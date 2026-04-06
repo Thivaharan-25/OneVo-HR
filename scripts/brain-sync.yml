@@ -1,0 +1,106 @@
+# =============================================================================
+# Cross-Repo Brain Sync Workflow
+# =============================================================================
+#
+# PURPOSE: Automatically update the brain repo when PRs are merged in the
+#          code repo. This keeps the brain aware of code changes without
+#          relying on developers to manually update documentation.
+#
+# SETUP:
+#   1. Copy this file to your CODE repo: .github/workflows/brain-sync.yml
+#   2. Replace [YOUR_ORG/YOUR_PROJECT-brain] with your brain repo path
+#   3. Create a GitHub PAT with 'repo' scope (or fine-grained with write access)
+#   4. Add the PAT as a secret named BRAIN_REPO_PAT in your code repo
+#
+# See docs/guides/cross-repo-sync.md in the brain repo for full setup guide.
+# =============================================================================
+
+name: Sync to Brain Repo
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  sync-brain:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout brain repo
+        uses: actions/checkout@v4
+        with:
+          repository: '[YOUR_ORG/YOUR_PROJECT-brain]'
+          token: ${{ secrets.BRAIN_REPO_PAT }}
+          path: brain
+
+      - name: Update brain changelog
+        run: |
+          cd brain
+
+          DATE=$(date +%Y-%m-%d)
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          PR_LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+
+          # Build the changelog entry
+          ENTRY="## [${DATE}] - Code PR #${PR_NUMBER}: ${PR_TITLE}"
+          ENTRY="${ENTRY}\n- **PR:** [#${PR_NUMBER} ${PR_TITLE}](${PR_URL})"
+          ENTRY="${ENTRY}\n- **Author:** ${PR_AUTHOR}"
+          ENTRY="${ENTRY}\n- **Merged:** ${DATE}"
+
+          # Add label-based flags
+          if echo "$PR_LABELS" | grep -qi "breaking-change"; then
+            ENTRY="${ENTRY}\n- **WARNING:** This PR contains breaking changes. Review relevant docs."
+          fi
+          if echo "$PR_LABELS" | grep -qi "new-api"; then
+            ENTRY="${ENTRY}\n- **ACTION:** New API endpoint(s) added. Update \`docs/api/README.md\`."
+          fi
+          if echo "$PR_LABELS" | grep -qi "schema-change"; then
+            ENTRY="${ENTRY}\n- **ACTION:** Database schema changed. Update \`docs/database/README.md\`."
+          fi
+          if echo "$PR_LABELS" | grep -qi "new-dependency"; then
+            ENTRY="${ENTRY}\n- **ACTION:** Dependencies changed. Update \`AI_CONTEXT/tech-stack.md\`."
+          fi
+
+          ENTRY="${ENTRY}\n"
+
+          # Append to changelog (after the --- separator line)
+          if grep -q "^---$" AI_CONTEXT/changelog.md; then
+            sed -i "/^---$/a\\
+          \\
+          $(echo -e "$ENTRY")" AI_CONTEXT/changelog.md
+          else
+            echo -e "\n${ENTRY}" >> AI_CONTEXT/changelog.md
+          fi
+
+      - name: Flag breaking changes in known issues
+        if: contains(toJson(github.event.pull_request.labels.*.name), 'breaking-change')
+        run: |
+          cd brain
+
+          DATE=$(date +%Y-%m-%d)
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+
+          # Add to known issues under Active Bugs section
+          ISSUE_ENTRY="| PR-${PR_NUMBER} | Breaking change: ${PR_TITLE} -- review impact and update docs | High | See [PR #${PR_NUMBER}](${PR_URL}) | [PR](${PR_URL}) |"
+
+          # Append after the Active Bugs table header
+          if grep -q "^\| \[BUG-001\]" AI_CONTEXT/known-issues.md; then
+            sed -i "/^\| \[BUG-002\]/a ${ISSUE_ENTRY}" AI_CONTEXT/known-issues.md
+          else
+            echo -e "\n${ISSUE_ENTRY}" >> AI_CONTEXT/known-issues.md
+          fi
+
+      - name: Commit and push to brain
+        run: |
+          cd brain
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || (git commit -m "chore(sync): auto-update from code repo PR #${{ github.event.pull_request.number }}" && git push)

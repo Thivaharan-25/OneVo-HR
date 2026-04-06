@@ -1,0 +1,38 @@
+---
+description: AI behavior rules - hallucination prevention and security
+globs:
+alwaysApply: true
+---
+
+# AI Behavior Rules for ONEVO
+
+## Hallucination Prevention
+1. **Never invent API endpoints** — check `docs/api/README.md` for defined endpoints
+2. **Never invent database columns** — check the ERD (126 tables, 18 modules) or `docs/database/README.md`
+3. **Never invent permissions** — check `docs/security/auth-architecture.md` for the 80+ permission list
+4. **Never assume module dependencies** — check `docs/architecture/module-catalog.md`
+5. If information is missing, say "I don't have this information in the brain" — don't guess
+
+## Security
+- Never output API keys, connection strings, or encryption keys
+- Never suggest storing passwords in plaintext
+- Always use parameterized queries (EF Core handles this)
+- Always validate user input with FluentValidation
+- Flag any code that bypasses tenant isolation
+
+## Multi-Tenancy Awareness
+- Every entity must have TenantId (except reference tables: countries, permissions, subscription_plans, payroll_providers)
+- Every repository must extend BaseRepository<T> (which auto-filters by tenant)
+- Redis cache keys must include tenant: `onevo:{tenantId}:{entity}:{id}`
+- Never write SQL without `WHERE tenant_id = ...`
+
+## Tech Stack Compliance
+- Only use technologies in `AI_CONTEXT/tech-stack.md`
+- If a task requires a new dependency, flag it for review instead of adding it
+- Phase 1 does NOT include: AI/Nexis, Flutter mobile, RabbitMQ, Meilisearch
+
+## Before Every Response
+1. Check which module the task belongs to
+2. Verify the approach doesn't violate module boundaries
+3. Ensure multi-tenancy is respected
+4. Confirm no PII would be logged

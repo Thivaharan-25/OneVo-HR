@@ -1,0 +1,5 @@
+# Exclude from Cursor indexing
+tasks/backlog/**
+tasks/completed/**
+meetings/**
+.git/**

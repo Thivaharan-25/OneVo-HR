@@ -1,0 +1,43 @@
+---
+description: C# coding standards for ONEVO - active when editing code files
+globs: "**/*.cs"
+alwaysApply: false
+---
+
+# ONEVO C# Coding Standards
+
+## Naming
+- Classes: PascalCase (`EmployeeService`)
+- Interfaces: IPascalCase (`IEmployeeRepository`)
+- Methods: PascalCase + Async suffix (`GetByIdAsync()`)
+- Private fields: _camelCase (`_repository`)
+- DTOs: `{Entity}{Action}Dto` (e.g., `EmployeeListDto`)
+- Commands: `{Action}{Entity}Command` (e.g., `CreateEmployeeCommand`)
+- Events: `{Entity}{Action}Event` (e.g., `EmployeeHiredEvent`)
+
+## Patterns
+- Use `Result<T>` instead of throwing exceptions
+- Use MediatR for command/query dispatch
+- Use FluentValidation for request validation
+- Use async/await with CancellationToken on ALL async methods
+- Use BaseRepository<T> for data access (auto-filters by tenant)
+- Use `[RequirePermission("resource:action")]` on all endpoints
+
+## Module Boundaries
+- Only import from other modules' `Public/` interfaces
+- Never reference `*.Internal.*` from outside the module
+- Use domain events for cross-module side effects
+
+## Database
+- EF Core snake_case convention handles mapping
+- UUID primary keys (Guid in C#)
+- DateTimeOffset for timestamps, DateOnly for dates
+- Encrypted fields via IEncryptionService (AES-256)
+
+## Don't
+- Don't use synchronous I/O
+- Don't throw exceptions for business logic
+- Don't bypass BaseRepository (loses tenant filtering)
+- Don't use string for IDs (use Guid)
+- Don't log PII (emails, names, phone numbers)
+- Don't hardcode secrets

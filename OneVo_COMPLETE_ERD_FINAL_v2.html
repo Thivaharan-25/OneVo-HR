@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONEVO — Complete Interactive ERD | 151 Tables</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#080c16;color:#e8ecf4;line-height:1.5}
+
+.app{display:flex;height:100vh;flex-direction:column}
+
+/* TOPBAR */
+.topbar{height:52px;background:linear-gradient(135deg,#0c1225 0%,#1a1540 50%,#0c1225 100%);border-bottom:1px solid #1c2847;display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;z-index:300}
+.topbar h1{font-size:17px;font-weight:800;background:linear-gradient(135deg,#818cf8,#c084fc,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.topbar-divider{width:1px;height:26px;background:#1c2847}
+.topbar-stats{display:flex;gap:6px;flex-wrap:nowrap}
+.topbar-chip{font-size:10px;font-weight:700;padding:3px 10px;border-radius:14px;letter-spacing:0.3px;white-space:nowrap;border:1px solid}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.topbar-btn{background:rgba(255,255,255,0.06);border:1px solid #1c2847;color:#8b9dc3;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s}
+.topbar-btn:hover{background:rgba(255,255,255,0.1);color:#e8ecf4}
+.topbar-btn kbd{font-size:9px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px;font-family:inherit}
+
+/* MAIN LAYOUT */
+.main-area{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:240px;background:#0b1020;border-right:1px solid #1c2847;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;z-index:200;transition:width .25s}
+.sidebar.collapsed{width:0;border:none}
+.sidebar-header{padding:12px 14px 8px;border-bottom:1px solid #1c2847;display:flex;justify-content:space-between;align-items:center}
+.sidebar-header h2{font-size:12px;font-weight:700;color:#8b9dc3;text-transform:uppercase;letter-spacing:0.5px}
+.sidebar-count{font-size:10px;color:#566a8f;font-weight:600}
+.sidebar-scroll{flex:1;overflow-y:auto;padding:6px 8px}
+.sidebar-scroll::-webkit-scrollbar{width:4px}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:#1c2847;border-radius:4px}
+.sidebar-module{margin-bottom:4px}
+.sidebar-module-header{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;transition:background .15s}
+.sidebar-module-header:hover{background:rgba(255,255,255,0.04)}
+.sidebar-module-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sidebar-module-count{margin-left:auto;font-size:9px;color:#566a8f;font-weight:600}
+.sidebar-module-chevron{font-size:8px;color:#566a8f;transition:transform .2s}
+.sidebar-module-chevron.open{transform:rotate(90deg)}
+.sidebar-table-list{padding:0 0 0 22px}
+.sidebar-table-item{font-size:11px;color:#8b9dc3;padding:3px 8px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-table-item:hover{background:rgba(255,255,255,0.05);color:#e8ecf4}
+.sidebar-table-item.active{background:rgba(129,140,248,0.15);color:#818cf8}
+
+/* FILTER BAR */
+.filter-bar{height:40px;background:#0a0f1e;border-bottom:1px solid #1c2847;display:flex;align-items:center;padding:0 16px;gap:6px;overflow-x:auto;flex-shrink:0}
+.filter-bar::-webkit-scrollbar{height:3px}
+.filter-bar::-webkit-scrollbar-thumb{background:#1c2847;border-radius:3px}
+.filter-pill{font-size:10px;font-weight:600;padding:4px 10px;border-radius:12px;cursor:pointer;white-space:nowrap;border:1px solid transparent;transition:all .2s;display:flex;align-items:center;gap:4px}
+.filter-pill .dot{width:6px;height:6px;border-radius:50%}
+.filter-pill.inactive{background:rgba(255,255,255,0.04);color:#566a8f}
+.filter-pill.inactive:hover{color:#8b9dc3;background:rgba(255,255,255,0.07)}
+
+/* CANVAS */
+.canvas-wrap{flex:1;position:relative;overflow:hidden;background:#080c16}
+.canvas{position:absolute;top:0;left:0;transform-origin:0 0}
+.canvas svg.lines{position:absolute;top:0;left:0;pointer-events:none;z-index:1}
+
+/* ENTITY CARDS */
+.entity{position:absolute;width:240px;background:#0f1628;border:1px solid #1c2847;border-radius:10px;cursor:grab;z-index:10;transition:box-shadow .2s,opacity .25s,border-color .2s;user-select:none}
+.entity:hover{z-index:50}
+.entity.dragging{cursor:grabbing;z-index:100;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+.entity.dimmed{opacity:0.12;pointer-events:none}
+.entity.highlighted{z-index:80}
+.entity-header{padding:8px 10px 6px;border-radius:10px 10px 0 0;display:flex;align-items:center;gap:8px;cursor:grab}
+.entity-header .icon-box{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.entity-header .name{font-size:12px;font-weight:700;color:#e8ecf4;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.entity-header .module-badge{font-size:8px;font-weight:700;padding:2px 6px;border-radius:8px;letter-spacing:0.3px;white-space:nowrap;flex-shrink:0}
+.entity-cols{padding:4px 0;max-height:140px;overflow:hidden}
+.entity-col{display:flex;align-items:center;gap:4px;padding:2px 10px;font-size:10px;color:#8b9dc3}
+.entity-col .col-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.entity-col .col-tag{font-size:8px;font-weight:700;padding:1px 4px;border-radius:4px;letter-spacing:0.3px}
+.tag-pk{background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3)}
+.tag-fk{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.3)}
+.tag-enc{background:rgba(244,114,182,0.15);color:#f472b6;border:1px solid rgba(244,114,182,0.3)}
+.tag-json{background:rgba(45,212,191,0.12);color:#2dd4bf;border:1px solid rgba(45,212,191,0.25)}
+.entity-more{padding:2px 10px 4px;font-size:9px;color:#566a8f;font-weight:600}
+.entity-footer{padding:5px 10px;border-top:1px solid #1c2847;display:flex;justify-content:space-between;align-items:center;font-size:9px;border-radius:0 0 10px 10px}
+.entity-footer .mod{font-weight:600}
+.entity-footer .rels{color:#566a8f}
+
+/* DETAIL PANEL */
+.detail-overlay{position:fixed;inset:0;z-index:400;display:none}
+.detail-overlay.open{display:flex}
+.detail-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)}
+.detail-panel{position:absolute;right:0;top:0;bottom:0;width:420px;background:#0c1225;border-left:1px solid #1c2847;overflow-y:auto;z-index:1;animation:slideIn .2s ease}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.detail-panel::-webkit-scrollbar{width:5px}
+.detail-panel::-webkit-scrollbar-thumb{background:#1c2847;border-radius:5px}
+.detail-head{padding:18px 20px 14px;border-bottom:1px solid #1c2847}
+.detail-head h2{font-size:16px;font-weight:800;margin-bottom:2px}
+.detail-head .mod-label{font-size:11px;font-weight:600;padding:2px 8px;border-radius:8px;display:inline-block}
+.detail-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#566a8f;font-size:18px;cursor:pointer;padding:4px}
+.detail-close:hover{color:#e8ecf4}
+.detail-section{padding:14px 20px}
+.detail-section h3{font-size:11px;font-weight:700;color:#566a8f;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.detail-col-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;border-bottom:1px solid #0f1628}
+.detail-col-row .dcol-name{font-weight:600;color:#e8ecf4;min-width:120px}
+.detail-col-row .dcol-type{color:#566a8f;font-size:10px;flex:1}
+.detail-col-row .dcol-tags{display:flex;gap:3px}
+.detail-rel-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:background .15s;font-size:11px}
+.detail-rel-item:hover{background:rgba(255,255,255,0.05)}
+.detail-rel-item .arrow{color:#566a8f;font-size:10px}
+
+/* SEARCH MODAL */
+.search-overlay{position:fixed;inset:0;z-index:500;display:none;justify-content:center;padding-top:80px}
+.search-overlay.open{display:flex}
+.search-overlay .backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px)}
+.search-box{position:relative;width:500px;max-height:500px;background:#0f1628;border:1px solid #1c2847;border-radius:14px;overflow:hidden;z-index:1;display:flex;flex-direction:column;animation:fadeScale .15s ease}
+@keyframes fadeScale{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+.search-input-wrap{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #1c2847;gap:8px}
+.search-input-wrap svg{color:#566a8f;flex-shrink:0}
+.search-input{flex:1;background:none;border:none;color:#e8ecf4;font-size:14px;outline:none;font-family:inherit}
+.search-input::placeholder{color:#3a4a6b}
+.search-results{overflow-y:auto;padding:6px}
+.search-results::-webkit-scrollbar{width:4px}
+.search-results::-webkit-scrollbar-thumb{background:#1c2847;border-radius:4px}
+.search-result-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .15s}
+.search-result-item:hover,.search-result-item.selected{background:rgba(129,140,248,0.1)}
+.search-result-item .sr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.search-result-item .sr-name{font-size:12px;font-weight:600}
+.search-result-item .sr-meta{font-size:10px;color:#566a8f;margin-left:auto}
+.search-empty{padding:24px;text-align:center;color:#566a8f;font-size:12px}
+
+/* MINIMAP */
+.minimap{position:absolute;bottom:12px;right:12px;width:180px;height:120px;background:rgba(11,16,32,0.9);border:1px solid #1c2847;border-radius:8px;z-index:100;overflow:hidden}
+.minimap canvas{width:100%;height:100%}
+
+/* TOOLBAR */
+.toolbar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(11,16,32,0.92);border:1px solid #1c2847;border-radius:10px;padding:4px;z-index:100}
+.toolbar button{background:rgba(255,255,255,0.05);border:1px solid transparent;color:#8b9dc3;padding:5px 10px;border-radius:6px;font-size:10px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;font-family:inherit;font-weight:600}
+.toolbar button:hover{background:rgba(255,255,255,0.1);color:#e8ecf4}
+.toolbar button kbd{font-size:8px;opacity:0.5}
+
+/* ZOOM INDICATOR */
+.zoom-ind{position:absolute;top:8px;right:12px;font-size:10px;color:#566a8f;z-index:100;background:rgba(11,16,32,0.8);padding:3px 8px;border-radius:6px}
+
+/* SCROLLBARS */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1c2847;border-radius:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <h1>ONEVO ERD</h1>
+    <div class="topbar-divider"></div>
+    <div class="topbar-stats">
+      <span class="topbar-chip" style="background:rgba(129,140,248,0.12);color:#818cf8;border-color:rgba(129,140,248,0.3)">151 Tables</span>
+      <span class="topbar-chip" style="background:rgba(52,211,153,0.12);color:#34d399;border-color:rgba(52,211,153,0.3)">22 Modules</span>
+      <span class="topbar-chip" style="background:rgba(251,191,36,0.12);color:#fbbf24;border-color:rgba(251,191,36,0.3)">Complete System</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" onclick="toggleSidebar()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        Sidebar
+      </button>
+      <button class="topbar-btn" onclick="openSearch()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Search <kbd>Ctrl+K</kbd>
+      </button>
+    </div>
+  </div>
+
+  <div class="main-area">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Tables</h2>
+        <span class="sidebar-count">151</span>
+      </div>
+      <div class="sidebar-scroll" id="sidebarScroll"></div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="filter-bar" id="filterBar"></div>
+      <div class="canvas-wrap" id="canvasWrap">
+        <svg class="lines" id="svgLines"></svg>
+        <div class="canvas" id="canvas"></div>
+        <div class="zoom-ind" id="zoomInd">100%</div>
+        <div class="toolbar">
+          <button onclick="fitAll()">Fit All <kbd>F</kbd></button>
+          <button onclick="resetView()">Reset <kbd>R</kbd></button>
+          <button onclick="zoomIn()">Zoom + <kbd>+</kbd></button>
+          <button onclick="zoomOut()">Zoom - <kbd>-</kbd></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-backdrop" onclick="closeDetail()"></div>
+  <div class="detail-panel" id="detailPanel"></div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="backdrop" onclick="closeSearch()"></div>
+  <div class="search-box">
+    <div class="search-input-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" placeholder="Search tables or columns..." autocomplete="off">
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<script>
+// ===== MODULE DEFINITIONS =====
+const MODULES = [
+  // Pillar 1: HR Management
+  {key:'infrastructure',label:'Infrastructure',color:'#6B7280',count:4},
+  {key:'org',label:'Org Structure',color:'#0F6E56',count:8},
+  {key:'auth',label:'Auth & Security',color:'#A32D2D',count:8},
+  {key:'core_hr',label:'Core HR',color:'#185FA5',count:13},
+  {key:'leave',label:'Leave',color:'#639922',count:5},
+  {key:'payroll',label:'Payroll',color:'#BA7517',count:11},
+  {key:'performance',label:'Performance',color:'#534AB7',count:7},
+  {key:'skills',label:'Skills & Learning',color:'#0891B2',count:15},
+  {key:'documents',label:'Documents',color:'#0F766E',count:5},
+  {key:'ai',label:'AI / Nexis',color:'#7C3AED',count:5},
+  // Pillar 2: Workforce Intelligence
+  {key:'workforce_presence',label:'Workforce Presence',color:'#D85A30',count:12},
+  {key:'activity_monitoring',label:'Activity Monitoring',color:'#F59E0B',count:8},
+  {key:'identity_verification',label:'Identity Verification',color:'#EC4899',count:6},
+  {key:'exception_engine',label:'Exception Engine',color:'#EF4444',count:5},
+  {key:'productivity_analytics',label:'Productivity Analytics',color:'#8B5CF6',count:4},
+  // Shared Foundation
+  {key:'shared',label:'Shared Platform',color:'#059669',count:21},
+  {key:'notifications',label:'Notifications',color:'#E11D48',count:2},
+  {key:'config',label:'Configuration',color:'#9333EA',count:5},
+  {key:'calendar',label:'Calendar',color:'#0284C7',count:1},
+  {key:'reports',label:'Reporting Engine',color:'#B45309',count:3},
+  {key:'grievance',label:'Grievance & Disciplinary',color:'#DC2626',count:2},
+  {key:'expense',label:'Expense Management',color:'#D97706',count:3},
+  {key:'agent_gateway',label:'Agent Gateway',color:'#14B8A6',count:3}
+];
+
+// ===== ALL 151 TABLES =====
+const TABLES = [
+// Infrastructure (1-4)
+{id:1,name:'tenants',module:'infrastructure',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'name',t:'varchar(255)'},{n:'slug',t:'varchar(100)'},{n:'plan',t:'varchar(50)'},{n:'status',t:'varchar(20)'},{n:'currency',t:'varchar(3)'},{n:'timezone',t:'varchar(50)'},{n:'locale',t:'varchar(10)'}
+]},
+{id:2,name:'users',module:'infrastructure',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'email',t:'varchar(255)'},{n:'first_name',t:'varchar(100)'},{n:'last_name',t:'varchar(100)'},{n:'avatar_file_record_id',t:'uuid',fk:'file_records'},{n:'status',t:'varchar(20)'},{n:'mfa_enabled',t:'boolean'},{n:'preferences',t:'jsonb',json:true}
+]},
+{id:3,name:'file_records',module:'infrastructure',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'uploaded_by',t:'uuid',fk:'users'},{n:'file_path',t:'varchar(500)'},{n:'mime_type',t:'varchar(100)'},{n:'file_size',t:'bigint'},{n:'scan_status',t:'varchar(20)'},{n:'context',t:'varchar(50)'}
+]},
+{id:4,name:'countries',module:'infrastructure',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'code',t:'varchar(3)'},{n:'name',t:'varchar(100)'},{n:'currency_code',t:'varchar(3)'},{n:'timezone',t:'varchar(50)'},{n:'tax_regime',t:'varchar(50)'},{n:'is_active',t:'boolean'}
+]},
+// Org Structure (5-12)
+{id:5,name:'legal_entities',module:'org',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'country_id',t:'uuid',fk:'countries'},{n:'name',t:'varchar(255)'},{n:'registration_no',t:'varchar(100)'},{n:'is_active',t:'boolean'}
+]},
+{id:6,name:'office_locations',module:'org',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'legal_entity_id',t:'uuid',fk:'legal_entities'},{n:'country_id',t:'uuid',fk:'countries'},{n:'name',t:'varchar(255)'},{n:'city',t:'varchar(100)'},{n:'address',t:'text'}
+]},
+{id:7,name:'departments',module:'org',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'legal_entity_id',t:'uuid',fk:'legal_entities'},{n:'parent_department_id',t:'uuid',fk:'departments'},{n:'office_location_id',t:'uuid',fk:'office_locations'},{n:'head_employee_id',t:'uuid',fk:'employees'},{n:'name',t:'varchar(255)'},{n:'code',t:'varchar(50)'}
+]},
+{id:8,name:'job_families',module:'org',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'department_id',t:'uuid',fk:'departments'},{n:'name',t:'varchar(255)'},{n:'code',t:'varchar(50)'},{n:'description',t:'text'},{n:'color',t:'varchar(7)'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:9,name:'job_family_levels',module:'org',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'job_family_id',t:'uuid',fk:'job_families'},{n:'name',t:'varchar(255)'},{n:'rank_order',t:'integer'},{n:'min_experience_years',t:'integer'},{n:'is_active',t:'boolean'}
+]},
+{id:10,name:'job_titles',module:'org',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'job_family_id',t:'uuid',fk:'job_families'},{n:'name',t:'varchar(255)'},{n:'code',t:'varchar(50)'},{n:'level',t:'varchar(50)'}
+]},
+{id:11,name:'teams',module:'org',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'department_id',t:'uuid',fk:'departments'},{n:'name',t:'varchar(255)'},{n:'is_active',t:'boolean'}
+]},
+{id:12,name:'team_members',module:'org',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'team_id',t:'uuid',fk:'teams'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'role',t:'varchar(50)'},{n:'is_active',t:'boolean'}
+]},
+// Auth & Security (13-20)
+{id:13,name:'user_sessions',module:'auth',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'user_id',t:'uuid',fk:'users'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'device_type',t:'varchar(50)'},{n:'ip_address',t:'varchar(45)'},{n:'expires_at',t:'timestamptz'}
+]},
+{id:14,name:'user_mfa',module:'auth',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'user_id',t:'uuid',fk:'users'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'method',t:'varchar(20)'},{n:'is_active',t:'boolean'}
+]},
+{id:15,name:'roles',module:'auth',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'is_system_role',t:'boolean'}
+]},
+{id:16,name:'permissions',module:'auth',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'resource',t:'varchar(100)'},{n:'action',t:'varchar(50)'},{n:'is_active',t:'boolean'}
+]},
+{id:17,name:'role_permissions',module:'auth',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'role_id',t:'uuid',fk:'roles'},{n:'permission_id',t:'uuid',fk:'permissions'},{n:'granted_by',t:'uuid',fk:'users'}
+]},
+{id:18,name:'user_roles',module:'auth',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'user_id',t:'uuid',fk:'users'},{n:'role_id',t:'uuid',fk:'roles'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'assigned_by',t:'uuid',fk:'users'},{n:'expires_at',t:'timestamptz'}
+]},
+{id:19,name:'audit_logs',module:'auth',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'user_id',t:'uuid',fk:'users'},{n:'resource_type',t:'varchar(100)'},{n:'action',t:'varchar(50)'},{n:'old_values',t:'jsonb',json:true},{n:'new_values',t:'jsonb',json:true}
+]},
+{id:20,name:'consent_records',module:'auth',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'user_id',t:'uuid',fk:'users'},{n:'consent_type',t:'varchar(50)'},{n:'version',t:'integer'},{n:'given_at',t:'timestamptz'}
+]},
+// Core HR (21-29)
+{id:21,name:'employees',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'user_id',t:'uuid',fk:'users'},{n:'department_id',t:'uuid',fk:'departments'},{n:'office_location_id',t:'uuid',fk:'office_locations'},{n:'job_family_id',t:'uuid',fk:'job_families'},{n:'job_family_level_id',t:'uuid',fk:'job_family_levels'},{n:'job_title_id',t:'uuid',fk:'job_titles'},{n:'country_id',t:'uuid',fk:'countries'},{n:'manager_id',t:'uuid',fk:'employees'},{n:'avatar_file_record_id',t:'uuid',fk:'file_records'},{n:'employee_no',t:'varchar(20)'},{n:'first_name',t:'varchar(100)'},{n:'last_name',t:'varchar(100)'},{n:'employment_type',t:'varchar(30)'},{n:'employment_status',t:'varchar(20)'},{n:'hire_date',t:'date'}
+]},
+{id:22,name:'salary_history',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'gross_salary',t:'decimal(12,2)'},{n:'currency',t:'varchar(3)'},{n:'effective_date',t:'date'},{n:'approved_by',t:'uuid',fk:'employees'}
+]},
+{id:23,name:'employee_emergency_contacts',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'name',t:'varchar(255)'},{n:'relationship',t:'varchar(50)'},{n:'phone',t:'varchar(20)'},{n:'is_primary',t:'boolean'}
+]},
+{id:24,name:'employee_bank_details',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'bank_name',t:'varchar(255)'},{n:'account_holder_name',t:'varchar(255)'},{n:'account_number_encrypted',t:'bytea',enc:true},{n:'currency',t:'varchar(3)'},{n:'is_primary',t:'boolean'}
+]},
+{id:25,name:'onboarding_steps',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'step_name',t:'varchar(255)'},{n:'status',t:'varchar(20)'},{n:'due_date',t:'date'},{n:'completed_by',t:'uuid',fk:'employees'}
+]},
+{id:26,name:'offboarding_cases',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'separation_reason',t:'varchar(100)'},{n:'last_working_day',t:'date'},{n:'status',t:'varchar(20)'},{n:'knowledge_risk_level',t:'varchar(10)'},{n:'initiated_by_id',t:'uuid',fk:'employees'}
+]},
+{id:27,name:'offboarding_tasks',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'offboarding_case_id',t:'uuid',fk:'offboarding_cases'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'task_name',t:'varchar(255)'},{n:'status',t:'varchar(20)'},{n:'due_date',t:'date'},{n:'assigned_to',t:'uuid',fk:'employees'}
+]},
+{id:28,name:'offboarding_penalties',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'offboarding_case_id',t:'uuid',fk:'offboarding_cases'},{n:'amount',t:'decimal(10,2)'},{n:'currency',t:'varchar(3)'},{n:'deduct_from',t:'varchar(50)'},{n:'justification_note',t:'text'},{n:'approved_by_id',t:'uuid',fk:'employees'}
+]},
+{id:29,name:'employee_lifecycle_events',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'event_type',t:'varchar(50)'},{n:'from_value',t:'varchar(255)'},{n:'to_value',t:'varchar(255)'},{n:'from_department_id',t:'uuid',fk:'departments'},{n:'to_department_id',t:'uuid',fk:'departments'},{n:'from_salary',t:'decimal(12,2)'},{n:'to_salary',t:'decimal(12,2)'},{n:'effective_date',t:'date'},{n:'notes',t:'text'},{n:'created_by_id',t:'uuid',fk:'employees'}
+]},
+// Workforce Presence (30-42)
+{id:30,name:'shifts',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'code',t:'varchar(20)'},{n:'start_time',t:'time'},{n:'end_time',t:'time'},{n:'break_minutes',t:'integer'},{n:'is_overnight',t:'boolean'}
+]},
+{id:31,name:'work_schedules',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'shift_pattern',t:'jsonb',json:true},{n:'is_active',t:'boolean'}
+]},
+{id:32,name:'employee_shift_assignments',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'shift_id',t:'uuid',fk:'shifts'},{n:'work_schedule_id',t:'uuid',fk:'work_schedules'},{n:'effective_from',t:'date'},{n:'assigned_by',t:'uuid',fk:'employees'}
+]},
+{id:33,name:'holidays',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'office_location_id',t:'uuid',fk:'office_locations'},{n:'country_id',t:'uuid',fk:'countries'},{n:'name',t:'varchar(255)'},{n:'date',t:'date'}
+]},
+{id:34,name:'biometric_devices',module:'identity_verification',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'office_location_id',t:'uuid',fk:'office_locations'},{n:'serial_no',t:'varchar(100)'},{n:'model',t:'varchar(100)'},{n:'device_type',t:'varchar(30)'},{n:'mac_address',t:'varchar(17)'},{n:'status',t:'varchar(20)'}
+]},
+{id:35,name:'biometric_enrollments',module:'identity_verification',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'device_id',t:'uuid',fk:'biometric_devices'},{n:'enrolled_by',t:'uuid',fk:'users'},{n:'consent_given',t:'boolean'}
+]},
+{id:36,name:'biometric_events',module:'identity_verification',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'device_id',t:'uuid',fk:'biometric_devices'},{n:'event_type',t:'varchar(20)'},{n:'event_time',t:'timestamptz'},{n:'capture_method',t:'varchar(20)'},{n:'attendance_record_id',t:'uuid',fk:'attendance_records'}
+]},
+{id:37,name:'attendance_records',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'biometric_event_id',t:'uuid',fk:'biometric_events'},{n:'work_schedule_id',t:'uuid',fk:'work_schedules'},{n:'shift_id',t:'uuid',fk:'shifts'},{n:'date',t:'date'},{n:'clock_in',t:'timestamptz'},{n:'clock_out',t:'timestamptz'},{n:'status',t:'varchar(20)'},{n:'total_hours',t:'decimal(4,2)'},{n:'approved_by',t:'uuid',fk:'employees'}
+]},
+{id:38,name:'overtime_requests',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'attendance_record_id',t:'uuid',fk:'attendance_records'},{n:'hours_requested',t:'decimal(4,2)'},{n:'status',t:'varchar(20)'},{n:'approved_by',t:'uuid',fk:'employees'}
+]},
+{id:39,name:'biometric_audit_logs',module:'identity_verification',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'device_id',t:'uuid',fk:'biometric_devices'},{n:'performed_by',t:'uuid',fk:'users'},{n:'action',t:'varchar(50)'}
+]},
+{id:40,name:'attendance_corrections',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'attendance_record_id',t:'uuid',fk:'attendance_records'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'original_clock_in',t:'timestamptz'},{n:'corrected_clock_in',t:'timestamptz'},{n:'original_clock_out',t:'timestamptz'},{n:'corrected_clock_out',t:'timestamptz'},{n:'reason',t:'text'},{n:'status',t:'varchar(20)'},{n:'reviewed_by_id',t:'uuid',fk:'employees'}
+]},
+{id:41,name:'schedule_templates',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'description',t:'text'},{n:'color',t:'varchar(7)'},{n:'pattern',t:'jsonb',json:true},{n:'is_system',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:42,name:'employee_work_schedules',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'template_id',t:'uuid',fk:'schedule_templates'},{n:'day_of_week',t:'integer'},{n:'work_mode',t:'varchar(20)'},{n:'effective_from',t:'date'},{n:'effective_to',t:'date'},{n:'assigned_by_id',t:'uuid',fk:'employees'}
+]},
+// Leave (43-47)
+{id:43,name:'leave_types',module:'leave',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'code',t:'varchar(20)'},{n:'is_paid',t:'boolean'},{n:'requires_approval',t:'boolean'},{n:'max_days_per_year',t:'integer'},{n:'applicable_gender',t:'varchar(10)'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:44,name:'leave_type_employment_types',module:'leave',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'leave_type_id',t:'uuid',fk:'leave_types'},{n:'employment_type',t:'varchar(30)'}
+]},
+{id:45,name:'leave_policies',module:'leave',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'leave_type_id',t:'uuid',fk:'leave_types'},{n:'country_id',t:'uuid',fk:'countries'},{n:'job_family_level_id',t:'uuid',fk:'job_family_levels'},{n:'version',t:'integer'},{n:'accrual_method',t:'varchar(30)'},{n:'accrual_amount',t:'decimal(5,2)'},{n:'carry_over_allowed',t:'boolean'},{n:'max_carry_over_days',t:'integer'},{n:'superseded_by_id',t:'uuid',fk:'leave_policies'}
+]},
+{id:46,name:'leave_entitlements',module:'leave',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'leave_type_id',t:'uuid',fk:'leave_types'},{n:'year',t:'integer'},{n:'total_entitled',t:'decimal(5,2)'},{n:'used',t:'decimal(5,2)'},{n:'balance',t:'decimal(5,2)'},{n:'adjusted_by_id',t:'uuid',fk:'employees'}
+]},
+{id:47,name:'leave_requests',module:'leave',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'leave_type_id',t:'uuid',fk:'leave_types'},{n:'start_date',t:'date'},{n:'end_date',t:'date'},{n:'total_days',t:'decimal(4,1)'},{n:'status',t:'varchar(20)'},{n:'reviewed_by_id',t:'uuid',fk:'employees'}
+]},
+// Payroll (48-58)
+{id:48,name:'payroll_providers',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'name',t:'varchar(100)'},{n:'code',t:'varchar(20)'},{n:'supported_countries',t:'jsonb',json:true},{n:'auth_method',t:'varchar(30)'},{n:'is_active',t:'boolean'}
+]},
+{id:49,name:'payroll_connections',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'provider_id',t:'uuid',fk:'payroll_providers'},{n:'country_id',t:'uuid',fk:'countries'},{n:'auth_type',t:'varchar(30)'},{n:'status',t:'varchar(20)'},{n:'last_sync_at',t:'timestamptz'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:50,name:'tax_engines',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'country_id',t:'uuid',fk:'countries'},{n:'tax_type',t:'varchar(50)'},{n:'name',t:'varchar(100)'},{n:'employee_rate',t:'decimal(5,4)'},{n:'employer_rate',t:'decimal(5,4)'},{n:'effective_from',t:'date'}
+]},
+{id:51,name:'allowance_types',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'code',t:'varchar(20)'},{n:'calc_type',t:'varchar(30)'},{n:'scope',t:'varchar(30)'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:52,name:'allowance_type_job_families',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'allowance_type_id',t:'uuid',fk:'allowance_types'},{n:'job_family_id',t:'uuid',fk:'job_families'}
+]},
+{id:53,name:'employee_allowances',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'allowance_type_id',t:'uuid',fk:'allowance_types'},{n:'override_amount',t:'decimal(10,2)'},{n:'effective_from',t:'date'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:54,name:'pension_plans',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'plan_type',t:'varchar(30)'},{n:'country_id',t:'uuid',fk:'countries'},{n:'employer_rate',t:'decimal(5,4)'},{n:'employee_rate',t:'decimal(5,4)'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:55,name:'employee_pension_enrollments',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'pension_plan_id',t:'uuid',fk:'pension_plans'},{n:'enrolled_date',t:'date'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:56,name:'payroll_runs',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'connection_id',t:'uuid',fk:'payroll_connections'},{n:'pay_period_start',t:'date'},{n:'pay_period_end',t:'date'},{n:'status',t:'varchar(20)'},{n:'total_gross',t:'decimal(14,2)'},{n:'total_net',t:'decimal(14,2)'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:57,name:'payroll_line_items',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'payroll_run_id',t:'uuid',fk:'payroll_runs'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'line_type',t:'varchar(30)'},{n:'amount',t:'decimal(12,2)'},{n:'allowance_type_id',t:'uuid',fk:'allowance_types'},{n:'leave_request_id',t:'uuid',fk:'leave_requests'},{n:'tax_engine_id',t:'uuid',fk:'tax_engines'},{n:'pension_plan_id',t:'uuid',fk:'pension_plans'}
+]},
+{id:58,name:'payroll_leave_adjustments',module:'payroll',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'payroll_run_id',t:'uuid',fk:'payroll_runs'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'leave_request_id',t:'uuid',fk:'leave_requests'},{n:'leave_type_id',t:'uuid',fk:'leave_types'},{n:'days',t:'decimal(4,1)'},{n:'is_paid',t:'boolean'},{n:'deduction_amount',t:'decimal(10,2)'}
+]},
+// Performance (59-65)
+{id:59,name:'review_cycles',module:'performance',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(255)'},{n:'type',t:'varchar(30)'},{n:'status',t:'varchar(20)'},{n:'period_start',t:'date'},{n:'period_end',t:'date'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:60,name:'review_participants',module:'performance',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'review_cycle_id',t:'uuid',fk:'review_cycles'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'manager_id',t:'uuid',fk:'employees'},{n:'self_rating',t:'decimal(3,2)'},{n:'manager_rating',t:'decimal(3,2)'},{n:'skill_assessment_json',t:'jsonb',json:true},{n:'calibrated_rating',t:'decimal(3,2)'},{n:'status',t:'varchar(20)'},{n:'hr_sign_off_by_id',t:'uuid',fk:'employees'}
+]},
+{id:61,name:'peer_feedbacks',module:'performance',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'review_cycle_id',t:'uuid',fk:'review_cycles'},{n:'target_employee_id',t:'uuid',fk:'employees'},{n:'reviewer_employee_id',t:'uuid',fk:'employees'},{n:'rating',t:'decimal(3,2)'},{n:'is_anonymous',t:'boolean'},{n:'status',t:'varchar(20)'}
+]},
+{id:62,name:'goals',module:'performance',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'title',t:'varchar(255)'},{n:'type',t:'varchar(30)'},{n:'parent_goal_id',t:'uuid',fk:'goals'},{n:'review_cycle_id',t:'uuid',fk:'review_cycles'},{n:'linked_skill_id',t:'uuid',fk:'skills'},{n:'status',t:'varchar(20)'},{n:'progress_percent',t:'integer'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:63,name:'recognitions',module:'performance',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'giver_id',t:'uuid',fk:'employees'},{n:'receiver_id',t:'uuid',fk:'employees'},{n:'badge_type',t:'varchar(50)'},{n:'title',t:'varchar(255)'},{n:'points',t:'integer'},{n:'is_public',t:'boolean'},{n:'linked_skill_id',t:'uuid',fk:'skills'}
+]},
+{id:64,name:'succession_plans',module:'performance',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'role_title',t:'varchar(255)'},{n:'department_id',t:'uuid',fk:'departments'},{n:'incumbent_employee_id',t:'uuid',fk:'employees'},{n:'job_family_id',t:'uuid',fk:'job_families'},{n:'risk_level',t:'varchar(20)'},{n:'status',t:'varchar(20)'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:65,name:'succession_candidates',module:'performance',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'succession_plan_id',t:'uuid',fk:'succession_plans'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'readiness',t:'varchar(20)'},{n:'readiness_score',t:'decimal(3,2)'},{n:'rating',t:'decimal(3,2)'},{n:'skills_match_percent',t:'integer'}
+]},
+// Skills & Learning (66-79)
+{id:66,name:'skill_categories',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:67,name:'skills',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'category_id',t:'uuid',fk:'skill_categories'},{n:'name',t:'varchar(100)'},{n:'proficiency_levels',t:'jsonb',json:true},{n:'evidence_required',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:68,name:'employee_skills',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'proficiency_level',t:'integer'},{n:'status',t:'varchar(20)'},{n:'validated_by_id',t:'uuid',fk:'employees'},{n:'last_assessed_in_review_id',t:'uuid',fk:'review_cycles'}
+]},
+{id:69,name:'job_family_required_skills',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'job_family_id',t:'uuid',fk:'job_families'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'min_proficiency',t:'integer'},{n:'is_mandatory',t:'boolean'}
+]},
+{id:70,name:'lms_providers',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'provider_type',t:'varchar(30)'},{n:'sso_enabled',t:'boolean'},{n:'status',t:'varchar(20)'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:71,name:'courses',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'title',t:'varchar(255)'},{n:'source',t:'varchar(50)'},{n:'lms_provider_id',t:'uuid',fk:'lms_providers'},{n:'content_type',t:'varchar(30)'},{n:'duration_minutes',t:'integer'},{n:'is_mandatory',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:72,name:'course_skill_tags',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'course_id',t:'uuid',fk:'courses'},{n:'skill_id',t:'uuid',fk:'skills'}
+]},
+{id:73,name:'course_assignments',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'course_id',t:'uuid',fk:'courses'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'assigned_by_id',t:'uuid',fk:'employees'},{n:'status',t:'varchar(20)'},{n:'completion_percent',t:'integer'},{n:'linked_milestone_id',t:'uuid',fk:'development_milestones'}
+]},
+{id:74,name:'development_plans',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'created_by_id',t:'uuid',fk:'users'},{n:'title',t:'varchar(255)'},{n:'status',t:'varchar(20)'},{n:'linked_review_cycle_id',t:'uuid',fk:'review_cycles'}
+]},
+{id:75,name:'development_milestones',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'plan_id',t:'uuid',fk:'development_plans'},{n:'title',t:'varchar(255)'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'linked_course_id',t:'uuid',fk:'courses'},{n:'status',t:'varchar(20)'}
+]},
+{id:76,name:'skill_validation_requests',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'from_level',t:'integer'},{n:'to_level',t:'integer'},{n:'evidence_url',t:'varchar(500)'},{n:'validator_id',t:'uuid',fk:'employees'},{n:'status',t:'varchar(20)'},{n:'review_note',t:'text'}
+]},
+{id:77,name:'skill_questions',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'question_text',t:'text'},{n:'question_type',t:'varchar(20)'},{n:'sort_order',t:'integer'},{n:'is_required',t:'boolean'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:78,name:'skill_question_options',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'question_id',t:'uuid',fk:'skill_questions'},{n:'option_text',t:'text'},{n:'is_correct',t:'boolean'},{n:'sort_order',t:'integer'}
+]},
+{id:79,name:'skill_assessment_responses',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'question_id',t:'uuid',fk:'skill_questions'},{n:'selected_option_id',t:'uuid',fk:'skill_question_options'},{n:'text_answer',t:'text'},{n:'file_record_id',t:'uuid',fk:'file_records'},{n:'submitted_at',t:'timestamptz'},{n:'scored_by_id',t:'uuid',fk:'employees'},{n:'score',t:'decimal(5,2)'}
+]},
+// AI / Nexis (80-84)
+{id:80,name:'ai_features',module:'ai',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'feature_code',t:'varchar(50)'},{n:'name',t:'varchar(100)'},{n:'scope',t:'varchar(30)'},{n:'is_active',t:'boolean'}
+]},
+{id:81,name:'ai_feature_permissions',module:'ai',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'feature_code',t:'varchar(50)',fk:'ai_features'},{n:'role_id',t:'uuid',fk:'roles'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'is_allowed',t:'boolean'},{n:'granted_by',t:'uuid',fk:'users'}
+]},
+{id:82,name:'ai_prompt_templates',module:'ai',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'feature_code',t:'varchar(50)',fk:'ai_features'},{n:'template_name',t:'varchar(100)'},{n:'system_prompt',t:'text'},{n:'version',t:'integer'},{n:'is_active',t:'boolean'},{n:'model',t:'varchar(50)'},{n:'created_by',t:'uuid',fk:'users'}
+]},
+{id:83,name:'ai_interactions',module:'ai',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'initiated_by',t:'uuid',fk:'employees'},{n:'context_employee_id',t:'uuid',fk:'employees'},{n:'feature_code',t:'varchar(50)',fk:'ai_features'},{n:'template_id',t:'uuid',fk:'ai_prompt_templates'},{n:'query_text',t:'text'},{n:'tokens_input',t:'integer'},{n:'tokens_output',t:'integer'},{n:'cost_usd',t:'decimal(8,6)'},{n:'status',t:'varchar(20)'},{n:'reviewed_by',t:'uuid',fk:'users'}
+]},
+{id:84,name:'ai_suggestions',module:'ai',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'interaction_id',t:'uuid',fk:'ai_interactions'},{n:'suggestion_type',t:'varchar(50)'},{n:'content',t:'jsonb',json:true},{n:'confidence_score',t:'decimal(3,2)'},{n:'is_applied',t:'boolean'},{n:'applied_by',t:'uuid',fk:'users'}
+]},
+// Documents (85-89)
+{id:85,name:'document_categories',module:'documents',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'parent_category_id',t:'uuid',fk:'document_categories'},{n:'name',t:'varchar(100)'},{n:'applies_to',t:'varchar(30)'},{n:'is_active',t:'boolean'}
+]},
+{id:86,name:'documents',module:'documents',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'legal_entity_id',t:'uuid',fk:'legal_entities'},{n:'category_id',t:'uuid',fk:'document_categories'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'title',t:'varchar(255)'},{n:'requires_acknowledgement',t:'boolean'},{n:'is_active',t:'boolean'},{n:'created_by',t:'uuid',fk:'users'}
+]},
+{id:87,name:'document_versions',module:'documents',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'document_id',t:'uuid',fk:'documents'},{n:'version_number',t:'integer'},{n:'blob_storage_url',t:'varchar(500)'},{n:'file_name',t:'varchar(255)'},{n:'effective_date',t:'date'},{n:'expiry_date',t:'date'},{n:'is_current',t:'boolean'},{n:'uploaded_by',t:'uuid',fk:'users'}
+]},
+{id:88,name:'document_acknowledgements',module:'documents',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'document_version_id',t:'uuid',fk:'document_versions'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'acknowledged_by',t:'uuid',fk:'users'},{n:'method',t:'varchar(20)'},{n:'acknowledged_at',t:'timestamptz'},{n:'ip_address',t:'varchar(45)'}
+]},
+{id:89,name:'document_access_logs',module:'documents',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'document_version_id',t:'uuid',fk:'document_versions'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'action',t:'varchar(20)'},{n:'accessed_at',t:'timestamptz'},{n:'ip_address',t:'varchar(45)'}
+]},
+// Notifications (90-91)
+{id:90,name:'notifications',module:'notifications',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'user_id',t:'uuid',fk:'users'},{n:'type',t:'varchar(50)'},{n:'title',t:'varchar(255)'},{n:'message',t:'text'},{n:'resource_type',t:'varchar(50)'},{n:'resource_id',t:'uuid'},{n:'is_read',t:'boolean'},{n:'severity',t:'varchar(10)'}
+]},
+{id:91,name:'notification_preferences',module:'notifications',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'user_id',t:'uuid',fk:'users'},{n:'category',t:'varchar(50)'},{n:'push_enabled',t:'boolean'},{n:'email_enabled',t:'boolean'}
+]},
+// Configuration (92-94)
+{id:92,name:'tenant_settings',module:'config',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'setting_group',t:'varchar(50)'},{n:'setting_key',t:'varchar(100)'},{n:'setting_value',t:'jsonb',json:true},{n:'updated_by_id',t:'uuid',fk:'users'}
+]},
+{id:93,name:'integration_connections',module:'config',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'provider_name',t:'varchar(100)'},{n:'provider_type',t:'varchar(50)'},{n:'auth_type',t:'varchar(30)'},{n:'credentials_encrypted',t:'bytea',enc:true},{n:'status',t:'varchar(20)'},{n:'last_sync_at',t:'timestamptz'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:94,name:'digital_signature_configs',module:'config',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'document_type',t:'varchar(50)'},{n:'is_required',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+// Calendar (95)
+{id:95,name:'calendar_events',module:'calendar',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'title',t:'varchar(255)'},{n:'event_type',t:'varchar(30)'},{n:'start_datetime',t:'timestamptz'},{n:'end_datetime',t:'timestamptz'},{n:'scope',t:'varchar(20)'},{n:'scope_target_id',t:'uuid'},{n:'description',t:'text'},{n:'color',t:'varchar(7)'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+// Reports (96-97)
+{id:96,name:'scheduled_reports',module:'reports',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'report_type',t:'varchar(50)'},{n:'filters',t:'jsonb',json:true},{n:'columns',t:'jsonb',json:true},{n:'recipient_email',t:'varchar(255)'},{n:'frequency',t:'varchar(20)'},{n:'format',t:'varchar(10)'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:97,name:'report_executions',module:'reports',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'scheduled_report_id',t:'uuid',fk:'scheduled_reports'},{n:'report_type',t:'varchar(50)'},{n:'status',t:'varchar(20)'},{n:'row_count',t:'integer'},{n:'file_url',t:'varchar(500)'},{n:'executed_at',t:'timestamptz'}
+]},
+// Shared Platform (98-116)
+{id:98,name:'sso_providers',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'provider_type',t:'varchar(30)'},{n:'name',t:'varchar(100)'},{n:'client_id_encrypted',t:'bytea',enc:true},{n:'client_secret_encrypted',t:'bytea',enc:true},{n:'metadata_url',t:'varchar(500)'},{n:'domain_hint',t:'varchar(100)'},{n:'auto_provision_users',t:'boolean'},{n:'is_active',t:'boolean'}
+]},
+{id:99,name:'refresh_tokens',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'user_id',t:'uuid',fk:'users'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'token_hash',t:'varchar(255)'},{n:'device_fingerprint',t:'varchar(255)'},{n:'issued_at',t:'timestamptz'},{n:'expires_at',t:'timestamptz'},{n:'is_revoked',t:'boolean'},{n:'replaced_by_id',t:'uuid',fk:'refresh_tokens'}
+]},
+{id:100,name:'hardware_terminals',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'office_location_id',t:'uuid',fk:'office_locations'},{n:'terminal_code',t:'varchar(50)'},{n:'terminal_type',t:'varchar(30)'},{n:'webhook_url',t:'varchar(500)'},{n:'api_key_encrypted',t:'bytea',enc:true},{n:'status',t:'varchar(20)'},{n:'last_heartbeat_at',t:'timestamptz'}
+]},
+{id:101,name:'subscription_plans',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'name',t:'varchar(100)'},{n:'code',t:'varchar(20)'},{n:'tier',t:'varchar(20)'},{n:'feature_limits',t:'jsonb',json:true},{n:'monthly_price',t:'decimal(10,2)'},{n:'annual_price',t:'decimal(10,2)'},{n:'currency',t:'varchar(3)'},{n:'is_active',t:'boolean'}
+]},
+{id:102,name:'tenant_subscriptions',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'plan_id',t:'uuid',fk:'subscription_plans'},{n:'billing_cycle',t:'varchar(20)'},{n:'status',t:'varchar(20)'},{n:'current_period_start',t:'date'},{n:'current_period_end',t:'date'},{n:'payment_provider_ref',t:'varchar(100)'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:103,name:'feature_flags',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'flag_key',t:'varchar(100)'},{n:'is_enabled',t:'boolean'},{n:'conditions',t:'jsonb',json:true},{n:'toggled_by_id',t:'uuid',fk:'users'}
+]},
+{id:104,name:'tenant_branding',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'custom_domain',t:'varchar(255)'},{n:'logo_file_id',t:'uuid',fk:'file_records'},{n:'primary_color',t:'varchar(7)'},{n:'accent_color',t:'varchar(7)'},{n:'metadata',t:'jsonb',json:true},{n:'updated_by_id',t:'uuid',fk:'users'}
+]},
+{id:105,name:'notification_templates',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'template_code',t:'varchar(50)'},{n:'channel',t:'varchar(20)'},{n:'subject_template',t:'text'},{n:'body_template',t:'text'},{n:'locale',t:'varchar(10)'},{n:'version',t:'integer'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:106,name:'notification_channels',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'channel_type',t:'varchar(30)'},{n:'provider',t:'varchar(50)'},{n:'credentials_encrypted',t:'jsonb',enc:true},{n:'is_active',t:'boolean'},{n:'configured_by_id',t:'uuid',fk:'users'}
+]},
+{id:107,name:'escalation_rules',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'resource_type',t:'varchar(50)'},{n:'trigger_condition',t:'varchar(100)'},{n:'sla_hours',t:'integer'},{n:'action_type',t:'varchar(30)'},{n:'escalate_to_role_id',t:'uuid',fk:'roles'},{n:'notification_template_id',t:'uuid',fk:'notification_templates'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:108,name:'legal_holds',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'resource_type',t:'varchar(50)'},{n:'resource_id',t:'uuid'},{n:'reason',t:'text'},{n:'placed_by_id',t:'uuid',fk:'users'},{n:'placed_at',t:'timestamptz'},{n:'released_by_id',t:'uuid',fk:'users'},{n:'released_at',t:'timestamptz'}
+]},
+{id:109,name:'retention_policies',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'resource_type',t:'varchar(50)'},{n:'retention_days',t:'integer'},{n:'action_on_expiry',t:'varchar(30)'},{n:'compliance_framework',t:'varchar(50)'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:110,name:'compliance_exports',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'requested_by_id',t:'uuid',fk:'users'},{n:'export_type',t:'varchar(30)'},{n:'scope',t:'varchar(30)'},{n:'target_user_id',t:'uuid',fk:'users'},{n:'status',t:'varchar(20)'},{n:'file_url',t:'varchar(500)'},{n:'requested_at',t:'timestamptz'},{n:'completed_at',t:'timestamptz'}
+]},
+{id:111,name:'user_preferences',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'user_id',t:'uuid',fk:'users'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'preference_key',t:'varchar(100)'},{n:'preference_value',t:'jsonb',json:true},{n:'updated_at',t:'timestamptz'}
+]},
+{id:112,name:'workflow_definitions',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'code',t:'varchar(50)'},{n:'resource_type',t:'varchar(50)'},{n:'description',t:'text'},{n:'is_active',t:'boolean'},{n:'version',t:'integer'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:113,name:'workflow_steps',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'workflow_definition_id',t:'uuid',fk:'workflow_definitions'},{n:'step_order',t:'integer'},{n:'step_type',t:'varchar(30)'},{n:'approver_type',t:'varchar(30)'},{n:'approver_role_id',t:'uuid',fk:'roles'},{n:'conditions',t:'jsonb',json:true},{n:'sla_hours',t:'integer'},{n:'on_timeout_action',t:'varchar(30)'}
+]},
+{id:114,name:'workflow_instances',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'workflow_definition_id',t:'uuid',fk:'workflow_definitions'},{n:'resource_type',t:'varchar(50)'},{n:'resource_id',t:'uuid'},{n:'initiated_by_id',t:'uuid',fk:'employees'},{n:'current_step_order',t:'integer'},{n:'status',t:'varchar(20)'}
+]},
+{id:115,name:'approval_actions',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'workflow_instance_id',t:'uuid',fk:'workflow_instances'},{n:'workflow_step_id',t:'uuid',fk:'workflow_steps'},{n:'actor_id',t:'uuid',fk:'employees'},{n:'action',t:'varchar(20)'},{n:'comment',t:'text'},{n:'acted_at',t:'timestamptz'},{n:'delegated_to_id',t:'uuid',fk:'employees'}
+]},
+{id:116,name:'presence_sessions',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'user_id',t:'uuid',fk:'users'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'connection_id',t:'varchar(100)'},{n:'channel',t:'varchar(30)'},{n:'device_type',t:'varchar(30)'},{n:'connected_at',t:'timestamptz'},{n:'last_ping_at',t:'timestamptz'},{n:'is_active',t:'boolean'}
+]},
+// Core HR additions (117-120)
+{id:117,name:'employee_dependents',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'first_name',t:'varchar(100)'},{n:'last_name',t:'varchar(100)'},{n:'relationship',t:'varchar(30)'},{n:'date_of_birth',t:'date'},{n:'gender',t:'varchar(10)'},{n:'is_emergency_contact',t:'boolean'},{n:'is_beneficiary',t:'boolean'},{n:'is_active',t:'boolean'}
+]},
+{id:118,name:'employee_addresses',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'address_type',t:'varchar(20)'},{n:'address_line_1',t:'varchar(255)'},{n:'address_line_2',t:'varchar(255)'},{n:'city',t:'varchar(100)'},{n:'state_province',t:'varchar(100)'},{n:'postal_code',t:'varchar(20)'},{n:'country_id',t:'uuid',fk:'countries'},{n:'is_primary',t:'boolean'}
+]},
+{id:119,name:'employee_qualifications',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'qualification_type',t:'varchar(30)'},{n:'institution_name',t:'varchar(255)'},{n:'field_of_study',t:'varchar(255)'},{n:'grade',t:'varchar(50)'},{n:'start_date',t:'date'},{n:'end_date',t:'date'},{n:'document_file_record_id',t:'uuid',fk:'file_records'}
+]},
+{id:120,name:'employee_work_history',module:'core_hr',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'company_name',t:'varchar(255)'},{n:'job_title',t:'varchar(255)'},{n:'start_date',t:'date'},{n:'end_date',t:'date'},{n:'responsibilities',t:'text'},{n:'reason_for_leaving',t:'varchar(255)'}
+]},
+// Skills & Learning addition (121)
+{id:121,name:'employee_certifications',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'course_id',t:'uuid',fk:'courses'},{n:'certification_name',t:'varchar(255)'},{n:'issuing_authority',t:'varchar(255)'},{n:'credential_id',t:'varchar(100)'},{n:'issue_date',t:'date'},{n:'expiry_date',t:'date'},{n:'status',t:'varchar(20)'},{n:'certificate_file_record_id',t:'uuid',fk:'file_records'},{n:'renewal_reminder_sent',t:'boolean'}
+]},
+// Grievance & Disciplinary (122-123)
+{id:122,name:'grievance_cases',module:'grievance',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'case_type',t:'varchar(20)'},{n:'subject',t:'varchar(255)'},{n:'description',t:'text'},{n:'severity',t:'varchar(20)'},{n:'status',t:'varchar(20)'},{n:'reported_by_id',t:'uuid',fk:'employees'},{n:'assigned_to_id',t:'uuid',fk:'employees'},{n:'resolution_note',t:'text'},{n:'opened_at',t:'timestamptz'},{n:'closed_at',t:'timestamptz'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:123,name:'disciplinary_actions',module:'grievance',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'grievance_case_id',t:'uuid',fk:'grievance_cases'},{n:'action_type',t:'varchar(30)'},{n:'description',t:'text'},{n:'effective_date',t:'date'},{n:'expiry_date',t:'date'},{n:'issued_by_id',t:'uuid',fk:'employees'},{n:'acknowledged_by_employee',t:'boolean'},{n:'acknowledged_at',t:'timestamptz'}
+]},
+// Expense Management (124-126)
+{id:124,name:'expense_categories',module:'expense',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'code',t:'varchar(20)'},{n:'max_amount',t:'decimal(10,2)'},{n:'currency',t:'varchar(3)'},{n:'requires_receipt',t:'boolean'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:125,name:'expense_claims',module:'expense',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'title',t:'varchar(255)'},{n:'submission_date',t:'date'},{n:'total_amount',t:'decimal(10,2)'},{n:'currency',t:'varchar(3)'},{n:'status',t:'varchar(20)'},{n:'reviewed_by_id',t:'uuid',fk:'employees'},{n:'approved_at',t:'timestamptz'},{n:'paid_at',t:'timestamptz'},{n:'rejection_reason',t:'text'}
+]},
+{id:126,name:'expense_claim_items',module:'expense',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'expense_claim_id',t:'uuid',fk:'expense_claims'},{n:'category_id',t:'uuid',fk:'expense_categories'},{n:'description',t:'text'},{n:'amount',t:'decimal(10,2)'},{n:'currency',t:'varchar(3)'},{n:'receipt_date',t:'date'},{n:'receipt_file_record_id',t:'uuid',fk:'file_records'}
+]},
+// Workforce Presence additions (127-129)
+{id:127,name:'presence_sessions',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'date',t:'date'},{n:'first_seen_at',t:'timestamptz'},{n:'last_seen_at',t:'timestamptz'},{n:'total_present_minutes',t:'int'},{n:'total_break_minutes',t:'int'},{n:'source',t:'varchar(20)'},{n:'status',t:'varchar(20)'}
+]},
+{id:128,name:'device_sessions',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'device_id',t:'uuid',fk:'registered_agents'},{n:'session_start',t:'timestamptz'},{n:'session_end',t:'timestamptz'},{n:'active_minutes',t:'int'},{n:'idle_minutes',t:'int'},{n:'active_percentage',t:'decimal(5,2)'}
+]},
+{id:129,name:'break_records',module:'workforce_presence',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'break_start',t:'timestamptz'},{n:'break_end',t:'timestamptz'},{n:'break_type',t:'varchar(30)'},{n:'auto_detected',t:'boolean'}
+]},
+// Identity Verification additions (130-131)
+{id:130,name:'verification_policies',module:'identity_verification',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'verify_on_login',t:'boolean'},{n:'verify_on_logout',t:'boolean'},{n:'interval_minutes',t:'int'},{n:'match_threshold',t:'decimal(5,2)'},{n:'is_active',t:'boolean'}
+]},
+{id:131,name:'verification_records',module:'identity_verification',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'verified_at',t:'timestamptz'},{n:'method',t:'varchar(20)'},{n:'photo_file_id',t:'uuid',fk:'file_records'},{n:'match_confidence',t:'decimal(5,2)'},{n:'status',t:'varchar(20)'},{n:'device_type',t:'varchar(20)'},{n:'device_id',t:'uuid'},{n:'failure_reason',t:'varchar(255)'}
+]},
+// Activity Monitoring (132-139)
+{id:132,name:'activity_raw_buffer',module:'activity_monitoring',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'agent_device_id',t:'uuid',fk:'registered_agents'},{n:'received_at',t:'timestamptz'},{n:'payload_json',t:'jsonb',json:true}
+]},
+{id:133,name:'activity_snapshots',module:'activity_monitoring',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'captured_at',t:'timestamptz'},{n:'keyboard_events_count',t:'int'},{n:'mouse_events_count',t:'int'},{n:'active_seconds',t:'int'},{n:'idle_seconds',t:'int'},{n:'intensity_score',t:'decimal(5,2)'},{n:'foreground_app',t:'varchar(255)'}
+]},
+{id:134,name:'application_usage',module:'activity_monitoring',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'date',t:'date'},{n:'application_name',t:'varchar(255)'},{n:'application_category',t:'varchar(100)'},{n:'total_seconds',t:'int'},{n:'is_productive',t:'boolean'}
+]},
+{id:135,name:'meeting_sessions',module:'activity_monitoring',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'meeting_start',t:'timestamptz'},{n:'meeting_end',t:'timestamptz'},{n:'platform',t:'varchar(20)'},{n:'duration_minutes',t:'int'},{n:'had_camera_on',t:'boolean'},{n:'had_mic_activity',t:'boolean'}
+]},
+{id:136,name:'screenshots',module:'activity_monitoring',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'captured_at',t:'timestamptz'},{n:'file_record_id',t:'uuid',fk:'file_records'},{n:'trigger_type',t:'varchar(20)'}
+]},
+{id:137,name:'activity_daily_summary',module:'activity_monitoring',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'date',t:'date'},{n:'total_active_minutes',t:'int'},{n:'total_idle_minutes',t:'int'},{n:'total_meeting_minutes',t:'int'},{n:'active_percentage',t:'decimal(5,2)'},{n:'top_apps_json',t:'jsonb',json:true},{n:'intensity_avg',t:'decimal(5,2)'}
+]},
+{id:138,name:'application_categories',module:'activity_monitoring',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'application_name_pattern',t:'varchar(255)'},{n:'category',t:'varchar(100)'},{n:'is_productive',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:139,name:'device_tracking',module:'activity_monitoring',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'date',t:'date'},{n:'laptop_active_minutes',t:'int'},{n:'estimated_mobile_minutes',t:'int'},{n:'laptop_percentage',t:'decimal(5,2)'},{n:'detection_method',t:'varchar(30)'}
+]},
+// Exception Engine (140-144)
+{id:140,name:'exception_rules',module:'exception_engine',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'rule_name',t:'varchar(100)'},{n:'rule_type',t:'varchar(30)'},{n:'threshold_json',t:'jsonb',json:true},{n:'severity',t:'varchar(20)'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:141,name:'exception_alerts',module:'exception_engine',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'rule_id',t:'uuid',fk:'exception_rules'},{n:'triggered_at',t:'timestamptz'},{n:'severity',t:'varchar(20)'},{n:'summary',t:'varchar(500)'},{n:'data_snapshot_json',t:'jsonb',json:true},{n:'status',t:'varchar(20)'}
+]},
+{id:142,name:'escalation_chains',module:'exception_engine',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'severity',t:'varchar(20)'},{n:'step_order',t:'int'},{n:'notify_role',t:'varchar(30)'},{n:'notify_user_id',t:'uuid',fk:'users'},{n:'delay_minutes',t:'int'}
+]},
+{id:143,name:'alert_acknowledgements',module:'exception_engine',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'alert_id',t:'uuid',fk:'exception_alerts'},{n:'acknowledged_by_id',t:'uuid',fk:'users'},{n:'action',t:'varchar(20)'},{n:'comment',t:'text'},{n:'acted_at',t:'timestamptz'}
+]},
+{id:144,name:'exception_schedules',module:'exception_engine',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'check_interval_minutes',t:'int'},{n:'active_from_time',t:'time'},{n:'active_to_time',t:'time'},{n:'active_days_json',t:'jsonb',json:true},{n:'timezone',t:'varchar(50)'}
+]},
+// Productivity Analytics (145-148)
+{id:145,name:'daily_employee_report',module:'productivity_analytics',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'date',t:'date'},{n:'total_hours',t:'decimal(5,2)'},{n:'active_hours',t:'decimal(5,2)'},{n:'idle_hours',t:'decimal(5,2)'},{n:'meeting_hours',t:'decimal(5,2)'},{n:'active_percentage',t:'decimal(5,2)'},{n:'top_apps_json',t:'jsonb',json:true},{n:'intensity_score',t:'decimal(5,2)'},{n:'exceptions_count',t:'int'}
+]},
+{id:146,name:'weekly_employee_report',module:'productivity_analytics',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'week_start',t:'date'},{n:'total_hours',t:'decimal(6,2)'},{n:'active_hours',t:'decimal(6,2)'},{n:'idle_hours',t:'decimal(6,2)'},{n:'meeting_hours',t:'decimal(6,2)'},{n:'active_percentage',t:'decimal(5,2)'},{n:'intensity_avg',t:'decimal(5,2)'},{n:'exceptions_count',t:'int'},{n:'trend_vs_previous_week_json',t:'jsonb',json:true}
+]},
+{id:147,name:'monthly_employee_report',module:'productivity_analytics',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'year',t:'int'},{n:'month',t:'int'},{n:'total_hours',t:'decimal(7,2)'},{n:'active_hours',t:'decimal(7,2)'},{n:'idle_hours',t:'decimal(7,2)'},{n:'meeting_hours',t:'decimal(7,2)'},{n:'active_percentage',t:'decimal(5,2)'},{n:'intensity_avg',t:'decimal(5,2)'},{n:'exceptions_count',t:'int'},{n:'performance_pattern_json',t:'jsonb',json:true}
+]},
+{id:148,name:'workforce_snapshot',module:'productivity_analytics',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'date',t:'date'},{n:'total_employees',t:'int'},{n:'active_count',t:'int'},{n:'avg_active_percentage',t:'decimal(5,2)'},{n:'avg_meeting_percentage',t:'decimal(5,2)'},{n:'total_exceptions',t:'int'},{n:'top_exception_types_json',t:'jsonb',json:true},{n:'department_breakdown_json',t:'jsonb',json:true}
+]},
+// Agent Gateway (149-151)
+{id:149,name:'registered_agents',module:'agent_gateway',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'device_id',t:'uuid'},{n:'device_name',t:'varchar(100)'},{n:'os_version',t:'varchar(50)'},{n:'agent_version',t:'varchar(20)'},{n:'status',t:'varchar(20)'},{n:'last_heartbeat_at',t:'timestamptz'}
+]},
+{id:150,name:'agent_policies',module:'agent_gateway',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'agent_id',t:'uuid',fk:'registered_agents'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'policy_json',t:'jsonb',json:true},{n:'last_synced_at',t:'timestamptz'}
+]},
+{id:151,name:'agent_health_logs',module:'agent_gateway',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'agent_id',t:'uuid',fk:'registered_agents'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'reported_at',t:'timestamptz'},{n:'cpu_usage',t:'decimal(5,2)'},{n:'memory_mb',t:'int'},{n:'errors_json',t:'jsonb',json:true},{n:'tamper_detected',t:'boolean'}
+]}
+];
+
+// ===== BUILD RELATIONSHIP MAP =====
+const tableByName = {};
+TABLES.forEach(t => tableByName[t.name] = t);
+
+// Build relationships from FK columns
+const relationships = []; // {from: tableName, to: tableName, fromCol, toCol}
+TABLES.forEach(t => {
+  t.cols.forEach(c => {
+    if (c.fk) {
+      relationships.push({from: t.name, to: c.fk, fromCol: c.n, toCol: 'id'});
+    }
+  });
+});
+
+// For each table, how many relationships it has
+function getRelCount(tName) {
+  return relationships.filter(r => r.from === tName || r.to === tName).length;
+}
+
+// Get connected table names
+function getConnected(tName) {
+  const s = new Set();
+  relationships.forEach(r => {
+    if (r.from === tName) s.add(r.to);
+    if (r.to === tName) s.add(r.from);
+  });
+  return s;
+}
+
+// ===== POSITIONS — cluster by module =====
+const MODULE_POSITIONS = {
+  // Pillar 1: HR Management
+  infrastructure:          {x:50,   y:50},
+  auth:                    {x:700,  y:50},
+  org:                     {x:50,   y:500},
+  core_hr:                 {x:700,  y:500},
+  leave:                   {x:1500, y:850},
+  payroll:                 {x:2200, y:50},
+  performance:             {x:2200, y:750},
+  skills:                  {x:50,   y:1200},
+  ai:                      {x:700,  y:1200},
+  documents:               {x:1200, y:1400},
+  // Pillar 2: Workforce Intelligence
+  workforce_presence:      {x:1500, y:50},
+  activity_monitoring:     {x:3000, y:50},
+  identity_verification:   {x:3000, y:750},
+  exception_engine:        {x:3000, y:1300},
+  productivity_analytics:  {x:3600, y:50},
+  agent_gateway:           {x:3600, y:750},
+  // Shared Foundation
+  notifications:           {x:1700, y:1400},
+  config:                  {x:2000, y:1400},
+  calendar:                {x:2400, y:1400},
+  reports:                 {x:2650, y:1400},
+  grievance:               {x:1500, y:1700},
+  expense:                 {x:2100, y:1700},
+  shared:                  {x:50,   y:2100}
+};
+
+function assignPositions() {
+  const moduleCounters = {};
+  TABLES.forEach(t => {
+    const mp = MODULE_POSITIONS[t.module] || {x:0,y:0};
+    if (!moduleCounters[t.module]) moduleCounters[t.module] = 0;
+    const idx = moduleCounters[t.module]++;
+    const cols = Math.min(4, Math.ceil(Math.sqrt(MODULES.find(m=>m.key===t.module)?.count||4)));
+    const row = Math.floor(idx / cols);
+    const col = idx % cols;
+    t.x = mp.x + col * 270;
+    t.y = mp.y + row * 260;
+  });
+}
+assignPositions();
+
+// ===== STATE =====
+let zoom = 0.55;
+let panX = 40, panY = 40;
+let dragging = null;
+let dragOffX = 0, dragOffY = 0;
+let panning = false;
+let panStartX = 0, panStartY = 0;
+let panStartPanX = 0, panStartPanY = 0;
+let selectedTable = null;
+let activeModules = new Set(MODULES.map(m => m.key));
+let sidebarOpen = true;
+let sidebarModulesOpen = {};
+MODULES.forEach(m => sidebarModulesOpen[m.key] = true);
+
+const canvasEl = document.getElementById('canvas');
+const canvasWrap = document.getElementById('canvasWrap');
+const svgLines = document.getElementById('svgLines');
+const zoomInd = document.getElementById('zoomInd');
+
+// ===== RENDER ENTITIES =====
+const entityEls = {};
+function renderEntities() {
+  canvasEl.innerHTML = '';
+  TABLES.forEach(t => {
+    const mod = MODULES.find(m => m.key === t.module);
+    const color = mod ? mod.color : '#666';
+    const relCount = getRelCount(t.name);
+    const maxShow = 6;
+    const visibleCols = t.cols.slice(0, maxShow);
+    const extraCols = t.cols.length - maxShow;
+
+    const el = document.createElement('div');
+    el.className = 'entity';
+    el.dataset.table = t.name;
+    el.dataset.module = t.module;
+    el.style.left = t.x + 'px';
+    el.style.top = t.y + 'px';
+    el.style.borderColor = color + '40';
+
+    let colsHtml = visibleCols.map(c => {
+      let tags = '';
+      if (c.pk) tags += '<span class="col-tag tag-pk">PK</span>';
+      if (c.fk) tags += '<span class="col-tag tag-fk">FK</span>';
+      if (c.enc) tags += '<span class="col-tag tag-enc">ENC</span>';
+      if (c.json) tags += '<span class="col-tag tag-json">JSON</span>';
+      return `<div class="entity-col"><span class="col-name">${c.n}</span>${tags}</div>`;
+    }).join('');
+
+    el.innerHTML = `
+      <div class="entity-header" style="background:linear-gradient(135deg,${color}18,${color}08)">
+        <div class="icon-box" style="background:${color}">${t.name.charAt(0).toUpperCase()}</div>
+        <span class="name">${t.name}</span>
+        <span class="module-badge" style="background:${color}20;color:${color};border:1px solid ${color}40">${(mod?.label||'').split(' ')[0]}</span>
+      </div>
+      <div class="entity-cols">${colsHtml}</div>
+      ${extraCols > 0 ? `<div class="entity-more">+ ${extraCols} more columns</div>` : ''}
+      <div class="entity-footer" style="background:${color}08">
+        <span class="mod" style="color:${color}">${mod?.label||t.module}</span>
+        <span class="rels">${relCount} rel${relCount!==1?'s':''}</span>
+      </div>
+    `;
+
+    // Click to select
+    el.addEventListener('click', (e) => {
+      if (el.classList.contains('dragging')) return;
+      e.stopPropagation();
+      selectTable(t.name);
+    });
+
+    // Double-click opens detail
+    el.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      openDetail(t.name);
+    });
+
+    // Drag
+    el.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      dragging = t;
+      dragOffX = (e.clientX - panX) / zoom - t.x;
+      dragOffY = (e.clientY - panY) / zoom - t.y;
+      el.classList.add('dragging');
+      el.style.zIndex = 200;
+    });
+
+    canvasEl.appendChild(el);
+    entityEls[t.name] = el;
+  });
+}
+
+// ===== SVG LINES =====
+function updateLines() {
+  const w = 8000, h = 6000;
+  svgLines.setAttribute('width', w);
+  svgLines.setAttribute('height', h);
+  svgLines.style.width = w + 'px';
+  svgLines.style.height = h + 'px';
+
+  let html = '';
+  relationships.forEach(r => {
+    const fromT = tableByName[r.from];
+    const toT = tableByName[r.to];
+    if (!fromT || !toT) return;
+    const fromEl = entityEls[r.from];
+    const toEl = entityEls[r.to];
+    if (!fromEl || !toEl) return;
+    if (fromEl.classList.contains('dimmed') || toEl.classList.contains('dimmed')) return;
+
+    const fromMod = MODULES.find(m => m.key === fromT.module);
+    const toMod = MODULES.find(m => m.key === toT.module);
+
+    const x1 = fromT.x + 120;
+    const y1 = fromT.y + 60;
+    const x2 = toT.x + 120;
+    const y2 = toT.y + 60;
+
+    const isHighlighted = selectedTable && (r.from === selectedTable || r.to === selectedTable);
+    const color = isHighlighted ? '#818cf8' : (fromMod?.color || '#333');
+    const opacity = isHighlighted ? 0.8 : 0.08;
+    const width = isHighlighted ? 2 : 1;
+
+    // Curved path
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const cx = mx - dy * 0.15;
+    const cy = my + dx * 0.15;
+
+    html += `<path d="M${x1},${y1} Q${cx},${cy} ${x2},${y2}" fill="none" stroke="${color}" stroke-width="${width}" opacity="${opacity}"${isHighlighted ? ' filter="url(#glow)"' : ''}/>`;
+
+    if (isHighlighted) {
+      // Arrow at end
+      const angle = Math.atan2(y2 - cy, x2 - cx);
+      const ax1 = x2 - 8 * Math.cos(angle - 0.4);
+      const ay1 = y2 - 8 * Math.sin(angle - 0.4);
+      const ax2 = x2 - 8 * Math.cos(angle + 0.4);
+      const ay2 = y2 - 8 * Math.sin(angle + 0.4);
+      html += `<polygon points="${x2},${y2} ${ax1},${ay1} ${ax2},${ay2}" fill="${color}" opacity="0.8"/>`;
+    }
+  });
+
+  svgLines.innerHTML = `<defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>` + html;
+}
+
+// ===== TRANSFORM =====
+function applyTransform() {
+  canvasEl.style.transform = `translate(${panX}px,${panY}px) scale(${zoom})`;
+  svgLines.style.transform = `translate(${panX}px,${panY}px) scale(${zoom})`;
+  zoomInd.textContent = Math.round(zoom * 100) + '%';
+}
+
+// ===== SELECTION =====
+function selectTable(name) {
+  if (selectedTable === name) {
+    clearSelection();
+    return;
+  }
+  selectedTable = name;
+  const connected = getConnected(name);
+  connected.add(name);
+
+  Object.keys(entityEls).forEach(k => {
+    const el = entityEls[k];
+    if (connected.has(k)) {
+      el.classList.remove('dimmed');
+      el.classList.add('highlighted');
+      const mod = MODULES.find(m => m.key === tableByName[k].module);
+      el.style.borderColor = mod ? mod.color + '80' : '#818cf880';
+      el.style.boxShadow = `0 0 20px ${mod ? mod.color : '#818cf8'}30`;
+    } else {
+      el.classList.add('dimmed');
+      el.classList.remove('highlighted');
+      el.style.borderColor = '';
+      el.style.boxShadow = '';
+    }
+  });
+
+  // Update sidebar
+  document.querySelectorAll('.sidebar-table-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.table === name);
+  });
+
+  updateLines();
+  openDetail(name);
+}
+
+function clearSelection() {
+  selectedTable = null;
+  Object.keys(entityEls).forEach(k => {
+    const el = entityEls[k];
+    el.classList.remove('dimmed', 'highlighted');
+    el.style.borderColor = '';
+    el.style.boxShadow = '';
+  });
+  document.querySelectorAll('.sidebar-table-item').forEach(el => el.classList.remove('active'));
+  updateLines();
+  closeDetail();
+}
+
+// ===== DETAIL PANEL =====
+function openDetail(name) {
+  const t = tableByName[name];
+  if (!t) return;
+  const mod = MODULES.find(m => m.key === t.module);
+  const color = mod?.color || '#666';
+  const panel = document.getElementById('detailPanel');
+
+  // All relationships for this table
+  const rels = relationships.filter(r => r.from === name || r.to === name);
+
+  let colRows = t.cols.map(c => {
+    let tags = '';
+    if (c.pk) tags += '<span class="col-tag tag-pk">PK</span>';
+    if (c.fk) tags += `<span class="col-tag tag-fk" title="FK → ${c.fk}">FK</span>`;
+    if (c.enc) tags += '<span class="col-tag tag-enc">ENC</span>';
+    if (c.json) tags += '<span class="col-tag tag-json">JSON</span>';
+    return `<div class="detail-col-row">
+      <span class="dcol-name">${c.n}</span>
+      <span class="dcol-type">${c.t}</span>
+      <span class="dcol-tags">${tags}</span>
+    </div>`;
+  }).join('');
+
+  let relItems = rels.map(r => {
+    const isOutgoing = r.from === name;
+    const otherName = isOutgoing ? r.to : r.from;
+    const otherMod = MODULES.find(m => m.key === tableByName[otherName]?.module);
+    const oColor = otherMod?.color || '#666';
+    const dir = isOutgoing ? `${r.fromCol} -> ${otherName}.${r.toCol}` : `${r.from}.${r.fromCol} -> ${r.toCol}`;
+    return `<div class="detail-rel-item" onclick="selectTable('${otherName}')">
+      <span class="dot" style="width:8px;height:8px;border-radius:50%;background:${oColor};flex-shrink:0"></span>
+      <span style="font-weight:600;color:#e8ecf4">${otherName}</span>
+      <span class="arrow">${isOutgoing ? '&rarr;' : '&larr;'}</span>
+      <span style="color:#566a8f;font-size:10px;flex:1;text-align:right">${isOutgoing ? r.fromCol : r.fromCol}</span>
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <button class="detail-close" onclick="closeDetail()">&times;</button>
+    <div class="detail-head">
+      <h2 style="color:${color}">${t.name}</h2>
+      <span class="mod-label" style="background:${color}20;color:${color};border:1px solid ${color}40">${mod?.label || t.module}</span>
+      <div style="margin-top:8px;font-size:11px;color:#566a8f">${t.cols.length} columns &middot; ${rels.length} relationships</div>
+    </div>
+    <div class="detail-section">
+      <h3>Columns (${t.cols.length})</h3>
+      ${colRows}
+    </div>
+    <div class="detail-section">
+      <h3>Relationships (${rels.length})</h3>
+      ${rels.length ? relItems : '<div style="color:#566a8f;font-size:11px">No direct FK relationships</div>'}
+    </div>
+  `;
+
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+}
+
+// ===== FILTER =====
+function renderFilters() {
+  const bar = document.getElementById('filterBar');
+  // All toggle
+  let html = `<div class="filter-pill" style="background:rgba(129,140,248,0.15);color:#818cf8;border-color:rgba(129,140,248,0.3)" onclick="toggleAllModules()">All</div>`;
+  MODULES.forEach(m => {
+    const active = activeModules.has(m.key);
+    html += `<div class="filter-pill ${active?'':'inactive'}" data-module="${m.key}"
+      style="${active ? `background:${m.color}20;color:${m.color};border-color:${m.color}40` : ''}"
+      onclick="toggleModule('${m.key}')">
+      <span class="dot" style="background:${m.color}"></span>
+      ${m.label} (${m.count})
+    </div>`;
+  });
+  bar.innerHTML = html;
+}
+
+function toggleModule(key) {
+  if (activeModules.has(key)) activeModules.delete(key);
+  else activeModules.add(key);
+  applyFilters();
+  renderFilters();
+}
+
+function toggleAllModules() {
+  if (activeModules.size === MODULES.length) {
+    activeModules.clear();
+  } else {
+    MODULES.forEach(m => activeModules.add(m.key));
+  }
+  applyFilters();
+  renderFilters();
+}
+
+function applyFilters() {
+  TABLES.forEach(t => {
+    const el = entityEls[t.name];
+    if (!el) return;
+    const vis = activeModules.has(t.module);
+    el.style.display = vis ? '' : 'none';
+  });
+  if (selectedTable && !activeModules.has(tableByName[selectedTable]?.module)) {
+    clearSelection();
+  }
+  updateLines();
+}
+
+// ===== SIDEBAR =====
+function renderSidebar() {
+  const scroll = document.getElementById('sidebarScroll');
+  let html = '';
+  MODULES.forEach(m => {
+    const tables = TABLES.filter(t => t.module === m.key);
+    const isOpen = sidebarModulesOpen[m.key];
+    html += `<div class="sidebar-module">
+      <div class="sidebar-module-header" onclick="toggleSidebarModule('${m.key}')">
+        <span class="sidebar-module-dot" style="background:${m.color}"></span>
+        <span style="flex:1;color:${m.color}">${m.label}</span>
+        <span class="sidebar-module-count">${tables.length}</span>
+        <span class="sidebar-module-chevron ${isOpen?'open':''}">&#9654;</span>
+      </div>
+      ${isOpen ? `<div class="sidebar-table-list">${tables.map(t =>
+        `<div class="sidebar-table-item${selectedTable===t.name?' active':''}" data-table="${t.name}" onclick="selectTable('${t.name}')">${t.name}</div>`
+      ).join('')}</div>` : ''}
+    </div>`;
+  });
+  scroll.innerHTML = html;
+}
+
+function toggleSidebarModule(key) {
+  sidebarModulesOpen[key] = !sidebarModulesOpen[key];
+  renderSidebar();
+}
+
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
+}
+
+// ===== SEARCH =====
+function openSearch() {
+  document.getElementById('searchOverlay').classList.add('open');
+  const inp = document.getElementById('searchInput');
+  inp.value = '';
+  inp.focus();
+  renderSearchResults('');
+}
+
+function closeSearch() {
+  document.getElementById('searchOverlay').classList.remove('open');
+}
+
+function renderSearchResults(query) {
+  const res = document.getElementById('searchResults');
+  if (!query) {
+    res.innerHTML = '<div class="search-empty">Type to search tables and columns...</div>';
+    return;
+  }
+  const q = query.toLowerCase();
+  const matches = [];
+
+  TABLES.forEach(t => {
+    const mod = MODULES.find(m => m.key === t.module);
+    // Match table name
+    if (t.name.toLowerCase().includes(q)) {
+      matches.push({type:'table', table:t.name, module:mod, score:t.name.toLowerCase().startsWith(q)?2:1});
+    }
+    // Match column names
+    t.cols.forEach(c => {
+      if (c.n.toLowerCase().includes(q)) {
+        matches.push({type:'column', table:t.name, col:c.n, module:mod, score:0});
+      }
+    });
+  });
+
+  matches.sort((a,b) => b.score - a.score);
+  const limited = matches.slice(0, 30);
+
+  if (!limited.length) {
+    res.innerHTML = '<div class="search-empty">No results found</div>';
+    return;
+  }
+
+  res.innerHTML = limited.map(m => {
+    const color = m.module?.color || '#666';
+    if (m.type === 'table') {
+      return `<div class="search-result-item" onclick="closeSearch();selectTable('${m.table}');navigateTo('${m.table}')">
+        <span class="sr-dot" style="background:${color}"></span>
+        <span class="sr-name">${m.table}</span>
+        <span class="sr-meta">${m.module?.label||''}</span>
+      </div>`;
+    } else {
+      return `<div class="search-result-item" onclick="closeSearch();selectTable('${m.table}');navigateTo('${m.table}')">
+        <span class="sr-dot" style="background:${color};opacity:0.5"></span>
+        <span class="sr-name" style="color:#8b9dc3"><span style="color:#566a8f">${m.table}.</span>${m.col}</span>
+        <span class="sr-meta">column</span>
+      </div>`;
+    }
+  }).join('');
+}
+
+function navigateTo(tableName) {
+  const t = tableByName[tableName];
+  if (!t) return;
+  // Center on this table
+  const wrapRect = canvasWrap.getBoundingClientRect();
+  panX = wrapRect.width / 2 - (t.x + 120) * zoom;
+  panY = wrapRect.height / 2 - (t.y + 80) * zoom;
+  applyTransform();
+}
+
+// ===== ZOOM/PAN CONTROLS =====
+function fitAll() {
+  if (!TABLES.length) return;
+  const visible = TABLES.filter(t => activeModules.has(t.module));
+  if (!visible.length) return;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  visible.forEach(t => {
+    minX = Math.min(minX, t.x);
+    minY = Math.min(minY, t.y);
+    maxX = Math.max(maxX, t.x + 240);
+    maxY = Math.max(maxY, t.y + 200);
+  });
+  const wrapRect = canvasWrap.getBoundingClientRect();
+  const pw = wrapRect.width - 40;
+  const ph = wrapRect.height - 40;
+  const cw = maxX - minX;
+  const ch = maxY - minY;
+  zoom = Math.min(pw / cw, ph / ch, 1.5);
+  zoom = Math.max(0.1, Math.min(zoom, 1.5));
+  panX = (pw - cw * zoom) / 2 + 20 - minX * zoom;
+  panY = (ph - ch * zoom) / 2 + 20 - minY * zoom;
+  applyTransform();
+}
+
+function resetView() {
+  zoom = 0.55;
+  panX = 40;
+  panY = 40;
+  applyTransform();
+  clearSelection();
+}
+
+function zoomIn() { zoom = Math.min(zoom * 1.2, 3); applyTransform(); }
+function zoomOut() { zoom = Math.max(zoom / 1.2, 0.08); applyTransform(); }
+
+// ===== EVENT HANDLERS =====
+
+// Mouse wheel zoom
+canvasWrap.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rect = canvasWrap.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const oldZ = zoom;
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  zoom = Math.max(0.08, Math.min(zoom * delta, 3));
+  panX = mx - (mx - panX) * (zoom / oldZ);
+  panY = my - (my - panY) * (zoom / oldZ);
+  applyTransform();
+}, {passive: false});
+
+// Pan with mouse drag on background
+canvasWrap.addEventListener('mousedown', (e) => {
+  if (e.target === canvasWrap || e.target === canvasEl) {
+    panning = true;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+    panStartPanX = panX;
+    panStartPanY = panY;
+    canvasWrap.style.cursor = 'grabbing';
+  }
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (dragging) {
+    const t = dragging;
+    t.x = (e.clientX - panX) / zoom - dragOffX;
+    t.y = (e.clientY - panY) / zoom - dragOffY;
+    const el = entityEls[t.name];
+    el.style.left = t.x + 'px';
+    el.style.top = t.y + 'px';
+    updateLines();
+  }
+  if (panning) {
+    panX = panStartPanX + (e.clientX - panStartX);
+    panY = panStartPanY + (e.clientY - panStartY);
+    applyTransform();
+  }
+});
+
+window.addEventListener('mouseup', (e) => {
+  if (dragging) {
+    const el = entityEls[dragging.name];
+    // Small delay so click handler doesn't fire
+    setTimeout(() => el.classList.remove('dragging'), 50);
+    el.style.zIndex = '';
+    dragging = null;
+  }
+  if (panning) {
+    panning = false;
+    canvasWrap.style.cursor = '';
+  }
+});
+
+// Click background to deselect
+canvasWrap.addEventListener('click', (e) => {
+  if (e.target === canvasWrap || e.target === canvasEl) {
+    clearSelection();
+  }
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('searchOverlay').classList.contains('open')) {
+      closeSearch();
+    } else if (document.getElementById('detailOverlay').classList.contains('open')) {
+      closeDetail();
+    } else {
+      clearSelection();
+    }
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    openSearch();
+  }
+  if (e.key === 'f' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT') {
+    fitAll();
+  }
+  if (e.key === 'r' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT') {
+    resetView();
+  }
+  if (e.key === '+' || e.key === '=') zoomIn();
+  if (e.key === '-') zoomOut();
+});
+
+// Search input
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  renderSearchResults(e.target.value);
+});
+
+// ===== INIT =====
+renderEntities();
+renderFilters();
+renderSidebar();
+applyTransform();
+updateLines();
+
+// Initial fit after a tick
+setTimeout(fitAll, 100);
+</script>
+</body>
+</html>

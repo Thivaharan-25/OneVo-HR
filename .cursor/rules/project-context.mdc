@@ -1,0 +1,58 @@
+---
+description: Always-on context for ONEVO backend development
+globs:
+alwaysApply: true
+---
+
+# ONEVO Project Context
+
+You are working on **ONEVO**, a multi-tenant SaaS platform with two pillars: **HR Management** + **Workforce Intelligence**.
+
+## Key Facts
+- **Backend:** .NET 9, C#, ASP.NET Core (Monolithic + Service-Oriented)
+- **Database:** PostgreSQL 16 with Row-Level Security
+- **ORM:** Entity Framework Core 9 (code-first, snake_case naming convention)
+- **Cache:** Redis 7
+- **Background Jobs:** Hangfire (5-queue priority system)
+- **Real-time:** SignalR
+- **Architecture:** 22 modules in one solution, strict namespace boundaries
+- **Multi-tenancy:** 4-layer isolation (JWT → BaseRepository → RLS → ArchUnit)
+- **Pillar 1:** HR Management — CoreHR, OrgStructure, Leave, Performance, Skills, Payroll, Documents
+- **Pillar 2:** Workforce Intelligence — WorkforcePresence, ActivityMonitoring, IdentityVerification, ExceptionEngine, ProductivityAnalytics
+- **Desktop Agent:** .NET Windows Service + MAUI tray app (data flows via AgentGateway)
+- **Monitoring is configurable:** industry profile → tenant toggles → per-employee overrides
+
+## Critical Rules
+1. **Every query must be tenant-scoped** — use BaseRepository<T>, never bypass ITenantContext
+2. **Module boundaries are non-negotiable** — never import from another module's Internal/ namespace
+3. **Use Result<T> pattern** — never throw exceptions for business logic
+4. **Async all the way** — always use async/await with CancellationToken
+5. **snake_case in DB, PascalCase in C#** — EF Core handles mapping
+6. **Activity data is append-only** — never UPDATE activity_snapshots, application_usage, or activity_raw_buffer
+7. **Never log activity content** — log counts only, never window titles or screenshot data
+8. **Check monitoring toggles** before processing any Workforce Intelligence data
+9. **Device JWT ≠ User JWT** — agents use separate auth with `type: "agent"` claim
+
+## Directory Structure
+```
+AI_CONTEXT/                   → Read these first (project context, tech stack, rules)
+docs/architecture/            → Module catalog, boundaries, multi-tenancy, messaging
+docs/architecture/modules/    → Individual module docs (22 files, one per module)
+docs/database/                → Schema conventions, migrations, performance
+docs/api/                     → API design, endpoints, error handling
+docs/security/                → Auth, data classification, compliance
+docs/testing/                 → Test strategy, patterns
+docs/deployment/              → CI/CD, environment parity
+docs/guides/                  → Coding standards, git workflow, logging
+tasks/active/                 → Week-by-week task assignments per developer
+frontend/                     → Frontend secondary brain (React/Next.js)
+agent/                        → Desktop agent secondary brain (.NET MAUI)
+```
+
+## Before Generating Code
+1. Read the specific module doc: `docs/architecture/modules/{module-name}.md`
+2. Verify it follows module boundary rules (`docs/architecture/module-boundaries.md`)
+3. Ensure tenant_id is included where required
+4. Use the correct naming conventions (`AI_CONTEXT/rules.md`)
+5. Check `AI_CONTEXT/known-issues.md` for gotchas
+6. For Workforce Intelligence modules: check monitoring toggles + retention policies
