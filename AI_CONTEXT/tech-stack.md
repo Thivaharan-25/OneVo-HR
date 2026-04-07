@@ -4,12 +4,14 @@
 
 | Language | Version | Key Usage Areas |
 |:---------|:--------|:----------------|
-| C# | 13 (.NET 9) | Backend API, business logic, background jobs, desktop agent |
+| C# | 13 (.NET 9) | Backend API, business logic, background jobs, desktop agent service + tray app |
 | SQL | PostgreSQL 16 | Database queries, RLS policies, migrations |
-| TypeScript | ES2024 | Frontend (Next.js 14 — built after backend foundation) |
+| TypeScript | ES2024 / 5.x | Frontend (Next.js 14) |
 | XAML | .NET MAUI | Desktop agent tray app UI |
 
-## 2. Backend Technologies
+---
+
+## 2. Backend
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
@@ -29,39 +31,146 @@
 | Testing | xUnit + Moq + FluentAssertions | Latest | Unit + integration tests |
 | Architecture Tests | ArchUnitNET | Latest | Module boundary enforcement |
 
-## 3. Desktop Agent Technologies
+---
+
+## 3. Frontend
+
+| Category | Technology | Version | Notes |
+|:---------|:-----------|:--------|:------|
+| Framework | Next.js | 14+ | App Router, Server Components, Vercel deployment |
+| Language | TypeScript | 5.x | Strict mode enabled |
+| Runtime | Node.js | 20 LTS | |
+| Package Manager | pnpm | 8.x | Workspace support |
+| CSS Framework | Tailwind CSS | 3.x | Utility-first, CSS custom property tokens |
+| Component Library | shadcn/ui | Latest | Copy-paste Radix primitives, enterprise-grade |
+| Icons | Lucide React | Latest | Consistent icon set |
+| Charts | Recharts | Latest | Standard charts (line, bar, pie, area) |
+| Dashboard Blocks | Tremor | Latest | Pre-built KPI cards, sparklines |
+| Animation | Framer Motion | Latest | Page transitions, micro-interactions |
+| Theming | CSS Custom Properties | - | Light/dark mode, tenant branding |
+| Server State | TanStack Query | v5 | API data fetching, caching, mutations, optimistic updates |
+| Client State | Zustand | 4.x | Sidebar, filters, UI preferences, monitoring config cache |
+| URL State | nuqs | Latest | Filters, pagination, search params in URL |
+| Forms | React Hook Form + Zod | Latest | Form state + validation (mirrors backend FluentValidation) |
+| Real-time | @microsoft/signalr | Latest | WebSocket connection to ONEVO backend |
+| SignalR channels | `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status` | - | Auto-reconnect with exponential backoff |
+| Testing | Vitest + RTL + Playwright + MSW | Latest | Unit, component, E2E, API mocking |
+| Linting | ESLint + Prettier | - | |
+| Bundle Analysis | @next/bundle-analyzer | - | |
+
+### Key Frontend Dependencies
+
+```json
+{
+  "@microsoft/signalr": "latest",
+  "@tanstack/react-query": "^5",
+  "@radix-ui/react-*": "latest",
+  "zustand": "^4",
+  "nuqs": "latest",
+  "react-hook-form": "latest",
+  "zod": "latest",
+  "recharts": "latest",
+  "@tremor/react": "latest",
+  "lucide-react": "latest",
+  "framer-motion": "latest",
+  "date-fns": "latest",
+  "class-variance-authority": "latest",
+  "clsx": "latest",
+  "tailwind-merge": "latest"
+}
+```
+
+---
+
+## 4. Desktop Agent
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
 | Background Service | .NET Windows Service | 9.0 | `Microsoft.Extensions.Hosting.WindowsServices` — always-on data collector |
 | Tray App UI | .NET MAUI | 9.0 | System tray icon, photo capture, employee login |
-| Local Storage | SQLite | via Microsoft.Data.Sqlite | Offline buffer for activity data |
+| Language | C# | 13 | Same as backend |
+| Local Storage | SQLite | via `Microsoft.Data.Sqlite` | Offline buffer for activity data |
 | Activity Capture | Win32 APIs (user32.dll) | - | `SetWindowsHookEx` for keyboard/mouse event COUNTS (not keystrokes) |
 | App Detection | Win32 APIs | - | `GetForegroundWindow`, `GetWindowText`, process enumeration |
 | Idle Detection | Win32 APIs | - | `GetLastInputInfo` |
-| IPC | Named Pipes | System.IO.Pipes | Service ↔ MAUI tray app communication |
+| IPC | Named Pipes | `System.IO.Pipes` | Service ↔ MAUI tray app communication |
 | Installer | MSIX | Windows SDK | Silent install, auto-update |
 | HTTP Client | HttpClient + Polly | Built-in | Retry + circuit breaker for Agent Gateway |
 
-See [[agent-gateway]] for the API contract and `agent/` brain for full agent architecture.
+### Win32 APIs (P/Invoke)
 
-## 4. Frontend Technologies
+| API | DLL | Purpose |
+|:----|:----|:--------|
+| `SetWindowsHookEx` | user32.dll | Keyboard/mouse event COUNTING (not keylogging) |
+| `GetForegroundWindow` | user32.dll | Active window detection |
+| `GetWindowText` | user32.dll | Window title capture (hashed before storage) |
+| `GetLastInputInfo` | user32.dll | Idle detection (time since last input) |
+| `EnumProcesses` / `Process.GetProcesses()` | kernel32.dll / .NET | Process enumeration for meeting detection |
 
-| Category | Technology | Version | Notes |
-|:---------|:-----------|:--------|:------|
-| Framework | Next.js | 14+ | App Router, Server Components |
-| Language | TypeScript | 5.x | Strict mode |
-| Styling | Tailwind CSS | 3.x | Utility-first, CSS custom property tokens |
-| Components | shadcn/ui | Latest | Copy-paste, Radix primitives |
-| Charts | Recharts + Tremor | Latest | Standard charts + dashboard blocks |
-| Server State | TanStack Query | v5 | API data fetching, caching, mutations |
-| Client State | Zustand | 4.x | Sidebar, filters, monitoring config cache |
-| Forms | React Hook Form + Zod | Latest | Validation mirrors backend FluentValidation |
-| URL State | nuqs | Latest | Search params, filters, pagination |
-| Real-time | @microsoft/signalr | Latest | Live dashboards, exception alerts |
-| Testing | Vitest + RTL + Playwright | Latest | Unit, component, E2E |
+### Agent NuGet Dependencies
 
-See `frontend/` brain for full frontend architecture.
+| Package | Purpose |
+|:--------|:--------|
+| `Microsoft.Extensions.Hosting.WindowsServices` | Windows Service hosting |
+| `Microsoft.Data.Sqlite` | SQLite local buffer |
+| `Polly` | HTTP resilience (retry, circuit breaker, timeout) |
+| `System.Text.Json` | JSON serialization |
+| `Serilog` + `Serilog.Sinks.File` | Local logging (rolling file) |
+| `CommunityToolkit.Maui` | MAUI helpers (tray icon, notifications) |
+
+### Agent Project Structure
+
+```
+ONEVO.Agent/
+├── ONEVO.Agent.Service/           # Windows Service (background collector)
+│   ├── Collectors/
+│   │   ├── ActivityCollector.cs    # Keyboard/mouse event counting
+│   │   ├── AppTracker.cs          # Foreground app detection
+│   │   ├── IdleDetector.cs        # Idle period detection
+│   │   ├── MeetingDetector.cs     # Meeting app process detection
+│   │   └── DeviceTracker.cs       # Device active/idle cycle tracking
+│   ├── Buffer/
+│   │   ├── SqliteBuffer.cs        # Local SQLite storage
+│   │   └── BufferCleanup.cs       # Purge sent data
+│   ├── Sync/
+│   │   ├── DataSyncService.cs     # Batch & send to Agent Gateway
+│   │   ├── HeartbeatService.cs    # 60-second heartbeat
+│   │   └── PolicySyncService.cs   # Fetch monitoring policy
+│   ├── Security/
+│   │   ├── DeviceTokenStore.cs    # Secure Device JWT storage (DPAPI)
+│   │   └── TamperDetector.cs      # Detect service manipulation
+│   ├── IPC/
+│   │   └── NamedPipeServer.cs     # Listen for MAUI app commands
+│   └── Program.cs
+│
+├── ONEVO.Agent.TrayApp/           # MAUI tray app
+│   ├── Views/
+│   │   ├── LoginWindow.xaml
+│   │   ├── StatusPopup.xaml
+│   │   └── PhotoCaptureWindow.xaml
+│   ├── Services/
+│   │   ├── NamedPipeClient.cs
+│   │   ├── CameraService.cs
+│   │   └── TrayIconService.cs
+│   └── App.xaml.cs
+│
+├── ONEVO.Agent.Shared/            # Shared types between Service and TrayApp
+│   ├── Models/
+│   │   ├── ActivitySnapshot.cs
+│   │   ├── AppUsageRecord.cs
+│   │   ├── DeviceSession.cs
+│   │   └── AgentPolicy.cs
+│   ├── IPC/
+│   │   └── IpcMessages.cs
+│   └── Constants.cs
+│
+└── ONEVO.Agent.Installer/         # MSIX packaging
+    └── Package.appxmanifest
+```
+
+See [[agent-gateway]] for the server-side API contract.
+
+---
 
 ## 5. Database & Storage
 
@@ -75,6 +184,8 @@ See `frontend/` brain for full frontend architecture.
 | Search (Phase 2) | Meilisearch | Latest | Upgraded search at scale |
 | File Storage | Blob Storage (Railway/S3) | - | Documents, avatars, screenshots, verification photos |
 
+---
+
 ## 6. Infrastructure & Deployment
 
 | Category | Technology | Notes |
@@ -87,6 +198,8 @@ See `frontend/` brain for full frontend architecture.
 | Observability | OpenTelemetry + Prometheus + Grafana | Distributed tracing, metrics, dashboards |
 | Status Page | BetterStack | Public status page |
 | In-app Support | Crisp | Chat widget with auto-context |
+
+---
 
 ## 7. External Integrations
 
@@ -103,6 +216,8 @@ See `frontend/` brain for full frontend architecture.
 
 See [[external-integrations]] for full integration details.
 
+---
+
 ## 8. Architecture Patterns
 
 | Pattern | Where Used |
@@ -118,6 +233,8 @@ See [[external-integrations]] for full integration details.
 | Time-Series Buffer | Raw activity data → buffer table (partitioned, purged 48h) → aggregated summaries |
 | Tiered Real-Time | Agent→server (2-3 min), exception engine (5 min), dashboard (30s polling / SignalR push) |
 
+---
+
 ## 9. NOT Using in Phase 1
 
 | Technology | Reason |
@@ -129,3 +246,14 @@ See [[external-integrations]] for full integration details.
 | RabbitMQ | Using in-process domain events initially; RabbitMQ for scale later |
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
 | Teams Graph API (deep) | Basic meeting detection via process name sufficient for Phase 1 |
+
+## Related
+
+- [[project-context]]
+- [[rules]]
+- [[current-focus/README|Current Focus]]
+- [[known-issues]]
+- [[module-catalog]]
+- [[shared-kernel]]
+- [[agent-gateway]]
+- [[external-integrations]]

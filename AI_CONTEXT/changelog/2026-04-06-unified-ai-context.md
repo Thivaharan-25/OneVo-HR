@@ -1,0 +1,25 @@
+# 2026-04-06 - Unified Root AI_CONTEXT
+
+- **Added:** Root `AI_CONTEXT/` directory as the single source of truth for all AI agent context
+- **Merged:** `backend/AI_CONTEXT/project-context.md` + `frontend/AI_CONTEXT/project-context.md` + `agent/AI_CONTEXT/project-context.md` → `AI_CONTEXT/project-context.md`
+  - Backend platform overview is primary (Section 1–8)
+  - Desktop Agent context added as Section 9
+  - Frontend context added as Section 10
+- **Merged:** All three `tech-stack.md` files → `AI_CONTEXT/tech-stack.md`
+  - Sections: Backend, Frontend, Desktop Agent, Database & Storage, Infrastructure, External Integrations, Architecture Patterns
+  - Agent Win32 API table and project structure included
+  - Frontend key dependencies JSON preserved
+- **Merged:** All three `rules.md` files → `AI_CONTEXT/rules.md`
+  - Sections 1–7 from backend rules (primary, authoritative)
+  - **Added Section 8:** Task Completion Rules (checkbox tracking, status updates, changelog logging, one source of truth)
+  - **Added Section 9:** Frontend / React / Next.js Rules (naming, component patterns, API integration, real-time, styling, testing, security)
+  - **Added Section 10:** Desktop Agent Rules (privacy, performance, network resilience, coding standards, policy enforcement, IPC protocol)
+  - Updated Contextual Awareness reading order to use new unified paths
+- **Merged:** All three `known-issues.md` files → `AI_CONTEXT/known-issues.md`
+  - Sections: General/Backend, Workforce Intelligence, Payroll, Workflow Engine, Leave, Frontend/API Integration, Desktop Agent (Win32, MAUI, SQLite, Network, Device JWT, Idle Detection, Meeting Detection, Installation)
+  - Deprecated patterns updated to include frontend-specific patterns
+- **Copied:** Backend changelog entries (4 files) + Frontend changelog entry (1 file) → `AI_CONTEXT/changelog/`
+  - Renamed `2026-04-05-initial-setup.md` → `2026-04-05-backend-initial-setup.md` to avoid collision
+  - Renamed `2026-04-06-initial-setup.md` → `2026-04-06-frontend-initial-setup.md`
+- **Added:** `[[wikilinks]]` throughout all files linking to modules, architecture docs, and cross-cutting concerns
+- **Why:** Three separate AI_CONTEXT directories created fragmentation — AI agents working on any part of the platform (backend, frontend, agent) now have a single, unified context entry point

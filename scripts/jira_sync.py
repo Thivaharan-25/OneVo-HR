@@ -248,7 +248,7 @@ def determine_directory(status: str) -> str:
     if status in STATUS_MAP_COMPLETED:
         return "tasks/completed"
     elif status in STATUS_MAP_ACTIVE:
-        return "tasks/active"
+        return "current-focus"
     else:
         return "tasks/backlog"
 

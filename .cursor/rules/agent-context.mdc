@@ -1,0 +1,88 @@
+---
+description: Context for ONEVO Desktop Agent development (.NET Windows Service + MAUI)
+globs:
+  - "**/ONEVO.Agent*/**"
+  - "**/Agent.Service/**"
+  - "**/Agent.TrayApp/**"
+  - "**/Agent.Shared/**"
+alwaysApply: false
+---
+
+# ONEVO Desktop Agent Context
+
+You are building the **ONEVO Desktop Agent** — a Windows application that collects employee workforce activity data and sends it to the ONEVO backend via the Agent Gateway API.
+
+## Architecture
+
+Two components communicating via Named Pipes IPC:
+
+```
+ONEVO.Agent.Service (Windows Service)     ONEVO.Agent.TrayApp (MAUI)
+├── Collectors/                           ├── Views/
+│   ├── ActivityCollector.cs              │   ├── LoginWindow.xaml
+│   ├── AppTracker.cs                     │   ├── StatusPopup.xaml
+│   ├── IdleDetector.cs                   │   └── PhotoCaptureWindow.xaml
+│   ├── MeetingDetector.cs                ├── Services/
+│   └── DeviceTracker.cs                  │   ├── NamedPipeClient.cs
+├── Buffer/SqliteBuffer.cs                │   ├── CameraService.cs
+├── Sync/                                 │   └── TrayIconService.cs
+│   ├── DataSyncService.cs                └── App.xaml.cs
+│   ├── HeartbeatService.cs
+│   └── PolicySyncService.cs
+├── Security/
+│   ├── DeviceTokenStore.cs (DPAPI)
+│   └── TamperDetector.cs
+├── IPC/NamedPipeServer.cs
+└── Program.cs
+
+ONEVO.Agent.Shared (Class Library)
+├── Models/ (ActivitySnapshot, AppUsageRecord, DeviceSession, AgentPolicy)
+├── IPC/IpcMessages.cs
+└── Constants.cs
+```
+
+## Key Tech
+- **.NET 9** — C# 13
+- **Windows Service** — `Microsoft.Extensions.Hosting.WindowsServices`
+- **MAUI** — tray app UI (system tray, camera, login)
+- **SQLite** — local offline buffer (`Microsoft.Data.Sqlite`)
+- **Win32 APIs** — `SetWindowsHookEx` (keyboard/mouse counts), `GetForegroundWindow`, `GetLastInputInfo`
+- **Named Pipes** — IPC between Service and TrayApp (`System.IO.Pipes`)
+- **DPAPI** — secure device JWT storage
+- **Polly** — HTTP resilience (retry, circuit breaker)
+- **MSIX** — installer packaging
+
+## Critical Rules
+1. **Count only, never content** — capture keyboard/mouse EVENT COUNTS, never keystrokes
+2. **Hash window titles** — SHA-256 hash BEFORE touching disk, raw title never stored
+3. **Policy-driven** — EVERY collector checks policy toggles before capturing
+4. **Offline-first** — buffer in SQLite, sync when connected, retry with backoff
+5. **DPAPI for secrets** — device JWT stored via Windows DPAPI, never plaintext
+6. **Minimal footprint** — agent should use <50MB RAM, <2% CPU
+7. **Tamper detection, not prevention** — detect and report, don't rootkit
+8. **Clean IPC** — Service ↔ TrayApp via Named Pipes only, never shared files
+9. **Device JWT ≠ User JWT** — agent auth is device-level with `type: "agent"` claim
+
+## Before Generating Agent Code
+1. Read `modules/agent-gateway/agent-overview.md` — full architecture overview
+2. Read `modules/agent-gateway/agent-server-protocol.md` — API contract (6 endpoints)
+3. Read `modules/agent-gateway/data-collection.md` — 5 collectors with code samples
+4. Read `modules/agent-gateway/ipc-protocol.md` — Named Pipes message protocol
+5. Read `modules/agent-gateway/sqlite-buffer.md` — local buffer schema
+6. Read `modules/identity-verification/photo-capture.md` — camera + verification
+7. Read `AI_CONTEXT/rules.md` Section 10 — Desktop Agent Rules
+8. Check `modules/agent-gateway/mock-mode.md` — if backend doesn't exist yet
+
+## Data Flow
+```
+Employee Login (TrayApp) → IPC → Service starts collectors
+  → ActivityCollector captures keyboard/mouse counts every 150s
+  → AppTracker polls foreground app every 5s, aggregates per interval
+  → IdleDetector checks GetLastInputInfo
+  → MeetingDetector scans for Teams/Zoom processes
+  → DeviceTracker tracks active/idle sessions
+  → All data → SQLite buffer
+  → DataSyncService batches & POSTs to /api/v1/agent/ingest every 2-3 min
+  → HeartbeatService POSTs to /api/v1/agent/heartbeat every 60s
+  → PolicySyncService GETs /api/v1/agent/policy every 60 min
+```

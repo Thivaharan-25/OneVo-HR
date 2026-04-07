@@ -12,7 +12,6 @@
 #   3. Create a GitHub PAT with 'repo' scope (or fine-grained with write access)
 #   4. Add the PAT as a secret named BRAIN_REPO_PAT in your code repo
 #
-# See docs/guides/cross-repo-sync.md in the brain repo for full setup guide.
 # =============================================================================
 
 name: Sync to Brain Repo
@@ -46,35 +45,29 @@ jobs:
           PR_AUTHOR="${{ github.event.pull_request.user.login }}"
           PR_LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
 
-          # Build the changelog entry
-          ENTRY="## [${DATE}] - Code PR #${PR_NUMBER}: ${PR_TITLE}"
-          ENTRY="${ENTRY}\n- **PR:** [#${PR_NUMBER} ${PR_TITLE}](${PR_URL})"
-          ENTRY="${ENTRY}\n- **Author:** ${PR_AUTHOR}"
-          ENTRY="${ENTRY}\n- **Merged:** ${DATE}"
+          # Create a new changelog entry file (matches directory-based changelog structure)
+          CHANGELOG_FILE="AI_CONTEXT/changelog/${DATE}-pr-${PR_NUMBER}.md"
+
+          cat > "$CHANGELOG_FILE" << EOF
+          # ${DATE} - Code PR #${PR_NUMBER}: ${PR_TITLE}
+
+          - **PR:** [#${PR_NUMBER} ${PR_TITLE}](${PR_URL})
+          - **Author:** ${PR_AUTHOR}
+          - **Merged:** ${DATE}
+          EOF
 
           # Add label-based flags
           if echo "$PR_LABELS" | grep -qi "breaking-change"; then
-            ENTRY="${ENTRY}\n- **WARNING:** This PR contains breaking changes. Review relevant docs."
+            echo "- **WARNING:** This PR contains breaking changes. Review relevant docs." >> "$CHANGELOG_FILE"
           fi
           if echo "$PR_LABELS" | grep -qi "new-api"; then
-            ENTRY="${ENTRY}\n- **ACTION:** New API endpoint(s) added. Update \`docs/api/README.md\`."
+            echo "- **ACTION:** New API endpoint(s) added. Update \`architecture/api-conventions.md\`." >> "$CHANGELOG_FILE"
           fi
           if echo "$PR_LABELS" | grep -qi "schema-change"; then
-            ENTRY="${ENTRY}\n- **ACTION:** Database schema changed. Update \`docs/database/README.md\`."
+            echo "- **ACTION:** Database schema changed. Update \`cross-cutting/database/README.md\`." >> "$CHANGELOG_FILE"
           fi
           if echo "$PR_LABELS" | grep -qi "new-dependency"; then
-            ENTRY="${ENTRY}\n- **ACTION:** Dependencies changed. Update \`AI_CONTEXT/tech-stack.md\`."
-          fi
-
-          ENTRY="${ENTRY}\n"
-
-          # Append to changelog (after the --- separator line)
-          if grep -q "^---$" AI_CONTEXT/changelog.md; then
-            sed -i "/^---$/a\\
-          \\
-          $(echo -e "$ENTRY")" AI_CONTEXT/changelog.md
-          else
-            echo -e "\n${ENTRY}" >> AI_CONTEXT/changelog.md
+            echo "- **ACTION:** Dependencies changed. Update \`AI_CONTEXT/tech-stack.md\`." >> "$CHANGELOG_FILE"
           fi
 
       - name: Flag breaking changes in known issues
@@ -87,15 +80,12 @@ jobs:
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_URL="${{ github.event.pull_request.html_url }}"
 
-          # Add to known issues under Active Bugs section
-          ISSUE_ENTRY="| PR-${PR_NUMBER} | Breaking change: ${PR_TITLE} -- review impact and update docs | High | See [PR #${PR_NUMBER}](${PR_URL}) | [PR](${PR_URL}) |"
-
-          # Append after the Active Bugs table header
-          if grep -q "^\| \[BUG-001\]" AI_CONTEXT/known-issues.md; then
-            sed -i "/^\| \[BUG-002\]/a ${ISSUE_ENTRY}" AI_CONTEXT/known-issues.md
-          else
-            echo -e "\n${ISSUE_ENTRY}" >> AI_CONTEXT/known-issues.md
-          fi
+          # Append breaking change warning to known-issues
+          echo "" >> AI_CONTEXT/known-issues.md
+          echo "### PR-${PR_NUMBER}: Breaking Change (${DATE})" >> AI_CONTEXT/known-issues.md
+          echo "- **What:** ${PR_TITLE}" >> AI_CONTEXT/known-issues.md
+          echo "- **Impact:** Review and update relevant docs — [PR #${PR_NUMBER}](${PR_URL})" >> AI_CONTEXT/known-issues.md
+          echo "- **Severity:** High" >> AI_CONTEXT/known-issues.md
 
       - name: Commit and push to brain
         run: |

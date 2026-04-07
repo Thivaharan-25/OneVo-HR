@@ -36,23 +36,19 @@ You are working on **ONEVO**, a multi-tenant SaaS platform with two pillars: **H
 ## Directory Structure
 ```
 AI_CONTEXT/                   → Read these first (project context, tech stack, rules)
-docs/architecture/            → Module catalog, boundaries, multi-tenancy, messaging
-docs/architecture/modules/    → Individual module docs (22 files, one per module)
-docs/database/                → Schema conventions, migrations, performance
-docs/api/                     → API design, endpoints, error handling
-docs/security/                → Auth, data classification, compliance
-docs/testing/                 → Test strategy, patterns
-docs/deployment/              → CI/CD, environment parity
-docs/guides/                  → Coding standards, git workflow, logging
-tasks/active/                 → Week-by-week task assignments per developer
-frontend/                     → Frontend secondary brain (React/Next.js)
-agent/                        → Desktop agent secondary brain (.NET MAUI)
+modules/                      → Unified module docs (22 modules, feature-wise structure)
+modules/{module}/{feature}/   → overview.md, end-to-end-logic.md, testing.md, frontend.md
+cross-cutting/                → Security, database, messaging, deployment, observability, testing, guides
+architecture/                 → Module catalog, boundaries, shared kernel, integrations
+design-system/                → Component catalog, color tokens, typography, layout patterns
+current-focus/                → Week-by-week task assignments per developer (one file per task)
 ```
 
 ## Before Generating Code
-1. Read the specific module doc: `docs/architecture/modules/{module-name}.md`
-2. Verify it follows module boundary rules (`docs/architecture/module-boundaries.md`)
-3. Ensure tenant_id is included where required
-4. Use the correct naming conventions (`AI_CONTEXT/rules.md`)
-5. Check `AI_CONTEXT/known-issues.md` for gotchas
-6. For Workforce Intelligence modules: check monitoring toggles + retention policies
+1. Read the specific module doc: `modules/{module-name}/overview.md`
+2. Read the feature doc: `modules/{module-name}/{feature}/overview.md`
+3. Verify it follows module boundary rules (`architecture/module-boundaries.md`)
+4. Ensure tenant_id is included where required
+5. Use the correct naming conventions (`AI_CONTEXT/rules.md`)
+6. Check `AI_CONTEXT/known-issues.md` for gotchas
+7. For Workforce Intelligence modules: check monitoring toggles + retention policies

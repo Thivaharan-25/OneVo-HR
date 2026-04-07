@@ -6,7 +6,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 
 1. Open in Cursor — `.cursor/rules/` auto-inject AI context
 2. Read [[project-context]] for system overview
-3. Read [[current-focus]] for delivery plan and sprint priorities
+3. Read [[current-focus/README|Current Focus]] for delivery plan and sprint priorities
 4. Check [[known-issues]] before writing any code
 
 ## System Overview
@@ -15,7 +15,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 
 - **Pillar 1: HR Management** — Employee lifecycle, leave, performance, payroll, skills
 - **Pillar 2: Workforce Intelligence** — Activity monitoring, presence tracking, identity verification, exception detection, productivity analytics
-- **~138 database tables** across **22 modules**
+- **~163 database tables** across **22 modules**
 - **.NET 9** backend (Modular Monolith)
 - **.NET MAUI + Windows Service** desktop agent
 - **Next.js 14** frontend (React)
@@ -35,35 +35,35 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 
 ```
 onevo-hr-brain/
-├── AI_CONTEXT/                  # Backend AI context — read FIRST
+├── AI_CONTEXT/                  # AI context — read FIRST
 │   ├── [[project-context]]       # Two-pillar architecture, business logic
 │   ├── [[tech-stack]]            # .NET 9, PostgreSQL, MAUI, Next.js
-│   ├── [[current-focus]]         # Delivery plan with developer assignments
-│   ├── [[rules]]                 # AI agent rules for .NET/C# code generation
+│   ├── [[rules]]                 # AI agent rules (backend + frontend + agent)
 │   ├── [[known-issues]]          # Gotchas, monitoring data, agent auth
-│   └── [[changelog]]             # Knowledge base update log
-├── .cursor/rules/               # Cursor AI auto-injected context
-├── docs/
-│   ├── architecture/
-│   │   ├── modules/             # ONE file per module (22 modules)
-│   │   ├── [[module-catalog]]    # Module index and dependency map
-│   │   ├── [[module-boundaries]] # Boundary rules and enforcement
-│   │   └── ...                  # Multi-tenancy, messaging, search, integrations
+│   └── changelog/               # Knowledge base update log (one file per change)
+├── modules/                     # Unified module docs — 22 modules, feature-wise
+│   └── {module}/{feature}/      # overview.md, end-to-end-logic.md, testing.md, frontend.md
+├── cross-cutting/               # Shared concerns across all modules
+│   ├── security/                # Auth architecture, data classification, compliance
 │   ├── database/                # Schema conventions, migrations, performance
-│   ├── security/                # Auth, data classification, compliance
-│   ├── guides/                  # Coding standards, git workflow, logging
-│   └── operations/              # Observability, monitoring
-├── frontend/                    # Frontend secondary brain (Next.js team)
-│   ├── AI_CONTEXT/              # Frontend AI context
-│   ├── .cursor/rules/           # Frontend Cursor rules
-│   └── docs/                    # Architecture, design system, page specs
-├── agent/                       # Desktop agent secondary brain (.NET MAUI team)
-│   ├── AI_CONTEXT/              # Agent AI context
-│   ├── .cursor/rules/           # Agent Cursor rules
-│   └── docs/                    # Agent architecture, protocols
-├── tasks/active/                # Sprint tasks (one file per developer per week)
+│   ├── messaging/               # Event catalog, exchange topology, error handling
+│   ├── deployment/              # CI/CD, environment parity
+│   ├── observability/           # Monitoring, logging, observability
+│   ├── testing/                 # Test strategy, frontend testing
+│   └── guides/                  # Coding standards, git workflow, logging
+├── architecture/                # High-level architecture docs
+│   ├── [[module-catalog]]        # Module index and dependency map
+│   ├── [[module-boundaries]]     # Boundary rules and enforcement
+│   ├── [[shared-kernel]]         # Cross-cutting code (Result<T>, ITenantContext)
+│   └── ...                      # Integrations, search, notifications, frontend structure
+├── design-system/               # Frontend design system (components, tokens, typography)
+├── current-focus/               # Sprint tasks — one file per developer per week
+│   ├── README.md                # Delivery plan overview + deadlines
+│   └── WEEK*.md                 # Individual task files with checkboxes
+├── .cursor/rules/               # Cursor AI auto-injected context
+├── decisions/                   # Architecture decision records
 ├── meetings/                    # Meeting notes
-└── decisions/                   # Architecture decision records
+└── scripts/                     # Automation scripts (brain-sync, jira-sync)
 ```
 
 ## Delivery Timeline

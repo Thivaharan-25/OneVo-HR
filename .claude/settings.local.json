@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:diagrams-xi.vercel.app)"
+      "WebFetch(domain:diagrams-xi.vercel.app)",
+      "Bash(grep -rl '\\\\[\\\\[' . --include=\"*.md\" -not -path './.git/*')",
+      "Bash(grep:*)"
     ]
   }
 }

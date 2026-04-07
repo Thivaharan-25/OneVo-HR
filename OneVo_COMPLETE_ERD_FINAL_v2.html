@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ONEVO — Complete Interactive ERD | 151 Tables</title>
+<title>ONEVO — Complete Interactive ERD | 163 Tables</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
@@ -151,7 +151,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#080c1
     <h1>ONEVO ERD</h1>
     <div class="topbar-divider"></div>
     <div class="topbar-stats">
-      <span class="topbar-chip" style="background:rgba(129,140,248,0.12);color:#818cf8;border-color:rgba(129,140,248,0.3)">151 Tables</span>
+      <span class="topbar-chip" style="background:rgba(129,140,248,0.12);color:#818cf8;border-color:rgba(129,140,248,0.3)">163 Tables</span>
       <span class="topbar-chip" style="background:rgba(52,211,153,0.12);color:#34d399;border-color:rgba(52,211,153,0.3)">22 Modules</span>
       <span class="topbar-chip" style="background:rgba(251,191,36,0.12);color:#fbbf24;border-color:rgba(251,191,36,0.3)">Complete System</span>
     </div>
@@ -171,7 +171,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#080c1
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <h2>Tables</h2>
-        <span class="sidebar-count">151</span>
+        <span class="sidebar-count">163</span>
       </div>
       <div class="sidebar-scroll" id="sidebarScroll"></div>
     </div>
@@ -242,7 +242,7 @@ const MODULES = [
   {key:'agent_gateway',label:'Agent Gateway',color:'#14B8A6',count:3}
 ];
 
-// ===== ALL 151 TABLES =====
+// ===== ALL 163 TABLES =====
 const TABLES = [
 // Infrastructure (1-4)
 {id:1,name:'tenants',module:'infrastructure',cols:[
@@ -389,7 +389,7 @@ const TABLES = [
   {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'leave_type_id',t:'uuid',fk:'leave_types'},{n:'year',t:'integer'},{n:'total_entitled',t:'decimal(5,2)'},{n:'used',t:'decimal(5,2)'},{n:'balance',t:'decimal(5,2)'},{n:'adjusted_by_id',t:'uuid',fk:'employees'}
 ]},
 {id:47,name:'leave_requests',module:'leave',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'leave_type_id',t:'uuid',fk:'leave_types'},{n:'start_date',t:'date'},{n:'end_date',t:'date'},{n:'total_days',t:'decimal(4,1)'},{n:'status',t:'varchar(20)'},{n:'reviewed_by_id',t:'uuid',fk:'employees'}
+  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'leave_type_id',t:'uuid',fk:'leave_types'},{n:'start_date',t:'date'},{n:'end_date',t:'date'},{n:'total_days',t:'decimal(4,1)'},{n:'status',t:'varchar(20)'},{n:'conflict_snapshot_json',t:'jsonb',json:true},{n:'reviewed_by_id',t:'uuid',fk:'employees'}
 ]},
 // Payroll (48-58)
 {id:48,name:'payroll_providers',module:'payroll',cols:[
@@ -452,13 +452,13 @@ const TABLES = [
   {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
 ]},
 {id:67,name:'skills',module:'skills',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'category_id',t:'uuid',fk:'skill_categories'},{n:'name',t:'varchar(100)'},{n:'proficiency_levels',t:'jsonb',json:true},{n:'evidence_required',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'category_id',t:'uuid',fk:'skill_categories'},{n:'name',t:'varchar(100)'},{n:'proficiency_levels',t:'jsonb',json:true},{n:'evidence_required',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
 ]},
 {id:68,name:'employee_skills',module:'skills',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'proficiency_level',t:'integer'},{n:'status',t:'varchar(20)'},{n:'validated_by_id',t:'uuid',fk:'employees'},{n:'last_assessed_in_review_id',t:'uuid',fk:'review_cycles'}
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'proficiency_level',t:'integer'},{n:'status',t:'varchar(20)'},{n:'validated_by_id',t:'uuid',fk:'employees'},{n:'last_assessed_in_review_id',t:'uuid',fk:'review_cycles'}
 ]},
-{id:69,name:'job_family_required_skills',module:'skills',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'job_family_id',t:'uuid',fk:'job_families'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'min_proficiency',t:'integer'},{n:'is_mandatory',t:'boolean'}
+{id:69,name:'job_skill_requirements',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'job_family_id',t:'uuid',fk:'job_families'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'min_proficiency',t:'integer'},{n:'is_mandatory',t:'boolean'}
 ]},
 {id:70,name:'lms_providers',module:'skills',cols:[
   {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'provider_type',t:'varchar(30)'},{n:'sso_enabled',t:'boolean'},{n:'status',t:'varchar(20)'},{n:'created_by_id',t:'uuid',fk:'users'}
@@ -467,16 +467,16 @@ const TABLES = [
   {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'title',t:'varchar(255)'},{n:'source',t:'varchar(50)'},{n:'lms_provider_id',t:'uuid',fk:'lms_providers'},{n:'content_type',t:'varchar(30)'},{n:'duration_minutes',t:'integer'},{n:'is_mandatory',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
 ]},
 {id:72,name:'course_skill_tags',module:'skills',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'course_id',t:'uuid',fk:'courses'},{n:'skill_id',t:'uuid',fk:'skills'}
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'course_id',t:'uuid',fk:'courses'},{n:'skill_id',t:'uuid',fk:'skills'}
 ]},
-{id:73,name:'course_assignments',module:'skills',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'course_id',t:'uuid',fk:'courses'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'assigned_by_id',t:'uuid',fk:'employees'},{n:'status',t:'varchar(20)'},{n:'completion_percent',t:'integer'},{n:'linked_milestone_id',t:'uuid',fk:'development_milestones'}
+{id:73,name:'course_enrollments',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'course_id',t:'uuid',fk:'courses'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'assigned_by_id',t:'uuid',fk:'employees'},{n:'status',t:'varchar(20)'},{n:'completion_percent',t:'integer'},{n:'linked_milestone_id',t:'uuid',fk:'development_plan_items'}
 ]},
 {id:74,name:'development_plans',module:'skills',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'employee_id',t:'uuid',fk:'employees'},{n:'created_by_id',t:'uuid',fk:'users'},{n:'title',t:'varchar(255)'},{n:'status',t:'varchar(20)'},{n:'linked_review_cycle_id',t:'uuid',fk:'review_cycles'}
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'created_by_id',t:'uuid',fk:'users'},{n:'title',t:'varchar(255)'},{n:'status',t:'varchar(20)'},{n:'linked_review_cycle_id',t:'uuid',fk:'review_cycles'}
 ]},
-{id:75,name:'development_milestones',module:'skills',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'plan_id',t:'uuid',fk:'development_plans'},{n:'title',t:'varchar(255)'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'linked_course_id',t:'uuid',fk:'courses'},{n:'status',t:'varchar(20)'}
+{id:75,name:'development_plan_items',module:'skills',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'plan_id',t:'uuid',fk:'development_plans'},{n:'title',t:'varchar(255)'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'linked_course_id',t:'uuid',fk:'courses'},{n:'status',t:'varchar(20)'}
 ]},
 {id:76,name:'skill_validation_requests',module:'skills',cols:[
   {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'skill_id',t:'uuid',fk:'skills'},{n:'from_level',t:'integer'},{n:'to_level',t:'integer'},{n:'evidence_url',t:'varchar(500)'},{n:'validator_id',t:'uuid',fk:'employees'},{n:'status',t:'varchar(20)'},{n:'review_note',t:'text'}
@@ -511,16 +511,19 @@ const TABLES = [
   {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'parent_category_id',t:'uuid',fk:'document_categories'},{n:'name',t:'varchar(100)'},{n:'applies_to',t:'varchar(30)'},{n:'is_active',t:'boolean'}
 ]},
 {id:86,name:'documents',module:'documents',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'legal_entity_id',t:'uuid',fk:'legal_entities'},{n:'category_id',t:'uuid',fk:'document_categories'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'title',t:'varchar(255)'},{n:'requires_acknowledgement',t:'boolean'},{n:'is_active',t:'boolean'},{n:'created_by',t:'uuid',fk:'users'}
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'legal_entity_id',t:'uuid',fk:'legal_entities'},{n:'category_id',t:'uuid',fk:'document_categories'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'title',t:'varchar(255)'},{n:'requires_acknowledgement',t:'boolean'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
 ]},
 {id:87,name:'document_versions',module:'documents',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'document_id',t:'uuid',fk:'documents'},{n:'version_number',t:'integer'},{n:'blob_storage_url',t:'varchar(500)'},{n:'file_name',t:'varchar(255)'},{n:'effective_date',t:'date'},{n:'expiry_date',t:'date'},{n:'is_current',t:'boolean'},{n:'uploaded_by',t:'uuid',fk:'users'}
+  {n:'id',t:'uuid',pk:true},{n:'document_id',t:'uuid',fk:'documents'},{n:'version_number',t:'integer'},{n:'blob_storage_url',t:'varchar(500)'},{n:'file_name',t:'varchar(255)'},{n:'effective_date',t:'date'},{n:'expiry_date',t:'date'},{n:'is_current',t:'boolean'},{n:'uploaded_by_id',t:'uuid',fk:'users'}
 ]},
 {id:88,name:'document_acknowledgements',module:'documents',cols:[
-  {n:'id',t:'uuid',pk:true},{n:'document_version_id',t:'uuid',fk:'document_versions'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'acknowledged_by',t:'uuid',fk:'users'},{n:'method',t:'varchar(20)'},{n:'acknowledged_at',t:'timestamptz'},{n:'ip_address',t:'varchar(45)'}
+  {n:'id',t:'uuid',pk:true},{n:'document_version_id',t:'uuid',fk:'document_versions'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'acknowledged_by_id',t:'uuid',fk:'users'},{n:'method',t:'varchar(20)'},{n:'acknowledged_at',t:'timestamptz'},{n:'ip_address',t:'varchar(45)'}
 ]},
 {id:89,name:'document_access_logs',module:'documents',cols:[
   {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'document_version_id',t:'uuid',fk:'document_versions'},{n:'employee_id',t:'uuid',fk:'employees'},{n:'action',t:'varchar(20)'},{n:'accessed_at',t:'timestamptz'},{n:'ip_address',t:'varchar(45)'}
+]},
+{id:152,name:'document_templates',module:'documents',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'category_id',t:'uuid',fk:'document_categories'},{n:'template_content',t:'text'},{n:'variables_json',t:'jsonb',json:true},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
 ]},
 // Notifications (90-91)
 {id:90,name:'notifications',module:'notifications',cols:[
@@ -605,7 +608,7 @@ const TABLES = [
 {id:115,name:'approval_actions',module:'shared',cols:[
   {n:'id',t:'uuid',pk:true},{n:'workflow_instance_id',t:'uuid',fk:'workflow_instances'},{n:'workflow_step_id',t:'uuid',fk:'workflow_steps'},{n:'actor_id',t:'uuid',fk:'employees'},{n:'action',t:'varchar(20)'},{n:'comment',t:'text'},{n:'acted_at',t:'timestamptz'},{n:'delegated_to_id',t:'uuid',fk:'employees'}
 ]},
-{id:116,name:'presence_sessions',module:'shared',cols:[
+{id:116,name:'signalr_connections',module:'shared',cols:[
   {n:'id',t:'uuid',pk:true},{n:'user_id',t:'uuid',fk:'users'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'connection_id',t:'varchar(100)'},{n:'channel',t:'varchar(30)'},{n:'device_type',t:'varchar(30)'},{n:'connected_at',t:'timestamptz'},{n:'last_ping_at',t:'timestamptz'},{n:'is_active',t:'boolean'}
 ]},
 // Core HR additions (117-120)
@@ -722,6 +725,40 @@ const TABLES = [
 ]},
 {id:151,name:'agent_health_logs',module:'agent_gateway',cols:[
   {n:'id',t:'uuid',pk:true},{n:'agent_id',t:'uuid',fk:'registered_agents'},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'reported_at',t:'timestamptz'},{n:'cpu_usage',t:'decimal(5,2)'},{n:'memory_mb',t:'int'},{n:'errors_json',t:'jsonb',json:true},{n:'tamper_detected',t:'boolean'}
+]},
+// Shared Platform additions (153-163)
+{id:153,name:'plan_features',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'plan_id',t:'uuid',fk:'subscription_plans'},{n:'feature_key',t:'varchar(100)'},{n:'limit_value',t:'integer'},{n:'is_included',t:'boolean'}
+]},
+{id:154,name:'subscription_invoices',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'subscription_id',t:'uuid',fk:'tenant_subscriptions'},{n:'invoice_number',t:'varchar(50)'},{n:'amount',t:'decimal(10,2)'},{n:'currency',t:'varchar(3)'},{n:'status',t:'varchar(20)'},{n:'payment_provider_ref',t:'varchar(100)'},{n:'issued_at',t:'timestamptz'},{n:'paid_at',t:'timestamptz'}
+]},
+{id:155,name:'payment_methods',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'type',t:'varchar(20)'},{n:'last_four',t:'varchar(4)'},{n:'brand',t:'varchar(20)'},{n:'expiry_month',t:'integer'},{n:'expiry_year',t:'integer'},{n:'is_default',t:'boolean'},{n:'payment_provider_ref',t:'varchar(100)'}
+]},
+{id:156,name:'tenant_feature_flags',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'flag_key',t:'varchar(100)'},{n:'is_enabled',t:'boolean'},{n:'overridden_by_id',t:'uuid',fk:'users'}
+]},
+{id:157,name:'workflow_step_instances',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'workflow_instance_id',t:'uuid',fk:'workflow_instances'},{n:'workflow_step_id',t:'uuid',fk:'workflow_steps'},{n:'assigned_to_id',t:'uuid',fk:'employees'},{n:'status',t:'varchar(20)'},{n:'started_at',t:'timestamptz'},{n:'completed_at',t:'timestamptz'},{n:'sla_deadline_at',t:'timestamptz'}
+]},
+{id:158,name:'system_settings',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'setting_key',t:'varchar(100)'},{n:'setting_value',t:'jsonb',json:true},{n:'description',t:'text'},{n:'updated_by_id',t:'uuid',fk:'users'}
+]},
+{id:159,name:'api_keys',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'name',t:'varchar(100)'},{n:'key_hash',t:'varchar(255)'},{n:'key_prefix',t:'varchar(10)'},{n:'scopes',t:'jsonb',json:true},{n:'expires_at',t:'timestamptz'},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'},{n:'last_used_at',t:'timestamptz'}
+]},
+{id:160,name:'webhook_endpoints',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'url',t:'varchar(500)'},{n:'secret_hash',t:'varchar(255)'},{n:'events',t:'jsonb',json:true},{n:'is_active',t:'boolean'},{n:'created_by_id',t:'uuid',fk:'users'}
+]},
+{id:161,name:'webhook_deliveries',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'webhook_endpoint_id',t:'uuid',fk:'webhook_endpoints'},{n:'event_type',t:'varchar(50)'},{n:'payload',t:'jsonb',json:true},{n:'response_status',t:'integer'},{n:'response_body',t:'text'},{n:'attempt_number',t:'integer'},{n:'delivered_at',t:'timestamptz'}
+]},
+{id:162,name:'rate_limit_rules',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'endpoint_pattern',t:'varchar(200)'},{n:'max_requests',t:'integer'},{n:'window_seconds',t:'integer'},{n:'is_active',t:'boolean'}
+]},
+{id:163,name:'scheduled_tasks',module:'shared',cols:[
+  {n:'id',t:'uuid',pk:true},{n:'tenant_id',t:'uuid',fk:'tenants'},{n:'task_type',t:'varchar(100)'},{n:'cron_expression',t:'varchar(50)'},{n:'description',t:'text'},{n:'is_active',t:'boolean'},{n:'last_run_at',t:'timestamptz'},{n:'next_run_at',t:'timestamptz'}
 ]}
 ];
 

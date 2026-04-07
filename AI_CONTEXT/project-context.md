@@ -1,6 +1,6 @@
 # Project Context: ONEVO
 
-## 1. Project Overview
+## 1. Platform Overview
 
 - **Project Name:** ONEVO
 - **Short Description:** A production-grade, multi-tenant SaaS platform combining HR Management, Workforce Intelligence, and optional Work/Task Management into a unified ecosystem.
@@ -159,13 +159,162 @@ See [[external-integrations]] for API contracts.
 - Multi-region deployment — single region for Phase 1
 - Teams Graph API deep integration — basic meeting detection via process name in Phase 1
 
-## 9. AI Agent Instructions
+---
+
+## 9. Desktop Agent
+
+The ONEVO Desktop Agent is a Windows application that runs on employee laptops to capture workforce activity data. It is part of **Pillar 2: Workforce Intelligence**.
+
+### Two Components
+
+**Background Service (Windows Service)**
+
+Always-on data collector running as a Windows Service (`Microsoft.Extensions.Hosting.WindowsServices`) — starts on boot, survives logoff, tamper-resistant.
+
+Captures:
+- Keyboard event counts (NOT keystrokes — just how many key presses)
+- Mouse event counts
+- Foreground application name + window title (hashed before sending)
+- Idle periods (no input for configurable threshold)
+- Meeting detection (Teams, Zoom, Meet process detection)
+- Device active/idle cycles
+- Camera/microphone activity status
+
+**Tray App (MAUI)**
+
+Minimal UI in the system tray providing:
+- Employee login/logout (links employee identity to device)
+- Photo capture for identity verification (when policy requires)
+- Status indicator (connected/disconnected/syncing)
+- "What's being tracked" transparency display (per privacy mode)
+- Policy display (which features are active)
+
+**IPC Between Components**
+
+Named Pipes (`System.IO.Pipes`) for communication between the Service and MAUI app:
+- Service → MAUI: "capture photo now" (verification trigger), status updates
+- MAUI → Service: employee login context, manual break start/end
+
+### Data Flow
+
+```
+Capture → Local Buffer (SQLite) → Batch & Send → Agent Gateway
+```
+
+1. **Capture:** Win32 APIs collect raw activity data continuously
+2. **Local Buffer:** SQLite stores data locally (handles offline/network issues)
+3. **Batch:** Every 2-3 minutes (configurable via policy), batch buffered data
+4. **Send:** POST to `/api/v1/agent/ingest` with Device JWT
+5. **Server responds 202 Accepted** — processing is async on server side
+
+### Policy-Driven Behavior
+
+The agent does NOT decide what to track. It fetches its monitoring policy from the server:
+
+```json
+{
+  "activity_monitoring": true,
+  "application_tracking": true,
+  "screenshot_capture": false,
+  "meeting_detection": true,
+  "device_tracking": true,
+  "identity_verification": true,
+  "verification_on_login": true,
+  "verification_interval_minutes": 60,
+  "idle_threshold_seconds": 300,
+  "snapshot_interval_seconds": 150,
+  "heartbeat_interval_seconds": 60
+}
+```
+
+Policy is fetched on employee login and refreshed hourly. If a feature is `false`, the agent does NOT collect that data type.
+
+### Authentication
+
+The agent uses **Device JWT** — separate from user JWT:
+- Issued at registration (`POST /api/v1/agent/register`)
+- Contains `device_id` + `tenant_id` + `type: "agent"`
+- NO user permissions — agent cannot access HR data
+- Employee context is added when employee logs in via tray app
+
+### Key Constraints
+
+1. Minimal resource footprint — < 2% CPU, < 50MB RAM
+2. Network resilience — buffer locally, retry with exponential backoff
+3. Privacy first — only collect what policy allows, hash window titles
+4. Tamper resistant — detect service stops, report to server
+5. Silent install — MSIX package, no user interaction required
+
+See [[agent-gateway]] for the server-side API contract.
+
+---
+
+## 10. Frontend
+
+The ONEVO Frontend is a React/Next.js application serving as the web interface for the full platform (both pillars).
+
+### Architecture Overview
+
+```
+Next.js 14 App Router
+├── (auth)/          — Public pages (login, forgot password, MFA)
+├── (dashboard)/     — Authenticated pages (sidebar + topbar layout)
+│   ├── overview/    — Landing dashboard
+│   ├── hr/          — Pillar 1: HR Management
+│   ├── workforce/   — Pillar 2: Workforce Intelligence
+│   ├── org/         — Org Structure
+│   └── settings/    — Tenant Configuration
+├── (employee)/      — Employee self-service (limited nav)
+└── api/             — API route handlers (BFF pattern for sensitive ops)
+```
+
+### Key Design Principles
+
+1. **Permission-based rendering** — every feature gated by RBAC permissions
+2. **Real-time where it matters** — SignalR for live workforce dashboard, exception alerts
+3. **Polling where it's enough** — 30s polling for non-critical updates
+4. **Responsive but desktop-first** — monitoring dashboards are primarily desktop
+5. **Tenant-scoped everything** — all API calls include tenant context from JWT
+6. **Feature flag aware** — UI adapts to what features the tenant has enabled
+
+### Product Configurations Affect UI
+
+| Config | What's Visible |
+|:-------|:---------------|
+| HR Only | `/hr/*`, `/org/*`, `/settings/*` (no `/workforce/*`) |
+| HR + Workforce Intelligence | Full UI including `/workforce/*` |
+| HR + Work Management | `/hr/*` + bridge data in dashboards |
+| Full Suite | Everything |
+
+### Backend API Consumption
+
+The frontend consumes the ONEVO REST API at `/api/v1/*`.
+
+- **Auth:** JWT in memory (access token) + HttpOnly cookie (refresh token)
+- **Pagination:** Cursor-based, max 100 items
+- **Errors:** RFC 7807 Problem Details
+- **Real-time:** SignalR hub at `/hubs/notifications`
+
+### Development Phase
+
+The frontend is built AFTER the backend foundation is complete. See [[current-focus/README|Current Focus]] for timeline.
+
+---
+
+## 11. AI Agent Instructions
 
 - **Prioritization:** Always read this file and [[rules]] before generating any code
-- **Tech Stack:** Only use .NET 9 / C# patterns. See [[tech-stack]] for full details
+- **Tech Stack:** See [[tech-stack]] for full details (.NET 9, Next.js 14, WPF/MAUI agent)
 - **Module Boundaries:** Never violate module boundaries. See [[module-boundaries]]
 - **Multi-Tenancy:** Every query must be tenant-scoped. See [[multi-tenancy]]
-- **Module Details:** Each module has its own doc in `docs/architecture/modules/`. Read the specific module doc before working on it.
+- **Module Details:** Each module has its own doc in `modules/`. Read the specific module doc before working on it.
 - **Hallucination Prevention:** If information is not in these docs, state it's unknown — do not guess
 - **WorkManage Pro:** Do not build WorkManage Pro features. Only build bridge interfaces
 - **Monitoring Privacy:** Always check monitoring configuration before processing activity data
+
+## Related
+
+- [[tech-stack]]
+- [[current-focus/README|Current Focus]]
+- [[module-catalog]]
+- [[rules]]
