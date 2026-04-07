@@ -3,7 +3,17 @@
     "allow": [
       "WebFetch(domain:diagrams-xi.vercel.app)",
       "Bash(grep -rl '\\\\[\\\\[' . --include=\"*.md\" -not -path './.git/*')",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(find /c/Users/User/OneDrive/Documents/light/onevo-hr-brain -name \"*.md\" -type f -exec grep -l \"\\\\[\\\\[\" {} \\\\;)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(sed -i 's/\\\\[\\\\[coding-standards\\\\]\\\\] — Minimal API/\\\\[\\\\[backend-standards\\\\]\\\\] — Minimal API/' backend/api-conventions.md)",
+      "Bash(sed -i 's/\\\\[\\\\[coding-standards\\\\]\\\\] — naming conventions and code/\\\\[\\\\[backend-standards\\\\]\\\\] — naming conventions and code/' backend/shared-kernel.md)",
+      "Bash(sed -i 's/\\\\[\\\\[coding-standards\\\\]\\\\] — naming conventions/\\\\[\\\\[backend-standards\\\\]\\\\] — naming conventions/' current-focus/WEEK1-org-structure.md)",
+      "Bash(sed -i 's/\\\\[\\\\[coding-standards\\\\]\\\\] — naming conventions/\\\\[\\\\[backend-standards\\\\]\\\\] — naming conventions/; s/in \\\\[\\\\[coding-standards\\\\]\\\\]/in \\\\[\\\\[backend-standards\\\\]\\\\]/' current-focus/WEEK1-infrastructure-setup.md)",
+      "Bash(sed:*)",
+      "Bash(ls -d */)",
+      "Bash(ls -d Userflow/*/)"
     ]
   }
 }

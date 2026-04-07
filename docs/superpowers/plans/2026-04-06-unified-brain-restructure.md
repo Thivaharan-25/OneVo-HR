@@ -688,7 +688,7 @@ Add `## Related`:
 ## Related
 
 - [[project-context]] — platform overview
-- [[frontend-structure]] — frontend architecture
+- [[structure]] — frontend architecture
 - [[agent-server-protocol]] — agent communication
 ```
 

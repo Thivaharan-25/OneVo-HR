@@ -41,22 +41,23 @@ onevo-hr-brain/
 │   ├── [[rules]]                 # AI agent rules (backend + frontend + agent)
 │   ├── [[known-issues]]          # Gotchas, monitoring data, agent auth
 │   └── changelog/               # Knowledge base update log (one file per change)
-├── modules/                     # Unified module docs — 22 modules, feature-wise
+├── Userflow/                    # End-to-end user flows by feature area (permission-based)
+│   └── {feature-area}/          # ~93 flow files across 18 areas
+├── modules/                     # Feature specs — 22 modules, feature-wise
 │   └── {module}/{feature}/      # overview.md, end-to-end-logic.md, testing.md, frontend.md
-├── cross-cutting/               # Shared concerns across all modules
-│   ├── security/                # Auth architecture, data classification, compliance
-│   ├── database/                # Schema conventions, migrations, performance
-│   ├── messaging/               # Event catalog, exchange topology, error handling
-│   ├── deployment/              # CI/CD, environment parity
-│   ├── observability/           # Monitoring, logging, observability
-│   ├── testing/                 # Test strategy, frontend testing
-│   └── guides/                  # Coding standards, git workflow, logging
-├── architecture/                # High-level architecture docs
+├── backend/                     # .NET 9 backend architecture
 │   ├── [[module-catalog]]        # Module index and dependency map
 │   ├── [[module-boundaries]]     # Boundary rules and enforcement
 │   ├── [[shared-kernel]]         # Cross-cutting code (Result<T>, ITenantContext)
-│   └── ...                      # Integrations, search, notifications, frontend structure
-├── design-system/               # Frontend design system (components, tokens, typography)
+│   └── messaging/               # Event catalog, exchange topology
+├── frontend/                    # Next.js 14 frontend architecture
+│   ├── [[structure]]             # App Router layout
+│   ├── [[state-management]]      # TanStack Query + Zustand
+│   └── design-system/           # UI tokens, components, typography
+├── database/                    # PostgreSQL 16 — migrations, performance
+├── code-standards/              # Backend + frontend coding standards, git workflow
+├── security/                    # Auth architecture, RBAC, compliance, data classification
+├── infrastructure/              # CI/CD, observability, multi-tenancy
 ├── current-focus/               # Sprint tasks — one file per developer per week
 │   ├── README.md                # Delivery plan overview + deadlines
 │   └── WEEK*.md                 # Individual task files with checkboxes
@@ -65,6 +66,19 @@ onevo-hr-brain/
 ├── meetings/                    # Meeting notes
 └── scripts/                     # Automation scripts (brain-sync, jira-sync)
 ```
+
+## Information Layers
+
+| Layer | Folder | Purpose |
+|:------|:-------|:--------|
+| **What users do** | [[Userflow/README\|Userflow/]] | End-to-end flows by permission |
+| **What to build** | `modules/` | Feature specs, DB schema, APIs |
+| **How to build (backend)** | [[backend/README\|backend/]] | .NET architecture, patterns |
+| **How to build (frontend)** | [[frontend/README\|frontend/]] | Next.js structure, components |
+| **Data layer** | `database/` | Migrations, performance |
+| **Code rules** | [[code-standards/README\|code-standards/]] | Naming, git, logging |
+| **Security** | `security/` | Auth, RBAC, compliance |
+| **Infrastructure** | `infrastructure/` | CI/CD, monitoring, multi-tenancy |
 
 ## Delivery Timeline
 

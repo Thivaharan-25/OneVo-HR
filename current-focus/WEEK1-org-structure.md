@@ -28,7 +28,7 @@ Implement organizational hierarchy: legal entities, office locations, department
 - [[module-catalog]] — OrgStructure module details
 - [[module-boundaries]] — dependency rules
 - [[shared-kernel]] — BaseEntity, BaseRepository
-- [[coding-standards]] — naming conventions
+- [[backend-standards]] — naming conventions
 - [[known-issues]] — self-referencing tables (departments)
 - [[multi-tenancy]] — tenant-scoped entity patterns
 - [[WEEK1-infrastructure-setup]] — shared kernel and solution structure this depends on

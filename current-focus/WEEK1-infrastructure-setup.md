@@ -32,7 +32,7 @@ Set up the foundational .NET 9 solution structure, shared kernel, tenant provisi
 - [[multi-tenancy]] — tenant isolation
 - [[migration-patterns]] — EF Core migrations
 - [[environment-parity]] — Docker Compose setup
-- [[coding-standards]] — naming conventions
+- [[backend-standards]] — naming conventions
 - [[module-catalog]] — 22-module solution structure
 - [[configuration]] — industry profile seeding for monitoring toggles
 - [[WEEK1-auth-security]] — builds on top of shared kernel (same week)
@@ -43,7 +43,7 @@ Set up the foundational .NET 9 solution structure, shared kernel, tenant provisi
 
 When generating code for this task:
 1. Create the solution structure per [[module-catalog]]
-2. Follow naming conventions in [[coding-standards]]
+2. Follow naming conventions in [[backend-standards]]
 3. Ensure all entities inherit from BaseEntity
 4. Include tenant_id on all tenant-scoped entities
 5. Use UUID v7 for primary keys
