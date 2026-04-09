@@ -8,17 +8,26 @@
 
 ## Preconditions
 
-- Monitoring enabled → [[monitoring-configuration]]
-- Desktop agents deployed → [[agent-deployment]]
+- Monitoring enabled → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- Desktop agents deployed → [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
 - Employees have active presence sessions
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Open Dashboard
 - **UI:** Sidebar → Workforce → Live Dashboard
+
+### Tabs Within Live Dashboard
+
+| Tab | Content | Previously |
+|:----|:--------|:-----------|
+| Overview | Real-time employee grid, summary stats | Live Dashboard |
+| Activity | Activity snapshots, app usage | Separate sidebar item "Activity" |
+| Work Insights | Productivity metrics, trends | Separate sidebar item "Productivity" |
+| Online Status | Presence tracking, status dots | Separate sidebar item "Presence" |
 - **API:** `GET /api/v1/workforce/live`
-- **Real-time:** SignalR connection on `workforce-live` channel → [[real-time]]
+- **Real-time:** SignalR connection on `workforce-live` channel → [[backend/real-time|Real-Time Architecture]]
 
 ### Step 2: View Real-Time Grid
 - **UI:** Grid showing all monitored employees:
@@ -34,7 +43,7 @@
 
 ### Step 4: Drill Down
 - **UI:** Click employee → detail panel: full timeline (apps, breaks, screenshots if enabled), productivity score, attendance status
-- Links: [[activity-snapshot-view]]
+- Links: [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
 
 ### Step 5: Summary Stats
 - **UI:** Top bar: total active now, total idle, total offline, avg productive hours, top productive department
@@ -57,14 +66,14 @@
 
 ## Related Flows
 
-- [[monitoring-configuration]]
-- [[activity-snapshot-view]]
-- [[presence-session-view]]
-- [[exception-dashboard]]
+- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
+- [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- [[Userflow/Exception-Engine/exception-dashboard|Exception Dashboard]]
 
 ## Module References
 
-- [[presence-sessions]]
-- [[activity-monitoring]]
-- [[real-time]]
-- [[monitoring-data-flow]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[modules/activity-monitoring/overview|Activity Monitoring]]
+- [[backend/real-time|Real-Time Architecture]]
+- [[backend/monitoring-data-flow|Monitoring Data Flow]]
