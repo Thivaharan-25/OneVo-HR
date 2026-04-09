@@ -1,57 +1,29 @@
-# Exception Dashboard
+# Alerts Overview
 
-**Area:** Exception Engine  
-**Required Permission(s):** `exceptions:view`  
-**Related Permissions:** `analytics:view` (trend analysis)
+Alerts surface contextually across the application — on the dashboard, in employee profiles, and via the notification bell. There is no dedicated alerts page.
 
----
+## Where Alerts Appear
+
+1. **Dashboard** — Alert cards in the Activity & Alerts section (position 5 in dashboard priority). Severity-colored left border. Click → navigates to relevant record.
+2. **Employee Profile** — Banner at position 3 (Alerts / Action Items section). Shows alerts specific to that employee (expiring visa, pending review, probation ending).
+3. **Notification Bell** — Real-time alert push via SignalR. Click → navigates to relevant record.
+
+## Alert Configuration
+
+Alert rules are configured under **Settings → Alert Rules** (admin only). See [[Userflow/Exception-Engine/exception-rule-setup|Alert Rule Setup]].
 
 ## Preconditions
 
-- Exception rules active → [[exception-rule-setup]]
-- Alerts generated → [[alert-review]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
-
-## Flow Steps
-
-### Step 1: Open Dashboard
-- **UI:** Sidebar → Exceptions → Dashboard
-- **API:** `GET /api/v1/exceptions/dashboard`
-
-### Step 2: View Overview
-- **UI:** Cards showing:
-  - Total active alerts (by severity: critical/high/medium/low)
-  - Alerts this week vs last week (trend arrow)
-  - Average time to acknowledge
-  - Top triggered rules (bar chart)
-  - Top employees by alert count
-
-### Step 3: Filter & Drill Down
-- **UI:** Filter by: department, date range, severity, rule type → click any chart element to see individual alerts
-- Links: [[alert-review]]
-
-### Step 4: Export
-- **UI:** Export dashboard data → PDF report or CSV
-- Links: [[data-export]]
-
-## Error Scenarios
-
-| Scenario | What happens | User sees |
-|:---------|:-------------|:----------|
-| No alerts exist | Empty state | "No exceptions detected — all clear" |
-
-## Events Triggered
-
-- None (read-only dashboard)
+- Alert rules active → [[Userflow/Exception-Engine/exception-rule-setup|Alert Rule Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Related Flows
 
-- [[exception-rule-setup]]
-- [[alert-review]]
-- [[productivity-dashboard]]
+- [[Userflow/Exception-Engine/alert-review|Alert Review]]
+- [[Userflow/Exception-Engine/exception-rule-setup|Alert Rule Setup]]
+- [[Userflow/Notifications/notification-view|Notification View]]
 
 ## Module References
 
-- [[exception-engine]]
-- [[alert-generation]]
-- [[exception-rules]]
+- [[modules/exception-engine/overview|Exception Engine]]
+- [[modules/exception-engine/alert-generation/overview|Alert Generation]]
