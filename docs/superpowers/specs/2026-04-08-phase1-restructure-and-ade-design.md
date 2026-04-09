@@ -10,10 +10,10 @@
 
 ### Phase Changes
 
-| Module | Previous Phase | New Phase | Reason |
-|:-------|:--------------|:----------|:-------|
-| Payroll | 1 — Build | **2 — Deferred** | Not needed in Phase 1; full payroll engine is Phase 2 |
-| Calendar | 2 — Deferred | **1 — Build** | Leave module depends on `ICalendarConflictService`; must exist before Leave |
+| Module   | Previous Phase | New Phase        | Reason                                                                      |
+| :------- | :------------- | :--------------- | :-------------------------------------------------------------------------- |
+| Payroll  | 1 — Build      | **2 — Deferred** | Not needed in Phase 1; full payroll engine is Phase 2                       |
+| Calendar | 2 — Deferred   | **1 — Build**    | Leave module depends on `ICalendarConflictService`; must exist before Leave |
 
 ### Phase 1 Modules (15 total)
 
