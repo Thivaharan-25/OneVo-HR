@@ -11,7 +11,7 @@ Inter-module communication:
 - **Async (domain events):** Module A publishes, Module B handles via MediatR
 - **Future:** RabbitMQ for scale when in-process events are insufficient
 
-See [[module-boundaries]] for boundary rules. Each module has its own detailed doc in `docs/architecture/modules/`.
+See [[backend/module-boundaries|Module Boundaries]] for boundary rules. Each module has its own detailed doc in `docs/architecture/modules/`.
 
 ## Solution Structure
 
@@ -62,38 +62,38 @@ ONEVO.sln
 
 | #   | Module            | Detailed Doc       | Tables | Owner   | Build Week |
 | :-- | :---------------- | :----------------- | :----- | :------ | :--------- |
-| 1   | Infrastructure    | [[infrastructure]] | 4      | Dev 1   | Week 1     |
-| 2   | Auth & Security   | [[auth]]           | 8      | Dev 2   | Week 1     |
-| 3   | Org Structure     | [[org-structure]]  | 8      | Dev 3   | Week 1     |
-| 4   | Core HR           | [[core-hr]]        | 13     | Dev 1+2 | Week 2     |
-| 5   | Leave             | [[leave]]          | 5      | Dev 1   | Week 3     |
-| 6   | Payroll           | [[payroll]]        | 11     | Dev 3   | Week 4     |
-| 7   | Performance       | [[performance]]    | 7      | Dev 2   | Week 3     |
+| 1   | Infrastructure    | [[modules/infrastructure/overview|Infrastructure]] | 4      | Dev 1   | Week 1     |
+| 2   | Auth & Security   | [[modules/auth/overview|Auth]]           | 8      | Dev 2   | Week 1     |
+| 3   | Org Structure     | [[modules/org-structure/overview|Org Structure]]  | 8      | Dev 3   | Week 1     |
+| 4   | Core HR           | [[modules/core-hr/overview|Core Hr]]        | 13     | Dev 1+2 | Week 2     |
+| 5   | Leave             | [[modules/leave/overview|Leave]]          | 5      | Dev 1   | Week 3     |
+| 6   | Payroll           | [[modules/payroll/overview|Payroll]]        | 11     | Dev 3   | Week 4     |
+| 7   | Performance       | [[database/performance|Performance]]    | 7      | Dev 2   | Week 3     |
 | 8   | Skills & Learning | [[skills]]         | 15     | Dev 3+4 | Week 3     |
-| 9   | Documents         | [[documents]]      | 5      | Dev 4   | Week 4     |
+| 9   | Documents         | [[modules/documents/overview|Documents]]      | 5      | Dev 4   | Week 4     |
 
 ### Pillar 2: Workforce Intelligence
 
 | # | Module | Detailed Doc | Tables | Owner | Build Week |
 |:--|:-------|:-------------|:-------|:------|:-----------|
-| 10 | Workforce Presence | [[workforce-presence]] | 12 | Dev 3+4 | Week 2 |
-| 11 | Activity Monitoring | [[activity-monitoring]] | 8 | Dev 3 | Week 3 |
-| 12 | Identity Verification | [[identity-verification]] | 6 | Dev 4 | Week 3 |
-| 13 | Exception Engine | [[exception-engine]] | 5 | Dev 2 | Week 4 |
-| 14 | Productivity Analytics | [[productivity-analytics]] | 4 | Dev 1 | Week 4 |
+| 10 | Workforce Presence | [[modules/workforce-presence/overview|Workforce Presence]] | 12 | Dev 3+4 | Week 2 |
+| 11 | Activity Monitoring | [[modules/activity-monitoring/overview|Activity Monitoring]] | 8 | Dev 3 | Week 3 |
+| 12 | Identity Verification | [[modules/identity-verification/overview|Identity Verification]] | 6 | Dev 4 | Week 3 |
+| 13 | Exception Engine | [[modules/exception-engine/overview|Exception Engine]] | 5 | Dev 2 | Week 4 |
+| 14 | Productivity Analytics | [[modules/productivity-analytics/overview|Productivity Analytics]] | 4 | Dev 1 | Week 4 |
 
 ### Shared Foundation
 
 | # | Module | Detailed Doc | Tables | Owner | Build Week |
 |:--|:-------|:-------------|:-------|:------|:-----------|
-| 15 | Shared Platform | [[shared-platform]] | 21 | Dev 4 | Week 1+4 |
-| 16 | Notifications | [[notifications]] | 2 | Dev 4 | Week 4 |
-| 17 | Configuration | [[configuration]] | 5 | Dev 1 | Week 4 |
-| 18 | Calendar | [[calendar]] | 1 | Dev 1 | Week 4 |
-| 19 | Reporting Engine | [[reporting-engine]] | 3 | Dev 1 | Week 4 |
-| 20 | Grievance | [[grievance]] | 2 | Dev 2 | Week 4 |
-| 21 | Expense | [[expense]] | 3 | Dev 2 | Week 4 |
-| 22 | Agent Gateway | [[agent-gateway]] | 3 | Dev 4 | Week 1 |
+| 15 | Shared Platform | [[modules/shared-platform/overview|Shared Platform]] | 21 | Dev 4 | Week 1+4 |
+| 16 | Notifications | [[modules/notifications/overview|Notifications]] | 2 | Dev 4 | Week 4 |
+| 17 | Configuration | [[modules/configuration/overview|Configuration]] | 5 | Dev 1 | Week 4 |
+| 18 | Calendar | [[modules/calendar/overview|Calendar]] | 1 | Dev 1 | Week 4 |
+| 19 | Reporting Engine | [[modules/reporting-engine/overview|Reporting Engine]] | 3 | Dev 1 | Week 4 |
+| 20 | Grievance | [[modules/grievance/overview|Grievance]] | 2 | Dev 2 | Week 4 |
+| 21 | Expense | [[modules/expense/overview|Expense]] | 3 | Dev 2 | Week 4 |
+| 22 | Agent Gateway | [[modules/agent-gateway/overview|Agent Gateway]] | 3 | Dev 4 | Week 1 |
 
 **Total: 22 modules, 163 tables**
 
@@ -144,6 +144,6 @@ Cross-cutting: Notifications, Configuration, Calendar, Reporting Engine
 3. Define the public API in `Public/` folder
 4. Register services: `Add{Name}Module()`
 5. Update this catalog
-6. Document events in [[event-catalog]]
+6. Document events in [[backend/messaging/event-catalog|Event Catalog]]
 7. Add ArchUnitNET tests
 8. Create sprint task in `current-focus/`

@@ -39,9 +39,9 @@ POST /api/v1/subscriptions/upgrade
 
 ## Related
 
-- [[subscriptions-billing|Overview]]
-- [[tenant-management]]
-- [[feature-flags]]
-- [[notification-infrastructure]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/shared-platform/subscriptions-billing/overview|Overview]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[frontend/cross-cutting/feature-flags|Feature Flags]]
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

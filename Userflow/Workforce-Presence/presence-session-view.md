@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Shifts/schedules assigned → [[shift-schedule-setup]]
+- Shifts/schedules assigned → [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
 - Employees clocking in (via biometric device or desktop agent)
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -20,7 +20,7 @@
 
 ### Step 2: View Sessions
 - **UI:** Table/grid showing per employee: clock-in time, clock-out time (or "Active"), break time, total hours, status badge (On-time, Late, Early Leave, Absent)
-- **Real-time:** Active sessions update via SignalR → [[real-time]]
+- **Real-time:** Active sessions update via SignalR → [[backend/real-time|Real-Time Architecture]]
 - **Color coding:** Green = on-time, Yellow = late < 15 min, Red = late > 15 min, Grey = absent
 
 ### Step 3: Filter & Drill Down
@@ -36,7 +36,7 @@
 - Employee sees only their own sessions and history
 
 ### With `workforce:view`
-- Gets additional live dashboard view with real-time status grid → [[live-dashboard]]
+- Gets additional live dashboard view with real-time status grid → [[Userflow/Workforce-Intelligence/live-dashboard|Live Dashboard]]
 
 ## Error Scenarios
 
@@ -51,12 +51,12 @@
 
 ## Related Flows
 
-- [[shift-schedule-setup]]
-- [[attendance-correction]]
-- [[live-dashboard]]
+- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
+- [[Userflow/Workforce-Presence/attendance-correction|Attendance Correction]]
+- [[Userflow/Workforce-Intelligence/live-dashboard|Live Dashboard]]
 
 ## Module References
 
-- [[presence-sessions]]
-- [[shifts-schedules]]
-- [[real-time]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]]
+- [[backend/real-time|Real-Time Architecture]]

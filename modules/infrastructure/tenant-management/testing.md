@@ -51,6 +51,6 @@ public class TenantServiceTests
 
 ## Related
 
-- [[tenant-management|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/infrastructure/tenant-management/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

@@ -207,11 +207,11 @@ server_idle_timeout = 300      ; Close idle server connections after 5 min
 3. **Never** load more than 100 records in a single query (use pagination)
 4. **Use** `EXPLAIN ANALYZE` to verify query plans for new queries
 5. **Avoid** `LIKE '%search%'` — use PostgreSQL FTS with GIN indexes
-6. **Monitor** slow queries via `pg_stat_statements` extension — see [[monitoring]]
+6. **Monitor** slow queries via `pg_stat_statements` extension — see [[frontend/performance/monitoring|Monitoring]]
 
 ## Related
 
-- [[raw-data-processing]]
-- [[daily-aggregation]]
-- [[multi-tenancy]]
-- [[migration-patterns]]
+- [[modules/activity-monitoring/raw-data-processing/overview|Raw Data Processing]]
+- [[modules/activity-monitoring/daily-aggregation/overview|Daily Aggregation]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[database/migration-patterns|Migration Patterns]]

@@ -9,7 +9,7 @@ The MAUI Tray App (`ONEVO.Agent.TrayApp`) is the user-facing component of the de
 - Status popup showing collector and sync state
 - Notification toasts for important events
 
-The TrayApp communicates with the Windows Service via Named Pipes. See [[ipc-protocol]] for the full message contract.
+The TrayApp communicates with the Windows Service via Named Pipes. See [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] for the full message contract.
 
 ---
 
@@ -334,13 +334,13 @@ Shown when the user clicks "Status" from the tray menu or double-clicks the tray
 </Window>
 ```
 
-The status popup sends `get_status` via IPC when opened and updates when `status_update` messages arrive. See [[ipc-protocol]].
+The status popup sends `get_status` via IPC when opened and updates when `status_update` messages arrive. See [[modules/agent-gateway/ipc-protocol|Ipc Protocol]].
 
 ---
 
 ## Photo Capture Window
 
-Opened when the Service sends a `capture_photo` IPC message. See [[photo-capture]] for the full verification flow.
+Opened when the Service sends a `capture_photo` IPC message. See [[modules/identity-verification/photo-capture|Photo Capture]] for the full verification flow.
 
 ### Layout
 
@@ -432,7 +432,7 @@ Opened when the Service sends a `capture_photo` IPC message. See [[photo-capture
 - After capture, window closes immediately
 - After skip (manual or timeout), sends `photo_captured` with `skipped: true`
 
-See [[photo-capture]] for photo quality requirements, privacy rules, and server-side verification.
+See [[modules/identity-verification/photo-capture|Photo Capture]] for photo quality requirements, privacy rules, and server-side verification.
 
 ---
 
@@ -487,9 +487,9 @@ The monitoring policy includes a transparency level that affects what the user s
 | `partial` | "Monitoring active" (no details) | "Identity verification required" | "Connect to your device" |
 | `covert` | N/A — not applicable to desktop agent (always visible in tray) | N/A — verification always requires interaction | Standard login |
 
-**Important:** The desktop agent is always visible in the system tray and Task Manager. There is no covert/hidden mode. See [[tamper-resistance]] for the reasoning.
+**Important:** The desktop agent is always visible in the system tray and Task Manager. There is no covert/hidden mode. See [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] for the reasoning.
 
-The transparency level comes from the policy (see [[agent-server-protocol]]) and is communicated to the TrayApp via the `policy_updated` IPC message (see [[ipc-protocol]]).
+The transparency level comes from the policy (see [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]]) and is communicated to the TrayApp via the `policy_updated` IPC message (see [[modules/agent-gateway/ipc-protocol|Ipc Protocol]]).
 
 ---
 
@@ -532,12 +532,12 @@ All windows are non-resizable. The TrayApp does not have a main window — it ru
 
 ## Related
 
-- [[photo-capture]] — Photo capture flow, quality requirements, privacy
-- [[ipc-protocol]] — All IPC messages between TrayApp and Service
-- [[agent-overview]] — Architecture overview (TrayApp is one of three components)
-- [[agent-server-protocol]] — Server endpoints called via the Service
-- [[mock-mode]] — TrayApp works identically in mock mode
-- [[agent-installer]] — TrayApp starts via MSIX startup task
-- [[tamper-resistance]] — Why the agent is always visible
-- [[rules]] — Section 10: Desktop Agent Rules (UI thread rules)
-- [[WEEK1-shared-platform]] — Implementation task
+- [[modules/identity-verification/photo-capture|Photo Capture]] — Photo capture flow, quality requirements, privacy
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — All IPC messages between TrayApp and Service
+- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview (TrayApp is one of three components)
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Server endpoints called via the Service
+- [[modules/agent-gateway/mock-mode|Mock Mode]] — TrayApp works identically in mock mode
+- [[modules/agent-gateway/agent-installer|Agent Installer]] — TrayApp starts via MSIX startup task
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Why the agent is always visible
+- [[AI_CONTEXT/rules|Rules]] — Section 10: Desktop Agent Rules (UI thread rules)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task

@@ -45,11 +45,11 @@ ExceptionEngineEvaluationJob (Hangfire, every 5 min during work hours)
 
 ## Related
 
-- [[exception-engine/alert-generation/overview|Alert Generation Overview]]
-- [[exception-engine/evaluation-engine/overview|Evaluation Engine]]
-- [[exception-engine/exception-rules/overview|Exception Rules]]
-- [[exception-engine/escalation-chains/overview|Escalation Chains]]
-- [[error-handling]]
-- [[event-catalog]]
-- [[shared-kernel]]
-- [[WEEK4-exception-engine]]
+- [[frontend/architecture/overview|Alert Generation Overview]]
+- [[frontend/architecture/overview|Evaluation Engine]]
+- [[frontend/architecture/overview|Exception Rules]]
+- [[frontend/architecture/overview|Escalation Chains]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

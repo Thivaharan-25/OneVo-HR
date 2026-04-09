@@ -83,6 +83,6 @@ public class AuthServiceTests
 
 ## Related
 
-- [[authentication|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/cross-cutting/authentication|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

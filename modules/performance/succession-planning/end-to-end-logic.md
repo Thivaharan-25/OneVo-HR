@@ -24,13 +24,13 @@ POST /api/v1/performance/succession-plans
 
 ## Related
 
-- [[performance|Performance Module]]
-- [[succession-planning/overview|Succession Planning Overview]]
-- [[reviews/end-to-end-logic|Reviews — End-to-End Logic]]
-- [[goals-okr/end-to-end-logic|Goals & OKR — End-to-End Logic]]
-- [[improvement-plans/end-to-end-logic|Improvement Plans — End-to-End Logic]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[notification-system]]
-- [[multi-tenancy]]
-- [[WEEK3-performance]]
+- [[database/performance|Performance Module]]
+- [[frontend/architecture/overview|Succession Planning Overview]]
+- [[modules/performance/reviews/end-to-end-logic|Reviews — End-to-End Logic]]
+- [[modules/performance/goals-okr/end-to-end-logic|Goals & OKR — End-to-End Logic]]
+- [[modules/performance/improvement-plans/end-to-end-logic|Improvement Plans — End-to-End Logic]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/notification-system|Notification System]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- Performance task file (deferred to Phase 2)

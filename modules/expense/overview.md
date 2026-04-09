@@ -1,15 +1,19 @@
 # Module: Expense
 
 **Namespace:** `ONEVO.Modules.Expense`
+**Phase:** 2 — Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 2 (Week 4)
 **Tables:** 3
+
+> [!WARNING]
+> **This module is deferred to Phase 2. Do not implement.** Expense claims and routing are not core to the employee monitoring product. Specs are preserved here for future reference.
 
 ---
 
 ## Purpose
 
-Manages expense categories, claims, and individual line items. Uses the [[shared-platform]] workflow engine for approval routing.
+Manages expense categories, claims, and individual line items. Uses the [[modules/shared-platform/overview|Shared Platform]] workflow engine for approval routing.
 
 ---
 
@@ -17,9 +21,9 @@ Manages expense categories, claims, and individual line items. Uses the [[shared
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[core-hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[infrastructure]] | `IFileService` | Receipt uploads |
-| **Depends on** | [[shared-platform]] | Workflow engine | Approval routing |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context |
+| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `IFileService` | Receipt uploads |
+| **Depends on** | [[modules/shared-platform/overview|Shared Platform]] | Workflow engine | Approval routing |
 
 ---
 
@@ -79,15 +83,15 @@ Manages expense categories, claims, and individual line items. Uses the [[shared
 
 ## Features
 
-- [[expense-categories]] — Category definitions with per-claim limits and receipt requirements
-- [[expense-claims]] — Claims with line items, approval workflow via [[shared-platform]]
+- [[modules/expense/expense-categories/overview|Expense Categories]] — Category definitions with per-claim limits and receipt requirements
+- [[modules/expense/expense-claims/overview|Expense Claims]] — Claims with line items, approval workflow via [[modules/shared-platform/overview|Shared Platform]]
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All expense data is tenant-scoped
-- [[error-handling]] — Workflow engine handles approval routing
-- [[WEEK4-supporting-bridges]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All expense data is tenant-scoped
+- [[backend/messaging/error-handling|Error Handling]] — Workflow engine handles approval routing
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
 
-See also: [[module-catalog]], [[core-hr]], [[shared-platform]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/shared-platform/overview|Shared Platform]]

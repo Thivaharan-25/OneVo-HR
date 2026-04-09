@@ -68,7 +68,7 @@ Real-time overview of the entire workforce — who's active, idle, on leave, abs
 
 ## Related
 
-- [[presence-sessions|Presence Sessions Overview]]
-- [[presence-sessions/end-to-end-logic|Presence Sessions — End-to-End Logic]]
-- [[auth-architecture]]
-- [[data-classification]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions Overview]]
+- [[modules/workforce-presence/presence-sessions/end-to-end-logic|Presence Sessions — End-to-End Logic]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]

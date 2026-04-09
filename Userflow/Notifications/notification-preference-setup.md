@@ -9,7 +9,7 @@
 ## Preconditions
 
 - User has an active account
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -27,7 +27,7 @@
   - **Payroll:** payslip available, payroll run
   - **General:** announcements, recognitions
 - For each: toggle channels → In-App (always on), Email (on/off), Push (on/off)
-- **Backend:** NotificationPreferenceService.UpdateAsync() → [[notification-preferences]]
+- **Backend:** NotificationPreferenceService.UpdateAsync() → Notification Preferences
 - **DB:** `notification_preferences`
 
 ### Step 3: Set Quiet Hours
@@ -47,15 +47,15 @@
 
 ## Events Triggered
 
-- `NotificationPreferencesUpdated` → [[event-catalog]]
+- `NotificationPreferencesUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[notification-view]]
-- [[login-flow]]
+- [[Userflow/Notifications/notification-view|Notification View]]
+- [[Userflow/Auth-Access/login-flow|Login Flow]]
 
 ## Module References
 
-- [[notification-preferences]]
-- [[notification-channels]]
-- [[notifications]]
+- Notification Preferences
+- [[modules/notifications/notification-channels/overview|Notification Channels]]
+- [[modules/notifications/overview|Notifications]]

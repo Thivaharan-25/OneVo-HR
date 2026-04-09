@@ -94,9 +94,9 @@ Per-employee or bulk (department/team) overrides.
 
 ## Related
 
-- [[configuration/tenant-settings/overview|Tenant Settings Overview]]
-- [[configuration/monitoring-toggles/overview|Monitoring Toggles]]
-- [[configuration/employee-overrides/overview|Employee Overrides]]
-- [[configuration/retention-policies/overview|Retention Policies]]
-- [[multi-tenancy]]
-- [[WEEK1-shared-platform]]
+- [[frontend/architecture/overview|Tenant Settings Overview]]
+- [[frontend/architecture/overview|Monitoring Toggles]]
+- [[frontend/architecture/overview|Employee Overrides]]
+- [[frontend/architecture/overview|Retention Policies]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

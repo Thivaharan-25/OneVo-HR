@@ -41,8 +41,8 @@ PUT /api/v1/performance/pips/{id}/complete
 
 ## Related
 
-- [[improvement-plans|Improvement Plans Overview]]
-- [[reviews]]
-- [[review-cycles]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/performance/improvement-plans/overview|Improvement Plans Overview]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

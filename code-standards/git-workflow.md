@@ -89,5 +89,5 @@ Examples:
 
 ## Related
 
-- [[ci-cd-pipeline]]
-- [[rules]]
+- [[infrastructure/ci-cd-pipeline|Ci Cd Pipeline]]
+- [[AI_CONTEXT/rules|Rules]]

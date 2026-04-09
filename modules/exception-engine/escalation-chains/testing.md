@@ -51,5 +51,5 @@ public class EscalationServiceTests
 
 ## Related
 
-- [[exception-engine/escalation-chains/overview|Escalation Chains Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Escalation Chains Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

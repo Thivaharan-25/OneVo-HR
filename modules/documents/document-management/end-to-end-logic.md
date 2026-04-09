@@ -54,9 +54,9 @@ GET /api/v1/documents/{id}
 
 ## Related
 
-- [[documents/document-management/overview|Document Management Overview]]
-- [[documents/categories/overview|Categories]]
-- [[documents/access-control/overview|Access Control]]
-- [[documents/acknowledgements/overview|Acknowledgements]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Document Management Overview]]
+- [[frontend/architecture/overview|Categories]]
+- [[frontend/architecture/overview|Access Control]]
+- [[frontend/architecture/overview|Acknowledgements]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -51,6 +51,6 @@ public class CompensationServiceTests
 
 ## Related
 
-- [[compensation|Compensation Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/core-hr/compensation/overview|Compensation Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

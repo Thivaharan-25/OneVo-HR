@@ -51,5 +51,5 @@ public class PensionServiceTests
 
 ## Related
 
-- [[payroll/pensions/overview|Pensions Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Pensions Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

@@ -41,9 +41,9 @@ PUT /api/v1/workforce/breaks/{id}/end
 
 ## Related
 
-- [[break-tracking|Break Tracking Overview]]
-- [[device-sessions]]
-- [[presence-sessions]]
-- [[shifts-schedules]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[Userflow/Workforce-Presence/break-tracking|Break Tracking Overview]]
+- [[modules/workforce-presence/device-sessions/overview|Device Sessions]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

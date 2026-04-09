@@ -23,10 +23,10 @@ Key columns: `name`, `report_type` (`headcount`, `turnover`, `leave_utilization`
 
 ## Related
 
-- [[reporting-engine|Reporting Engine Module]]
-- [[reporting-engine/report-execution/overview|Report Execution]]
-- [[reporting-engine/report-templates/overview|Report Templates]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[shared-kernel]]
-- [[WEEK4-productivity-analytics]]
+- [[modules/reporting-engine/overview|Reporting Engine Module]]
+- [[frontend/architecture/overview|Report Execution]]
+- [[frontend/architecture/overview|Report Templates]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

@@ -9,7 +9,7 @@
 ## Preconditions
 
 - Employee is active
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -22,7 +22,7 @@
 - **Validation:** Description required, min 50 characters
 
 ### Step 3: Submit
-- **Backend:** GrievanceService.FileAsync() → [[grievance]]
+- **Backend:** GrievanceService.FileAsync() → [[modules/grievance/overview|Grievance]]
 - **DB:** `grievance_cases` — case number generated (GRV-2026-001), status: "Open"
 - **Result:** HR team notified → case assigned to HR admin
 
@@ -38,15 +38,15 @@
 
 ## Events Triggered
 
-- `GrievanceFiled` → [[event-catalog]]
-- Notification to HR → [[notification-system]]
+- `GrievanceFiled` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to HR → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[grievance-investigation]]
-- [[disciplinary-action]]
-- [[document-upload]]
+- [[Userflow/Grievance/grievance-investigation|Grievance Investigation]]
+- [[Userflow/Grievance/disciplinary-action|Disciplinary Action]]
+- [[Userflow/Documents/document-upload|Document Upload]]
 
 ## Module References
 
-- [[grievance]]
+- [[modules/grievance/overview|Grievance]]

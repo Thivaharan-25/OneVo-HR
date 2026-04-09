@@ -51,6 +51,6 @@ public class IntegrationServiceTests
 
 ## Related
 
-- [[real-time-integrations|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/shared-platform/real-time-integrations/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

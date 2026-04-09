@@ -13,7 +13,17 @@
       "Bash(sed -i 's/\\\\[\\\\[coding-standards\\\\]\\\\] — naming conventions/\\\\[\\\\[backend-standards\\\\]\\\\] — naming conventions/; s/in \\\\[\\\\[coding-standards\\\\]\\\\]/in \\\\[\\\\[backend-standards\\\\]\\\\]/' current-focus/WEEK1-infrastructure-setup.md)",
       "Bash(sed:*)",
       "Bash(ls -d */)",
-      "Bash(ls -d Userflow/*/)"
+      "Bash(ls -d Userflow/*/)",
+      "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+      "mcp__plugin_context-mode_context-mode__ctx_search",
+      "mcp__plugin_context-mode_context-mode__ctx_execute",
+      "mcp__plugin_context-mode_context-mode__ctx_execute_file",
+      "Bash(xxd \"C:\\\\Users\\\\User\\\\OneDrive\\\\Documents\\\\light\\\\onevo-hr-brain\\\\backend\\\\shared-kernel.md\")",
+      "Bash(xxd)",
+      "Bash(git rm:*)",
+      "Bash(find modules/payroll -name \"*.md\" -exec sed -i 's#\\\\[\\\\[current-focus/DEV3-payroll|DEV3: Payroll\\\\]\\\\]#Payroll task file \\(deferred to Phase 2\\)#g' {} +)",
+      "Bash(find modules/performance -name \"*.md\" -exec sed -i 's#\\\\[\\\\[current-focus/DEV2-performance|DEV2: Performance\\\\]\\\\]#Performance task file \\(deferred to Phase 2\\)#g' {} +)",
+      "Bash(ls current-focus/*.md)"
     ]
   }
 }

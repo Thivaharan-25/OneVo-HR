@@ -71,7 +71,7 @@ ONEVO is designed around **two core pillars** sold in multiple configurations:
 - Single deployable .NET 9 application
 - Strict module boundaries enforced via namespaces and dependency rules
 - Inter-module communication: sync (direct service calls) for queries, domain events for side effects
-- See [[module-catalog]] for full module registry
+- See [[backend/module-catalog|Module Catalog]] for full module registry
 
 ## 4. Key Stats
 
@@ -149,7 +149,7 @@ Tenant Level (Company Settings)
 | **Skills** | Bidirectional | Skill profiles ↔ task skill requirements |
 | **Work Activity** | Work → HR | Time logged per task/project, active task context |
 
-See [[external-integrations]] for API contracts.
+See [[backend/external-integrations|External Integrations]] for API contracts.
 
 ## 8. What We Are NOT Building in Phase 1
 
@@ -245,7 +245,7 @@ The agent uses **Device JWT** — separate from user JWT:
 4. Tamper resistant — detect service stops, report to server
 5. Silent install — MSIX package, no user interaction required
 
-See [[agent-gateway]] for the server-side API contract.
+See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API contract.
 
 ---
 
@@ -303,10 +303,10 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 
 ## 11. AI Agent Instructions
 
-- **Prioritization:** Always read this file and [[rules]] before generating any code
-- **Tech Stack:** See [[tech-stack]] for full details (.NET 9, Next.js 14, WPF/MAUI agent)
-- **Module Boundaries:** Never violate module boundaries. See [[module-boundaries]]
-- **Multi-Tenancy:** Every query must be tenant-scoped. See [[multi-tenancy]]
+- **Prioritization:** Always read this file and [[AI_CONTEXT/rules|Rules]] before generating any code
+- **Tech Stack:** See [[AI_CONTEXT/tech-stack|Tech Stack]] for full details (.NET 9, Next.js 14, WPF/MAUI agent)
+- **Module Boundaries:** Never violate module boundaries. See [[backend/module-boundaries|Module Boundaries]]
+- **Multi-Tenancy:** Every query must be tenant-scoped. See [[infrastructure/multi-tenancy|Multi Tenancy]]
 - **Module Details:** Each module has its own doc in `modules/`. Read the specific module doc before working on it.
 - **Hallucination Prevention:** If information is not in these docs, state it's unknown — do not guess
 - **WorkManage Pro:** Do not build WorkManage Pro features. Only build bridge interfaces
@@ -314,7 +314,7 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 
 ## Related
 
-- [[tech-stack]]
+- [[AI_CONTEXT/tech-stack|Tech Stack]]
 - [[current-focus/README|Current Focus]]
-- [[module-catalog]]
-- [[rules]]
+- [[backend/module-catalog|Module Catalog]]
+- [[AI_CONTEXT/rules|Rules]]

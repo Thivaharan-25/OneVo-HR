@@ -48,10 +48,10 @@ Log output format:
 }
 ```
 
-See [[logging-standards]] for full logging rules and PII scrubbing.
+See [[code-standards/logging-standards|Logging Standards]] for full logging rules and PII scrubbing.
 
 ## Related
 
-- [[monitoring]]
-- [[logging-standards]]
-- [[ci-cd-pipeline]]
+- [[frontend/performance/monitoring|Monitoring]]
+- [[code-standards/logging-standards|Logging Standards]]
+- [[infrastructure/ci-cd-pipeline|Ci Cd Pipeline]]

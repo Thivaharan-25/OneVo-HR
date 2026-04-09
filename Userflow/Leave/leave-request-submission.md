@@ -9,30 +9,30 @@
 ## Preconditions
 
 - Employee has an active employment record
-- Leave entitlements have been assigned for the current year: [[leave-entitlement-assignment|Leave Entitlement Assignment Flow]]
+- Leave entitlements have been assigned for the current year: [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment Flow]]
 - Employee has sufficient balance for the requested leave type
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Leave Request
 - **UI:** Employee navigates to Leave → My Leave → clicks "New Request" button. Alternatively, clicks on a date in the calendar widget to pre-fill dates
 - **API:** `GET /api/v1/leave/entitlements/me?year={year}`
-- **Backend:** `LeaveEntitlementService.GetByEmployeeAsync()` → [[leave]]
+- **Backend:** `LeaveEntitlementService.GetByEmployeeAsync()` → [[modules/leave/overview|Leave]]
 - **Validation:** Checks `leave:create` permission via RBAC middleware
 - **DB:** `leave_entitlements` (filtered by `employee_id`, `year`)
 
 ### Step 2: Select Leave Type
 - **UI:** Dropdown showing available leave types with current balance beside each (e.g., "Annual Leave — 15 days remaining", "Sick Leave — 8 days remaining"). Leave types with 0 balance shown greyed out (still selectable for unpaid). Gender-restricted types hidden if not applicable
 - **API:** `GET /api/v1/leave/types?active=true`
-- **Backend:** `LeaveTypeService.GetAvailableForEmployeeAsync()` → [[leave]]
+- **Backend:** `LeaveTypeService.GetAvailableForEmployeeAsync()` → [[modules/leave/overview|Leave]]
 - **Validation:** Filters leave types by employee gender for gender-specific types (maternity/paternity)
 - **DB:** `leave_types`, `leave_entitlements`, `employees`
 
 ### Step 3: Select Dates
 - **UI:** Calendar date picker: Start Date, End Date. Toggle for "Half Day" (AM/PM selector appears). Calendar visually shows: weekends (greyed), public holidays (marked), existing leave (coloured blocks), team members on leave (count badge per date)
 - **API:** `GET /api/v1/calendar/holidays?year={year}` and `GET /api/v1/leave/team-calendar?from={start}&to={end}`
-- **Backend:** `CalendarService.GetHolidaysAsync()`, `LeaveService.GetTeamCalendarAsync()` → [[calendar]], [[leave]]
+- **Backend:** `CalendarService.GetHolidaysAsync()`, `LeaveService.GetTeamCalendarAsync()` → [[modules/calendar/overview|Calendar]], [[modules/leave/overview|Leave]]
 - **Validation:** Start date must be today or future (unless backdating allowed by policy). End date must be ≥ start date
 - **DB:** `calendar_events`, `leave_requests`
 
@@ -42,7 +42,7 @@
   - "Exceeds maximum consecutive days (policy limit: X)"
   - "Falls within a blackout period"
 - **API:** `POST /api/v1/leave/calculate` (preview endpoint, no state change)
-- **Backend:** `LeaveCalculationService.CalculateDaysAsync()` → [[leave]]
+- **Backend:** `LeaveCalculationService.CalculateDaysAsync()` → [[modules/leave/overview|Leave]]
   1. Counts business days between start and end date
   2. Excludes weekends (based on employee's work schedule)
   3. Excludes public holidays for employee's country/location
@@ -63,13 +63,13 @@
 ### Step 6: Submit Request
 - **UI:** Review summary shown: Leave Type, Dates, Total Days, Balance Impact (current → after approval). Click "Submit Request". Success toast: "Leave request submitted. Pending approval from [Manager Name]"
 - **API:** `POST /api/v1/leave/requests`
-- **Backend:** `LeaveRequestService.CreateAsync()` → [[leave]]
+- **Backend:** `LeaveRequestService.CreateAsync()` → [[modules/leave/overview|Leave]]
   1. Creates `leave_requests` record with status `pending`
   2. Calculates and stores `total_days`, start/end dates, leave type
-  3. Uploads supporting documents to storage via [[documents]]
+  3. Uploads supporting documents to storage via [[modules/documents/overview|Documents]]
   4. Determines approver(s) from employee's reporting line
-  5. Creates workflow instance via [[workflow-engine]]
-  6. Sends notification to approver(s) via [[notification-system]]
+  5. Creates workflow instance via [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+  6. Sends notification to approver(s) via [[backend/notification-system|Notification System]]
   7. Publishes `LeaveRequestCreatedEvent`
   8. Creates audit log entry
 - **Validation:** Final server-side validation: balance sufficiency, date conflicts, policy rules (notice period, consecutive days, blackout), no duplicate overlapping pending/approved requests
@@ -104,24 +104,24 @@
 
 ## Events Triggered
 
-- `LeaveRequestCreatedEvent` → [[event-catalog]] — consumed by notification service, calendar service
-- `WorkflowInstanceCreatedEvent` → [[event-catalog]] — consumed by workflow engine for approval routing
-- `AuditLogEntry` (action: `leave_request.created`) → [[audit-logging]]
+- `LeaveRequestCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by notification service, calendar service
+- `WorkflowInstanceCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by workflow engine for approval routing
+- `AuditLogEntry` (action: `leave_request.created`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[leave-approval]] — approver processes this request
-- [[leave-cancellation]] — employee cancels a submitted request
-- [[leave-balance-view]] — view current balances before requesting
-- [[leave-entitlement-assignment]] — entitlements that determine available balance
+- [[Userflow/Leave/leave-approval|Leave Approval]] — approver processes this request
+- [[Userflow/Leave/leave-cancellation|Leave Cancellation]] — employee cancels a submitted request
+- [[Userflow/Leave/leave-balance-view|Leave Balance View]] — view current balances before requesting
+- [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment]] — entitlements that determine available balance
 
 ## Module References
 
-- [[leave]] — leave module overview and architecture
-- [[leave-requests]] — request data model and lifecycle
-- [[leave-entitlements]] — balance checking and deduction
-- [[calendar-events]] — holiday and team calendar data
-- [[conflict-detection]] — overlap and team threshold checking
-- [[notification-system]] — approval notification dispatch
-- [[workflow-engine]] — approval workflow orchestration
-- [[documents]] — supporting document storage
+- [[modules/leave/overview|Leave]] — leave module overview and architecture
+- [[modules/leave/leave-requests/overview|Leave Requests]] — request data model and lifecycle
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]] — balance checking and deduction
+- [[modules/calendar/calendar-events/overview|Calendar Events]] — holiday and team calendar data
+- [[Userflow/Calendar/conflict-detection|Conflict Detection]] — overlap and team threshold checking
+- [[backend/notification-system|Notification System]] — approval notification dispatch
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] — approval workflow orchestration
+- [[modules/documents/overview|Documents]] — supporting document storage

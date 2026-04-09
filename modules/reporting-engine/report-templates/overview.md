@@ -16,10 +16,10 @@ Fields: `name`, `report_type`, `columns_json`, `filters_json`, `is_system`.
 
 ## Related
 
-- [[reporting-engine|Reporting Engine Module]]
-- [[reporting-engine/report-definitions/overview|Report Definitions]]
-- [[reporting-engine/report-execution/overview|Report Execution]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[WEEK4-productivity-analytics]]
+- [[modules/reporting-engine/overview|Reporting Engine Module]]
+- [[frontend/architecture/overview|Report Definitions]]
+- [[frontend/architecture/overview|Report Execution]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

@@ -60,8 +60,8 @@ public class DailyAggregationServiceTests
 
 ## Related
 
-- [[activity-monitoring|Activity Monitoring Module]]
-- [[daily-aggregation/end-to-end-logic|Daily Aggregation — End-to-End Logic]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
-- [[WEEK3-activity-monitoring]]
+- [[modules/activity-monitoring/overview|Activity Monitoring Module]]
+- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation — End-to-End Logic]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

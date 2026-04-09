@@ -28,9 +28,9 @@ POST /api/v1/payroll/adjustments
 
 ## Related
 
-- [[payroll/adjustments/overview|Adjustments Overview]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[payroll/audit-trail/overview|Audit Trail]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[frontend/architecture/overview|Adjustments Overview]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[frontend/architecture/overview|Audit Trail]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

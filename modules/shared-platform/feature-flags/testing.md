@@ -51,5 +51,5 @@ public class FeatureFlagServiceTests
 
 ## Related
 
-- [[feature-flags|Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/cross-cutting/feature-flags|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

@@ -11,7 +11,7 @@
 - Learning module is enabled for the tenant
 - At least one course has been created by an admin
 - Employee has an active employment record
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -44,7 +44,7 @@
   2. Check enrollment capacity (if limited)
   3. Create `course_enrollments` record with status `enrolled`
   4. Add to employee's learning plan
-  5. If scheduled course: create calendar event via [[calendar-events]]
+  5. If scheduled course: create calendar event via [[modules/calendar/calendar-events/overview|Calendar Events]]
   6. Notify manager of enrollment (optional based on settings)
   7. Publish `CourseEnrollmentEvent`
   8. Create audit log entry
@@ -77,11 +77,11 @@
   1. Validate all modules are completed (and quizzes passed)
   2. Update `course_enrollments` status to `completed`
   3. Set `completed_at` timestamp
-  4. Generate completion certificate via [[documents]]
+  4. Generate completion certificate via [[modules/documents/overview|Documents]]
   5. Auto-update linked employee skills (if auto-update enabled):
      - New skill: create `employee_skills` record at course-defined proficiency
      - Existing skill: suggest proficiency upgrade if course level is higher
-  6. Notify manager of completion via [[notification-system]]
+  6. Notify manager of completion via [[backend/notification-system|Notification System]]
   7. Publish `CourseCompletedEvent`
   8. Update learning plan progress
 - **Validation:** All required modules must be completed. Minimum quiz scores must be met
@@ -117,23 +117,23 @@
 
 ## Events Triggered
 
-- `CourseEnrollmentEvent` → [[event-catalog]] — consumed by learning analytics, notification service
-- `CourseProgressUpdatedEvent` → [[event-catalog]] — consumed by learning plan tracking
-- `CourseCompletedEvent` → [[event-catalog]] — consumed by skill auto-update, notification service, certificate generation
-- `AuditLogEntry` (action: `course.enrolled`, `course.completed`) → [[audit-logging]]
+- `CourseEnrollmentEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by learning analytics, notification service
+- `CourseProgressUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by learning plan tracking
+- `CourseCompletedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by skill auto-update, notification service, certificate generation
+- `AuditLogEntry` (action: `course.enrolled`, `course.completed`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[skill-taxonomy-setup]] — skills linked to courses
-- [[employee-skill-declaration]] — skills updated on course completion
-- [[development-plan]] — courses assigned as part of development goals
-- [[certification-tracking]] — certifications earned from courses
+- [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]] — skills linked to courses
+- [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]] — skills updated on course completion
+- [[Userflow/Skills-Learning/development-plan|Development Plan]] — courses assigned as part of development goals
+- [[Userflow/Skills-Learning/certification-tracking|Certification Tracking]] — certifications earned from courses
 
 ## Module References
 
 - [[skills]] — skills module overview
-- [[courses-learning]] — course data model, catalog, and enrollment logic
-- [[employee-skills]] — skill updates on completion
-- [[calendar-events]] — scheduled course events
-- [[notification-system]] — enrollment and completion notifications
-- [[documents]] — certificate generation
+- [[modules/skills/courses-learning/overview|Courses Learning]] — course data model, catalog, and enrollment logic
+- [[modules/skills/employee-skills/overview|Employee Skills]] — skill updates on completion
+- [[modules/calendar/calendar-events/overview|Calendar Events]] — scheduled course events
+- [[backend/notification-system|Notification System]] — enrollment and completion notifications
+- [[modules/documents/overview|Documents]] — certificate generation

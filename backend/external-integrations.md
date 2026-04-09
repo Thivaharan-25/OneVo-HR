@@ -55,7 +55,7 @@ services.AddHttpClient<IBiometricClient>("BiometricApi")
 | **Module** | IdentityVerification (device management) → WorkforcePresence (event consumption) |
 | **Auth** | HMAC-SHA256 signed webhooks |
 | **Purpose** | Clock-in/out events from physical terminals |
-| **Tables** | `biometric_devices`, `biometric_enrollments`, `biometric_events` (in [[identity-verification]]) |
+| **Tables** | `biometric_devices`, `biometric_enrollments`, `biometric_events` (in [[modules/identity-verification/overview|Identity Verification]]) |
 
 **Webhook Verification:**
 ```csharp
@@ -122,12 +122,12 @@ These are NOT external integrations — they are internal API contracts for the 
 3. Task completion metrics — velocity, completion rate for Performance reviews
 4. Active task identifier — which task is being worked on (real-time dashboard context)
 
-Bridge endpoints are authenticated via API key + tenant context. See [[auth-architecture]] for details.
+Bridge endpoints are authenticated via API key + tenant context. See [[security/auth-architecture|Auth Architecture]] for details.
 
 ## Related
 
-- [[module-catalog]] — which modules own each integration
-- [[notification-system]] — Resend email pipeline
-- [[tech-stack]] — integration technology choices
-- [[error-handling]] — retry and circuit breaker patterns for external calls
-- [[known-issues]] — WorkManage Pro bridge gotchas
+- [[backend/module-catalog|Module Catalog]] — which modules own each integration
+- [[backend/notification-system|Notification System]] — Resend email pipeline
+- [[AI_CONTEXT/tech-stack|Tech Stack]] — integration technology choices
+- [[backend/messaging/error-handling|Error Handling]] — retry and circuit breaker patterns for external calls
+- [[AI_CONTEXT/known-issues|Known Issues]] — WorkManage Pro bridge gotchas

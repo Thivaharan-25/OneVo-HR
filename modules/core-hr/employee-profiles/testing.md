@@ -329,6 +329,6 @@ public class EmployeesApiTests : IClassFixture<CustomWebApplicationFactory>
 
 ## Related
 
-- [[employee-profiles|Employee Profiles Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

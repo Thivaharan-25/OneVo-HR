@@ -51,5 +51,5 @@ public class RecognitionServiceTests
 
 ## Related
 
-- [[recognitions|Recognitions Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/performance/recognitions/overview|Recognitions Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

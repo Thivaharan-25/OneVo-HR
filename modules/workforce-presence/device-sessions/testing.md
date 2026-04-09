@@ -51,6 +51,6 @@ public class DeviceSessionServiceTests
 
 ## Related
 
-- [[device-sessions|Device Sessions Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/workforce-presence/device-sessions/overview|Device Sessions Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

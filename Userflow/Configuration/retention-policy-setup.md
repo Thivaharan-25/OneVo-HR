@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Tenant provisioned → [[tenant-provisioning]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Tenant provisioned → [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -27,7 +27,7 @@
   | Audit logs | 3 years | 1-7 years |
   | Employee data (after exit) | 2 years | 1-7 years |
   | Aggregated analytics | Indefinite | 1 year-indefinite |
-- **Backend:** RetentionPolicyService.UpdateAsync() → [[retention-policies]]
+- **Backend:** RetentionPolicyService.UpdateAsync() → [[modules/configuration/retention-policies/overview|Retention Policies]]
 - **DB:** `retention_policies`
 
 ### Step 3: Set Auto-Purge Schedule
@@ -52,18 +52,18 @@
 
 ## Events Triggered
 
-- `RetentionPolicyUpdated` → [[event-catalog]]
-- `DataPurgeCompleted` → [[event-catalog]] (automated)
+- `RetentionPolicyUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `DataPurgeCompleted` → [[backend/messaging/event-catalog|Event Catalog]] (automated)
 
 ## Related Flows
 
-- [[tenant-settings]]
-- [[monitoring-configuration]]
-- [[gdpr-consent]]
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]]
+- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
 
 ## Module References
 
-- [[retention-policies]]
-- [[configuration]]
-- [[data-classification]]
-- [[compliance]]
+- [[modules/configuration/retention-policies/overview|Retention Policies]]
+- [[modules/configuration/overview|Configuration]]
+- [[security/data-classification|Data Classification]]
+- [[security/compliance|Compliance]]

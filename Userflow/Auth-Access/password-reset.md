@@ -9,27 +9,27 @@
 ## Preconditions
 
 - User account exists in the system
-- Email service configured → [[notification-system]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Email service configured → [[backend/notification-system|Notification System]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Initiate Reset (Self-Service)
 - **UI:** Login page → click "Forgot Password" → enter registered email
 - **API:** `POST /api/v1/auth/forgot-password`
-- **Backend:** AuthService.InitiatePasswordResetAsync() → [[authentication]]
+- **Backend:** AuthService.InitiatePasswordResetAsync() → [[frontend/cross-cutting/authentication|Authentication]]
 - **Validation:** Email exists in system, account is active, not SSO-only user
 - **DB:** `password_reset_tokens` — token created with expiry (24h)
 
 ### Step 2: Receive Reset Email
 - **UI:** User checks email → clicks reset link with token
-- **Backend:** Email sent via Resend → [[notification-system]]
+- **Backend:** Email sent via Resend → [[backend/notification-system|Notification System]]
 - **Validation:** Token is valid, not expired, not already used
 
 ### Step 3: Set New Password
 - **UI:** Reset page → enter new password + confirm → submit
 - **API:** `POST /api/v1/auth/reset-password`
-- **Backend:** AuthService.ResetPasswordAsync() → [[authentication]]
+- **Backend:** AuthService.ResetPasswordAsync() → [[frontend/cross-cutting/authentication|Authentication]]
 - **Validation:** Password meets policy (min length, complexity), token valid
 - **DB:** `users` — password hash updated, `sessions` — all existing sessions invalidated
 
@@ -37,7 +37,7 @@
 - **UI:** Navigate to Users → select user → Actions → Reset Password → enter new password
 - **API:** `POST /api/v1/users/{id}/reset-password`
 - **Permission:** `users:manage`
-- **Backend:** UserService.AdminResetPasswordAsync() → [[authentication]]
+- **Backend:** UserService.AdminResetPasswordAsync() → [[frontend/cross-cutting/authentication|Authentication]]
 - **DB:** Password updated, all sessions invalidated, user notified via email
 
 ## Variations
@@ -57,18 +57,18 @@
 
 ## Events Triggered
 
-- `PasswordResetRequested` → [[event-catalog]]
-- `PasswordResetCompleted` → [[event-catalog]]
-- Notification: reset email → [[notification-system]]
+- `PasswordResetRequested` → [[backend/messaging/event-catalog|Event Catalog]]
+- `PasswordResetCompleted` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification: reset email → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[login-flow]]
-- [[mfa-setup]]
-- [[user-invitation]]
+- [[Userflow/Auth-Access/login-flow|Login Flow]]
+- [[Userflow/Auth-Access/mfa-setup|Mfa Setup]]
+- [[Userflow/Auth-Access/user-invitation|User Invitation]]
 
 ## Module References
 
-- [[authentication]]
-- [[session-management]]
-- [[notification-system]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[modules/auth/session-management/overview|Session Management]]
+- [[backend/notification-system|Notification System]]

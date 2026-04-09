@@ -4,6 +4,23 @@
 
 Each collector runs on its own timer. Data flows: Collector → SQLite Buffer → Sync Service → Agent Gateway.
 
+**Lifecycle-aware:** All collectors respect the monitoring lifecycle state. When the agent receives a `StopMonitoring` or `PauseMonitoring` command (via SignalR or heartbeat polling), all collectors stop immediately. NO data is captured during breaks or after clock-out. Collectors resume only when `StartMonitoring` or `ResumeMonitoring` is received.
+
+```csharp
+// ONEVO.Agent.Service/MonitoringLifecycleManager.cs
+public class MonitoringLifecycleManager
+{
+    public MonitoringState State { get; private set; } = MonitoringState.Stopped;
+    
+    public void Start(Guid sessionId) { State = MonitoringState.Active; /* start all collectors */ }
+    public void Stop(string reason) { State = MonitoringState.Stopped; /* stop all collectors, flush buffer */ }
+    public void Pause(string reason) { State = MonitoringState.Paused; /* stop all collectors, keep buffer */ }
+    public void Resume(Guid sessionId) { State = MonitoringState.Active; /* restart all collectors */ }
+}
+
+public enum MonitoringState { Stopped, Active, Paused }
+```
+
 ## Collectors
 
 ### 1. Activity Collector (`ActivityCollector.cs`)
@@ -87,7 +104,7 @@ var isIdle = idleMs > _policy.IdleThresholdSeconds * 1000;
 
 **Idle threshold:** Configurable via policy (default 300 seconds / 5 min).
 
-**Break detection:** If idle exceeds threshold, mark as break candidate. Server-side reconciliation in [[workforce-presence]] creates the break record.
+**Break detection:** If idle exceeds threshold, mark as break candidate. Server-side reconciliation in [[modules/workforce-presence/overview|Workforce Presence]] creates the break record.
 
 ### 4. Meeting Detector (`MeetingDetector.cs`)
 
@@ -131,6 +148,45 @@ if (meetingProcess != null)
 - Session splits when idle exceeds threshold
 - Session ends on logout/shutdown
 
+### 6. Screenshot Capturer (`ScreenshotCapturer.cs`)
+
+**What:** Captures screenshot of the primary display on remote command from manager/CEO.
+
+**How:**
+```csharp
+public class ScreenshotCapturer
+{
+    public async Task<string?> CaptureScreenshotAsync(string reason, CancellationToken ct)
+    {
+        // 1. Show employee notification (GDPR requirement)
+        await _notificationService.ShowToastAsync(
+            "Verification Request",
+            $"Your manager has requested a screen capture. Reason: {reason}");
+        
+        // 2. Wait 3 seconds (give employee awareness)
+        await Task.Delay(3000, ct);
+        
+        // 3. Capture primary screen
+        var bounds = Screen.PrimaryScreen.Bounds;
+        using var bitmap = new Bitmap(bounds.Width, bounds.Height);
+        using var graphics = Graphics.FromImage(bitmap);
+        graphics.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
+        
+        // 4. Compress and save
+        var path = Path.Combine(Path.GetTempPath(), $"onevo_capture_{Guid.NewGuid()}.jpg");
+        bitmap.Save(path, ImageFormat.Jpeg);
+        
+        return path;
+    }
+}
+```
+
+**Trigger:** Only via remote command (`capture_screenshot` from `agent_commands`). NEVER automated or scheduled.
+
+**Privacy:** Employee always sees notification BEFORE capture. 3-second delay is mandatory (GDPR compliance).
+
+**Upload:** After capture, image is uploaded via `POST /api/v1/agent/ingest` with type `screenshot_capture`, then local file is deleted.
+
 ## SQLite Buffer Schema
 
 ```sql
@@ -164,14 +220,14 @@ Data is batched into the ingestion payload format expected by Agent Gateway:
 }
 ```
 
-See [[rules]] (Section 10: Desktop Agent Rules) for privacy rules and [[agent-server-protocol]] for the server-side API contract.
+See [[AI_CONTEXT/rules|Rules]] (Section 10: Desktop Agent Rules) for privacy rules and [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] for the server-side API contract.
 
 ## Related
 
-- [[agent-gateway|Agent Gateway Module]] — server-side module
-- [[agent-server-protocol]] — API endpoints and payload schemas
-- [[tamper-resistance]] — detection and reporting
-- [[data-classification]] — PII/RESTRICTED data handling
-- [[retention-policies]] — data retention rules
-- [[logging-standards]] — never log activity content
-- [[WEEK1-shared-platform]] — implementation task
+- [[modules/agent-gateway/overview|Agent Gateway Module]] — server-side module
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — API endpoints and payload schemas
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — detection and reporting
+- [[security/data-classification|Data Classification]] — PII/RESTRICTED data handling
+- [[modules/configuration/retention-policies/overview|Retention Policies]] — data retention rules
+- [[code-standards/logging-standards|Logging Standards]] — never log activity content
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — implementation task

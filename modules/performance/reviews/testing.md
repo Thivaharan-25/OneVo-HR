@@ -51,5 +51,5 @@ public class ReviewServiceTests
 
 ## Related
 
-- [[reviews|Reviews Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/performance/reviews/overview|Reviews Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

@@ -51,6 +51,6 @@ public class CostCenterServiceTests
 
 ## Related
 
-- [[cost-centers|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/org-structure/cost-centers/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

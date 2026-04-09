@@ -57,6 +57,6 @@ public class AuditLogServiceTests
 
 ## Related
 
-- [[audit-logging|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/auth/audit-logging/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

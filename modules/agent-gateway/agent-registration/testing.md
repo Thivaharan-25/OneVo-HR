@@ -69,6 +69,6 @@ public class AgentRegistrationServiceTests
 
 ## Related
 
-- [[agent-registration|Agent Registration Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/agent-gateway/agent-registration/overview|Agent Registration Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

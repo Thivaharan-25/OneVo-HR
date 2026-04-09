@@ -140,10 +140,10 @@ sequenceDiagram
 
 ## Related
 
-- [[employee-profiles|Employee Profiles Overview]]
-- [[employee-lifecycle]]
-- [[onboarding]]
-- [[offboarding]]
-- [[compensation]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles Overview]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
+- [[modules/core-hr/onboarding/overview|Onboarding]]
+- [[modules/core-hr/offboarding/overview|Offboarding]]
+- [[modules/core-hr/compensation/overview|Compensation]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

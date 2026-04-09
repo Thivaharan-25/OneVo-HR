@@ -33,9 +33,9 @@ GET /api/v1/payroll/runs/{id}/audit
 
 ## Related
 
-- [[payroll/audit-trail/overview|Audit Trail Overview]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[payroll/adjustments/overview|Adjustments]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[frontend/architecture/overview|Audit Trail Overview]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[frontend/architecture/overview|Adjustments]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

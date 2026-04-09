@@ -143,7 +143,7 @@ Desktop agents use a separate device-level JWT. This is NOT the same as user JWT
 - Contains `device_id` + `tenant_id` but **NO user permissions**
 - The `type: "agent"` claim distinguishes from user JWT
 - Employee context linked at login via MAUI tray app
-- See [[agent-gateway]] for full protocol
+- See [[modules/agent-gateway/overview|Agent Gateway]] for full protocol
 
 ### Authorization Check
 
@@ -217,12 +217,12 @@ Multiple methods per user via `user_mfa` table:
 
 ## Related
 
-- [[authentication]]
-- [[authorization]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[frontend/cross-cutting/authorization|Authorization]]
 - [[mfa]]
-- [[session-management]]
-- [[agent-server-protocol]]
-- [[multi-tenancy]]
-- [[compliance]]
-- [[data-classification]]
-- [[WEEK1-auth-security]]
+- [[modules/auth/session-management/overview|Session Management]]
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/compliance|Compliance]]
+- [[security/data-classification|Data Classification]]
+- [[current-focus/DEV2-auth-security|DEV2: Auth Security]]

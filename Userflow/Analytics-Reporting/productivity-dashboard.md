@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Activity monitoring running → [[monitoring-configuration]]
-- Daily aggregation processed → [[activity-snapshot-view]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Activity monitoring running → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- Daily aggregation processed → [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -31,7 +31,7 @@
 - **API:** `GET /api/v1/analytics/productivity?group_by=department`
 
 ### Step 4: App Usage Analysis
-- **UI:** Top productive apps, top unproductive apps, app category distribution → [[application-tracking]]
+- **UI:** Top productive apps, top unproductive apps, app category distribution → [[modules/activity-monitoring/application-tracking/overview|Application Tracking]]
 
 ### Step 5: Export
 - **UI:** Export → CSV/Excel/PDF with current filters and period
@@ -49,13 +49,13 @@
 
 ## Related Flows
 
-- [[activity-snapshot-view]]
-- [[workforce-snapshot]]
-- [[data-export]]
+- [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
+- [[Userflow/Analytics-Reporting/workforce-snapshot|Workforce Snapshot]]
+- [[Userflow/Analytics-Reporting/data-export|Data Export]]
 
 ## Module References
 
-- [[daily-reports]]
-- [[weekly-reports]]
-- [[monthly-reports]]
-- [[productivity-analytics]]
+- [[modules/productivity-analytics/daily-reports/overview|Daily Reports]]
+- [[modules/productivity-analytics/weekly-reports/overview|Weekly Reports]]
+- [[modules/productivity-analytics/monthly-reports/overview|Monthly Reports]]
+- [[modules/productivity-analytics/overview|Productivity Analytics]]

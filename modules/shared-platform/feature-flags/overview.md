@@ -25,11 +25,11 @@ Per-tenant overrides: `flag_key`, `is_enabled` (override value), `overridden_by_
 
 ## Related
 
-- [[shared-platform|Shared Platform Module]]
-- [[tenant-management]]
-- [[compliance-governance]]
-- [[workflow-engine]]
-- [[subscriptions-billing]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[WEEK1-shared-platform]]
+- [[modules/shared-platform/overview|Shared Platform Module]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[modules/shared-platform/compliance-governance/overview|Compliance Governance]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

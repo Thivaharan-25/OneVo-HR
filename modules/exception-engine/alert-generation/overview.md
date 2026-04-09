@@ -21,7 +21,7 @@ Audit trail: `alert_id`, `acknowledged_by_id`, `action` (`acknowledged`, `dismis
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `ExceptionAlertCreated` | Rule threshold breached | [[notifications]] |
+| `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview|Notifications]] |
 | `AlertAcknowledged` | Manager acknowledges/dismisses | Audit trail |
 
 ## SignalR Integration
@@ -39,13 +39,13 @@ New alerts pushed to frontend via `exception-alerts` channel.
 
 ## Related
 
-- [[exception-engine|Exception Engine Module]]
-- [[exception-engine/evaluation-engine/overview|Evaluation Engine]]
-- [[exception-engine/exception-rules/overview|Exception Rules]]
-- [[exception-engine/escalation-chains/overview|Escalation Chains]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[error-handling]]
-- [[event-catalog]]
-- [[shared-kernel]]
-- [[WEEK4-exception-engine]]
+- [[modules/exception-engine/overview|Exception Engine Module]]
+- [[frontend/architecture/overview|Evaluation Engine]]
+- [[frontend/architecture/overview|Exception Rules]]
+- [[frontend/architecture/overview|Escalation Chains]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

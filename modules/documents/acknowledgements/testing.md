@@ -51,5 +51,5 @@ public class AcknowledgementServiceTests
 
 ## Related
 
-- [[documents/acknowledgements/overview|Acknowledgements Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Acknowledgements Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

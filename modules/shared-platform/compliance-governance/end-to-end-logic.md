@@ -43,9 +43,9 @@ POST /api/v1/compliance/exports
 
 ## Related
 
-- [[compliance-governance|Overview]]
-- [[audit-logging]]
-- [[gdpr-consent]]
-- [[file-management]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/shared-platform/compliance-governance/overview|Overview]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[modules/infrastructure/file-management/overview|File Management]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Legal entity exists → [[legal-entity-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Legal entity exists → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -19,7 +19,7 @@
 
 ### Step 2: Set Contribution Rates
 - **UI:** Employee contribution % (e.g., 5%) → employer contribution % (e.g., 8%) → set contribution cap (max annual amount) → select calculation base (gross salary, base salary only)
-- **Backend:** PensionService.ConfigureAsync() → [[pensions]]
+- **Backend:** PensionService.ConfigureAsync() → [[modules/payroll/pensions/overview|Pensions]]
 - **DB:** `pension_configurations`
 
 ### Step 3: Set Opt-Out Rules
@@ -42,15 +42,15 @@
 
 ## Events Triggered
 
-- `PensionConfigured` → [[event-catalog]]
+- `PensionConfigured` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[tax-configuration]]
-- [[payroll-run-execution]]
-- [[compensation-setup]]
+- [[Userflow/Payroll/tax-configuration|Tax Configuration]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
+- [[Userflow/Employee-Management/compensation-setup|Compensation Setup]]
 
 ## Module References
 
-- [[pensions]]
-- [[payroll]]
+- [[modules/payroll/pensions/overview|Pensions]]
+- [[modules/payroll/overview|Payroll]]

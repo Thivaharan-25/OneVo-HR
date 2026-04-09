@@ -9,7 +9,7 @@
 ## Preconditions
 
 - Employee exists and is active
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -20,7 +20,7 @@
 ### Step 2: Add Dependent
 - **UI:** Click "Add Dependent" → enter: name, relationship (spouse, child, parent), date of birth, gender, contact number → toggle "Emergency Contact" → save
 - **API:** `POST /api/v1/employees/{id}/dependents`
-- **Backend:** DependentService.AddAsync() → [[dependents-contacts]]
+- **Backend:** DependentService.AddAsync() → [[modules/core-hr/dependents-contacts/overview|Dependents Contacts]]
 - **DB:** `employee_dependents` — record created
 
 ### Step 3: Manage Emergency Contacts
@@ -36,13 +36,13 @@
 
 ## Events Triggered
 
-- `DependentAdded` → [[event-catalog]]
+- `DependentAdded` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[profile-management]]
-- [[employee-onboarding]]
+- [[Userflow/Employee-Management/profile-management|Profile Management]]
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
 
 ## Module References
 
-- [[dependents-contacts]]
+- [[modules/core-hr/dependents-contacts/overview|Dependents Contacts]]

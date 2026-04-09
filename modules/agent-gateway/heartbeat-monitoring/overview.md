@@ -28,7 +28,7 @@ Agents send heartbeats every 60 seconds. If no heartbeat for 5+ minutes, fires `
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[exception-engine]] (flag offline agent) |
+| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview|Exception Engine]] (flag offline agent) |
 
 ## Hangfire Jobs
 

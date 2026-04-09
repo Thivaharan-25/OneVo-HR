@@ -9,15 +9,15 @@
 ## Preconditions
 
 - User has an active account
-- Consent policy configured by admin → [[compliance]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Consent policy configured by admin → [[security/compliance|Compliance]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Consent Dialog Triggered
 - **UI:** On first login or when policy is updated → modal dialog appears (cannot be dismissed without action)
 - **API:** `GET /api/v1/consent/pending`
-- **Backend:** ConsentService.GetPendingConsentsAsync() → [[gdpr-consent]]
+- **Backend:** ConsentService.GetPendingConsentsAsync() → [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
 - **DB:** `consent_records` — checks for missing or outdated consents
 
 ### Step 2: Review Consent Categories
@@ -31,13 +31,13 @@
 ### Step 3: Accept/Decline Each Category
 - **UI:** Toggle accept/decline per category → mandatory categories pre-checked
 - **API:** `POST /api/v1/consent`
-- **Backend:** ConsentService.RecordConsentAsync() → [[gdpr-consent]]
+- **Backend:** ConsentService.RecordConsentAsync() → [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
 - **Validation:** Essential categories must be accepted, optional categories can be declined
 - **DB:** `consent_records` — consent recorded with timestamp, IP, version
 
 ### Step 4: Consequences of Declining
-- If monitoring consent declined → activity tracking disabled for this employee → [[employee-overrides]]
-- If biometric consent declined → identity verification skipped → [[identity-verification]]
+- If monitoring consent declined → activity tracking disabled for this employee → [[modules/configuration/employee-overrides/overview|Employee Overrides]]
+- If biometric consent declined → identity verification skipped → [[modules/identity-verification/overview|Identity Verification]]
 - All other features remain accessible
 
 ## Variations
@@ -58,18 +58,18 @@
 
 ## Events Triggered
 
-- `ConsentRecorded` → [[event-catalog]]
-- `ConsentWithdrawn` → [[event-catalog]]
+- `ConsentRecorded` → [[backend/messaging/event-catalog|Event Catalog]]
+- `ConsentWithdrawn` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[login-flow]]
-- [[monitoring-configuration]]
-- [[retention-policy-setup]]
+- [[Userflow/Auth-Access/login-flow|Login Flow]]
+- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Configuration/retention-policy-setup|Retention Policy Setup]]
 
 ## Module References
 
-- [[gdpr-consent]]
-- [[compliance]]
-- [[data-classification]]
-- [[employee-overrides]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[security/compliance|Compliance]]
+- [[security/data-classification|Data Classification]]
+- [[modules/configuration/employee-overrides/overview|Employee Overrides]]

@@ -40,7 +40,7 @@ GET /api/v1/disciplinary/{employeeId}
 
 ## Related
 
-- [[disciplinary-actions]] — feature overview
-- [[grievance-cases]] — grievance case that may precede the action
-- [[event-catalog]] — events emitted on action issuance and acknowledgement
-- [[error-handling]] — NotFoundException, BusinessRuleException patterns
+- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] — feature overview
+- [[modules/grievance/grievance-cases/overview|Grievance Cases]] — grievance case that may precede the action
+- [[backend/messaging/event-catalog|Event Catalog]] — events emitted on action issuance and acknowledgement
+- [[backend/messaging/error-handling|Error Handling]] — NotFoundException, BusinessRuleException patterns

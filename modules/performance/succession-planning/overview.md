@@ -16,13 +16,13 @@ Fields: `position_id`, `current_holder_id`, `successor_id`, `readiness` (`ready_
 
 ## Related
 
-- [[performance|Performance Module]]
-- [[reviews]]
-- [[review-cycles]]
-- [[feedback]]
-- [[goals-okr]]
-- [[recognitions]]
-- [[improvement-plans]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[WEEK3-performance]]
+- [[database/performance|Performance Module]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[modules/performance/feedback/overview|Feedback]]
+- [[modules/performance/goals-okr/overview|Goals Okr]]
+- [[modules/performance/recognitions/overview|Recognitions]]
+- [[modules/performance/improvement-plans/overview|Improvement Plans]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- Performance task file (deferred to Phase 2)

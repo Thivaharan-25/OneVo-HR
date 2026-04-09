@@ -51,5 +51,5 @@ public class SkillTaxonomyServiceTests
 
 ## Related
 
-- [[skill-taxonomy]] — feature overview
-- [[testing/README|Testing Standards]] — project-wide testing conventions
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — feature overview
+- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions

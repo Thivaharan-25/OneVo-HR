@@ -51,6 +51,6 @@ public class HardwareTerminalServiceTests
 
 ## Related
 
-- [[hardware-terminals|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/shared-platform/hardware-terminals/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

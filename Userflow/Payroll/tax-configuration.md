@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Legal entity with country set → [[legal-entity-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Legal entity with country set → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -26,9 +26,9 @@
 - **DB:** `tax_configurations` — records per legal entity per year
 
 ### Step 4: Set Employee Deductions
-- **UI:** Income tax (auto from brackets), social security (employee %), pension (from [[pension-configuration]]) → tax-free allowance threshold
+- **UI:** Income tax (auto from brackets), social security (employee %), pension (from [[Userflow/Payroll/pension-configuration|Pension Configuration]]) → tax-free allowance threshold
 - **API:** `POST /api/v1/payroll/tax`
-- **Backend:** TaxService.ConfigureAsync() → [[tax-configuration]]
+- **Backend:** TaxService.ConfigureAsync() → [[Userflow/Payroll/tax-configuration|Tax Configuration]]
 
 ### Step 5: Save
 - **Result:** Effective from next payroll run → system auto-calculates taxes per employee based on gross salary
@@ -42,15 +42,15 @@
 
 ## Events Triggered
 
-- `TaxConfigurationUpdated` → [[event-catalog]]
+- `TaxConfigurationUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[payroll-run-execution]]
-- [[pension-configuration]]
-- [[legal-entity-setup]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
+- [[Userflow/Payroll/pension-configuration|Pension Configuration]]
+- [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
 
 ## Module References
 
-- [[tax-configuration]]
-- [[payroll]]
+- [[Userflow/Payroll/tax-configuration|Tax Configuration]]
+- [[modules/payroll/overview|Payroll]]

@@ -65,5 +65,5 @@ public class ExpenseClaimServiceTests
 
 ## Related
 
-- [[expense-claims]] — feature overview
-- [[testing/README|Testing Standards]] — project-wide testing conventions
+- [[modules/expense/expense-claims/overview|Expense Claims]] — feature overview
+- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions

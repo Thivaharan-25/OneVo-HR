@@ -86,7 +86,7 @@ When clicking "View Detail":
 
 ## Related
 
-- [[exception-engine/alert-generation/overview|Alert Generation Backend]]
-- [[auth-architecture]]
-- [[design-system]]
-- [[WEEK4-exception-engine]]
+- [[frontend/architecture/overview|Alert Generation Backend]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[frontend/design-system/README|Design System]]
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

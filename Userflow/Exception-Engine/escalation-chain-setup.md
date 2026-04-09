@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Exception rules exist → [[exception-rule-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Exception rules exist → [[Userflow/Exception-Engine/exception-rule-setup|Exception Rule Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -23,7 +23,7 @@
   - **Level 2:** HR Admin → if unacknowledged after X hours → auto-escalate
   - **Level 3:** Department Head / CEO → if still unacknowledged after Y hours
 - Set time intervals between levels (e.g., 2h, 4h, 8h)
-- **Backend:** EscalationService.CreateChainAsync() → [[escalation-chains]]
+- **Backend:** EscalationService.CreateChainAsync() → [[modules/exception-engine/escalation-chains/overview|Escalation Chains]]
 - **DB:** `escalation_chains`, `escalation_levels`
 
 ### Step 3: Assign to Rules
@@ -39,16 +39,16 @@
 
 ## Events Triggered
 
-- `EscalationChainCreated` → [[event-catalog]]
-- `AlertAutoEscalated` → [[event-catalog]] (when triggered)
+- `EscalationChainCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `AlertAutoEscalated` → [[backend/messaging/event-catalog|Event Catalog]] (when triggered)
 
 ## Related Flows
 
-- [[exception-rule-setup]]
-- [[alert-review]]
+- [[Userflow/Exception-Engine/exception-rule-setup|Exception Rule Setup]]
+- [[Userflow/Exception-Engine/alert-review|Alert Review]]
 
 ## Module References
 
-- [[escalation-chains]]
-- [[exception-rules]]
-- [[notification-system]]
+- [[modules/exception-engine/escalation-chains/overview|Escalation Chains]]
+- [[modules/exception-engine/exception-rules/overview|Exception Rules]]
+- [[backend/notification-system|Notification System]]

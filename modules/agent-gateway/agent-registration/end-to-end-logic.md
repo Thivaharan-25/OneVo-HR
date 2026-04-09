@@ -47,9 +47,9 @@ POST /api/v1/agent/register
 
 ## Related
 
-- [[agent-registration|Agent Registration Overview]]
-- [[policy-distribution]]
-- [[heartbeat-monitoring]]
-- [[data-ingestion]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/agent-gateway/agent-registration/overview|Agent Registration Overview]]
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
+- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]]
+- [[modules/agent-gateway/data-ingestion/overview|Data Ingestion]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

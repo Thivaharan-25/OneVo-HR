@@ -45,7 +45,7 @@ PUT /api/v1/settings/monitoring
 
 ## Related
 
-- [[configuration/monitoring-toggles/overview|Monitoring Toggles Overview]]
-- [[configuration/employee-overrides/overview|Employee Overrides]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Monitoring Toggles Overview]]
+- [[frontend/architecture/overview|Employee Overrides]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

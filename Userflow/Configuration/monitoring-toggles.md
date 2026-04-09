@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Tenant has Workforce Intelligence pillar enabled → [[feature-flag-management]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Tenant has Workforce Intelligence pillar enabled → [[Userflow/Platform-Setup/feature-flag-management|Feature Flag Management]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -29,12 +29,12 @@
 
 ### Step 3: Department Overrides
 - **UI:** Click feature → see department-level overrides → enable/disable per department
-- **Backend:** ConfigurationService.UpdateTogglesAsync() → [[monitoring-toggles]]
+- **Backend:** ConfigurationService.UpdateTogglesAsync() → [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]]
 - **DB:** `monitoring_toggle_settings`
 
 ### Step 4: Save & Distribute
 - **API:** `PUT /api/v1/configuration/monitoring-toggles`
-- **Result:** Policy updated → agents pick up changes on next heartbeat → [[policy-distribution]]
+- **Result:** Policy updated → agents pick up changes on next heartbeat → [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
 
 ## Error Scenarios
 
@@ -44,16 +44,16 @@
 
 ## Events Triggered
 
-- `MonitoringTogglesUpdated` → [[event-catalog]]
+- `MonitoringTogglesUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[monitoring-configuration]]
-- [[employee-override]]
-- [[agent-deployment]]
+- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Configuration/employee-override|Employee Override]]
+- [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
 
 ## Module References
 
-- [[monitoring-toggles]]
-- [[configuration]]
-- [[policy-distribution]]
+- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]]
+- [[modules/configuration/overview|Configuration]]
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]

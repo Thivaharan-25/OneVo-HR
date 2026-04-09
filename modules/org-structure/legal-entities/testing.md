@@ -193,6 +193,6 @@ public class LegalEntityEndpointTests : IClassFixture<ONEVOWebFactory>
 
 ## Related
 
-- [[legal-entities|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/org-structure/legal-entities/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

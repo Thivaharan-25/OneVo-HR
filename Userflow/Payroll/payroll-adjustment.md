@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Payroll run exists for the period → [[payroll-run-execution]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Payroll run exists for the period → [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -19,7 +19,7 @@
 
 ### Step 2: Enter Details
 - **UI:** Select type (Bonus, Deduction, Correction, Back Pay, Advance Recovery) → enter amount → enter description/reason → select if taxable
-- **Backend:** AdjustmentService.CreateAsync() → [[adjustments]]
+- **Backend:** AdjustmentService.CreateAsync() → [[modules/payroll/adjustments/overview|Adjustments]]
 - **DB:** `payroll_adjustments`
 
 ### Step 3: Submit
@@ -39,16 +39,16 @@
 
 ## Events Triggered
 
-- `PayrollAdjustmentCreated` → [[event-catalog]]
+- `PayrollAdjustmentCreated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[payroll-run-execution]]
-- [[compensation-setup]]
-- [[expense-approval]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
+- [[Userflow/Employee-Management/compensation-setup|Compensation Setup]]
+- [[Userflow/Expense/expense-approval|Expense Approval]]
 
 ## Module References
 
-- [[adjustments]]
-- [[payroll-execution]]
-- [[audit-trail]]
+- [[modules/payroll/adjustments/overview|Adjustments]]
+- [[modules/payroll/payroll-execution/overview|Payroll Execution]]
+- [[modules/payroll/audit-trail/overview|Audit Trail]]

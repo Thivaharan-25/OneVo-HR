@@ -167,14 +167,14 @@ public async Task<Result<TenantDto>> ProvisionTenantAsync(CreateTenantCommand cm
 
 ## Performance Considerations
 
-- **Index on `tenant_id`** on every tenant-scoped table (composite indexes with other frequently queried columns) — see [[performance]]
+- **Index on `tenant_id`** on every tenant-scoped table (composite indexes with other frequently queried columns) — see [[database/performance|Performance]]
 - **Partition large tables** by tenant_id (for very large tenants) or by time (for audit_logs, biometric_events)
-- **Redis caching** keyed by `tenant:{tenantId}:{entity}:{id}` — never cache cross-tenant data (see [[performance]])
+- **Redis caching** keyed by `tenant:{tenantId}:{entity}:{id}` — never cache cross-tenant data (see [[database/performance|Performance]])
 - **Rate limiting** per tenant via Redis token bucket
 
 ## Related
 
-- [[shared-kernel]] — BaseRepository, ITenantContext implementation
-- [[auth-architecture]] — JWT claims carrying tenant_id
-- [[module-boundaries]] — ArchUnitNET tests for tenant isolation enforcement
-- [[compliance]] — GDPR tenant offboarding and data export
+- [[backend/shared-kernel|Shared Kernel]] — BaseRepository, ITenantContext implementation
+- [[security/auth-architecture|Auth Architecture]] — JWT claims carrying tenant_id
+- [[backend/module-boundaries|Module Boundaries]] — ArchUnitNET tests for tenant isolation enforcement
+- [[security/compliance|Compliance]] — GDPR tenant offboarding and data export

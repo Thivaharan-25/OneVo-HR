@@ -5,9 +5,9 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 ## Quick Start
 
 1. Open in Cursor — `.cursor/rules/` auto-inject AI context
-2. Read [[project-context]] for system overview
+2. Read [[AI_CONTEXT/project-context|Project Context]] for system overview
 3. Read [[current-focus/README|Current Focus]] for delivery plan and sprint priorities
-4. Check [[known-issues]] before writing any code
+4. Check [[AI_CONTEXT/known-issues|Known Issues]] before writing any code
 
 ## System Overview
 
@@ -36,23 +36,23 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 ```
 onevo-hr-brain/
 ├── AI_CONTEXT/                  # AI context — read FIRST
-│   ├── [[project-context]]       # Two-pillar architecture, business logic
-│   ├── [[tech-stack]]            # .NET 9, PostgreSQL, MAUI, Next.js
-│   ├── [[rules]]                 # AI agent rules (backend + frontend + agent)
-│   ├── [[known-issues]]          # Gotchas, monitoring data, agent auth
+│   ├── [[AI_CONTEXT/project-context|Project Context]]       # Two-pillar architecture, business logic
+│   ├── [[AI_CONTEXT/tech-stack|Tech Stack]]            # .NET 9, PostgreSQL, MAUI, Next.js
+│   ├── [[AI_CONTEXT/rules|Rules]]                 # AI agent rules (backend + frontend + agent)
+│   ├── [[AI_CONTEXT/known-issues|Known Issues]]          # Gotchas, monitoring data, agent auth
 │   └── changelog/               # Knowledge base update log (one file per change)
 ├── Userflow/                    # End-to-end user flows by feature area (permission-based)
 │   └── {feature-area}/          # ~93 flow files across 18 areas
 ├── modules/                     # Feature specs — 22 modules, feature-wise
 │   └── {module}/{feature}/      # overview.md, end-to-end-logic.md, testing.md, frontend.md
 ├── backend/                     # .NET 9 backend architecture
-│   ├── [[module-catalog]]        # Module index and dependency map
-│   ├── [[module-boundaries]]     # Boundary rules and enforcement
-│   ├── [[shared-kernel]]         # Cross-cutting code (Result<T>, ITenantContext)
+│   ├── [[backend/module-catalog|Module Catalog]]        # Module index and dependency map
+│   ├── [[backend/module-boundaries|Module Boundaries]]     # Boundary rules and enforcement
+│   ├── [[backend/shared-kernel|Shared Kernel]]         # Cross-cutting code (Result<T>, ITenantContext)
 │   └── messaging/               # Event catalog, exchange topology
 ├── frontend/                    # Next.js 14 frontend architecture
-│   ├── [[structure]]             # App Router layout
-│   ├── [[state-management]]      # TanStack Query + Zustand
+│   ├── [[frontend/architecture/app-structure|App Structure]]             # App Router layout
+│   ├── [[frontend/data-layer/state-management|State Management]]      # TanStack Query + Zustand
 │   └── design-system/           # UI tokens, components, typography
 ├── database/                    # PostgreSQL 16 — migrations, performance
 ├── code-standards/              # Backend + frontend coding standards, git workflow
@@ -91,9 +91,9 @@ onevo-hr-brain/
 
 ## Key Principles
 
-1. **[[multi-tenancy|Multi-tenant]] by default** — 4-layer isolation on every query
-2. **[[module-boundaries|Module boundaries]] enforced** — ArchUnitNET tests prevent violations
-3. **[[shared-kernel|Result<T>]] over exceptions** — explicit error handling
+1. **[[infrastructure/multi-tenancy|Multi-tenant]] by default** — 4-layer isolation on every query
+2. **[[backend/module-boundaries|Module boundaries]] enforced** — ArchUnitNET tests prevent violations
+3. **[[backend/shared-kernel|Result<T>]] over exceptions** — explicit error handling
 4. **Async all the way** — CancellationToken on every async method
-5. **PII protection** — encrypted fields, [[logging-standards|Serilog scrubbing]], never log PII
+5. **PII protection** — encrypted fields, [[code-standards/logging-standards|Serilog scrubbing]], never log PII
 6. **Monitoring is configurable** — per-tenant industry profiles, per-employee overrides

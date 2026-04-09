@@ -51,6 +51,6 @@ public class ComplianceServiceTests
 
 ## Related
 
-- [[compliance-governance|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/shared-platform/compliance-governance/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

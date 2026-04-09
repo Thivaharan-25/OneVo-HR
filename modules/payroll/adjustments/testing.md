@@ -51,5 +51,5 @@ public class AdjustmentServiceTests
 
 ## Related
 
-- [[payroll/adjustments/overview|Adjustments Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Adjustments Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

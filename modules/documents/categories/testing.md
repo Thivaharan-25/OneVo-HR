@@ -51,6 +51,6 @@ public class CategoryServiceTests
 
 ## Related
 
-- [[documents/categories/overview|Categories Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/architecture/overview|Categories Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

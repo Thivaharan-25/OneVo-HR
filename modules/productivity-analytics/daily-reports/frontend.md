@@ -52,7 +52,7 @@ Daily, weekly, and monthly productivity reports with trend analysis and CSV/Exce
 
 ## Related
 
-- [[productivity-analytics/daily-reports/overview|Daily Reports Backend]]
-- [[auth-architecture]]
-- [[design-system]]
-- [[WEEK4-productivity-analytics]]
+- [[frontend/architecture/overview|Daily Reports Backend]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[frontend/design-system/README|Design System]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

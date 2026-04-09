@@ -51,5 +51,5 @@ public class TaxConfigServiceTests
 
 ## Related
 
-- [[payroll/tax-configuration/overview|Tax Configuration Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Tax Configuration Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

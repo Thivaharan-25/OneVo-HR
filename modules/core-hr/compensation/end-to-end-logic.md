@@ -44,9 +44,9 @@ GET /api/v1/employees/{id}/salary-history
 
 ## Related
 
-- [[compensation|Compensation Overview]]
-- [[employee-lifecycle]]
-- [[employee-profiles]]
-- [[offboarding]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/core-hr/compensation/overview|Compensation Overview]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
+- [[modules/core-hr/offboarding/overview|Offboarding]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

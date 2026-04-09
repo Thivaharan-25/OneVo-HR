@@ -39,8 +39,8 @@ CertificationExpiryJob (Hangfire, daily)
 
 ## Related
 
-- [[certifications]] — feature overview
-- [[courses-learning]] — course completion that triggers certification issuance
-- [[employee-skills]] — skill validation linked to certification status
-- [[event-catalog]] — CertificationExpiringSoon, CertificationExpired events
-- [[error-handling]] — Hangfire job retry and failure patterns
+- [[modules/skills/certifications/overview|Certifications]] — feature overview
+- [[modules/skills/courses-learning/overview|Courses Learning]] — course completion that triggers certification issuance
+- [[modules/skills/employee-skills/overview|Employee Skills]] — skill validation linked to certification status
+- [[backend/messaging/event-catalog|Event Catalog]] — CertificationExpiringSoon, CertificationExpired events
+- [[backend/messaging/error-handling|Error Handling]] — Hangfire job retry and failure patterns

@@ -28,9 +28,9 @@ POST /api/v1/payroll/providers
 
 ## Related
 
-- [[payroll/payroll-providers/overview|Payroll Providers Overview]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[error-handling]]
-- [[data-classification]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[frontend/architecture/overview|Payroll Providers Overview]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/data-classification|Data Classification]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

@@ -1,16 +1,19 @@
 # Module: Auth & Security
 
 **Namespace:** `ONEVO.Modules.Auth`
+**Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 2 (Week 1)
-**Tables:** 8
-**Task File:** [[WEEK1-auth-security]]
+**Tables:** 10
+**Task File:** [[current-focus/DEV2-auth-security|DEV2: Auth Security]]
 
 ---
 
 ## Purpose
 
-Handles authentication (JWT RS256), authorization (RBAC with 90+ permissions), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
+Handles authentication (JWT RS256), authorization (**hybrid permission control** with 90+ permissions, per-employee overrides, hierarchy-scoped access), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
+
+**Authorization model:** NOT role-based. Roles are convenience templates. Super Admin grants feature/module access to any role or individual employee. Per-employee permission overrides (grant/revoke) always win over role defaults. All data access is scoped to the user's position in the org hierarchy (they only see employees below them).
 
 ---
 
@@ -18,9 +21,9 @@ Handles authentication (JWT RS256), authorization (RBAC with 90+ permissions), s
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[infrastructure]] | `IUserService` | User identity |
+| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `IUserService` | User identity |
 | **Consumed by** | All modules | `ICurrentUser`, `RequirePermissionAttribute` | Auth context |
-| **Consumed by** | [[agent-gateway]] | `ITokenService` | Device JWT issuance |
+| **Consumed by** | [[modules/agent-gateway/overview|Agent Gateway]] | `ITokenService` | Device JWT issuance |
 
 ---
 
@@ -48,11 +51,38 @@ public interface IRoleService
     Task<Result<RoleDto>> CreateRoleAsync(CreateRoleCommand command, CancellationToken ct);
     Task<Result> AssignRoleAsync(Guid userId, Guid roleId, CancellationToken ct);
 }
+
+public interface IPermissionResolver
+{
+    /// Resolves effective permissions: role permissions + individual overrides, filtered by feature grants
+    Task<List<string>> ResolveAsync(Guid userId, Guid tenantId, CancellationToken ct);
+}
+
+public interface IHierarchyScopeService
+{
+    /// Returns IDs of all employees below this user in the reporting chain.
+    /// Super Admin returns all employee IDs (bypasses hierarchy).
+    Task<HashSet<Guid>> GetSubordinateIdsAsync(Guid userId, CancellationToken ct);
+}
+
+public interface IFeatureAccessService
+{
+    /// Grants module access to a role or individual employee
+    Task<Result> GrantAsync(GrantFeatureAccessCommand command, CancellationToken ct);
+    /// Checks if a module is granted for a specific user (checks both role-level and employee-level grants)
+    Task<bool> IsModuleGrantedAsync(Guid userId, string module, CancellationToken ct);
+}
+
+public interface IPermissionOverrideService
+{
+    /// Sets a grant or revoke override for a specific permission on a specific employee
+    Task<Result> SetAsync(Guid userId, SetPermissionOverrideCommand command, CancellationToken ct);
+}
 ```
 
 ---
 
-## Database Tables (8)
+## Database Tables (10)
 
 ### `roles`
 
@@ -93,7 +123,41 @@ Global permission definitions — NOT tenant-scoped.
 | `user_id` | `uuid` | FK → users |
 | `role_id` | `uuid` | FK → roles |
 | `assigned_at` | `timestamptz` | |
+| `assigned_by` | `uuid` | FK → users (who granted this) |
 | PK: `(user_id, role_id)` | | |
+
+### `user_permission_overrides`
+
+Per-employee permission overrides. Super Admin can grant or revoke individual permissions for any employee, independent of their role. **Overrides always win over role permissions.**
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `user_id` | `uuid` | FK → users |
+| `permission_id` | `uuid` | FK → permissions |
+| `grant_type` | `varchar(10)` | `grant` or `revoke` |
+| `reason` | `varchar(255)` | Why this override exists |
+| `granted_by` | `uuid` | FK → users (Super Admin who set this) |
+| `created_at` | `timestamptz` | |
+| UNIQUE: `(tenant_id, user_id, permission_id)` | | |
+
+### `feature_access_grants`
+
+Module-level access grants. Super Admin toggles entire feature modules for a role or individual employee.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `grantee_type` | `varchar(10)` | `role` or `employee` |
+| `grantee_id` | `uuid` | FK → roles.id OR users.id |
+| `module` | `varchar(50)` | Module code: `leave`, `payroll`, `performance`, etc. |
+| `is_enabled` | `boolean` | |
+| `granted_by` | `uuid` | FK → users |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+| UNIQUE: `(tenant_id, grantee_type, grantee_id, module)` | | |
 
 ### `sessions`
 
@@ -156,10 +220,13 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 ## Key Business Rules
 
 1. **JWT RS256** — access tokens (15 min), refresh tokens (7 days) with rotation.
-2. **Device JWT** for agents — contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
-3. **Refresh token rotation** — each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, revoke the entire chain (token theft detection).
-4. **GDPR consent for monitoring** — `consent_type: "monitoring"` must be recorded before monitoring features activate for an employee.
-5. **Audit logs are append-only** — partitioned by month, never deleted (compliance requirement).
+2. **Hybrid permission control** — roles are templates; effective permissions = role permissions + individual overrides; filtered by feature grants; scoped by org hierarchy.
+3. **Hierarchy scoping** — users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Super Admin bypasses hierarchy.
+4. **Never hardcode role names** — roles are custom, created by Super Admin. Always check permissions, never role names.
+5. **Device JWT** for agents — contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
+6. **Refresh token rotation** — each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, revoke the entire chain (token theft detection).
+7. **GDPR consent for monitoring** — `consent_type: "monitoring"` must be recorded before monitoring features activate for an employee.
+8. **Audit logs are append-only** — partitioned by month, never deleted (compliance requirement).
 
 ---
 
@@ -175,28 +242,35 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 | GET | `/api/v1/roles` | `roles:read` | List roles |
 | POST | `/api/v1/roles` | `roles:manage` | Create role |
 | PUT | `/api/v1/roles/{id}` | `roles:manage` | Update role |
-| POST | `/api/v1/roles/{id}/permissions` | `roles:manage` | Assign permissions |
+| POST | `/api/v1/roles/{id}/permissions` | `roles:manage` | Set role permissions |
+| POST | `/api/v1/users/{id}/roles` | `roles:manage` | Assign role to employee |
+| GET | `/api/v1/users/{id}/permissions` | `roles:manage` | Get effective permissions |
+| POST | `/api/v1/users/{id}/permission-overrides` | `roles:manage` | Grant/revoke permission override |
+| DELETE | `/api/v1/users/{id}/permission-overrides/{permId}` | `roles:manage` | Remove override |
+| GET | `/api/v1/feature-access` | `roles:manage` | List feature grants |
+| POST | `/api/v1/feature-access` | `roles:manage` | Grant feature to role/employee |
+| DELETE | `/api/v1/feature-access/{id}` | `roles:manage` | Revoke feature grant |
 | GET | `/api/v1/audit-logs` | `settings:admin` | Query audit logs |
 
 ## Features
 
-- [[authentication]] — JWT RS256 login, token issuance, refresh token rotation
-- [[authorization]] — RBAC, 90+ permissions across all modules
-- [[session-management]] — Session tracking, revocation, expiry
+- [[frontend/cross-cutting/authentication|Authentication]] — JWT RS256 login, token issuance, refresh token rotation
+- [[frontend/cross-cutting/authorization|Authorization]] — Hybrid permission control: roles + per-employee overrides + feature grants + hierarchy scoping
+- [[modules/auth/session-management/overview|Session Management]] — Session tracking, revocation, expiry
 - [[mfa]] — Multi-factor authentication (TOTP)
-- [[audit-logging]] — Append-only audit trail, partitioned by month
-- [[gdpr-consent]] — Consent tracking for data processing and monitoring
+- [[modules/auth/audit-logging/overview|Audit Logging]] — Append-only audit trail, partitioned by month
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] — Consent tracking for data processing and monitoring
 
 ---
 
 ## Related
 
-- [[auth-architecture]] — Full JWT RS256 design, device JWT, token rotation
-- [[multi-tenancy]] — All roles and sessions are tenant-scoped
-- [[compliance]] — Audit logs are never deleted; GDPR consent records
-- [[data-classification]] — Refresh tokens hashed (SHA-256), never stored raw
-- [[shared-kernel]] — `ICurrentUser`, `RequirePermissionAttribute` used by all modules
-- [[logging-standards]] — Correlation IDs in audit logs
-- [[WEEK1-auth-security]] — Implementation task file
+- [[security/auth-architecture|Auth Architecture]] — Full JWT RS256 design, device JWT, token rotation
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All roles and sessions are tenant-scoped
+- [[security/compliance|Compliance]] — Audit logs are never deleted; GDPR consent records
+- [[security/data-classification|Data Classification]] — Refresh tokens hashed (SHA-256), never stored raw
+- [[backend/shared-kernel|Shared Kernel]] — `ICurrentUser`, `RequirePermissionAttribute` used by all modules
+- [[code-standards/logging-standards|Logging Standards]] — Correlation IDs in audit logs
+- [[current-focus/DEV2-auth-security|DEV2: Auth Security]] — Implementation task file
 
-See also: [[module-catalog]], [[infrastructure]], [[auth-architecture]], [[compliance]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/infrastructure/overview|Infrastructure]], [[security/auth-architecture|Auth Architecture]], [[security/compliance|Compliance]]

@@ -29,13 +29,13 @@ Version history: `version_number` (auto-incremented), `blob_storage_url`, `file_
 
 ## Related
 
-- [[documents|Documents Module]]
-- [[documents/categories/overview|Categories]]
-- [[documents/access-control/overview|Access Control]]
-- [[documents/acknowledgements/overview|Acknowledgements]]
-- [[documents/templates/overview|Templates]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[multi-tenancy]]
-- [[event-catalog]]
-- [[WEEK4-supporting-bridges]]
+- [[modules/documents/overview|Documents Module]]
+- [[frontend/architecture/overview|Categories]]
+- [[frontend/architecture/overview|Access Control]]
+- [[frontend/architecture/overview|Acknowledgements]]
+- [[frontend/architecture/overview|Templates]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]]

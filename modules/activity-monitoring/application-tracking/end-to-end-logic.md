@@ -55,12 +55,12 @@ POST /api/v1/activity/categories
 
 ## Related
 
-- [[activity-monitoring|Activity Monitoring Module]]
-- [[application-tracking/overview|Application Tracking Overview]]
-- [[raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
-- [[daily-aggregation/end-to-end-logic|Daily Aggregation — End-to-End Logic]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[data-classification]]
-- [[multi-tenancy]]
-- [[WEEK3-activity-monitoring]]
+- [[modules/activity-monitoring/overview|Activity Monitoring Module]]
+- [[frontend/architecture/overview|Application Tracking Overview]]
+- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
+- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation — End-to-End Logic]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/data-classification|Data Classification]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

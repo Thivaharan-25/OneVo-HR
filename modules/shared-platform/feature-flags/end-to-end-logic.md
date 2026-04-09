@@ -36,8 +36,8 @@ PUT /api/v1/feature-flags/{key}
 
 ## Related
 
-- [[feature-flags|Overview]]
-- [[tenant-management]]
-- [[subscriptions-billing]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/cross-cutting/feature-flags|Overview]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -51,5 +51,5 @@ public class WorkforceSnapshotServiceTests
 
 ## Related
 
-- [[productivity-analytics/workforce-snapshots/overview|Workforce Snapshots Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Workforce Snapshots Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

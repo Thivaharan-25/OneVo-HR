@@ -51,5 +51,5 @@ public class DisciplinaryServiceTests
 
 ## Related
 
-- [[disciplinary-actions]] — feature overview
-- [[testing/README|Testing Standards]] — project-wide testing conventions
+- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] — feature overview
+- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions

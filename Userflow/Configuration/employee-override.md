@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Tenant monitoring configured → [[monitoring-configuration]]
-- Employee has GDPR consent (for enabling features) → [[gdpr-consent]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Tenant monitoring configured → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- Employee has GDPR consent (for enabling features) → [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -27,7 +27,7 @@
 
 ### Step 3: Add Reason
 - **UI:** Enter reason for override (required for audit trail) → e.g., "Employee in probation — enhanced monitoring" or "Privacy exemption approved by legal"
-- **Backend:** EmployeeOverrideService.SetAsync() → [[employee-overrides]]
+- **Backend:** EmployeeOverrideService.SetAsync() → [[modules/configuration/employee-overrides/overview|Employee Overrides]]
 - **DB:** `employee_monitoring_overrides` — with reason and timestamp
 
 ### Step 4: Save
@@ -48,16 +48,16 @@
 
 ## Events Triggered
 
-- `EmployeeOverrideUpdated` → [[event-catalog]]
+- `EmployeeOverrideUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[monitoring-configuration]]
-- [[monitoring-toggles]]
-- [[gdpr-consent]]
+- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
 
 ## Module References
 
-- [[employee-overrides]]
-- [[monitoring-toggles]]
-- [[policy-distribution]]
+- [[modules/configuration/employee-overrides/overview|Employee Overrides]]
+- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]]
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]

@@ -1,16 +1,18 @@
 # Module: Payroll
 
 **Namespace:** `ONEVO.Modules.Payroll`
+**Phase:** 2 — Deferred
 **Pillar:** 1 — HR Management
-**Owner:** Dev 3 (Week 4)
+**Owner:** Dev 3
 **Tables:** 11
-**Task File:** [[WEEK4-payroll]]
 
 ---
 
 ## Purpose
 
-Manages payroll providers, tax engines, allowances, pensions, and batch payroll execution. Reads actual worked hours from [[workforce-presence]] (not just clock-in/out) and leave data from [[leave]] to compute payroll.
+Manages payroll providers, tax engines, allowances, pensions, and batch payroll execution. Reads actual worked hours from [[modules/workforce-presence/overview|Workforce Presence]] (not just clock-in/out) and leave data from [[modules/leave/overview|Leave]] to compute payroll.
+
+**Phase 1 activity data feed:** Payroll also reads activity data from [[modules/activity-monitoring/overview|Activity Monitoring]] as a **read-only reference** — active time, idle time, app usage summary, meeting time. This data is displayed alongside payroll data for context but does NOT affect salary calculation in Phase 1. It prepares the data pipeline for Phase 2 payroll integration.
 
 ---
 
@@ -18,10 +20,11 @@ Manages payroll providers, tax engines, allowances, pensions, and batch payroll 
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[core-hr]] | `IEmployeeService` | Employee salary, bank details |
-| **Depends on** | [[workforce-presence]] | `IWorkforcePresenceService` | Actual worked hours |
-| **Depends on** | [[leave]] | `ILeaveService` | Leave days for deductions |
-| **Depends on** | [[org-structure]] | `IOrgStructureService` | Legal entity context |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee salary, bank details |
+| **Depends on** | [[modules/workforce-presence/overview|Workforce Presence]] | `IWorkforcePresenceService` | Actual worked hours |
+| **Depends on** | [[modules/leave/overview|Leave]] | `ILeaveService` | Leave days for deductions |
+| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Legal entity context |
+| **Depends on** | [[modules/activity-monitoring/overview|Activity Monitoring]] | `IActivityMonitoringService` | Activity data feed (read-only): active/idle hours, app usage, meeting time |
 
 ---
 
@@ -152,9 +155,14 @@ External payroll system connections.
 | `pension_employee` | `decimal(15,2)` | |
 | `pension_employer` | `decimal(15,2)` | |
 | `net_pay` | `decimal(15,2)` | |
-| `worked_hours` | `decimal(7,2)` | From [[workforce-presence]] |
+| `worked_hours` | `decimal(7,2)` | From [[modules/workforce-presence/overview|Workforce Presence]] |
 | `overtime_hours` | `decimal(7,2)` | |
 | `leave_days_deducted` | `decimal(5,1)` | |
+| `activity_active_hours` | `decimal(7,2)` | Read-only from activity-monitoring (informational, not used in calculation) |
+| `activity_idle_hours` | `decimal(7,2)` | Read-only from activity-monitoring |
+| `activity_meeting_hours` | `decimal(7,2)` | Read-only from activity-monitoring |
+| `activity_active_pct` | `decimal(5,2)` | Read-only from activity-monitoring |
+| `activity_top_apps_json` | `jsonb` | Read-only — top 5 apps for the period |
 | `breakdown_json` | `jsonb` | Line-by-line breakdown |
 
 ### `payroll_adjustments`
@@ -188,6 +196,8 @@ External payroll system connections.
 1. **Payroll reads actual hours from `IWorkforcePresenceService`** — not just clock-in/out times.
 2. **Pessimistic locking** via `SELECT FOR UPDATE` — prevents concurrent payroll runs for the same tenant.
 3. **`tenant_id`** is used consistently on all tables — no column mapping workarounds needed.
+4. **Activity data is read-only in Phase 1.** The `activity_*` columns on payslips are informational — they do NOT affect `net_pay` calculation. They provide visibility into employee work behaviour alongside payroll. Phase 2 will optionally use activity data for productivity-based adjustments.
+5. **Activity data is populated during payroll run** by calling `IActivityMonitoringService.GetDailySummaryAsync()` for each day in the payroll period and aggregating. If activity monitoring is disabled for an employee, `activity_*` columns are null.
 
 ---
 
@@ -202,25 +212,27 @@ External payroll system connections.
 | GET | `/api/v1/payroll/providers` | `payroll:read` | List providers |
 | POST | `/api/v1/payroll/allowance-types` | `payroll:write` | Create allowance type |
 | GET | `/api/v1/payroll/tax-config` | `payroll:read` | Tax configuration |
+| GET | `/api/v1/payroll/activity-summary/{employeeId}` | `payroll:read` | Activity data feed for payroll period (active/idle hours, app usage, meeting time) |
+| GET | `/api/v1/payroll/export/with-activity` | `payroll:read` | Export payroll data with activity columns (CSV/Excel) |
 
 ## Features
 
-- [[payroll-providers]] — External payroll system connections (ADP, Oracle, internal)
-- [[tax-configuration]] — Country-specific progressive tax bracket definitions
-- [[allowances]] — Allowance types and per-employee assignments
-- [[pensions]] — Pension plan definitions and employee enrollments
-- [[payroll-execution]] — Batch payroll run with pessimistic locking — frontend: [[payroll-execution/frontend]]
-- [[adjustments]] — Bonuses, deductions, reimbursements, penalties per run
-- [[audit-trail]] — Payroll audit trail with performed-by tracking
+- [[modules/payroll/payroll-providers/overview|Payroll Providers]] — External payroll system connections (ADP, Oracle, internal)
+- [[Userflow/Payroll/tax-configuration|Tax Configuration]] — Country-specific progressive tax bracket definitions
+- [[modules/payroll/allowances/overview|Allowances]] — Allowance types and per-employee assignments
+- [[modules/payroll/pensions/overview|Pensions]] — Pension plan definitions and employee enrollments
+- [[modules/payroll/payroll-execution/overview|Payroll Execution]] — Batch payroll run with pessimistic locking — frontend: [[modules/payroll/payroll-execution/frontend|Frontend]]
+- [[modules/payroll/adjustments/overview|Adjustments]] — Bonuses, deductions, reimbursements, penalties per run
+- [[modules/payroll/audit-trail/overview|Audit Trail]] — Payroll audit trail with performed-by tracking
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All payroll data is tenant-scoped
-- [[compliance]] — Payroll audit trail for legal record-keeping
-- [[data-classification]] — Provider credentials encrypted at rest
-- [[error-handling]] — `SELECT FOR UPDATE` pessimistic locking prevents concurrent runs
-- [[WEEK4-payroll]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All payroll data is tenant-scoped
+- [[security/compliance|Compliance]] — Payroll audit trail for legal record-keeping
+- [[security/data-classification|Data Classification]] — Provider credentials encrypted at rest
+- [[backend/messaging/error-handling|Error Handling]] — `SELECT FOR UPDATE` pessimistic locking prevents concurrent runs
+- Payroll task file (deferred to Phase 2) — Implementation task file
 
-See also: [[module-catalog]], [[core-hr]], [[workforce-presence]], [[leave]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/leave/overview|Leave]]

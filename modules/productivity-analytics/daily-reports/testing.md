@@ -51,5 +51,5 @@ public class DailyReportServiceTests
 
 ## Related
 
-- [[productivity-analytics/daily-reports/overview|Daily Reports Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Daily Reports Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

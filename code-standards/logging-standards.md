@@ -96,7 +96,7 @@ app.Use(async (context, next) =>
 
 ## Related
 
-- [[observability]]
-- [[data-classification]]
-- [[compliance]]
-- [[rules]]
+- [[infrastructure/observability|Observability]]
+- [[security/data-classification|Data Classification]]
+- [[security/compliance|Compliance]]
+- [[AI_CONTEXT/rules|Rules]]

@@ -174,12 +174,12 @@ Then edit `modules/core-hr/employee-profiles/frontend.md` to append:
 
 ## Related
 
-- [[employee-profiles|Backend: Employee Profiles]] — API and data model
-- [[employee-lifecycle|Employee Lifecycle]] — onboarding/offboarding flows
-- [[auth-architecture|Auth Architecture]] — permission checks
-- [[authorization|RBAC]] — `employees:read`, `employees:write` permissions
-- [[multi-tenancy]] — tenant-scoped queries
-- [[WEEK2-core-hr-profile]] — implementation task
+- [[modules/core-hr/employee-profiles/overview|Backend: Employee Profiles]] — API and data model
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]] — onboarding/offboarding flows
+- [[security/auth-architecture|Auth Architecture]] — permission checks
+- [[frontend/cross-cutting/authorization|RBAC]] — `employees:read`, `employees:write` permissions
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped queries
+- [[current-focus/DEV1-core-hr-profile|DEV1: Core HR Profile]] — implementation task
 ```
 
 - [x] **Step 2: Repeat for all 11 frontend page specs**
@@ -247,12 +247,12 @@ For `modules/agent-gateway/agent-server-protocol.md`, append:
 
 ## Related
 
-- [[agent-gateway|Agent Gateway Module]] — parent module overview
-- [[data-ingestion|Data Ingestion]] — how agent sends data to server
-- [[heartbeat-monitoring|Heartbeat]] — agent health checks
-- [[tamper-resistance]] — anti-tamper protections
-- [[auth-architecture]] — device JWT authentication
-- [[WEEK1-shared-platform]] — implementation task
+- [[modules/agent-gateway/overview|Agent Gateway Module]] — parent module overview
+- [[modules/agent-gateway/data-ingestion/overview|Data Ingestion]] — how agent sends data to server
+- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat]] — agent health checks
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — anti-tamper protections
+- [[security/auth-architecture|Auth Architecture]] — device JWT authentication
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — implementation task
 ```
 
 For `modules/agent-gateway/data-collection.md`, append:
@@ -260,12 +260,12 @@ For `modules/agent-gateway/data-collection.md`, append:
 
 ## Related
 
-- [[agent-server-protocol]] — communication protocol
-- [[raw-data-processing]] — how server processes collected data
-- [[application-tracking]] — app usage tracking
-- [[device-tracking]] — device activity tracking
-- [[data-classification]] — PII/RESTRICTED classification for collected data
-- [[retention-policies]] — data retention rules
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — communication protocol
+- [[modules/activity-monitoring/raw-data-processing/overview|Raw Data Processing]] — how server processes collected data
+- [[modules/activity-monitoring/application-tracking/overview|Application Tracking]] — app usage tracking
+- [[modules/activity-monitoring/device-tracking/overview|Device Tracking]] — device activity tracking
+- [[security/data-classification|Data Classification]] — PII/RESTRICTED classification for collected data
+- [[modules/configuration/retention-policies/overview|Retention Policies]] — data retention rules
 ```
 
 For `modules/agent-gateway/tamper-resistance.md`, append:
@@ -273,9 +273,9 @@ For `modules/agent-gateway/tamper-resistance.md`, append:
 
 ## Related
 
-- [[agent-server-protocol]] — secure communication
-- [[auth-architecture]] — device JWT, HMAC
-- [[compliance]] — security requirements
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — secure communication
+- [[security/auth-architecture|Auth Architecture]] — device JWT, HMAC
+- [[security/compliance|Compliance]] — security requirements
 ```
 
 For `modules/identity-verification/photo-capture.md`, append:
@@ -283,11 +283,11 @@ For `modules/identity-verification/photo-capture.md`, append:
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]] — parent module
-- [[photo-verification]] — server-side verification
-- [[biometric-enrollment]] — biometric data enrollment
-- [[verification-policies]] — when photos are required
-- [[data-classification]] — RESTRICTED classification for photos
+- [[modules/identity-verification/overview|Identity Verification Module]] — parent module
+- [[modules/identity-verification/photo-verification/overview|Photo Verification]] — server-side verification
+- [[modules/identity-verification/biometric-enrollment/overview|Biometric Enrollment]] — biometric data enrollment
+- [[modules/identity-verification/verification-policies/overview|Verification Policies]] — when photos are required
+- [[security/data-classification|Data Classification]] — RESTRICTED classification for photos
 ```
 
 - [x] **Step 3: Copy agent AI_CONTEXT info into root AI_CONTEXT**
@@ -356,15 +356,15 @@ For `cross-cutting/security/auth-architecture.md`, append:
 
 ## Related
 
-- [[authentication]] — login flow feature
-- [[authorization]] — RBAC feature
+- [[frontend/cross-cutting/authentication|Authentication]] — login flow feature
+- [[frontend/cross-cutting/authorization|Authorization]] — RBAC feature
 - [[mfa]] — multi-factor auth feature
-- [[session-management]] — session tracking
-- [[agent-server-protocol]] — device JWT
-- [[multi-tenancy]] — tenant isolation
-- [[compliance]] — GDPR, PDPA, OWASP
-- [[data-classification]] — PII inventory
-- [[WEEK1-auth-security]] — implementation task
+- [[modules/auth/session-management/overview|Session Management]] — session tracking
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — device JWT
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant isolation
+- [[security/compliance|Compliance]] — GDPR, PDPA, OWASP
+- [[security/data-classification|Data Classification]] — PII inventory
+- [[current-focus/DEV2-auth-security|DEV2: Auth Security]] — implementation task
 ```
 
 For `cross-cutting/security/data-classification.md`, append:
@@ -372,12 +372,12 @@ For `cross-cutting/security/data-classification.md`, append:
 
 ## Related
 
-- [[auth-architecture]] — encryption, access control
-- [[retention-policies]] — data retention per classification
-- [[screenshots]] — RESTRICTED data
-- [[photo-capture]] — RESTRICTED data
-- [[compliance]] — GDPR rights
-- [[logging-standards]] — PII scrubbing
+- [[security/auth-architecture|Auth Architecture]] — encryption, access control
+- [[modules/configuration/retention-policies/overview|Retention Policies]] — data retention per classification
+- [[modules/activity-monitoring/screenshots/overview|Screenshots]] — RESTRICTED data
+- [[modules/identity-verification/photo-capture|Photo Capture]] — RESTRICTED data
+- [[security/compliance|Compliance]] — GDPR rights
+- [[code-standards/logging-standards|Logging Standards]] — PII scrubbing
 ```
 
 For `cross-cutting/multi-tenancy.md`, append:
@@ -385,12 +385,12 @@ For `cross-cutting/multi-tenancy.md`, append:
 
 ## Related
 
-- [[tenant-management]] — tenant provisioning
-- [[tenant-settings]] — per-tenant configuration
-- [[auth-architecture]] — JWT tenant isolation
-- [[shared-kernel]] — ITenantContext
-- [[performance]] — RLS performance impact
-- [[WEEK1-infrastructure-setup]] — implementation task
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]] — tenant provisioning
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — per-tenant configuration
+- [[security/auth-architecture|Auth Architecture]] — JWT tenant isolation
+- [[backend/shared-kernel|Shared Kernel]] — ITenantContext
+- [[database/performance|Performance]] — RLS performance impact
+- [[current-focus/DEV1-infrastructure-setup|DEV1: Infrastructure]] — implementation task
 ```
 
 For `cross-cutting/database/performance.md`, append:
@@ -398,10 +398,10 @@ For `cross-cutting/database/performance.md`, append:
 
 ## Related
 
-- [[raw-data-processing]] — partitioned time-series tables
-- [[daily-aggregation]] — aggregation queries
-- [[multi-tenancy]] — RLS performance
-- [[migration-patterns]] — EF Core migrations
+- [[modules/activity-monitoring/raw-data-processing/overview|Raw Data Processing]] — partitioned time-series tables
+- [[modules/activity-monitoring/daily-aggregation/overview|Daily Aggregation]] — aggregation queries
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — RLS performance
+- [[database/migration-patterns|Migration Patterns]] — EF Core migrations
 ```
 
 For `cross-cutting/messaging/event-catalog.md`, append:
@@ -409,10 +409,10 @@ For `cross-cutting/messaging/event-catalog.md`, append:
 
 ## Related
 
-- [[module-boundaries]] — cross-module communication rules
-- [[exchange-topology]] — RabbitMQ topology (Phase 2)
-- [[error-handling]] — dead letter handling
-- [[shared-kernel]] — IDomainEvent interface
+- [[backend/module-boundaries|Module Boundaries]] — cross-module communication rules
+- [[backend/messaging/exchange-topology|Exchange Topology]] — RabbitMQ topology (Phase 2)
+- [[backend/messaging/error-handling|Error Handling]] — dead letter handling
+- [[backend/shared-kernel|Shared Kernel]] — IDomainEvent interface
 ```
 
 Apply similar `## Related` sections to ALL cross-cutting docs, linking to the modules and features that use them.
@@ -453,7 +453,7 @@ cp frontend/docs/architecture/README.md architecture/frontend-structure.md
 
 - [x] **Step 2: Update module-catalog.md links to point to new module locations**
 
-Replace all module links to use the new `modules/` paths. The catalog should link to each module's `overview.md` using wikilinks like `[[auth|Auth & Security]]`, `[[core-hr|Core HR]]`, etc.
+Replace all module links to use the new `modules/` paths. The catalog should link to each module's `overview.md` using wikilinks like `[[modules/auth/overview|Auth & Security]]`, `[[modules/core-hr/overview|Core HR]]`, etc.
 
 - [x] **Step 3: Add Related sections**
 
@@ -462,10 +462,10 @@ For `architecture/module-boundaries.md`:
 
 ## Related
 
-- [[module-catalog]] — full module index
-- [[shared-kernel]] — cross-cutting code
-- [[event-catalog]] — cross-module events
-- [[exchange-topology]] — message routing
+- [[backend/module-catalog|Module Catalog]] — full module index
+- [[backend/shared-kernel|Shared Kernel]] — cross-cutting code
+- [[backend/messaging/event-catalog|Event Catalog]] — cross-module events
+- [[backend/messaging/exchange-topology|Exchange Topology]] — message routing
 ```
 
 For `architecture/shared-kernel.md`:
@@ -473,10 +473,10 @@ For `architecture/shared-kernel.md`:
 
 ## Related
 
-- [[module-boundaries]] — what belongs in shared kernel
-- [[multi-tenancy]] — ITenantContext
-- [[auth-architecture]] — ICurrentUser, RequirePermissionAttribute
-- [[error-handling]] — Result<T> pattern
+- [[backend/module-boundaries|Module Boundaries]] — what belongs in shared kernel
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — ITenantContext
+- [[security/auth-architecture|Auth Architecture]] — ICurrentUser, RequirePermissionAttribute
+- [[backend/messaging/error-handling|Error Handling]] — Result<T> pattern
 ```
 
 - [x] **Step 4: Commit**
@@ -506,10 +506,10 @@ For `design-system/component-catalog.md`:
 
 ## Related
 
-- [[color-tokens]] — color system
-- [[typography]] — type scale
-- [[layout-patterns]] — page layouts
-- [[frontend-coding-standards]] — component conventions
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — color system
+- [[frontend/design-system/foundations/typography|Typography]] — type scale
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — page layouts
+- [[frontend/coding-standards|Frontend Coding Standards]] — component conventions
 ```
 
 - [x] **Step 3: Commit**
@@ -548,37 +548,37 @@ Extract ONLY the overview/metadata from `backend/AI_CONTEXT/current-focus.md` �
 
 | Developer | Module(s) | Task File | Key Deliverables |
 |:----------|:----------|:----------|:----------------|
-| Dev 1 | Infrastructure + Shared Kernel | [[WEEK1-infrastructure-setup]] | Tenant provisioning, user CRUD, multi-tenancy, EF Core |
-| Dev 2 | Auth & Security | [[WEEK1-auth-security]] | JWT (RS256), RBAC 90+ perms, MFA, audit logging |
-| Dev 3 | Org Structure | [[WEEK1-org-structure]] | Departments, job hierarchy, teams, legal entities |
-| Dev 4 | Shared Platform + Agent Gateway | [[WEEK1-shared-platform]] | SSO, subscriptions, feature flags, Agent Gateway |
+| Dev 1 | Infrastructure + Shared Kernel | [[current-focus/DEV1-infrastructure-setup|DEV1: Infrastructure]] | Tenant provisioning, user CRUD, multi-tenancy, EF Core |
+| Dev 2 | Auth & Security | [[current-focus/DEV2-auth-security|DEV2: Auth Security]] | JWT (RS256), RBAC 90+ perms, MFA, audit logging |
+| Dev 3 | Org Structure | [[current-focus/DEV3-org-structure|DEV3: Org Structure]] | Departments, job hierarchy, teams, legal entities |
+| Dev 4 | Shared Platform + Agent Gateway | [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] | SSO, subscriptions, feature flags, Agent Gateway |
 
 ### Week 2 (Apr 14–18): Core HR + Workforce Presence
 
 | Developer | Module(s) | Task File | Key Deliverables |
 |:----------|:----------|:----------|:----------------|
-| Dev 1 | Core HR (Profile) | [[WEEK2-core-hr-profile]] | Employee CRUD, full profile, salary, bank details |
-| Dev 2 | Core HR (Lifecycle) | [[WEEK2-core-hr-lifecycle]] | Onboarding, offboarding, lifecycle events |
-| Dev 3 | Workforce Presence (Setup) | [[WEEK2-workforce-presence-setup]] | Shifts, schedules, presence/device sessions, breaks |
-| Dev 4 | Workforce Presence (Biometric) | [[WEEK2-workforce-presence-biometric]] | Biometric devices, enrollment, overtime, corrections |
+| Dev 1 | Core HR (Profile) | [[current-focus/DEV1-core-hr-profile|DEV1: Core HR Profile]] | Employee CRUD, full profile, salary, bank details |
+| Dev 2 | Core HR (Lifecycle) | [[current-focus/DEV2-core-hr-lifecycle|DEV2: Core HR Lifecycle]] | Onboarding, offboarding, lifecycle events |
+| Dev 3 | Workforce Presence (Setup) | [[current-focus/DEV3-workforce-presence-setup|DEV3: Workforce Presence]] | Shifts, schedules, presence/device sessions, breaks |
+| Dev 4 | Workforce Presence (Biometric) | [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]] | Biometric devices, enrollment, overtime, corrections |
 
 ### Week 3 (Apr 21–25): Leave + Performance + Monitoring
 
 | Developer | Module(s) | Task File | Key Deliverables |
 |:----------|:----------|:----------|:----------------|
-| Dev 1 | Leave | [[WEEK3-leave]] | Leave types, policies, entitlements, request/approval |
-| Dev 2 | Performance | [[WEEK3-performance]] | Reviews, feedback, goals, recognition, succession |
-| Dev 3 | Activity Monitoring | [[WEEK3-activity-monitoring]] | Snapshots, app tracking, meetings, screenshots, aggregation |
-| Dev 4 | Identity Verification | [[WEEK3-identity-verification]] | Policies, photo capture, biometric matching |
+| Dev 1 | Leave | [[current-focus/DEV1-leave|DEV1: Leave]] | Leave types, policies, entitlements, request/approval |
+| Dev 2 | Performance | [[current-focus/DEV2-performance|DEV2: Performance]] | Reviews, feedback, goals, recognition, succession |
+| Dev 3 | Activity Monitoring | [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]] | Snapshots, app tracking, meetings, screenshots, aggregation |
+| Dev 4 | Identity Verification | [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]] | Policies, photo capture, biometric matching |
 
 ### Week 4 (Apr 28–May 2): Exception Engine + Analytics + Payroll
 
 | Developer | Module(s) | Task File | Key Deliverables |
 |:----------|:----------|:----------|:----------------|
-| Dev 1 | Productivity Analytics | [[WEEK4-productivity-analytics]] | Daily/weekly/monthly reports, workforce snapshots |
-| Dev 2 | Exception Engine | [[WEEK4-exception-engine]] | Rules, triggers, alerts, escalation chains |
-| Dev 3 | Payroll | [[WEEK4-payroll]] | Providers, tax, allowances, batch execution |
-| Dev 4 | Supporting + Bridges | [[WEEK4-supporting-bridges]] | Documents, notifications, grievance, expense, bridges |
+| Dev 1 | Productivity Analytics | [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]] | Daily/weekly/monthly reports, workforce snapshots |
+| Dev 2 | Exception Engine | [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]] | Rules, triggers, alerts, escalation chains |
+| Dev 3 | Payroll | [[current-focus/DEV3-payroll|DEV3: Payroll]] | Providers, tax, allowances, batch execution |
+| Dev 4 | Supporting + Bridges | [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] | Documents, notifications, grievance, expense, bridges |
 
 ---
 
@@ -587,8 +587,8 @@ Extract ONLY the overview/metadata from `backend/AI_CONTEXT/current-focus.md` �
 - **AI Chatbot (Nexis)** — deferred to Phase 2
 - **Mobile Application (Flutter)** — deferred to Phase 2
 - **Frontend (React/Next.js)** — follows backend completion
-- **Desktop Agent code** — follows Agent Gateway completion (see [[agent-gateway]])
-- **WorkManage Pro features** — other team; we only build [[external-integrations|bridge interfaces]]
+- **Desktop Agent code** — follows Agent Gateway completion (see [[modules/agent-gateway/overview|Agent Gateway]])
+- **WorkManage Pro features** — other team; we only build [[backend/external-integrations|bridge interfaces]]
 - **Teams Graph API deep integration** — Phase 2
 - **Meilisearch** — PostgreSQL FTS sufficient for Phase 1
 - **RabbitMQ** — in-process domain events; RabbitMQ for scale later
@@ -605,11 +605,11 @@ Extract ONLY the overview/metadata from `backend/AI_CONTEXT/current-focus.md` �
 
 ## Related
 
-- [[project-context]] — what ONEVO is
-- [[tech-stack]] — technology decisions
-- [[module-catalog]] — all 22 modules
-- [[rules]] — AI agent operating rules
-- [[known-issues]] — gotchas
+- [[AI_CONTEXT/project-context|Project Context]] — what ONEVO is
+- [[AI_CONTEXT/tech-stack|Tech Stack]] — technology decisions
+- [[backend/module-catalog|Module Catalog]] — all 22 modules
+- [[AI_CONTEXT/rules|Rules]] — AI agent operating rules
+- [[AI_CONTEXT/known-issues|Known Issues]] — gotchas
 ```
 
 - [x] **Step 2: Copy task files from tasks/active/ to current-focus/**
@@ -625,18 +625,18 @@ For each WEEK task file, ensure a `## Related` section exists linking to the mod
 ```markdown
 ## Related
 
-- [[auth|Auth Module Overview]] — module overview
-- [[authentication]] — login flow feature
-- [[authorization]] — RBAC feature
+- [[modules/auth/overview|Auth Module Overview]] — module overview
+- [[frontend/cross-cutting/authentication|Authentication]] — login flow feature
+- [[frontend/cross-cutting/authorization|Authorization]] — RBAC feature
 - [[mfa]] — multi-factor auth feature
-- [[session-management]] — session feature
-- [[audit-logging]] — audit trail feature
-- [[gdpr-consent]] — GDPR consent feature
-- [[auth-architecture]] — security architecture
-- [[data-classification]] — PII handling
-- [[multi-tenancy]] — JWT tenant isolation
-- [[shared-kernel]] — RequirePermissionAttribute, ICurrentUser
-- [[compliance]] — GDPR consent requirements
+- [[modules/auth/session-management/overview|Session Management]] — session feature
+- [[modules/auth/audit-logging/overview|Audit Logging]] — audit trail feature
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] — GDPR consent feature
+- [[security/auth-architecture|Auth Architecture]] — security architecture
+- [[security/data-classification|Data Classification]] — PII handling
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — JWT tenant isolation
+- [[backend/shared-kernel|Shared Kernel]] — RequirePermissionAttribute, ICurrentUser
+- [[security/compliance|Compliance]] — GDPR consent requirements
 ```
 
 - [x] **Step 4: Merge frontend current-focus into README.md**
@@ -673,10 +673,10 @@ Add `## Related` section:
 ```markdown
 ## Related
 
-- [[tech-stack]] — technology decisions
+- [[AI_CONTEXT/tech-stack|Tech Stack]] — technology decisions
 - [[current-focus/README|Current Focus]] — what we're building now
-- [[module-catalog]] — all 22 modules
-- [[rules]] — AI operating rules
+- [[backend/module-catalog|Module Catalog]] — all 22 modules
+- [[AI_CONTEXT/rules|Rules]] — AI operating rules
 ```
 
 - [x] **Step 2: Merge tech-stack.md**
@@ -687,9 +687,9 @@ Add `## Related`:
 ```markdown
 ## Related
 
-- [[project-context]] — platform overview
-- [[structure]] — frontend architecture
-- [[agent-server-protocol]] — agent communication
+- [[AI_CONTEXT/project-context|Project Context]] — platform overview
+- [[frontend/architecture/app-structure|App Structure]] — frontend architecture
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — agent communication
 ```
 
 - [x] **Step 3: Merge rules.md**
@@ -708,10 +708,10 @@ Combine backend rules (primary — largest), frontend rules, and agent rules int
 
 Update the "Contextual Awareness" reading order to reference new paths:
 ```markdown
-1. [[project-context]] — What ONEVO is
-2. [[tech-stack]] — .NET 9, PostgreSQL, Redis, Next.js, etc.
+1. [[AI_CONTEXT/project-context|Project Context]] — What ONEVO is
+2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 9, PostgreSQL, Redis, Next.js, etc.
 3. [[current-focus/README|Current Focus]] — Current sprint/week priorities
-4. [[known-issues]] — Gotchas and deprecated patterns
+4. [[AI_CONTEXT/known-issues|Known Issues]] — Gotchas and deprecated patterns
 5. The specific module doc in `modules/` for the module you're working on
 ```
 
@@ -772,10 +772,10 @@ git commit -m "docs: add task completion rules (section 8)"
 - [x] **Step 1: Update each module overview.md with comprehensive Related section**
 
 Every module `overview.md` must link to:
-- All its feature subfolders: `[[authentication]]`, `[[authorization]]`, etc.
-- Cross-cutting concerns it uses: `[[multi-tenancy]]`, `[[auth-architecture]]`, `[[error-handling]]`, etc.
+- All its feature subfolders: `[[frontend/cross-cutting/authentication|Authentication]]`, `[[frontend/cross-cutting/authorization|Authorization]]`, etc.
+- Cross-cutting concerns it uses: `[[infrastructure/multi-tenancy|Multi Tenancy]]`, `[[security/auth-architecture|Auth Architecture]]`, `[[backend/messaging/error-handling|Error Handling]]`, etc.
 - Other modules it depends on or is consumed by (from the Dependencies table)
-- Its task file: `[[WEEK1-auth-security]]`
+- Its task file: `[[current-focus/DEV2-auth-security|DEV2: Auth Security]]`
 - Frontend pages if applicable
 
 Example for `modules/auth/overview.md` — ensure the Related/Dependencies sections use wikilinks:
@@ -785,27 +785,27 @@ Example for `modules/auth/overview.md` — ensure the Related/Dependencies secti
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[infrastructure]] | `IUserService` | User identity |
+| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `IUserService` | User identity |
 | **Consumed by** | All modules | `ICurrentUser`, `RequirePermissionAttribute` | Auth context |
-| **Consumed by** | [[agent-gateway]] | `ITokenService` | Device JWT issuance |
+| **Consumed by** | [[modules/agent-gateway/overview|Agent Gateway]] | `ITokenService` | Device JWT issuance |
 
 ## Features
 
-- [[authentication]] — JWT login, RS256 tokens
-- [[authorization]] — RBAC, 90+ permissions
-- [[session-management]] — user sessions, device tracking
+- [[frontend/cross-cutting/authentication|Authentication]] — JWT login, RS256 tokens
+- [[frontend/cross-cutting/authorization|Authorization]] — RBAC, 90+ permissions
+- [[modules/auth/session-management/overview|Session Management]] — user sessions, device tracking
 - [[mfa]] — TOTP, Email OTP
-- [[audit-logging]] — JSON diff audit trail
-- [[gdpr-consent]] — consent records, monitoring opt-in
+- [[modules/auth/audit-logging/overview|Audit Logging]] — JSON diff audit trail
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] — consent records, monitoring opt-in
 
 ## Related
 
-- [[auth-architecture]] — security design doc
-- [[data-classification]] — PII handling
-- [[compliance]] — GDPR, PDPA requirements
-- [[multi-tenancy]] — JWT tenant isolation
-- [[shared-kernel]] — RequirePermissionAttribute, ICurrentUser
-- [[WEEK1-auth-security]] — implementation task
+- [[security/auth-architecture|Auth Architecture]] — security design doc
+- [[security/data-classification|Data Classification]] — PII handling
+- [[security/compliance|Compliance]] — GDPR, PDPA requirements
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — JWT tenant isolation
+- [[backend/shared-kernel|Shared Kernel]] — RequirePermissionAttribute, ICurrentUser
+- [[current-focus/DEV2-auth-security|DEV2: Auth Security]] — implementation task
 ```
 
 - [x] **Step 2: Repeat for all 22 module overviews**
@@ -853,39 +853,39 @@ git commit -m "docs: add wikilinks to all 22 module overview files"
 - [x] **Step 1: Add Related section to every feature overview.md**
 
 Each feature `overview.md` should link to:
-- Parent module: `[[auth|Auth Module]]`
-- Sibling features: `[[authentication]]`, `[[authorization]]`, etc.
-- Cross-cutting concerns: `[[multi-tenancy]]`, `[[error-handling]]`, `[[auth-architecture]]`, etc.
-- Frontend page if exists: `[[frontend]]` (in same folder)
+- Parent module: `[[modules/auth/overview|Auth Module]]`
+- Sibling features: `[[frontend/cross-cutting/authentication|Authentication]]`, `[[frontend/cross-cutting/authorization|Authorization]]`, etc.
+- Cross-cutting concerns: `[[infrastructure/multi-tenancy|Multi Tenancy]]`, `[[backend/messaging/error-handling|Error Handling]]`, `[[security/auth-architecture|Auth Architecture]]`, etc.
+- Frontend page if exists: `[[modules/activity-monitoring/application-tracking/frontend|Frontend]]` (in same folder)
 
 Example for `modules/auth/authentication/overview.md`:
 ```markdown
 ## Related
 
-- [[auth|Auth Module]] — parent module
-- [[authorization]] — RBAC checks after authentication
-- [[session-management]] — session created on login
+- [[modules/auth/overview|Auth Module]] — parent module
+- [[frontend/cross-cutting/authorization|Authorization]] — RBAC checks after authentication
+- [[modules/auth/session-management/overview|Session Management]] — session created on login
 - [[mfa]] — MFA challenge after password verification
-- [[auth-architecture]] — JWT RS256 design
-- [[multi-tenancy]] — tenant_id in JWT claims
-- [[error-handling]] — Result<T> for login failures
-- [[logging-standards]] — audit logging on auth events
-- [[WEEK1-auth-security]] — implementation task
+- [[security/auth-architecture|Auth Architecture]] — JWT RS256 design
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant_id in JWT claims
+- [[backend/messaging/error-handling|Error Handling]] — Result<T> for login failures
+- [[code-standards/logging-standards|Logging Standards]] — audit logging on auth events
+- [[current-focus/DEV2-auth-security|DEV2: Auth Security]] — implementation task
 ```
 
 - [x] **Step 2: Add Related section to every end-to-end-logic.md**
 
 Each `end-to-end-logic.md` should link to:
-- Its feature overview: `[[authentication|Overview]]`
-- Other features in the flow: `[[session-management]]`, `[[audit-logging]]`
-- Cross-cutting docs relevant to the flow: `[[event-catalog]]`, `[[error-handling]]`
+- Its feature overview: `[[frontend/cross-cutting/authentication|Overview]]`
+- Other features in the flow: `[[modules/auth/session-management/overview|Session Management]]`, `[[modules/auth/audit-logging/overview|Audit Logging]]`
+- Cross-cutting docs relevant to the flow: `[[backend/messaging/event-catalog|Event Catalog]]`, `[[backend/messaging/error-handling|Error Handling]]`
 
 - [x] **Step 3: Add Related section to every testing.md**
 
 Each `testing.md` should link to:
-- Its feature overview: `[[authentication|Overview]]`
-- Testing standards: `[[testing/README|Testing Standards]]`
-- Database testing: `[[migration-patterns]]` if relevant
+- Its feature overview: `[[frontend/cross-cutting/authentication|Overview]]`
+- Testing standards: `[[code-standards/testing-strategy|Testing Standards]]`
+- Database testing: `[[database/migration-patterns|Migration Patterns]]` if relevant
 
 - [x] **Step 4: Commit**
 

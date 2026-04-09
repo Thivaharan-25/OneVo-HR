@@ -32,10 +32,10 @@ POST /api/v1/users
 
 ## Related
 
-- [[user-management|Overview]]
-- [[tenant-management]]
-- [[authentication]]
-- [[authorization]]
-- [[audit-logging]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/infrastructure/user-management/overview|Overview]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

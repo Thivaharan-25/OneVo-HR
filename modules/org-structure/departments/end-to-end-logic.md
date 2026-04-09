@@ -94,10 +94,10 @@ PUT /api/v1/departments/{id}
 
 ## Related
 
-- [[departments|Overview]]
-- [[legal-entities]]
-- [[cost-centers]]
-- [[teams]]
-- [[job-hierarchy]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/org-structure/departments/overview|Overview]]
+- [[modules/org-structure/legal-entities/overview|Legal Entities]]
+- [[modules/org-structure/cost-centers/overview|Cost Centers]]
+- [[modules/org-structure/teams/overview|Teams]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

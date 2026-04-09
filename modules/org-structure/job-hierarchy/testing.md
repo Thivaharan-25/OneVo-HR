@@ -51,6 +51,6 @@ public class JobHierarchyServiceTests
 
 ## Related
 
-- [[job-hierarchy|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/org-structure/job-hierarchy/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

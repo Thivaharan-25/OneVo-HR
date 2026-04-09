@@ -49,7 +49,7 @@ app.MapHealthChecks("/health/ready");   // Kubernetes readiness
 
 ## Related
 
-- [[observability]]
-- [[logging-standards]]
-- [[exception-engine]]
-- [[alert-generation]]
+- [[infrastructure/observability|Observability]]
+- [[code-standards/logging-standards|Logging Standards]]
+- [[modules/exception-engine/overview|Exception Engine]]
+- [[modules/exception-engine/alert-generation/overview|Alert Generation]]

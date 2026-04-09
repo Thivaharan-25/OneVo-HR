@@ -10,14 +10,14 @@
 
 - Tenant is active with a valid subscription
 - Subscription plan determines which modules are available to toggle
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Feature Flags
 - **UI:** Settings > Modules & Features. Page displays a grid of all ONEVO modules organized by pillar: HR Management, Workforce Intelligence, Analytics. Each module card shows: name, description, status (Enabled/Disabled/Plan Required), and toggle switch
 - **API:** `GET /api/v1/settings/features`
-- **Backend:** `FeatureFlagService.GetAllFlagsAsync()` → [[feature-flags]]
+- **Backend:** `FeatureFlagService.GetAllFlagsAsync()` → [[frontend/cross-cutting/feature-flags|Feature Flags]]
 - **Validation:** Permission check for `settings:admin`
 - **DB:** `tenant_feature_flags`, `billing_plans` (to determine plan-gated features)
 
@@ -40,7 +40,7 @@
   ```json
   { "enabled": true }
   ```
-- **Backend:** `FeatureFlagService.SetFeatureFlagAsync()` → [[feature-flags]]
+- **Backend:** `FeatureFlagService.SetFeatureFlagAsync()` → [[frontend/cross-cutting/feature-flags|Feature Flags]]
   1. Updates `tenant_feature_flags` table
   2. Clears feature flag cache for the tenant
   3. Publishes `FeatureFlagChangedEvent`
@@ -87,18 +87,18 @@
 
 ## Events Triggered
 
-- `FeatureFlagChangedEvent` → [[event-catalog]] — consumed by navigation service, API middleware, and scheduled job manager
-- `AuditLogEntry` (action: `feature.enabled` or `feature.disabled`) → [[audit-logging]]
+- `FeatureFlagChangedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by navigation service, API middleware, and scheduled job manager
+- `AuditLogEntry` (action: `feature.enabled` or `feature.disabled`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[billing-subscription]] — plan determines available modules
-- [[tenant-provisioning]] — initial module selection during setup
-- [[tenant-settings]] — other tenant-level configuration
+- [[Userflow/Platform-Setup/billing-subscription|Billing Subscription]] — plan determines available modules
+- [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]] — initial module selection during setup
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — other tenant-level configuration
 
 ## Module References
 
-- [[feature-flags]] — feature flag implementation details
-- [[configuration]] — tenant configuration system
-- [[infrastructure]] — caching layer for feature flags
-- [[shared-platform]] — navigation menu generation based on flags
+- [[frontend/cross-cutting/feature-flags|Feature Flags]] — feature flag implementation details
+- [[modules/configuration/overview|Configuration]] — tenant configuration system
+- [[modules/infrastructure/overview|Infrastructure]] — caching layer for feature flags
+- [[modules/shared-platform/overview|Shared Platform]] — navigation menu generation based on flags

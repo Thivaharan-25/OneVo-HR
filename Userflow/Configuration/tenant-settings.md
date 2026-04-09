@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Tenant provisioned → [[tenant-provisioning]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Tenant provisioned → [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -26,7 +26,7 @@
   - Fiscal year start month
   - Work week days (e.g., Mon-Fri or Sun-Thu)
   - Default language (English, others)
-- **Backend:** TenantSettingsService.UpdateAsync() → [[tenant-settings]]
+- **Backend:** TenantSettingsService.UpdateAsync() → [[Userflow/Configuration/tenant-settings|Tenant Settings]]
 - **DB:** `tenant_settings`
 
 ### Step 3: Save
@@ -47,15 +47,15 @@
 
 ## Events Triggered
 
-- `TenantSettingsUpdated` → [[event-catalog]]
+- `TenantSettingsUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[tenant-provisioning]]
-- [[tenant-branding]]
-- [[monitoring-toggles]]
+- [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
+- [[frontend/design-system/theming/tenant-branding|Tenant Branding]]
+- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]]
 
 ## Module References
 
-- [[tenant-settings]]
-- [[configuration]]
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]]
+- [[modules/configuration/overview|Configuration]]

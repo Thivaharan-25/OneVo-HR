@@ -83,7 +83,7 @@ Process payroll runs, review calculations, and approve for payment. Reads actual
 
 ## Related
 
-- [[payroll/payroll-execution/overview|Payroll Execution Backend]]
-- [[auth-architecture]]
-- [[design-system]]
-- [[WEEK4-payroll]]
+- [[frontend/architecture/overview|Payroll Execution Backend]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[frontend/design-system/README|Design System]]
+- Payroll task file (deferred to Phase 2)

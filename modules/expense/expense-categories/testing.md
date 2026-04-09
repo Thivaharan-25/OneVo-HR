@@ -262,5 +262,5 @@ public class ExpenseCategoriesApiTests : IClassFixture<CustomWebApplicationFacto
 
 ## Related
 
-- [[expense-categories]] — feature overview
-- [[testing/README|Testing Standards]] — project-wide testing conventions
+- [[modules/expense/expense-categories/overview|Expense Categories]] — feature overview
+- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions

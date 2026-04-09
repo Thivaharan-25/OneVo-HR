@@ -1,9 +1,13 @@
 # Module: Grievance
 
 **Namespace:** `ONEVO.Modules.Grievance`
+**Phase:** 2 — Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 2 (Week 4)
 **Tables:** 2
+
+> [!WARNING]
+> **This module is deferred to Phase 2. Do not implement.** Case tracking is not core to the employee monitoring product. Specs are preserved here for future reference.
 
 ---
 
@@ -17,8 +21,8 @@ Manages employee grievance cases and disciplinary actions. Supports anonymous re
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[core-hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[shared-platform]] | Workflow engine | Resolution approval |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context |
+| **Depends on** | [[modules/shared-platform/overview|Shared Platform]] | Workflow engine | Resolution approval |
 
 ---
 
@@ -72,16 +76,16 @@ Manages employee grievance cases and disciplinary actions. Supports anonymous re
 
 ## Features
 
-- [[grievance-cases]] — Grievance filing, investigation tracking, anonymous reporting
-- [[disciplinary-actions]] — Disciplinary actions linked optionally to grievance cases
+- [[modules/grievance/grievance-cases/overview|Grievance Cases]] — Grievance filing, investigation tracking, anonymous reporting
+- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] — Disciplinary actions linked optionally to grievance cases
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All cases and actions are tenant-scoped
-- [[compliance]] — Case resolution and disciplinary history form a legal audit trail
-- [[data-classification]] — Anonymous filings must not expose `filed_by_id`
-- [[WEEK4-supporting-bridges]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All cases and actions are tenant-scoped
+- [[security/compliance|Compliance]] — Case resolution and disciplinary history form a legal audit trail
+- [[security/data-classification|Data Classification]] — Anonymous filings must not expose `filed_by_id`
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
 
-See also: [[module-catalog]], [[core-hr]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]]

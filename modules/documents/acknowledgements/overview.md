@@ -16,13 +16,13 @@ Fields: `document_version_id`, `employee_id`, `acknowledged_by_id`, `method` (`c
 
 ## Related
 
-- [[documents|Documents Module]]
-- [[documents/document-management/overview|Document Management]]
-- [[documents/access-control/overview|Access Control]]
-- [[documents/categories/overview|Categories]]
-- [[documents/templates/overview|Templates]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[multi-tenancy]]
-- [[event-catalog]]
-- [[WEEK4-supporting-bridges]]
+- [[modules/documents/overview|Documents Module]]
+- [[frontend/architecture/overview|Document Management]]
+- [[frontend/architecture/overview|Access Control]]
+- [[frontend/architecture/overview|Categories]]
+- [[frontend/architecture/overview|Templates]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]]

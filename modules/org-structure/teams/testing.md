@@ -51,6 +51,6 @@ public class TeamServiceTests
 
 ## Related
 
-- [[teams|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/org-structure/teams/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

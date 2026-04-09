@@ -22,13 +22,13 @@ Fields: `country_id`, `tax_brackets_json` (progressive brackets), `effective_fro
 
 ## Related
 
-- [[payroll|Payroll Module]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[payroll/pensions/overview|Pensions]]
-- [[payroll/allowances/overview|Allowances]]
-- [[payroll/audit-trail/overview|Audit Trail]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[modules/payroll/overview|Payroll Module]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[frontend/architecture/overview|Pensions]]
+- [[frontend/architecture/overview|Allowances]]
+- [[frontend/architecture/overview|Audit Trail]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

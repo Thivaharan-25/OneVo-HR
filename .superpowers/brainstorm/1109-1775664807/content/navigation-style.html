@@ -1,0 +1,74 @@
+<h2>How should navigation feel?</h2>
+<p class="subtitle">Your sidebar has 30+ items across 7 sections. How do we tame it?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Pillar-Based (Two-Level Sidebar)</h3>
+      <p>Left rail shows 5-6 top-level pillars as icons. Clicking a pillar reveals its sub-items in a secondary panel. Only one pillar expanded at a time. Clean, scalable, never overwhelming.</p>
+      <div style="margin-top:12px; display:flex; gap:2px; font-family:monospace; font-size:11px; color:#a1a1aa;">
+        <div style="background:#18181b; padding:8px 6px; border-radius:4px 0 0 4px; display:flex; flex-direction:column; gap:8px; align-items:center; width:48px;">
+          <div style="width:20px;height:20px;background:#27272a;border-radius:4px;"></div>
+          <div style="width:20px;height:20px;background:#6366f1;border-radius:4px;"></div>
+          <div style="width:20px;height:20px;background:#27272a;border-radius:4px;"></div>
+          <div style="width:20px;height:20px;background:#27272a;border-radius:4px;"></div>
+          <div style="width:20px;height:20px;background:#27272a;border-radius:4px;"></div>
+        </div>
+        <div style="background:#1c1c20; padding:10px 12px; border-radius:0 4px 4px 0; width:160px;">
+          <div style="color:#6366f1;font-weight:600;margin-bottom:8px;">HR Management</div>
+          <div style="margin-bottom:4px;color:#e4e4e7;">Employees</div>
+          <div style="margin-bottom:4px;color:#a1a1aa;">Onboarding</div>
+          <div style="margin-bottom:4px;color:#a1a1aa;">Leave</div>
+          <div style="margin-bottom:4px;color:#a1a1aa;">Performance</div>
+          <div style="color:#a1a1aa;">Documents</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Collapsible Sections (Single Sidebar)</h3>
+      <p>Traditional sidebar with accordion sections. Only 1-2 sections expanded at a time, rest collapsed to section headers. Familiar pattern, easy to scan.</p>
+      <div style="margin-top:12px; font-family:monospace; font-size:11px; color:#a1a1aa; background:#18181b; padding:10px 12px; border-radius:4px; width:180px;">
+        <div style="color:#e4e4e7;margin-bottom:6px;">▸ Overview</div>
+        <div style="color:#6366f1;margin-bottom:4px;">▾ HR Management</div>
+        <div style="padding-left:12px;margin-bottom:3px;color:#e4e4e7;">Employees</div>
+        <div style="padding-left:12px;margin-bottom:3px;color:#a1a1aa;">Onboarding</div>
+        <div style="padding-left:12px;margin-bottom:3px;color:#a1a1aa;">Leave</div>
+        <div style="padding-left:12px;margin-bottom:6px;color:#a1a1aa;">Performance</div>
+        <div style="color:#e4e4e7;margin-bottom:6px;">▸ Workforce Intel</div>
+        <div style="color:#e4e4e7;margin-bottom:6px;">▸ Organization</div>
+        <div style="color:#e4e4e7;">▸ Settings</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Top Nav + Context Sidebar</h3>
+      <p>Top-level pillars live in the topbar as tabs. The sidebar only shows sub-items for the active pillar. Maximizes content area, clear context switching.</p>
+      <div style="margin-top:12px; font-family:monospace; font-size:11px; color:#a1a1aa;">
+        <div style="background:#18181b; padding:6px 12px; border-radius:4px 4px 0 0; display:flex; gap:16px;">
+          <span style="color:#a1a1aa;">Overview</span>
+          <span style="color:#6366f1;border-bottom:2px solid #6366f1;padding-bottom:2px;">HR</span>
+          <span style="color:#a1a1aa;">Workforce</span>
+          <span style="color:#a1a1aa;">Org</span>
+          <span style="color:#a1a1aa;">Admin</span>
+        </div>
+        <div style="display:flex; gap:2px;">
+          <div style="background:#1c1c20; padding:8px 10px; border-radius:0 0 0 4px; width:140px;">
+            <div style="margin-bottom:3px;color:#e4e4e7;">Employees</div>
+            <div style="margin-bottom:3px;color:#a1a1aa;">Onboarding</div>
+            <div style="margin-bottom:3px;color:#a1a1aa;">Leave</div>
+            <div style="color:#a1a1aa;">Performance</div>
+          </div>
+          <div style="background:#09090b; padding:8px; border-radius:0 0 4px 0; flex:1; color:#52525b;">Content</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

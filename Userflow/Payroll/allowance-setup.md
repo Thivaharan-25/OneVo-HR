@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Payroll provider configured → [[payroll-provider-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Payroll provider configured → [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -19,7 +19,7 @@
 
 ### Step 2: Configure Rules
 - **UI:** Set taxability (fully taxable, partially exempt, tax-free) → set eligibility (all employees, by job family level, by department) → set amount or percentage
-- **Backend:** AllowanceService.CreateTypeAsync() → [[allowances]]
+- **Backend:** AllowanceService.CreateTypeAsync() → [[modules/payroll/allowances/overview|Allowances]]
 - **DB:** `allowance_types`
 
 ### Step 3: Assign to Employees
@@ -39,16 +39,16 @@
 
 ## Events Triggered
 
-- `AllowanceTypeCreated` → [[event-catalog]]
-- `AllowanceAssigned` → [[event-catalog]]
+- `AllowanceTypeCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `AllowanceAssigned` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[compensation-setup]]
-- [[payroll-run-execution]]
-- [[tax-configuration]]
+- [[Userflow/Employee-Management/compensation-setup|Compensation Setup]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
+- [[Userflow/Payroll/tax-configuration|Tax Configuration]]
 
 ## Module References
 
-- [[allowances]]
-- [[compensation]]
+- [[modules/payroll/allowances/overview|Allowances]]
+- [[modules/core-hr/compensation/overview|Compensation]]

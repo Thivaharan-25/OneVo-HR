@@ -51,6 +51,6 @@ public class CorrectionServiceTests
 
 ## Related
 
-- [[attendance-corrections|Attendance Corrections Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

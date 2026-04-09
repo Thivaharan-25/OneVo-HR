@@ -51,6 +51,6 @@ public class DependentServiceTests
 
 ## Related
 
-- [[dependents-contacts|Dependents & Contacts Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/core-hr/dependents-contacts/overview|Dependents & Contacts Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

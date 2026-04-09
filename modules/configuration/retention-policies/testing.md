@@ -44,6 +44,6 @@ public class RetentionPolicyServiceTests
 
 ## Related
 
-- [[configuration/retention-policies/overview|Retention Policies Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/architecture/overview|Retention Policies Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

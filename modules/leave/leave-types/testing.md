@@ -113,5 +113,5 @@ public class LeaveTypeEndpointTests : IClassFixture<ONEVOWebFactory>
 
 ## Related
 
-- [[leave-types|Leave Types Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/leave/leave-types/overview|Leave Types Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

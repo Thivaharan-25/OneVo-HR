@@ -39,8 +39,8 @@ POST /api/v1/org/teams/{id}/members
 
 ## Related
 
-- [[teams|Overview]]
-- [[departments]]
-- [[job-hierarchy]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/org-structure/teams/overview|Overview]]
+- [[modules/org-structure/departments/overview|Departments]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

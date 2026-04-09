@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Active review cycle with employee as participant → [[review-cycle-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Active review cycle with employee as participant → [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -22,13 +22,13 @@
   - Rate self against each competency (using cycle's rating scale)
   - Key achievements this period (text)
   - Areas for development (text)
-  - Goals progress update → [[goal-setting]]
+  - Goals progress update → [[Userflow/Performance/goal-setting|Goal Setting]]
   - Overall self-rating
 
 ### Step 3: Save Draft / Submit
 - **UI:** "Save Draft" (come back later) or "Submit" (final, cannot edit after)
 - **API:** `PUT /api/v1/performance/reviews/{id}` (draft) or `POST /api/v1/performance/reviews/{id}/submit`
-- **Backend:** ReviewService.SubmitSelfAssessmentAsync() → [[reviews]]
+- **Backend:** ReviewService.SubmitSelfAssessmentAsync() → [[modules/performance/reviews/overview|Reviews]]
 - **DB:** `reviews` — status: "Draft" or "Submitted"
 
 ### Step 4: Post-Submit
@@ -44,16 +44,16 @@
 
 ## Events Triggered
 
-- `SelfAssessmentSubmitted` → [[event-catalog]]
-- Notification to manager → [[notification-system]]
+- `SelfAssessmentSubmitted` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to manager → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[review-cycle-setup]]
-- [[manager-review]]
-- [[goal-setting]]
+- [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
+- [[Userflow/Performance/manager-review|Manager Review]]
+- [[Userflow/Performance/goal-setting|Goal Setting]]
 
 ## Module References
 
-- [[reviews]]
-- [[review-cycles]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]

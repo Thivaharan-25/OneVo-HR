@@ -51,6 +51,6 @@ public class SsoProviderServiceTests
 
 ## Related
 
-- [[sso-authentication|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/shared-platform/sso-authentication/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

@@ -1,9 +1,13 @@
 # Module: Reporting Engine
 
 **Namespace:** `ONEVO.Modules.ReportingEngine`
+**Phase:** 2 — Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 1 (Week 4)
 **Tables:** 3
+
+> [!WARNING]
+> **This module is deferred to Phase 2. Do not implement.** Reporting is subsumed by Productivity Analytics for Phase 1. This generic reporting engine is deferred. Specs are preserved here for future reference.
 
 ---
 
@@ -17,10 +21,10 @@ Scheduled and on-demand report generation serving **both pillars** — HR report
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[productivity-analytics]] | `IProductivityAnalyticsService` | Workforce reports |
-| **Depends on** | [[core-hr]] | `IEmployeeService` | HR reports |
-| **Depends on** | [[leave]] | `ILeaveService` | Leave utilization reports |
-| **Depends on** | [[workforce-presence]] | `IWorkforcePresenceService` | Attendance reports |
+| **Depends on** | [[modules/productivity-analytics/overview|Productivity Analytics]] | `IProductivityAnalyticsService` | Workforce reports |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | HR reports |
+| **Depends on** | [[modules/leave/overview|Leave]] | `ILeaveService` | Leave utilization reports |
+| **Depends on** | [[modules/workforce-presence/overview|Workforce Presence]] | `IWorkforcePresenceService` | Attendance reports |
 
 ---
 
@@ -82,17 +86,17 @@ Scheduled and on-demand report generation serving **both pillars** — HR report
 
 ## Features
 
-- [[report-definitions]] — Scheduled and on-demand report definitions with cron expressions
-- [[report-execution]] — Execution tracking with file record output (CSV/Excel)
-- [[report-templates]] — System and custom column/filter templates per report type
+- [[modules/reporting-engine/report-definitions/overview|Report Definitions]] — Scheduled and on-demand report definitions with cron expressions
+- [[modules/reporting-engine/report-execution/overview|Report Execution]] — Execution tracking with file record output (CSV/Excel)
+- [[modules/reporting-engine/report-templates/overview|Report Templates]] — System and custom column/filter templates per report type
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All definitions and executions are tenant-scoped
-- [[data-classification]] — Report files stored in blob storage via `file_records`
-- [[compliance]] — Audit and exception reports support both HR and workforce intelligence pillars
-- [[WEEK4-productivity-analytics]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All definitions and executions are tenant-scoped
+- [[security/data-classification|Data Classification]] — Report files stored in blob storage via `file_records`
+- [[security/compliance|Compliance]] — Audit and exception reports support both HR and workforce intelligence pillars
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]] — Implementation task file
 
-See also: [[module-catalog]], [[productivity-analytics]], [[core-hr]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/productivity-analytics/overview|Productivity Analytics]], [[modules/core-hr/overview|Core Hr]]

@@ -19,12 +19,12 @@ Fields: `employee_id`, `pension_plan_id`, `enrolled_at`, `opt_out_at`.
 
 ## Related
 
-- [[payroll|Payroll Module]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[payroll/tax-configuration/overview|Tax Configuration]]
-- [[payroll/allowances/overview|Allowances]]
-- [[payroll/audit-trail/overview|Audit Trail]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[modules/payroll/overview|Payroll Module]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[frontend/architecture/overview|Tax Configuration]]
+- [[frontend/architecture/overview|Allowances]]
+- [[frontend/architecture/overview|Audit Trail]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

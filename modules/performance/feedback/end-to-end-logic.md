@@ -38,8 +38,8 @@ PUT /api/v1/performance/feedback/{id}
 
 ## Related
 
-- [[feedback|Feedback Overview]]
-- [[review-cycles]]
-- [[reviews]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/performance/feedback/overview|Feedback Overview]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

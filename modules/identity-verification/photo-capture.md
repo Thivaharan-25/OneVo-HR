@@ -79,11 +79,11 @@ When verification is triggered:
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]] — parent module
-- [[photo-verification]] — server-side photo comparison
-- [[verification-policies]] — when photos are required
-- [[biometric-enrollment]] — profile photo enrollment
-- [[agent-server-protocol]] — IPC communication
-- [[data-classification]] — RESTRICTED classification for photos
-- [[compliance]] — privacy requirements
-- [[WEEK3-identity-verification]] — implementation task
+- [[modules/identity-verification/overview|Identity Verification Module]] — parent module
+- [[modules/identity-verification/photo-verification/overview|Photo Verification]] — server-side photo comparison
+- [[modules/identity-verification/verification-policies/overview|Verification Policies]] — when photos are required
+- [[modules/identity-verification/biometric-enrollment/overview|Biometric Enrollment]] — profile photo enrollment
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — IPC communication
+- [[security/data-classification|Data Classification]] — RESTRICTED classification for photos
+- [[security/compliance|Compliance]] — privacy requirements
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]] — implementation task

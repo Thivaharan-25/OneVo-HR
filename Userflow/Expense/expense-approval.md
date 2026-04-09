@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Expense claim submitted → [[expense-claim-submission]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Expense claim submitted → [[Userflow/Expense/expense-claim-submission|Expense Claim Submission]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -24,11 +24,11 @@
 ### Step 3: Approve or Reject
 - **UI:** "Approve" (all items) or "Partial Approve" (approve some, reject others with reason) or "Reject" (with reason)
 - **API:** `PUT /api/v1/expense/claims/{id}/approve`
-- **Backend:** ExpenseService.ApproveAsync() → [[expense]]
+- **Backend:** ExpenseService.ApproveAsync() → [[modules/expense/overview|Expense]]
 - **DB:** `expense_claims` — status updated
 
 ### Step 4: Payroll Integration
-- **Backend:** Approved amount added to next payroll run as reimbursement → [[payroll-run-execution]]
+- **Backend:** Approved amount added to next payroll run as reimbursement → [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
 - Employee notified of decision
 
 ## Error Scenarios
@@ -40,16 +40,16 @@
 
 ## Events Triggered
 
-- `ExpenseClaimApproved` → [[event-catalog]]
-- `ExpenseClaimRejected` → [[event-catalog]]
-- Notification to employee → [[notification-system]]
+- `ExpenseClaimApproved` → [[backend/messaging/event-catalog|Event Catalog]]
+- `ExpenseClaimRejected` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to employee → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[expense-claim-submission]]
-- [[payroll-run-execution]]
+- [[Userflow/Expense/expense-claim-submission|Expense Claim Submission]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
 
 ## Module References
 
-- [[expense]]
-- [[notification-system]]
+- [[modules/expense/overview|Expense]]
+- [[backend/notification-system|Notification System]]

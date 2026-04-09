@@ -50,13 +50,13 @@ POST /api/v1/payroll/runs
 
 ## Related
 
-- [[payroll/payroll-execution/overview|Payroll Execution Overview]]
-- [[payroll/adjustments/overview|Adjustments]]
-- [[payroll/allowances/overview|Allowances]]
-- [[payroll/audit-trail/overview|Audit Trail]]
-- [[payroll/tax-configuration/overview|Tax Configuration]]
-- [[payroll/pensions/overview|Pensions]]
-- [[error-handling]]
-- [[event-catalog]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[frontend/architecture/overview|Payroll Execution Overview]]
+- [[frontend/architecture/overview|Adjustments]]
+- [[frontend/architecture/overview|Allowances]]
+- [[frontend/architecture/overview|Audit Trail]]
+- [[frontend/architecture/overview|Tax Configuration]]
+- [[frontend/architecture/overview|Pensions]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

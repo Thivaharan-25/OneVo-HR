@@ -51,5 +51,5 @@ public class GoalServiceTests
 
 ## Related
 
-- [[goals-okr|Goals & OKR Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/performance/goals-okr/overview|Goals & OKR Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

@@ -1,0 +1,77 @@
+<h2>How should accent colors work?</h2>
+<p class="subtitle">The primary accent defines buttons, active states, links, and brand identity throughout the app.</p>
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<div class="cards" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; font-family:'Outfit',sans-serif;">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)" style="background:#09090b; border:1px solid #27272a; border-radius:12px; padding:20px; cursor:pointer;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div style="background:#6366f1; color:white; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">A</div>
+      <span style="color:#52525b; font-size:10px;">INDIGO CORE</span>
+    </div>
+    <div style="display:flex; gap:4px; margin-bottom:12px;">
+      <div style="flex:1;height:32px;border-radius:6px;background:linear-gradient(135deg,#4f46e5,#6366f1);"></div>
+      <div style="flex:1;height:32px;border-radius:6px;background:linear-gradient(135deg,#6366f1,#818cf8);"></div>
+      <div style="flex:1;height:32px;border-radius:6px;background:#818cf8;"></div>
+    </div>
+    <div style="font-size:15px; font-weight:700; color:#fafafa; margin-bottom:4px;">Indigo → Violet</div>
+    <div style="font-size:12px; color:#a1a1aa; margin-bottom:14px;">Confident, techy, trustworthy. The Linear / Figma vibe.</div>
+    <div style="background:#18181b; border-radius:8px; padding:12px;">
+      <button style="background:linear-gradient(135deg,#4f46e5,#6366f1); color:white; border:none; padding:8px 16px; border-radius:6px; font-family:'Outfit'; font-weight:600; font-size:12px; cursor:pointer;">Create Employee</button>
+      <div style="margin-top:10px; display:flex; align-items:center; gap:6px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#6366f1;box-shadow:0 0 8px #6366f180;"></div>
+        <span style="color:#818cf8; font-size:11px;">Active nav item</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)" style="background:#09090b; border:1px solid #27272a; border-radius:12px; padding:20px; cursor:pointer;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div style="background:#8b5cf6; color:white; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">B</div>
+      <span style="color:#52525b; font-size:10px;">VIOLET ELECTRIC</span>
+    </div>
+    <div style="display:flex; gap:4px; margin-bottom:12px;">
+      <div style="flex:1;height:32px;border-radius:6px;background:linear-gradient(135deg,#7c3aed,#8b5cf6);"></div>
+      <div style="flex:1;height:32px;border-radius:6px;background:linear-gradient(135deg,#8b5cf6,#a78bfa);"></div>
+      <div style="flex:1;height:32px;border-radius:6px;background:#c4b5fd;"></div>
+    </div>
+    <div style="font-size:15px; font-weight:700; color:#fafafa; margin-bottom:4px;">Violet → Lavender</div>
+    <div style="font-size:12px; color:#a1a1aa; margin-bottom:14px;">Bold, creative, energetic. Stands out from typical blue SaaS.</div>
+    <div style="background:#18181b; border-radius:8px; padding:12px;">
+      <button style="background:linear-gradient(135deg,#7c3aed,#8b5cf6); color:white; border:none; padding:8px 16px; border-radius:6px; font-family:'Outfit'; font-weight:600; font-size:12px; cursor:pointer;">Create Employee</button>
+      <div style="margin-top:10px; display:flex; align-items:center; gap:6px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#8b5cf6;box-shadow:0 0 8px #8b5cf680;"></div>
+        <span style="color:#a78bfa; font-size:11px;">Active nav item</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)" style="background:#09090b; border:1px solid #27272a; border-radius:12px; padding:20px; cursor:pointer;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div style="background:#06b6d4; color:white; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">C</div>
+      <span style="color:#52525b; font-size:10px;">CYAN SURGE</span>
+    </div>
+    <div style="display:flex; gap:4px; margin-bottom:12px;">
+      <div style="flex:1;height:32px;border-radius:6px;background:linear-gradient(135deg,#0891b2,#06b6d4);"></div>
+      <div style="flex:1;height:32px;border-radius:6px;background:linear-gradient(135deg,#06b6d4,#22d3ee);"></div>
+      <div style="flex:1;height:32px;border-radius:6px;background:#67e8f9;"></div>
+    </div>
+    <div style="font-size:15px; font-weight:700; color:#fafafa; margin-bottom:4px;">Cyan → Teal</div>
+    <div style="font-size:12px; color:#a1a1aa; margin-bottom:14px;">Futuristic, sharp, high-tech. Command center energy. Glows on dark.</div>
+    <div style="background:#18181b; border-radius:8px; padding:12px;">
+      <button style="background:linear-gradient(135deg,#0891b2,#06b6d4); color:white; border:none; padding:8px 16px; border-radius:6px; font-family:'Outfit'; font-weight:600; font-size:12px; cursor:pointer;">Create Employee</button>
+      <div style="margin-top:10px; display:flex; align-items:center; gap:6px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#06b6d4;box-shadow:0 0 8px #06b6d480;"></div>
+        <span style="color:#22d3ee; font-size:11px;">Active nav item</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:20px; padding:16px; background:#18181b; border:1px solid #27272a; border-radius:10px;">
+  <div style="font-family:'Outfit',sans-serif; font-size:13px; color:#71717a;">
+    <strong style="color:#a1a1aa;">Note:</strong> Status colors (green/yellow/red/orange) stay universal regardless of accent choice. The accent is for brand identity — buttons, active states, links, selection highlights, and chart accents.
+  </div>
+</div>

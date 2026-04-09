@@ -162,9 +162,9 @@ GET /api/v1/leave/audit/{employeeId}?leaveTypeId={id}&year=2026
 
 ## Related
 
-- [[balance-audit|Balance Audit Overview]]
-- [[leave-entitlements]]
-- [[leave-requests]]
-- [[leave-policies]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/leave/balance-audit/overview|Balance Audit Overview]]
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]]
+- [[modules/leave/leave-requests/overview|Leave Requests]]
+- [[modules/leave/leave-policies/overview|Leave Policies]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

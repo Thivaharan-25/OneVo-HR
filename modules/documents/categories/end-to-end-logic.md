@@ -39,7 +39,7 @@ GET /api/v1/documents/categories
 
 ## Related
 
-- [[documents/categories/overview|Categories Overview]]
-- [[documents/document-management/overview|Document Management]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Categories Overview]]
+- [[frontend/architecture/overview|Document Management]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -68,10 +68,10 @@ POST /api/v1/auth/refresh
 
 ## Related
 
-- [[authentication|Overview]]
-- [[session-management]]
+- [[frontend/cross-cutting/authentication|Overview]]
+- [[modules/auth/session-management/overview|Session Management]]
 - [[mfa]]
-- [[audit-logging]]
-- [[authorization]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

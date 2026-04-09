@@ -51,6 +51,6 @@ public class NotificationPipelineServiceTests
 
 ## Related
 
-- [[notification-infrastructure|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/shared-platform/notification-infrastructure/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

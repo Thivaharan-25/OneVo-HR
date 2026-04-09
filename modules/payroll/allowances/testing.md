@@ -51,5 +51,5 @@ public class AllowanceServiceTests
 
 ## Related
 
-- [[payroll/allowances/overview|Allowances Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Allowances Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

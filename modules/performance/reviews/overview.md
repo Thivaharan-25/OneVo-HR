@@ -23,13 +23,13 @@ Key columns: `cycle_id`, `employee_id`, `reviewer_id`, `review_type` (`self`, `m
 
 ## Related
 
-- [[performance|Performance Module]]
-- [[review-cycles]]
-- [[feedback]]
-- [[goals-okr]]
-- [[recognitions]]
-- [[improvement-plans]]
-- [[succession-planning]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[WEEK3-performance]]
+- [[database/performance|Performance Module]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[modules/performance/feedback/overview|Feedback]]
+- [[modules/performance/goals-okr/overview|Goals Okr]]
+- [[modules/performance/recognitions/overview|Recognitions]]
+- [[modules/performance/improvement-plans/overview|Improvement Plans]]
+- [[Userflow/Performance/succession-planning|Succession Planning]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- Performance task file (deferred to Phase 2)

@@ -25,13 +25,13 @@ Fields: `employee_id`, `allowance_type_id`, `amount`, `effective_from`, `effecti
 
 ## Related
 
-- [[payroll|Payroll Module]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[payroll/adjustments/overview|Adjustments]]
-- [[payroll/tax-configuration/overview|Tax Configuration]]
-- [[payroll/pensions/overview|Pensions]]
-- [[payroll/audit-trail/overview|Audit Trail]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[modules/payroll/overview|Payroll Module]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[frontend/architecture/overview|Adjustments]]
+- [[frontend/architecture/overview|Tax Configuration]]
+- [[frontend/architecture/overview|Pensions]]
+- [[frontend/architecture/overview|Audit Trail]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

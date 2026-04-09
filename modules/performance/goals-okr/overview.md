@@ -25,13 +25,13 @@ Key columns: `employee_id`, `parent_goal_id` (self-referencing), `title`, `goal_
 
 ## Related
 
-- [[performance|Performance Module]]
-- [[review-cycles]]
-- [[reviews]]
-- [[feedback]]
-- [[recognitions]]
-- [[improvement-plans]]
-- [[succession-planning]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[WEEK3-performance]]
+- [[database/performance|Performance Module]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[modules/performance/feedback/overview|Feedback]]
+- [[modules/performance/recognitions/overview|Recognitions]]
+- [[modules/performance/improvement-plans/overview|Improvement Plans]]
+- [[Userflow/Performance/succession-planning|Succession Planning]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- Performance task file (deferred to Phase 2)

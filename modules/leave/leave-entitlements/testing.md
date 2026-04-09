@@ -287,5 +287,5 @@ public class LeaveEntitlementEndpointTests : IClassFixture<ONEVOWebFactory>
 
 ## Related
 
-- [[leave-entitlements|Leave Entitlements Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

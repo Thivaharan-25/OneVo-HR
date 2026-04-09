@@ -51,5 +51,5 @@ public class TemplateServiceTests
 
 ## Related
 
-- [[documents/templates/overview|Templates Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Templates Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

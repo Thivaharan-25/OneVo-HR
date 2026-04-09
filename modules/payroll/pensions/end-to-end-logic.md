@@ -39,9 +39,9 @@ POST /api/v1/payroll/pensions/enroll
 
 ## Related
 
-- [[payroll/pensions/overview|Pensions Overview]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[payroll/tax-configuration/overview|Tax Configuration]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[frontend/architecture/overview|Pensions Overview]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[frontend/architecture/overview|Tax Configuration]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

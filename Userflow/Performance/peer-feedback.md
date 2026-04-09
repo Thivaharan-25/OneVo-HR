@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Review cycle configured as 360-degree → [[review-cycle-setup]]
+- Review cycle configured as 360-degree → [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
 - Peer feedback nominations assigned
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -21,7 +21,7 @@
 ### Step 2: Provide Feedback
 - **UI:** Performance → Feedback Requests → select colleague → answer structured questions (strengths, areas for improvement, collaboration rating) → rate on scale → option for anonymous submission
 - **API:** `POST /api/v1/performance/feedback`
-- **Backend:** FeedbackService.SubmitAsync() → [[feedback]]
+- **Backend:** FeedbackService.SubmitAsync() → [[modules/performance/feedback/overview|Feedback]]
 - **DB:** `peer_feedback` — record with optional `is_anonymous` flag
 
 ### Step 3: Aggregation
@@ -36,15 +36,15 @@
 
 ## Events Triggered
 
-- `PeerFeedbackSubmitted` → [[event-catalog]]
+- `PeerFeedbackSubmitted` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[review-cycle-setup]]
-- [[manager-review]]
-- [[self-assessment]]
+- [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
+- [[Userflow/Performance/manager-review|Manager Review]]
+- [[Userflow/Performance/self-assessment|Self Assessment]]
 
 ## Module References
 
-- [[feedback]]
-- [[reviews]]
+- [[modules/performance/feedback/overview|Feedback]]
+- [[modules/performance/reviews/overview|Reviews]]

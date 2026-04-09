@@ -130,9 +130,9 @@ MonthlyAccrualJob (Hangfire, 1st of each month 01:00 UTC)
 
 ## Related
 
-- [[leave-entitlements|Leave Entitlements Overview]]
-- [[balance-audit]]
-- [[leave-policies]]
-- [[leave-requests]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements Overview]]
+- [[modules/leave/balance-audit/overview|Balance Audit]]
+- [[modules/leave/leave-policies/overview|Leave Policies]]
+- [[modules/leave/leave-requests/overview|Leave Requests]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -26,12 +26,12 @@ Join table: `team_id`, `employee_id`, `joined_at`. PK: `(team_id, employee_id)`.
 
 ## Related
 
-- [[org-structure|Org Structure Module]]
-- [[departments]]
-- [[legal-entities]]
-- [[cost-centers]]
-- [[job-hierarchy]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[shared-kernel]]
-- [[WEEK1-org-structure]]
+- [[modules/org-structure/overview|Org Structure Module]]
+- [[modules/org-structure/departments/overview|Departments]]
+- [[modules/org-structure/legal-entities/overview|Legal Entities]]
+- [[modules/org-structure/cost-centers/overview|Cost Centers]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV3-org-structure|DEV3: Org Structure]]

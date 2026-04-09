@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Employees exist in system → [[employee-onboarding]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Employees exist in system → [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -40,10 +40,10 @@
 
 ## Related Flows
 
-- [[productivity-dashboard]]
-- [[report-creation]]
+- [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]]
+- [[Userflow/Analytics-Reporting/report-creation|Report Creation]]
 
 ## Module References
 
-- [[workforce-snapshots]]
-- [[productivity-analytics]]
+- [[modules/productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]]
+- [[modules/productivity-analytics/overview|Productivity Analytics]]

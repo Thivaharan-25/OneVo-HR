@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- At least one approved payroll run including the employee → [[payroll-run-execution]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- At least one approved payroll run including the employee → [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -51,10 +51,10 @@
 
 ## Related Flows
 
-- [[payroll-run-execution]]
-- [[compensation-setup]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
+- [[Userflow/Employee-Management/compensation-setup|Compensation Setup]]
 
 ## Module References
 
-- [[payroll-execution]]
-- [[documents]]
+- [[modules/payroll/payroll-execution/overview|Payroll Execution]]
+- [[modules/documents/overview|Documents]]

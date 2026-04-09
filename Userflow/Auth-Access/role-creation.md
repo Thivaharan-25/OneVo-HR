@@ -10,14 +10,14 @@
 
 - Tenant is active
 - Understanding of which permissions are needed for the role being created
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Role Management
 - **UI:** Administration > Roles & Permissions. List view shows all roles: Name, Description, User Count (how many users have this role), Type (System/Custom), Created Date. System roles marked with a lock icon (cannot be deleted). "Create Role" button in top-right
 - **API:** `GET /api/v1/roles`
-- **Backend:** `RoleService.GetRolesAsync()` → [[authorization]]
+- **Backend:** `RoleService.GetRolesAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** Permission check for `roles:manage`
 - **DB:** `roles`, `user_roles` (for user count)
 
@@ -26,7 +26,7 @@
   - **Basic Info:** Role Name (required, e.g., "HR Business Partner"), Description (optional, e.g., "Can manage employees in assigned departments")
   - **Permission Browser:** Accordion-style category list showing all 90+ permissions grouped by module
 - **API:** `GET /api/v1/permissions` (loads all available permissions)
-- **Backend:** `PermissionService.GetAllPermissionsAsync()` → [[authorization]]
+- **Backend:** `PermissionService.GetAllPermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** N/A
 - **DB:** `permissions`
 
@@ -70,7 +70,7 @@
     "permissionIds": ["uuid1", "uuid2", "uuid3"]
   }
   ```
-- **Backend:** `RoleService.CreateRoleAsync()` → [[authorization]]
+- **Backend:** `RoleService.CreateRoleAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
   1. Validate role name is unique within tenant
   2. Create `roles` record
   3. Create `role_permissions` records for each selected permission
@@ -100,7 +100,7 @@
 - Active sessions pick up new permissions on next token refresh (within 15 minutes)
 
 ### When role is linked to a Job Family Level
-- Role created here can be assigned to a [[job-family-setup|Job Family Level]]
+- Role created here can be assigned to a [[Userflow/Org-Structure/job-family-setup|Job Family Level]]
 - Employees assigned to that job family level automatically receive this role
 - Changes to the role's permissions cascade to all employees in that job family level
 
@@ -115,18 +115,18 @@
 
 ## Events Triggered
 
-- `RoleCreatedEvent` → [[event-catalog]] — consumed by audit logging
-- `AuditLogEntry` (action: `role.created`) → [[audit-logging]]
+- `RoleCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging
+- `AuditLogEntry` (action: `role.created`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[permission-assignment]] — assign permissions to roles or override per employee
-- [[user-invitation]] — assign role during user invitation
-- [[job-family-setup]] — link role to job family levels for automatic assignment
-- [[employee-onboarding]] — role assigned during onboarding
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — assign permissions to roles or override per employee
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] — assign role during user invitation
+- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] — link role to job family levels for automatic assignment
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — role assigned during onboarding
 
 ## Module References
 
-- [[authorization]] — RBAC implementation, role and permission management
-- [[rbac-frontend]] — role management UI components
-- [[authentication]] — JWT claims include permissions from assigned role
+- [[frontend/cross-cutting/authorization|Authorization]] — RBAC implementation, role and permission management
+- [[security/rbac-frontend|Rbac Frontend]] — role management UI components
+- [[frontend/cross-cutting/authentication|Authentication]] — JWT claims include permissions from assigned role

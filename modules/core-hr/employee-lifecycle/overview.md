@@ -28,10 +28,10 @@ Audit trail for promotions, transfers, salary changes, suspensions, terminations
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeCreated` | New employee added | [[notifications]], [[leave]] |
-| `EmployeePromoted` | Promotion event | [[notifications]], [[payroll]] |
-| `EmployeeTransferred` | Department/team change | [[notifications]] |
-| `EmployeeTerminated` | Termination/resignation | [[leave]], [[payroll]], [[agent-gateway]] |
+| `EmployeeCreated` | New employee added | [[modules/notifications/overview|Notifications]], [[modules/leave/overview|Leave]] |
+| `EmployeePromoted` | Promotion event | [[modules/notifications/overview|Notifications]], [[modules/payroll/overview|Payroll]] |
+| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview|Notifications]] |
+| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview|Leave]], [[modules/payroll/overview|Payroll]], [[modules/agent-gateway/overview|Agent Gateway]] |
 
 ## API Endpoints
 
@@ -41,17 +41,17 @@ Audit trail for promotions, transfers, salary changes, suspensions, terminations
 
 ## Related
 
-- [[core-hr|Core HR Module]]
-- [[employee-profiles]]
-- [[onboarding]]
-- [[offboarding]]
-- [[compensation]]
-- [[qualifications]]
-- [[dependents-contacts]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[event-catalog]]
-- [[compliance]]
-- [[shared-kernel]]
-- [[logging-standards]]
-- [[WEEK2-core-hr-lifecycle]]
+- [[modules/core-hr/overview|Core HR Module]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
+- [[modules/core-hr/onboarding/overview|Onboarding]]
+- [[modules/core-hr/offboarding/overview|Offboarding]]
+- [[modules/core-hr/compensation/overview|Compensation]]
+- [[modules/core-hr/qualifications/overview|Qualifications]]
+- [[modules/core-hr/dependents-contacts/overview|Dependents Contacts]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[security/compliance|Compliance]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[code-standards/logging-standards|Logging Standards]]
+- [[current-focus/DEV2-core-hr-lifecycle|DEV2: Core HR Lifecycle]]

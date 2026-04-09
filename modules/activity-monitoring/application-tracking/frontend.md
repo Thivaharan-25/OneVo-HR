@@ -68,12 +68,12 @@ Deep dive into a single employee's activity for a specific day. Shows timeline, 
 
 ## Related
 
-- [[activity-monitoring|Activity Monitoring Module]]
-- [[application-tracking/end-to-end-logic|Application Tracking — End-to-End Logic]]
-- [[screenshots/overview|Screenshots]]
-- [[meeting-detection/overview|Meeting Detection]]
-- [[authorization]]
-- [[component-catalog]]
-- [[layout-patterns]]
-- [[frontend-coding-standards]]
-- [[WEEK3-activity-monitoring]]
+- [[modules/activity-monitoring/overview|Activity Monitoring Module]]
+- [[modules/activity-monitoring/application-tracking/end-to-end-logic|Application Tracking — End-to-End Logic]]
+- [[frontend/architecture/overview|Screenshots]]
+- [[frontend/architecture/overview|Meeting Detection]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[frontend/design-system/components/component-catalog|Component Catalog]]
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]]
+- [[frontend/coding-standards|Frontend Coding Standards]]
+- [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

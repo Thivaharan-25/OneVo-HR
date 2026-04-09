@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Roles created with permissions → [[role-creation]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Roles created with permissions → [[Userflow/Auth-Access/role-creation|Role Creation]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -32,7 +32,7 @@
 
 ### Step 4: Assign Default Role Per Level (CRITICAL for RBAC)
 - **UI:** For each level → select a role from existing roles → this role's permissions become the default for employees at this level
-- **Backend:** JobFamilyService.CreateAsync() → [[job-hierarchy]]
+- **Backend:** JobFamilyService.CreateAsync() → [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
 - **Example:** Junior Engineer → "Employee" role (basic permissions), Engineering Lead → "Team Lead" role (includes `performance:read-team`, `attendance:read-team`)
 
 ### Step 5: Save
@@ -59,18 +59,18 @@
 
 ## Events Triggered
 
-- `JobFamilyCreated` → [[event-catalog]]
-- `JobFamilyLevelUpdated` → [[event-catalog]]
+- `JobFamilyCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `JobFamilyLevelUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[role-creation]] — create roles before assigning to levels
-- [[permission-assignment]] — permissions come from role assigned to level
-- [[employee-onboarding]] — job family level selected during onboarding
-- [[employee-promotion]] — promotion changes job family level and potentially role
+- [[Userflow/Auth-Access/role-creation|Role Creation]] — create roles before assigning to levels
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — permissions come from role assigned to level
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — job family level selected during onboarding
+- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] — promotion changes job family level and potentially role
 
 ## Module References
 
-- [[job-hierarchy]]
-- [[authorization]]
-- [[org-structure]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[modules/org-structure/overview|Org Structure]]

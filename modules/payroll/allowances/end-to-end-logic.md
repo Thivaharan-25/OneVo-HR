@@ -38,9 +38,9 @@ POST /api/v1/payroll/allowances
 
 ## Related
 
-- [[payroll/allowances/overview|Allowances Overview]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[payroll/tax-configuration/overview|Tax Configuration]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[frontend/architecture/overview|Allowances Overview]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[frontend/architecture/overview|Tax Configuration]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

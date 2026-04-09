@@ -123,7 +123,7 @@ sequenceDiagram
 
 ## Related
 
-- [[expense-categories]] — feature overview
-- [[expense-claims]] — claims that consume categories in line items
-- [[event-catalog]] — events produced during category lifecycle
-- [[error-handling]] — ConflictException, BusinessRuleException patterns
+- [[modules/expense/expense-categories/overview|Expense Categories]] — feature overview
+- [[modules/expense/expense-claims/overview|Expense Claims]] — claims that consume categories in line items
+- [[backend/messaging/event-catalog|Event Catalog]] — events produced during category lifecycle
+- [[backend/messaging/error-handling|Error Handling]] — ConflictException, BusinessRuleException patterns

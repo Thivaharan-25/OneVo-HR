@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Activity monitoring enabled → [[monitoring-configuration]]
-- Employee has agent running → [[agent-deployment]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Activity monitoring enabled → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- Employee has agent running → [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -29,7 +29,7 @@
 ### Step 3: View Daily Summary
 - **UI:** Summary card: total productive hours, total idle time, top 5 apps by duration, productivity score (%), meeting time, first/last activity
 - **API:** `GET /api/v1/activity/daily-summary?employee_id={id}&date={date}`
-- **Backend:** DailySummaryService → [[daily-aggregation]]
+- **Backend:** DailySummaryService → [[modules/activity-monitoring/daily-aggregation/overview|Daily Aggregation]]
 
 ### Step 4: App Usage Breakdown
 - **UI:** Bar chart or table: each app with total time, category (productive/neutral/unproductive), percentage of day
@@ -55,15 +55,15 @@
 
 ## Related Flows
 
-- [[live-dashboard]]
-- [[monitoring-configuration]]
-- [[exception-rule-setup]]
-- [[productivity-dashboard]]
+- [[Userflow/Workforce-Intelligence/live-dashboard|Live Dashboard]]
+- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Exception-Engine/exception-rule-setup|Exception Rule Setup]]
+- [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]]
 
 ## Module References
 
-- [[application-tracking]]
-- [[screenshots]]
-- [[meeting-detection]]
-- [[daily-aggregation]]
-- [[activity-monitoring]]
+- [[modules/activity-monitoring/application-tracking/overview|Application Tracking]]
+- [[modules/activity-monitoring/screenshots/overview|Screenshots]]
+- [[modules/activity-monitoring/meeting-detection/overview|Meeting Detection]]
+- [[modules/activity-monitoring/daily-aggregation/overview|Daily Aggregation]]
+- [[modules/activity-monitoring/overview|Activity Monitoring]]

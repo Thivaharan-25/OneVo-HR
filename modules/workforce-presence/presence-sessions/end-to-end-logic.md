@@ -53,10 +53,10 @@ GET /api/v1/workforce/presence/live
 
 ## Related
 
-- [[presence-sessions|Presence Sessions Overview]]
-- [[device-sessions]]
-- [[break-tracking]]
-- [[attendance-corrections]]
-- [[shifts-schedules]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions Overview]]
+- [[modules/workforce-presence/device-sessions/overview|Device Sessions]]
+- [[Userflow/Workforce-Presence/break-tracking|Break Tracking]]
+- [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections]]
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

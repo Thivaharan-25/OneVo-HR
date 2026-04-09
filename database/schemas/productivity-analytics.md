@@ -1,0 +1,104 @@
+# Productivity Analytics — Schema
+
+**Module:** [[modules/productivity-analytics/overview|Productivity Analytics]]
+**Phase:** Phase 1
+**Tables:** 4
+
+---
+
+## `daily_employee_report`
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `employee_id` | `uuid` | FK → employees |
+| `date` | `date` |  |
+| `total_hours` | `decimal(5,2)` | From presence sessions |
+| `active_hours` | `decimal(5,2)` | From activity summaries |
+| `idle_hours` | `decimal(5,2)` |  |
+| `meeting_hours` | `decimal(5,2)` |  |
+| `active_percentage` | `decimal(5,2)` |  |
+| `top_apps_json` | `jsonb` | Top 5 apps with time |
+| `intensity_score` | `decimal(5,2)` | Average intensity for the day |
+| `device_split_json` | `jsonb` | `{"laptop": 85, "mobile_estimate": 15}` |
+| `exceptions_count` | `int` | Alerts triggered this day |
+| `anomaly_flags_json` | `jsonb` | Flagged anomalies |
+| `created_at` | `timestamptz` |  |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+
+---
+
+## `monthly_employee_report`
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `employee_id` | `uuid` | FK → employees |
+| `year` | `int` |  |
+| `month` | `int` | 1–12 |
+| `total_hours` | `decimal(7,2)` |  |
+| `active_hours` | `decimal(7,2)` |  |
+| `idle_hours` | `decimal(7,2)` |  |
+| `meeting_hours` | `decimal(7,2)` |  |
+| `active_percentage` | `decimal(5,2)` |  |
+| `intensity_avg` | `decimal(5,2)` |  |
+| `exceptions_count` | `int` |  |
+| `performance_pattern_json` | `jsonb` | Weekday patterns, peak hours |
+| `comparative_rank_in_department` | `int` | Rank by active% within department |
+| `created_at` | `timestamptz` |  |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+
+---
+
+## `weekly_employee_report`
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `employee_id` | `uuid` | FK → employees |
+| `week_start` | `date` | Monday of the week |
+| `total_hours` | `decimal(6,2)` |  |
+| `active_hours` | `decimal(6,2)` |  |
+| `idle_hours` | `decimal(6,2)` |  |
+| `meeting_hours` | `decimal(6,2)` |  |
+| `active_percentage` | `decimal(5,2)` |  |
+| `intensity_avg` | `decimal(5,2)` |  |
+| `exceptions_count` | `int` |  |
+| `trend_vs_previous_week_json` | `jsonb` | `{"active_pct_change": +5.2, "hours_change": -0.5}` |
+| `created_at` | `timestamptz` |  |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+
+---
+
+## `workforce_snapshot`
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `date` | `date` |  |
+| `total_employees` | `int` | Active employees count |
+| `active_count` | `int` | Employees with activity this day |
+| `avg_active_percentage` | `decimal(5,2)` | Tenant-wide average |
+| `avg_meeting_percentage` | `decimal(5,2)` |  |
+| `total_exceptions` | `int` | Total alerts generated |
+| `top_exception_types_json` | `jsonb` | Most common exception types |
+| `department_breakdown_json` | `jsonb` | Per-department active% |
+| `created_at` | `timestamptz` |  |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+
+---
+
+## Related
+
+- [[modules/productivity-analytics/overview|Productivity Analytics Module]]
+- [[database/schema-catalog|Schema Catalog]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[database/performance|Performance]]

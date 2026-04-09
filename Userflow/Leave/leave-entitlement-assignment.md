@@ -8,24 +8,24 @@
 
 ## Preconditions
 
-- Leave policies have been created and assigned to legal entities: [[leave-policy-setup|Leave Policy Setup Flow]]
+- Leave policies have been created and assigned to legal entities: [[Userflow/Leave/leave-policy-setup|Leave Policy Setup Flow]]
 - Employees exist and are assigned to a legal entity
 - User has `leave:manage` permission assigned via their Job Family role
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Leave Entitlements
 - **UI:** User navigates to Leave → Entitlements. Sees dashboard: total employees, entitlements generated count, pending generation count. Table of entitlements with columns: Employee, Leave Type, Annual Entitlement, Carry Forward, Used, Pending, Remaining
 - **API:** `GET /api/v1/leave/entitlements?year={year}`
-- **Backend:** `LeaveEntitlementService.GetAllAsync()` → [[leave]]
+- **Backend:** `LeaveEntitlementService.GetAllAsync()` → [[modules/leave/overview|Leave]]
 - **Validation:** Checks `leave:manage` permission via RBAC middleware
 - **DB:** `leave_entitlements` (filtered by `tenant_id`, `year`)
 
 ### Step 2a: Auto-Generate Entitlements (Bulk)
 - **UI:** Click "Auto-Generate Entitlements" → select year → select legal entity (or All) → preview shows: number of employees affected, entitlements per leave type based on policy → click "Generate"
 - **API:** `POST /api/v1/leave/entitlements/generate`
-- **Backend:** `LeaveEntitlementService.GenerateBulkAsync()` → [[leave]]
+- **Backend:** `LeaveEntitlementService.GenerateBulkAsync()` → [[modules/leave/overview|Leave]]
   1. Fetches all active employees in selected legal entity
   2. For each employee, determines applicable policy via legal entity assignment
   3. Calculates entitlement per leave type based on accrual method:
@@ -41,7 +41,7 @@
 ### Step 2b: Manual Entitlement Assignment (Individual)
 - **UI:** Click "Manual Assignment" → search and select employee → select leave type → enter fields: Annual Entitlement Days, Carry Forward Days (from previous year), Reason for Manual Assignment (required)
 - **API:** `POST /api/v1/leave/entitlements`
-- **Backend:** `LeaveEntitlementService.CreateManualAsync()` → [[leave]]
+- **Backend:** `LeaveEntitlementService.CreateManualAsync()` → [[modules/leave/overview|Leave]]
   1. Creates entitlement record with `source = manual`
   2. Records the admin who created it and reason
   3. Creates audit log entry
@@ -58,7 +58,7 @@
 ### Step 4: Adjust Individual Entitlement (Optional)
 - **UI:** From entitlements list → click employee row → Edit → modify Annual Entitlement or Carry Forward → enter reason → Save
 - **API:** `PUT /api/v1/leave/entitlements/{entitlementId}`
-- **Backend:** `LeaveEntitlementService.UpdateAsync()` → [[leave]]
+- **Backend:** `LeaveEntitlementService.UpdateAsync()` → [[modules/leave/overview|Leave]]
   1. Updates entitlement record
   2. Recalculates remaining balance (entitlement + carry-forward - used - pending)
   3. If new entitlement < used: flags as over-utilized, does not retroactively reject approved leaves
@@ -95,19 +95,19 @@
 
 ## Events Triggered
 
-- `LeaveEntitlementCreatedEvent` → [[event-catalog]] — consumed by employee self-service to show updated balances
-- `LeaveEntitlementUpdatedEvent` → [[event-catalog]] — triggers balance recalculation
-- `AuditLogEntry` (action: `leave_entitlement.generated`) → [[audit-logging]]
+- `LeaveEntitlementCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by employee self-service to show updated balances
+- `LeaveEntitlementUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — triggers balance recalculation
+- `AuditLogEntry` (action: `leave_entitlement.generated`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[leave-policy-setup]] — policies that drive entitlement calculations
-- [[leave-type-configuration]] — leave types entitlements are created for
-- [[leave-request-submission]] — employees use entitlements when requesting leave
-- [[leave-balance-view]] — view entitlement balances
+- [[Userflow/Leave/leave-policy-setup|Leave Policy Setup]] — policies that drive entitlement calculations
+- [[Userflow/Leave/leave-type-configuration|Leave Type Configuration]] — leave types entitlements are created for
+- [[Userflow/Leave/leave-request-submission|Leave Request Submission]] — employees use entitlements when requesting leave
+- [[Userflow/Leave/leave-balance-view|Leave Balance View]] — view entitlement balances
 
 ## Module References
 
-- [[leave]] — leave module overview and architecture
-- [[leave-entitlements]] — entitlement data model and calculation logic
-- [[leave-policies]] — policy rules driving entitlement amounts
+- [[modules/leave/overview|Leave]] — leave module overview and architecture
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]] — entitlement data model and calculation logic
+- [[modules/leave/leave-policies/overview|Leave Policies]] — policy rules driving entitlement amounts

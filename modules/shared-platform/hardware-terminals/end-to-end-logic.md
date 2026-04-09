@@ -28,9 +28,9 @@ POST /api/v1/hardware/terminals
 
 ## Related
 
-- [[hardware-terminals|Overview]]
-- [[real-time-integrations]]
-- [[notification-infrastructure]]
-- [[gdpr-consent]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/shared-platform/hardware-terminals/overview|Overview]]
+- [[modules/shared-platform/real-time-integrations/overview|Real Time Integrations]]
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

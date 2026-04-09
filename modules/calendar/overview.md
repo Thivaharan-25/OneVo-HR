@@ -1,9 +1,11 @@
 # Module: Calendar
 
 **Namespace:** `ONEVO.Modules.Calendar`
+**Phase:** 1 — Build
 **Pillar:** Shared Foundation
-**Owner:** Dev 1 (Week 4)
+**Owner:** Dev 3
 **Tables:** 1
+**Task File:** [[current-focus/DEV3-calendar|DEV3: Calendar]]
 
 ---
 
@@ -17,10 +19,10 @@ Company-wide and team calendar events. Aggregates leave, holidays, review cycles
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[leave]] | `ILeaveService` | Approved leave for calendar |
-| **Depends on** | [[workforce-presence]] | — | Holidays |
-| **Depends on** | [[performance]] | — | Review cycle dates |
-| **Consumed by** | [[leave]] | `ICalendarConflictService` | Conflict detection for leave requests |
+| **Depends on** | [[modules/leave/overview|Leave]] | `ILeaveService` | Approved leave for calendar |
+| **Depends on** | [[modules/workforce-presence/overview|Workforce Presence]] | — | Holidays |
+| **Depends on** | [[database/performance|Performance]] | — | Review cycle dates |
+| **Consumed by** | [[modules/leave/overview|Leave]] | `ICalendarConflictService` | Conflict detection for leave requests |
 
 ---
 
@@ -66,7 +68,7 @@ public interface ICalendarConflictService
 ## Key Business Rules
 
 1. **Unified calendar** — aggregates leave, holidays, review cycles, and custom events into one view via `source_type` + `source_id` polymorphic references.
-2. **Conflict detection** — `ICalendarConflictService` queries overlapping events for a given employee + date range. Excludes `leave` and `holiday` event types (holidays are already factored into leave day count). Severity: `review` and `company` events are **high**, `team` and `personal` are **medium**. See [[2026-04-06-leave-calendar-conflict-detection]].
+2. **Conflict detection** — `ICalendarConflictService` queries overlapping events for a given employee + date range. Excludes `leave` and `holiday` event types (holidays are already factored into leave day count). Severity: `review` and `company` events are **high**, `team` and `personal` are **medium**. See [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]].
 
 ---
 
@@ -82,15 +84,15 @@ public interface ICalendarConflictService
 
 ## Features
 
-- [[calendar-events]] — Company, team, personal, leave, holiday, and review events
-- [[conflict-detection]] — `ICalendarConflictService` for leave request conflict warnings
+- [[modules/calendar/calendar-events/overview|Calendar Events]] — Company, team, personal, leave, holiday, and review events
+- [[Userflow/Calendar/conflict-detection|Conflict Detection]] — `ICalendarConflictService` for leave request conflict warnings
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All events are tenant-scoped
-- [[event-catalog]] — Events sourced polymorphically from leave, holidays, review cycles
-- [[WEEK4-supporting-bridges]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All events are tenant-scoped
+- [[backend/messaging/event-catalog|Event Catalog]] — Events sourced polymorphically from leave, holidays, review cycles
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
 
-See also: [[module-catalog]], [[leave]], [[workforce-presence]], [[2026-04-06-leave-calendar-conflict-detection]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/leave/overview|Leave]], [[modules/workforce-presence/overview|Workforce Presence]], [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]]

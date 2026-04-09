@@ -39,8 +39,8 @@ POST /api/v1/reports/execute/{definitionId}
 
 ## Related
 
-- [[reporting-engine/report-execution/overview|Report Execution Overview]]
-- [[reporting-engine/report-definitions/overview|Report Definitions]]
-- [[reporting-engine/report-templates/overview|Report Templates]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Report Execution Overview]]
+- [[frontend/architecture/overview|Report Definitions]]
+- [[frontend/architecture/overview|Report Templates]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -36,8 +36,8 @@ POST /api/v1/skills
 
 ## Related
 
-- [[skill-taxonomy]] — feature overview
-- [[employee-skills]] — skills consumed from taxonomy
-- [[skill-assessments]] — questions linked to taxonomy skills
-- [[event-catalog]] — SkillCreated, SkillUpdated events
-- [[error-handling]] — duplicate name, inactive category, and FK constraint errors
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — feature overview
+- [[modules/skills/employee-skills/overview|Employee Skills]] — skills consumed from taxonomy
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] — questions linked to taxonomy skills
+- [[backend/messaging/event-catalog|Event Catalog]] — SkillCreated, SkillUpdated events
+- [[backend/messaging/error-handling|Error Handling]] — duplicate name, inactive category, and FK constraint errors

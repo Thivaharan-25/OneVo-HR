@@ -29,9 +29,9 @@ POST /api/v1/performance/reviews
 
 ## Related
 
-- [[reviews|Reviews Overview]]
-- [[review-cycles]]
-- [[feedback]]
-- [[goals-okr]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/performance/reviews/overview|Reviews Overview]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[modules/performance/feedback/overview|Feedback]]
+- [[modules/performance/goals-okr/overview|Goals Okr]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

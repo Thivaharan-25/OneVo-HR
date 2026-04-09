@@ -51,6 +51,6 @@ public class ReportExecutionServiceTests
 
 ## Related
 
-- [[reporting-engine/report-execution/overview|Report Execution Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/architecture/overview|Report Execution Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

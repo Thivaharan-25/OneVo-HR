@@ -32,13 +32,13 @@ Manages external integration connections (Stripe, Resend, Google Calendar, Slack
 
 ## Related
 
-- [[configuration|Configuration Module]]
-- [[configuration/tenant-settings/overview|Tenant Settings]]
-- [[configuration/monitoring-toggles/overview|Monitoring Toggles]]
-- [[configuration/employee-overrides/overview|Employee Overrides]]
-- [[configuration/retention-policies/overview|Retention Policies]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[compliance]]
-- [[WEEK1-shared-platform]]
+- [[modules/configuration/overview|Configuration Module]]
+- [[frontend/architecture/overview|Tenant Settings]]
+- [[frontend/architecture/overview|Monitoring Toggles]]
+- [[frontend/architecture/overview|Employee Overrides]]
+- [[frontend/architecture/overview|Retention Policies]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[security/compliance|Compliance]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

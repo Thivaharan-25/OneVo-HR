@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Tenant provisioned → [[tenant-provisioning]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Tenant provisioned → [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -19,7 +19,7 @@
 
 ### Step 2: Configure Limits
 - **UI:** Set per-item limit (max per single expense) → set monthly limit per employee → set receipt required (yes/no) → set auto-approval threshold (claims below this amount auto-approved)
-- **Backend:** ExpenseCategoryService.CreateAsync() → [[expense-categories]]
+- **Backend:** ExpenseCategoryService.CreateAsync() → [[modules/expense/expense-categories/overview|Expense Categories]]
 - **DB:** `expense_categories`
 
 ### Step 3: Save
@@ -34,14 +34,14 @@
 
 ## Events Triggered
 
-- `ExpenseCategoryCreated` → [[event-catalog]]
+- `ExpenseCategoryCreated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[expense-claim-submission]]
-- [[expense-approval]]
+- [[Userflow/Expense/expense-claim-submission|Expense Claim Submission]]
+- [[Userflow/Expense/expense-approval|Expense Approval]]
 
 ## Module References
 
-- [[expense-categories]]
-- [[expense]]
+- [[modules/expense/expense-categories/overview|Expense Categories]]
+- [[modules/expense/overview|Expense]]

@@ -1,10 +1,11 @@
 # Module: Infrastructure
 
 **Namespace:** `ONEVO.Modules.Infrastructure`
+**Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 1 (Week 1)
 **Tables:** 4
-**Task File:** [[WEEK1-infrastructure-setup]]
+**Task File:** [[current-focus/DEV1-infrastructure-setup|DEV1: Infrastructure]]
 
 ---
 
@@ -18,7 +19,7 @@ Foundational module managing tenants, users (authentication identity), file uplo
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[shared-kernel]] | `BaseEntity`, `BaseRepository`, `ITenantContext` | Foundation |
+| **Depends on** | [[backend/shared-kernel|Shared Kernel]] | `BaseEntity`, `BaseRepository`, `ITenantContext` | Foundation |
 | **Consumed by** | All modules | `ITenantContext`, `IFileService`, `IUserService` | Multi-tenancy, files, users |
 
 ---
@@ -64,7 +65,7 @@ public interface IFileService
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Note:** `industry_profile` is new — used by [[configuration]] to set default monitoring feature toggles when a tenant signs up.
+**Note:** `industry_profile` is new — used by [[modules/configuration/overview|Configuration]] to set default monitoring feature toggles when a tenant signs up.
 
 ### `users`
 
@@ -114,7 +115,7 @@ Reference data — NOT tenant-scoped (global).
 ## Key Business Rules
 
 1. **Tenant provisioning flow:** Signup → seed default data (roles, permissions, monitoring toggles based on `industry_profile`) → activate.
-2. **Users ≠ Employees.** `users` is the login identity. `employees` is the HR identity in [[core-hr]]. They are 1:1 linked via `user_id` on the employees table. When working with HR features, always query through `employees`.
+2. **Users ≠ Employees.** `users` is the login identity. `employees` is the HR identity in [[modules/core-hr/overview|Core Hr]]. They are 1:1 linked via `user_id` on the employees table. When working with HR features, always query through `employees`.
 3. **Files are stored in blob storage** (Railway/S3). Only metadata lives in `file_records`.
 4. **Countries table has no `tenant_id`** — it's global reference data.
 
@@ -136,19 +137,19 @@ Reference data — NOT tenant-scoped (global).
 
 ## Features
 
-- [[tenant-management]] — Tenant provisioning, industry profile, subscription linking
-- [[user-management]] — Authentication identity (login), linked 1:1 to employees
-- [[file-management]] — File upload/download metadata; blobs in external storage
-- [[reference-data]] — Global countries table (ISO codes, currency, phone codes)
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]] — Tenant provisioning, industry profile, subscription linking
+- [[modules/infrastructure/user-management/overview|User Management]] — Authentication identity (login), linked 1:1 to employees
+- [[modules/infrastructure/file-management/overview|File Management]] — File upload/download metadata; blobs in external storage
+- [[modules/infrastructure/reference-data/overview|Reference Data]] — Global countries table (ISO codes, currency, phone codes)
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — Source of truth for `tenants` table and `ITenantContext`
-- [[shared-kernel]] — `BaseEntity`, `BaseRepository`, `ITenantContext` foundation
-- [[data-classification]] — Files stored in blob storage; `password_hash` is bcrypt
-- [[migration-patterns]] — Countries table is global (no `tenant_id`)
-- [[WEEK1-infrastructure-setup]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — Source of truth for `tenants` table and `ITenantContext`
+- [[backend/shared-kernel|Shared Kernel]] — `BaseEntity`, `BaseRepository`, `ITenantContext` foundation
+- [[security/data-classification|Data Classification]] — Files stored in blob storage; `password_hash` is bcrypt
+- [[database/migration-patterns|Migration Patterns]] — Countries table is global (no `tenant_id`)
+- [[current-focus/DEV1-infrastructure-setup|DEV1: Infrastructure]] — Implementation task file
 
-See also: [[module-catalog]], [[auth]], [[core-hr]], [[configuration]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/auth/overview|Auth]], [[modules/core-hr/overview|Core Hr]], [[modules/configuration/overview|Configuration]]

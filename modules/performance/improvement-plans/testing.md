@@ -51,5 +51,5 @@ public class PipServiceTests
 
 ## Related
 
-- [[improvement-plans|Improvement Plans Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/performance/improvement-plans/overview|Improvement Plans Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

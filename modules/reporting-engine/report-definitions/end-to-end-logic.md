@@ -31,8 +31,8 @@ POST /api/v1/reports/definitions
 
 ## Related
 
-- [[reporting-engine/report-definitions/overview|Report Definitions Overview]]
-- [[reporting-engine/report-execution/overview|Report Execution]]
-- [[reporting-engine/report-templates/overview|Report Templates]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Report Definitions Overview]]
+- [[frontend/architecture/overview|Report Execution]]
+- [[frontend/architecture/overview|Report Templates]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

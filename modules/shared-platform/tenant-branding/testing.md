@@ -51,6 +51,6 @@ public class BrandingServiceTests
 
 ## Related
 
-- [[tenant-branding|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/design-system/theming/tenant-branding|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

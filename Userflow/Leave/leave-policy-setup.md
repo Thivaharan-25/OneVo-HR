@@ -8,17 +8,17 @@
 
 ## Preconditions
 
-- At least one leave type has been configured: [[leave-type-configuration|Leave Type Configuration Flow]]
-- Legal entities exist in the system: [[legal-entities]]
+- At least one leave type has been configured: [[Userflow/Leave/leave-type-configuration|Leave Type Configuration Flow]]
+- Legal entities exist in the system: [[modules/org-structure/legal-entities/overview|Legal Entities]]
 - User has `leave:manage` permission assigned via their Job Family role
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Leave Policies
 - **UI:** User navigates to Leave → Policies. Sees a list of existing policies with columns: Policy Name, Country, Leave Types Covered, Assigned Legal Entities, Status
 - **API:** `GET /api/v1/leave/policies`
-- **Backend:** `LeavePolicyService.GetAllAsync()` → [[leave]]
+- **Backend:** `LeavePolicyService.GetAllAsync()` → [[modules/leave/overview|Leave]]
 - **Validation:** Checks `leave:manage` permission via RBAC middleware
 - **DB:** `leave_policies` (filtered by `tenant_id`)
 
@@ -67,7 +67,7 @@
 ### Step 8: Save Policy
 - **UI:** Click "Save & Activate" button. Confirmation dialog if replacing an existing policy for any legal entity. Success toast shown
 - **API:** `POST /api/v1/leave/policies`
-- **Backend:** `LeavePolicyService.CreateAsync()` → [[leave]]
+- **Backend:** `LeavePolicyService.CreateAsync()` → [[modules/leave/overview|Leave]]
   1. Validates policy configuration
   2. Creates `leave_policies` record with nested `leave_policy_rules` for each leave type
   3. Creates `leave_policy_assignments` linking policy to legal entities
@@ -100,19 +100,19 @@
 
 ## Events Triggered
 
-- `LeavePolicyCreatedEvent` → [[event-catalog]] — triggers entitlement generation for employees in assigned legal entities
-- `LeavePolicyUpdatedEvent` → [[event-catalog]] — triggers entitlement recalculation
-- `AuditLogEntry` (action: `leave_policy.created`) → [[audit-logging]]
+- `LeavePolicyCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — triggers entitlement generation for employees in assigned legal entities
+- `LeavePolicyUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — triggers entitlement recalculation
+- `AuditLogEntry` (action: `leave_policy.created`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[leave-type-configuration]] — configure the leave types referenced by policies
-- [[leave-entitlement-assignment]] — entitlements generated from policy rules
-- [[leave-request-submission]] — policies govern request validation rules
+- [[Userflow/Leave/leave-type-configuration|Leave Type Configuration]] — configure the leave types referenced by policies
+- [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment]] — entitlements generated from policy rules
+- [[Userflow/Leave/leave-request-submission|Leave Request Submission]] — policies govern request validation rules
 
 ## Module References
 
-- [[leave]] — leave module overview and architecture
-- [[leave-policies]] — policy data model and business rules
-- [[leave-types]] — leave type definitions
-- [[legal-entities]] — organizational entities policies are assigned to
+- [[modules/leave/overview|Leave]] — leave module overview and architecture
+- [[modules/leave/leave-policies/overview|Leave Policies]] — policy data model and business rules
+- [[modules/leave/leave-types/overview|Leave Types]] — leave type definitions
+- [[modules/org-structure/legal-entities/overview|Legal Entities]] — organizational entities policies are assigned to

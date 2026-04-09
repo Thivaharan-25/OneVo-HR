@@ -55,13 +55,13 @@ GET /api/v1/activity/screenshots/{id}/view
 
 ## Related
 
-- [[activity-monitoring|Activity Monitoring Module]]
-- [[screenshots/overview|Screenshots Overview]]
-- [[raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
-- [[agent-gateway|Agent Gateway Module]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[data-classification]]
-- [[retention-policies]]
-- [[multi-tenancy]]
-- [[WEEK3-activity-monitoring]]
+- [[modules/activity-monitoring/overview|Activity Monitoring Module]]
+- [[frontend/architecture/overview|Screenshots Overview]]
+- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
+- [[modules/agent-gateway/overview|Agent Gateway Module]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/data-classification|Data Classification]]
+- [[modules/configuration/retention-policies/overview|Retention Policies]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Expense categories configured → [[expense-category-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Expense categories configured → [[Userflow/Expense/expense-category-setup|Expense Category Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -24,7 +24,7 @@
 ### Step 3: Review & Submit
 - **UI:** Review all items → see total amount → submit for approval
 - **API:** `POST /api/v1/expense/claims/{id}/submit`
-- **Backend:** ExpenseService.SubmitAsync() → [[expense]]
+- **Backend:** ExpenseService.SubmitAsync() → [[modules/expense/overview|Expense]]
 - **DB:** `expense_claims` — status: "Pending", `expense_items` — individual line items
 
 ### Step 4: Track Status
@@ -45,16 +45,16 @@
 
 ## Events Triggered
 
-- `ExpenseClaimSubmitted` → [[event-catalog]]
-- Notification to approver → [[notification-system]]
+- `ExpenseClaimSubmitted` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to approver → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[expense-approval]]
-- [[expense-category-setup]]
-- [[payroll-run-execution]] (reimbursement)
+- [[Userflow/Expense/expense-approval|Expense Approval]]
+- [[Userflow/Expense/expense-category-setup|Expense Category Setup]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]] (reimbursement)
 
 ## Module References
 
-- [[expense]]
-- [[expense-categories]]
+- [[modules/expense/overview|Expense]]
+- [[modules/expense/expense-categories/overview|Expense Categories]]

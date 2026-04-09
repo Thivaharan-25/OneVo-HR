@@ -1,116 +1,157 @@
 # Current Focus: ONEVO
 
-**Last Updated:** 2026-04-06
-**Current Phase:** Phase 1 — Backend First, Then Frontend (React)
+**Current Phase:** Phase 1
 **Team Size:** 4 developers
-**Delivery Deadline:** 2026-05-05 (1 month)
 **Development Approach:** Agentic Development Environment (AI-assisted)
 
 ---
 
-## Delivery Plan — 4 Weeks, 4 Developers
+## How to Use This Folder
 
-### Week 1 (Apr 7–11): Foundation & Infrastructure
-> Goal: All foundational modules operational. Auth working. Org structure CRUD complete. Agent Gateway ready.
+Each file below is a **self-contained task** for one developer. It includes:
+1. **Step 1: Backend** — acceptance criteria, module docs links
+2. **Step 2: Frontend** — pages to build, userflow links, API endpoints to consume
 
-| Developer | Module(s) | Task File | Key Deliverables |
-|:----------|:----------|:----------|:----------------|
-| Dev 1 | **Infrastructure + Shared Kernel** | [[WEEK1-infrastructure-setup]] | Tenant provisioning (with industry profile), user CRUD, file upload, base entity/repository, multi-tenancy middleware, EF Core setup, PostgreSQL RLS |
-| Dev 2 | **Auth & Security** | [[WEEK1-auth-security]] | JWT auth (RS256), RBAC with 90+ permissions (incl. monitoring perms), session management, MFA, audit logging, GDPR consent |
-| Dev 3 | **Org Structure** | [[WEEK1-org-structure]] | Hierarchical departments, job families/levels/titles, teams, legal entities |
-| Dev 4 | **Shared Platform + Agent Gateway** | [[WEEK1-shared-platform]] | SSO config, subscriptions, feature flags, workflow engine, Agent Gateway (registration, heartbeat, policy sync, ingestion endpoint) |
+The dev builds backend first, then frontend for the same module. Each task file links to the relevant [[Userflow/README|Userflows]] so the AI knows the full user journey and API contracts.
 
 ---
 
-### Week 2 (Apr 14–18): Core HR + Workforce Presence
-> Goal: Employee lifecycle fully operational. Unified presence tracking working end-to-end.
+## Task Assignment — Dev 1
 
-| Developer | Module(s) | Task File | Key Deliverables |
-|:----------|:----------|:----------|:----------------|
-| Dev 1 | **Core HR (Employee Profile)** | [[WEEK2-core-hr-profile]] | Employee CRUD, full profile (dependents, addresses, qualifications, work history), salary history, bank details (encrypted), manager hierarchy |
-| Dev 2 | **Core HR (Lifecycle)** | [[WEEK2-core-hr-lifecycle]] | Onboarding workflow, offboarding (knowledge risk + penalties), lifecycle events (promotions, transfers, salary changes) |
-| Dev 3 | **Workforce Presence (Setup)** | [[WEEK2-workforce-presence-setup]] | Shifts, schedules, templates, holidays, presence sessions, device sessions, break records |
-| Dev 4 | **Workforce Presence (Biometric + Agent)** | [[WEEK2-workforce-presence-biometric]] | Biometric device registration, enrollment, event capture, overtime, corrections, agent data integration into presence |
+| # | Task | Module | Priority | Task File |
+|:--|:-----|:-------|:---------|:----------|
+| 1 | Infrastructure & Foundation | Infrastructure + SharedKernel | Critical | [[current-focus/DEV1-infrastructure-setup|DEV1 Infrastructure Setup]] |
+| 2 | Employee Profile | CoreHR | Critical | [[current-focus/DEV1-core-hr-profile|DEV1 Core Hr Profile]] |
+| 3 | Leave | Leave | High | [[current-focus/DEV1-leave|DEV1 Leave]] |
+| 4 | Productivity Analytics | ProductivityAnalytics | High | [[current-focus/DEV1-productivity-analytics|DEV1 Productivity Analytics]] |
 
----
-
-### Week 3 (Apr 21–25): Leave + Performance + Activity Monitoring + Identity Verification
-> Goal: Leave operational. Performance reviews working. Activity monitoring pipeline functional. Identity verification active.
-
-| Developer | Module(s) | Task File | Key Deliverables |
-|:----------|:----------|:----------|:----------------|
-| Dev 1 | **Leave** | [[WEEK3-leave]] | Leave types, country/level-specific policies with versioning, entitlement calculation, request + approval workflow |
-| Dev 2 | **Performance** | [[WEEK3-performance]] | Review cycles, multi-rater reviews, peer feedback, goals (OKR), recognition, succession planning, optional productivity score intake |
-| Dev 3 | **Activity Monitoring** | [[WEEK3-activity-monitoring]] | Activity snapshots, app usage tracking, meeting detection, screenshots, daily summary aggregation, raw buffer with partitioning, application categories |
-| Dev 4 | **Identity Verification** | [[WEEK3-identity-verification]] | Verification policies (configurable intervals), photo capture API, biometric matching, verification records |
+**Dev 1 Frontend Pages:** Dashboard layout, Employee list/detail/create, Leave management, Productivity reports
 
 ---
 
-### Week 4 (Apr 28 – May 2): Exception Engine + Analytics + Payroll + Supporting
-> Goal: Exception detection active. Productivity reports generated. Payroll operational. All bridges defined.
+## Task Assignment — Dev 2
 
-| Developer | Module(s) | Task File | Key Deliverables |
-|:----------|:----------|:----------|:----------------|
-| Dev 1 | **Productivity Analytics + Reporting Engine** | [[WEEK4-productivity-analytics]] | Daily/weekly/monthly employee reports, workforce snapshots, trend analysis, reporting engine serving both pillars, CSV/Excel export |
-| Dev 2 | **Exception Engine** | [[WEEK4-exception-engine]] | Configurable anomaly detection rules, threshold triggers, alert generation, escalation chains, exception schedules (work hours only), SignalR push |
-| Dev 3 | **Payroll** | [[WEEK4-payroll]] | Payroll providers, tax engines, allowances, pensions, batch execution (Hangfire), reads actual hours from [[workforce-presence]] |
-| Dev 4 | **Supporting Modules + Bridges** | [[WEEK4-supporting-bridges]] | Documents, Notifications (enhanced with monitoring alerts), Grievance, Expense, 5 WorkManage Pro bridges (incl. Work Activity) |
+| # | Task | Module | Priority | Task File |
+|:--|:-----|:-------|:---------|:----------|
+| 1 | Auth & Security | Auth | Critical | [[current-focus/DEV2-auth-security|DEV2 Auth Security]] |
+| 2 | Employee Lifecycle | CoreHR | Critical | [[current-focus/DEV2-core-hr-lifecycle|DEV2 Core Hr Lifecycle]] |
+| 3 | Exception Engine | ExceptionEngine | Critical | [[current-focus/DEV2-exception-engine|DEV2 Exception Engine]] |
+| 4 | Notifications | Notifications | High | [[current-focus/DEV2-notifications|DEV2 Notifications]] |
+
+**Dev 2 Frontend Pages:** Login/MFA/Password reset, Role/User management, Onboarding/Offboarding, Exception dashboard, Notification bell + preferences
+
+---
+
+## Task Assignment — Dev 3
+
+| # | Task | Module | Priority | Task File |
+|:--|:-----|:-------|:---------|:----------|
+| 1 | Org Structure | OrgStructure | Critical | [[current-focus/DEV3-org-structure|DEV3 Org Structure]] |
+| 2 | Calendar | Calendar | High | [[current-focus/DEV3-calendar|DEV3 Calendar]] |
+| 3 | Workforce Presence (Setup) | WorkforcePresence | Critical | [[current-focus/DEV3-workforce-presence-setup|DEV3 Workforce Presence Setup]] |
+| 4 | Activity Monitoring | ActivityMonitoring | Critical | [[current-focus/DEV3-activity-monitoring|DEV3 Activity Monitoring]] |
+
+**Dev 3 Frontend Pages:** Department/Team/Job management, Unified calendar, Shift/Holiday management, Live workforce dashboard, Activity detail/screenshots
+
+---
+
+## Task Assignment — Dev 4
+
+| # | Task | Module | Priority | Task File |
+|:--|:-----|:-------|:---------|:----------|
+| 1 | Shared Platform + Agent Gateway | SharedPlatform + AgentGateway | Critical | [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] |
+| 2 | Configuration | Configuration | High | [[current-focus/DEV4-configuration|DEV4 Configuration]] |
+| 3 | Identity Verification | IdentityVerification | High | [[current-focus/DEV4-identity-verification|DEV4 Identity Verification]] |
+| 4 | Workforce Presence (Biometric) | WorkforcePresence | Critical | [[current-focus/DEV4-workforce-presence-biometric|DEV4 Workforce Presence Biometric]] |
+
+**Dev 4 Frontend Pages:** Settings (monitoring config, tenant settings, integrations, retention), Agent management, Biometric devices, Attendance/Overtime, Verification log
+
+---
+
+## Task Execution Order
+
+Tasks are numbered 1-4 per developer. **Task 1 should be built first** (it's the foundation). Tasks 2-4 proceed after task 1 is complete, but some have cross-dev dependencies noted in each task file.
+
+### Critical Path
+
+```
+DEV1: Infrastructure Setup ──> (all other tasks depend on this)
+DEV2: Auth & Security ──────> (all modules use RBAC from this)
+```
+
+These two tasks **must be completed first** before other devs can make progress.
+
+### Cross-Dev Dependencies
+
+```
+DEV3 Calendar (task 2) ──> unblocks DEV1 Leave (task 3)
+DEV3 Workforce Presence Setup (task 3) ──> unblocks DEV4 Biometric (task 4)
+DEV3 Activity Monitoring (task 4) ──> unblocks DEV1 Productivity Analytics (task 4)
+DEV4 Shared Platform (task 1) ──> unblocks DEV2 Notifications (task 4)
+```
 
 ---
 
 ## What We Are NOT Working On Right Now
 
+- **Payroll** — deferred to Phase 2
+- **Performance** — deferred to Phase 2
+- **Documents** — deferred to Phase 2
+- **Grievance** — deferred to Phase 2
+- **Expense** — deferred to Phase 2
+- **Reporting Engine** — deferred to Phase 2
+- **Skills & Learning** — deferred to Phase 2
 - **AI Chatbot (Nexis)** — deferred to Phase 2
 - **Mobile Application (Flutter)** — deferred to Phase 2
-- **Frontend (React/Next.js)** — in scope, follows backend completion (see Frontend Phase section below)
+- **WorkManage Pro Bridges** — deferred to Phase 2
 - **Desktop Agent code** — in scope, follows Agent Gateway completion (see `agent/AI_CONTEXT/`)
-- **WorkManage Pro features** — other team; we only build [[external-integrations|bridge interfaces]]
 - **Teams Graph API deep integration** — Phase 2; Phase 1 uses process name detection
 - **Meilisearch** — PostgreSQL FTS sufficient for Phase 1
 - **RabbitMQ** — using in-process domain events; RabbitMQ for scale later
 
 ---
 
-## Key Dates & Deadlines
+## Milestones
 
-| Milestone | Date | Notes |
-|:----------|:-----|:------|
-| Week 1 complete: Foundation | 2026-04-11 | Auth, RBAC, Org Structure, Shared Platform, Agent Gateway |
-| Week 2 complete: Core HR + Presence | 2026-04-18 | Employee lifecycle, workforce presence tracking |
-| Week 3 complete: Leave + Performance + Monitoring | 2026-04-25 | Leave, performance, activity monitoring, identity verification |
-| Week 4 complete: All modules + Payroll | 2026-05-02 | Exception engine, analytics, payroll, supporting, bridges |
-| Final testing & bug fixes | 2026-05-05 | Buffer for integration testing |
+| Milestone | Scope | Notes |
+|:----------|:------|:------|
+| Foundation complete | DEV1 task 1 + DEV2 task 1 | All other tasks depend on this |
+| Core modules complete | All devs task 2 | Calendar, Lifecycle, Configuration, Employee Profile |
+| Extended modules complete | All devs task 3 | Leave, Exception Engine, Presence, Identity Verification |
+| All Phase 1 modules complete | All devs task 4 | Productivity, Notifications, Activity Monitoring, Biometric |
+| Integration testing | All devs | Buffer for cross-module testing |
 
 ---
 
-## Frontend Phase
+## Frontend Phase (Per Module)
 
-**Phase:** Follows backend completion
-**Timeline:** After Week 4 backend deliverables (target: May 2026)
-**Team:** Frontend developers (TBD)
+Each dev builds the frontend for their module **immediately after** completing the backend for that module. Frontend tasks are defined in each task file under "Step 2: Frontend".
 
-### Priority Order
+### Key Frontend Resources
 
-1. **Auth flow** — login, MFA, token management
-2. **Dashboard layout** — sidebar, topbar, permission-based navigation
-3. **Workforce Intelligence pages** — live dashboard, activity detail, exceptions (highest client value)
-4. **HR pages** — employees, leave, performance
-5. **Settings** — monitoring configuration, tenant settings
-6. **Employee self-service** — own dashboard, own leave
+- [[frontend/architecture/app-structure|Frontend Structure]] — Next.js app directory layout
+- [[frontend/design-system/README|Design System]] — shadcn/ui components, design tokens
+- [[frontend/design-system/components/component-catalog|Component Catalog]] — all UI components
+- [[frontend/data-layer/api-integration|API Integration]] — API client, error handling, pagination
+- [[frontend/data-layer/state-management|State Management]] — TanStack Query + Zustand
+- [[frontend/coding-standards|Frontend Coding Standards]] — conventions
 
-### Not in Scope Yet
+### Frontend Priority Order (if time is tight)
 
-- Mobile-responsive optimization (tablet minimum, mobile deferred)
-- PWA / offline support
-- Dark mode (light mode first, dark mode Phase 2)
-- Tenant branding customization UI
+1. **Auth flow** — login, MFA, token management (DEV2)
+2. **Dashboard layout** — sidebar, topbar, permission-based navigation (DEV1)
+3. **Workforce Intelligence pages** — live dashboard, activity detail, exceptions (DEV3 + DEV2)
+4. **HR pages** — employees, leave, calendar (DEV1 + DEV3)
+5. **Settings** — monitoring configuration, tenant settings (DEV4)
+6. **Employee self-service** — own dashboard, own leave (DEV1)
 
 ---
 
 ## Related
 
-- [[project-context]]
-- [[tech-stack]]
-- [[module-catalog]]
-- [[rules]]
-- [[known-issues]]
+- [[AI_CONTEXT/project-context|Project Context]]
+- [[AI_CONTEXT/tech-stack|Tech Stack]]
+- [[backend/module-catalog|Module Catalog]]
+- [[AI_CONTEXT/rules|Rules]]
+- [[AI_CONTEXT/known-issues|Known Issues]]
+- [[ade/README|ADE Orchestrator Instructions]]

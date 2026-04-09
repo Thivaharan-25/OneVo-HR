@@ -18,7 +18,7 @@ Fields: `reason` (`resignation`, `termination`, `retirement`, `contract_end`), `
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeOffboardingStarted` | Offboarding initiated | [[notifications]], [[documents]] |
+| `EmployeeOffboardingStarted` | Offboarding initiated | [[modules/notifications/overview|Notifications]], [[modules/documents/overview|Documents]] |
 
 ## API Endpoints
 
@@ -28,16 +28,16 @@ Fields: `reason` (`resignation`, `termination`, `retirement`, `contract_end`), `
 
 ## Related
 
-- [[core-hr|Core HR Module]]
-- [[employee-profiles]]
-- [[employee-lifecycle]]
-- [[onboarding]]
-- [[compensation]]
-- [[qualifications]]
-- [[dependents-contacts]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[event-catalog]]
-- [[compliance]]
-- [[shared-kernel]]
-- [[WEEK2-core-hr-lifecycle]]
+- [[modules/core-hr/overview|Core HR Module]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
+- [[modules/core-hr/onboarding/overview|Onboarding]]
+- [[modules/core-hr/compensation/overview|Compensation]]
+- [[modules/core-hr/qualifications/overview|Qualifications]]
+- [[modules/core-hr/dependents-contacts/overview|Dependents Contacts]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[security/compliance|Compliance]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-core-hr-lifecycle|DEV2: Core HR Lifecycle]]

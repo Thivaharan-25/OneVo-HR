@@ -39,8 +39,8 @@ PUT /api/v1/development-plans/{planId}/items/{itemId}
 
 ## Related
 
-- [[development-plans]] — feature overview
-- [[courses-learning]] — courses linked to milestones
-- [[employee-skills]] — skill targets resolved from plan items
-- [[event-catalog]] — DevelopmentPlanMilestoneCompleted events
-- [[error-handling]] — orphaned milestone and link validation errors
+- [[modules/skills/development-plans/overview|Development Plans]] — feature overview
+- [[modules/skills/courses-learning/overview|Courses Learning]] — courses linked to milestones
+- [[modules/skills/employee-skills/overview|Employee Skills]] — skill targets resolved from plan items
+- [[backend/messaging/event-catalog|Event Catalog]] — DevelopmentPlanMilestoneCompleted events
+- [[backend/messaging/error-handling|Error Handling]] — orphaned milestone and link validation errors

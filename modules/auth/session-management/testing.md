@@ -39,6 +39,6 @@ public class SessionServiceTests
 
 ## Related
 
-- [[session-management|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/auth/session-management/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

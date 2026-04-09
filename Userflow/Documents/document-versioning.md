@@ -8,15 +8,15 @@
 
 ## Preconditions
 
-- Document exists → [[document-upload]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Document exists → [[Userflow/Documents/document-upload|Document Upload]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Upload New Version
 - **UI:** Navigate to document → "Upload New Version" → select new file → add changelog note
 - **API:** `POST /api/v1/documents/{id}/versions`
-- **Backend:** DocumentService.UploadVersionAsync() → [[document-management]]
+- **Backend:** DocumentService.UploadVersionAsync() → [[modules/documents/document-management/overview|Document Management]]
 - **DB:** Previous version preserved in `document_versions`, document points to new version
 
 ### Step 2: Version History
@@ -25,7 +25,7 @@
 
 ### Step 3: Re-notify (if policy document)
 - **Backend:** If document has acknowledgement requirement → all previous acknowledgements reset → employees re-notified
-- Links: [[document-acknowledgement]]
+- Links: [[Userflow/Documents/document-acknowledgement|Document Acknowledgement]]
 
 ## Variations
 
@@ -40,13 +40,13 @@
 
 ## Events Triggered
 
-- `DocumentVersionCreated` → [[event-catalog]]
+- `DocumentVersionCreated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[document-upload]]
-- [[document-acknowledgement]]
+- [[Userflow/Documents/document-upload|Document Upload]]
+- [[Userflow/Documents/document-acknowledgement|Document Acknowledgement]]
 
 ## Module References
 
-- [[document-management]]
+- [[modules/documents/document-management/overview|Document Management]]

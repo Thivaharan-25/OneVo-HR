@@ -93,6 +93,6 @@ Manage performance review cycles, individual goals, and view review details. Opt
 
 ## Related
 
-- [[review-cycles|Review Cycles Overview]]
-- [[auth-architecture]]
-- [[design-system]]
+- [[modules/performance/review-cycles/overview|Review Cycles Overview]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[frontend/design-system/README|Design System]]

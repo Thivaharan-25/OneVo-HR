@@ -48,9 +48,9 @@ POST /api/v1/agent/ingest
 
 ## Related
 
-- [[data-ingestion|Data Ingestion Overview]]
-- [[agent-registration]]
-- [[heartbeat-monitoring]]
-- [[policy-distribution]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/agent-gateway/data-ingestion/overview|Data Ingestion Overview]]
+- [[modules/agent-gateway/agent-registration/overview|Agent Registration]]
+- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]]
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

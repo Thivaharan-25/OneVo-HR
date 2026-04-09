@@ -51,6 +51,6 @@ public class ShiftServiceTests
 
 ## Related
 
-- [[shifts-schedules|Shifts & Schedules Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts & Schedules Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

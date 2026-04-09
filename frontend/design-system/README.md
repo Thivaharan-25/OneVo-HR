@@ -7,7 +7,7 @@
 Visual building blocks that every component inherits:
 
 - [[frontend/design-system/foundations/color-tokens|Color Tokens]] — brand, semantic, status, severity, surface tokens (light + dark)
-- [[frontend/design-system/foundations/typography|Typography]] — Inter font scale, weights, monospace for data
+- [[frontend/design-system/foundations/typography|Typography]] — Outfit + Geist font scale, weights, monospace for data
 - [[frontend/design-system/foundations/spacing|Spacing]] — 4px base unit, layout spacing rules, component internal spacing
 - [[frontend/design-system/foundations/elevation|Elevation]] — shadow scale, z-index layers, flat-by-default philosophy
 - [[frontend/design-system/foundations/motion|Motion]] — duration scale, easing curves, animation keyframes, reduced-motion
@@ -25,7 +25,7 @@ Reusable interaction patterns with code examples:
 - [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — dashboard layout, page types (list, detail, dashboard), responsive breakpoints
 - [[frontend/design-system/patterns/form-patterns|Form Patterns]] — React Hook Form + Zod, multi-step wizards, inline editing, filter forms, validation
 - [[frontend/design-system/patterns/table-patterns|Table Patterns]] — DataTable architecture, column types, sorting, pagination, bulk actions, export
-- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — sidebar states, topbar, command palette, breadcrumbs, tab navigation
+- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — sidebar states, topbar, Quick Search, breadcrumbs, tab navigation
 - [[frontend/design-system/patterns/data-visualization|Data Visualization]] — chart library choice, chart types per page, custom components (timeline, heatmap)
 
 ## Theming

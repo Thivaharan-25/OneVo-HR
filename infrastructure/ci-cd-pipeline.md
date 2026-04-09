@@ -111,7 +111,7 @@ jobs:
 
 ## Zero-Downtime Migrations
 
-All schema changes follow expand-contract pattern (see [[migration-patterns]]):
+All schema changes follow expand-contract pattern (see [[database/migration-patterns|Migration Patterns]]):
 
 ```
 Deploy 1: Add new columns/tables (expand) → app ignores them
@@ -121,5 +121,5 @@ Deploy 3: Remove old columns/tables (contract)
 
 ## Related
 
-- [[environment-parity]]
-- [[git-workflow]]
+- [[infrastructure/environment-parity|Environment Parity]]
+- [[code-standards/git-workflow|Git Workflow]]

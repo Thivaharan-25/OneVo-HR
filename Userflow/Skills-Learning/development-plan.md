@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Skill assessments completed → [[skill-assessment]]
-- Courses available in catalog → [[course-enrollment]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Skill assessments completed → [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]]
+- Courses available in catalog → [[Userflow/Skills-Learning/course-enrollment|Course Enrollment]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -20,11 +20,11 @@
 
 ### Step 2: Identify Skill Gaps
 - **UI:** System shows current skills vs target role requirements → highlights gaps → add target skills to plan
-- Links: [[skill-assessment]], [[job-family-setup]]
+- Links: [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]], [[Userflow/Org-Structure/job-family-setup|Job Family Setup]]
 
 ### Step 3: Assign Learning Actions
 - **UI:** For each target skill → assign actions: enroll in course, assign mentor, set stretch project, attend training → set milestones with dates
-- **Backend:** DevelopmentPlanService.CreateAsync() → [[development-plans]]
+- **Backend:** DevelopmentPlanService.CreateAsync() → [[modules/skills/development-plans/overview|Development Plans]]
 - **DB:** `development_plans`, `development_plan_actions`
 
 ### Step 4: Track Progress
@@ -43,18 +43,18 @@
 
 ## Events Triggered
 
-- `DevelopmentPlanCreated` → [[event-catalog]]
-- `DevelopmentPlanCompleted` → [[event-catalog]]
+- `DevelopmentPlanCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `DevelopmentPlanCompleted` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[skill-assessment]]
-- [[course-enrollment]]
-- [[goal-setting]]
-- [[succession-planning]]
+- [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]]
+- [[Userflow/Skills-Learning/course-enrollment|Course Enrollment]]
+- [[Userflow/Performance/goal-setting|Goal Setting]]
+- [[Userflow/Performance/succession-planning|Succession Planning]]
 
 ## Module References
 
-- [[development-plans]]
-- [[courses-learning]]
-- [[skill-assessments]]
+- [[modules/skills/development-plans/overview|Development Plans]]
+- [[modules/skills/courses-learning/overview|Courses Learning]]
+- [[modules/skills/skill-assessments/overview|Skill Assessments]]

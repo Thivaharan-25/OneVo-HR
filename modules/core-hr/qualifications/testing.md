@@ -51,6 +51,6 @@ public class QualificationServiceTests
 
 ## Related
 
-- [[qualifications|Qualifications Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/core-hr/qualifications/overview|Qualifications Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

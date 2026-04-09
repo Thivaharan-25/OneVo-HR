@@ -51,5 +51,5 @@ public class DocumentAccessServiceTests
 
 ## Related
 
-- [[documents/access-control/overview|Access Control Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Access Control Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

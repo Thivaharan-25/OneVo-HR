@@ -170,6 +170,6 @@ function WorkforceSection() {
 
 ## Related
 
-- [[authorization]]
-- [[auth-architecture]]
-- [[structure]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[frontend/architecture/app-structure|App Structure]]

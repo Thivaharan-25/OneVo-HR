@@ -4,21 +4,21 @@
 
 ## Quick Links
 
-- [[module-catalog]] — Full module registry + dependency map
-- [[module-boundaries]] — 5 core boundary rules
-- [[shared-kernel]] — BaseEntity, Result<T>, ITenantContext
-- [[api-conventions]] — REST standards, versioning, error format
-- [[notification-system]] — 6-step notification pipeline
-- [[real-time]] — SignalR architecture
-- [[search-architecture]] — PostgreSQL FTS → Meilisearch
-- [[monitoring-data-flow]] — Agent → API → Dashboard data flow
-- [[external-integrations]] — Bridges, Stripe, Resend
+- [[backend/module-catalog|Module Catalog]] — Full module registry + dependency map
+- [[backend/module-boundaries|Module Boundaries]] — 5 core boundary rules
+- [[backend/shared-kernel|Shared Kernel]] — BaseEntity, Result<T>, ITenantContext
+- [[backend/api-conventions|Api Conventions]] — REST standards, versioning, error format
+- [[backend/notification-system|Notification System]] — 6-step notification pipeline
+- [[backend/real-time|Real-Time Architecture]] — SignalR architecture
+- [[backend/search-architecture|Search Architecture]] — PostgreSQL FTS → Meilisearch
+- [[backend/monitoring-data-flow|Monitoring Data Flow]] — Agent → API → Dashboard data flow
+- [[backend/external-integrations|External Integrations]] — Bridges, Stripe, Resend
 
 ## Messaging & Events
 
-- [[event-catalog]] — 40+ domain events
-- [[exchange-topology]] — Transactional outbox pattern
-- [[error-handling]] — Result<T>, exception handling
+- [[backend/messaging/event-catalog|Event Catalog]] — 40+ domain events
+- [[backend/messaging/exchange-topology|Exchange Topology]] — Transactional outbox pattern
+- [[backend/messaging/error-handling|Error Handling]] — Result<T>, exception handling
 
 ## Related
 

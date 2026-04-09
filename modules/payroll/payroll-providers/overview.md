@@ -25,13 +25,13 @@ Links provider to legal entity: `provider_id`, `legal_entity_id`, `config_json`.
 
 ## Related
 
-- [[payroll|Payroll Module]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[payroll/audit-trail/overview|Audit Trail]]
-- [[payroll/tax-configuration/overview|Tax Configuration]]
-- [[payroll/pensions/overview|Pensions]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[modules/payroll/overview|Payroll Module]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[frontend/architecture/overview|Audit Trail]]
+- [[frontend/architecture/overview|Tax Configuration]]
+- [[frontend/architecture/overview|Pensions]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

@@ -10,7 +10,7 @@
 
 - Tenant is active and skills module is enabled
 - User has admin-level access to the skills module
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -115,19 +115,19 @@
 
 ## Events Triggered
 
-- `SkillCategoryCreatedEvent` → [[event-catalog]] — consumed by audit logging
-- `SkillCreatedEvent` → [[event-catalog]] — consumed by audit logging, search indexing
-- `ProficiencyLevelsUpdatedEvent` → [[event-catalog]] — consumed by employee skill recalculation
-- `AuditLogEntry` (action: `skill_taxonomy.updated`) → [[audit-logging]]
+- `SkillCategoryCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging
+- `SkillCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging, search indexing
+- `ProficiencyLevelsUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by employee skill recalculation
+- `AuditLogEntry` (action: `skill_taxonomy.updated`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[employee-skill-declaration]] — employees declare skills from this taxonomy
-- [[skill-assessment]] — managers validate employee skills
-- [[development-plan]] — skill gaps identified from taxonomy
+- [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]] — employees declare skills from this taxonomy
+- [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]] — managers validate employee skills
+- [[Userflow/Skills-Learning/development-plan|Development Plan]] — skill gaps identified from taxonomy
 
 ## Module References
 
 - [[skills]] — skills module overview and architecture
-- [[skill-taxonomy]] — taxonomy data model and tree structure
-- [[employee-skills]] — employee skill records linked to taxonomy
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — taxonomy data model and tree structure
+- [[modules/skills/employee-skills/overview|Employee Skills]] — employee skill records linked to taxonomy

@@ -115,11 +115,11 @@ Install completes
   → Service reads tenant API key from appsettings.json or registry
   → Service calls POST /api/v1/agent/register
   → Server returns device JWT + agent_id
-  → Service stores device JWT via DPAPI (see [[sqlite-buffer]] agent_config table)
+  → Service stores device JWT via DPAPI (see [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] agent_config table)
   → Service begins heartbeat loop (every 60s)
   → User logs in to Windows
   → Tray App starts (startup task)
-  → Tray App connects to Service via Named Pipe (see [[ipc-protocol]])
+  → Tray App connects to Service via Named Pipe (see [[modules/agent-gateway/ipc-protocol|Ipc Protocol]])
   → Tray App shows login prompt
   → Employee enters email + password
   → Service calls POST /api/v1/agent/login
@@ -160,7 +160,7 @@ sc.exe failure "ONEVO.Agent.Service" reset= 86400 actions= restart/5000/restart/
 sc.exe start "ONEVO.Agent.Service"
 ```
 
-See [[tamper-resistance]] for the recovery configuration details (1st failure: 5s, 2nd: 10s, 3rd: 30s).
+See [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] for the recovery configuration details (1st failure: 5s, 2nd: 10s, 3rd: 30s).
 
 ---
 
@@ -170,7 +170,7 @@ The agent checks for updates via the heartbeat response from the server.
 
 ### How It Works
 
-1. Agent sends heartbeat every 60 seconds (see [[agent-server-protocol]])
+1. Agent sends heartbeat every 60 seconds (see [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]])
 2. Server compares `agent_version` in heartbeat with the latest available version
 3. If an update is available, the heartbeat response includes:
 
@@ -260,7 +260,7 @@ Get-AppxPackage "ONEVO.Agent" | Remove-AppxPackage
 ### What Happens on Uninstall
 
 1. MSIX triggers pre-uninstall — Service receives shutdown signal
-2. Service marks a clean shutdown (see [[tamper-resistance]])
+2. Service marks a clean shutdown (see [[modules/agent-gateway/tamper-resistance|Tamper Resistance]])
 3. Service flushes remaining buffer to server (best-effort)
 4. Service sends a final heartbeat with `"uninstalling": true`
 5. MSIX removes all application files
@@ -272,7 +272,7 @@ Get-AppxPackage "ONEVO.Agent" | Remove-AppxPackage
 
 - All local data (SQLite buffer, config, logs) is deleted with the MSIX package
 - Any unsent data in the buffer is lost (best-effort flush before uninstall)
-- Server-side data (activity records already synced) is retained per [[retention-policies]]
+- Server-side data (activity records already synced) is retained per [[modules/configuration/retention-policies/overview|Retention Policies]]
 
 ---
 
@@ -294,11 +294,11 @@ signtool sign /fd SHA256 /a /f certificate.pfx /p password ONEVO.Agent.msixbundl
 
 ## Related
 
-- [[agent-overview]] — Architecture overview and first-run flow
-- [[agent-server-protocol]] — Registration endpoint and heartbeat (update_available)
-- [[tamper-resistance]] — Service recovery configuration and clean shutdown
-- [[sqlite-buffer]] — Local data that is cleaned up on uninstall
-- [[ipc-protocol]] — Service-TrayApp communication
-- [[tray-app-ui]] — TrayApp that starts on login
-- [[rules]] — Desktop Agent rules (Section 10)
-- [[WEEK1-shared-platform]] — Implementation task
+- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview and first-run flow
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Registration endpoint and heartbeat (update_available)
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Service recovery configuration and clean shutdown
+- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] — Local data that is cleaned up on uninstall
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — Service-TrayApp communication
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — TrayApp that starts on login
+- [[AI_CONTEXT/rules|Rules]] — Desktop Agent rules (Section 10)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task

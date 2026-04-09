@@ -35,7 +35,7 @@ POST /api/v1/settings/integrations
 
 ## Related
 
-- [[configuration/integrations/overview|Integrations Overview]]
-- [[configuration/tenant-settings/overview|Tenant Settings]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Integrations Overview]]
+- [[frontend/architecture/overview|Tenant Settings]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

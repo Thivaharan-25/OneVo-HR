@@ -76,11 +76,11 @@ Landing page after login. Shows a role-appropriate summary of HR and Workforce I
 
 ## Related
 
-- [[authorization]]
-- [[auth-architecture]]
-- [[component-catalog]]
-- [[layout-patterns]]
-- [[frontend-coding-standards]]
-- [[workflow-engine]]
-- [[notification-infrastructure]]
-- [[feature-flags]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[frontend/design-system/components/component-catalog|Component Catalog]]
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]]
+- [[frontend/coding-standards|Frontend Coding Standards]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[frontend/cross-cutting/feature-flags|Feature Flags]]

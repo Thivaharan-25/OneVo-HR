@@ -46,6 +46,6 @@ public class TenantSettingsServiceTests
 
 ## Related
 
-- [[configuration/tenant-settings/overview|Tenant Settings Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/architecture/overview|Tenant Settings Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

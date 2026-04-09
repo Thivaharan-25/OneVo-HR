@@ -11,9 +11,9 @@
 ## Preconditions
 
 - Tenant is active
-- Roles exist (system or custom via [[role-creation|Role Creation Flow]])
-- Permissions are seeded (90+ permissions seeded during [[tenant-provisioning|Tenant Provisioning]])
-- Required permissions: [[permission-assignment|Permission Assignment Flow]] (recursive: an admin who already has `roles:manage`)
+- Roles exist (system or custom via [[Userflow/Auth-Access/role-creation|Role Creation Flow]])
+- Permissions are seeded (90+ permissions seeded during [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]])
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]] (recursive: an admin who already has `roles:manage`)
 
 ## Flow Steps
 
@@ -22,12 +22,12 @@
 #### Step A1: Navigate to Role Detail
 - **UI:** Administration > Roles & Permissions > click on a role name. Role detail page shows: Name, Description, User Count, and a full permission grid
 - **API:** `GET /api/v1/roles/{roleId}`
-- **Backend:** `RoleService.GetRoleWithPermissionsAsync()` → [[authorization]]
+- **Backend:** `RoleService.GetRoleWithPermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** Permission check for `roles:manage`. System roles can be viewed but not modified
 - **DB:** `roles`, `role_permissions`, `permissions`
 
 #### Step A2: Manage Role Permissions
-- **UI:** Click "Manage Permissions" button. Full permission browser opens (same as [[role-creation]]):
+- **UI:** Click "Manage Permissions" button. Full permission browser opens (same as [[Userflow/Auth-Access/role-creation|Role Creation]]):
   - Accordion categories by module
   - Checkboxes for each permission
   - Currently assigned permissions pre-checked
@@ -47,7 +47,7 @@
     "permissionIds": ["uuid1", "uuid2", "uuid3"]
   }
   ```
-- **Backend:** `RoleService.UpdatePermissionsAsync()` → [[authorization]]
+- **Backend:** `RoleService.UpdatePermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
   1. Calculate diff: added permissions, removed permissions
   2. Delete removed `role_permissions` records
   3. Insert new `role_permissions` records
@@ -69,7 +69,7 @@
 #### Step B1: Navigate to Employee Profile
 - **UI:** Employees > search for employee > click profile > Security tab. Shows: Assigned Role (from job family or manual assignment), Effective Permissions list (role permissions + overrides), "Override Permissions" button
 - **API:** `GET /api/v1/employees/{employeeId}/permissions`
-- **Backend:** `PermissionService.GetEffectivePermissionsAsync()` → [[authorization]]
+- **Backend:** `PermissionService.GetEffectivePermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
   - Computes: Role permissions + added overrides - removed overrides = effective permissions
 - **Validation:** Permission check for `roles:manage` AND (`users:manage` OR `employees:write`)
 - **DB:** `user_roles`, `role_permissions`, `user_permission_overrides`, `permissions`
@@ -97,7 +97,7 @@
     "removedPermissionIds": ["uuid3"]
   }
   ```
-- **Backend:** `PermissionService.SaveOverridesAsync()` → [[authorization]]
+- **Backend:** `PermissionService.SaveOverridesAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
   1. Upsert `user_permission_overrides` records (type: `grant` or `revoke`)
   2. Invalidate permission cache for this specific user
   3. Publish `UserPermissionsOverriddenEvent`
@@ -126,7 +126,7 @@ This effective permission set is embedded in the JWT access token claims.
 ## Variations
 
 ### When permissions change via Job Family Level change
-- Employee is promoted/transferred to a new [[job-family-setup|Job Family Level]]
+- Employee is promoted/transferred to a new [[Userflow/Org-Structure/job-family-setup|Job Family Level]]
 - New level has a different default role → user's role changes automatically
 - Existing per-employee overrides are preserved (they layer on top of the new role)
 - Admin is warned: "This employee has 3 permission overrides that will carry over to the new role"
@@ -154,25 +154,25 @@ This effective permission set is embedded in the JWT access token claims.
 
 ## Events Triggered
 
-- `RolePermissionsUpdatedEvent` → [[event-catalog]] — consumed by token cache invalidation
-- `UserPermissionsOverriddenEvent` → [[event-catalog]] — consumed by token cache invalidation
-- `AuditLogEntry` (action: `role.permissions.updated` or `user.permissions.overridden`) → [[audit-logging]]
+- `RolePermissionsUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by token cache invalidation
+- `UserPermissionsOverriddenEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by token cache invalidation
+- `AuditLogEntry` (action: `role.permissions.updated` or `user.permissions.overridden`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 - SignalR: `permissions-changed` event to affected clients
 - SignalR: `force-token-refresh` event to specific user (for per-employee overrides)
 
 ## Related Flows
 
-- [[role-creation]] — create roles before assigning permissions
-- [[job-family-setup]] — automatic role assignment via job family levels
-- [[employee-onboarding]] — initial permission assignment during onboarding
-- [[employee-promotion]] — permission changes when promoted to new job family level
-- [[login-flow]] — JWT contains effective permissions
+- [[Userflow/Auth-Access/role-creation|Role Creation]] — create roles before assigning permissions
+- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] — automatic role assignment via job family levels
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — initial permission assignment during onboarding
+- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] — permission changes when promoted to new job family level
+- [[Userflow/Auth-Access/login-flow|Login Flow]] — JWT contains effective permissions
 
 ## Module References
 
-- [[authorization]] — RBAC engine, permission resolution, caching
-- [[rbac-frontend]] — permission browser UI components
-- [[authentication]] — JWT claims with permission set
-- [[session-management]] — token refresh for permission propagation
-- [[job-hierarchy]] — job family to role mapping
-- [[audit-logging]] — permission change audit trail
+- [[frontend/cross-cutting/authorization|Authorization]] — RBAC engine, permission resolution, caching
+- [[security/rbac-frontend|Rbac Frontend]] — permission browser UI components
+- [[frontend/cross-cutting/authentication|Authentication]] — JWT claims with permission set
+- [[modules/auth/session-management/overview|Session Management]] — token refresh for permission propagation
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — job family to role mapping
+- [[modules/auth/audit-logging/overview|Audit Logging]] — permission change audit trail

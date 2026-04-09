@@ -9,7 +9,7 @@
 ## Preconditions
 
 - Employee is active
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -22,7 +22,7 @@
 
 ### Step 3: Set Timeline
 - **UI:** Set start date → set deadline → link to company/team objective (optional for cascading OKRs)
-- **Backend:** GoalService.CreateAsync() → [[goals-okr]]
+- **Backend:** GoalService.CreateAsync() → [[modules/performance/goals-okr/overview|Goals Okr]]
 - **DB:** `goals` — record created
 
 ### Step 4: Track Progress
@@ -47,16 +47,16 @@
 
 ## Events Triggered
 
-- `GoalCreated` → [[event-catalog]]
-- `GoalCompleted` → [[event-catalog]]
+- `GoalCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `GoalCompleted` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[review-cycle-setup]]
-- [[self-assessment]]
-- [[development-plan]]
+- [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
+- [[Userflow/Performance/self-assessment|Self Assessment]]
+- [[Userflow/Skills-Learning/development-plan|Development Plan]]
 
 ## Module References
 
-- [[goals-okr]]
-- [[performance]]
+- [[modules/performance/goals-okr/overview|Goals Okr]]
+- [[database/performance|Performance]]

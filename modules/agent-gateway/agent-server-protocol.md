@@ -94,16 +94,21 @@ Content-Type: application/json
   "cpu_usage": 1.5,
   "memory_mb": 42,
   "buffer_count": 15,
-  "errors": []
+  "errors": [],
+  "monitoring_state": "active"  // "active", "paused", "stopped", "idle"
 }
 
 Response 200:
 {
   "status": "ok",
   "update_available": false,
-  "update_url": null
+  "update_url": null,
+  "has_pending_commands": true,
+  "pending_command_count": 1
 }
 ```
+
+If `has_pending_commands` is true AND agent is not connected via SignalR, agent should immediately call `GET /api/v1/agent/commands` to fetch pending commands. This is the fallback mechanism.
 
 If no heartbeat for 5 minutes, server fires `AgentHeartbeatLost` event.
 
@@ -158,7 +163,80 @@ Authorization: Bearer {device_token}
 Response 200
 ```
 
-After logout, agent continues heartbeat but stops collecting activity data (no employee linked).
+After logout, agent continues heartbeat but stops collecting activity data (no employee linked). Agent disconnects from SignalR command hub.
+
+### 7. SignalR Command Hub Connection
+
+**When:** Immediately after successful employee login.
+
+```
+Connect: /hubs/agent-commands
+Query: ?access_token={device_token}
+```
+
+Agent maintains this connection for the entire session. On disconnect, falls back to heartbeat polling for commands.
+
+**Reconnect strategy:** Same as frontend — exponential backoff [0, 1s, 2s, 5s, 10s, 30s].
+
+### 8. Fetch Pending Commands (Fallback)
+
+**When:** On heartbeat response with `has_pending_commands: true` AND SignalR disconnected.
+
+```
+GET /api/v1/agent/commands
+Authorization: Bearer {device_token}
+
+Response 200:
+{
+  "commands": [
+    {
+      "id": "uuid",
+      "type": "capture_screenshot",
+      "payload": { "reason": "Manager verification request" },
+      "created_at": "2026-04-05T10:30:00Z",
+      "expires_at": "2026-04-05T10:35:00Z"
+    }
+  ]
+}
+```
+
+### 9. Acknowledge Command
+
+**When:** Agent receives and starts processing a command.
+
+```
+POST /api/v1/agent/commands/{commandId}/ack
+Authorization: Bearer {device_token}
+
+Response 200
+```
+
+### 10. Complete Command
+
+**When:** Agent finishes executing a command.
+
+```
+POST /api/v1/agent/commands/{commandId}/complete
+Authorization: Bearer {device_token}
+Content-Type: application/json
+
+{
+  "success": true,
+  "result": {
+    "screenshot_url": "https://storage.onevo.io/captures/uuid.jpg"
+  }
+}
+
+Response 200
+```
+
+If command failed:
+```json
+{
+  "success": false,
+  "error": "Camera access denied by user"
+}
+```
 
 ## Error Handling
 
@@ -184,12 +262,12 @@ Server enforces: 30 requests/minute/device. Agent should space requests naturall
 
 ## Related
 
-- [[agent-gateway|Agent Gateway Module]]
-- [[heartbeat-monitoring/overview|Heartbeat Monitoring]]
-- [[data-ingestion/overview|Data Ingestion]]
-- [[policy-distribution/overview|Policy Distribution]]
-- [[agent-registration/overview|Agent Registration]]
-- [[auth-architecture]]
-- [[error-handling]]
-- [[multi-tenancy]]
-- [[WEEK1-shared-platform]]
+- [[modules/agent-gateway/overview|Agent Gateway Module]]
+- [[frontend/architecture/overview|Heartbeat Monitoring]]
+- [[frontend/architecture/overview|Data Ingestion]]
+- [[frontend/architecture/overview|Policy Distribution]]
+- [[frontend/architecture/overview|Agent Registration]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

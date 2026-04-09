@@ -20,7 +20,7 @@ Example for `critical`: 1. reporting_manager (0 min) → 2. hr (30 min) → 3. c
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AlertEscalated` | Unacknowledged alert escalated | [[notifications]] |
+| `AlertEscalated` | Unacknowledged alert escalated | [[modules/notifications/overview|Notifications]] |
 
 ## Key Business Rules
 
@@ -36,12 +36,12 @@ Example for `critical`: 1. reporting_manager (0 min) → 2. hr (30 min) → 3. c
 
 ## Related
 
-- [[exception-engine|Exception Engine Module]]
-- [[exception-engine/alert-generation/overview|Alert Generation]]
-- [[exception-engine/evaluation-engine/overview|Evaluation Engine]]
-- [[exception-engine/exception-rules/overview|Exception Rules]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[event-catalog]]
-- [[shared-kernel]]
-- [[WEEK4-exception-engine]]
+- [[modules/exception-engine/overview|Exception Engine Module]]
+- [[frontend/architecture/overview|Alert Generation]]
+- [[frontend/architecture/overview|Evaluation Engine]]
+- [[frontend/architecture/overview|Exception Rules]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

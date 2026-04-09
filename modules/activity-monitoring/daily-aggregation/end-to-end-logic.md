@@ -60,13 +60,13 @@ GET /api/v1/activity/summary/{employeeId}?date=2026-04-05
 
 ## Related
 
-- [[activity-monitoring|Activity Monitoring Module]]
-- [[daily-aggregation/overview|Daily Aggregation Overview]]
-- [[raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
-- [[application-tracking/end-to-end-logic|Application Tracking — End-to-End Logic]]
-- [[meeting-detection/end-to-end-logic|Meeting Detection — End-to-End Logic]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[retention-policies]]
-- [[multi-tenancy]]
-- [[WEEK3-activity-monitoring]]
+- [[modules/activity-monitoring/overview|Activity Monitoring Module]]
+- [[frontend/architecture/overview|Daily Aggregation Overview]]
+- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
+- [[modules/activity-monitoring/application-tracking/end-to-end-logic|Application Tracking — End-to-End Logic]]
+- [[modules/activity-monitoring/meeting-detection/end-to-end-logic|Meeting Detection — End-to-End Logic]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[modules/configuration/retention-policies/overview|Retention Policies]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

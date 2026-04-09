@@ -1,6 +1,7 @@
 # Module: Shared Platform
 
 **Namespace:** `ONEVO.Modules.SharedPlatform`
+**Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4 (Week 1 + Week 4)
 **Tables:** 30
@@ -17,8 +18,8 @@ Cross-cutting platform services: SSO provider management, subscription/billing (
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Consumed by** | [[leave]], [[core-hr]], [[expense]] | Workflow engine | Approval routing |
+| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext` | Multi-tenancy |
+| **Consumed by** | [[modules/leave/overview|Leave]], [[modules/core-hr/overview|Core Hr]], [[modules/expense/overview|Expense]] | Workflow engine | Approval routing |
 | **Consumed by** | All modules | Feature flags | Feature toggle checks |
 
 ---
@@ -557,28 +558,28 @@ Hangfire job metadata for visibility/management. Not in HTML ERD — to be added
 
 ## Features
 
-- [[sso-authentication]] — SSO provider configuration (Google, Microsoft, SAML, OIDC) with auto-provisioning
-- [[subscriptions-billing]] — Stripe-backed subscription plans, invoices, and payment methods
-- [[feature-flags]] — Per-tenant feature flag definitions with targeting conditions
-- [[tenant-branding]] — Custom domain, logo, and brand colors per tenant
-- [[workflow-engine]] — Generic approval engine for leave, expense, overtime, document workflows
-- [[compliance-governance]] — Legal holds, retention policies, GDPR subject access exports
-- [[hardware-terminals]] — Physical biometric/RFID/kiosk terminal management
-- [[real-time-integrations]] — SignalR connections, API keys, webhooks, rate limits
-- [[notification-infrastructure]] — Notification templates and channel provider configuration
-- [[overview-dashboard]] — Frontend: [[overview-dashboard/frontend]]
-- [[self-service]] — Frontend: [[self-service/frontend]]
+- [[modules/shared-platform/sso-authentication/overview|Sso Authentication]] — SSO provider configuration (Google, Microsoft, SAML, OIDC) with auto-provisioning
+- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] — Stripe-backed subscription plans, invoices, and payment methods
+- [[frontend/cross-cutting/feature-flags|Feature Flags]] — Per-tenant feature flag definitions with targeting conditions
+- [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — Custom domain, logo, and brand colors per tenant
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] — Generic approval engine for leave, expense, overtime, document workflows
+- [[modules/shared-platform/compliance-governance/overview|Compliance Governance]] — Legal holds, retention policies, GDPR subject access exports
+- [[modules/shared-platform/hardware-terminals/overview|Hardware Terminals]] — Physical biometric/RFID/kiosk terminal management
+- [[modules/shared-platform/real-time-integrations/overview|Real Time Integrations]] — SignalR connections, API keys, webhooks, rate limits
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]] — Notification templates and channel provider configuration
+- Overview Dashboard — Frontend: [[modules/shared-platform/overview-dashboard/frontend|Frontend]]
+- Self Service — Frontend: [[modules/shared-platform/self-service/frontend|Frontend]]
 
 ---
 
 ## Related
 
-- [[auth-architecture]] — SSO provider tokens and refresh token rotation
-- [[multi-tenancy]] — Subscription plans are global; all other data is tenant-scoped
-- [[compliance]] — Legal holds prevent data deletion; compliance exports for GDPR
-- [[data-classification]] — SSO client secrets and API keys encrypted via `IEncryptionService`
-- [[event-catalog]] — Workflow events: approval/rejection drive module state transitions
-- [[error-handling]] — SLA-based escalation rules with auto-approve/reject timeouts
-- [[WEEK1-shared-platform]] — Implementation task file
+- [[security/auth-architecture|Auth Architecture]] — SSO provider tokens and refresh token rotation
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — Subscription plans are global; all other data is tenant-scoped
+- [[security/compliance|Compliance]] — Legal holds prevent data deletion; compliance exports for GDPR
+- [[security/data-classification|Data Classification]] — SSO client secrets and API keys encrypted via `IEncryptionService`
+- [[backend/messaging/event-catalog|Event Catalog]] — Workflow events: approval/rejection drive module state transitions
+- [[backend/messaging/error-handling|Error Handling]] — SLA-based escalation rules with auto-approve/reject timeouts
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task file
 
-See also: [[module-catalog]], [[infrastructure]], [[auth]], [[external-integrations]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/infrastructure/overview|Infrastructure]], [[modules/auth/overview|Auth]], [[backend/external-integrations|External Integrations]]

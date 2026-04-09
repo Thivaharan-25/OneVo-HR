@@ -31,13 +31,13 @@ public interface ICalendarConflictService
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/calendar/conflicts` | `leave:create` or `leave:approve` | Get conflicts for employee + date range |
 
-See also: [[leave/leave-requests]], [[2026-04-06-leave-calendar-conflict-detection]]
+See also: [[modules/leave/leave-requests/overview|Leave Requests]], [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]]
 
 ## Related
 
-- [[calendar|Calendar Module]]
-- [[calendar/calendar-events/overview|Calendar Events]]
-- [[event-catalog]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[WEEK4-supporting-bridges]]
+- [[modules/calendar/overview|Calendar Module]]
+- [[frontend/architecture/overview|Calendar Events]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]]

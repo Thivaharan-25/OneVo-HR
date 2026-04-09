@@ -26,12 +26,12 @@ JWT refresh token rotation: `token_hash`, `device_fingerprint`, `expires_at`, `i
 
 ## Related
 
-- [[shared-platform|Shared Platform Module]]
-- [[authentication]]
-- [[authorization]]
-- [[user-management]]
-- [[tenant-management]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[WEEK1-shared-platform]]
+- [[modules/shared-platform/overview|Shared Platform Module]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[modules/infrastructure/user-management/overview|User Management]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

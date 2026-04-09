@@ -55,7 +55,7 @@ var builder = Host.CreateDefaultBuilder(args)
                 client.BaseAddress = new Uri(
                     context.Configuration["AgentGateway:BaseUrl"]!);
             })
-            .AddPolicyHandler(/* Polly policies — see [[rules]] Section 10 */);
+            .AddPolicyHandler(/* Polly policies — see [[AI_CONTEXT/rules|Rules]] Section 10 */);
         }
 
         // All other services remain the same
@@ -347,11 +347,11 @@ The SQLite buffer, collectors, and IPC all work identically — only the HTTP cl
 
 ## Related
 
-- [[agent-overview]] — Architecture overview and development setup
-- [[agent-server-protocol]] — Real API endpoints that the mock simulates
-- [[sqlite-buffer]] — Buffer works the same in mock mode
-- [[ipc-protocol]] — IPC works the same in mock mode
-- [[data-collection]] — Collectors work the same in mock mode
-- [[tray-app-ui]] — TrayApp works the same in mock mode
-- [[rules]] — Polly resilience policies (Section 10)
-- [[WEEK1-shared-platform]] — Implementation task
+- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview and development setup
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Real API endpoints that the mock simulates
+- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] — Buffer works the same in mock mode
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — IPC works the same in mock mode
+- [[modules/agent-gateway/data-collection|Data Collection]] — Collectors work the same in mock mode
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — TrayApp works the same in mock mode
+- [[AI_CONTEXT/rules|Rules]] — Polly resilience policies (Section 10)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task

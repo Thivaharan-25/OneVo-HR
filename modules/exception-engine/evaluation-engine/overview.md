@@ -50,12 +50,12 @@ ExceptionEngineEvaluationJob (every 5 min during work hours)
 
 ## Related
 
-- [[exception-engine|Exception Engine Module]]
-- [[exception-engine/alert-generation/overview|Alert Generation]]
-- [[exception-engine/exception-rules/overview|Exception Rules]]
-- [[exception-engine/escalation-chains/overview|Escalation Chains]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[WEEK4-exception-engine]]
+- [[modules/exception-engine/overview|Exception Engine Module]]
+- [[frontend/architecture/overview|Alert Generation]]
+- [[frontend/architecture/overview|Exception Rules]]
+- [[frontend/architecture/overview|Escalation Chains]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

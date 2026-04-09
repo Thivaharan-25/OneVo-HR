@@ -32,13 +32,13 @@ Key columns: `employee_id`, `year`, `month`, `total_hours`, `active_hours`, `int
 
 ## Related
 
-- [[productivity-analytics|Productivity Analytics Module]]
-- [[productivity-analytics/daily-reports/overview|Daily Reports]]
-- [[productivity-analytics/weekly-reports/overview|Weekly Reports]]
-- [[productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[event-catalog]]
-- [[data-classification]]
-- [[shared-kernel]]
-- [[WEEK4-productivity-analytics]]
+- [[modules/productivity-analytics/overview|Productivity Analytics Module]]
+- [[frontend/architecture/overview|Daily Reports]]
+- [[frontend/architecture/overview|Weekly Reports]]
+- [[frontend/architecture/overview|Workforce Snapshots]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[security/data-classification|Data Classification]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

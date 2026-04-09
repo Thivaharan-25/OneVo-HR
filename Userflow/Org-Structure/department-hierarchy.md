@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- At least one legal entity exists → [[legal-entity-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- At least one legal entity exists → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -23,7 +23,7 @@
 
 ### Step 3: Set Hierarchy
 - **UI:** Select parent department (or set as root) → select legal entity → assign cost center (optional)
-- **Backend:** DepartmentService.CreateAsync() → [[departments]]
+- **Backend:** DepartmentService.CreateAsync() → [[modules/org-structure/departments/overview|Departments]]
 
 ### Step 4: Assign Department Head
 - **UI:** Search and select employee as department head
@@ -52,18 +52,18 @@
 
 ## Events Triggered
 
-- `DepartmentCreated` → [[event-catalog]]
-- `DepartmentMoved` → [[event-catalog]]
+- `DepartmentCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `DepartmentMoved` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[legal-entity-setup]]
-- [[team-creation]]
-- [[employee-onboarding]]
-- [[employee-transfer]]
+- [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- [[Userflow/Org-Structure/team-creation|Team Creation]]
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
+- [[Userflow/Employee-Management/employee-transfer|Employee Transfer]]
 
 ## Module References
 
-- [[departments]]
-- [[org-structure]]
-- [[cost-centers]]
+- [[modules/org-structure/departments/overview|Departments]]
+- [[modules/org-structure/overview|Org Structure]]
+- [[modules/org-structure/cost-centers/overview|Cost Centers]]

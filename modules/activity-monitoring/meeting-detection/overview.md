@@ -33,12 +33,12 @@ Detects meeting sessions from desktop agent data. Phase 1 uses basic process nam
 
 ## Related
 
-- [[activity-monitoring|Activity Monitoring Module]]
-- [[meeting-detection/end-to-end-logic|Meeting Detection — End-to-End Logic]]
-- [[meeting-detection/testing|Meeting Detection — Testing]]
-- [[raw-data-processing/overview|Raw Data Processing]]
-- [[daily-aggregation/overview|Daily Aggregation]]
-- [[data-classification]]
-- [[retention-policies]]
-- [[multi-tenancy]]
-- [[WEEK3-activity-monitoring]]
+- [[modules/activity-monitoring/overview|Activity Monitoring Module]]
+- [[modules/activity-monitoring/meeting-detection/end-to-end-logic|Meeting Detection — End-to-End Logic]]
+- [[modules/activity-monitoring/meeting-detection/testing|Meeting Detection — Testing]]
+- [[frontend/architecture/overview|Raw Data Processing]]
+- [[frontend/architecture/overview|Daily Aggregation]]
+- [[security/data-classification|Data Classification]]
+- [[modules/configuration/retention-policies/overview|Retention Policies]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

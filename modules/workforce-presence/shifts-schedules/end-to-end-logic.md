@@ -41,9 +41,9 @@ POST /api/v1/schedules/assign
 
 ## Related
 
-- [[shifts-schedules|Shifts & Schedules Overview]]
-- [[presence-sessions]]
-- [[break-tracking]]
-- [[overtime]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts & Schedules Overview]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[Userflow/Workforce-Presence/break-tracking|Break Tracking]]
+- [[modules/workforce-presence/overtime/overview|Overtime]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

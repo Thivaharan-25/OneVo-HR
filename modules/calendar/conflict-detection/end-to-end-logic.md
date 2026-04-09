@@ -36,7 +36,7 @@ Called by Leave module during request submission:
 
 ## Related
 
-- [[calendar/conflict-detection/overview|Conflict Detection Overview]]
-- [[calendar/calendar-events/overview|Calendar Events]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Conflict Detection Overview]]
+- [[frontend/architecture/overview|Calendar Events]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

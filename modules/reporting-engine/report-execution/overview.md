@@ -24,10 +24,10 @@ Fields: `definition_id`, `status` (`queued`, `running`, `completed`, `failed`), 
 
 ## Related
 
-- [[reporting-engine|Reporting Engine Module]]
-- [[reporting-engine/report-definitions/overview|Report Definitions]]
-- [[reporting-engine/report-templates/overview|Report Templates]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[WEEK4-productivity-analytics]]
+- [[modules/reporting-engine/overview|Reporting Engine Module]]
+- [[frontend/architecture/overview|Report Definitions]]
+- [[frontend/architecture/overview|Report Templates]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

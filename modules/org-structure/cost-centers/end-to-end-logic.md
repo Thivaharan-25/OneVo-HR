@@ -40,7 +40,7 @@ PUT /api/v1/org/departments/{id}/cost-center
 
 ## Related
 
-- [[cost-centers|Overview]]
-- [[departments]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/org-structure/cost-centers/overview|Overview]]
+- [[modules/org-structure/departments/overview|Departments]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

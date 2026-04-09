@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Employee is active → [[profile-management]]
-- Job family levels defined → [[job-family-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Employee is active → [[Userflow/Employee-Management/profile-management|Profile Management]]
+- Job family levels defined → [[Userflow/Org-Structure/job-family-setup|Job Family Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -32,7 +32,7 @@
 
 ### Step 5: Submit
 - **API:** `POST /api/v1/employees/{id}/promote`
-- **Backend:** EmployeeLifecycleService.PromoteAsync() → [[employee-lifecycle]]
+- **Backend:** EmployeeLifecycleService.PromoteAsync() → [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
 - **DB:** `employees` — title/level updated, `employee_compensation` — new salary record, `user_roles` — role updated
 
 ### Step 6: Effective Date Processing
@@ -54,21 +54,21 @@
 
 ## Events Triggered
 
-- `EmployeePromoted` → [[event-catalog]]
-- `RoleChanged` → [[event-catalog]]
-- `CompensationUpdated` → [[event-catalog]]
-- Notification to employee → [[notification-system]]
+- `EmployeePromoted` → [[backend/messaging/event-catalog|Event Catalog]]
+- `RoleChanged` → [[backend/messaging/event-catalog|Event Catalog]]
+- `CompensationUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to employee → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[job-family-setup]] — defines levels and default roles
-- [[compensation-setup]] — salary details
-- [[permission-assignment]] — permissions change with role
-- [[employee-transfer]] — may accompany promotion
+- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] — defines levels and default roles
+- [[Userflow/Employee-Management/compensation-setup|Compensation Setup]] — salary details
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — permissions change with role
+- [[Userflow/Employee-Management/employee-transfer|Employee Transfer]] — may accompany promotion
 
 ## Module References
 
-- [[employee-lifecycle]]
-- [[job-hierarchy]]
-- [[compensation]]
-- [[authorization]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
+- [[modules/core-hr/compensation/overview|Compensation]]
+- [[frontend/cross-cutting/authorization|Authorization]]

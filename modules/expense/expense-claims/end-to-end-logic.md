@@ -171,7 +171,7 @@ sequenceDiagram
 
 ## Related
 
-- [[expense-claims]] — feature overview
-- [[expense-categories]] — categories referenced by expense items
-- [[event-catalog]] — events produced on claim submission and approval
-- [[error-handling]] — workflow state transition error patterns
+- [[modules/expense/expense-claims/overview|Expense Claims]] — feature overview
+- [[modules/expense/expense-categories/overview|Expense Categories]] — categories referenced by expense items
+- [[backend/messaging/event-catalog|Event Catalog]] — events produced on claim submission and approval
+- [[backend/messaging/error-handling|Error Handling]] — workflow state transition error patterns

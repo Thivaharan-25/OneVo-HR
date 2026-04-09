@@ -34,13 +34,13 @@ POST /api/v1/biometric/enroll
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[biometric-enrollment/overview|Biometric Enrollment Overview]]
-- [[biometric-devices/end-to-end-logic|Biometric Devices — End-to-End Logic]]
-- [[verification-policies/end-to-end-logic|Verification Policies — End-to-End Logic]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[compliance]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[frontend/architecture/overview|Biometric Enrollment Overview]]
+- [[modules/identity-verification/biometric-devices/end-to-end-logic|Biometric Devices — End-to-End Logic]]
+- [[modules/identity-verification/verification-policies/end-to-end-logic|Verification Policies — End-to-End Logic]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/compliance|Compliance]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

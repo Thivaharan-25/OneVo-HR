@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Employee has declared at least one skill with status `pending_validation`: [[employee-skill-declaration|Employee Skill Declaration Flow]]
+- Employee has declared at least one skill with status `pending_validation`: [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration Flow]]
 - Assessor (manager) has the employee in their reporting line
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -51,7 +51,7 @@
   2. Update `employee_skills` record: set `validated_proficiency`, `assessment_notes`, `assessed_by`, `assessed_at`
   3. Update status to `validated` or `rejected`
   4. If validated: effective proficiency = manager rating (overrides self-rating for reporting)
-  5. Notify employee of assessment result via [[notification-system]]
+  5. Notify employee of assessment result via [[backend/notification-system|Notification System]]
   6. Publish `SkillAssessedEvent`
   7. Create audit log entry
 - **Validation:** Assessor must be in employee's reporting chain. Proficiency level must be valid. Rejection requires notes
@@ -60,7 +60,7 @@
 ### Step 5: Employee Notified
 - **UI:** Employee receives in-app notification: "Your [Skill Name] skill has been validated by [Manager Name] at [Proficiency Level]" or "Your [Skill Name] skill declaration was rejected: [reason]". Clicking notification navigates to skill on profile. Validated skills show green checkmark badge. Rejected skills show option to re-declare with updated proficiency
 - **API:** N/A (notification-driven)
-- **Backend:** Notification dispatched via [[notification-system]]
+- **Backend:** Notification dispatched via [[backend/notification-system|Notification System]]
 - **Validation:** N/A
 - **DB:** `notifications`
 
@@ -94,19 +94,19 @@
 
 ## Events Triggered
 
-- `SkillAssessedEvent` → [[event-catalog]] — consumed by notification service, analytics, development plan suggestions
-- `SkillRejectedEvent` → [[event-catalog]] — consumed by notification service
-- `AuditLogEntry` (action: `skill.assessed`) → [[audit-logging]]
+- `SkillAssessedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by notification service, analytics, development plan suggestions
+- `SkillRejectedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by notification service
+- `AuditLogEntry` (action: `skill.assessed`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[employee-skill-declaration]] — declaration that triggers this assessment
-- [[development-plan]] — assessment results inform skill gap analysis
-- [[certification-tracking]] — certifications provide evidence for assessment
+- [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]] — declaration that triggers this assessment
+- [[Userflow/Skills-Learning/development-plan|Development Plan]] — assessment results inform skill gap analysis
+- [[Userflow/Skills-Learning/certification-tracking|Certification Tracking]] — certifications provide evidence for assessment
 
 ## Module References
 
 - [[skills]] — skills module overview and architecture
-- [[skill-assessments]] — assessment data model and history
-- [[employee-skills]] — employee skill lifecycle
-- [[notification-system]] — employee notification on assessment result
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] — assessment data model and history
+- [[modules/skills/employee-skills/overview|Employee Skills]] — employee skill lifecycle
+- [[backend/notification-system|Notification System]] — employee notification on assessment result

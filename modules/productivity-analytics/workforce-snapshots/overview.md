@@ -24,12 +24,12 @@ Key columns: `date`, `total_employees`, `active_count`, `avg_active_percentage`,
 
 ## Related
 
-- [[productivity-analytics|Productivity Analytics Module]]
-- [[productivity-analytics/daily-reports/overview|Daily Reports]]
-- [[productivity-analytics/weekly-reports/overview|Weekly Reports]]
-- [[productivity-analytics/monthly-reports/overview|Monthly Reports]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[shared-kernel]]
-- [[WEEK4-productivity-analytics]]
+- [[modules/productivity-analytics/overview|Productivity Analytics Module]]
+- [[frontend/architecture/overview|Daily Reports]]
+- [[frontend/architecture/overview|Weekly Reports]]
+- [[frontend/architecture/overview|Monthly Reports]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

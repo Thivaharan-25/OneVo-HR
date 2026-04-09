@@ -65,5 +65,5 @@ public class ExceptionRuleServiceTests
 
 ## Related
 
-- [[exception-engine/exception-rules/overview|Exception Rules Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Exception Rules Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

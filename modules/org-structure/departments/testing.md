@@ -210,6 +210,6 @@ public class DepartmentEndpointTests : IClassFixture<ONEVOWebFactory>
 
 ## Related
 
-- [[departments|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/org-structure/departments/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

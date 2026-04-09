@@ -29,9 +29,9 @@ Fields: `claim_id`, `category_id`, `description`, `amount`, `date`, `receipt_fil
 
 ## Related
 
-- [[expense|Expense Module]] — parent module
-- [[expense-categories]] — categories used in claim line items
-- [[multi-tenancy]] — tenant-scoped claim isolation
-- [[auth-architecture]] — permissions: `expense:create`, `expense:approve`
-- [[event-catalog]] — events emitted on claim status changes
-- [[WEEK4-supporting-bridges]] — implementation task
+- [[modules/expense/overview|Expense Module]] — parent module
+- [[modules/expense/expense-categories/overview|Expense Categories]] — categories used in claim line items
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped claim isolation
+- [[security/auth-architecture|Auth Architecture]] — permissions: `expense:create`, `expense:approve`
+- [[backend/messaging/event-catalog|Event Catalog]] — events emitted on claim status changes
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task

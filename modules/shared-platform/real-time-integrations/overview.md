@@ -34,13 +34,13 @@ Hangfire job metadata: `task_type`, `cron_expression`, `description`, `last_run_
 
 ## Related
 
-- [[shared-platform|Shared Platform Module]]
-- [[notification-infrastructure]]
-- [[hardware-terminals]]
-- [[sso-authentication]]
-- [[workflow-engine]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[error-handling]]
-- [[migration-patterns]]
-- [[WEEK1-shared-platform]]
+- [[modules/shared-platform/overview|Shared Platform Module]]
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[modules/shared-platform/hardware-terminals/overview|Hardware Terminals]]
+- [[modules/shared-platform/sso-authentication/overview|Sso Authentication]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

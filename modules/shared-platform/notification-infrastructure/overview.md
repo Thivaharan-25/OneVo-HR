@@ -22,12 +22,12 @@ SLA triggers: `resource_type`, `trigger_condition`, `sla_hours`, `action_type` (
 
 ## Related
 
-- [[shared-platform|Shared Platform Module]]
-- [[workflow-engine]]
-- [[real-time-integrations]]
-- [[sso-authentication]]
-- [[tenant-branding]]
-- [[event-catalog]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[WEEK1-shared-platform]]
+- [[modules/shared-platform/overview|Shared Platform Module]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[modules/shared-platform/real-time-integrations/overview|Real Time Integrations]]
+- [[modules/shared-platform/sso-authentication/overview|Sso Authentication]]
+- [[frontend/design-system/theming/tenant-branding|Tenant Branding]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

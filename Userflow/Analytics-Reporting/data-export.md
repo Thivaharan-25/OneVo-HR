@@ -9,7 +9,7 @@
 ## Preconditions
 
 - Data visible on any analytics page
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -45,11 +45,11 @@
 
 ## Related Flows
 
-- [[productivity-dashboard]]
-- [[report-creation]]
-- [[workforce-snapshot]]
+- [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]]
+- [[Userflow/Analytics-Reporting/report-creation|Report Creation]]
+- [[Userflow/Analytics-Reporting/workforce-snapshot|Workforce Snapshot]]
 
 ## Module References
 
-- [[productivity-analytics]]
-- [[reporting-engine]]
+- [[modules/productivity-analytics/overview|Productivity Analytics]]
+- [[modules/reporting-engine/overview|Reporting Engine]]

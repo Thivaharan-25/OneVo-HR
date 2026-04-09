@@ -8,10 +8,10 @@
 
 ## Preconditions
 
-- Department exists → [[department-hierarchy]]
-- Job family with levels configured → [[job-family-setup]]
-- Onboarding workflow template configured → [[workflow-engine]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Department exists → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Job family with levels configured → [[Userflow/Org-Structure/job-family-setup|Job Family Setup]]
+- Onboarding workflow template configured → [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -25,7 +25,7 @@
 
 ### Step 3: Set Employment Details
 - **UI:** Select department → select team → select job family → select level within family → enter job title → set employment type (full-time, part-time, contract) → set start date → select reporting manager
-- **Backend:** Job family level auto-assigns default role → [[job-hierarchy]]
+- **Backend:** Job family level auto-assigns default role → [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
 - **Key:** The role assigned here determines what features/permissions the employee will have
 
 ### Step 4: Set Compensation (if `payroll:write`)
@@ -34,7 +34,7 @@
 
 ### Step 5: Submit
 - **API:** `POST /api/v1/employees`
-- **Backend:** EmployeeService.CreateAsync() → [[employee-profiles]]
+- **Backend:** EmployeeService.CreateAsync() → [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
 - **DB:** `employees` — status: "Onboarding", `user_roles` — default role assigned
 - **Triggers:**
   1. User account created with temporary password
@@ -48,7 +48,7 @@
 
 ### Step 7: Complete Onboarding Checklist
 - **UI:** Employee/admin sees checklist → tick off items as completed → all items done → status: "Active"
-- **Backend:** WorkflowService.CompleteStepAsync() → [[workflow-engine]]
+- **Backend:** WorkflowService.CompleteStepAsync() → [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
 - **DB:** `employees.status` → "Active"
 
 ## Variations
@@ -57,8 +57,8 @@
 - Can override the default role from job family → assign different role or additional permissions
 
 ### When monitoring is enabled for tenant
-- GDPR consent dialog appears on employee's first login → [[gdpr-consent]]
-- Agent deployment instructions generated → [[agent-deployment]]
+- GDPR consent dialog appears on employee's first login → [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- Agent deployment instructions generated → [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
 
 ## Error Scenarios
 
@@ -71,26 +71,26 @@
 
 ## Events Triggered
 
-- `EmployeeCreated` → [[event-catalog]]
-- `EmployeeOnboardingStarted` → [[event-catalog]]
-- `UserAccountCreated` → [[event-catalog]]
-- Notification: invitation email → [[notification-system]]
-- Notification: onboarding tasks to admin → [[notification-system]]
+- `EmployeeCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `EmployeeOnboardingStarted` → [[backend/messaging/event-catalog|Event Catalog]]
+- `UserAccountCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification: invitation email → [[backend/notification-system|Notification System]]
+- Notification: onboarding tasks to admin → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[job-family-setup]] — determines default role/permissions
-- [[permission-assignment]] — override or add permissions
-- [[compensation-setup]] — detailed salary config
-- [[employee-offboarding]] — reverse flow
-- [[profile-management]] — employee completes profile
+- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] — determines default role/permissions
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — override or add permissions
+- [[Userflow/Employee-Management/compensation-setup|Compensation Setup]] — detailed salary config
+- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]] — reverse flow
+- [[Userflow/Employee-Management/profile-management|Profile Management]] — employee completes profile
 
 ## Module References
 
-- [[employee-profiles]]
-- [[employee-lifecycle]]
-- [[onboarding]]
-- [[job-hierarchy]]
-- [[authorization]]
-- [[workflow-engine]]
-- [[notification-system]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
+- [[modules/core-hr/onboarding/overview|Onboarding]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[backend/notification-system|Notification System]]

@@ -1,10 +1,11 @@
 # Module: Core HR
 
 **Namespace:** `ONEVO.Modules.CoreHR`
+**Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 1 + Dev 2 (Week 2)
 **Tables:** 13
-**Task Files:** [[WEEK2-core-hr-profile]], [[WEEK2-core-hr-lifecycle]]
+**Task Files:** [[current-focus/DEV1-core-hr-profile|DEV1: Core HR Profile]], [[current-focus/DEV2-core-hr-lifecycle|DEV2: Core HR Lifecycle]]
 
 ---
 
@@ -18,15 +19,15 @@ The **central hub** of ONEVO. Manages employee profiles, lifecycle events (onboa
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[infrastructure]] | `ITenantContext`, `IUserService`, `IFileService` | Multi-tenancy, user linking, avatar uploads |
-| **Depends on** | [[org-structure]] | `IOrgStructureService` | Department, job title, team context |
-| **Consumed by** | [[leave]] | `IEmployeeService` | Employee context for leave |
-| **Consumed by** | [[payroll]] | `IEmployeeService` | Employee salary, bank details |
-| **Consumed by** | [[performance]] | `IEmployeeService` | Employee context for reviews |
-| **Consumed by** | [[activity-monitoring]] | `IEmployeeService` | Employee/department context |
-| **Consumed by** | [[workforce-presence]] | `IEmployeeService` | Employee context for presence |
-| **Consumed by** | [[exception-engine]] | `IEmployeeService` | Manager hierarchy for escalation |
-| **Consumed by** | [[productivity-analytics]] | `IEmployeeService` | Employee/department for reports |
+| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext`, `IUserService`, `IFileService` | Multi-tenancy, user linking, avatar uploads |
+| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Department, job title, team context |
+| **Consumed by** | [[modules/leave/overview|Leave]] | `IEmployeeService` | Employee context for leave |
+| **Consumed by** | [[modules/payroll/overview|Payroll]] | `IEmployeeService` | Employee salary, bank details |
+| **Consumed by** | [[database/performance|Performance]] | `IEmployeeService` | Employee context for reviews |
+| **Consumed by** | [[modules/activity-monitoring/overview|Activity Monitoring]] | `IEmployeeService` | Employee/department context |
+| **Consumed by** | [[modules/workforce-presence/overview|Workforce Presence]] | `IEmployeeService` | Employee context for presence |
+| **Consumed by** | [[modules/exception-engine/overview|Exception Engine]] | `IEmployeeService` | Manager hierarchy for escalation |
+| **Consumed by** | [[modules/productivity-analytics/overview|Productivity Analytics]] | `IEmployeeService` | Employee/department for reports |
 
 ---
 
@@ -245,12 +246,12 @@ Audit trail for promotions, transfers, salary changes, etc.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeCreated` | New employee added | [[notifications]], [[leave]] (calculate entitlements) |
-| `EmployeePromoted` | Promotion event | [[notifications]], [[payroll]] |
-| `EmployeeTransferred` | Department/team change | [[notifications]] |
-| `EmployeeTerminated` | Termination/resignation | [[leave]] (forfeit unused), [[payroll]] (final settlement), [[agent-gateway]] (revoke agent) |
-| `EmployeeOnboardingStarted` | Onboarding initiated | [[notifications]] |
-| `EmployeeOffboardingStarted` | Offboarding initiated | [[notifications]], [[documents]] |
+| `EmployeeCreated` | New employee added | [[modules/notifications/overview|Notifications]], [[modules/leave/overview|Leave]] (calculate entitlements) |
+| `EmployeePromoted` | Promotion event | [[modules/notifications/overview|Notifications]], [[modules/payroll/overview|Payroll]] |
+| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview|Notifications]] |
+| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview|Leave]] (forfeit unused), [[modules/payroll/overview|Payroll]] (final settlement), [[modules/agent-gateway/overview|Agent Gateway]] (revoke agent) |
+| `EmployeeOnboardingStarted` | Onboarding initiated | [[modules/notifications/overview|Notifications]] |
+| `EmployeeOffboardingStarted` | Offboarding initiated | [[modules/notifications/overview|Notifications]], [[modules/documents/overview|Documents]] |
 
 ---
 
@@ -273,25 +274,25 @@ Audit trail for promotions, transfers, salary changes, etc.
 
 ## Features
 
-- [[employee-profiles]] — Central employee entity, addresses, custom fields — frontend: [[employee-profiles/frontend]]
-- [[employee-lifecycle]] — Promotions, transfers, suspensions, terminations, salary changes
-- [[onboarding]] — Onboarding task checklists and templates
-- [[offboarding]] — Offboarding records, exit interviews, penalty tracking
-- [[dependents-contacts]] — Dependents and emergency contacts
-- [[qualifications]] — Degrees, certifications, licenses with document upload
-- [[compensation]] — Salary history and bank details (encrypted)
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]] — Central employee entity, addresses, custom fields — frontend: [[modules/core-hr/employee-profiles/frontend|Frontend]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]] — Promotions, transfers, suspensions, terminations, salary changes
+- [[modules/core-hr/onboarding/overview|Onboarding]] — Onboarding task checklists and templates
+- [[modules/core-hr/offboarding/overview|Offboarding]] — Offboarding records, exit interviews, penalty tracking
+- [[modules/core-hr/dependents-contacts/overview|Dependents Contacts]] — Dependents and emergency contacts
+- [[modules/core-hr/qualifications/overview|Qualifications]] — Degrees, certifications, licenses with document upload
+- [[modules/core-hr/compensation/overview|Compensation]] — Salary history and bank details (encrypted)
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — Every employee and sub-entity is tenant-scoped
-- [[data-classification]] — `date_of_birth` is PII-CONFIDENTIAL; `account_number_encrypted` is AES-256
-- [[compliance]] — Salary history and lifecycle events form immutable audit trail
-- [[event-catalog]] — `EmployeeCreated`, `EmployeePromoted`, `EmployeeTransferred`, `EmployeeTerminated`
-- [[shared-kernel]] — `BaseEntity`, `BaseRepository` foundation
-- [[migration-patterns]] — Soft-delete pattern (`is_deleted`), self-referencing `manager_id` hierarchy
-- [[WEEK2-core-hr-profile]] — Profile implementation task file
-- [[WEEK2-core-hr-lifecycle]] — Lifecycle implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — Every employee and sub-entity is tenant-scoped
+- [[security/data-classification|Data Classification]] — `date_of_birth` is PII-CONFIDENTIAL; `account_number_encrypted` is AES-256
+- [[security/compliance|Compliance]] — Salary history and lifecycle events form immutable audit trail
+- [[backend/messaging/event-catalog|Event Catalog]] — `EmployeeCreated`, `EmployeePromoted`, `EmployeeTransferred`, `EmployeeTerminated`
+- [[backend/shared-kernel|Shared Kernel]] — `BaseEntity`, `BaseRepository` foundation
+- [[database/migration-patterns|Migration Patterns]] — Soft-delete pattern (`is_deleted`), self-referencing `manager_id` hierarchy
+- [[current-focus/DEV1-core-hr-profile|DEV1: Core HR Profile]] — Profile implementation task file
+- [[current-focus/DEV2-core-hr-lifecycle|DEV2: Core HR Lifecycle]] — Lifecycle implementation task file
 
-See also: [[module-catalog]], [[infrastructure]], [[org-structure]], [[leave]], [[payroll]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/infrastructure/overview|Infrastructure]], [[modules/org-structure/overview|Org Structure]], [[modules/leave/overview|Leave]], [[modules/payroll/overview|Payroll]]

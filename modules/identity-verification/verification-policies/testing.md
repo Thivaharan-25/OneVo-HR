@@ -51,8 +51,8 @@ public class VerificationPolicyServiceTests
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[verification-policies/end-to-end-logic|Verification Policies — End-to-End Logic]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[modules/identity-verification/verification-policies/end-to-end-logic|Verification Policies — End-to-End Logic]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

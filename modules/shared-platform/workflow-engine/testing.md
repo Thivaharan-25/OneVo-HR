@@ -65,6 +65,6 @@ public class WorkflowServiceTests
 
 ## Related
 
-- [[workflow-engine|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/shared-platform/workflow-engine/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

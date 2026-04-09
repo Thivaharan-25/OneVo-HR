@@ -50,5 +50,5 @@ public class MfaServiceTests
 ## Related
 
 - [[mfa|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

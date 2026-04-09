@@ -65,5 +65,5 @@ public class ExceptionEvaluationServiceTests
 
 ## Related
 
-- [[exception-engine/evaluation-engine/overview|Evaluation Engine Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Evaluation Engine Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

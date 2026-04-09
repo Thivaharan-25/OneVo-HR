@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Documents uploaded → [[document-upload]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Documents uploaded → [[Userflow/Documents/document-upload|Document Upload]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -48,11 +48,11 @@
 
 ## Related Flows
 
-- [[document-upload]]
-- [[profile-management]]
+- [[Userflow/Documents/document-upload|Document Upload]]
+- [[Userflow/Employee-Management/profile-management|Profile Management]]
 
 ## Module References
 
-- [[document-management]]
-- [[access-control]]
-- [[audit-logging]]
+- [[modules/documents/document-management/overview|Document Management]]
+- [[modules/documents/access-control/overview|Access Control]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]

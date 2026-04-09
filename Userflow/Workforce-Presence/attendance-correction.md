@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Presence session exists → [[presence-session-view]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Presence session exists → [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -20,7 +20,7 @@
 ### Step 2: Submit Correction
 - **UI:** Show original clock-in/out → enter corrected times → select reason (forgot to clock in/out, device error, worked remotely) → add notes → submit
 - **API:** `POST /api/v1/workforce/attendance-corrections`
-- **Backend:** AttendanceCorrectionService.SubmitAsync() → [[attendance-corrections]]
+- **Backend:** AttendanceCorrectionService.SubmitAsync() → [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections]]
 - **DB:** `attendance_corrections` — status: "Pending"
 
 ### Step 3: Approval
@@ -38,16 +38,16 @@
 
 ## Events Triggered
 
-- `AttendanceCorrectionRequested` → [[event-catalog]]
-- `AttendanceCorrectionApproved` → [[event-catalog]]
-- Notification to approver → [[notification-system]]
+- `AttendanceCorrectionRequested` → [[backend/messaging/event-catalog|Event Catalog]]
+- `AttendanceCorrectionApproved` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to approver → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[presence-session-view]]
-- [[shift-schedule-setup]]
+- [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
 
 ## Module References
 
-- [[attendance-corrections]]
-- [[presence-sessions]]
+- [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]

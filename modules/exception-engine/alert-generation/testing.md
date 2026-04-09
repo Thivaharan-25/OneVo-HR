@@ -65,5 +65,5 @@ public class ExceptionEvaluationServiceTests
 
 ## Related
 
-- [[exception-engine/alert-generation/overview|Alert Generation Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Alert Generation Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

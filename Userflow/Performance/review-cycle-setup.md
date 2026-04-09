@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Employees exist and are active → [[employee-onboarding]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Employees exist and are active → [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -26,7 +26,7 @@
 
 ### Step 4: Select Participants
 - **UI:** Add: all active employees, specific departments, or individual employees → exclude probationary employees (optional)
-- **Backend:** ReviewCycleService.CreateAsync() → [[review-cycles]]
+- **Backend:** ReviewCycleService.CreateAsync() → [[modules/performance/review-cycles/overview|Review Cycles]]
 - **DB:** `review_cycles`, `review_cycle_participants`
 
 ### Step 5: Launch Cycle
@@ -52,18 +52,18 @@
 
 ## Events Triggered
 
-- `ReviewCycleLaunched` → [[event-catalog]]
-- Notifications to all participants → [[notification-system]]
+- `ReviewCycleLaunched` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notifications to all participants → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[self-assessment]]
-- [[manager-review]]
-- [[peer-feedback]]
-- [[goal-setting]]
+- [[Userflow/Performance/self-assessment|Self Assessment]]
+- [[Userflow/Performance/manager-review|Manager Review]]
+- [[Userflow/Performance/peer-feedback|Peer Feedback]]
+- [[Userflow/Performance/goal-setting|Goal Setting]]
 
 ## Module References
 
-- [[review-cycles]]
-- [[reviews]]
-- [[performance]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[database/performance|Performance]]

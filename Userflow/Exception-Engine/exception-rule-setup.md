@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Monitoring enabled → [[monitoring-configuration]]
-- Data flowing from agents → [[agent-deployment]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Monitoring enabled → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- Data flowing from agents → [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -24,7 +24,7 @@
   - **Productivity:** "Productive hours < 4h/day for 3+ days" / "Unproductive app > 2h/day" / "Idle time > 3h/day"
   - **Verification:** "Identity verification failed" / "Agent offline > 2 hours during shift"
   - **Custom:** Combine multiple conditions with AND/OR
-- **Backend:** ExceptionRuleService.CreateAsync() → [[exception-rules]]
+- **Backend:** ExceptionRuleService.CreateAsync() → [[modules/exception-engine/exception-rules/overview|Exception Rules]]
 - **DB:** `exception_rules` — condition stored as JSON
 
 ### Step 3: Set Severity
@@ -32,11 +32,11 @@
 
 ### Step 4: Set Notification Targets
 - **UI:** Who gets notified: Direct Manager, HR Admin, Department Head, CEO → varies by severity
-- Links: [[escalation-chain-setup]]
+- Links: [[Userflow/Exception-Engine/escalation-chain-setup|Escalation Chain Setup]]
 
 ### Step 5: Activate
 - **API:** `PUT /api/v1/exceptions/rules/{id}/activate`
-- **Result:** Evaluation engine checks this rule against incoming data → [[evaluation-engine]]
+- **Result:** Evaluation engine checks this rule against incoming data → [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]]
 
 ## Error Scenarios
 
@@ -47,17 +47,17 @@
 
 ## Events Triggered
 
-- `ExceptionRuleCreated` → [[event-catalog]]
+- `ExceptionRuleCreated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[alert-review]]
-- [[escalation-chain-setup]]
-- [[exception-dashboard]]
-- [[monitoring-configuration]]
+- [[Userflow/Exception-Engine/alert-review|Alert Review]]
+- [[Userflow/Exception-Engine/escalation-chain-setup|Escalation Chain Setup]]
+- [[Userflow/Exception-Engine/exception-dashboard|Alerts Overview]]
+- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
 
 ## Module References
 
-- [[exception-rules]]
-- [[evaluation-engine]]
-- [[exception-engine]]
+- [[modules/exception-engine/exception-rules/overview|Exception Rules]]
+- [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]]
+- [[modules/exception-engine/overview|Exception Engine]]

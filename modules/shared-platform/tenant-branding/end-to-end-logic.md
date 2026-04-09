@@ -24,8 +24,8 @@ PUT /api/v1/branding
 
 ## Related
 
-- [[tenant-branding|Overview]]
-- [[tenant-management]]
-- [[file-management]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/design-system/theming/tenant-branding|Overview]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[modules/infrastructure/file-management/overview|File Management]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

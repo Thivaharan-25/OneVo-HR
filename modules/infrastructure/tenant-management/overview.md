@@ -28,12 +28,12 @@ Key columns: `name`, `slug` (UNIQUE), `industry_profile` (`office_it`, `manufact
 
 ## Related
 
-- [[infrastructure|Infrastructure Module]]
-- [[file-management]]
-- [[reference-data]]
-- [[user-management]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[audit-logging]]
-- [[migration-patterns]]
-- [[WEEK1-infrastructure-setup]]
+- [[modules/infrastructure/overview|Infrastructure Module]]
+- [[modules/infrastructure/file-management/overview|File Management]]
+- [[modules/infrastructure/reference-data/overview|Reference Data]]
+- [[modules/infrastructure/user-management/overview|User Management]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV1-infrastructure-setup|DEV1: Infrastructure]]

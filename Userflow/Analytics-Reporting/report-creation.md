@@ -9,7 +9,7 @@
 ## Preconditions
 
 - Data exists in system
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -29,12 +29,12 @@
 ### Step 5: Preview & Run
 - **UI:** Click "Preview" → see sample data → click "Run" → full report generated
 - **API:** `POST /api/v1/reports`
-- **Backend:** ReportService.ExecuteAsync() → [[report-execution]]
+- **Backend:** ReportService.ExecuteAsync() → [[modules/reporting-engine/report-execution/overview|Report Execution]]
 - **DB:** `report_definitions`, `report_executions`
 
 ### Step 6: Save & Export
 - **UI:** Save as template for reuse → export to CSV / Excel / PDF
-- Links: [[scheduled-report-setup]] (for automation)
+- Links: [[Userflow/Analytics-Reporting/scheduled-report-setup|Scheduled Report Setup]] (for automation)
 
 ## Error Scenarios
 
@@ -45,15 +45,15 @@
 
 ## Events Triggered
 
-- `ReportExecuted` → [[event-catalog]]
+- `ReportExecuted` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[scheduled-report-setup]]
-- [[data-export]]
+- [[Userflow/Analytics-Reporting/scheduled-report-setup|Scheduled Report Setup]]
+- [[Userflow/Analytics-Reporting/data-export|Data Export]]
 
 ## Module References
 
-- [[report-definitions]]
-- [[report-execution]]
-- [[reporting-engine]]
+- [[modules/reporting-engine/report-definitions/overview|Report Definitions]]
+- [[modules/reporting-engine/report-execution/overview|Report Execution]]
+- [[modules/reporting-engine/overview|Reporting Engine]]

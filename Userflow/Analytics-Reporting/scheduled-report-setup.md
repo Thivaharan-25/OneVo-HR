@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Saved report template exists → [[report-creation]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Saved report template exists → [[Userflow/Analytics-Reporting/report-creation|Report Creation]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -22,7 +22,7 @@
 
 ### Step 3: Set Delivery
 - **UI:** Delivery method: Email (enter recipients) / In-app notification / Both → set format (CSV, Excel, PDF)
-- **Backend:** ScheduledReportService.CreateAsync() → [[report-templates]]
+- **Backend:** ScheduledReportService.CreateAsync() → [[modules/reporting-engine/report-templates/overview|Report Templates]]
 - **DB:** `report_schedules` — Hangfire recurring job created
 
 ### Step 4: Activate
@@ -37,15 +37,15 @@
 
 ## Events Triggered
 
-- `ScheduledReportExecuted` → [[event-catalog]]
+- `ScheduledReportExecuted` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[report-creation]]
-- [[notification-preference-setup]]
+- [[Userflow/Analytics-Reporting/report-creation|Report Creation]]
+- [[Userflow/Notifications/notification-preference-setup|Notification Preference Setup]]
 
 ## Module References
 
-- [[report-execution]]
-- [[report-templates]]
-- [[notification-system]]
+- [[modules/reporting-engine/report-execution/overview|Report Execution]]
+- [[modules/reporting-engine/report-templates/overview|Report Templates]]
+- [[backend/notification-system|Notification System]]

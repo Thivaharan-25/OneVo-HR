@@ -51,6 +51,6 @@ public class ReportDefinitionServiceTests
 
 ## Related
 
-- [[reporting-engine/report-definitions/overview|Report Definitions Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/architecture/overview|Report Definitions Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

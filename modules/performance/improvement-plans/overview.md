@@ -16,15 +16,15 @@ Fields: `employee_id`, `initiated_by_id`, `reason`, `objectives_json`, `start_da
 
 ## Related
 
-- [[performance|Performance Module]]
-- [[reviews]]
-- [[review-cycles]]
-- [[feedback]]
-- [[goals-okr]]
-- [[recognitions]]
-- [[succession-planning]]
-- [[multi-tenancy]]
-- [[notifications]]
-- [[compliance]]
-- [[error-handling]]
-- [[WEEK3-performance]]
+- [[database/performance|Performance Module]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[modules/performance/feedback/overview|Feedback]]
+- [[modules/performance/goals-okr/overview|Goals Okr]]
+- [[modules/performance/recognitions/overview|Recognitions]]
+- [[Userflow/Performance/succession-planning|Succession Planning]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[modules/notifications/overview|Notifications]]
+- [[security/compliance|Compliance]]
+- [[backend/messaging/error-handling|Error Handling]]
+- Performance task file (deferred to Phase 2)

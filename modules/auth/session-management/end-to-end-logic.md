@@ -48,9 +48,9 @@ On every authenticated request:
 
 ## Related
 
-- [[session-management|Overview]]
-- [[authentication]]
-- [[audit-logging]]
+- [[modules/auth/session-management/overview|Overview]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[mfa]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

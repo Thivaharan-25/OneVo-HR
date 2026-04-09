@@ -45,8 +45,8 @@ PUT /api/v1/performance/goals/{id}
 
 ## Related
 
-- [[goals-okr|Goals & OKR Overview]]
-- [[review-cycles]]
-- [[reviews]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/performance/goals-okr/overview|Goals & OKR Overview]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

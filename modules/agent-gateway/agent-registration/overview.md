@@ -40,7 +40,7 @@ Handles desktop agent registration and employee linking. New devices register us
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AgentRegistered` | New device registered | [[configuration]] (push initial policy) |
+| `AgentRegistered` | New device registered | [[modules/configuration/overview|Configuration]] (push initial policy) |
 | `AgentRevoked` | Admin revokes agent access | Agent receives 401 on next request |
 
 ## API Endpoints
@@ -53,13 +53,13 @@ Handles desktop agent registration and employee linking. New devices register us
 
 ## Related
 
-- [[agent-gateway|Agent Gateway Module]]
-- [[data-ingestion]]
-- [[heartbeat-monitoring]]
-- [[policy-distribution]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[logging-standards]]
-- [[WEEK1-shared-platform]]
+- [[modules/agent-gateway/overview|Agent Gateway Module]]
+- [[modules/agent-gateway/data-ingestion/overview|Data Ingestion]]
+- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]]
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[code-standards/logging-standards|Logging Standards]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

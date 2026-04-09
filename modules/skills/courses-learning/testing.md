@@ -51,5 +51,5 @@ public class CourseServiceTests
 
 ## Related
 
-- [[courses-learning]] — feature overview
-- [[testing/README|Testing Standards]] — project-wide testing conventions
+- [[modules/skills/courses-learning/overview|Courses Learning]] — feature overview
+- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions

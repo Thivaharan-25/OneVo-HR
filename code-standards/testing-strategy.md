@@ -187,5 +187,5 @@ dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
 
 ## Related
 
-- [[migration-patterns]]
-- [[shared-kernel]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[backend/shared-kernel|Shared Kernel]]

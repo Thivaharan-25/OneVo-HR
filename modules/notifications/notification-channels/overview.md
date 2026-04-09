@@ -26,10 +26,10 @@ Fields: `channel_type` (`email`, `slack`, `webhook`), `config_json`, `credential
 
 ## Related
 
-- [[notifications|Notifications Module]]
-- [[notifications/notification-templates/overview|Notification Templates]]
-- [[notifications/signalr-real-time/overview|SignalR Real-Time]]
-- [[event-catalog]]
-- [[notification-system]]
-- [[multi-tenancy]]
-- [[WEEK4-supporting-bridges]]
+- [[modules/notifications/overview|Notifications Module]]
+- [[frontend/architecture/overview|Notification Templates]]
+- [[frontend/architecture/overview|SignalR Real-Time]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/notification-system|Notification System]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]]

@@ -10,7 +10,7 @@
 
 - Physical biometric device available (fingerprint reader, face recognition camera, NFC card reader)
 - Network access configured for device
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -21,7 +21,7 @@
 
 ### Step 2: Configure Connection
 - **UI:** Enter device webhook URL or API endpoint → set authentication key → test connection → confirm bi-directional communication
-- **Backend:** DeviceService.RegisterAsync() → [[device-sessions]]
+- **Backend:** DeviceService.RegisterAsync() → [[modules/workforce-presence/device-sessions/overview|Device Sessions]]
 
 ### Step 3: Enroll Employees
 - **UI:** Select device → "Enroll Employees" → employees physically scan fingerprint/face at device → enrollment data stored
@@ -30,7 +30,7 @@
 
 ### Step 4: Activate
 - **UI:** Toggle device to "Active" → device starts sending clock-in/out events → events create presence sessions automatically
-- **Backend:** Webhook receives events → PresenceService.ProcessClockEvent() → [[presence-sessions]]
+- **Backend:** Webhook receives events → PresenceService.ProcessClockEvent() → [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
 
 ## Error Scenarios
 
@@ -42,18 +42,18 @@
 
 ## Events Triggered
 
-- `DeviceRegistered` → [[event-catalog]]
-- `EmployeeEnrolled` → [[event-catalog]]
-- `ClockEventReceived` → [[event-catalog]]
+- `DeviceRegistered` → [[backend/messaging/event-catalog|Event Catalog]]
+- `EmployeeEnrolled` → [[backend/messaging/event-catalog|Event Catalog]]
+- `ClockEventReceived` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[presence-session-view]]
-- [[shift-schedule-setup]]
-- [[agent-deployment]]
+- [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
+- [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
 
 ## Module References
 
-- [[device-sessions]]
-- [[workforce-presence]]
-- [[agent-gateway]]
+- [[modules/workforce-presence/device-sessions/overview|Device Sessions]]
+- [[modules/workforce-presence/overview|Workforce Presence]]
+- [[modules/agent-gateway/overview|Agent Gateway]]

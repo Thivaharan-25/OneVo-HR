@@ -46,12 +46,12 @@ POST /api/v1/biometric/webhook
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[biometric-devices/overview|Biometric Devices Overview]]
-- [[biometric-enrollment/end-to-end-logic|Biometric Enrollment — End-to-End Logic]]
-- [[verification-policies/end-to-end-logic|Verification Policies — End-to-End Logic]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[frontend/architecture/overview|Biometric Devices Overview]]
+- [[modules/identity-verification/biometric-enrollment/end-to-end-logic|Biometric Enrollment — End-to-End Logic]]
+- [[modules/identity-verification/verification-policies/end-to-end-logic|Verification Policies — End-to-End Logic]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

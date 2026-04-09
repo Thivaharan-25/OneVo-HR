@@ -21,7 +21,7 @@ Raw clock-in/out events: `event_type` (`clock_in`, `clock_out`, `break_start`, `
 
 1. `consent_given` must be `true` before enrollment (GDPR/PDPA).
 2. Fingerprint templates NEVER stored in ONEVO — only `template_hash`.
-3. Biometric events flow to [[workforce-presence]] for presence reconciliation.
+3. Biometric events flow to [[modules/workforce-presence/overview|Workforce Presence]] for presence reconciliation.
 
 ## API Endpoints
 
@@ -32,13 +32,13 @@ Raw clock-in/out events: `event_type` (`clock_in`, `clock_out`, `break_start`, `
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[biometric-enrollment/end-to-end-logic|Biometric Enrollment — End-to-End Logic]]
-- [[biometric-enrollment/testing|Biometric Enrollment — Testing]]
-- [[biometric-devices/overview|Biometric Devices]]
-- [[verification-policies/overview|Verification Policies]]
-- [[data-classification]]
-- [[compliance]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[modules/identity-verification/biometric-enrollment/end-to-end-logic|Biometric Enrollment — End-to-End Logic]]
+- [[modules/identity-verification/biometric-enrollment/testing|Biometric Enrollment — Testing]]
+- [[frontend/architecture/overview|Biometric Devices]]
+- [[frontend/architecture/overview|Verification Policies]]
+- [[security/data-classification|Data Classification]]
+- [[security/compliance|Compliance]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

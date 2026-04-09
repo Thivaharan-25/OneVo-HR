@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Employee has received below-standard review → [[manager-review]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Employee has received below-standard review → [[Userflow/Performance/manager-review|Manager Review]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -19,7 +19,7 @@
 
 ### Step 2: Define Improvement Areas
 - **UI:** Add specific improvement areas → set measurable targets for each → set check-in schedule (weekly/bi-weekly)
-- **Backend:** ImprovementPlanService.CreateAsync() → [[improvement-plans]]
+- **Backend:** ImprovementPlanService.CreateAsync() → [[modules/performance/improvement-plans/overview|Improvement Plans]]
 - **DB:** `improvement_plans`, `improvement_plan_goals`
 
 ### Step 3: Assign Support
@@ -39,7 +39,7 @@
 - If partially met → extend PIP with revised targets → new end date
 
 ### Escalation to disciplinary
-- If not met → can trigger [[disciplinary-action]]
+- If not met → can trigger [[Userflow/Grievance/disciplinary-action|Disciplinary Action]]
 
 ## Error Scenarios
 
@@ -50,17 +50,17 @@
 
 ## Events Triggered
 
-- `ImprovementPlanCreated` → [[event-catalog]]
-- `ImprovementPlanEvaluated` → [[event-catalog]]
-- Notifications to employee, mentor, HR → [[notification-system]]
+- `ImprovementPlanCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `ImprovementPlanEvaluated` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notifications to employee, mentor, HR → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[manager-review]]
-- [[goal-setting]]
-- [[disciplinary-action]]
+- [[Userflow/Performance/manager-review|Manager Review]]
+- [[Userflow/Performance/goal-setting|Goal Setting]]
+- [[Userflow/Grievance/disciplinary-action|Disciplinary Action]]
 
 ## Module References
 
-- [[improvement-plans]]
-- [[reviews]]
+- [[modules/performance/improvement-plans/overview|Improvement Plans]]
+- [[modules/performance/reviews/overview|Reviews]]

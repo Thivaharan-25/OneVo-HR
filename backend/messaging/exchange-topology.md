@@ -94,5 +94,5 @@ onevo.events (topic exchange)
 
 ## Related
 
-- [[event-catalog]]
-- [[error-handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

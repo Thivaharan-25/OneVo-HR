@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Department exists → [[department-hierarchy]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Department exists → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -42,15 +42,15 @@
 
 ## Events Triggered
 
-- `TeamCreated` → [[event-catalog]]
+- `TeamCreated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[department-hierarchy]]
-- [[employee-onboarding]]
-- [[employee-transfer]]
+- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
+- [[Userflow/Employee-Management/employee-transfer|Employee Transfer]]
 
 ## Module References
 
-- [[teams]]
-- [[org-structure]]
+- [[modules/org-structure/teams/overview|Teams]]
+- [[modules/org-structure/overview|Org Structure]]

@@ -8,15 +8,15 @@
 
 ## Preconditions
 
-- User account exists with status `active` (via [[user-invitation|User Invitation]] or [[employee-onboarding|Employee Onboarding]])
+- User account exists with status `active` (via [[Userflow/Auth-Access/user-invitation|User Invitation]] or [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]])
 - User knows their email and password (or SSO is configured for their tenant)
 
 ## Flow Steps
 
 ### Step 1: Navigate to Login Page
-- **UI:** User opens `https://{tenant}.onevo.app/login` (or custom domain if configured via [[tenant-branding]]). Login page displays: tenant logo, email field, password field, "Remember me" checkbox, "Forgot Password?" link, "Sign in with SSO" button (if SSO configured). If tenant not found by subdomain: generic ONEVO login page with tenant selector
+- **UI:** User opens `https://{tenant}.onevo.app/login` (or custom domain if configured via [[frontend/design-system/theming/tenant-branding|Tenant Branding]]). Login page displays: tenant logo, email field, password field, "Remember me" checkbox, "Forgot Password?" link, "Sign in with SSO" button (if SSO configured). If tenant not found by subdomain: generic ONEVO login page with tenant selector
 - **API:** `GET /api/v1/tenants/resolve?domain={hostname}` (resolves tenant from subdomain/custom domain)
-- **Backend:** `TenantResolver.ResolveAsync()` → [[infrastructure]]
+- **Backend:** `TenantResolver.ResolveAsync()` → [[modules/infrastructure/overview|Infrastructure]]
 - **Validation:** Tenant must exist and be active
 - **DB:** `tenants`, `tenant_branding` (for logo/colors)
 
@@ -37,7 +37,7 @@
     "rememberMe": true
   }
   ```
-- **Backend:** `AuthService.LoginAsync()` → [[authentication]]
+- **Backend:** `AuthService.LoginAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
   1. Look up user by email + tenant_id
   2. Verify password hash (bcrypt compare)
   3. Check user status is `active` (not `disabled`, `invited`, or `locked`)
@@ -83,8 +83,8 @@
     }
   }
   ```
-- **Backend:** `TokenService.GenerateAccessTokenAsync()` → [[authentication]]
-  1. Compute effective permissions: role permissions + overrides (see [[permission-assignment]])
+- **Backend:** `TokenService.GenerateAccessTokenAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
+  1. Compute effective permissions: role permissions + overrides (see [[Userflow/Auth-Access/permission-assignment|Permission Assignment]])
   2. Generate JWT RS256 access token (15-minute expiry) with claims: `sub` (userId), `tenant_id`, `permissions[]`, `employee_id`, `iat`, `exp`
   3. Generate refresh token (7-day expiry, or 30 days if "remember me"), store hash in `refresh_tokens`
   4. Create session record in `sessions` table
@@ -122,7 +122,7 @@
 
 ### When GDPR consent is pending
 - After successful login, before dashboard access
-- [[gdpr-consent|GDPR Consent Flow]] dialog appears
+- [[Userflow/Auth-Access/gdpr-consent|GDPR Consent Flow]] dialog appears
 - User must accept required consents before proceeding
 - If monitoring consent declined: monitoring features disabled for this user
 
@@ -152,26 +152,26 @@
 
 ## Events Triggered
 
-- `UserLoggedInEvent` → [[event-catalog]] — consumed by session tracking, audit logging
-- `LoginFailedEvent` → [[event-catalog]] — consumed by security monitoring, lockout counter
-- `SessionCreatedEvent` → [[event-catalog]] — consumed by presence tracking
-- `AuditLogEntry` (action: `auth.login.success` or `auth.login.failed`) → [[audit-logging]]
+- `UserLoggedInEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by session tracking, audit logging
+- `LoginFailedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by security monitoring, lockout counter
+- `SessionCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by presence tracking
+- `AuditLogEntry` (action: `auth.login.success` or `auth.login.failed`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[password-reset]] — "Forgot Password?" link on login page
-- [[mfa-setup]] — enabling MFA before this flow
-- [[sso-configuration]] — SSO setup by admin
-- [[gdpr-consent]] — consent collection after login
-- [[user-invitation]] — account creation before first login
-- [[employee-offboarding]] — disabled accounts cannot login
+- [[Userflow/Auth-Access/password-reset|Password Reset]] — "Forgot Password?" link on login page
+- [[Userflow/Auth-Access/mfa-setup|Mfa Setup]] — enabling MFA before this flow
+- [[Userflow/Platform-Setup/sso-configuration|Sso Configuration]] — SSO setup by admin
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] — consent collection after login
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] — account creation before first login
+- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]] — disabled accounts cannot login
 
 ## Module References
 
-- [[authentication]] — login logic, JWT RS256 token issuance
-- [[authorization]] — effective permission computation for JWT claims
-- [[session-management]] — session creation and tracking
+- [[frontend/cross-cutting/authentication|Authentication]] — login logic, JWT RS256 token issuance
+- [[frontend/cross-cutting/authorization|Authorization]] — effective permission computation for JWT claims
+- [[modules/auth/session-management/overview|Session Management]] — session creation and tracking
 - [[mfa]] — TOTP verification
-- [[auth-architecture]] — overall auth design
-- [[auth-flow]] — authentication flow diagrams
-- [[infrastructure]] — tenant resolution, multi-tenancy
+- [[security/auth-architecture|Auth Architecture]] — overall auth design
+- [[security/auth-flow|Auth Flow]] — authentication flow diagrams
+- [[modules/infrastructure/overview|Infrastructure]] — tenant resolution, multi-tenancy

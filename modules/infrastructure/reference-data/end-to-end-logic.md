@@ -27,8 +27,8 @@ GET /api/v1/countries
 
 ## Related
 
-- [[reference-data|Overview]]
-- [[tenant-management]]
-- [[shared-kernel]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/infrastructure/reference-data/overview|Overview]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

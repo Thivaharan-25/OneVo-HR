@@ -54,12 +54,12 @@ DetectOfflineAgentsJob (Hangfire, every 5 min)
 
 ## Related
 
-- [[agent-gateway|Agent Gateway Module]]
-- [[heartbeat-monitoring/overview|Heartbeat Monitoring Overview]]
-- [[agent-registration/end-to-end-logic|Agent Registration — End-to-End Logic]]
-- [[policy-distribution/end-to-end-logic|Policy Distribution — End-to-End Logic]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[WEEK1-shared-platform]]
+- [[modules/agent-gateway/overview|Agent Gateway Module]]
+- [[frontend/architecture/overview|Heartbeat Monitoring Overview]]
+- [[modules/agent-gateway/agent-registration/end-to-end-logic|Agent Registration — End-to-End Logic]]
+- [[modules/agent-gateway/policy-distribution/end-to-end-logic|Policy Distribution — End-to-End Logic]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

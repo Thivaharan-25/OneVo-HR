@@ -28,12 +28,12 @@ Level upgrade requests: `from_level`, `to_level`, `evidence_url`, `validator_id`
 ## Related
 
 - [[skills|Skills Module]] — parent module
-- [[skill-taxonomy]] — skill definitions and proficiency level descriptors
-- [[skill-assessments]] — assessments used to validate proficiency
-- [[certifications]] — certifications as evidence for skill validation
-- [[development-plans]] — plans targeting skill growth
-- [[courses-learning]] — courses that build specific skills
-- [[multi-tenancy]] — tenant-scoped employee skill profiles
-- [[event-catalog]] — SkillValidated, SkillExpired events
-- [[error-handling]] — validation request state machine errors
-- [[WEEK4-supporting-bridges]] — implementation task
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — skill definitions and proficiency level descriptors
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] — assessments used to validate proficiency
+- [[modules/skills/certifications/overview|Certifications]] — certifications as evidence for skill validation
+- [[modules/skills/development-plans/overview|Development Plans]] — plans targeting skill growth
+- [[modules/skills/courses-learning/overview|Courses Learning]] — courses that build specific skills
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped employee skill profiles
+- [[backend/messaging/event-catalog|Event Catalog]] — SkillValidated, SkillExpired events
+- [[backend/messaging/error-handling|Error Handling]] — validation request state machine errors
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task

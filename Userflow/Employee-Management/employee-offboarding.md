@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Employee is active → [[profile-management]]
-- Offboarding workflow template exists → [[workflow-engine]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Employee is active → [[Userflow/Employee-Management/profile-management|Profile Management]]
+- Offboarding workflow template exists → [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -24,11 +24,11 @@
 
 ### Step 3: Submit
 - **API:** `POST /api/v1/employees/{id}/offboard`
-- **Backend:** EmployeeLifecycleService.OffboardAsync() → [[employee-lifecycle]]
+- **Backend:** EmployeeLifecycleService.OffboardAsync() → [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
 - **DB:** `employees.status` → "Offboarding", `employee_offboarding` — record created
 
 ### Step 4: Offboarding Checklist Triggered
-- **Backend:** Workflow creates checklist → [[offboarding]]
+- **Backend:** Workflow creates checklist → [[modules/core-hr/offboarding/overview|Offboarding]]
 - **Checklist items:**
   - IT: Revoke system access, collect laptop/devices
   - HR: Conduct exit interview, process final documents
@@ -43,12 +43,12 @@
 ### Step 6: Final Day Processing
 - **Backend:** On last working day (automated via Hangfire):
   - Status → "Inactive"
-  - All sessions terminated → [[session-management]]
-  - Desktop agent unregistered → [[agent-registration]]
+  - All sessions terminated → [[modules/auth/session-management/overview|Session Management]]
+  - Desktop agent unregistered → [[modules/agent-gateway/agent-registration/overview|Agent Registration]]
   - Notifications stopped
-  - Profile read-only (data retained per policy) → [[retention-policy-setup]]
+  - Profile read-only (data retained per policy) → [[Userflow/Configuration/retention-policy-setup|Retention Policy Setup]]
   - Leave balance snapshot taken for records
-  - Final payroll adjustment created → [[payroll-adjustment]]
+  - Final payroll adjustment created → [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]]
 
 ## Variations
 
@@ -69,20 +69,20 @@
 
 ## Events Triggered
 
-- `EmployeeOffboardingStarted` → [[event-catalog]]
-- `EmployeeDeactivated` → [[event-catalog]]
-- Notifications to checklist assignees → [[notification-system]]
+- `EmployeeOffboardingStarted` → [[backend/messaging/event-catalog|Event Catalog]]
+- `EmployeeDeactivated` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notifications to checklist assignees → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[employee-onboarding]] — reverse flow
-- [[payroll-adjustment]] — final pay
-- [[disciplinary-action]] — may trigger offboarding
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — reverse flow
+- [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]] — final pay
+- [[Userflow/Grievance/disciplinary-action|Disciplinary Action]] — may trigger offboarding
 
 ## Module References
 
-- [[employee-lifecycle]]
-- [[offboarding]]
-- [[workflow-engine]]
-- [[session-management]]
-- [[agent-registration]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
+- [[modules/core-hr/offboarding/overview|Offboarding]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[modules/auth/session-management/overview|Session Management]]
+- [[modules/agent-gateway/agent-registration/overview|Agent Registration]]

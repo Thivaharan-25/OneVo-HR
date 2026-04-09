@@ -1,16 +1,17 @@
 # Module: Leave
 
 **Namespace:** `ONEVO.Modules.Leave`
+**Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 1 (Week 3)
 **Tables:** 5
-**Task File:** [[WEEK3-leave]]
+**Task File:** [[current-focus/DEV1-leave|DEV1: Leave]]
 
 ---
 
 ## Purpose
 
-Manages leave types, country/level-specific policies with versioning, entitlement calculation, and request/approval workflows. Integrates with [[shared-platform]] workflow engine for approval routing.
+Manages leave types, country/level-specific policies with versioning, entitlement calculation, and request/approval workflows. Integrates with [[modules/shared-platform/overview|Shared Platform]] workflow engine for approval routing.
 
 ---
 
@@ -18,12 +19,12 @@ Manages leave types, country/level-specific policies with versioning, entitlemen
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[core-hr]] | `IEmployeeService` | Employee context, hire date for entitlement |
-| **Depends on** | [[org-structure]] | `IOrgStructureService` | Job level/country for policy matching |
-| **Depends on** | [[shared-platform]] | Workflow engine | Approval routing |
-| **Depends on** | [[calendar]] | `ICalendarConflictService` | Check calendar conflicts during leave submission |
-| **Consumed by** | [[payroll]] | `ILeaveService` | Leave days for payroll deductions |
-| **Consumed by** | [[workforce-presence]] | `ILeaveService` | Mark presence status as `on_leave` |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context, hire date for entitlement |
+| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Job level/country for policy matching |
+| **Depends on** | [[modules/shared-platform/overview|Shared Platform]] | Workflow engine | Approval routing |
+| **Depends on** | [[modules/calendar/overview|Calendar]] | `ICalendarConflictService` | Check calendar conflicts during leave submission |
+| **Consumed by** | [[modules/payroll/overview|Payroll]] | `ILeaveService` | Leave days for payroll deductions |
+| **Consumed by** | [[modules/workforce-presence/overview|Workforce Presence]] | `ILeaveService` | Mark presence status as `on_leave` |
 
 ---
 
@@ -111,7 +112,7 @@ Calculated entitlement per employee per year.
 | `status` | `varchar(20)` | `pending`, `approved`, `rejected`, `cancelled` |
 | `approved_by_id` | `uuid` | FK → users |
 | `approved_at` | `timestamptz` | |
-| `conflict_snapshot_json` | `jsonb` | Calendar conflicts at submission time (nullable) — see [[2026-04-06-leave-calendar-conflict-detection]] |
+| `conflict_snapshot_json` | `jsonb` | Calendar conflicts at submission time (nullable) — see [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]] |
 | `document_file_id` | `uuid` | FK → file_records (nullable) |
 | `created_at` | `timestamptz` | |
 
@@ -137,10 +138,10 @@ Audit trail for balance changes.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `LeaveRequested` | Employee submits request | [[notifications]] (notify manager) |
-| `LeaveApproved` | Manager approves | [[notifications]], [[workforce-presence]] (update status) |
-| `LeaveRejected` | Manager rejects | [[notifications]] |
-| `LeaveCancelled` | Employee/manager cancels | [[notifications]], entitlement adjustment |
+| `LeaveRequested` | Employee submits request | [[modules/notifications/overview|Notifications]] (notify manager) |
+| `LeaveApproved` | Manager approves | [[modules/notifications/overview|Notifications]], [[modules/workforce-presence/overview|Workforce Presence]] (update status) |
+| `LeaveRejected` | Manager rejects | [[modules/notifications/overview|Notifications]] |
+| `LeaveCancelled` | Employee/manager cancels | [[modules/notifications/overview|Notifications]], entitlement adjustment |
 
 ---
 
@@ -148,7 +149,7 @@ Audit trail for balance changes.
 
 1. **Leave policy versioning** — `leave_policies` has a `superseded_by_id` column forming a chain. Active policy: `WHERE superseded_by_id IS NULL` for the given leave type + country + job level.
 2. **Request validation** — checks sufficient balance, no overlapping requests, max consecutive days.
-3. **Calendar conflict detection** — on submission, `ICalendarConflictService.GetConflictsForDateRangeAsync()` checks for overlapping calendar events (meetings, reviews, team events). Conflicts are **warnings only** — they do not block submission or approval. The conflict snapshot is stored as `conflict_snapshot_json` on the leave request so the approving manager can see what the employee saw at submission time. The manager also sees a live re-check for any events added after submission. See [[2026-04-06-leave-calendar-conflict-detection]].
+3. **Calendar conflict detection** — on submission, `ICalendarConflictService.GetConflictsForDateRangeAsync()` checks for overlapping calendar events (meetings, reviews, team events). Conflicts are **warnings only** — they do not block submission or approval. The conflict snapshot is stored as `conflict_snapshot_json` on the leave request so the approving manager can see what the employee saw at submission time. The manager also sees a live re-check for any events added after submission. See [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]].
 
 ---
 
@@ -169,21 +170,21 @@ Audit trail for balance changes.
 
 ## Features
 
-- [[leave-types]] — Leave type definitions (paid/unpaid, document requirements)
-- [[leave-policies]] — Country/job-level policies with versioning (`superseded_by_id`)
-- [[leave-entitlements]] — Calculated entitlement per employee per year
-- [[leave-requests]] — Request submission, approval, rejection workflow — frontend: [[leave-requests/frontend]]
-- [[balance-audit]] — Immutable audit trail for all balance changes
+- [[modules/leave/leave-types/overview|Leave Types]] — Leave type definitions (paid/unpaid, document requirements)
+- [[modules/leave/leave-policies/overview|Leave Policies]] — Country/job-level policies with versioning (`superseded_by_id`)
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]] — Calculated entitlement per employee per year
+- [[modules/leave/leave-requests/overview|Leave Requests]] — Request submission, approval, rejection workflow — frontend: [[modules/leave/leave-requests/frontend|Frontend]]
+- [[modules/leave/balance-audit/overview|Balance Audit]] — Immutable audit trail for all balance changes
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All leave data is tenant-scoped
-- [[event-catalog]] — `LeaveRequested`, `LeaveApproved`, `LeaveRejected`, `LeaveCancelled`
-- [[error-handling]] — Calendar conflicts are warnings only; never block submission
-- [[compliance]] — Leave balance audit trail for legal record-keeping
-- [[migration-patterns]] — Policy versioning via `superseded_by_id` self-referencing chain
-- [[WEEK3-leave]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All leave data is tenant-scoped
+- [[backend/messaging/event-catalog|Event Catalog]] — `LeaveRequested`, `LeaveApproved`, `LeaveRejected`, `LeaveCancelled`
+- [[backend/messaging/error-handling|Error Handling]] — Calendar conflicts are warnings only; never block submission
+- [[security/compliance|Compliance]] — Leave balance audit trail for legal record-keeping
+- [[database/migration-patterns|Migration Patterns]] — Policy versioning via `superseded_by_id` self-referencing chain
+- [[current-focus/DEV1-leave|DEV1: Leave]] — Implementation task file
 
-See also: [[module-catalog]], [[core-hr]], [[payroll]], [[workforce-presence]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/payroll/overview|Payroll]], [[modules/workforce-presence/overview|Workforce Presence]]

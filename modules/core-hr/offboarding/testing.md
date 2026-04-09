@@ -51,6 +51,6 @@ public class OffboardingServiceTests
 
 ## Related
 
-- [[offboarding|Offboarding Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/core-hr/offboarding/overview|Offboarding Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

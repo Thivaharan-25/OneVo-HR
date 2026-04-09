@@ -1,0 +1,60 @@
+<h2>How should surfaces and cards feel?</h2>
+<p class="subtitle">This defines the visual depth and texture of every panel, card, and container in the app.</p>
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<div class="options" style="font-family:'Outfit',sans-serif;">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Glassmorphism</h3>
+      <p>Frosted glass panels with blur, subtle transparency, and soft glowing borders. Layered, futuristic, premium. Works beautifully with violet accents on dark.</p>
+      <div style="margin-top:14px; position:relative; background:linear-gradient(135deg,#0a0a0f,#12121a); padding:16px; border-radius:10px; overflow:hidden;">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:#7c3aed40;border-radius:50%;filter:blur(30px);"></div>
+        <div style="position:absolute;bottom:-10px;left:20px;width:60px;height:60px;background:#8b5cf620;border-radius:50%;filter:blur(25px);"></div>
+        <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px; position:relative;">
+          <div style="font-size:11px; color:#71717a; margin-bottom:4px;">ACTIVE EMPLOYEES</div>
+          <div style="font-size:22px; font-weight:700; color:#fafafa;">1,247</div>
+          <div style="font-size:11px; color:#a78bfa; margin-top:4px;">+12 this month</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Elevated Cards</h3>
+      <p>Subtle shadows, solid backgrounds, clear elevation hierarchy. Cards lift off the surface with soft shadows. Clean and structured. The Stripe approach.</p>
+      <div style="margin-top:14px; background:#09090b; padding:16px; border-radius:10px;">
+        <div style="background:#18181b; border:1px solid #27272a; border-radius:8px; padding:14px; box-shadow:0 4px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);">
+          <div style="font-size:11px; color:#71717a; margin-bottom:4px;">ACTIVE EMPLOYEES</div>
+          <div style="font-size:22px; font-weight:700; color:#fafafa;">1,247</div>
+          <div style="font-size:11px; color:#a78bfa; margin-top:4px;">+12 this month</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Bordered Flat + Glow Accents</h3>
+      <p>Flat cards with crisp borders, no shadows. But active/important elements get a subtle violet glow. Minimal by default, dramatic when it matters.</p>
+      <div style="margin-top:14px; background:#09090b; padding:16px; border-radius:10px; display:flex; gap:8px;">
+        <div style="flex:1; background:#18181b; border:1px solid #27272a; border-radius:8px; padding:14px;">
+          <div style="font-size:11px; color:#71717a; margin-bottom:4px;">TOTAL</div>
+          <div style="font-size:22px; font-weight:700; color:#fafafa;">1,247</div>
+          <div style="font-size:11px; color:#71717a; margin-top:4px;">+12 this month</div>
+        </div>
+        <div style="flex:1; background:#18181b; border:1px solid #7c3aed50; border-radius:8px; padding:14px; box-shadow:0 0 16px #7c3aed15;">
+          <div style="font-size:11px; color:#a78bfa; margin-bottom:4px;">ALERTS</div>
+          <div style="font-size:22px; font-weight:700; color:#fafafa;">3</div>
+          <div style="font-size:11px; color:#ef4444; margin-top:4px;">Needs attention</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

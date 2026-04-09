@@ -24,8 +24,8 @@ Key columns: `employee_id`, `verified_at`, `method` (`photo`, `fingerprint`), `p
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `VerificationFailed` | Match below threshold | [[exception-engine]], [[notifications]] |
-| `VerificationCompleted` | Successful verification | [[workforce-presence]] |
+| `VerificationFailed` | Match below threshold | [[modules/exception-engine/overview|Exception Engine]], [[modules/notifications/overview|Notifications]] |
+| `VerificationCompleted` | Successful verification | [[modules/workforce-presence/overview|Workforce Presence]] |
 
 ## API Endpoints
 
@@ -36,13 +36,13 @@ Key columns: `employee_id`, `verified_at`, `method` (`photo`, `fingerprint`), `p
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[photo-verification/end-to-end-logic|Photo Verification — End-to-End Logic]]
-- [[photo-verification/testing|Photo Verification — Testing]]
-- [[biometric-enrollment/overview|Biometric Enrollment]]
-- [[verification-policies/overview|Verification Policies]]
-- [[data-classification]]
-- [[compliance]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[modules/identity-verification/photo-verification/end-to-end-logic|Photo Verification — End-to-End Logic]]
+- [[modules/identity-verification/photo-verification/testing|Photo Verification — Testing]]
+- [[frontend/architecture/overview|Biometric Enrollment]]
+- [[frontend/architecture/overview|Verification Policies]]
+- [[security/data-classification|Data Classification]]
+- [[security/compliance|Compliance]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

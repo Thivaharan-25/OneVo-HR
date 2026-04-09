@@ -105,8 +105,8 @@ GET /api/v1/job-titles?familyId={id}&levelId={id}
 
 ## Related
 
-- [[job-hierarchy|Overview]]
-- [[departments]]
-- [[legal-entities]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/org-structure/job-hierarchy/overview|Overview]]
+- [[modules/org-structure/departments/overview|Departments]]
+- [[modules/org-structure/legal-entities/overview|Legal Entities]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

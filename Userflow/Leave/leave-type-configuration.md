@@ -10,14 +10,14 @@
 
 - Tenant has been provisioned and is active
 - User has `leave:manage` permission assigned via their Job Family role
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Leave Type Configuration
 - **UI:** User navigates to Leave → Configuration → Leave Types. Sees a list of existing leave types (system defaults like Annual, Sick are pre-seeded)
 - **API:** `GET /api/v1/leave/types`
-- **Backend:** `LeaveTypeService.GetAllAsync()` → [[leave]]
+- **Backend:** `LeaveTypeService.GetAllAsync()` → [[modules/leave/overview|Leave]]
 - **Validation:** Checks `leave:manage` permission via RBAC middleware
 - **DB:** `leave_types` (filtered by `tenant_id`)
 
@@ -52,7 +52,7 @@
 ### Step 6: Save Leave Type
 - **UI:** Click "Save" button. Success toast shown. Redirected back to leave types list
 - **API:** `POST /api/v1/leave/types`
-- **Backend:** `LeaveTypeService.CreateAsync()` → [[leave]]
+- **Backend:** `LeaveTypeService.CreateAsync()` → [[modules/leave/overview|Leave]]
   1. Validates uniqueness of code within tenant
   2. Creates `leave_types` record with all configuration
   3. Publishes `LeaveTypeCreatedEvent`
@@ -85,18 +85,18 @@
 
 ## Events Triggered
 
-- `LeaveTypeCreatedEvent` → [[event-catalog]] — consumed by leave policy engine to make type available for policy assignment
-- `LeaveTypeUpdatedEvent` → [[event-catalog]] — consumed by entitlement recalculation service
-- `AuditLogEntry` (action: `leave_type.created`) → [[audit-logging]]
+- `LeaveTypeCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by leave policy engine to make type available for policy assignment
+- `LeaveTypeUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by entitlement recalculation service
+- `AuditLogEntry` (action: `leave_type.created`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[leave-policy-setup]] — create policies that reference these leave types
-- [[leave-entitlement-assignment]] — assign entitlements based on configured types
-- [[leave-request-submission]] — employees request leave using these types
+- [[Userflow/Leave/leave-policy-setup|Leave Policy Setup]] — create policies that reference these leave types
+- [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment]] — assign entitlements based on configured types
+- [[Userflow/Leave/leave-request-submission|Leave Request Submission]] — employees request leave using these types
 
 ## Module References
 
-- [[leave]] — leave module overview and architecture
-- [[leave-types]] — leave type data model and business rules
-- [[configuration]] — system-wide configuration patterns
+- [[modules/leave/overview|Leave]] — leave module overview and architecture
+- [[modules/leave/leave-types/overview|Leave Types]] — leave type data model and business rules
+- [[modules/configuration/overview|Configuration]] — system-wide configuration patterns

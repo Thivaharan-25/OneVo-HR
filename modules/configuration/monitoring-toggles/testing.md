@@ -37,6 +37,6 @@ public class MonitoringToggleServiceTests
 
 ## Related
 
-- [[configuration/monitoring-toggles/overview|Monitoring Toggles Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/architecture/overview|Monitoring Toggles Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

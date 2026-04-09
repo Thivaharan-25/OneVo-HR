@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Critical roles identified in org structure → [[job-family-setup]]
-- Employees have performance reviews and skill assessments → [[manager-review]], [[skill-assessment]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Critical roles identified in org structure → [[Userflow/Org-Structure/job-family-setup|Job Family Setup]]
+- Employees have performance reviews and skill assessments → [[Userflow/Performance/manager-review|Manager Review]], [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -20,16 +20,16 @@
 ### Step 2: Nominate Successors
 - **UI:** Search employees → add as potential successors → rate readiness: "Ready Now", "1-2 Years", "3-5 Years"
 - **API:** `POST /api/v1/performance/succession/nominees`
-- **Backend:** SuccessionService.NominateAsync() → [[succession-planning]]
+- **Backend:** SuccessionService.NominateAsync() → [[Userflow/Performance/succession-planning|Succession Planning]]
 - **DB:** `succession_plans`, `succession_nominees`
 
 ### Step 3: Gap Analysis
 - **UI:** View skill gaps between nominee and target role requirements → system highlights missing competencies
-- Links: [[skill-assessment]], [[employee-skills]]
+- Links: [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]], [[modules/skills/employee-skills/overview|Employee Skills]]
 
 ### Step 4: Create Development Actions
 - **UI:** For each nominee → assign development actions (training, mentoring, stretch assignments) → link to development plan → set milestones
-- Links: [[development-plan]], [[course-enrollment]]
+- Links: [[Userflow/Skills-Learning/development-plan|Development Plan]], [[Userflow/Skills-Learning/course-enrollment|Course Enrollment]]
 
 ### Step 5: Track and Review
 - **UI:** Review readiness quarterly → update status → succession pipeline dashboard shows coverage for all critical roles
@@ -43,17 +43,17 @@
 
 ## Events Triggered
 
-- `SuccessionNomineeAdded` → [[event-catalog]]
+- `SuccessionNomineeAdded` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[manager-review]]
-- [[skill-assessment]]
-- [[development-plan]]
-- [[employee-promotion]]
+- [[Userflow/Performance/manager-review|Manager Review]]
+- [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]]
+- [[Userflow/Skills-Learning/development-plan|Development Plan]]
+- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]]
 
 ## Module References
 
-- [[succession-planning]]
-- [[development-plans]]
-- [[goals-okr]]
+- [[Userflow/Performance/succession-planning|Succession Planning]]
+- [[modules/skills/development-plans/overview|Development Plans]]
+- [[modules/performance/goals-okr/overview|Goals Okr]]

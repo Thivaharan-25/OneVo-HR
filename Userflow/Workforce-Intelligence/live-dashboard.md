@@ -69,7 +69,7 @@
 - [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
 - [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
 - [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
-- [[Userflow/Exception-Engine/exception-dashboard|Exception Dashboard]]
+- [[Userflow/Exception-Engine/exception-dashboard|Alerts Overview]]
 
 ## Module References
 

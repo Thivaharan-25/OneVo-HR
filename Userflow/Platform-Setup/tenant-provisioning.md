@@ -10,7 +10,7 @@
 
 - Super admin access to the ONEVO platform management console
 - Valid business email and company registration details available
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -38,7 +38,7 @@
 ### Step 4: Submit and Provision Tenant
 - **UI:** Click "Provision Tenant" button. Loading spinner with progress steps shown: "Creating schema...", "Seeding defaults...", "Creating admin user..."
 - **API:** `POST /api/v1/admin/tenants`
-- **Backend:** `TenantProvisioningService.ProvisionAsync()` → [[infrastructure]]
+- **Backend:** `TenantProvisioningService.ProvisionAsync()` → [[modules/infrastructure/overview|Infrastructure]]
   1. Creates a new row in `tenants` table with status `provisioning`
   2. Executes database schema provisioning (applies all migrations for the new tenant schema using row-level security with `tenant_id`)
   3. Seeds default data: system roles (Super Admin, Employee), default permissions (all 90+), default leave types, default notification templates
@@ -49,7 +49,7 @@
 ### Step 5: Create First Admin User
 - **UI:** Form: Admin Email, Admin First Name, Admin Last Name. System auto-generates a temporary password
 - **API:** `POST /api/v1/admin/tenants/{tenantId}/first-admin`
-- **Backend:** `UserService.CreateAdminAsync()` → [[authentication]]
+- **Backend:** `UserService.CreateAdminAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
   1. Creates user record in `users` table
   2. Assigns the system "Super Admin" role (all permissions)
   3. Creates employee stub record linked to the user
@@ -73,7 +73,7 @@
 - Failed provisioning attempt logged in `audit_logs`
 
 ### When tenant has custom module selection
-- If `billing:manage` permission is also held, admin can pre-select which modules to enable via [[feature-flag-management|Feature Flags]]
+- If `billing:manage` permission is also held, admin can pre-select which modules to enable via [[Userflow/Platform-Setup/feature-flag-management|Feature Flags]]
 - Only selected modules' seed data is provisioned
 
 ## Error Scenarios
@@ -88,22 +88,22 @@
 
 ## Events Triggered
 
-- `TenantProvisionedEvent` → [[event-catalog]] — consumed by billing module to start trial period
-- `UserCreatedEvent` → [[event-catalog]] — consumed by notification module
-- `AuditLogEntry` (action: `tenant.provisioned`) → [[audit-logging]]
+- `TenantProvisionedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by billing module to start trial period
+- `UserCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by notification module
+- `AuditLogEntry` (action: `tenant.provisioned`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[billing-subscription]] — activate subscription after provisioning
-- [[sso-configuration]] — configure SSO for the new tenant
-- [[feature-flag-management]] — enable/disable modules
-- [[tenant-branding]] — customize look and feel
-- [[user-invitation]] — invite additional users
+- [[Userflow/Platform-Setup/billing-subscription|Billing Subscription]] — activate subscription after provisioning
+- [[Userflow/Platform-Setup/sso-configuration|Sso Configuration]] — configure SSO for the new tenant
+- [[Userflow/Platform-Setup/feature-flag-management|Feature Flag Management]] — enable/disable modules
+- [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — customize look and feel
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] — invite additional users
 
 ## Module References
 
-- [[infrastructure]] — multi-tenancy, schema provisioning
-- [[multi-tenancy]] — row-level security, tenant isolation
-- [[tenant-settings]] — default configuration values
-- [[authentication]] — first admin user creation
-- [[authorization]] — system roles and permissions seeding
+- [[modules/infrastructure/overview|Infrastructure]] — multi-tenancy, schema provisioning
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — row-level security, tenant isolation
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — default configuration values
+- [[frontend/cross-cutting/authentication|Authentication]] — first admin user creation
+- [[frontend/cross-cutting/authorization|Authorization]] — system roles and permissions seeding

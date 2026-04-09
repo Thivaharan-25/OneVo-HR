@@ -22,14 +22,28 @@ All endpoints require JWT Bearer token (except `/api/v1/auth/login`, `/api/v1/au
 Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
 ```
 
-### Authorization
+### Authorization (Hybrid Permission Control)
 
-Every endpoint must specify required permission:
+Every endpoint must specify required permission. Permissions are checked against the user's **effective permissions** (role + individual overrides, filtered by feature grants). Data is automatically scoped to the user's **org hierarchy** (they only see employees below them).
 
 ```csharp
 [HttpGet]
 [RequirePermission("employees:read")]
 public async Task<IResult> GetEmployees([AsParameters] PagedRequest request, CancellationToken ct)
+{
+    // IHierarchyScope is injected — queries are auto-scoped to subordinates
+    // Super Admin bypasses hierarchy scoping
+}
+```
+
+**Never hardcode role names.** Roles are custom — always check permissions or module grants:
+
+```csharp
+// WRONG
+if (currentUser.RoleName == "HR Manager") { ... }
+
+// RIGHT
+if (currentUser.HasPermission("employees:update")) { ... }
 ```
 
 ### Request/Response Format
@@ -268,8 +282,8 @@ POST   /api/v1/bridges/skills/{empId}            # Update skills from WorkManage
 
 ## Related
 
-- [[auth-architecture]] — JWT authentication and RBAC authorization
-- [[backend-standards]] — Minimal API endpoint conventions
-- [[module-catalog]] — module-specific API endpoints
-- [[multi-tenancy]] — tenant scoping for all API requests
-- [[external-integrations]] — WorkManage Pro bridge API contracts
+- [[security/auth-architecture|Auth Architecture]] — JWT authentication and RBAC authorization
+- [[code-standards/backend-standards|Backend Standards]] — Minimal API endpoint conventions
+- [[backend/module-catalog|Module Catalog]] — module-specific API endpoints
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant scoping for all API requests
+- [[backend/external-integrations|External Integrations]] — WorkManage Pro bridge API contracts

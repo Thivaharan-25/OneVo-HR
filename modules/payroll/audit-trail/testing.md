@@ -51,5 +51,5 @@ public class PayrollAuditServiceTests
 
 ## Related
 
-- [[payroll/audit-trail/overview|Audit Trail Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Audit Trail Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

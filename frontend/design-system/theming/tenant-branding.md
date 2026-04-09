@@ -6,7 +6,7 @@ Each tenant can override a subset of the design system to match their brand:
 
 | Token | Default | Customizable | Applied Via |
 |:------|:--------|:-------------|:------------|
-| Primary color | Brand blue (`222.2 84% 51%`) | Yes | CSS variable override |
+| Primary color | Violet Electric (`263.4 70% 50.4%`) | Yes | CSS variable override |
 | Primary foreground | White | Yes (auto-calculated) | CSS variable override |
 | Accent color | Derived from primary | Yes | CSS variable override |
 | Company logo | ONEVO logo | Yes | `<img>` src from tenant config |
@@ -30,7 +30,7 @@ Each tenant can override a subset of the design system to match their brand:
 
 ```typescript
 interface TenantBranding {
-  primaryColor: string;       // HSL: "222.2 84% 51%"
+  primaryColor: string;       // HSL: "263.4 70% 50.4%"
   accentColor?: string;       // HSL or null (auto-derive)
   logoUrl: string;            // URL to tenant logo
   logoDarkUrl?: string;       // Dark mode variant

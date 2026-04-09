@@ -25,10 +25,10 @@ Fields: `filed_by_id` (nullable if anonymous), `against_id`, `category` (`harass
 
 ## Related
 
-- [[grievance|Grievance Module]] — parent module
-- [[disciplinary-actions]] — actions that may result from resolved cases
-- [[multi-tenancy]] — tenant-scoped case isolation
-- [[auth-architecture]] — permissions: `grievance:write`, `grievance:manage`
-- [[data-classification]] — sensitive PII and anonymous reporting classification
-- [[compliance]] — regulatory requirements for grievance handling
-- [[WEEK4-supporting-bridges]] — implementation task
+- [[modules/grievance/overview|Grievance Module]] — parent module
+- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] — actions that may result from resolved cases
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped case isolation
+- [[security/auth-architecture|Auth Architecture]] — permissions: `grievance:write`, `grievance:manage`
+- [[security/data-classification|Data Classification]] — sensitive PII and anonymous reporting classification
+- [[security/compliance|Compliance]] — regulatory requirements for grievance handling
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task

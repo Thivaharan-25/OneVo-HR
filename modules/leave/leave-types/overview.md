@@ -34,11 +34,11 @@ Defines leave types per tenant (Annual, Sick, Maternity, etc.) with configuratio
 
 ## Related
 
-- [[leave|Leave Module]]
-- [[balance-audit]]
-- [[leave-entitlements]]
-- [[leave-policies]]
-- [[leave-requests]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[WEEK3-leave]]
+- [[modules/leave/overview|Leave Module]]
+- [[modules/leave/balance-audit/overview|Balance Audit]]
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]]
+- [[modules/leave/leave-policies/overview|Leave Policies]]
+- [[modules/leave/leave-requests/overview|Leave Requests]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[current-focus/DEV1-leave|DEV1: Leave]]

@@ -28,13 +28,13 @@ Key columns: `tenant_id`, `email` (UNIQUE per tenant), `password_hash` (bcrypt),
 
 ## Related
 
-- [[infrastructure|Infrastructure Module]]
-- [[file-management]]
-- [[reference-data]]
-- [[tenant-management]]
-- [[authentication]]
-- [[authorization]]
-- [[audit-logging]]
-- [[multi-tenancy]]
-- [[migration-patterns]]
-- [[WEEK1-infrastructure-setup]]
+- [[modules/infrastructure/overview|Infrastructure Module]]
+- [[modules/infrastructure/file-management/overview|File Management]]
+- [[modules/infrastructure/reference-data/overview|Reference Data]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV1-infrastructure-setup|DEV1: Infrastructure]]

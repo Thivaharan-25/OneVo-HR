@@ -36,9 +36,9 @@ GET /api/v1/workforce/device-sessions/{employeeId}?date=2026-04-05
 
 ## Related
 
-- [[device-sessions|Device Sessions Overview]]
-- [[presence-sessions]]
-- [[break-tracking]]
-- [[attendance-corrections]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/workforce-presence/device-sessions/overview|Device Sessions Overview]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[Userflow/Workforce-Presence/break-tracking|Break Tracking]]
+- [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -10,7 +10,7 @@ The ONEVO Desktop Agent is a Windows application that monitors employee activity
 | **MAUI Tray App** | `ONEVO.Agent.TrayApp` | System tray UI. Handles employee login/logout, photo capture for identity verification, status display. |
 | **Shared Library** | `ONEVO.Agent.Shared` | Shared types (IPC messages, models, constants) used by both Service and TrayApp. |
 
-The Service and TrayApp are separate processes that communicate via **Named Pipes** (IPC). See [[ipc-protocol]] for the full message contract.
+The Service and TrayApp are separate processes that communicate via **Named Pipes** (IPC). See [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] for the full message contract.
 
 ---
 
@@ -47,13 +47,13 @@ The Service and TrayApp are separate processes that communicate via **Named Pipe
 
 ### Step-by-Step Flow
 
-1. **Install** — MSIX package installs the Service + TrayApp. Service registers with the server via `POST /api/v1/agent/register`, receives a device JWT. See [[agent-installer]].
-2. **Employee Login** — Employee opens tray app, enters email + password. TrayApp sends `employee_login` IPC message to Service. Service calls `POST /api/v1/agent/login`, receives monitoring policy. See [[agent-server-protocol]].
-3. **Collectors Start** — Based on the received policy, the Service starts the enabled collectors (activity, app tracking, idle, meeting, device). See [[data-collection]].
-4. **Buffer Locally** — Collected data is written to the local SQLite buffer immediately. See [[sqlite-buffer]].
+1. **Install** — MSIX package installs the Service + TrayApp. Service registers with the server via `POST /api/v1/agent/register`, receives a device JWT. See [[modules/agent-gateway/agent-installer|Agent Installer]].
+2. **Employee Login** — Employee opens tray app, enters email + password. TrayApp sends `employee_login` IPC message to Service. Service calls `POST /api/v1/agent/login`, receives monitoring policy. See [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]].
+3. **Collectors Start** — Based on the received policy, the Service starts the enabled collectors (activity, app tracking, idle, meeting, device). See [[modules/agent-gateway/data-collection|Data Collection]].
+4. **Buffer Locally** — Collected data is written to the local SQLite buffer immediately. See [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]].
 5. **Sync to Server** — Every `snapshot_interval_seconds` (default 150s), the Sync Service reads unsent rows from the buffer, batches them, and sends via `POST /api/v1/agent/ingest`. Server returns 202 Accepted.
 6. **Heartbeat** — Every 60 seconds, the Service sends a heartbeat to `POST /api/v1/agent/heartbeat` with CPU usage, memory, buffer count, and any errors.
-7. **Identity Verification** — When the policy triggers a verification (login, interval, or logout), the Service sends `capture_photo` via IPC to the TrayApp. See [[photo-capture]].
+7. **Identity Verification** — When the policy triggers a verification (login, interval, or logout), the Service sends `capture_photo` via IPC to the TrayApp. See [[modules/identity-verification/photo-capture|Photo Capture]].
 8. **Employee Logout** — Employee clicks logout in TrayApp. Service calls `POST /api/v1/agent/logout`. Collectors stop. Service continues heartbeating.
 
 ---
@@ -65,19 +65,19 @@ Read these docs in this order to understand the full agent system:
 | # | Document | What You Learn |
 |:--|:---------|:---------------|
 | 1 | **This file** (`agent-overview`) | Architecture, data flow, setup |
-| 2 | [[agent-server-protocol]] | All 6 API endpoints (register, login, policy, heartbeat, ingest, logout) |
-| 3 | [[data-collection]] | 5 collectors with Win32 P/Invoke code samples |
-| 4 | [[ipc-protocol]] | Named Pipes messages between Service and TrayApp |
-| 5 | [[sqlite-buffer]] | Local SQLite schema, offline resilience, encryption |
-| 6 | [[tamper-resistance]] | Detection and reporting of service manipulation |
-| 7 | [[photo-capture]] | Camera capture and identity verification flow |
-| 8 | [[tray-app-ui]] | MAUI tray app UI: login, status, photo capture, notifications |
-| 9 | [[agent-installer]] | MSIX packaging, silent install, auto-update |
-| 10 | [[mock-mode]] | Development without a backend server |
+| 2 | [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] | All 6 API endpoints (register, login, policy, heartbeat, ingest, logout) |
+| 3 | [[modules/agent-gateway/data-collection|Data Collection]] | 5 collectors with Win32 P/Invoke code samples |
+| 4 | [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] | Named Pipes messages between Service and TrayApp |
+| 5 | [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] | Local SQLite schema, offline resilience, encryption |
+| 6 | [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] | Detection and reporting of service manipulation |
+| 7 | [[modules/identity-verification/photo-capture|Photo Capture]] | Camera capture and identity verification flow |
+| 8 | [[modules/agent-gateway/tray-app-ui|Tray App Ui]] | MAUI tray app UI: login, status, photo capture, notifications |
+| 9 | [[modules/agent-gateway/agent-installer|Agent Installer]] | MSIX packaging, silent install, auto-update |
+| 10 | [[modules/agent-gateway/mock-mode|Mock Mode]] | Development without a backend server |
 
 Also read:
-- [[rules]] (Section 10) — Privacy rules, performance budgets, coding standards
-- [[tech-stack]] (Section 4) — NuGet packages, Win32 APIs, project structure
+- [[AI_CONTEXT/rules|Rules]] (Section 10) — Privacy rules, performance budgets, coding standards
+- [[AI_CONTEXT/tech-stack|Tech Stack]] (Section 4) — NuGet packages, Win32 APIs, project structure
 
 ---
 
@@ -131,7 +131,7 @@ ONEVO.Agent/
     └── Package.appxmanifest
 ```
 
-Full structure also documented in [[tech-stack]] Section 4.
+Full structure also documented in [[AI_CONTEXT/tech-stack|Tech Stack]] Section 4.
 
 ---
 
@@ -185,7 +185,7 @@ dotnet run
 
 ### Development Without Backend
 
-Use [[mock-mode]] to develop the agent without needing the ONEVO backend server running. Set `"UseMockGateway": true` in `appsettings.Development.json`.
+Use [[modules/agent-gateway/mock-mode|Mock Mode]] to develop the agent without needing the ONEVO backend server running. Set `"UseMockGateway": true` in `appsettings.Development.json`.
 
 ### Key Configuration Files
 
@@ -199,7 +199,7 @@ Use [[mock-mode]] to develop the agent without needing the ONEVO backend server 
 
 ## Performance Budget
 
-From [[rules]] Section 10:
+From [[AI_CONTEXT/rules|Rules]] Section 10:
 
 | Metric | Limit |
 |:-------|:------|
@@ -213,16 +213,16 @@ From [[rules]] Section 10:
 
 ## Related
 
-- [[agent-server-protocol]] — Full API contract (6 endpoints)
-- [[data-collection]] — 5 collectors with code samples
-- [[tamper-resistance]] — Detection and reporting
-- [[photo-capture]] — Camera and identity verification flow
-- [[ipc-protocol]] — Named Pipes IPC between Service and TrayApp
-- [[sqlite-buffer]] — Local SQLite buffer schema and operations
-- [[agent-installer]] — MSIX packaging and deployment
-- [[mock-mode]] — Development without a backend
-- [[tray-app-ui]] — MAUI tray app UI
-- [[tech-stack]] — Full technology stack (Section 4: Desktop Agent)
-- [[rules]] — Desktop Agent rules (Section 10)
-- [[WEEK1-shared-platform]] — Implementation task
-- [[agent-gateway|Agent Gateway Module]] — Server-side module
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Full API contract (6 endpoints)
+- [[modules/agent-gateway/data-collection|Data Collection]] — 5 collectors with code samples
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Detection and reporting
+- [[modules/identity-verification/photo-capture|Photo Capture]] — Camera and identity verification flow
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — Named Pipes IPC between Service and TrayApp
+- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] — Local SQLite buffer schema and operations
+- [[modules/agent-gateway/agent-installer|Agent Installer]] — MSIX packaging and deployment
+- [[modules/agent-gateway/mock-mode|Mock Mode]] — Development without a backend
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — MAUI tray app UI
+- [[AI_CONTEXT/tech-stack|Tech Stack]] — Full technology stack (Section 4: Desktop Agent)
+- [[AI_CONTEXT/rules|Rules]] — Desktop Agent rules (Section 10)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task
+- [[modules/agent-gateway/overview|Agent Gateway Module]] — Server-side module

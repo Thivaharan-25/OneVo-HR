@@ -8,28 +8,28 @@
 
 ## Preconditions
 
-- Payroll provider configured → [[payroll-provider-setup]]
-- Tax rules set → [[tax-configuration]]
-- Employee compensation records exist → [[compensation-setup]]
-- Leave and attendance data up to date → [[leave-approval]], [[presence-session-view]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Payroll provider configured → [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
+- Tax rules set → [[Userflow/Payroll/tax-configuration|Tax Configuration]]
+- Employee compensation records exist → [[Userflow/Employee-Management/compensation-setup|Compensation Setup]]
+- Leave and attendance data up to date → [[Userflow/Leave/leave-approval|Leave Approval]], [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Create Payroll Run
 - **UI:** Payroll → Runs → "Create Run" → select pay period (e.g., March 2026) → select legal entity → click "Calculate"
 - **API:** `POST /api/v1/payroll/runs`
-- **Backend:** PayrollRunService.InitiateAsync() → [[payroll-execution]]
+- **Backend:** PayrollRunService.InitiateAsync() → [[modules/payroll/payroll-execution/overview|Payroll Execution]]
 
 ### Step 2: System Calculates (Automated via Hangfire)
 - **Backend:** For each employee in legal entity:
   1. **Gross Salary** = base salary (prorated if mid-month join/leave)
-  2. **+ Allowances** = housing + transport + meal + other → [[allowances]]
-  3. **+ Overtime** = approved overtime hours × overtime rate → [[overtime-management]]
-  4. **+ Expense Reimbursements** = approved expense claims → [[expense-approval]]
-  5. **- Unpaid Leave** = unpaid leave days × daily rate → [[leave-approval]]
-  6. **- Tax** = income tax from brackets → [[tax-configuration]]
-  7. **- Pension (employee)** = contribution % → [[pension-configuration]]
+  2. **+ Allowances** = housing + transport + meal + other → [[modules/payroll/allowances/overview|Allowances]]
+  3. **+ Overtime** = approved overtime hours × overtime rate → [[Userflow/Workforce-Presence/overtime-management|Overtime Management]]
+  4. **+ Expense Reimbursements** = approved expense claims → [[Userflow/Expense/expense-approval|Expense Approval]]
+  5. **- Unpaid Leave** = unpaid leave days × daily rate → [[Userflow/Leave/leave-approval|Leave Approval]]
+  6. **- Tax** = income tax from brackets → [[Userflow/Payroll/tax-configuration|Tax Configuration]]
+  7. **- Pension (employee)** = contribution % → [[Userflow/Payroll/pension-configuration|Pension Configuration]]
   8. **- Other deductions** = loans, advances, disciplinary
   9. **= Net Pay**
   10. **Employer costs** = employer pension + employer social security
@@ -51,9 +51,9 @@
 
 ### Step 6: Post-Approval Processing
 - **Backend:**
-  1. Payslips generated (PDF) per employee → [[document-management]]
-  2. Employees notified → [[notification-system]]
-  3. Provider sync triggered (if external provider) → [[payroll-provider-setup]]
+  1. Payslips generated (PDF) per employee → [[modules/documents/document-management/overview|Document Management]]
+  2. Employees notified → [[backend/notification-system|Notification System]]
+  3. Provider sync triggered (if external provider) → [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
   4. Accounting entries created
   5. Bank file generated for payment processing
 
@@ -76,25 +76,25 @@
 
 ## Events Triggered
 
-- `PayrollRunCreated` → [[event-catalog]]
-- `PayrollRunApproved` → [[event-catalog]]
-- `PayslipGenerated` → [[event-catalog]]
-- Notifications to employees → [[notification-system]]
+- `PayrollRunCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `PayrollRunApproved` → [[backend/messaging/event-catalog|Event Catalog]]
+- `PayslipGenerated` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notifications to employees → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[payroll-provider-setup]] — provider configuration
-- [[tax-configuration]] — tax rules
-- [[allowance-setup]] — allowance types
-- [[pension-configuration]] — pension deductions
-- [[payroll-adjustment]] — post-run corrections
-- [[payslip-view]] — employee views result
+- [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]] — provider configuration
+- [[Userflow/Payroll/tax-configuration|Tax Configuration]] — tax rules
+- [[Userflow/Payroll/allowance-setup|Allowance Setup]] — allowance types
+- [[Userflow/Payroll/pension-configuration|Pension Configuration]] — pension deductions
+- [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]] — post-run corrections
+- [[Userflow/Payroll/payslip-view|Payslip View]] — employee views result
 
 ## Module References
 
-- [[payroll-execution]]
-- [[payroll-providers]]
-- [[tax-configuration]]
-- [[allowances]]
-- [[pensions]]
-- [[notification-system]]
+- [[modules/payroll/payroll-execution/overview|Payroll Execution]]
+- [[modules/payroll/payroll-providers/overview|Payroll Providers]]
+- [[Userflow/Payroll/tax-configuration|Tax Configuration]]
+- [[modules/payroll/allowances/overview|Allowances]]
+- [[modules/payroll/pensions/overview|Pensions]]
+- [[backend/notification-system|Notification System]]

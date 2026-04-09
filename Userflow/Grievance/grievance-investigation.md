@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Grievance case filed → [[grievance-filing]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Grievance case filed → [[Userflow/Grievance/grievance-filing|Grievance Filing]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -38,7 +38,7 @@
 ## Variations
 
 ### Escalation to disciplinary
-- If outcome = disciplinary → [[disciplinary-action]] triggered
+- If outcome = disciplinary → [[Userflow/Grievance/disciplinary-action|Disciplinary Action]] triggered
 
 ## Error Scenarios
 
@@ -49,16 +49,16 @@
 
 ## Events Triggered
 
-- `GrievanceInvestigationStarted` → [[event-catalog]]
-- `GrievanceResolved` → [[event-catalog]]
-- Notifications to parties → [[notification-system]]
+- `GrievanceInvestigationStarted` → [[backend/messaging/event-catalog|Event Catalog]]
+- `GrievanceResolved` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notifications to parties → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[grievance-filing]]
-- [[disciplinary-action]]
+- [[Userflow/Grievance/grievance-filing|Grievance Filing]]
+- [[Userflow/Grievance/disciplinary-action|Disciplinary Action]]
 
 ## Module References
 
-- [[grievance]]
-- [[audit-logging]]
+- [[modules/grievance/overview|Grievance]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]

@@ -1,6 +1,6 @@
 # Event Catalog: ONEVO
 
-All domain events published and consumed across modules. Phase 1 uses in-process MediatR `INotification` (see [[exchange-topology]]); future phases migrate to RabbitMQ for scale. See [[error-handling]] for retry and idempotency patterns.
+All domain events published and consumed across modules. Phase 1 uses in-process MediatR `INotification` (see [[backend/messaging/exchange-topology|Exchange Topology]]); future phases migrate to RabbitMQ for scale. See [[backend/messaging/error-handling|Error Handling]] for retry and idempotency patterns.
 
 ## Event Format
 
@@ -164,16 +164,16 @@ public abstract record DomainEvent
 
 ## Related
 
-- [[module-boundaries]]
-- [[exchange-topology]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[core-hr]]
-- [[leave]]
-- [[payroll]]
-- [[attendance]]
-- [[expense]]
-- [[notifications]]
-- [[workforce-presence]]
-- [[activity-monitoring]]
-- [[exception-engine]]
+- [[backend/module-boundaries|Module Boundaries]]
+- [[backend/messaging/exchange-topology|Exchange Topology]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[modules/core-hr/overview|Core Hr]]
+- [[modules/leave/overview|Leave]]
+- [[modules/payroll/overview|Payroll]]
+- [[modules/workforce-presence/overview|Workforce Presence]]
+- [[modules/expense/overview|Expense]]
+- [[modules/notifications/overview|Notifications]]
+- [[modules/workforce-presence/overview|Workforce Presence]]
+- [[modules/activity-monitoring/overview|Activity Monitoring]]
+- [[modules/exception-engine/overview|Exception Engine]]

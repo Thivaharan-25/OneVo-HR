@@ -29,11 +29,11 @@ Required skills per job family: `job_family_id`, `skill_id`, `min_proficiency`, 
 ## Related
 
 - [[skills|Skills Module]] — parent module
-- [[employee-skills]] — skills from taxonomy assigned to employees
-- [[skill-assessments]] — assessments built around taxonomy skills
-- [[courses-learning]] — courses tagged to taxonomy skills
-- [[development-plans]] — plan milestones targeting taxonomy skills
-- [[multi-tenancy]] — tenant-scoped skill categories and definitions
-- [[event-catalog]] — SkillCreated, SkillDeactivated events
-- [[error-handling]] — duplicate skill name and category integrity errors
-- [[WEEK4-supporting-bridges]] — implementation task
+- [[modules/skills/employee-skills/overview|Employee Skills]] — skills from taxonomy assigned to employees
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] — assessments built around taxonomy skills
+- [[modules/skills/courses-learning/overview|Courses Learning]] — courses tagged to taxonomy skills
+- [[modules/skills/development-plans/overview|Development Plans]] — plan milestones targeting taxonomy skills
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped skill categories and definitions
+- [[backend/messaging/event-catalog|Event Catalog]] — SkillCreated, SkillDeactivated events
+- [[backend/messaging/error-handling|Error Handling]] — duplicate skill name and category integrity errors
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task

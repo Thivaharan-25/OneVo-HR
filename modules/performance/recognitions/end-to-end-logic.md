@@ -24,8 +24,8 @@ POST /api/v1/performance/recognitions
 
 ## Related
 
-- [[recognitions|Recognitions Overview]]
-- [[reviews]]
-- [[feedback]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/performance/recognitions/overview|Recognitions Overview]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[modules/performance/feedback/overview|Feedback]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

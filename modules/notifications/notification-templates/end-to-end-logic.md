@@ -32,8 +32,8 @@ Notification Pipeline (when domain event fires):
 
 ## Related
 
-- [[notifications/notification-templates/overview|Notification Templates Overview]]
-- [[notifications/notification-channels/overview|Notification Channels]]
-- [[notifications/signalr-real-time/overview|SignalR Real-Time]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Notification Templates Overview]]
+- [[frontend/architecture/overview|Notification Channels]]
+- [[frontend/architecture/overview|SignalR Real-Time]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

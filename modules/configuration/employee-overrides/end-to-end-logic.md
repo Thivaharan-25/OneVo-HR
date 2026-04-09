@@ -47,7 +47,7 @@ POST /api/v1/settings/monitoring/overrides/bulk
 
 ## Related
 
-- [[configuration/employee-overrides/overview|Employee Overrides Overview]]
-- [[configuration/monitoring-toggles/overview|Monitoring Toggles]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Employee Overrides Overview]]
+- [[frontend/architecture/overview|Monitoring Toggles]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

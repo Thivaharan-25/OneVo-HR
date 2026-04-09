@@ -51,12 +51,12 @@ Optional periodic screenshot capture. **RESTRICTED data classification.** Screen
 
 ## Related
 
-- [[activity-monitoring|Activity Monitoring Module]]
-- [[screenshots/end-to-end-logic|Screenshots — End-to-End Logic]]
-- [[screenshots/testing|Screenshots — Testing]]
-- [[raw-data-processing/overview|Raw Data Processing]]
-- [[data-classification]]
-- [[retention-policies]]
-- [[logging-standards]]
-- [[multi-tenancy]]
-- [[WEEK3-activity-monitoring]]
+- [[modules/activity-monitoring/overview|Activity Monitoring Module]]
+- [[modules/activity-monitoring/screenshots/end-to-end-logic|Screenshots — End-to-End Logic]]
+- [[modules/activity-monitoring/screenshots/testing|Screenshots — Testing]]
+- [[frontend/architecture/overview|Raw Data Processing]]
+- [[security/data-classification|Data Classification]]
+- [[modules/configuration/retention-policies/overview|Retention Policies]]
+- [[code-standards/logging-standards|Logging Standards]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

@@ -18,13 +18,13 @@ Optional MFA support for enhanced security.
 
 ## Related
 
-- [[auth|Auth Module]]
-- [[authentication]]
-- [[authorization]]
-- [[session-management]]
-- [[audit-logging]]
-- [[gdpr-consent]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[WEEK1-auth-security]]
+- [[modules/auth/overview|Auth Module]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[modules/auth/session-management/overview|Session Management]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[current-focus/DEV2-auth-security|DEV2: Auth Security]]

@@ -51,6 +51,6 @@ public class ReferenceDataServiceTests
 
 ## Related
 
-- [[reference-data|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/infrastructure/reference-data/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

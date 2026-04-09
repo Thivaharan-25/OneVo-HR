@@ -311,7 +311,7 @@ public class BufferCleanup
 
 ## Encryption at Rest
 
-The SQLite database contains activity data classified as **CONFIDENTIAL** (see [[data-classification]]). It is protected using Windows DPAPI.
+The SQLite database contains activity data classified as **CONFIDENTIAL** (see [[security/data-classification|Data Classification]]). It is protected using Windows DPAPI.
 
 ```csharp
 // Approach: Encrypt the entire DB file path using DPAPI
@@ -442,17 +442,17 @@ public class DataSyncService : BackgroundService
 }
 ```
 
-See [[agent-server-protocol]] for the ingest endpoint payload format and [[data-collection]] for what each collector writes to the buffer.
+See [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] for the ingest endpoint payload format and [[modules/agent-gateway/data-collection|Data Collection]] for what each collector writes to the buffer.
 
 ---
 
 ## Related
 
-- [[agent-overview]] — Architecture overview and data flow
-- [[data-collection]] — Collectors that write to the buffer (includes buffer schema)
-- [[agent-server-protocol]] — Ingest endpoint that receives buffered data
-- [[tamper-resistance]] — Uses buffer timestamps for gap detection
-- [[mock-mode]] — Mock mode still uses the real SQLite buffer
-- [[rules]] — Section 10: Buffer size limit (100MB), performance budgets
-- [[data-classification]] — Activity data classification
-- [[WEEK1-shared-platform]] — Implementation task
+- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview and data flow
+- [[modules/agent-gateway/data-collection|Data Collection]] — Collectors that write to the buffer (includes buffer schema)
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Ingest endpoint that receives buffered data
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Uses buffer timestamps for gap detection
+- [[modules/agent-gateway/mock-mode|Mock Mode]] — Mock mode still uses the real SQLite buffer
+- [[AI_CONTEXT/rules|Rules]] — Section 10: Buffer size limit (100MB), performance budgets
+- [[security/data-classification|Data Classification]] — Activity data classification
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task

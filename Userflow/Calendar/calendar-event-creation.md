@@ -8,7 +8,7 @@
 
 ## Preconditions
 
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -20,8 +20,8 @@
 - **UI:** Enter: title, description → select type (Meeting, Holiday, Training, Company Event, Out of Office) → set date, start/end time → set recurrence (none, daily, weekly, monthly)
 
 ### Step 3: Add Participants
-- **UI:** Search and add employees → check conflicts → [[conflict-detection]]
-- **Backend:** CalendarService.CreateEventAsync() → [[calendar-events]]
+- **UI:** Search and add employees → check conflicts → [[Userflow/Calendar/conflict-detection|Conflict Detection]]
+- **Backend:** CalendarService.CreateEventAsync() → [[modules/calendar/calendar-events/overview|Calendar Events]]
 - **DB:** `calendar_events`, `calendar_event_participants`
 
 ### Step 4: Save & Notify
@@ -41,15 +41,15 @@
 
 ## Events Triggered
 
-- `CalendarEventCreated` → [[event-catalog]]
-- Notification to participants → [[notification-system]]
+- `CalendarEventCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to participants → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[conflict-detection]]
-- [[leave-request-submission]]
+- [[Userflow/Calendar/conflict-detection|Conflict Detection]]
+- [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
 
 ## Module References
 
-- [[calendar-events]]
-- [[calendar]]
+- [[modules/calendar/calendar-events/overview|Calendar Events]]
+- [[modules/calendar/overview|Calendar]]

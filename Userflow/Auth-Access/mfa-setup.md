@@ -16,7 +16,7 @@
 ### Step 1: Navigate to Security Settings
 - **UI:** Click user avatar (top-right) > "Security Settings" or navigate to Profile > Security tab. Page shows: Password section (last changed date, "Change Password" button), MFA section (status: Enabled/Disabled), Active Sessions list
 - **API:** `GET /api/v1/users/me/security`
-- **Backend:** `UserSecurityService.GetSecuritySettingsAsync()` → [[authentication]]
+- **Backend:** `UserSecurityService.GetSecuritySettingsAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
 - **Validation:** Authenticated user only (JWT required)
 - **DB:** `users`, `user_mfa_settings`, `sessions`
 
@@ -113,7 +113,7 @@
 - New codes displayed for download/saving
 
 ### When using a backup code during login
-- During [[login-flow|login]], on MFA screen, click "Use backup code"
+- During [[Userflow/Auth-Access/login-flow|login]], on MFA screen, click "Use backup code"
 - Enter 8-character backup code instead of TOTP code
 - Code validated against stored hashes, marked as used
 - Warning shown: "You have X backup codes remaining. Consider regenerating if running low"
@@ -130,19 +130,19 @@
 
 ## Events Triggered
 
-- `MfaEnabledEvent` → [[event-catalog]] — consumed by audit logging and notification module
-- `MfaDisabledEvent` → [[event-catalog]] — consumed by audit logging and security alerting
-- `AuditLogEntry` (action: `mfa.enabled`, `mfa.disabled`, `mfa.reset`) → [[audit-logging]]
+- `MfaEnabledEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging and notification module
+- `MfaDisabledEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging and security alerting
+- `AuditLogEntry` (action: `mfa.enabled`, `mfa.disabled`, `mfa.reset`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[login-flow]] — MFA verification during login
-- [[password-reset]] — password reset does not disable MFA
-- [[user-invitation]] — MFA can be enforced from first login
+- [[Userflow/Auth-Access/login-flow|Login Flow]] — MFA verification during login
+- [[Userflow/Auth-Access/password-reset|Password Reset]] — password reset does not disable MFA
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] — MFA can be enforced from first login
 
 ## Module References
 
 - [[mfa]] — TOTP implementation, backup codes
-- [[authentication]] — integration with login flow
-- [[session-management]] — session handling after MFA verification
-- [[configuration]] — tenant-level MFA policy
+- [[frontend/cross-cutting/authentication|Authentication]] — integration with login flow
+- [[modules/auth/session-management/overview|Session Management]] — session handling after MFA verification
+- [[modules/configuration/overview|Configuration]] — tenant-level MFA policy

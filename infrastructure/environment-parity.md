@@ -71,10 +71,10 @@ dotnet run --project src/ONEVO.Api
 
 ## Related
 
-- [[ci-cd-pipeline]] — build and deploy pipeline
-- [[multi-tenancy]] — RLS setup in Docker
-- [[migration-patterns]] — running migrations locally
-- [[tech-stack]] — all infrastructure components
+- [[infrastructure/ci-cd-pipeline|Ci Cd Pipeline]] — build and deploy pipeline
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — RLS setup in Docker
+- [[database/migration-patterns|Migration Patterns]] — running migrations locally
+- [[AI_CONTEXT/tech-stack|Tech Stack]] — all infrastructure components
 
 ## Seed Data (Development)
 
@@ -92,5 +92,5 @@ Using Bogus library for realistic fake data:
 
 ## Related
 
-- [[ci-cd-pipeline]]
-- [[multi-tenancy]]
+- [[infrastructure/ci-cd-pipeline|Ci Cd Pipeline]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]

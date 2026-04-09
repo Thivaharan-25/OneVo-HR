@@ -38,5 +38,5 @@ public class IntegrationServiceTests
 
 ## Related
 
-- [[configuration/integrations/overview|Integrations Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Integrations Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

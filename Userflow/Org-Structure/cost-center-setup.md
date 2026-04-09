@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Department(s) exist → [[department-hierarchy]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Department(s) exist → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -38,15 +38,15 @@
 
 ## Events Triggered
 
-- `CostCenterCreated` → [[event-catalog]]
+- `CostCenterCreated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[department-hierarchy]]
-- [[payroll-run-execution]]
-- [[expense-claim-submission]]
+- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
+- [[Userflow/Expense/expense-claim-submission|Expense Claim Submission]]
 
 ## Module References
 
-- [[cost-centers]]
-- [[org-structure]]
+- [[modules/org-structure/cost-centers/overview|Cost Centers]]
+- [[modules/org-structure/overview|Org Structure]]

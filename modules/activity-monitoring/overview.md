@@ -1,16 +1,17 @@
 # Module: Activity Monitoring
 
 **Namespace:** `ONEVO.Modules.ActivityMonitoring`
+**Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 3 (Week 3)
 **Tables:** 8
-**Task File:** [[WEEK3-activity-monitoring]]
+**Task File:** [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]
 
 ---
 
 ## Purpose
 
-Receives, stores, and aggregates employee activity data from the desktop agent. Tracks application usage, keyboard/mouse intensity, idle periods, meeting detection, and optional screenshots. Produces daily summaries consumed by [[productivity-analytics]] and [[exception-engine]].
+Receives, stores, and aggregates employee activity data from the desktop agent. Tracks application usage, keyboard/mouse intensity, idle periods, meeting detection, and optional screenshots. Produces daily summaries consumed by [[modules/productivity-analytics/overview|Productivity Analytics]] and [[modules/exception-engine/overview|Exception Engine]].
 
 **This module is append-only for time-series tables.** Never UPDATE rows in `activity_snapshots`, `application_usage`, or `activity_raw_buffer`.
 
@@ -20,12 +21,13 @@ Receives, stores, and aggregates employee activity data from the desktop agent. 
 
 | Direction       | Module                     | Interface                    | Purpose                             |
 | :-------------- | :------------------------- | :--------------------------- | :---------------------------------- |
-| **Depends on**  | [[infrastructure]]         | `ITenantContext`             | Multi-tenancy                       |
-| **Depends on**  | [[core-hr]]                | `IEmployeeService`           | Employee/department context         |
-| **Depends on**  | [[configuration]]          | `IConfigurationService`      | Feature toggles, retention policies |
-| **Consumed by** | [[exception-engine]]       | `IActivityMonitoringService` | Latest activity for rule evaluation |
-| **Consumed by** | [[productivity-analytics]] | `IActivityMonitoringService` | Daily summaries for reports         |
-| **Consumed by** | [[performance]]            | `IActivityMonitoringService` | Optional productivity scores        |
+| **Depends on**  | [[modules/infrastructure/overview|Infrastructure]]         | `ITenantContext`             | Multi-tenancy                       |
+| **Depends on**  | [[modules/core-hr/overview|Core Hr]]                | `IEmployeeService`           | Employee/department context         |
+| **Depends on**  | [[modules/configuration/overview|Configuration]]          | `IConfigurationService`      | Feature toggles, retention policies, app allowlist |
+| **Depends on**  | [[modules/workforce-presence/overview|Workforce Presence]]     | `IWorkforcePresenceService`  | Presence window validation (only process data within active sessions) |
+| **Consumed by** | [[modules/exception-engine/overview|Exception Engine]]       | `IActivityMonitoringService` | Latest activity for rule evaluation |
+| **Consumed by** | [[modules/productivity-analytics/overview|Productivity Analytics]] | `IActivityMonitoringService` | Daily summaries for reports         |
+| **Consumed by** | [[database/performance|Performance]]            | `IActivityMonitoringService` | Optional productivity scores        |
 
 ---
 
@@ -49,7 +51,7 @@ public interface IActivityMonitoringService
 
 ### `activity_raw_buffer`
 
-Temporary high-volume buffer. Data arrives from [[agent-gateway]], sits here until processed.
+Temporary high-volume buffer. Data arrives from [[modules/agent-gateway/overview|Agent Gateway]], sits here until processed.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -103,8 +105,9 @@ Time per application per day.
 | `window_title_hash` | `varchar(64)` | SHA-256 hash (privacy — never store raw title) |
 | `total_seconds` | `int` | Time spent |
 | `is_productive` | `boolean` | Nullable — from `application_categories` |
+| `is_allowed` | `boolean` | Nullable — from resolved app allowlist. `false` = violation logged |
 
-**Indexes:** `(tenant_id, employee_id, date)`, `(tenant_id, date, application_category)`
+**Indexes:** `(tenant_id, employee_id, date)`, `(tenant_id, date, application_category)`, `(tenant_id, employee_id, date, is_allowed)` (for violation queries)
 
 ### `meeting_sessions`
 
@@ -136,7 +139,7 @@ Optional periodic screenshots. **RESTRICTED data classification.**
 | `employee_id` | `uuid` | FK → employees |
 | `captured_at` | `timestamptz` | |
 | `file_record_id` | `uuid` | FK → file_records (blob storage) |
-| `trigger_type` | `varchar(20)` | `scheduled`, `random`, `manual` |
+| `trigger_type` | `varchar(20)` | `scheduled`, `random`, `manual`, `on_demand` |
 | `created_at` | `timestamptz` | |
 
 **Screenshots are stored in blob storage, NOT in the database.** Only metadata lives here.
@@ -199,9 +202,10 @@ Device interaction tracking per day.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `ActivitySnapshotReceived` | Raw data processed into snapshot | [[exception-engine]] (evaluate rules) |
-| `DailySummaryAggregated` | Daily summary job completes | [[productivity-analytics]] (build reports) |
+| `ActivitySnapshotReceived` | Raw data processed into snapshot | [[modules/exception-engine/overview|Exception Engine]] (evaluate rules) |
+| `DailySummaryAggregated` | Daily summary job completes | [[modules/productivity-analytics/overview|Productivity Analytics]] (build reports) |
 | `ScreenshotCaptured` | Screenshot stored | Audit trail |
+| `AppAllowlistViolationDetected` | Employee used non-allowed app exceeding threshold | [[modules/exception-engine/overview|Exception Engine]] (fire `non_allowed_app` rule) |
 
 ---
 
@@ -212,6 +216,9 @@ Device interaction tracking per day.
 3. **Never log activity content** — log activity COUNTS (keyboard_events_count, mouse_events_count) but NEVER window titles, application names, or screenshot contents.
 4. **Feature toggle check:** Before processing any data, verify the feature is enabled for this employee via `IConfigurationService`. The desktop agent checks policy on login, but the **server must double-validate**.
 5. **Intensity score formula:** `(keyboard_events_count + mouse_events_count) / max_expected_events * 100`, capped at 100.
+6. **Presence-window validation:** Only process activity snapshots that fall within an active presence session. Snapshots outside clock-in/clock-out or during breaks are discarded with a warning log. See [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]].
+7. **App allowlist check:** During `ProcessRawBufferJob`, each `app_usage` record is checked against the employee's resolved allowlist (via `IConfigurationService.GetResolvedAppAllowlistAsync`). The `is_allowed` flag is set on `application_usage`. If cumulative non-allowed usage exceeds the tenant's `violation_threshold_minutes`, publish `AppAllowlistViolationDetected` event.
+8. **Break time exclusion:** Activity data received during break periods is discarded. The `total_active_minutes` and `total_idle_minutes` in `activity_daily_summary` only count time within active presence windows (excluding breaks).
 
 ---
 
@@ -221,12 +228,17 @@ Device interaction tracking per day.
 Agent → Agent Gateway (202 Accepted)
   → activity_raw_buffer (COPY/unnest, partitioned daily)
   → ProcessRawBufferJob (Hangfire, every 2 min)
-    → activity_snapshots (parsed, validated)
-    → application_usage (aggregated per app)
-    → meeting_sessions (if meeting app detected)
-    → device_tracking (daily rollup)
+    → 1. Presence-window validation: check snapshot falls within active presence session
+       → Outside session or during break → discard with warning log
+    → 2. activity_snapshots (parsed, validated)
+    → 3. application_usage (aggregated per app)
+       → Check each app against resolved allowlist → set is_allowed flag
+       → If cumulative non-allowed > threshold → publish AppAllowlistViolationDetected
+    → 4. meeting_sessions (if meeting app detected)
+    → 5. device_tracking (daily rollup)
   → AggregateDailySummaryJob (Hangfire, every 30 min during work hours + end of day)
     → activity_daily_summary (INSERT or UPDATE on conflict)
+    → Only counts minutes within active presence windows (excludes breaks)
 ```
 
 ---
@@ -244,6 +256,10 @@ Agent → Agent Gateway (202 Accepted)
 | GET | `/api/v1/activity/categories` | `monitoring:view-settings` | Application categories |
 | POST | `/api/v1/activity/categories` | `monitoring:configure` | Create/update app category |
 | DELETE | `/api/v1/activity/categories/{id}` | `monitoring:configure` | Delete app category |
+| GET | `/api/v1/activity/my/summary` | `activity:read:self` | Employee's own daily summary (self-service) |
+| GET | `/api/v1/activity/my/apps` | `activity:read:self` | Employee's own app usage breakdown |
+| GET | `/api/v1/activity/my/trends` | `activity:read:self` | Employee's own weekly/monthly trends |
+| GET | `/api/v1/activity/my/meetings` | `activity:read:self` | Employee's own meeting sessions |
 
 ---
 
@@ -264,28 +280,47 @@ Agent → Agent Gateway (202 Accepted)
 - **Data volume:** 240 rows/employee/day in snapshots. Plan queries with `tenant_id + date range` always.
 - **Raw buffer is NOT for reporting.** It's a temporary staging area.
 - **Retention tiers:** Raw buffer (48h) → Snapshots (90 days) → Daily summaries (2 years).
-- **This module does NOT determine presence** — that's [[workforce-presence]]. This module tracks what the employee is doing while present.
+- **This module does NOT determine presence** — that's [[modules/workforce-presence/overview|Workforce Presence]]. This module tracks what the employee is doing while present.
 
 ## Features
 
-- [[screenshots]] — Optional periodic screenshot capture (RESTRICTED data)
-- [[meeting-detection]] — Meeting time tracking via process name matching
-- [[application-tracking]] — Application usage categorization and time tracking
-- [[raw-data-processing]] — Buffer ingestion and snapshot parsing pipeline
-- [[device-tracking]] — Device interaction tracking per day
-- [[daily-aggregation]] — Pre-aggregated daily rollup jobs
+- [[modules/activity-monitoring/screenshots/overview|Screenshots]] — Optional periodic screenshot capture (RESTRICTED data)
+- [[modules/activity-monitoring/meeting-detection/overview|Meeting Detection]] — Meeting time tracking via process name matching
+- [[modules/activity-monitoring/application-tracking/overview|Application Tracking]] — Application usage categorization and time tracking
+- [[modules/activity-monitoring/raw-data-processing/overview|Raw Data Processing]] — Buffer ingestion and snapshot parsing pipeline
+- [[modules/activity-monitoring/device-tracking/overview|Device Tracking]] — Device interaction tracking per day
+- [[modules/activity-monitoring/daily-aggregation/overview|Daily Aggregation]] — Pre-aggregated daily rollup jobs
+- App Allowlist Check — Checks app usage against resolved allowlist during processing, flags violations
+- Self Service Api — Employee-facing API endpoints for viewing own activity data (`activity:read:self` permission)
+- Presence Window Validation — Validates snapshots fall within active presence sessions, discards break-time data
 
 ---
 
 ## Related
 
-- [[auth-architecture]] — Device JWT for agent data ingestion
-- [[multi-tenancy]] — All activity tables are tenant-scoped
-- [[data-classification]] — Window titles hashed (SHA-256), screenshots are RESTRICTED
-- [[compliance]] — Monitoring consent required before processing
-- [[event-catalog]] — `ActivitySnapshotReceived`, `DailySummaryAggregated`, `ScreenshotCaptured`
-- [[logging-standards]] — Log activity counts only, never content
-- [[migration-patterns]] — Partitioned tables via pg_partman
-- [[WEEK3-activity-monitoring]] — Implementation task file
+- [[security/auth-architecture|Auth Architecture]] — Device JWT for agent data ingestion
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All activity tables are tenant-scoped
+- [[security/data-classification|Data Classification]] — Window titles hashed (SHA-256), screenshots are RESTRICTED
+- [[security/compliance|Compliance]] — Monitoring consent required before processing
+- [[backend/messaging/event-catalog|Event Catalog]] — `ActivitySnapshotReceived`, `DailySummaryAggregated`, `ScreenshotCaptured`
+- [[code-standards/logging-standards|Logging Standards]] — Log activity counts only, never content
+- [[database/migration-patterns|Migration Patterns]] — Partitioned tables via pg_partman
+- [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]] — Implementation task file
 
-See also: [[module-catalog]], [[agent-gateway]], [[workforce-presence]], [[exception-engine]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/agent-gateway/overview|Agent Gateway]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/exception-engine/overview|Exception Engine]]
+
+---
+
+## Phase 2 Features (Do NOT Build)
+
+> [!WARNING]
+> The following features are deferred to Phase 2. Do not implement them. Specs are preserved here for future reference.
+
+### Microsoft Teams Graph API Integration
+Phase 1 uses basic process name matching (`Teams.exe`, `zoom.exe`) for meeting detection. Phase 2 will integrate with the Microsoft Teams Graph API for rich meeting analytics: participant lists, meeting duration from calendar, audio/video participation status, screen sharing detection. This requires Azure AD app registration and tenant-level Graph API consent.
+
+### Screen Recording
+Phase 2 will add continuous or triggered screen recording as a data collection type alongside screenshots. This requires significant storage planning, employee consent flows, and retention policy updates.
+
+### AI-Powered Activity Classification
+Phase 2 may add ML-based classification of productive vs. non-productive activity based on app usage patterns, rather than relying on manual `application_categories` configuration.

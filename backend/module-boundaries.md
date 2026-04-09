@@ -95,16 +95,16 @@ public class MarkLeaveInAttendanceHandler : INotificationHandler<LeaveApprovedEv
 
 ### Rule 5: Shared Kernel is Minimal
 
-`ONEVO.SharedKernel` contains ONLY (see [[shared-kernel]] for full details):
+`ONEVO.SharedKernel` contains ONLY (see [[backend/shared-kernel|Shared Kernel]] for full details):
 
 - `BaseEntity` (Id, TenantId, CreatedAt, UpdatedAt, CreatedById)
 - `BaseRepository<T>` (tenant-filtered CRUD)
 - `ITenantContext` (current tenant from JWT)
 - `Result<T>` (success/failure pattern)
-- `IEncryptionService` (AES-256 for PII — see [[data-classification]])
+- `IEncryptionService` (AES-256 for PII — see [[security/data-classification|Data Classification]])
 - Common enums (`EmploymentType`, `EmploymentStatus`, etc.)
 - Common utilities (`DateTimeProvider`, `IdGenerator`)
-- Domain event base class (`DomainEvent`) — see [[event-catalog]]
+- Domain event base class (`DomainEvent`) — see [[backend/messaging/event-catalog|Event Catalog]]
 - Pagination types (`PagedRequest`, `PagedResult<T>`)
 
 It does **NOT** contain business logic. If something is specific to 1-2 modules, it belongs in those modules.

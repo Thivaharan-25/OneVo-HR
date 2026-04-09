@@ -1,16 +1,22 @@
 # Module: Productivity Analytics
 
 **Namespace:** `ONEVO.Modules.ProductivityAnalytics`
+**Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 1 (Week 4)
 **Tables:** 4
-**Task File:** [[WEEK4-productivity-analytics]]
+**Task File:** [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]
 
 ---
 
 ## Purpose
 
-Aggregates data from [[activity-monitoring]], [[workforce-presence]], and [[core-hr]] into daily/weekly/monthly reports and workforce-wide snapshots. Serves both the dashboard API and CSV/Excel export. This is the **reporting layer** for Pillar 2.
+Aggregates data from [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/workforce-presence/overview|Workforce Presence]], and [[modules/core-hr/overview|Core Hr]] into daily/weekly/monthly reports and workforce-wide snapshots. Serves both the dashboard API and CSV/Excel export. This is the **reporting layer** for Pillar 2.
+
+**Three dashboard views:**
+1. **Manager Dashboard** — full team visibility, drill-down per employee, exception alerts, app usage micro-management
+2. **CEO Dashboard** — high-level workforce summary, exception-only escalation, no individual drill-down unless flagged
+3. **Employee Self-Service** — own data only (hours, active %, app usage, trends). Cannot see other employees.
 
 ---
 
@@ -18,12 +24,12 @@ Aggregates data from [[activity-monitoring]], [[workforce-presence]], and [[core
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[activity-monitoring]] | `IActivityMonitoringService` | Daily summaries for aggregation |
-| **Depends on** | [[workforce-presence]] | `IWorkforcePresenceService` | Attendance/hours data |
-| **Depends on** | [[core-hr]] | `IEmployeeService` | Employee/department context |
-| **Depends on** | [[exception-engine]] | `IExceptionEngineService` | Exception counts per day |
-| **Consumed by** | [[performance]] | `IProductivityAnalyticsService` | Productivity scores for reviews |
-| **Consumed by** | [[reporting-engine]] | — (via query) | Scheduled report generation |
+| **Depends on** | [[modules/activity-monitoring/overview|Activity Monitoring]] | `IActivityMonitoringService` | Daily summaries for aggregation |
+| **Depends on** | [[modules/workforce-presence/overview|Workforce Presence]] | `IWorkforcePresenceService` | Attendance/hours data |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee/department context |
+| **Depends on** | [[modules/exception-engine/overview|Exception Engine]] | `IExceptionEngineService` | Exception counts per day |
+| **Consumed by** | [[database/performance|Performance]] | `IProductivityAnalyticsService` | Productivity scores for reviews |
+| **Consumed by** | [[modules/reporting-engine/overview|Reporting Engine]] | — (via query) | Scheduled report generation |
 
 ---
 
@@ -141,9 +147,9 @@ Tenant-wide daily metrics.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `DailyReportReady` | Daily report aggregation complete | [[notifications]] (send summary to managers) |
-| `WeeklyReportReady` | Weekly report aggregation complete | [[notifications]] (send weekly digest) |
-| `MonthlyReportReady` | Monthly report aggregation complete | [[notifications]] |
+| `DailyReportReady` | Daily report aggregation complete | [[modules/notifications/overview|Notifications]] (send summary to managers) |
+| `WeeklyReportReady` | Weekly report aggregation complete | [[modules/notifications/overview|Notifications]] (send weekly digest) |
+| `MonthlyReportReady` | Monthly report aggregation complete | [[modules/notifications/overview|Notifications]] |
 
 ---
 
@@ -152,8 +158,11 @@ Tenant-wide daily metrics.
 1. **Reports are pre-computed, not real-time.** Dashboard API serves pre-aggregated data from these tables.
 2. **Daily reports aggregate from `activity_daily_summary` + `presence_sessions`** — never from raw snapshots.
 3. **Comparative rankings** (department rank) are only shown to managers with `analytics:view` permission, never to the employee themselves.
-4. **Export formats:** CSV and Excel via the [[reporting-engine]]. PDF deferred to Phase 2.
+4. **Export formats:** CSV and Excel via the [[modules/reporting-engine/overview|Reporting Engine]]. PDF deferred to Phase 2.
 5. **Workforce snapshot** includes ALL active employees, even those with monitoring disabled (they show presence data only, no activity breakdown).
+6. **Employee self-service dashboard** uses `analytics:view:self` permission — employee can ONLY see their own data. No access to team/department aggregates. No comparative rankings. Shows: daily hours, active %, app usage breakdown, meeting time, weekly/monthly trends.
+7. **CEO dashboard** uses `analytics:view:ceo` permission — shows workforce-level summary only. Individual employee data is NOT shown unless they have an escalated/critical exception alert. Designed to avoid information overload — key metrics + exceptions only.
+8. **Manager micro-management view** — managers with `analytics:view` can drill into any employee in their hierarchy: full app usage breakdown, per-app time, allowlist violations, activity timeline. This enables the "micro manage everyone about app usage" requirement.
 
 ---
 
@@ -169,6 +178,12 @@ Tenant-wide daily metrics.
 | GET | `/api/v1/analytics/export/daily` | `analytics:export` | Export daily report (CSV/Excel) |
 | GET | `/api/v1/analytics/export/weekly` | `analytics:export` | Export weekly report |
 | GET | `/api/v1/analytics/export/workforce` | `analytics:export` | Export workforce snapshot |
+| GET | `/api/v1/analytics/my/daily` | `analytics:view:self` | Employee's own daily report (self-service) |
+| GET | `/api/v1/analytics/my/weekly` | `analytics:view:self` | Employee's own weekly report |
+| GET | `/api/v1/analytics/my/monthly` | `analytics:view:self` | Employee's own monthly report |
+| GET | `/api/v1/analytics/my/trends` | `analytics:view:self` | Employee's own trend data for charts |
+| GET | `/api/v1/analytics/ceo/summary` | `analytics:view:ceo` | CEO-level workforce summary (exceptions only, no individual drill-down) |
+| GET | `/api/v1/analytics/ceo/exceptions` | `analytics:view:ceo` | CEO-level exception overview (escalated/critical only) |
 
 ---
 
@@ -185,24 +200,27 @@ Tenant-wide daily metrics.
 ## Important Notes
 
 - **This module does NOT collect data.** It only aggregates data from other modules.
-- **For real-time dashboard data**, the frontend queries [[workforce-presence]] `GetLiveWorkforceStatusAsync()` — not this module. This module serves historical/aggregated reports.
-- **Performance module integration:** [[performance]] can pull `GetProductivityScoreAsync()` to include productivity data in performance reviews (optional, configurable by tenant).
+- **For real-time dashboard data**, the frontend queries [[modules/workforce-presence/overview|Workforce Presence]] `GetLiveWorkforceStatusAsync()` — not this module. This module serves historical/aggregated reports.
+- **Performance module integration:** [[database/performance|Performance]] can pull `GetProductivityScoreAsync()` to include productivity data in performance reviews (optional, configurable by tenant).
 
 ## Features
 
-- [[daily-reports]] — One row per employee per day with hours, active %, top apps — frontend: [[daily-reports/frontend]]
-- [[weekly-reports]] — Weekly aggregation with trend vs prior week
-- [[monthly-reports]] — Monthly aggregation with department comparative ranking
-- [[workforce-snapshots]] — Tenant-wide daily metrics and per-department breakdown
+- [[modules/productivity-analytics/daily-reports/overview|Daily Reports]] — One row per employee per day with hours, active %, top apps — frontend: [[modules/productivity-analytics/daily-reports/frontend|Frontend]]
+- [[modules/productivity-analytics/weekly-reports/overview|Weekly Reports]] — Weekly aggregation with trend vs prior week
+- [[modules/productivity-analytics/monthly-reports/overview|Monthly Reports]] — Monthly aggregation with department comparative ranking
+- [[modules/productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]] — Tenant-wide daily metrics and per-department breakdown
+- Employee Self Service — Employee-facing dashboard: own hours, active %, app usage, trends (`analytics:view:self`)
+- Ceo Dashboard — CEO-level workforce summary: key metrics + exceptions only (`analytics:view:ceo`)
+- Manager Detail View — Manager drill-down: per-employee app usage, activity timeline, allowlist violations
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All report tables use `(tenant_id, employee_id, date)` UNIQUE indexes
-- [[data-classification]] — Department rankings only visible to managers (`analytics:view`)
-- [[event-catalog]] — `DailyReportReady`, `WeeklyReportReady`, `MonthlyReportReady`
-- [[compliance]] — Workforce snapshots cover all employees (monitoring-disabled show presence only)
-- [[WEEK4-productivity-analytics]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All report tables use `(tenant_id, employee_id, date)` UNIQUE indexes
+- [[security/data-classification|Data Classification]] — Department rankings only visible to managers (`analytics:view`)
+- [[backend/messaging/event-catalog|Event Catalog]] — `DailyReportReady`, `WeeklyReportReady`, `MonthlyReportReady`
+- [[security/compliance|Compliance]] — Workforce snapshots cover all employees (monitoring-disabled show presence only)
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]] — Implementation task file
 
-See also: [[module-catalog]], [[activity-monitoring]], [[workforce-presence]], [[exception-engine]], [[reporting-engine]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/exception-engine/overview|Exception Engine]], [[modules/reporting-engine/overview|Reporting Engine]]

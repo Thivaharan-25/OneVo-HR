@@ -53,9 +53,9 @@ POST /api/v1/workflows/{instanceId}/approve
 
 ## Related
 
-- [[workflow-engine|Overview]]
-- [[notification-infrastructure]]
-- [[compliance-governance]]
-- [[audit-logging]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/shared-platform/workflow-engine/overview|Overview]]
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[modules/shared-platform/compliance-governance/overview|Compliance Governance]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

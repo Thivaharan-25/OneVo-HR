@@ -51,5 +51,5 @@ public class LeaveBalanceAuditServiceTests
 
 ## Related
 
-- [[balance-audit|Balance Audit Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/leave/balance-audit/overview|Balance Audit Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

@@ -14,7 +14,7 @@ High-throughput ingestion endpoint for desktop agent data. Returns **202 Accepte
 1. Minimal validation (schema check only, detailed validation is async).
 2. Batch INSERT via `COPY` or `unnest()` for raw buffer.
 3. Rate limit per device (not per user) — default 30 requests/minute/device.
-4. Data routing by `type`: `activity_snapshot` → `activity_raw_buffer`, `device_session` → `device_sessions`, `verification_photo` → [[identity-verification]].
+4. Data routing by `type`: `activity_snapshot` → `activity_raw_buffer`, `device_session` → `device_sessions`, `verification_photo` → [[modules/identity-verification/overview|Identity Verification]].
 
 ## Ingestion Payload Schema
 
@@ -48,13 +48,13 @@ High-throughput ingestion endpoint for desktop agent data. Returns **202 Accepte
 
 ## Related
 
-- [[agent-gateway|Agent Gateway Module]]
-- [[agent-registration]]
-- [[heartbeat-monitoring]]
-- [[policy-distribution]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[logging-standards]]
-- [[WEEK1-shared-platform]]
+- [[modules/agent-gateway/overview|Agent Gateway Module]]
+- [[modules/agent-gateway/agent-registration/overview|Agent Registration]]
+- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]]
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[code-standards/logging-standards|Logging Standards]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

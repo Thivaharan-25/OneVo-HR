@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Employee has submitted self-assessment → [[self-assessment]]
-- Active review cycle → [[review-cycle-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Employee has submitted self-assessment → [[Userflow/Performance/self-assessment|Self Assessment]]
+- Active review cycle → [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -23,11 +23,11 @@
 
 ### Step 3: Rate and Comment
 - **UI:** Rate employee against each competency → add comments per competency → set overall rating → write summary feedback → add development recommendations
-- **Backend:** ReviewService.SubmitManagerReviewAsync() → [[reviews]]
+- **Backend:** ReviewService.SubmitManagerReviewAsync() → [[modules/performance/reviews/overview|Reviews]]
 
 ### Step 4: Include Productivity Data (if `workforce:view`)
 - **UI:** Toggle "Include Productivity Metrics" → system pulls: avg daily productive hours, top apps, attendance pattern, exception count
-- Links: [[productivity-dashboard]], [[presence-session-view]]
+- Links: [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]], [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
 
 ### Step 5: Submit
 - **API:** `POST /api/v1/performance/reviews/{id}/manager-submit`
@@ -43,18 +43,18 @@
 
 ## Events Triggered
 
-- `ManagerReviewSubmitted` → [[event-catalog]]
-- Notification to HR (for calibration) → [[notification-system]]
+- `ManagerReviewSubmitted` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to HR (for calibration) → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[self-assessment]]
-- [[peer-feedback]]
-- [[review-cycle-setup]]
-- [[improvement-plan]]
+- [[Userflow/Performance/self-assessment|Self Assessment]]
+- [[Userflow/Performance/peer-feedback|Peer Feedback]]
+- [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
+- [[Userflow/Performance/improvement-plan|Improvement Plan]]
 
 ## Module References
 
-- [[reviews]]
-- [[review-cycles]]
-- [[productivity-analytics]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[modules/performance/review-cycles/overview|Review Cycles]]
+- [[modules/productivity-analytics/overview|Productivity Analytics]]

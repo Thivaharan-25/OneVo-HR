@@ -1,18 +1,23 @@
 # Module: Agent Gateway
 
 **Namespace:** `ONEVO.Modules.AgentGateway`
+**Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4 (Week 1)
-**Tables:** 3
-**Task File:** [[WEEK1-shared-platform]] (Agent Gateway section)
+**Tables:** 4
+**Task File:** [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] (Agent Gateway section)
 
 ---
 
 ## Purpose
 
-High-throughput ingestion API for the desktop agent. Handles agent registration, heartbeat monitoring, policy distribution, and activity data ingestion. This is the **only entry point** for desktop agent data into the ONEVO backend.
+High-throughput ingestion API and **bidirectional command channel** for the desktop agent. Handles agent registration, heartbeat monitoring, policy distribution, activity data ingestion, and **server-to-agent command dispatch**. This is the **only entry point** for desktop agent data into the ONEVO backend, and the **only channel** for pushing commands back to agents.
 
-Agent Gateway uses **device-level JWT authentication**, separate from user JWT. See [[auth-architecture]] for details.
+Agent Gateway uses **device-level JWT authentication**, separate from user JWT. See [[security/auth-architecture|Auth Architecture]] for details.
+
+**Bidirectional communication:**
+- **Agent → Server:** REST API (register, login, heartbeat, ingest, logout)
+- **Server → Agent:** SignalR hub (`/hubs/agent-commands`) for real-time command push (remote capture, monitoring lifecycle, policy refresh)
 
 ---
 
@@ -20,12 +25,14 @@ Agent Gateway uses **device-level JWT authentication**, separate from user JWT. 
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[auth]] | `ITokenService` | Issue device JWT at registration |
-| **Depends on** | [[configuration]] | `IConfigurationService` | Build monitoring policy for agent |
-| **Depends on** | [[core-hr]] | `IEmployeeService` | Link employee to device at login |
-| **Consumed by** | [[activity-monitoring]] | — (writes to raw buffer) | Raw activity data |
-| **Consumed by** | [[workforce-presence]] | — (writes device sessions) | Device session data |
-| **Consumed by** | [[identity-verification]] | — (routes verification photos) | Photo verification requests |
+| **Depends on** | [[modules/auth/overview|Auth]] | `ITokenService` | Issue device JWT at registration |
+| **Depends on** | [[modules/configuration/overview|Configuration]] | `IConfigurationService` | Build monitoring policy for agent |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Link employee to device at login |
+| **Consumed by** | [[modules/activity-monitoring/overview|Activity Monitoring]] | — (writes to raw buffer) | Raw activity data |
+| **Consumed by** | [[modules/workforce-presence/overview|Workforce Presence]] | — (writes device sessions) | Device session data |
+| **Consumed by** | [[modules/identity-verification/overview|Identity Verification]] | — (routes verification photos) | Photo verification requests |
+| **Listens to** | [[modules/workforce-presence/overview|Workforce Presence]] | `PresenceSessionStarted/Ended`, `BreakStarted/Ended` | Controls agent monitoring lifecycle |
+| **Listens to** | [[modules/exception-engine/overview|Exception Engine]] | `RemoteCaptureRequested` | Dispatches capture command to agent |
 
 ---
 
@@ -39,11 +46,20 @@ public interface IAgentGatewayService
     Task<Result<AgentPolicyDto>> GetAgentPolicyAsync(Guid agentId, CancellationToken ct);
     Task<Result<bool>> IsAgentOnlineAsync(Guid agentId, CancellationToken ct);
 }
+
+// ONEVO.Modules.AgentGateway/Public/IAgentCommandService.cs
+public interface IAgentCommandService
+{
+    /// <summary>Send a command to a specific agent via SignalR. Returns false if agent is offline.</summary>
+    Task<Result<bool>> SendCommandAsync(Guid agentId, AgentCommand command, CancellationToken ct);
+    /// <summary>Get pending commands for an agent (fallback if SignalR disconnects).</summary>
+    Task<Result<IReadOnlyList<AgentCommandDto>>> GetPendingCommandsAsync(Guid agentId, CancellationToken ct);
+}
 ```
 
 ---
 
-## Database Tables (3)
+## Database Tables (4)
 
 ### `registered_agents`
 
@@ -96,11 +112,21 @@ Policy pushed to each agent — defines what features are enabled for the linked
   "verification_interval_minutes": 60,
   "idle_threshold_seconds": 300,
   "snapshot_interval_seconds": 150,
-  "heartbeat_interval_seconds": 60
+  "heartbeat_interval_seconds": 60,
+  "app_allowlist": {
+    "mode": "allowlist",
+    "apps": [
+      { "name": "Microsoft Teams", "category": "communication", "is_allowed": true },
+      { "name": "Visual Studio Code", "category": "development", "is_allowed": true },
+      { "name": "Google Chrome", "category": "browser", "is_allowed": true }
+    ],
+    "alert_on_violation": true,
+    "violation_threshold_minutes": 5
+  }
 }
 ```
 
-Policy is computed by merging: `monitoring_feature_toggles` (tenant) → `employee_monitoring_overrides` (employee). Override wins.
+Policy is computed by merging three tiers: `monitoring_feature_toggles` (tenant default) → `role_app_policies` (role override) → `employee_monitoring_overrides` (employee override). Most specific wins. See [[modules/configuration/employee-overrides/overview|App Allowlist Configuration]].
 
 ### `agent_health_logs`
 
@@ -119,15 +145,42 @@ Agent uptime, errors, tamper detection.
 
 **Indexes:** `(agent_id, reported_at)`
 
+### `agent_commands`
+
+Pending and completed commands sent from server to agent.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `agent_id` | `uuid` | FK → registered_agents |
+| `tenant_id` | `uuid` | FK → tenants |
+| `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
+| `requested_by` | `uuid` | FK → users (manager/CEO who initiated) |
+| `payload_json` | `jsonb` | Command-specific parameters |
+| `status` | `varchar(20)` | `pending`, `delivered`, `completed`, `failed`, `expired` |
+| `created_at` | `timestamptz` | When command was created |
+| `delivered_at` | `timestamptz` | When agent acknowledged receipt |
+| `completed_at` | `timestamptz` | When agent reported completion |
+| `result_json` | `jsonb` | Result data (e.g., screenshot URL, error message) |
+| `expires_at` | `timestamptz` | Auto-expire if not delivered (default: 5 min) |
+
+**Indexes:** `(agent_id, status)`, `(tenant_id, command_type, created_at)`
+
+**Expiry:** Hangfire job cleans up `pending` commands older than `expires_at`. If agent was offline when command was sent, it's expired — manager must re-request.
+
 ---
 
 ## Domain Events
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AgentRegistered` | New device registered | [[configuration]] (push initial policy) |
-| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[exception-engine]] (flag offline agent) |
+| `AgentRegistered` | New device registered | [[modules/configuration/overview|Configuration]] (push initial policy) |
+| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview|Exception Engine]] (flag offline agent) |
 | `AgentRevoked` | Admin revokes agent access | Agent receives 401 on next request |
+| `AgentCommandDispatched` | Command sent to agent via SignalR | Audit log |
+| `AgentCommandCompleted` | Agent reports command result | [[modules/identity-verification/overview|Identity Verification]] (photo result), [[modules/exception-engine/overview|Exception Engine]] (screenshot result) |
+| `MonitoringStarted` | Agent confirmed monitoring active | [[modules/activity-monitoring/overview|Activity Monitoring]] (begin accepting snapshots) |
+| `MonitoringStopped` | Agent confirmed monitoring stopped | [[modules/activity-monitoring/overview|Activity Monitoring]] (stop accepting snapshots) |
 
 ---
 
@@ -138,7 +191,7 @@ Agent uptime, errors, tamper detection.
    - Batch INSERT via `COPY` or `unnest()` for raw buffer
    - Return **202 Accepted** immediately, process asynchronously
    - Rate limit per device (not per user)
-2. **Device JWT ≠ User JWT.** Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. See [[auth-architecture]].
+2. **Device JWT ≠ User JWT.** Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. See [[security/auth-architecture|Auth Architecture]].
 3. **Employee linking:** Device is registered with `employee_id = null`. When employee logs in via MAUI tray app, the device is linked: `employee_id` is set.
 4. **Policy merge pattern:**
    ```csharp
@@ -152,16 +205,51 @@ Agent uptime, errors, tamper detection.
 
 ## API Endpoints
 
-All agent endpoints use device JWT authentication (not user JWT).
+### Agent-Facing (Device JWT auth)
 
 | Method | Route | Auth | Description |
 |:-------|:------|:-----|:------------|
 | POST | `/api/v1/agent/register` | Tenant API key | Register new device, receive device JWT |
-| POST | `/api/v1/agent/heartbeat` | Device JWT | Update `last_heartbeat_at`, report health |
-| GET | `/api/v1/agent/policy` | Device JWT | Fetch current monitoring policy |
+| POST | `/api/v1/agent/heartbeat` | Device JWT | Update `last_heartbeat_at`, report health, receive pending commands |
+| GET | `/api/v1/agent/policy` | Device JWT | Fetch current monitoring policy (includes app allowlist) |
 | POST | `/api/v1/agent/ingest` | Device JWT | Submit activity data batch (202 Accepted) |
 | POST | `/api/v1/agent/login` | Device JWT + employee credentials | Link employee to device |
 | POST | `/api/v1/agent/logout` | Device JWT | Unlink employee from device |
+| GET | `/api/v1/agent/commands` | Device JWT | Fetch pending commands (fallback if SignalR disconnected) |
+| POST | `/api/v1/agent/commands/{id}/ack` | Device JWT | Acknowledge command receipt |
+| POST | `/api/v1/agent/commands/{id}/complete` | Device JWT | Report command completion with result |
+
+### Manager-Facing (User JWT auth, requires `agent:command` permission)
+
+| Method | Route | Auth | Description |
+|:-------|:------|:-----|:------------|
+| POST | `/api/v1/agents/{agentId}/capture-screenshot` | User JWT | Request remote screenshot from agent |
+| POST | `/api/v1/agents/{agentId}/capture-photo` | User JWT | Request remote photo verification from agent |
+
+### SignalR Hub — `/hubs/agent-commands`
+
+**Connection:** Agent connects after employee login using Device JWT. Maintains persistent connection for real-time command push.
+
+**Server → Agent methods:**
+
+| Method | Payload | Purpose |
+|:-------|:--------|:--------|
+| `ExecuteCommand` | `{ commandId, type, payload }` | Push any command to agent |
+| `StartMonitoring` | `{ sessionId }` | Employee clocked in — begin data collection |
+| `StopMonitoring` | `{ reason }` | Employee clocked out — stop data collection |
+| `PauseMonitoring` | `{ reason }` | Break started — pause data collection (NO data captured) |
+| `ResumeMonitoring` | `{ sessionId }` | Break ended — resume data collection |
+| `RefreshPolicy` | `{ }` | Policy changed — agent should re-fetch |
+
+**Agent → Server methods:**
+
+| Method | Payload | Purpose |
+|:-------|:--------|:--------|
+| `CommandAcknowledged` | `{ commandId }` | Agent received the command |
+| `CommandCompleted` | `{ commandId, resultJson }` | Agent completed the command (e.g., screenshot URL) |
+| `CommandFailed` | `{ commandId, error }` | Agent failed to execute command |
+
+**Fallback:** If SignalR connection drops, agent polls `GET /api/v1/agent/commands` during each heartbeat cycle. Commands are idempotent — delivering twice is safe.
 
 ### Ingestion Payload Schema
 
@@ -208,7 +296,9 @@ All agent endpoints use device JWT authentication (not user JWT).
 | Job | Schedule | Queue | Purpose |
 |:----|:---------|:------|:--------|
 | `DetectOfflineAgentsJob` | Every 5 min | High | Find agents with `last_heartbeat_at` > 5 min ago, fire `AgentHeartbeatLost` |
+| `ExpirePendingCommandsJob` | Every 1 min | High | Mark `pending` commands past `expires_at` as `expired` |
 | `CleanupRevokedAgentsJob` | Daily 3:00 AM | Low | Remove health logs for revoked agents older than 30 days |
+| `CleanupCompletedCommandsJob` | Daily 3:00 AM | Low | Remove completed/expired commands older than 7 days |
 
 ---
 
@@ -216,39 +306,57 @@ All agent endpoints use device JWT authentication (not user JWT).
 
 - **This is the ONLY ingestion endpoint for agent data.** All agent data flows through `/api/v1/agent/ingest`.
 - **Rate limiting:** Per device, not per user. Default: 30 requests/minute/device.
-- **Data routing:** The ingestion handler routes different `type` values to different modules: `activity_snapshot` → `activity_raw_buffer`, `device_session` → `device_sessions`, `verification_photo` → [[identity-verification]].
+- **Data routing:** The ingestion handler routes different `type` values to different modules: `activity_snapshot` → `activity_raw_buffer`, `device_session` → `device_sessions`, `verification_photo` → [[modules/identity-verification/overview|Identity Verification]].
 - **Agent does NOT have HR permissions.** It cannot read employee profiles, leave data, or any HR information.
 
 ## Features (Server-Side)
 
-- [[agent-registration]] — Device registration and employee linking
-- [[heartbeat-monitoring]] — Heartbeat tracking and offline agent detection
-- [[policy-distribution]] — Monitoring policy computation and push to agents
-- [[data-ingestion]] — High-throughput batch activity data ingestion (202 Accepted)
+- [[modules/agent-gateway/agent-registration/overview|Agent Registration]] — Device registration and employee linking
+- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]] — Heartbeat tracking and offline agent detection
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]] — Monitoring policy computation and push to agents (includes app allowlist)
+- [[modules/agent-gateway/data-ingestion/overview|Data Ingestion]] — High-throughput batch activity data ingestion (202 Accepted)
+- [[modules/agent-gateway/remote-commands/overview|Remote Commands]] — Bidirectional SignalR command channel for server→agent push (capture requests, monitoring lifecycle, policy refresh)
+- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] — Listens to workforce-presence events, sends start/stop/pause/resume commands to agent
 
 ## Desktop Agent Docs
 
-- [[agent-overview]] — Start here: two-component architecture, data flow, setup
-- [[agent-server-protocol]] — Full API contract (6 endpoints, payloads, error handling)
-- [[data-collection]] — 5 collectors with Win32 P/Invoke code samples
-- [[ipc-protocol]] — Named Pipes protocol between Service and TrayApp
-- [[sqlite-buffer]] — Local SQLite buffer schema, offline resilience
-- [[tamper-resistance]] — Detection strategy, service recovery, reporting
-- [[photo-capture]] — Camera capture flow for identity verification
-- [[tray-app-ui]] — MAUI tray app UI states, windows, notifications
-- [[agent-installer]] — MSIX packaging, silent install, auto-update
-- [[mock-mode]] — Development without backend (MockGatewayClient)
+- [[modules/agent-gateway/agent-overview|Agent Overview]] — Start here: two-component architecture, data flow, setup
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Full API contract (6 endpoints, payloads, error handling)
+- [[modules/agent-gateway/data-collection|Data Collection]] — 5 collectors with Win32 P/Invoke code samples
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — Named Pipes protocol between Service and TrayApp
+- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] — Local SQLite buffer schema, offline resilience
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Detection strategy, service recovery, reporting
+- [[modules/identity-verification/photo-capture|Photo Capture]] — Camera capture flow for identity verification
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — MAUI tray app UI states, windows, notifications
+- [[modules/agent-gateway/agent-installer|Agent Installer]] — MSIX packaging, silent install, auto-update
+- [[modules/agent-gateway/mock-mode|Mock Mode]] — Development without backend (MockGatewayClient)
 
 ---
 
 ## Related
 
-- [[auth-architecture]] — Device JWT (separate from user JWT), `type: "agent"` claim
-- [[multi-tenancy]] — All agents scoped to tenant via `tenant_id`
-- [[event-catalog]] — `AgentRegistered`, `AgentHeartbeatLost`, `AgentRevoked`
-- [[error-handling]] — Rate limiting per device, async ingestion with minimal validation
-- [[data-classification]] — RESTRICTED data (screenshots, photos)
-- [[compliance]] — GDPR monitoring consent, privacy modes
-- [[WEEK1-shared-platform]] — Implementation task file (Agent Gateway section)
+- [[security/auth-architecture|Auth Architecture]] — Device JWT (separate from user JWT), `type: "agent"` claim
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All agents scoped to tenant via `tenant_id`
+- [[backend/messaging/event-catalog|Event Catalog]] — `AgentRegistered`, `AgentHeartbeatLost`, `AgentRevoked`
+- [[backend/messaging/error-handling|Error Handling]] — Rate limiting per device, async ingestion with minimal validation
+- [[security/data-classification|Data Classification]] — RESTRICTED data (screenshots, photos)
+- [[security/compliance|Compliance]] — GDPR monitoring consent, privacy modes
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task file (Agent Gateway section)
 
-See also: [[module-catalog]], [[activity-monitoring]], [[workforce-presence]], [[identity-verification]], [[auth]], [[tech-stack]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/identity-verification/overview|Identity Verification]], [[modules/auth/overview|Auth]], [[AI_CONTEXT/tech-stack|Tech Stack]]
+
+---
+
+## Phase 2 Features (Do NOT Build)
+
+> [!WARNING]
+> The following features are deferred to Phase 2. Do not implement them. Specs are preserved here for future reference.
+
+### App Blocking
+Phase 1 logs and alerts on non-allowed app usage but does NOT block applications. Phase 2 will add the ability for the agent to actively prevent non-allowed applications from running (process termination or launch interception). This requires careful implementation to avoid blocking system-critical processes and needs a robust override/emergency-stop mechanism.
+
+### Silent Capture
+Phase 1 requires mandatory employee notification before any screenshot or photo capture (GDPR requirement). Phase 2 may add a "silent capture" mode for jurisdictions where this is legally permitted, triggered only for critical exception alerts with explicit legal review. This feature will be gated by tenant jurisdiction configuration and require legal compliance sign-off.
+
+### Agent Auto-Update Push
+Phase 1 auto-update is agent-initiated (agent checks for updates on startup/heartbeat). Phase 2 will add server-pushed update commands, forcing agents to update within a specified window. This is needed for critical security patches.

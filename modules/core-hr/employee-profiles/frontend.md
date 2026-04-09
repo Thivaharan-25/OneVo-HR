@@ -84,7 +84,7 @@ Central employee directory with search, filters, and CRUD. Links to all HR data 
 
 ## Related
 
-- [[employee-profiles|Employee Profiles Overview]]
-- [[employee-profiles/end-to-end-logic|Employee Profiles — End-to-End Logic]]
-- [[auth-architecture]]
-- [[data-classification]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles Overview]]
+- [[modules/core-hr/employee-profiles/end-to-end-logic|Employee Profiles — End-to-End Logic]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]

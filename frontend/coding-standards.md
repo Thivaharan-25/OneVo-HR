@@ -138,6 +138,6 @@ import type { Employee } from '@/types/core-hr';
 
 ## Related
 
-- [[structure]]
-- [[component-catalog]]
-- [[rules]]
+- [[frontend/architecture/app-structure|App Structure]]
+- [[frontend/design-system/components/component-catalog|Component Catalog]]
+- [[AI_CONTEXT/rules|Rules]]

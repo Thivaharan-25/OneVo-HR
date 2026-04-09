@@ -84,7 +84,7 @@ Tamper events are included in the heartbeat payload:
 }
 ```
 
-Server-side, the `AgentHeartbeatLost` event + tamper report triggers an exception alert via [[exception-engine]].
+Server-side, the `AgentHeartbeatLost` event + tamper report triggers an exception alert via [[modules/exception-engine/overview|Exception Engine]].
 
 ## What We Do NOT Do
 

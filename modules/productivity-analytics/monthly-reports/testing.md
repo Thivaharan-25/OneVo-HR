@@ -51,5 +51,5 @@ public class MonthlyReportServiceTests
 
 ## Related
 
-- [[productivity-analytics/monthly-reports/overview|Monthly Reports Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Monthly Reports Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

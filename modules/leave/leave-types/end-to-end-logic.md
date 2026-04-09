@@ -46,8 +46,8 @@ GET /api/v1/leave/types
 
 ## Related
 
-- [[leave-types|Leave Types Overview]]
-- [[leave-policies]]
-- [[leave-requests]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/leave/leave-types/overview|Leave Types Overview]]
+- [[modules/leave/leave-policies/overview|Leave Policies]]
+- [[modules/leave/leave-requests/overview|Leave Requests]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -51,5 +51,5 @@ public class NotificationTemplateServiceTests
 
 ## Related
 
-- [[notifications/notification-templates/overview|Notification Templates Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Notification Templates Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

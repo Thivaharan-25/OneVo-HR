@@ -55,8 +55,8 @@ When domain event fires and webhook_endpoints subscribe to it:
 
 ## Related
 
-- [[real-time-integrations|Overview]]
-- [[notification-infrastructure]]
-- [[sso-authentication]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/shared-platform/real-time-integrations/overview|Overview]]
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[modules/shared-platform/sso-authentication/overview|Sso Authentication]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

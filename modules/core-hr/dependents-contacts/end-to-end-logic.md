@@ -39,8 +39,8 @@ POST /api/v1/employees/{id}/emergency-contacts
 
 ## Related
 
-- [[dependents-contacts|Dependents & Contacts Overview]]
-- [[employee-profiles]]
-- [[offboarding]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/core-hr/dependents-contacts/overview|Dependents & Contacts Overview]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
+- [[modules/core-hr/offboarding/overview|Offboarding]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

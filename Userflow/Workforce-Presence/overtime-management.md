@@ -8,15 +8,15 @@
 
 ## Preconditions
 
-- Employee has assigned shift/schedule → [[shift-schedule-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Employee has assigned shift/schedule → [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Request Overtime
 - **UI:** Workforce → Overtime → "Request Overtime" → select date → enter expected extra hours → select reason → submit
 - **API:** `POST /api/v1/workforce/overtime`
-- **Backend:** OvertimeService.RequestAsync() → [[overtime]]
+- **Backend:** OvertimeService.RequestAsync() → [[modules/workforce-presence/overtime/overview|Overtime]]
 - **DB:** `overtime_requests` — status: "Pending"
 
 ### Step 2: Approval
@@ -26,7 +26,7 @@
 
 ### Step 3: Payroll Integration
 - **Backend:** Approved overtime hours feed into next payroll run → calculated at overtime rate (1.5x or 2x as configured)
-- Links to: [[payroll-run-execution]]
+- Links to: [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
 
 ## Variations
 
@@ -42,16 +42,16 @@
 
 ## Events Triggered
 
-- `OvertimeRequested` → [[event-catalog]]
-- `OvertimeApproved` → [[event-catalog]]
+- `OvertimeRequested` → [[backend/messaging/event-catalog|Event Catalog]]
+- `OvertimeApproved` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[shift-schedule-setup]]
-- [[presence-session-view]]
-- [[payroll-run-execution]]
+- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
+- [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
 
 ## Module References
 
-- [[overtime]]
-- [[shifts-schedules]]
+- [[modules/workforce-presence/overtime/overview|Overtime]]
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]]

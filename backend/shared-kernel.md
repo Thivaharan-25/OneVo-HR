@@ -7,7 +7,7 @@ The shared kernel (`ONEVO.SharedKernel`) contains code genuinely shared across 3
 ```
 ONEVO.SharedKernel/
 ├── Entities/
-��   ├── BaseEntity.cs              # Id, TenantId, CreatedAt, UpdatedAt, CreatedById, IsDeleted
+│   ├── BaseEntity.cs              # Id, TenantId, CreatedAt, UpdatedAt, CreatedById, IsDeleted
 │   ├── IAuditableEntity.cs        # CreatedAt, UpdatedAt, CreatedById, UpdatedById
 │   └── ISoftDeletable.cs          # IsDeleted, DeletedAt, DeletedById
 ├── Repositories/
@@ -15,17 +15,19 @@ ONEVO.SharedKernel/
 │   ├── BaseRepository.cs          # Tenant-filtered CRUD (auto-applies TenantId)
 │   └── IUnitOfWork.cs             # SaveChangesAsync wrapper
 ├── Results/
-��   ├── Result.cs                  # Result<T> for success/failure without exceptions
+│   ├── Result.cs                  # Result<T> for success/failure without exceptions
 │   ├── Error.cs                   # Error type with Code + Message
 │   └── ValidationError.cs         # Validation-specific error with field details
 ├── MultiTenancy/
 │   ├── ITenantContext.cs           # Current tenant from JWT (TenantId, UserId)
-│   ├─�� TenantContext.cs            # HttpContext-based implementation
-│   └─��� TenantMiddleware.cs        # Extracts tenant from JWT, sets ITenantContext
+│   ├── TenantContext.cs            # HttpContext-based implementation
+│   └── TenantMiddleware.cs        # Extracts tenant from JWT, sets ITenantContext
 ├── Security/
 │   ├── IEncryptionService.cs      # AES-256 encrypt/decrypt
-���   ├── ICurrentUser.cs            # Current user context (UserId, TenantId, Roles, Permissions)
-│   └── RequirePermissionAttribute.cs # [RequirePermission("resource:action")]
+│   ├── ICurrentUser.cs            # Current user context (UserId, TenantId, EffectivePermissions, GrantedModules, HierarchyScope)
+│   ├── RequirePermissionAttribute.cs # [RequirePermission("resource:action")] — checks effective permissions
+│   ├── IHierarchyScope.cs         # Resolves subordinate IDs for hierarchy-scoped data access
+│   └── HierarchyScopeFilter.cs    # Auto-applies hierarchy WHERE clause to queries
 ├── Events/
 │   ├── DomainEvent.cs             # Base domain event (Id, OccurredAt, TenantId)
 │   ├── IDomainEventHandler.cs     # MediatR INotificationHandler wrapper
@@ -46,18 +48,18 @@ ONEVO.SharedKernel/
 │   ├── SlugGenerator.cs           # URL-safe slug generation
 │   └── StringExtensions.cs        # ToSnakeCase(), Truncate(), etc.
 ├── Exceptions/
-│   ├── ONEVOException.cs       # Base exception (for truly exceptional cases)
+│   ├── ONEVOException.cs          # Base exception (for truly exceptional cases)
 │   ├── TenantMismatchException.cs # Critical: cross-tenant access attempt
 │   └── ConcurrencyException.cs    # EF Core concurrency conflict
 ├── Configuration/
-���   ├── DatabaseSettings.cs        # PostgreSQL connection config
+│   ├── DatabaseSettings.cs        # PostgreSQL connection config
 │   ├── RedisSettings.cs           # Redis connection config
 │   ├── JwtSettings.cs             # JWT configuration (Issuer, Audience, Keys)
 │   └── EncryptionSettings.cs      # AES-256 key config
 └── Extensions/
     ├── ServiceCollectionExtensions.cs  # DI registration helpers
-    ├── QueryableExtensions.cs          # ApplyPaging(), ApplySorting()
-    └── ClaimsPrincipalExtensions.cs    # GetTenantId(), GetUserId(), HasPermission()
+    ├── QueryableExtensions.cs          # ApplyPaging(), ApplySorting(), ApplyHierarchyScope()
+    └── ClaimsPrincipalExtensions.cs    # GetTenantId(), GetUserId(), HasPermission(), GetGrantedModules()
 ```
 
 ## Key Implementations
@@ -109,6 +111,47 @@ public class BaseRepository<T> : IRepository<T> where T : BaseEntity
 }
 ```
 
+### ICurrentUser (Hybrid Permission Context)
+
+```csharp
+public interface ICurrentUser
+{
+    Guid UserId { get; }
+    Guid TenantId { get; }
+    IReadOnlyList<string> EffectivePermissions { get; }  // Resolved: role + overrides, filtered by feature grants
+    IReadOnlyList<string> GrantedModules { get; }         // Modules this user has access to
+    bool IsSuperAdmin { get; }                             // Has "*" permission — bypasses all checks
+    
+    bool HasPermission(string permission);
+    bool HasAnyPermission(params string[] permissions);
+    bool HasAllPermissions(params string[] permissions);
+    bool IsModuleGranted(string module);
+}
+```
+
+### IHierarchyScope (Data Access Scoping)
+
+```csharp
+public interface IHierarchyScope
+{
+    /// Returns IDs of all employees below this user in the reporting chain.
+    /// Super Admin returns null (meaning no filter — access all).
+    Task<HashSet<Guid>?> GetSubordinateIdsAsync(CancellationToken ct);
+}
+
+// Usage in any service that returns employee data:
+public async Task<PagedResult<EmployeeDto>> GetEmployeesAsync(PagedRequest request, CancellationToken ct)
+{
+    var subordinateIds = await _hierarchyScope.GetSubordinateIdsAsync(ct);
+    
+    var query = _repository.Query;
+    if (subordinateIds != null) // null = Super Admin, no filtering
+        query = query.Where(e => subordinateIds.Contains(e.Id));
+    
+    return await query.ApplyPaging(request).ToPagedResultAsync(ct);
+}
+```
+
 ### Result<T>
 
 ```csharp
@@ -126,10 +169,11 @@ public class Result<T>
 
 ## Related
 
-- [[module-boundaries]] — rules for using SharedKernel vs module code
-- [[multi-tenancy]] — how `ITenantContext` and `BaseRepository` enforce tenant isolation
-- [[module-catalog]] — all modules that depend on SharedKernel
-- [[backend-standards]] — naming conventions and code patterns
+- [[backend/module-boundaries|Module Boundaries]] — rules for using SharedKernel vs module code
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — how `ITenantContext` and `BaseRepository` enforce tenant isolation
+- [[backend/module-catalog|Module Catalog]] — all modules that depend on SharedKernel
+- [[code-standards/backend-standards|Backend Standards]] — naming conventions and code patterns
+- [[frontend/architecture/overview|Overview]] — hybrid permission control model
 
 ## Rules
 

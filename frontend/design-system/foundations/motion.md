@@ -135,7 +135,7 @@ See the Sidebar Panel Expand/Collapse pattern below for the expansion panel appr
 ```tsx
 <aside className={cn(
   "transition-[width] duration-moderate ease-in-out",
-  isOpen ? "w-64" : "w-16"
+  isOpen ? "w-[220px]" : "w-16"
 )}>
 ```
 

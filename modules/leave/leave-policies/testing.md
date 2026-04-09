@@ -51,5 +51,5 @@ public class LeavePolicyServiceTests
 
 ## Related
 
-- [[leave-policies|Leave Policies Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/leave/leave-policies/overview|Leave Policies Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

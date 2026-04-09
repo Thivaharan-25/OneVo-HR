@@ -65,5 +65,5 @@ public class CertificationServiceTests
 
 ## Related
 
-- [[certifications]] — feature overview
-- [[testing/README|Testing Standards]] — project-wide testing conventions
+- [[modules/skills/certifications/overview|Certifications]] — feature overview
+- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions

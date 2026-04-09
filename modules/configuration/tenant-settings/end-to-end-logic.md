@@ -48,8 +48,8 @@ PUT /api/v1/settings
 
 ## Related
 
-- [[configuration/tenant-settings/overview|Tenant Settings Overview]]
-- [[configuration/monitoring-toggles/overview|Monitoring Toggles]]
-- [[configuration/retention-policies/overview|Retention Policies]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Tenant Settings Overview]]
+- [[frontend/architecture/overview|Monitoring Toggles]]
+- [[frontend/architecture/overview|Retention Policies]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

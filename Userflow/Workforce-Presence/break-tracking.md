@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Active presence session → [[presence-session-view]]
-- Shift with break duration defined → [[shift-schedule-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Active presence session → [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- Shift with break duration defined → [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -36,20 +36,20 @@
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | No break policy | Breaks tracked but not enforced | No warnings |
-| Excessive breaks | Exception triggered | Manager sees alert → [[alert-review]] |
+| Excessive breaks | Exception triggered | Manager sees alert → [[Userflow/Exception-Engine/alert-review|Alert Review]] |
 
 ## Events Triggered
 
-- `ExcessiveBreakDetected` → [[event-catalog]] (via exception engine)
+- `ExcessiveBreakDetected` → [[backend/messaging/event-catalog|Event Catalog]] (via exception engine)
 
 ## Related Flows
 
-- [[presence-session-view]]
-- [[shift-schedule-setup]]
-- [[exception-rule-setup]]
+- [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
+- [[Userflow/Exception-Engine/exception-rule-setup|Exception Rule Setup]]
 
 ## Module References
 
-- [[break-tracking]]
-- [[presence-sessions]]
-- [[exception-rules]]
+- [[Userflow/Workforce-Presence/break-tracking|Break Tracking]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[modules/exception-engine/exception-rules/overview|Exception Rules]]

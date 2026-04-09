@@ -39,9 +39,9 @@ Unified calendar aggregating leave, holidays, review cycles, and custom events i
 
 ## Related
 
-- [[calendar|Calendar Module]]
-- [[calendar/conflict-detection/overview|Conflict Detection]]
-- [[event-catalog]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[WEEK4-supporting-bridges]]
+- [[modules/calendar/overview|Calendar Module]]
+- [[frontend/architecture/overview|Conflict Detection]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]]

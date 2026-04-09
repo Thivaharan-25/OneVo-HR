@@ -65,5 +65,5 @@ public class BreakServiceTests
 
 ## Related
 
-- [[break-tracking|Break Tracking Overview]]
-- [[testing/README|Testing Standards]]
+- [[Userflow/Workforce-Presence/break-tracking|Break Tracking Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

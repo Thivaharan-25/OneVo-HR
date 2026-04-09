@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Identity verification enabled and running → [[identity-verification-setup]]
+- Identity verification enabled and running → [[Userflow/Workforce-Intelligence/identity-verification-setup|Identity Verification Setup]]
 - Failed verifications exist
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -24,7 +24,7 @@
 ### Step 3: Take Action
 - **UI:** Three options:
   - **Dismiss as False Positive** — lighting/angle issue → flag cleared → no further action
-  - **Confirm Mismatch** — someone else at the desk → escalate to exception engine → [[alert-review]]
+  - **Confirm Mismatch** — someone else at the desk → escalate to exception engine → [[Userflow/Exception-Engine/alert-review|Alert Review]]
   - **Request Re-verification** — ask employee to verify again
 - **API:** `PUT /api/v1/verification/flags/{id}`
 - **DB:** `verification_flags` — status updated, reviewer recorded
@@ -38,17 +38,17 @@
 
 ## Events Triggered
 
-- `VerificationMismatchConfirmed` → [[event-catalog]]
-- Exception alert (if confirmed) → [[exception-engine]]
+- `VerificationMismatchConfirmed` → [[backend/messaging/event-catalog|Event Catalog]]
+- Exception alert (if confirmed) → [[modules/exception-engine/overview|Exception Engine]]
 
 ## Related Flows
 
-- [[identity-verification-setup]]
-- [[alert-review]]
-- [[profile-management]] (update enrolled photo)
+- [[Userflow/Workforce-Intelligence/identity-verification-setup|Identity Verification Setup]]
+- [[Userflow/Exception-Engine/alert-review|Alert Review]]
+- [[Userflow/Employee-Management/profile-management|Profile Management]] (update enrolled photo)
 
 ## Module References
 
-- [[identity-verification]]
-- [[exception-engine]]
-- [[audit-logging]]
+- [[modules/identity-verification/overview|Identity Verification]]
+- [[modules/exception-engine/overview|Exception Engine]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]

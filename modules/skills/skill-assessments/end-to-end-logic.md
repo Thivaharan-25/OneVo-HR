@@ -42,8 +42,8 @@ POST /api/v1/skills/validate
 
 ## Related
 
-- [[skill-assessments]] — feature overview
-- [[skill-taxonomy]] — skills and question banks
-- [[employee-skills]] — proficiency updated from assessment score
-- [[event-catalog]] — AssessmentSubmitted, SkillLevelUpdated events
-- [[error-handling]] — invalid answer type and duplicate submission errors
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] — feature overview
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — skills and question banks
+- [[modules/skills/employee-skills/overview|Employee Skills]] — proficiency updated from assessment score
+- [[backend/messaging/event-catalog|Event Catalog]] — AssessmentSubmitted, SkillLevelUpdated events
+- [[backend/messaging/error-handling|Error Handling]] — invalid answer type and duplicate submission errors

@@ -50,8 +50,8 @@ POST /api/v1/auth/mfa/verify
 ## Related
 
 - [[mfa|Overview]]
-- [[authentication]]
-- [[session-management]]
-- [[audit-logging]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[modules/auth/session-management/overview|Session Management]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

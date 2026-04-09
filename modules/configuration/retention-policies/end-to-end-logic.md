@@ -30,7 +30,7 @@ PUT /api/v1/settings/retention
 
 ## Related
 
-- [[configuration/retention-policies/overview|Retention Policies Overview]]
-- [[configuration/tenant-settings/overview|Tenant Settings]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Retention Policies Overview]]
+- [[frontend/architecture/overview|Tenant Settings]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

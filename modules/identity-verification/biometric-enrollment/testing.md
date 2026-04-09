@@ -51,8 +51,8 @@ public class BiometricEnrollmentServiceTests
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[biometric-enrollment/end-to-end-logic|Biometric Enrollment — End-to-End Logic]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[modules/identity-verification/biometric-enrollment/end-to-end-logic|Biometric Enrollment — End-to-End Logic]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

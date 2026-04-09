@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Document categories configured → [[categories]]
-- File storage configured (cloud storage) → [[infrastructure]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Document categories configured → [[modules/documents/categories/overview|Categories]]
+- File storage configured (cloud storage) → [[modules/infrastructure/overview|Infrastructure]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -24,12 +24,12 @@
 
 ### Step 3: Set Access Level
 - **UI:** Choose: Public (all employees), Department-specific, Individual (named employees), Confidential (HR only) → add tags for searchability
-- **Backend:** DocumentService.UploadAsync() → [[document-management]]
+- **Backend:** DocumentService.UploadAsync() → [[modules/documents/document-management/overview|Document Management]]
 - **DB:** `documents` — metadata, `document_access` — permissions
 
 ### Step 4: Upload & Process
 - **API:** `POST /api/v1/documents` (multipart form)
-- **Backend:** File uploaded to cloud storage → metadata saved → if policy document: triggers acknowledgement workflow → [[document-acknowledgement]]
+- **Backend:** File uploaded to cloud storage → metadata saved → if policy document: triggers acknowledgement workflow → [[Userflow/Documents/document-acknowledgement|Document Acknowledgement]]
 
 ## Variations
 
@@ -49,18 +49,18 @@
 
 ## Events Triggered
 
-- `DocumentUploaded` → [[event-catalog]]
-- `AcknowledgementRequired` (if policy) → [[event-catalog]]
+- `DocumentUploaded` → [[backend/messaging/event-catalog|Event Catalog]]
+- `AcknowledgementRequired` (if policy) → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[document-access]]
-- [[document-acknowledgement]]
-- [[document-versioning]]
-- [[template-management]]
+- [[Userflow/Documents/document-access|Document Access]]
+- [[Userflow/Documents/document-acknowledgement|Document Acknowledgement]]
+- [[Userflow/Documents/document-versioning|Document Versioning]]
+- [[Userflow/Documents/template-management|Template Management]]
 
 ## Module References
 
-- [[document-management]]
-- [[categories]]
-- [[access-control]]
+- [[modules/documents/document-management/overview|Document Management]]
+- [[modules/documents/categories/overview|Categories]]
+- [[modules/documents/access-control/overview|Access Control]]

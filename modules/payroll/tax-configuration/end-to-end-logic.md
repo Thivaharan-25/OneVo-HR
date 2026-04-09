@@ -31,10 +31,10 @@ POST /api/v1/payroll/tax-config
 
 ## Related
 
-- [[payroll/tax-configuration/overview|Tax Configuration Overview]]
-- [[payroll/payroll-execution/overview|Payroll Execution]]
-- [[payroll/pensions/overview|Pensions]]
-- [[error-handling]]
-- [[migration-patterns]]
-- [[shared-kernel]]
-- [[WEEK4-payroll]]
+- [[frontend/architecture/overview|Tax Configuration Overview]]
+- [[frontend/architecture/overview|Payroll Execution]]
+- [[frontend/architecture/overview|Pensions]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[backend/shared-kernel|Shared Kernel]]
+- Payroll task file (deferred to Phase 2)

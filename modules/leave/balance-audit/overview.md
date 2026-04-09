@@ -16,13 +16,13 @@ Fields: `employee_id`, `leave_type_id`, `change_type` (`accrual`, `deduction`, `
 
 ## Related
 
-- [[leave|Leave Module]]
-- [[leave-requests]]
-- [[leave-entitlements]]
-- [[leave-policies]]
-- [[leave-types]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[data-classification]]
-- [[retention-policies]]
-- [[WEEK3-leave]]
+- [[modules/leave/overview|Leave Module]]
+- [[modules/leave/leave-requests/overview|Leave Requests]]
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]]
+- [[modules/leave/leave-policies/overview|Leave Policies]]
+- [[modules/leave/leave-types/overview|Leave Types]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/data-classification|Data Classification]]
+- [[modules/configuration/retention-policies/overview|Retention Policies]]
+- [[current-focus/DEV1-leave|DEV1: Leave]]

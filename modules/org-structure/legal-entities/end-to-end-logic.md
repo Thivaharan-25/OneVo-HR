@@ -91,8 +91,8 @@ PUT /api/v1/legal-entities/{id}/deactivate
 
 ## Related
 
-- [[legal-entities|Overview]]
-- [[departments]]
-- [[reference-data]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/org-structure/legal-entities/overview|Overview]]
+- [[modules/org-structure/departments/overview|Departments]]
+- [[modules/infrastructure/reference-data/overview|Reference Data]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

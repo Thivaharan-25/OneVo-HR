@@ -51,6 +51,6 @@ public class ReportTemplateServiceTests
 
 ## Related
 
-- [[reporting-engine/report-templates/overview|Report Templates Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/architecture/overview|Report Templates Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

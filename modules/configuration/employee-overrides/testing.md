@@ -53,6 +53,6 @@ public class EmployeeOverrideServiceTests
 
 ## Related
 
-- [[configuration/employee-overrides/overview|Employee Overrides Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/architecture/overview|Employee Overrides Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

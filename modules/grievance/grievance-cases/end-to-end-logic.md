@@ -49,7 +49,7 @@ POST /api/v1/grievances/{id}/resolve
 
 ## Related
 
-- [[grievance-cases]] — feature overview
-- [[disciplinary-actions]] — outcomes that may follow resolution
-- [[event-catalog]] — events emitted on case filing, escalation, and resolution
-- [[error-handling]] — workflow state machine error patterns
+- [[modules/grievance/grievance-cases/overview|Grievance Cases]] — feature overview
+- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] — outcomes that may follow resolution
+- [[backend/messaging/event-catalog|Event Catalog]] — events emitted on case filing, escalation, and resolution
+- [[backend/messaging/error-handling|Error Handling]] — workflow state machine error patterns

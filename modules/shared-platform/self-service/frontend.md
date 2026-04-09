@@ -102,9 +102,9 @@ Content driven by `GET /configuration/monitoring/my-settings` — returns the ef
 
 ## Related
 
-- [[authorization]]
-- [[auth-architecture]]
-- [[gdpr-consent]]
-- [[component-catalog]]
-- [[layout-patterns]]
-- [[frontend-coding-standards]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[frontend/design-system/components/component-catalog|Component Catalog]]
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]]
+- [[frontend/coding-standards|Frontend Coding Standards]]

@@ -21,7 +21,7 @@ Reusable templates with `tasks_json`. Can be global or department-specific.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeOnboardingStarted` | Onboarding initiated | [[notifications]] |
+| `EmployeeOnboardingStarted` | Onboarding initiated | [[modules/notifications/overview|Notifications]] |
 
 ## API Endpoints
 
@@ -31,16 +31,16 @@ Reusable templates with `tasks_json`. Can be global or department-specific.
 
 ## Related
 
-- [[core-hr|Core HR Module]]
-- [[employee-profiles]]
-- [[employee-lifecycle]]
-- [[offboarding]]
-- [[compensation]]
-- [[qualifications]]
-- [[dependents-contacts]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[event-catalog]]
-- [[compliance]]
-- [[shared-kernel]]
-- [[WEEK2-core-hr-lifecycle]]
+- [[modules/core-hr/overview|Core HR Module]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
+- [[modules/core-hr/offboarding/overview|Offboarding]]
+- [[modules/core-hr/compensation/overview|Compensation]]
+- [[modules/core-hr/qualifications/overview|Qualifications]]
+- [[modules/core-hr/dependents-contacts/overview|Dependents Contacts]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[security/compliance|Compliance]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-core-hr-lifecycle|DEV2: Core HR Lifecycle]]

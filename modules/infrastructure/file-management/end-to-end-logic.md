@@ -45,8 +45,8 @@ GET /api/v1/files/{id}
 
 ## Related
 
-- [[file-management|Overview]]
-- [[tenant-management]]
-- [[user-management]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/infrastructure/file-management/overview|Overview]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[modules/infrastructure/user-management/overview|User Management]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

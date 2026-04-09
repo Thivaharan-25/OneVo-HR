@@ -11,9 +11,9 @@ ONEVO uses a two-phase messaging strategy:
 
 | Document | Purpose |
 |:---------|:--------|
-| [[event-catalog]] | Every domain event, publishers, consumers, and payloads |
-| [[exchange-topology]] | How events flow between modules (MediatR now, RabbitMQ later) |
-| [[error-handling]] | Retry policies, dead-letter handling, idempotency patterns |
+| [[backend/messaging/event-catalog|Event Catalog]] | Every domain event, publishers, consumers, and payloads |
+| [[backend/messaging/exchange-topology|Exchange Topology]] | How events flow between modules (MediatR now, RabbitMQ later) |
+| [[backend/messaging/error-handling|Error Handling]] | Retry policies, dead-letter handling, idempotency patterns |
 
 ## Quick Reference
 
@@ -40,15 +40,15 @@ public class HandleEmployeeHired : INotificationHandler<EmployeeHiredEvent>
 
 ### Rules
 
-1. All handlers must be **idempotent** (see [[error-handling]])
+1. All handlers must be **idempotent** (see [[backend/messaging/error-handling|Error Handling]])
 2. Handlers must not throw exceptions that crash the publisher
-3. Critical events use the **[[exchange-topology|outbox pattern]]** for guaranteed delivery
-4. Check [[event-catalog]] before publishing or consuming events
+3. Critical events use the **[[backend/messaging/exchange-topology|outbox pattern]]** for guaranteed delivery
+4. Check [[backend/messaging/event-catalog|Event Catalog]] before publishing or consuming events
 5. Always include `TenantId` in event payloads
 
 ## Related
 
-- [[event-catalog]]
-- [[exchange-topology]]
-- [[error-handling]]
-- [[module-boundaries]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/exchange-topology|Exchange Topology]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/module-boundaries|Module Boundaries]]

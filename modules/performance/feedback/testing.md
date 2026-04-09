@@ -51,5 +51,5 @@ public class FeedbackServiceTests
 
 ## Related
 
-- [[feedback|Feedback Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/performance/feedback/overview|Feedback Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

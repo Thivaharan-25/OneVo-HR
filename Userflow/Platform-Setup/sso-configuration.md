@@ -10,14 +10,14 @@
 
 - Tenant is active with a valid subscription
 - Admin has credentials for the identity provider (Google Workspace, Azure AD, or Okta)
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to SSO Settings
 - **UI:** Settings > Security > Single Sign-On. Page shows current SSO status (Disabled/Enabled), configured provider (if any), and login method settings (SSO only, SSO + password, password only)
 - **API:** `GET /api/v1/settings/sso`
-- **Backend:** `SsoConfigurationService.GetConfigAsync()` → [[sso-authentication]]
+- **Backend:** `SsoConfigurationService.GetConfigAsync()` → [[modules/shared-platform/sso-authentication/overview|Sso Authentication]]
 - **Validation:** Permission check for `settings:admin`
 - **DB:** `sso_configurations`
 
@@ -64,7 +64,7 @@
 ### Step 7: Save and Enable SSO
 - **UI:** Review configuration summary. Toggle "Enable SSO" switch. Select login policy: "SSO Only" (password login disabled), "SSO + Password" (both allowed), or "SSO Preferred" (SSO shown first, password link available). Click "Save Configuration"
 - **API:** `POST /api/v1/settings/sso`
-- **Backend:** `SsoConfigurationService.SaveAndEnableAsync()` → [[sso-authentication]]
+- **Backend:** `SsoConfigurationService.SaveAndEnableAsync()` → [[modules/shared-platform/sso-authentication/overview|Sso Authentication]]
   1. Encrypts and stores client secret using AES-256
   2. Saves configuration to `sso_configurations` table
   3. Updates tenant authentication settings
@@ -101,20 +101,20 @@
 
 ## Events Triggered
 
-- `SsoConfiguredEvent` → [[event-catalog]] — consumed by audit logging
-- `AuditLogEntry` (action: `sso.configured`) → [[audit-logging]]
-- `AuditLogEntry` (action: `sso.enabled`) → [[audit-logging]]
+- `SsoConfiguredEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging
+- `AuditLogEntry` (action: `sso.configured`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `AuditLogEntry` (action: `sso.enabled`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[login-flow]] — SSO changes the login experience
-- [[user-invitation]] — invited users may use SSO instead of password
-- [[tenant-provisioning]] — SSO typically configured after initial setup
+- [[Userflow/Auth-Access/login-flow|Login Flow]] — SSO changes the login experience
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] — invited users may use SSO instead of password
+- [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]] — SSO typically configured after initial setup
 
 ## Module References
 
-- [[sso-authentication]] — SSO implementation details
-- [[auth-architecture]] — how SSO fits into the auth stack
-- [[authentication]] — JWT issuance after SSO validation
-- [[session-management]] — session handling with SSO
-- [[configuration]] — tenant-level SSO settings
+- [[modules/shared-platform/sso-authentication/overview|Sso Authentication]] — SSO implementation details
+- [[security/auth-architecture|Auth Architecture]] — how SSO fits into the auth stack
+- [[frontend/cross-cutting/authentication|Authentication]] — JWT issuance after SSO validation
+- [[modules/auth/session-management/overview|Session Management]] — session handling with SSO
+- [[modules/configuration/overview|Configuration]] — tenant-level SSO settings

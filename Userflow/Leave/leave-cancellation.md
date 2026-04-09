@@ -11,14 +11,14 @@
 - A leave request exists with status `pending` or `approved`
 - For own cancellation: employee is the request owner and has `leave:create`
 - For admin cancellation: user has `leave:manage` permission
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Leave Request
 - **UI:** Employee: navigates to Leave → My Leave → sees list of requests filtered by status (Pending, Approved, Rejected, Cancelled). Admin: navigates to Leave → All Requests or searches for specific employee
 - **API:** `GET /api/v1/leave/requests/me` (employee) or `GET /api/v1/leave/requests?employeeId={id}` (admin)
-- **Backend:** `LeaveRequestService.GetByEmployeeAsync()` → [[leave]]
+- **Backend:** `LeaveRequestService.GetByEmployeeAsync()` → [[modules/leave/overview|Leave]]
 - **Validation:** Checks `leave:create` or `leave:manage` permission
 - **DB:** `leave_requests` (filtered by `employee_id` or all with admin access)
 
@@ -39,12 +39,12 @@
 ### Step 4: Process Cancellation
 - **UI:** Click "Confirm Cancel". Success toast: "Leave request cancelled successfully"
 - **API:** `POST /api/v1/leave/requests/{requestId}/cancel`
-- **Backend:** `LeaveRequestService.CancelAsync()` → [[leave]]
+- **Backend:** `LeaveRequestService.CancelAsync()` → [[modules/leave/overview|Leave]]
   1. Updates `leave_requests` status to `cancelled`
   2. Stores cancellation reason and cancelling user
   3. If request was `approved`:
      - Restores balance: decrements `used_days` in `leave_entitlements`
-     - Removes calendar event via [[calendar-events]]
+     - Removes calendar event via [[modules/calendar/calendar-events/overview|Calendar Events]]
      - If unpaid leave, removes payroll deduction flag
   4. If request was `pending`:
      - Cancels workflow instance
@@ -87,22 +87,22 @@
 
 ## Events Triggered
 
-- `LeaveRequestCancelledEvent` → [[event-catalog]] — consumed by calendar service (remove event), payroll module (remove deduction if unpaid), notification service
-- `LeaveBalanceRestoredEvent` → [[event-catalog]] — consumed by entitlement tracking
-- `CalendarEventDeletedEvent` → [[event-catalog]] — team calendar updated
-- `AuditLogEntry` (action: `leave_request.cancelled`) → [[audit-logging]]
+- `LeaveRequestCancelledEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by calendar service (remove event), payroll module (remove deduction if unpaid), notification service
+- `LeaveBalanceRestoredEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by entitlement tracking
+- `CalendarEventDeletedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — team calendar updated
+- `AuditLogEntry` (action: `leave_request.cancelled`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[leave-request-submission]] — the original request being cancelled
-- [[leave-approval]] — approved requests that may be cancelled
-- [[leave-balance-view]] — balance restored after cancellation
+- [[Userflow/Leave/leave-request-submission|Leave Request Submission]] — the original request being cancelled
+- [[Userflow/Leave/leave-approval|Leave Approval]] — approved requests that may be cancelled
+- [[Userflow/Leave/leave-balance-view|Leave Balance View]] — balance restored after cancellation
 
 ## Module References
 
-- [[leave]] — leave module overview and architecture
-- [[leave-requests]] — request data model and lifecycle
-- [[leave-entitlements]] — balance restoration on cancellation
-- [[balance-audit]] — audit trail for balance changes
-- [[calendar-events]] — calendar event removal
-- [[notification-system]] — cancellation notification dispatch
+- [[modules/leave/overview|Leave]] — leave module overview and architecture
+- [[modules/leave/leave-requests/overview|Leave Requests]] — request data model and lifecycle
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]] — balance restoration on cancellation
+- [[modules/leave/balance-audit/overview|Balance Audit]] — audit trail for balance changes
+- [[modules/calendar/calendar-events/overview|Calendar Events]] — calendar event removal
+- [[backend/notification-system|Notification System]] — cancellation notification dispatch

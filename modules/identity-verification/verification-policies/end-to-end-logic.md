@@ -41,13 +41,13 @@ PUT /api/v1/verification/policy
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[verification-policies/overview|Verification Policies Overview]]
-- [[photo-verification/end-to-end-logic|Photo Verification — End-to-End Logic]]
-- [[biometric-enrollment/end-to-end-logic|Biometric Enrollment — End-to-End Logic]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[compliance]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[frontend/architecture/overview|Verification Policies Overview]]
+- [[modules/identity-verification/photo-verification/end-to-end-logic|Photo Verification — End-to-End Logic]]
+- [[modules/identity-verification/biometric-enrollment/end-to-end-logic|Biometric Enrollment — End-to-End Logic]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/compliance|Compliance]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

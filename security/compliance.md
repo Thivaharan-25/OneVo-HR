@@ -36,15 +36,15 @@
 | Vulnerability | Mitigation |
 |:-------------|:-----------|
 | Injection | Parameterized queries via EF Core; no raw SQL |
-| Broken Auth | JWT RS256, refresh token rotation, MFA support — see [[auth-architecture]] |
-| Sensitive Data Exposure | AES-256 encryption, PII log scrubbing — see [[data-classification]] |
+| Broken Auth | JWT RS256, refresh token rotation, MFA support — see [[security/auth-architecture|Auth Architecture]] |
+| Sensitive Data Exposure | AES-256 encryption, PII log scrubbing — see [[security/data-classification|Data Classification]] |
 | XXE | JSON-only API (no XML parsing) |
-| Broken Access Control | RBAC with 80+ permissions, RLS — see [[multi-tenancy]] |
+| Broken Access Control | RBAC with 80+ permissions, RLS — see [[infrastructure/multi-tenancy|Multi Tenancy]] |
 | Security Misconfiguration | Hardened defaults, HSTS, CSP headers |
 | XSS | Content-Type enforcement, CSP headers |
 | Insecure Deserialization | System.Text.Json with strict options |
 | Known Vulnerabilities | Dependabot alerts, regular dependency updates |
-| Insufficient Logging | Serilog structured logging, audit trail — see [[logging-standards]] |
+| Insufficient Logging | Serilog structured logging, audit trail — see [[code-standards/logging-standards|Logging Standards]] |
 
 ### Security Headers
 
@@ -64,8 +64,8 @@ app.Use(async (context, next) =>
 
 ## Related
 
-- [[auth-architecture]]
-- [[data-classification]]
-- [[gdpr-consent]]
-- [[audit-logging]]
-- [[multi-tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]

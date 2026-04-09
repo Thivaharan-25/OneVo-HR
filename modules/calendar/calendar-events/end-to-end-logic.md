@@ -51,7 +51,7 @@ POST /api/v1/calendar
 
 ## Related
 
-- [[calendar/calendar-events/overview|Calendar Events Overview]]
-- [[calendar/conflict-detection/overview|Conflict Detection]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Calendar Events Overview]]
+- [[frontend/architecture/overview|Conflict Detection]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

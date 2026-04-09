@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Employee exists → [[employee-onboarding]]
-- Job family level with salary band configured → [[job-family-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Employee exists → [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
+- Job family level with salary band configured → [[Userflow/Org-Structure/job-family-setup|Job Family Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -25,7 +25,7 @@
 ### Step 3: Configure Allowances
 - **UI:** Add allowances from configured types (Housing, Transport, Meal, etc.) → set amount per allowance
 - **API:** `POST /api/v1/employees/{id}/compensation`
-- **Backend:** CompensationService.SetCompensationAsync() → [[compensation]]
+- **Backend:** CompensationService.SetCompensationAsync() → [[modules/core-hr/compensation/overview|Compensation]]
 - **DB:** `employee_compensation` — new record (previous record's `effective_to` set), `employee_allowances`
 
 ### Step 4: Enter Bank Details
@@ -52,17 +52,17 @@
 
 ## Events Triggered
 
-- `CompensationUpdated` → [[event-catalog]]
+- `CompensationUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[employee-onboarding]]
-- [[employee-promotion]]
-- [[allowance-setup]]
-- [[payroll-run-execution]]
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
+- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]]
+- [[Userflow/Payroll/allowance-setup|Allowance Setup]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
 
 ## Module References
 
-- [[compensation]]
-- [[allowances]]
-- [[data-classification]]
+- [[modules/core-hr/compensation/overview|Compensation]]
+- [[modules/payroll/allowances/overview|Allowances]]
+- [[security/data-classification|Data Classification]]

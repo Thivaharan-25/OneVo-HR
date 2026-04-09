@@ -24,10 +24,10 @@ Key columns: `employee_id`, `leave_type_id`, `start_date`, `end_date`, `total_da
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `LeaveRequested` | Employee submits | [[notifications]] |
-| `LeaveApproved` | Manager approves | [[notifications]], [[workforce-presence]] |
-| `LeaveRejected` | Manager rejects | [[notifications]] |
-| `LeaveCancelled` | Cancellation | [[notifications]], entitlement adjustment |
+| `LeaveRequested` | Employee submits | [[modules/notifications/overview|Notifications]] |
+| `LeaveApproved` | Manager approves | [[modules/notifications/overview|Notifications]], [[modules/workforce-presence/overview|Workforce Presence]] |
+| `LeaveRejected` | Manager rejects | [[modules/notifications/overview|Notifications]] |
+| `LeaveCancelled` | Cancellation | [[modules/notifications/overview|Notifications]], entitlement adjustment |
 
 ## API Endpoints
 
@@ -41,14 +41,14 @@ Key columns: `employee_id`, `leave_type_id`, `start_date`, `end_date`, `total_da
 
 ## Related
 
-- [[leave|Leave Module]]
-- [[balance-audit]]
-- [[leave-entitlements]]
-- [[leave-policies]]
-- [[leave-types]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[error-handling]]
-- [[event-catalog]]
-- [[notifications]]
-- [[WEEK3-leave]]
+- [[modules/leave/overview|Leave Module]]
+- [[modules/leave/balance-audit/overview|Balance Audit]]
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]]
+- [[modules/leave/leave-policies/overview|Leave Policies]]
+- [[modules/leave/leave-types/overview|Leave Types]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[modules/notifications/overview|Notifications]]
+- [[current-focus/DEV1-leave|DEV1: Leave]]

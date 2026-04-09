@@ -40,8 +40,8 @@ Client connects to SignalR hub:
 
 ## Related
 
-- [[notifications/signalr-real-time/overview|SignalR Real-Time Overview]]
-- [[notifications/notification-channels/overview|Notification Channels]]
-- [[notifications/notification-templates/overview|Notification Templates]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|SignalR Real-Time Overview]]
+- [[frontend/architecture/overview|Notification Channels]]
+- [[frontend/architecture/overview|Notification Templates]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -26,12 +26,12 @@ Tracks device interaction per employee per day — laptop active minutes vs esti
 
 ## Related
 
-- [[activity-monitoring|Activity Monitoring Module]]
-- [[device-tracking/end-to-end-logic|Device Tracking — End-to-End Logic]]
-- [[device-tracking/testing|Device Tracking — Testing]]
-- [[raw-data-processing/overview|Raw Data Processing]]
-- [[daily-aggregation/overview|Daily Aggregation]]
-- [[data-classification]]
-- [[retention-policies]]
-- [[multi-tenancy]]
-- [[WEEK3-activity-monitoring]]
+- [[modules/activity-monitoring/overview|Activity Monitoring Module]]
+- [[modules/activity-monitoring/device-tracking/end-to-end-logic|Device Tracking — End-to-End Logic]]
+- [[modules/activity-monitoring/device-tracking/testing|Device Tracking — Testing]]
+- [[frontend/architecture/overview|Raw Data Processing]]
+- [[frontend/architecture/overview|Daily Aggregation]]
+- [[security/data-classification|Data Classification]]
+- [[modules/configuration/retention-policies/overview|Retention Policies]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

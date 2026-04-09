@@ -50,12 +50,12 @@ effectivePolicy.ScreenshotCapture = employeeOverride?.ScreenshotCapture ?? tenan
 
 ## Related
 
-- [[agent-gateway|Agent Gateway Module]]
-- [[policy-distribution/overview|Policy Distribution Overview]]
-- [[heartbeat-monitoring/end-to-end-logic|Heartbeat Monitoring — End-to-End Logic]]
-- [[agent-registration/end-to-end-logic|Agent Registration — End-to-End Logic]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[WEEK1-shared-platform]]
+- [[modules/agent-gateway/overview|Agent Gateway Module]]
+- [[frontend/architecture/overview|Policy Distribution Overview]]
+- [[modules/agent-gateway/heartbeat-monitoring/end-to-end-logic|Heartbeat Monitoring — End-to-End Logic]]
+- [[modules/agent-gateway/agent-registration/end-to-end-logic|Agent Registration — End-to-End Logic]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

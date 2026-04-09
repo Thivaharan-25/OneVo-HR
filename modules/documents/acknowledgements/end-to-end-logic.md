@@ -40,7 +40,7 @@ GET /api/v1/documents/pending-acknowledgements
 
 ## Related
 
-- [[documents/acknowledgements/overview|Acknowledgements Overview]]
-- [[documents/document-management/overview|Document Management]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Acknowledgements Overview]]
+- [[frontend/architecture/overview|Document Management]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -122,6 +122,6 @@ Manage leave requests, view team leave calendar, and configure leave policies.
 
 ## Related
 
-- [[leave-requests|Leave Requests Overview]]
-- [[auth-architecture]]
-- [[design-system]]
+- [[modules/leave/leave-requests/overview|Leave Requests Overview]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[frontend/design-system/README|Design System]]

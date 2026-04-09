@@ -51,5 +51,5 @@ public class SkillsServiceTests
 
 ## Related
 
-- [[employee-skills]] — feature overview
-- [[testing/README|Testing Standards]] — project-wide testing conventions
+- [[modules/skills/employee-skills/overview|Employee Skills]] — feature overview
+- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions

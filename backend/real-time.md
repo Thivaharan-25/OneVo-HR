@@ -109,7 +109,7 @@ export function useWorkforceStatus() {
 
 ## Related
 
-- [[signalr-real-time]] — SignalR implementation
-- [[workforce-presence]] — live presence tracking
-- [[exception-engine]] — real-time alerts
-- [[notification-system]] — notification delivery
+- [[modules/notifications/signalr-real-time/overview|Signalr Real Time]] — SignalR implementation
+- [[modules/workforce-presence/overview|Workforce Presence]] — live presence tracking
+- [[modules/exception-engine/overview|Exception Engine]] — real-time alerts
+- [[backend/notification-system|Notification System]] — notification delivery

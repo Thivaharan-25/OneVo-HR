@@ -65,8 +65,8 @@ public class VerificationServiceTests
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[photo-verification/end-to-end-logic|Photo Verification — End-to-End Logic]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[modules/identity-verification/photo-verification/end-to-end-logic|Photo Verification — End-to-End Logic]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Legal entity exists → [[legal-entity-setup]]
+- Legal entity exists → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
 - External provider API credentials available (if using external)
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -20,7 +20,7 @@
 
 ### Step 2: Configure Provider
 - **UI:** Enter: provider name, API endpoint (if external), API key, pay frequency (monthly/bi-weekly/weekly) → configure field mapping between ONEVO and provider format
-- **Backend:** PayrollProviderService.CreateAsync() → [[payroll-providers]]
+- **Backend:** PayrollProviderService.CreateAsync() → [[modules/payroll/payroll-providers/overview|Payroll Providers]]
 - **DB:** `payroll_providers` — credentials encrypted
 
 ### Step 3: Assign to Legal Entity
@@ -43,15 +43,15 @@
 
 ## Events Triggered
 
-- `PayrollProviderCreated` → [[event-catalog]]
+- `PayrollProviderCreated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[legal-entity-setup]]
-- [[payroll-run-execution]]
-- [[tax-configuration]]
+- [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- [[Userflow/Payroll/payroll-run-execution|Payroll Run Execution]]
+- [[Userflow/Payroll/tax-configuration|Tax Configuration]]
 
 ## Module References
 
-- [[payroll-providers]]
-- [[external-integrations]]
+- [[modules/payroll/payroll-providers/overview|Payroll Providers]]
+- [[backend/external-integrations|External Integrations]]

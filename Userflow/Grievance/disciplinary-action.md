@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Grievance investigated or performance issue documented → [[grievance-investigation]], [[improvement-plan]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Grievance investigated or performance issue documented → [[Userflow/Grievance/grievance-investigation|Grievance Investigation]], [[Userflow/Performance/improvement-plan|Improvement Plan]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -23,18 +23,18 @@
 
 ### Step 3: Set Review Date
 - **UI:** For warnings: set review date (30/60/90 days) → employee must show improvement by this date
-- **Backend:** DisciplinaryService.IssueAsync() → [[grievance]]
+- **Backend:** DisciplinaryService.IssueAsync() → [[modules/grievance/overview|Grievance]]
 - **DB:** `disciplinary_actions` — linked to employee and case
 
 ### Step 4: Notify Employee
 - **UI:** Employee notified → must acknowledge receipt → acknowledgement recorded
-- **Backend:** Notification → [[notification-system]]
+- **Backend:** Notification → [[backend/notification-system|Notification System]]
 
 ### Step 5: Record on Profile
 - **Backend:** Action visible on employee's HR profile (restricted to `grievance:manage` viewers)
 
 ### Step 6: Follow-Up
-- **If termination:** triggers [[employee-offboarding]] automatically
+- **If termination:** triggers [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]] automatically
 - **If warning:** review at set date → either close or escalate to next level
 
 ## Error Scenarios
@@ -46,17 +46,17 @@
 
 ## Events Triggered
 
-- `DisciplinaryActionIssued` → [[event-catalog]]
-- `EmployeeTerminated` (if termination) → [[event-catalog]]
-- Notification to employee → [[notification-system]]
+- `DisciplinaryActionIssued` → [[backend/messaging/event-catalog|Event Catalog]]
+- `EmployeeTerminated` (if termination) → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to employee → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[grievance-investigation]]
-- [[improvement-plan]]
-- [[employee-offboarding]]
+- [[Userflow/Grievance/grievance-investigation|Grievance Investigation]]
+- [[Userflow/Performance/improvement-plan|Improvement Plan]]
+- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]]
 
 ## Module References
 
-- [[grievance]]
-- [[employee-lifecycle]]
+- [[modules/grievance/overview|Grievance]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]

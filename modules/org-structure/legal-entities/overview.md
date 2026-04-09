@@ -23,13 +23,13 @@ Fields: `name`, `registration_number`, `country_id`, `address_json`, `is_active`
 
 ## Related
 
-- [[org-structure|Org Structure Module]]
-- [[departments]]
-- [[cost-centers]]
-- [[job-hierarchy]]
-- [[teams]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[shared-kernel]]
-- [[migration-patterns]]
-- [[WEEK1-org-structure]]
+- [[modules/org-structure/overview|Org Structure Module]]
+- [[modules/org-structure/departments/overview|Departments]]
+- [[modules/org-structure/cost-centers/overview|Cost Centers]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
+- [[modules/org-structure/teams/overview|Teams]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV3-org-structure|DEV3: Org Structure]]

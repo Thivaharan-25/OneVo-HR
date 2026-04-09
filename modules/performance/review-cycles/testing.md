@@ -51,5 +51,5 @@ public class ReviewCycleServiceTests
 
 ## Related
 
-- [[review-cycles|Review Cycles Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/performance/review-cycles/overview|Review Cycles Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

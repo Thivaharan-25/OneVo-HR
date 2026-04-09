@@ -59,6 +59,6 @@ When search needs exceed PostgreSQL FTS capabilities (typo tolerance, faceted se
 
 ## Related
 
-- [[performance]] — indexing strategy and GIN indexes
-- [[multi-tenancy]] — tenant-isolated search indexes
-- [[tech-stack]] — search technology choices
+- [[database/performance|Performance]] — indexing strategy and GIN indexes
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-isolated search indexes
+- [[AI_CONTEXT/tech-stack|Tech Stack]] — search technology choices

@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Tenant provisioned → [[tenant-provisioning]]
-- Country data seeded in system → [[infrastructure]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Tenant provisioned → [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
+- Country data seeded in system → [[modules/infrastructure/overview|Infrastructure]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -24,7 +24,7 @@
 
 ### Step 3: Configure Entity Settings
 - **UI:** Set default currency, fiscal year start month, work week (Sun-Thu vs Mon-Fri), public holidays calendar
-- **Backend:** LegalEntityService.CreateAsync() → [[legal-entities]]
+- **Backend:** LegalEntityService.CreateAsync() → [[modules/org-structure/legal-entities/overview|Legal Entities]]
 
 ### Step 4: Save
 - **API:** `POST /api/v1/org/legal-entities`
@@ -47,16 +47,16 @@
 
 ## Events Triggered
 
-- `LegalEntityCreated` → [[event-catalog]]
+- `LegalEntityCreated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[tenant-provisioning]]
-- [[department-hierarchy]]
-- [[payroll-provider-setup]]
-- [[leave-policy-setup]]
+- [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
+- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
+- [[Userflow/Leave/leave-policy-setup|Leave Policy Setup]]
 
 ## Module References
 
-- [[legal-entities]]
-- [[org-structure]]
+- [[modules/org-structure/legal-entities/overview|Legal Entities]]
+- [[modules/org-structure/overview|Org Structure]]

@@ -16,11 +16,11 @@ Fields: `office_location_id`, `terminal_code`, `terminal_type` (`biometric`, `rf
 
 ## Related
 
-- [[shared-platform|Shared Platform Module]]
-- [[real-time-integrations]]
-- [[notification-infrastructure]]
-- [[gdpr-consent]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[migration-patterns]]
-- [[WEEK1-shared-platform]]
+- [[modules/shared-platform/overview|Shared Platform Module]]
+- [[modules/shared-platform/real-time-integrations/overview|Real Time Integrations]]
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

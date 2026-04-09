@@ -50,10 +50,10 @@ EscalationJob (Hangfire, every 5 min)
 
 ## Related
 
-- [[exception-engine/escalation-chains/overview|Escalation Chains Overview]]
-- [[exception-engine/alert-generation/overview|Alert Generation]]
-- [[exception-engine/evaluation-engine/overview|Evaluation Engine]]
-- [[error-handling]]
-- [[event-catalog]]
-- [[shared-kernel]]
-- [[WEEK4-exception-engine]]
+- [[frontend/architecture/overview|Escalation Chains Overview]]
+- [[frontend/architecture/overview|Alert Generation]]
+- [[frontend/architecture/overview|Evaluation Engine]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

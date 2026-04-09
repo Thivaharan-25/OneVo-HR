@@ -7,13 +7,13 @@
 
 ## Purpose
 
-Receives raw activity data from the desktop agent via [[agent-gateway]] and processes it into structured activity snapshots. Uses a temporary high-volume buffer (`activity_raw_buffer`) partitioned daily, purged after 48 hours.
+Receives raw activity data from the desktop agent via [[modules/agent-gateway/overview|Agent Gateway]] and processes it into structured activity snapshots. Uses a temporary high-volume buffer (`activity_raw_buffer`) partitioned daily, purged after 48 hours.
 
 ## Database Tables
 
 ### `activity_raw_buffer`
 
-Temporary high-volume buffer. Data arrives from [[agent-gateway]], sits here until processed.
+Temporary high-volume buffer. Data arrives from [[modules/agent-gateway/overview|Agent Gateway]], sits here until processed.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -73,4 +73,4 @@ Agent → Agent Gateway (202 Accepted)
 | `PurgeRawBufferJob` | Daily 3:00 AM | Low | Drop partitions older than 48 hours |
 | `PurgeExpiredSnapshotsJob` | Monthly | Batch | Drop snapshot partitions older than 90 days |
 
-See also: [[activity-monitoring/overview]], [[agent-gateway/overview]]
+See also: [[frontend/architecture/overview|Overview]], [[frontend/architecture/overview|Overview]]

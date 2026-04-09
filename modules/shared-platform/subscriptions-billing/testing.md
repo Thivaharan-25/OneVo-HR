@@ -51,6 +51,6 @@ public class SubscriptionServiceTests
 
 ## Related
 
-- [[subscriptions-billing|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/shared-platform/subscriptions-billing/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

@@ -36,9 +36,9 @@ POST /api/v1/exceptions/rules
 
 ## Related
 
-- [[exception-engine/exception-rules/overview|Exception Rules Overview]]
-- [[exception-engine/evaluation-engine/overview|Evaluation Engine]]
-- [[exception-engine/alert-generation/overview|Alert Generation]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[WEEK4-exception-engine]]
+- [[frontend/architecture/overview|Exception Rules Overview]]
+- [[frontend/architecture/overview|Evaluation Engine]]
+- [[frontend/architecture/overview|Alert Generation]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

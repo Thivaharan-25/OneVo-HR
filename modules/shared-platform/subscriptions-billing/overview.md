@@ -35,12 +35,12 @@ Stored methods: `type` (`card`, `bank_transfer`), `last_four`, `brand`, `is_defa
 
 ## Related
 
-- [[shared-platform|Shared Platform Module]]
-- [[tenant-management]]
-- [[feature-flags]]
-- [[compliance-governance]]
-- [[notification-infrastructure]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[migration-patterns]]
-- [[WEEK1-shared-platform]]
+- [[modules/shared-platform/overview|Shared Platform Module]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[frontend/cross-cutting/feature-flags|Feature Flags]]
+- [[modules/shared-platform/compliance-governance/overview|Compliance Governance]]
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[database/migration-patterns|Migration Patterns]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

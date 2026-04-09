@@ -1,15 +1,19 @@
 # Module: Documents
 
 **Namespace:** `ONEVO.Modules.Documents`
+**Phase:** 2 — Deferred
 **Pillar:** 1 — HR Management
 **Owner:** Dev 4 (Week 4)
 **Tables:** 6
+
+> [!WARNING]
+> **This module is deferred to Phase 2. Do not implement.** Document management and versioning are not core to the employee monitoring product. Specs are preserved here for future reference.
 
 ---
 
 ## Purpose
 
-Document management with versioning, categorization (hierarchical), access control, and expiry tracking. Stores metadata in PostgreSQL, files in blob storage via [[infrastructure]] `IFileService`.
+Document management with versioning, categorization (hierarchical), access control, and expiry tracking. Stores metadata in PostgreSQL, files in blob storage via [[modules/infrastructure/overview|Infrastructure]] `IFileService`.
 
 ---
 
@@ -17,8 +21,8 @@ Document management with versioning, categorization (hierarchical), access contr
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[infrastructure]] | `IFileService` | File storage |
-| **Depends on** | [[core-hr]] | `IEmployeeService` | Document ownership |
+| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `IFileService` | File storage |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Document ownership |
 
 ---
 
@@ -135,19 +139,19 @@ Reusable templates for generating documents (offer letters, contracts, etc.). No
 
 ## Features
 
-- [[document-management]] — Document metadata, versioning (`document_versions`), current version tracking
-- [[acknowledgements]] — Employee acknowledgement tracking (click or e-signature)
-- [[access-control]] — Access log audit trail for document views and downloads
-- [[templates]] — Reusable HTML/Markdown document templates with merge variables
-- [[categories]] — Hierarchical document categories (self-referencing `parent_category_id`)
+- [[modules/documents/document-management/overview|Document Management]] — Document metadata, versioning (`document_versions`), current version tracking
+- [[modules/documents/acknowledgements/overview|Acknowledgements]] — Employee acknowledgement tracking (click or e-signature)
+- [[modules/documents/access-control/overview|Access Control]] — Access log audit trail for document views and downloads
+- [[modules/documents/templates/overview|Templates]] — Reusable HTML/Markdown document templates with merge variables
+- [[modules/documents/categories/overview|Categories]] — Hierarchical document categories (self-referencing `parent_category_id`)
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All document metadata is tenant-scoped
-- [[compliance]] — Access logs and acknowledgement records for audit
-- [[data-classification]] — Files stored in blob storage, never in the database
-- [[WEEK4-supporting-bridges]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All document metadata is tenant-scoped
+- [[security/compliance|Compliance]] — Access logs and acknowledgement records for audit
+- [[security/data-classification|Data Classification]] — Files stored in blob storage, never in the database
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
 
-See also: [[module-catalog]], [[core-hr]], [[infrastructure]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/infrastructure/overview|Infrastructure]]

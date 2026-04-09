@@ -25,12 +25,12 @@ Key columns: `leave_type_id`, `country_id` (nullable = global), `job_level_id` (
 
 ## Related
 
-- [[leave|Leave Module]]
-- [[balance-audit]]
-- [[leave-entitlements]]
-- [[leave-requests]]
-- [[leave-types]]
-- [[multi-tenancy]]
-- [[error-handling]]
-- [[compliance]]
-- [[WEEK3-leave]]
+- [[modules/leave/overview|Leave Module]]
+- [[modules/leave/balance-audit/overview|Balance Audit]]
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]]
+- [[modules/leave/leave-requests/overview|Leave Requests]]
+- [[modules/leave/leave-types/overview|Leave Types]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/compliance|Compliance]]
+- [[current-focus/DEV1-leave|DEV1: Leave]]

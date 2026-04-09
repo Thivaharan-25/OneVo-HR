@@ -8,9 +8,9 @@
 
 ## Preconditions
 
-- Monitoring configuration set → [[monitoring-configuration]]
+- Monitoring configuration set → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
 - Windows machines available for employees
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -33,7 +33,7 @@
 
 ### Step 5: Policy Distribution
 - **Backend:** Server sends monitoring policy to agent (what to track, intervals, screenshot settings) → agent starts collecting data
-- Links: [[policy-distribution]]
+- Links: [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
 
 ### Step 6: Monitor Health
 - **UI:** Agent → Health Dashboard → see all agents: online/offline status, last heartbeat, version, data sync status
@@ -46,7 +46,7 @@
 - New version deployed → agents auto-update on next check-in
 
 ### Agent unregistration
-- On employee offboarding → agent automatically unregistered → [[employee-offboarding]]
+- On employee offboarding → agent automatically unregistered → [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]]
 
 ## Error Scenarios
 
@@ -58,19 +58,19 @@
 
 ## Events Triggered
 
-- `AgentRegistered` → [[event-catalog]]
-- `AgentOffline` → [[event-catalog]]
-- `PolicyDistributed` → [[event-catalog]]
+- `AgentRegistered` → [[backend/messaging/event-catalog|Event Catalog]]
+- `AgentOffline` → [[backend/messaging/event-catalog|Event Catalog]]
+- `PolicyDistributed` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[monitoring-configuration]]
-- [[live-dashboard]]
-- [[employee-offboarding]]
+- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Workforce-Intelligence/live-dashboard|Live Dashboard]]
+- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]]
 
 ## Module References
 
-- [[agent-registration]]
-- [[policy-distribution]]
-- [[heartbeat-monitoring]]
-- [[agent-gateway]]
+- [[modules/agent-gateway/agent-registration/overview|Agent Registration]]
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
+- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]]
+- [[modules/agent-gateway/overview|Agent Gateway]]

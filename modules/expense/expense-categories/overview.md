@@ -22,9 +22,9 @@ Fields: `name`, `max_amount` (nullable), `requires_receipt`, `is_active`.
 
 ## Related
 
-- [[expense|Expense Module]] — parent module
-- [[expense-claims]] — claims that reference categories
-- [[multi-tenancy]] — tenant-scoped category isolation
-- [[auth-architecture]] — permission: `expense:manage`
-- [[event-catalog]] — events emitted on category changes
-- [[WEEK4-supporting-bridges]] — implementation task
+- [[modules/expense/overview|Expense Module]] — parent module
+- [[modules/expense/expense-claims/overview|Expense Claims]] — claims that reference categories
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped category isolation
+- [[security/auth-architecture|Auth Architecture]] — permission: `expense:manage`
+- [[backend/messaging/event-catalog|Event Catalog]] — events emitted on category changes
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task

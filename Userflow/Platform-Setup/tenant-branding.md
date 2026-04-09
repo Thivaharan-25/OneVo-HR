@@ -10,21 +10,21 @@
 
 - Tenant is active with a valid subscription
 - Logo file ready (PNG/SVG, recommended 200x50px for header, 512x512px for favicon)
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Branding Settings
 - **UI:** Settings > Appearance > Branding. Page shows current branding: logo preview, color scheme preview, custom domain status, and a live preview panel on the right side
 - **API:** `GET /api/v1/settings/branding`
-- **Backend:** `BrandingService.GetBrandingAsync()` → [[tenant-branding]]
+- **Backend:** `BrandingService.GetBrandingAsync()` → [[frontend/design-system/theming/tenant-branding|Tenant Branding]]
 - **Validation:** Permission check for `settings:admin`
 - **DB:** `tenant_branding`
 
 ### Step 2: Upload Logo
 - **UI:** Two upload zones: "Header Logo" (displayed in top navigation, max 2MB) and "Favicon" (browser tab icon, max 500KB). Drag-and-drop or click to browse. Accepted formats: PNG, SVG, ICO (favicon only). Image cropper appears after upload for positioning
 - **API:** `POST /api/v1/settings/branding/logo` (multipart form data)
-- **Backend:** `BrandingService.UploadLogoAsync()` → [[tenant-branding]]
+- **Backend:** `BrandingService.UploadLogoAsync()` → [[frontend/design-system/theming/tenant-branding|Tenant Branding]]
   1. Validates file type and size
   2. Resizes image to standard dimensions (header: 200x50, favicon: 32x32 and 192x192)
   3. Uploads to blob storage (Azure Blob / S3) with tenant-scoped path
@@ -49,7 +49,7 @@
 ### Step 4: Configure Custom Domain (Optional)
 - **UI:** Input field for custom domain (e.g., `hr.acmecorp.com`). Instructions panel: "Add a CNAME record pointing to `{tenantSlug}.onevo.app`". Status indicator: "DNS Pending" / "DNS Verified" / "SSL Active". "Verify DNS" button to check configuration
 - **API:** `POST /api/v1/settings/branding/domain`
-- **Backend:** `DomainService.ConfigureCustomDomainAsync()` → [[tenant-branding]]
+- **Backend:** `DomainService.ConfigureCustomDomainAsync()` → [[frontend/design-system/theming/tenant-branding|Tenant Branding]]
   1. Validates domain format
   2. Stores domain in `tenant_branding`
   3. Initiates DNS verification (checks CNAME record)
@@ -70,7 +70,7 @@
     "customDomain": "hr.acmecorp.com"
   }
   ```
-- **Backend:** `BrandingService.SaveBrandingAsync()` → [[tenant-branding]]
+- **Backend:** `BrandingService.SaveBrandingAsync()` → [[frontend/design-system/theming/tenant-branding|Tenant Branding]]
   1. Updates `tenant_branding` table
   2. Invalidates CDN cache for tenant's static assets
   3. Pushes branding update to all connected clients via SignalR
@@ -103,18 +103,18 @@
 
 ## Events Triggered
 
-- `BrandingUpdatedEvent` → [[event-catalog]] — consumed by CDN cache invalidation
-- `CustomDomainVerifiedEvent` → [[event-catalog]] — triggers SSL provisioning
-- `AuditLogEntry` (action: `branding.updated`) → [[audit-logging]]
+- `BrandingUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by CDN cache invalidation
+- `CustomDomainVerifiedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — triggers SSL provisioning
+- `AuditLogEntry` (action: `branding.updated`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[tenant-provisioning]] — branding typically configured after initial setup
-- [[tenant-settings]] — other tenant configuration options
+- [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]] — branding typically configured after initial setup
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — other tenant configuration options
 
 ## Module References
 
-- [[tenant-branding]] — branding implementation details
-- [[tenant-settings]] — tenant-level settings storage
-- [[infrastructure]] — CDN, blob storage, SSL provisioning
-- [[configuration]] — tenant configuration management
+- [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — branding implementation details
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — tenant-level settings storage
+- [[modules/infrastructure/overview|Infrastructure]] — CDN, blob storage, SSL provisioning
+- [[modules/configuration/overview|Configuration]] — tenant configuration management

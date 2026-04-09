@@ -54,5 +54,5 @@ public class CalendarServiceTests
 
 ## Related
 
-- [[calendar/calendar-events/overview|Calendar Events Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Calendar Events Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

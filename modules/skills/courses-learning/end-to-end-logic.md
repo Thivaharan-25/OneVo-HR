@@ -43,8 +43,8 @@ PUT /api/v1/courses/enrollments/{id}/progress
 
 ## Related
 
-- [[courses-learning]] — feature overview
-- [[certifications]] — certifications issued on course completion
-- [[employee-skills]] — skill tags updated from course completion
-- [[event-catalog]] — CourseEnrolled, CourseCompleted events
-- [[error-handling]] — LMS provider sync failure and retry patterns
+- [[modules/skills/courses-learning/overview|Courses Learning]] — feature overview
+- [[modules/skills/certifications/overview|Certifications]] — certifications issued on course completion
+- [[modules/skills/employee-skills/overview|Employee Skills]] — skill tags updated from course completion
+- [[backend/messaging/event-catalog|Event Catalog]] — CourseEnrolled, CourseCompleted events
+- [[backend/messaging/error-handling|Error Handling]] — LMS provider sync failure and retry patterns

@@ -28,9 +28,9 @@ GET /api/v1/analytics/workforce?date=2026-04-05
 
 ## Related
 
-- [[productivity-analytics/workforce-snapshots/overview|Workforce Snapshots Overview]]
-- [[productivity-analytics/daily-reports/overview|Daily Reports]]
-- [[productivity-analytics/monthly-reports/overview|Monthly Reports]]
-- [[error-handling]]
-- [[shared-kernel]]
-- [[WEEK4-productivity-analytics]]
+- [[frontend/architecture/overview|Workforce Snapshots Overview]]
+- [[frontend/architecture/overview|Daily Reports]]
+- [[frontend/architecture/overview|Monthly Reports]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

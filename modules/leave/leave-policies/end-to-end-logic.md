@@ -49,8 +49,8 @@ GET /api/v1/leave/policies?leaveTypeId={id}&countryId={id}
 
 ## Related
 
-- [[leave-policies|Leave Policies Overview]]
-- [[leave-entitlements]]
-- [[leave-types]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/leave/leave-policies/overview|Leave Policies Overview]]
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]]
+- [[modules/leave/leave-types/overview|Leave Types]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

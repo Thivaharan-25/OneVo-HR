@@ -51,5 +51,5 @@ public class NotificationChannelServiceTests
 
 ## Related
 
-- [[notifications/notification-channels/overview|Notification Channels Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Notification Channels Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

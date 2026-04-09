@@ -37,5 +37,5 @@ public class PayrollProviderServiceTests
 
 ## Related
 
-- [[payroll/payroll-providers/overview|Payroll Providers Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Payroll Providers Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

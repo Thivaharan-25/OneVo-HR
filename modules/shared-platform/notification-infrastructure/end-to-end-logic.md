@@ -37,8 +37,8 @@ EscalationCheckJob (Hangfire, hourly)
 
 ## Related
 
-- [[notification-infrastructure|Overview]]
-- [[workflow-engine]]
-- [[real-time-integrations]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/shared-platform/notification-infrastructure/overview|Overview]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[modules/shared-platform/real-time-integrations/overview|Real Time Integrations]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

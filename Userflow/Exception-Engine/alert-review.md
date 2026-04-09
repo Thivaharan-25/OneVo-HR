@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Exception rules active and triggered → [[exception-rule-setup]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Exception rules active and triggered → [[Userflow/Exception-Engine/exception-rule-setup|Exception Rule Setup]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -25,13 +25,13 @@
 - **UI:** Three options:
   - **Acknowledge** — "I've reviewed this" → stops escalation timer → add notes
   - **Dismiss** — false positive or acceptable → add reason → alert closed
-  - **Escalate** — manually escalate to next level → [[escalation-chain-setup]]
+  - **Escalate** — manually escalate to next level → [[Userflow/Exception-Engine/escalation-chain-setup|Escalation Chain Setup]]
 - **API:** `PUT /api/v1/exceptions/alerts/{id}/acknowledge`
-- **Backend:** AlertService.AcknowledgeAsync() → [[alert-generation]]
+- **Backend:** AlertService.AcknowledgeAsync() → [[modules/exception-engine/alert-generation/overview|Alert Generation]]
 - **DB:** `exception_alerts` — status updated, acknowledged_by, acknowledged_at
 
 ### Step 4: Follow-Up (optional)
-- Start conversation with employee → schedule meeting → create PIP if pattern persists → [[improvement-plan]]
+- Start conversation with employee → schedule meeting → create PIP if pattern persists → [[Userflow/Performance/improvement-plan|Improvement Plan]]
 
 ## Error Scenarios
 
@@ -42,18 +42,18 @@
 
 ## Events Triggered
 
-- `AlertAcknowledged` → [[event-catalog]]
-- `AlertEscalated` (if manual) → [[event-catalog]]
+- `AlertAcknowledged` → [[backend/messaging/event-catalog|Event Catalog]]
+- `AlertEscalated` (if manual) → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[exception-rule-setup]]
-- [[escalation-chain-setup]]
-- [[exception-dashboard]]
-- [[improvement-plan]]
+- [[Userflow/Exception-Engine/exception-rule-setup|Exception Rule Setup]]
+- [[Userflow/Exception-Engine/escalation-chain-setup|Escalation Chain Setup]]
+- [[Userflow/Exception-Engine/exception-dashboard|Alerts Overview]]
+- [[Userflow/Performance/improvement-plan|Improvement Plan]]
 
 ## Module References
 
-- [[alert-generation]]
-- [[exception-rules]]
-- [[notification-system]]
+- [[modules/exception-engine/alert-generation/overview|Alert Generation]]
+- [[modules/exception-engine/exception-rules/overview|Exception Rules]]
+- [[backend/notification-system|Notification System]]

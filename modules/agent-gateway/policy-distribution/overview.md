@@ -39,11 +39,11 @@ var effectivePolicy = tenantPolicy.MergeWith(employeeOverride); // Override wins
 
 ## Related
 
-- [[agent-gateway|Agent Gateway Module]]
-- [[policy-distribution/end-to-end-logic|Policy Distribution — End-to-End Logic]]
-- [[policy-distribution/testing|Policy Distribution — Testing]]
-- [[heartbeat-monitoring/overview|Heartbeat Monitoring]]
-- [[data-ingestion/overview|Data Ingestion]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[WEEK1-shared-platform]]
+- [[modules/agent-gateway/overview|Agent Gateway Module]]
+- [[modules/agent-gateway/policy-distribution/end-to-end-logic|Policy Distribution — End-to-End Logic]]
+- [[modules/agent-gateway/policy-distribution/testing|Policy Distribution — Testing]]
+- [[frontend/architecture/overview|Heartbeat Monitoring]]
+- [[frontend/architecture/overview|Data Ingestion]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

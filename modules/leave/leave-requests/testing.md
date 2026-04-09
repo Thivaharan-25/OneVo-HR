@@ -157,5 +157,5 @@ public class LeaveRequestEndpointTests : IClassFixture<ONEVOWebFactory>
 
 ## Related
 
-- [[leave-requests|Leave Requests Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/leave/leave-requests/overview|Leave Requests Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

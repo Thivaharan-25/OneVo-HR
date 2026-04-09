@@ -29,12 +29,12 @@ Fields: `verify_on_login`, `verify_on_logout`, `interval_minutes` (0 = disabled)
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[verification-policies/end-to-end-logic|Verification Policies — End-to-End Logic]]
-- [[verification-policies/testing|Verification Policies — Testing]]
-- [[photo-verification/overview|Photo Verification]]
-- [[biometric-enrollment/overview|Biometric Enrollment]]
-- [[data-classification]]
-- [[compliance]]
-- [[multi-tenancy]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[modules/identity-verification/verification-policies/end-to-end-logic|Verification Policies — End-to-End Logic]]
+- [[modules/identity-verification/verification-policies/testing|Verification Policies — Testing]]
+- [[frontend/architecture/overview|Photo Verification]]
+- [[frontend/architecture/overview|Biometric Enrollment]]
+- [[security/data-classification|Data Classification]]
+- [[security/compliance|Compliance]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

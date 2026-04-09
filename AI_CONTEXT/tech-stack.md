@@ -168,7 +168,7 @@ ONEVO.Agent/
     └── Package.appxmanifest
 ```
 
-See [[agent-gateway]] for the server-side API contract.
+See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API contract.
 
 ---
 
@@ -214,7 +214,7 @@ See [[agent-gateway]] for the server-side API contract.
 | ADP / Oracle | Payroll sync | OAuth + REST | Phase 4 |
 | LMS Providers | Learning content | SSO + API | Phase 3 |
 
-See [[external-integrations]] for full integration details.
+See [[backend/external-integrations|External Integrations]] for full integration details.
 
 ---
 
@@ -223,13 +223,13 @@ See [[external-integrations]] for full integration details.
 | Pattern | Where Used |
 |:--------|:-----------|
 | CQRS | Write/read separation across modules |
-| Event Sourcing | Audit trails (`audit_logs` with JSON diffs) — see [[event-catalog]] |
+| Event Sourcing | Audit trails (`audit_logs` with JSON diffs) — see [[backend/messaging/event-catalog|Event Catalog]] |
 | [[exchange-topology\|Transactional Outbox]] | Reliable domain event delivery |
-| Repository Pattern | Data access via `BaseRepository<T>` — see [[shared-kernel]] |
+| Repository Pattern | Data access via `BaseRepository<T>` — see [[backend/shared-kernel|Shared Kernel]] |
 | Unit of Work | EF Core `DbContext` per request |
-| Mediator (MediatR) | Command/Query handling within modules — see [[module-boundaries]] |
+| Mediator (MediatR) | Command/Query handling within modules — see [[backend/module-boundaries|Module Boundaries]] |
 | Specification Pattern | Complex query composition |
-| Result Pattern | `Result<T, Error>` for explicit error handling — see [[shared-kernel]] |
+| Result Pattern | `Result<T, Error>` for explicit error handling — see [[backend/shared-kernel|Shared Kernel]] |
 | Time-Series Buffer | Raw activity data → buffer table (partitioned, purged 48h) → aggregated summaries |
 | Tiered Real-Time | Agent→server (2-3 min), exception engine (5 min), dashboard (30s polling / SignalR push) |
 
@@ -249,11 +249,11 @@ See [[external-integrations]] for full integration details.
 
 ## Related
 
-- [[project-context]]
-- [[rules]]
+- [[AI_CONTEXT/project-context|Project Context]]
+- [[AI_CONTEXT/rules|Rules]]
 - [[current-focus/README|Current Focus]]
-- [[known-issues]]
-- [[module-catalog]]
-- [[shared-kernel]]
-- [[agent-gateway]]
-- [[external-integrations]]
+- [[AI_CONTEXT/known-issues|Known Issues]]
+- [[backend/module-catalog|Module Catalog]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[modules/agent-gateway/overview|Agent Gateway]]
+- [[backend/external-integrations|External Integrations]]

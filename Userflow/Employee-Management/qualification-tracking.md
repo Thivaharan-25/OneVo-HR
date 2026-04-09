@@ -9,7 +9,7 @@
 ## Preconditions
 
 - Employee exists and is active
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -27,7 +27,7 @@
 ### Step 3: Upload Supporting Document
 - **UI:** Attach certificate/diploma image or PDF → uploaded to file storage
 - **API:** `POST /api/v1/employees/{id}/qualifications`
-- **Backend:** QualificationService.AddAsync() → [[qualifications]]
+- **Backend:** QualificationService.AddAsync() → [[modules/core-hr/qualifications/overview|Qualifications]]
 - **DB:** `employee_qualifications` — record with optional `document_id` FK
 
 ### Step 4: Verification (if admin)
@@ -43,15 +43,15 @@
 
 ## Events Triggered
 
-- `QualificationAdded` → [[event-catalog]]
+- `QualificationAdded` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[profile-management]]
-- [[certification-tracking]]
-- [[document-upload]]
+- [[Userflow/Employee-Management/profile-management|Profile Management]]
+- [[Userflow/Skills-Learning/certification-tracking|Certification Tracking]]
+- [[Userflow/Documents/document-upload|Document Upload]]
 
 ## Module References
 
-- [[qualifications]]
-- [[document-management]]
+- [[modules/core-hr/qualifications/overview|Qualifications]]
+- [[modules/documents/document-management/overview|Document Management]]

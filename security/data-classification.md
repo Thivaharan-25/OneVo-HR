@@ -69,7 +69,7 @@ Log.Logger = new LoggerConfiguration()
 | Verification photos | Per tenant policy (default 30 days) | Delete from blob + metadata | Privacy |
 | Agent health logs | 30 days | Delete | Housekeeping |
 
-Managed via `retention_policies` table and Hangfire daily cleanup job. See [[compliance]] for full GDPR requirements.
+Managed via `retention_policies` table and Hangfire daily cleanup job. See [[security/compliance|Compliance]] for full GDPR requirements.
 
 ## GDPR Data Subject Rights
 
@@ -99,9 +99,9 @@ public async Task<bool> CanDeleteAsync(string resourceType, Guid resourceId, Can
 
 ## Related
 
-- [[auth-architecture]]
-- [[retention-policies]]
-- [[screenshots]]
-- [[photo-capture]]
-- [[compliance]]
-- [[logging-standards]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[modules/configuration/retention-policies/overview|Retention Policies]]
+- [[modules/activity-monitoring/screenshots/overview|Screenshots]]
+- [[modules/identity-verification/photo-capture|Photo Capture]]
+- [[security/compliance|Compliance]]
+- [[code-standards/logging-standards|Logging Standards]]

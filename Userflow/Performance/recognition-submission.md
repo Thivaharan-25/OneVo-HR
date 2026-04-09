@@ -9,7 +9,7 @@
 ## Preconditions
 
 - Sender and recipient are active employees
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -19,12 +19,12 @@
 
 ### Step 2: Write Message
 - **UI:** Write appreciation message → optionally add badge/award → submit
-- **Backend:** RecognitionService.SubmitAsync() → [[recognitions]]
+- **Backend:** RecognitionService.SubmitAsync() → [[modules/performance/recognitions/overview|Recognitions]]
 - **DB:** `recognitions` — record created
 
 ### Step 3: Recipient Notified
 - **UI:** Recipient sees notification + recognition appears on company feed/wall
-- **Backend:** Notification sent → [[notification-system]]
+- **Backend:** Notification sent → [[backend/notification-system|Notification System]]
 
 ### Step 4: Recognition Feed
 - **UI:** Company-wide recognition feed visible on dashboard → filter by department → most recognized employees shown
@@ -38,14 +38,14 @@
 
 ## Events Triggered
 
-- `RecognitionSubmitted` → [[event-catalog]]
-- Notification to recipient → [[notification-system]]
+- `RecognitionSubmitted` → [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to recipient → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[review-cycle-setup]]
-- [[profile-management]]
+- [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
+- [[Userflow/Employee-Management/profile-management|Profile Management]]
 
 ## Module References
 
-- [[recognitions]]
+- [[modules/performance/recognitions/overview|Recognitions]]

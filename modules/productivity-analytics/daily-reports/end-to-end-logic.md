@@ -47,10 +47,10 @@ GET /api/v1/analytics/daily/{employeeId}?date=2026-04-05
 
 ## Related
 
-- [[productivity-analytics/daily-reports/overview|Daily Reports Overview]]
-- [[productivity-analytics/weekly-reports/overview|Weekly Reports]]
-- [[productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]]
-- [[error-handling]]
-- [[event-catalog]]
-- [[shared-kernel]]
-- [[WEEK4-productivity-analytics]]
+- [[frontend/architecture/overview|Daily Reports Overview]]
+- [[frontend/architecture/overview|Weekly Reports]]
+- [[frontend/architecture/overview|Workforce Snapshots]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

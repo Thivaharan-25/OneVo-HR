@@ -42,9 +42,9 @@ PUT /api/v1/performance/cycles/{id}/activate
 
 ## Related
 
-- [[review-cycles|Review Cycles Overview]]
-- [[reviews]]
-- [[feedback]]
-- [[goals-okr]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/performance/review-cycles/overview|Review Cycles Overview]]
+- [[modules/performance/reviews/overview|Reviews]]
+- [[modules/performance/feedback/overview|Feedback]]
+- [[modules/performance/goals-okr/overview|Goals Okr]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

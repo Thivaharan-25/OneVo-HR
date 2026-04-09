@@ -39,8 +39,8 @@ GET /api/v1/skills/gap-analysis/{employeeId}
 
 ## Related
 
-- [[employee-skills]] — feature overview
-- [[skill-taxonomy]] — skill and proficiency definitions
-- [[skill-assessments]] — assessment responses that drive validation
-- [[event-catalog]] — SkillValidated, SkillUpgradeRequested events
-- [[error-handling]] — invalid proficiency level and duplicate skill errors
+- [[modules/skills/employee-skills/overview|Employee Skills]] — feature overview
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — skill and proficiency definitions
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] — assessment responses that drive validation
+- [[backend/messaging/event-catalog|Event Catalog]] — SkillValidated, SkillUpgradeRequested events
+- [[backend/messaging/error-handling|Error Handling]] — invalid proficiency level and duplicate skill errors

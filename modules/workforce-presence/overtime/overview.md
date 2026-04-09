@@ -18,7 +18,7 @@ Overtime request + approval workflow.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `OvertimeRequested` | Employee requests | [[notifications]] |
+| `OvertimeRequested` | Employee requests | [[modules/notifications/overview|Notifications]] |
 
 ## API Endpoints
 
@@ -29,15 +29,15 @@ Overtime request + approval workflow.
 
 ## Related
 
-- [[workforce-presence|Workforce Presence Module]]
-- [[presence-sessions]]
-- [[shifts-schedules]]
-- [[attendance-corrections]]
-- [[device-sessions]]
-- [[break-tracking]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[event-catalog]]
-- [[compliance]]
-- [[shared-kernel]]
-- [[WEEK2-workforce-presence-biometric]]
+- [[modules/workforce-presence/overview|Workforce Presence Module]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]]
+- [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections]]
+- [[modules/workforce-presence/device-sessions/overview|Device Sessions]]
+- [[Userflow/Workforce-Presence/break-tracking|Break Tracking]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[security/compliance|Compliance]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

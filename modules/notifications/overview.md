@@ -1,8 +1,9 @@
 # Module: Notifications
 
 **Namespace:** `ONEVO.Modules.Notifications`
+**Phase:** 1 — Build
 **Pillar:** Shared Foundation
-**Owner:** Dev 4 (Week 4)
+**Owner:** Dev 2
 **Tables:** 2
 
 ---
@@ -17,7 +18,7 @@ Centralized notification pipeline for the entire platform. Handles in-app notifi
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[infrastructure]] | `ITenantContext` | Multi-tenancy |
+| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext` | Multi-tenancy |
 | **Consumed by** | All modules | — (via domain events) | Notification delivery |
 
 ---
@@ -64,7 +65,7 @@ public interface INotificationService
 
 ## Notification Pipeline
 
-See [[notification-system]] for the full 6-step pipeline:
+See [[backend/notification-system|Notification System]] for the full 6-step pipeline:
 1. Domain event published → 2. Handler resolves recipients → 3. Load template → 4. Render → 5. Dispatch per channel → 6. Log delivery
 
 **New event types for Workforce Intelligence:**
@@ -100,17 +101,17 @@ See [[notification-system]] for the full 6-step pipeline:
 
 ## Features
 
-- [[notification-templates]] — Per-channel, per-event templates (Liquid/Handlebars)
-- [[notification-channels]] — Channel provider configuration (email, Slack, webhook)
-- [[signalr-real-time]] — Real-time push channels (`exception-alerts`, `workforce-live`, `agent-status`)
+- [[modules/notifications/notification-templates/overview|Notification Templates]] — Per-channel, per-event templates (Liquid/Handlebars)
+- [[modules/notifications/notification-channels/overview|Notification Channels]] — Channel provider configuration (email, Slack, webhook)
+- [[modules/notifications/signalr-real-time/overview|Signalr Real Time]] — Real-time push channels (`exception-alerts`, `workforce-live`, `agent-status`)
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All templates and channels are tenant-scoped
-- [[event-catalog]] — `exception.alert.created`, `verification.failed`, `agent.heartbeat.lost`, `productivity.daily.report`
-- [[error-handling]] — Delivery failures logged per channel; retry logic
-- [[WEEK4-supporting-bridges]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All templates and channels are tenant-scoped
+- [[backend/messaging/event-catalog|Event Catalog]] — `exception.alert.created`, `verification.failed`, `agent.heartbeat.lost`, `productivity.daily.report`
+- [[backend/messaging/error-handling|Error Handling]] — Delivery failures logged per channel; retry logic
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
 
-See also: [[module-catalog]], [[notification-system]], [[exception-engine]]
+See also: [[backend/module-catalog|Module Catalog]], [[backend/notification-system|Notification System]], [[modules/exception-engine/overview|Exception Engine]]

@@ -56,5 +56,5 @@ public class CalendarConflictServiceTests
 
 ## Related
 
-- [[calendar/conflict-detection/overview|Conflict Detection Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Conflict Detection Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

@@ -29,12 +29,12 @@ Specific titles linked to a family and level (e.g., "Software Engineer" in Engin
 
 ## Related
 
-- [[org-structure|Org Structure Module]]
-- [[departments]]
-- [[legal-entities]]
-- [[cost-centers]]
-- [[teams]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[shared-kernel]]
-- [[WEEK1-org-structure]]
+- [[modules/org-structure/overview|Org Structure Module]]
+- [[modules/org-structure/departments/overview|Departments]]
+- [[modules/org-structure/legal-entities/overview|Legal Entities]]
+- [[modules/org-structure/cost-centers/overview|Cost Centers]]
+- [[modules/org-structure/teams/overview|Teams]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV3-org-structure|DEV3: Org Structure]]

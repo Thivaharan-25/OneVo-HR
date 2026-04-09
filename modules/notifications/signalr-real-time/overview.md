@@ -20,10 +20,10 @@ Real-time push notifications via SignalR channels.
 
 ## Related
 
-- [[notifications|Notifications Module]]
-- [[notifications/notification-channels/overview|Notification Channels]]
-- [[notifications/notification-templates/overview|Notification Templates]]
-- [[event-catalog]]
-- [[notification-system]]
-- [[multi-tenancy]]
-- [[WEEK4-supporting-bridges]]
+- [[modules/notifications/overview|Notifications Module]]
+- [[frontend/architecture/overview|Notification Channels]]
+- [[frontend/architecture/overview|Notification Templates]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/notification-system|Notification System]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]]

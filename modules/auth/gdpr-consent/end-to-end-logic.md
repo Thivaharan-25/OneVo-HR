@@ -46,10 +46,10 @@ Internal call (e.g., before activating monitoring):
 
 ## Related
 
-- [[gdpr-consent|Overview]]
-- [[authentication]]
-- [[audit-logging]]
-- [[authorization]]
-- [[event-catalog]]
-- [[error-handling]]
-- [[compliance]]
+- [[Userflow/Auth-Access/gdpr-consent|Overview]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[security/compliance|Compliance]]

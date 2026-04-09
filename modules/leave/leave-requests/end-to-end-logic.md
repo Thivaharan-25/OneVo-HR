@@ -79,9 +79,9 @@ LeaveRequestService.CancelAsync(requestId, ct)
 
 ## Related
 
-- [[leave-requests|Leave Requests Overview]]
-- [[leave-entitlements]]
-- [[balance-audit]]
-- [[leave-policies]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/leave/leave-requests/overview|Leave Requests Overview]]
+- [[modules/leave/leave-entitlements/overview|Leave Entitlements]]
+- [[modules/leave/balance-audit/overview|Balance Audit]]
+- [[modules/leave/leave-policies/overview|Leave Policies]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

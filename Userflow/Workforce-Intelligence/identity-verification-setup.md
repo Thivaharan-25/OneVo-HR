@@ -8,10 +8,10 @@
 
 ## Preconditions
 
-- Monitoring enabled → [[monitoring-configuration]]
-- Desktop agent deployed → [[agent-deployment]]
-- Employee GDPR consent for biometric data → [[gdpr-consent]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Monitoring enabled → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- Desktop agent deployed → [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
+- Employee GDPR consent for biometric data → [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -21,7 +21,7 @@
 
 ### Step 2: Configure Settings
 - **UI:** Set capture interval (every 15/30/60 min) → set confidence threshold for face match (e.g., 85%) → set action on failure: "Alert Only" or "Lock Session" → select enrolled photo source (employee profile photo)
-- **Backend:** VerificationConfigService.UpdateAsync() → [[identity-verification]]
+- **Backend:** VerificationConfigService.UpdateAsync() → [[modules/identity-verification/overview|Identity Verification]]
 - **DB:** `verification_settings`
 
 ### Step 3: Assign Scope
@@ -39,15 +39,15 @@
 
 ## Events Triggered
 
-- `VerificationConfigUpdated` → [[event-catalog]]
+- `VerificationConfigUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[identity-verification-review]]
-- [[monitoring-configuration]]
-- [[gdpr-consent]]
+- [[Userflow/Workforce-Intelligence/identity-verification-review|Identity Verification Review]]
+- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
 
 ## Module References
 
-- [[identity-verification]]
-- [[monitoring-toggles]]
+- [[modules/identity-verification/overview|Identity Verification]]
+- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]]

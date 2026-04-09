@@ -29,10 +29,10 @@ Employee responses: `employee_id`, `question_id`, `selected_option_id`, `text_an
 ## Related
 
 - [[skills|Skills Module]] — parent module
-- [[skill-taxonomy]] — skills that assessments evaluate
-- [[employee-skills]] — skill records updated on assessment completion
-- [[development-plans]] — plans that include assessment milestones
-- [[multi-tenancy]] — tenant-scoped assessment questions and responses
-- [[event-catalog]] — AssessmentSubmitted events
-- [[error-handling]] — invalid response types and scoring errors
-- [[WEEK4-supporting-bridges]] — implementation task
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — skills that assessments evaluate
+- [[modules/skills/employee-skills/overview|Employee Skills]] — skill records updated on assessment completion
+- [[modules/skills/development-plans/overview|Development Plans]] — plans that include assessment milestones
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped assessment questions and responses
+- [[backend/messaging/event-catalog|Event Catalog]] — AssessmentSubmitted events
+- [[backend/messaging/error-handling|Error Handling]] — invalid response types and scoring errors
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task

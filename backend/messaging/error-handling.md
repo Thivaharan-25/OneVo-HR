@@ -73,10 +73,10 @@ public class MarkLeaveInAttendanceHandler : INotificationHandler<LeaveApprovedEv
 - Dead Letter Exchange (DLX) per queue
 - 3-retry policy with exponential backoff
 - Poison message quarantine after max retries
-- Monitoring via Prometheus metrics on DLX message count (see [[monitoring]])
+- Monitoring via Prometheus metrics on DLX message count (see [[frontend/performance/monitoring|Monitoring]])
 
 ## Related
 
-- [[event-catalog]]
-- [[exchange-topology]]
-- [[logging-standards]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/exchange-topology|Exchange Topology]]
+- [[code-standards/logging-standards|Logging Standards]]

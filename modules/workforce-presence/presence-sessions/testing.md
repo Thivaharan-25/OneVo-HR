@@ -65,6 +65,6 @@ public class PresenceReconciliationServiceTests
 
 ## Related
 
-- [[presence-sessions|Presence Sessions Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

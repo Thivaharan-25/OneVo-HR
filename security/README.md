@@ -2,14 +2,14 @@
 
 | Document | Purpose |
 |:---------|:--------|
-| [[auth-architecture]] | JWT, RBAC, sessions, MFA, password policies |
-| [[data-classification]] | PII inventory, encryption, retention, GDPR rights |
-| [[compliance]] | GDPR, PDPA, OWASP mitigations, security headers |
+| [[security/auth-architecture|Auth Architecture]] | JWT, RBAC, sessions, MFA, password policies |
+| [[security/data-classification|Data Classification]] | PII inventory, encryption, retention, GDPR rights |
+| [[security/compliance|Compliance]] | GDPR, PDPA, OWASP mitigations, security headers |
 
 ## Related
 
-- [[auth-architecture]]
-- [[data-classification]]
-- [[compliance]]
-- [[auth-flow]]
-- [[rbac-frontend]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[security/compliance|Compliance]]
+- [[security/auth-flow|Auth Flow]]
+- [[security/rbac-frontend|Rbac Frontend]]

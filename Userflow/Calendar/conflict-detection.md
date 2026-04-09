@@ -9,13 +9,13 @@
 ## Preconditions
 
 - Calendar events or leave requests exist
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Automatic Conflict Check
-- **Trigger:** When creating a calendar event → [[calendar-event-creation]] or submitting leave request → [[leave-request-submission]]
-- **Backend:** ConflictDetectionService.CheckAsync() → [[conflict-detection]]
+- **Trigger:** When creating a calendar event → [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]] or submitting leave request → [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
+- **Backend:** ConflictDetectionService.CheckAsync() → [[Userflow/Calendar/conflict-detection|Conflict Detection]]
 
 ### Step 2: View Conflicts
 - **UI:** Warning panel showing:
@@ -45,12 +45,12 @@
 
 ## Related Flows
 
-- [[calendar-event-creation]]
-- [[leave-request-submission]]
-- [[leave-approval]]
+- [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]]
+- [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
+- [[Userflow/Leave/leave-approval|Leave Approval]]
 
 ## Module References
 
-- [[conflict-detection]]
-- [[calendar-events]]
-- [[leave-requests]]
+- [[Userflow/Calendar/conflict-detection|Conflict Detection]]
+- [[modules/calendar/calendar-events/overview|Calendar Events]]
+- [[modules/leave/leave-requests/overview|Leave Requests]]

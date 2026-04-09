@@ -27,12 +27,12 @@ Threshold JSON must be validated against known schema before evaluation. Invalid
 
 ## Related
 
-- [[exception-engine|Exception Engine Module]]
-- [[exception-engine/alert-generation/overview|Alert Generation]]
-- [[exception-engine/evaluation-engine/overview|Evaluation Engine]]
-- [[exception-engine/escalation-chains/overview|Escalation Chains]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[shared-kernel]]
-- [[WEEK4-exception-engine]]
+- [[modules/exception-engine/overview|Exception Engine Module]]
+- [[frontend/architecture/overview|Alert Generation]]
+- [[frontend/architecture/overview|Evaluation Engine]]
+- [[frontend/architecture/overview|Escalation Chains]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

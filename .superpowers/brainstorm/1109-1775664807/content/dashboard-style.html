@@ -1,0 +1,62 @@
+<h2>What should the dashboard feel like?</h2>
+<p class="subtitle">The first thing users see after login. This sets the tone for the entire product.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Mission Control</h3>
+      <p>Dense, real-time, everything-at-a-glance. KPI cards across the top, live charts, activity feed, alerts — all on one screen. Power users love this. Think Datadog or Grafana home.</p>
+      <div style="margin-top:12px; font-family:monospace; font-size:10px; background:#09090b; padding:12px; border-radius:6px; color:#a1a1aa;">
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+          <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:4px;padding:6px;text-align:center;"><span style="color:#6366f1;font-size:16px;font-weight:700;">247</span><br>Active</div>
+          <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:4px;padding:6px;text-align:center;"><span style="color:#22c55e;font-size:16px;font-weight:700;">94%</span><br>Attendance</div>
+          <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:4px;padding:6px;text-align:center;"><span style="color:#f59e0b;font-size:16px;font-weight:700;">12</span><br>Pending</div>
+          <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:4px;padding:6px;text-align:center;"><span style="color:#ef4444;font-size:16px;font-weight:700;">3</span><br>Alerts</div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <div style="flex:2;background:#18181b;border:1px solid #27272a;border-radius:4px;padding:8px;height:60px;">Chart ████▓▓░░</div>
+          <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:4px;padding:8px;height:60px;">Activity feed...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Focused Action Hub</h3>
+      <p>Clean, prioritized. Shows only what needs attention — pending approvals, upcoming events, recent changes. Minimal stats, maximum actionability. Think Linear or Notion home.</p>
+      <div style="margin-top:12px; font-family:monospace; font-size:10px; background:#09090b; padding:12px; border-radius:6px; color:#a1a1aa;">
+        <div style="color:#e4e4e7;font-size:12px;margin-bottom:8px;">Good morning, Thiva</div>
+        <div style="background:#18181b;border:1px solid #27272a;border-radius:4px;padding:8px;margin-bottom:6px;">
+          <span style="color:#6366f1;">3 approvals</span> waiting for you
+        </div>
+        <div style="background:#18181b;border:1px solid #27272a;border-radius:4px;padding:8px;margin-bottom:6px;">
+          <span style="color:#f59e0b;">2 onboardings</span> starting this week
+        </div>
+        <div style="background:#18181b;border:1px solid #27272a;border-radius:4px;padding:8px;">
+          Recent: John Doe promoted to Senior Engineer
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Hybrid: Action Hub + Expandable Analytics</h3>
+      <p>Actions and priorities at the top, with a collapsible analytics section below that users can expand when they want the data view. Best of both worlds.</p>
+      <div style="margin-top:12px; font-family:monospace; font-size:10px; background:#09090b; padding:12px; border-radius:6px; color:#a1a1aa;">
+        <div style="color:#e4e4e7;font-size:12px;margin-bottom:6px;">Good morning, Thiva</div>
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+          <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:4px;padding:6px;">3 approvals pending</div>
+          <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:4px;padding:6px;">2 onboardings</div>
+        </div>
+        <div style="border:1px dashed #27272a;border-radius:4px;padding:6px;text-align:center;color:#52525b;">
+          ▾ Expand Analytics Dashboard
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

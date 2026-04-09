@@ -18,7 +18,7 @@ Key columns: `employee_id`, `date`, `total_hours`, `active_hours`, `idle_hours`,
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `DailyReportReady` | Aggregation complete | [[notifications]] |
+| `DailyReportReady` | Aggregation complete | [[modules/notifications/overview|Notifications]] |
 
 ## Hangfire Jobs
 
@@ -35,13 +35,13 @@ Key columns: `employee_id`, `date`, `total_hours`, `active_hours`, `idle_hours`,
 
 ## Related
 
-- [[productivity-analytics|Productivity Analytics Module]]
-- [[productivity-analytics/weekly-reports/overview|Weekly Reports]]
-- [[productivity-analytics/monthly-reports/overview|Monthly Reports]]
-- [[productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[event-catalog]]
-- [[data-classification]]
-- [[shared-kernel]]
-- [[WEEK4-productivity-analytics]]
+- [[modules/productivity-analytics/overview|Productivity Analytics Module]]
+- [[frontend/architecture/overview|Weekly Reports]]
+- [[frontend/architecture/overview|Monthly Reports]]
+- [[frontend/architecture/overview|Workforce Snapshots]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[security/data-classification|Data Classification]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

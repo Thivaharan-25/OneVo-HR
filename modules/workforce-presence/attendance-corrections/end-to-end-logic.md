@@ -31,8 +31,8 @@ POST /api/v1/workforce/corrections
 
 ## Related
 
-- [[attendance-corrections|Attendance Corrections Overview]]
-- [[presence-sessions]]
-- [[device-sessions]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections Overview]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[modules/workforce-presence/device-sessions/overview|Device Sessions]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

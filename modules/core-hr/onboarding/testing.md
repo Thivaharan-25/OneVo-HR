@@ -65,6 +65,6 @@ public class OnboardingServiceTests
 
 ## Related
 
-- [[onboarding|Onboarding Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/core-hr/onboarding/overview|Onboarding Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

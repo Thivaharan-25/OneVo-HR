@@ -96,9 +96,9 @@ function ActivitySection({ employeeId }: { employeeId: string }) {
 
 ## Related
 
-- [[activity-monitoring]] — activity monitoring module
-- [[agent-gateway]] — agent data ingestion
-- [[data-ingestion]] — ingestion feature
-- [[raw-data-processing]] — raw buffer processing
-- [[daily-aggregation]] — daily summary aggregation
-- [[exception-engine]] — exception detection from data
+- [[modules/activity-monitoring/overview|Activity Monitoring]] — activity monitoring module
+- [[modules/agent-gateway/overview|Agent Gateway]] — agent data ingestion
+- [[modules/agent-gateway/data-ingestion/overview|Data Ingestion]] — ingestion feature
+- [[modules/activity-monitoring/raw-data-processing/overview|Raw Data Processing]] — raw buffer processing
+- [[modules/activity-monitoring/daily-aggregation/overview|Daily Aggregation]] — daily summary aggregation
+- [[modules/exception-engine/overview|Exception Engine]] — exception detection from data

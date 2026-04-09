@@ -63,11 +63,11 @@ PUT /api/v1/exceptions/alerts/{id}/acknowledge
 
 ## Related
 
-- [[exception-engine/evaluation-engine/overview|Evaluation Engine Overview]]
-- [[exception-engine/alert-generation/overview|Alert Generation]]
-- [[exception-engine/exception-rules/overview|Exception Rules]]
-- [[exception-engine/escalation-chains/overview|Escalation Chains]]
-- [[error-handling]]
-- [[event-catalog]]
-- [[shared-kernel]]
-- [[WEEK4-exception-engine]]
+- [[frontend/architecture/overview|Evaluation Engine Overview]]
+- [[frontend/architecture/overview|Alert Generation]]
+- [[frontend/architecture/overview|Exception Rules]]
+- [[frontend/architecture/overview|Escalation Chains]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

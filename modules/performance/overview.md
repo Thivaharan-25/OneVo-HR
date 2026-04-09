@@ -1,16 +1,20 @@
 # Module: Performance
 
 **Namespace:** `ONEVO.Modules.Performance`
+**Phase:** 2 — Deferred
 **Pillar:** 1 — HR Management
 **Owner:** Dev 2 (Week 3)
 **Tables:** 7
-**Task File:** [[WEEK3-performance]]
+**Task File:** Performance task file (deferred to Phase 2)
+
+> [!WARNING]
+> **This module is deferred to Phase 2. Do not implement.** Performance reviews are not core to the employee monitoring product. Specs are preserved here for future reference.
 
 ---
 
 ## Purpose
 
-Manages performance review cycles, multi-rater reviews, peer feedback, goals (OKR), recognition, and succession planning. **Enhanced** in the two-pillar architecture to optionally receive productivity scores from [[productivity-analytics]] for data-informed reviews.
+Manages performance review cycles, multi-rater reviews, peer feedback, goals (OKR), recognition, and succession planning. **Enhanced** in the two-pillar architecture to optionally receive productivity scores from [[modules/productivity-analytics/overview|Productivity Analytics]] for data-informed reviews.
 
 ---
 
@@ -18,9 +22,9 @@ Manages performance review cycles, multi-rater reviews, peer feedback, goals (OK
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[core-hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[org-structure]] | `IOrgStructureService` | Department hierarchy for cascade goals |
-| **Depends on** | [[productivity-analytics]] | `IProductivityAnalyticsService` | Optional productivity scores for reviews |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context |
+| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Department hierarchy for cascade goals |
+| **Depends on** | [[modules/productivity-analytics/overview|Productivity Analytics]] | `IProductivityAnalyticsService` | Optional productivity scores for reviews |
 
 ---
 
@@ -173,20 +177,20 @@ OKR-style goals with parent-child hierarchy.
 
 ## Features
 
-- [[review-cycles]] — Review cycle management (quarterly, annual, probation) with productivity data toggle — frontend: [[review-cycles/frontend]]
-- [[reviews]] — Multi-rater reviews (self, manager, peer, 360) with optional productivity score
-- [[goals-okr]] — OKR-style goals with hierarchical parent-child cascade
-- [[feedback]] — Ad-hoc and cycle-linked peer feedback requests
-- [[recognitions]] — Peer recognition with category and reward points
-- [[improvement-plans]] — Performance improvement plans with measurable objectives
-- [[succession-planning]] — Succession plans with readiness levels per position
+- [[modules/performance/review-cycles/overview|Review Cycles]] — Review cycle management (quarterly, annual, probation) with productivity data toggle — frontend: [[modules/performance/review-cycles/frontend|Frontend]]
+- [[modules/performance/reviews/overview|Reviews]] — Multi-rater reviews (self, manager, peer, 360) with optional productivity score
+- [[modules/performance/goals-okr/overview|Goals Okr]] — OKR-style goals with hierarchical parent-child cascade
+- [[modules/performance/feedback/overview|Feedback]] — Ad-hoc and cycle-linked peer feedback requests
+- [[modules/performance/recognitions/overview|Recognitions]] — Peer recognition with category and reward points
+- [[modules/performance/improvement-plans/overview|Improvement Plans]] — Performance improvement plans with measurable objectives
+- [[Userflow/Performance/succession-planning|Succession Planning]] — Succession plans with readiness levels per position
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All performance data is tenant-scoped
-- [[event-catalog]] — Review cycle status drives calendar events
-- [[WEEK3-performance]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All performance data is tenant-scoped
+- [[backend/messaging/event-catalog|Event Catalog]] — Review cycle status drives calendar events
+- Performance task file (deferred to Phase 2) — Implementation task file
 
-See also: [[module-catalog]], [[core-hr]], [[productivity-analytics]], [[skills]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/productivity-analytics/overview|Productivity Analytics]], [[skills]]

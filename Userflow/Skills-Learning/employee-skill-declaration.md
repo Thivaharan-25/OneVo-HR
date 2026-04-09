@@ -9,9 +9,9 @@
 ## Preconditions
 
 - Employee has an active employment record
-- Skill taxonomy has been configured with at least one category and skill: [[skill-taxonomy-setup|Skill Taxonomy Setup Flow]]
+- Skill taxonomy has been configured with at least one category and skill: [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup Flow]]
 - Proficiency levels have been defined
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -52,7 +52,7 @@
   2. Validate employee hasn't already declared this skill
   3. Create `employee_skills` record with status `pending_validation`
   4. Set `self_rated_proficiency` to selected level
-  5. Notify direct manager via [[notification-system]]
+  5. Notify direct manager via [[backend/notification-system|Notification System]]
   6. Publish `SkillDeclaredEvent`
   7. Create audit log entry
 - **Validation:** Skill must exist in taxonomy. No duplicate declarations. Proficiency level must be valid
@@ -94,20 +94,20 @@
 
 ## Events Triggered
 
-- `SkillDeclaredEvent` → [[event-catalog]] — consumed by notification service, skill analytics
-- `SkillUpdatedEvent` → [[event-catalog]] — when proficiency changed
-- `AuditLogEntry` (action: `employee_skill.declared`) → [[audit-logging]]
+- `SkillDeclaredEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by notification service, skill analytics
+- `SkillUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — when proficiency changed
+- `AuditLogEntry` (action: `employee_skill.declared`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[skill-taxonomy-setup]] — taxonomy that defines available skills
-- [[skill-assessment]] — manager validates this declaration
-- [[development-plan]] — skill gaps drive development planning
-- [[course-enrollment]] — courses linked to skills
+- [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]] — taxonomy that defines available skills
+- [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]] — manager validates this declaration
+- [[Userflow/Skills-Learning/development-plan|Development Plan]] — skill gaps drive development planning
+- [[Userflow/Skills-Learning/course-enrollment|Course Enrollment]] — courses linked to skills
 
 ## Module References
 
 - [[skills]] — skills module overview and architecture
-- [[employee-skills]] — employee skill data model and lifecycle
-- [[skill-taxonomy]] — taxonomy browsing and search
-- [[notification-system]] — manager notification on declaration
+- [[modules/skills/employee-skills/overview|Employee Skills]] — employee skill data model and lifecycle
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — taxonomy browsing and search
+- [[backend/notification-system|Notification System]] — manager notification on declaration

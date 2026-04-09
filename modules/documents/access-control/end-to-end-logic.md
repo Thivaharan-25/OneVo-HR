@@ -37,7 +37,7 @@ GET /api/v1/documents/{id}/access-logs
 
 ## Related
 
-- [[documents/access-control/overview|Access Control Overview]]
-- [[documents/document-management/overview|Document Management]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[frontend/architecture/overview|Access Control Overview]]
+- [[frontend/architecture/overview|Document Management]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

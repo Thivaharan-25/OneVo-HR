@@ -43,9 +43,9 @@ PUT /api/v1/workforce/overtime/{id}/approve
 
 ## Related
 
-- [[overtime|Overtime Overview]]
-- [[presence-sessions]]
-- [[shifts-schedules]]
-- [[attendance-corrections]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/workforce-presence/overtime/overview|Overtime Overview]]
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]]
+- [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

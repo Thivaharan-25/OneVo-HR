@@ -65,5 +65,5 @@ public class PayrollServiceTests
 
 ## Related
 
-- [[payroll/payroll-execution/overview|Payroll Execution Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Payroll Execution Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Department/team structure exists → [[department-hierarchy]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Department/team structure exists → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -26,7 +26,7 @@
 ### Step 3: Assign to Employees/Departments
 - **UI:** Select template → assign to: individual employees, team, or entire department → set effective date range (permanent or temporary)
 - **API:** `POST /api/v1/workforce/schedules/assign`
-- **Backend:** ScheduleService.AssignAsync() → [[shifts-schedules]]
+- **Backend:** ScheduleService.AssignAsync() → [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]]
 - **DB:** `employee_schedules` — assignment records
 
 ### Step 4: Confirmation
@@ -38,7 +38,7 @@
 - Define multi-week pattern (Week A: Morning, Week B: Night) → system auto-rotates
 
 ### Holiday overrides
-- Public holidays auto-applied from legal entity calendar → [[calendar-event-creation]]
+- Public holidays auto-applied from legal entity calendar → [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]]
 
 ## Error Scenarios
 
@@ -49,16 +49,16 @@
 
 ## Events Triggered
 
-- `ShiftCreated` → [[event-catalog]]
-- `ScheduleAssigned` → [[event-catalog]]
+- `ShiftCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `ScheduleAssigned` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[presence-session-view]]
-- [[overtime-management]]
-- [[exception-rule-setup]]
+- [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- [[Userflow/Workforce-Presence/overtime-management|Overtime Management]]
+- [[Userflow/Exception-Engine/exception-rule-setup|Exception Rule Setup]]
 
 ## Module References
 
-- [[shifts-schedules]]
-- [[workforce-presence]]
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]]
+- [[modules/workforce-presence/overview|Workforce Presence]]

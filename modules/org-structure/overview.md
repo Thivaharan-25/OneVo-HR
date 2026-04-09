@@ -1,10 +1,11 @@
 # Module: Org Structure
 
 **Namespace:** `ONEVO.Modules.OrgStructure`
+**Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 3 (Week 1)
 **Tables:** 8
-**Task File:** [[WEEK1-org-structure]]
+**Task File:** [[current-focus/DEV3-org-structure|DEV3: Org Structure]]
 
 ---
 
@@ -18,11 +19,11 @@ Manages the organizational hierarchy: legal entities, departments (hierarchical 
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Consumed by** | [[core-hr]] | `IOrgStructureService` | Department, job context for employees |
-| **Consumed by** | [[leave]] | `IOrgStructureService` | Leave policies per job level/country |
-| **Consumed by** | [[payroll]] | `IOrgStructureService` | Legal entity for payroll processing |
-| **Consumed by** | [[exception-engine]] | `IOrgStructureService` | Department-scoped exception rules |
+| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext` | Multi-tenancy |
+| **Consumed by** | [[modules/core-hr/overview|Core Hr]] | `IOrgStructureService` | Department, job context for employees |
+| **Consumed by** | [[modules/leave/overview|Leave]] | `IOrgStructureService` | Leave policies per job level/country |
+| **Consumed by** | [[modules/payroll/overview|Payroll]] | `IOrgStructureService` | Legal entity for payroll processing |
+| **Consumed by** | [[modules/exception-engine/overview|Exception Engine]] | `IOrgStructureService` | Department-scoped exception rules |
 
 ---
 
@@ -156,19 +157,19 @@ Self-referencing hierarchy via `parent_department_id`.
 
 ## Features
 
-- [[legal-entities]] — Legal entity registration with country and address
-- [[departments]] — Hierarchical department tree (`parent_department_id`, CTE-friendly)
-- [[job-hierarchy]] — Job families, job levels (with rank), and job titles
-- [[teams]] — Teams within departments with team leads and member assignments
-- [[cost-centers]] — Department cost centers with budget per fiscal year
+- [[modules/org-structure/legal-entities/overview|Legal Entities]] — Legal entity registration with country and address
+- [[modules/org-structure/departments/overview|Departments]] — Hierarchical department tree (`parent_department_id`, CTE-friendly)
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — Job families, job levels (with rank), and job titles
+- [[modules/org-structure/teams/overview|Teams]] — Teams within departments with team leads and member assignments
+- [[modules/org-structure/cost-centers/overview|Cost Centers]] — Department cost centers with budget per fiscal year
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All org structure data is tenant-scoped
-- [[shared-kernel]] — Foundation entity patterns
-- [[migration-patterns]] — Self-referencing `parent_department_id` hierarchy; CTE queries
-- [[WEEK1-org-structure]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All org structure data is tenant-scoped
+- [[backend/shared-kernel|Shared Kernel]] — Foundation entity patterns
+- [[database/migration-patterns|Migration Patterns]] — Self-referencing `parent_department_id` hierarchy; CTE queries
+- [[current-focus/DEV3-org-structure|DEV3: Org Structure]] — Implementation task file
 
-See also: [[module-catalog]], [[core-hr]], [[leave]], [[payroll]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/leave/overview|Leave]], [[modules/payroll/overview|Payroll]]

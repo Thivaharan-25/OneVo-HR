@@ -51,5 +51,5 @@ public class SkillAssessmentServiceTests
 
 ## Related
 
-- [[skill-assessments]] — feature overview
-- [[testing/README|Testing Standards]] — project-wide testing conventions
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] — feature overview
+- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions

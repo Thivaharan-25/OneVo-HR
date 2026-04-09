@@ -8,8 +8,8 @@
 
 ## Preconditions
 
-- Document system configured → [[document-upload]]
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Document system configured → [[Userflow/Documents/document-upload|Document Upload]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
@@ -19,7 +19,7 @@
 
 ### Step 2: Build Template
 - **UI:** Rich text editor → insert merge fields: `{{employee.name}}`, `{{employee.title}}`, `{{employee.department}}`, `{{employee.salary}}`, `{{employee.start_date}}`, `{{company.name}}`, `{{today}}` → format layout → set output format (PDF)
-- **Backend:** TemplateService.CreateAsync() → [[templates]]
+- **Backend:** TemplateService.CreateAsync() → [[modules/documents/templates/overview|Templates]]
 - **DB:** `document_templates`
 
 ### Step 3: Generate Document
@@ -35,15 +35,15 @@
 
 ## Events Triggered
 
-- `DocumentGenerated` → [[event-catalog]]
+- `DocumentGenerated` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[document-upload]]
-- [[employee-onboarding]]
-- [[employee-offboarding]]
+- [[Userflow/Documents/document-upload|Document Upload]]
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
+- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]]
 
 ## Module References
 
-- [[templates]]
-- [[document-management]]
+- [[modules/documents/templates/overview|Templates]]
+- [[modules/documents/document-management/overview|Document Management]]

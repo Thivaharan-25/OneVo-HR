@@ -51,5 +51,5 @@ public class WeeklyReportServiceTests
 
 ## Related
 
-- [[productivity-analytics/weekly-reports/overview|Weekly Reports Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|Weekly Reports Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

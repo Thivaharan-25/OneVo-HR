@@ -3,8 +3,8 @@
 ## 1. General Principles
 
 - **Readability over cleverness** — code is read far more than written
-- **Consistency** — follow existing patterns in the codebase (see [[module-boundaries]])
-- **Explicit over implicit** — prefer `Result<T>` (see [[shared-kernel]]) over exceptions, `async/await` over callbacks
+- **Consistency** — follow existing patterns in the codebase (see [[backend/module-boundaries|Module Boundaries]])
+- **Explicit over implicit** — prefer `Result<T>` (see [[backend/shared-kernel|Shared Kernel]]) over exceptions, `async/await` over callbacks
 - **Fail fast** — validate inputs at the boundary, use `FluentValidation`
 
 ## 2. Naming Conventions
@@ -200,11 +200,11 @@ public async Task<Result<LeaveRequestDto>> ApproveLeaveRequest(Guid requestId, C
 
 ## Related
 
-- [[rules]] — AI agent code generation rules
-- [[module-boundaries]] — module structure and boundary enforcement
-- [[shared-kernel]] — base classes and utilities
-- [[git-workflow]] — commit message format and branching
-- [[logging-standards]] — Serilog patterns
+- [[AI_CONTEXT/rules|Rules]] — AI agent code generation rules
+- [[backend/module-boundaries|Module Boundaries]] — module structure and boundary enforcement
+- [[backend/shared-kernel|Shared Kernel]] — base classes and utilities
+- [[code-standards/git-workflow|Git Workflow]] — commit message format and branching
+- [[code-standards/logging-standards|Logging Standards]] — Serilog patterns
 
 ## 7. Git Commit Messages
 
@@ -226,6 +226,6 @@ perf(payroll): optimize payroll run query with batch processing
 
 ## Related
 
-- [[rules]]
-- [[shared-kernel]]
-- [[module-boundaries]]
+- [[AI_CONTEXT/rules|Rules]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[backend/module-boundaries|Module Boundaries]]

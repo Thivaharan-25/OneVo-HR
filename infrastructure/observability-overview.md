@@ -4,8 +4,8 @@
 
 | Document | Purpose |
 |:---------|:--------|
-| [[monitoring]] | Dashboards, alerting rules, golden signals |
-| [[observability]] | Distributed tracing, correlation IDs, Serilog |
+| [[frontend/performance/monitoring|Monitoring]] | Dashboards, alerting rules, golden signals |
+| [[infrastructure/observability|Observability]] | Distributed tracing, correlation IDs, Serilog |
 
 ## SLA Targets
 
@@ -35,6 +35,6 @@
 
 ## Related
 
-- [[monitoring]]
-- [[observability]]
-- [[logging-standards]]
+- [[frontend/performance/monitoring|Monitoring]]
+- [[infrastructure/observability|Observability]]
+- [[code-standards/logging-standards|Logging Standards]]

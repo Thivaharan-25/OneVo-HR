@@ -30,10 +30,10 @@ GenerateWeeklyReportsJob (Hangfire, Monday 1:00 AM)
 
 ## Related
 
-- [[productivity-analytics/weekly-reports/overview|Weekly Reports Overview]]
-- [[productivity-analytics/daily-reports/overview|Daily Reports]]
-- [[productivity-analytics/monthly-reports/overview|Monthly Reports]]
-- [[error-handling]]
-- [[event-catalog]]
-- [[shared-kernel]]
-- [[WEEK4-productivity-analytics]]
+- [[frontend/architecture/overview|Weekly Reports Overview]]
+- [[frontend/architecture/overview|Daily Reports]]
+- [[frontend/architecture/overview|Monthly Reports]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]

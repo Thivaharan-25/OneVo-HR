@@ -37,10 +37,10 @@ POST /api/v1/tenants
 
 ## Related
 
-- [[tenant-management|Overview]]
-- [[user-management]]
-- [[reference-data]]
-- [[authorization]]
-- [[audit-logging]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/infrastructure/tenant-management/overview|Overview]]
+- [[modules/infrastructure/user-management/overview|User Management]]
+- [[modules/infrastructure/reference-data/overview|Reference Data]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

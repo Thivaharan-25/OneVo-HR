@@ -4,10 +4,10 @@
 
 - **Source of Truth:** Always prioritize information found within this repository. If there's a conflict, the most recently updated file in `AI_CONTEXT/` takes precedence.
 - **Contextual Awareness:** Before performing any task, read these files in order:
-    1. [[project-context]] — What ONEVO is
-    2. [[tech-stack]] — .NET 9, PostgreSQL, Redis, Next.js, etc.
+    1. [[AI_CONTEXT/project-context|Project Context]] — What ONEVO is
+    2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 9, PostgreSQL, Redis, Next.js, etc.
     3. [[current-focus/README|Current Focus]] — Current sprint/week priorities
-    4. [[known-issues]] — Gotchas and deprecated patterns
+    4. [[AI_CONTEXT/known-issues|Known Issues]] — Gotchas and deprecated patterns
     5. The specific module doc in `modules/` for the module you're working on
 - **Hallucination Prevention:** If a request cannot be fulfilled with the provided context, explicitly state that the information is unavailable. **DO NOT invent or speculate.**
 - **Token Efficiency:** Be concise. Leverage existing code patterns rather than rewriting. Read ONLY the module doc you need, not all 22.
@@ -21,9 +21,9 @@
 
 - **Monolithic + Service-Oriented:** All modules live in one .NET solution but maintain strict namespace boundaries
 - **Module structure:** `ONEVO.Modules.{ModuleName}` — each module has its own namespace
-- **[[shared-kernel|Shared kernel]]:** `ONEVO.SharedKernel` — only cross-cutting concerns used by 3+ modules
-- **Never** reference one module's internal classes from another module (see [[module-boundaries]])
-- **Use MediatR** for command/query dispatch within modules (see [[event-catalog]])
+- **[[backend/shared-kernel|Shared kernel]]:** `ONEVO.SharedKernel` — only cross-cutting concerns used by 3+ modules
+- **Never** reference one module's internal classes from another module (see [[backend/module-boundaries|Module Boundaries]])
+- **Use MediatR** for command/query dispatch within modules (see [[backend/messaging/event-catalog|Event Catalog]])
 - **Use domain events** for cross-module side effects (not direct service calls)
 
 ### Naming Conventions
@@ -94,7 +94,7 @@ var conn = "Host=localhost;Database=onevo"; // BAD
 var sql = $"SELECT * FROM employees WHERE id = '{id}'"; // BAD
 ```
 
-### [[multi-tenancy|Multi-Tenancy]] Rules
+### [[infrastructure/multi-tenancy|Multi-Tenancy]] Rules
 
 1. **Every entity** (except `countries`, `permissions`, `subscription_plans`, `payroll_providers`) must include `TenantId`
 2. **BaseRepository** automatically filters by `TenantId` — never bypass
@@ -183,14 +183,14 @@ users:read, users:manage
 
 ## 4. Database Rules
 
-- **EF Core Code-First** [[migration-patterns|migrations]] only — never raw DDL in production
+- **EF Core Code-First** [[database/migration-patterns|migrations]] only — never raw DDL in production
 - **snake_case** for all table/column names
 - **UUID** primary keys (not auto-increment)
 - **Soft delete** where appropriate (`IsDeleted` + `DeletedAt`)
 - **Audit columns** on all entities: `created_at`, `updated_at`, `created_by_id`
 - **Indexes** on: `tenant_id` (all tables), foreign keys, frequently queried columns
 - **No cascade deletes** — handle deletion in services
-- **Time-series tables** (activity_snapshots, activity_raw_buffer) use `pg_partman` partitioning — see [[performance]]
+- **Time-series tables** (activity_snapshots, activity_raw_buffer) use `pg_partman` partitioning — see [[database/performance|Performance]]
 
 ---
 
@@ -208,14 +208,14 @@ users:read, users:manage
 
 ## 6. Git Workflow
 
-- **Commit Messages:** `type(scope): subject` (e.g., `feat(activity-monitoring): add snapshot ingestion`) — see [[git-workflow]]
+- **Commit Messages:** `type(scope): subject` (e.g., `feat(activity-monitoring): add snapshot ingestion`) — see [[code-standards/git-workflow|Git Workflow]]
 - **Types:** feat, fix, refactor, test, docs, chore, perf
 - **Branches:** `feature/`, `bugfix/`, `hotfix/` prefixes
 - **PRs:** Small, focused. Require at least one reviewer.
 
 ---
 
-## 7. Logging Rules (Serilog) — see [[logging-standards]]
+## 7. Logging Rules (Serilog) — see [[code-standards/logging-standards|Logging Standards]]
 
 - Structured logging: `_logger.LogInformation("Snapshot received for {EmployeeId} in tenant {TenantId}", id, tenantId)`
 - **Never** log PII or activity content (emails, names, bank details, window titles, screenshot data)
@@ -224,7 +224,32 @@ users:read, users:manage
 
 ---
 
-## 8. Task Completion Rules
+## 8. Phase Guard Rules
+
+### Phase 2 Modules — DO NOT BUILD
+
+The following modules are **Phase 2 deferred**. Workers MUST NOT build routes, pages, components, API integrations, or sidebar/navigation items for these modules during Phase 1:
+
+| Module | Routes | Status |
+|:-------|:-------|:-------|
+| Payroll | `/hr/payroll/*` | Phase 2 — Deferred |
+| Performance | `/hr/performance/*` | Phase 2 — Deferred |
+| Skills | `/hr/skills/*` | Phase 2 — Deferred |
+| Documents | `/hr/documents/*` | Phase 2 — Deferred |
+| Grievance | `/hr/grievance/*` | Phase 2 — Deferred |
+| Expense | `/hr/expense/*` | Phase 2 — Deferred |
+| Reporting Engine | `/reports/*` | Phase 2 — Deferred |
+
+### How to Enforce
+
+1. **Sidebar/Navigation:** Only render nav items for Phase 1 modules. Phase 2 items in `navigation-patterns.md` are marked with `// Phase 2` comments — skip them.
+2. **Routes:** Phase 2 routes in `app-structure.md` are marked with `— Phase 2` comments — do not create these page files.
+3. **Components:** Only build components with Phase 1 in the component catalog. Do not build feature-specific components for Phase 2 modules.
+4. **If a task file references a Phase 2 module:** SKIP the task or the specific acceptance criterion. Report it as blocked.
+
+---
+
+## 9. Task Completion Rules
 
 - **Checkbox tracking:** When a feature or acceptance criterion is implemented, mark its checkbox `- [ ]` → `- [x]` in the relevant task file under `current-focus/`
 - **Status updates:** Update the task file's **Status** field as work progresses: `Planned` → `In Progress` → `Complete`
@@ -234,7 +259,7 @@ users:read, users:manage
 
 ---
 
-## 9. Frontend / React / Next.js Rules
+## 10. Frontend / React / Next.js Rules
 
 ### File & Component Conventions
 
@@ -384,7 +409,7 @@ export function CreateEmployeeForm() {
 
 ---
 
-## 10. Desktop Agent Rules
+## 11. Desktop Agent Rules
 
 ### Privacy & Security — NON-NEGOTIABLE
 
@@ -490,11 +515,11 @@ Message format between Service and MAUI app:
 
 ## Related
 
-- [[project-context]]
-- [[tech-stack]]
-- [[known-issues]]
+- [[AI_CONTEXT/project-context|Project Context]]
+- [[AI_CONTEXT/tech-stack|Tech Stack]]
+- [[AI_CONTEXT/known-issues|Known Issues]]
 - [[current-focus/README|Current Focus]]
-- [[module-boundaries]]
-- [[multi-tenancy]]
-- [[shared-kernel]]
-- [[agent-gateway]]
+- [[backend/module-boundaries|Module Boundaries]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[backend/shared-kernel|Shared Kernel]]
+- [[modules/agent-gateway/overview|Agent Gateway]]

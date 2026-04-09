@@ -54,9 +54,9 @@ PUT /api/v1/onboarding/tasks/{taskId}/complete
 
 ## Related
 
-- [[onboarding|Onboarding Overview]]
-- [[employee-lifecycle]]
-- [[employee-profiles]]
-- [[offboarding]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/core-hr/onboarding/overview|Onboarding Overview]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
+- [[modules/core-hr/offboarding/overview|Offboarding]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

@@ -45,10 +45,10 @@ User clicks "Login with Google/Microsoft":
 
 ## Related
 
-- [[sso-authentication|Overview]]
-- [[authentication]]
-- [[user-management]]
-- [[session-management]]
-- [[audit-logging]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/shared-platform/sso-authentication/overview|Overview]]
+- [[frontend/cross-cutting/authentication|Authentication]]
+- [[modules/infrastructure/user-management/overview|User Management]]
+- [[modules/auth/session-management/overview|Session Management]]
+- [[modules/auth/audit-logging/overview|Audit Logging]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

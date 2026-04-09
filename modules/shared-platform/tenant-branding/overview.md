@@ -19,10 +19,10 @@ Per-user: `preference_key` (`theme`, `locale`, `timezone`), `preference_value` (
 
 ## Related
 
-- [[shared-platform|Shared Platform Module]]
-- [[tenant-management]]
-- [[file-management]]
-- [[user-management]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[WEEK1-shared-platform]]
+- [[modules/shared-platform/overview|Shared Platform Module]]
+- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
+- [[modules/infrastructure/file-management/overview|File Management]]
+- [[modules/infrastructure/user-management/overview|User Management]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

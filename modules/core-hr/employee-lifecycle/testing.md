@@ -51,6 +51,6 @@ public class EmployeeLifecycleServiceTests
 
 ## Related
 
-- [[employee-lifecycle|Employee Lifecycle Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

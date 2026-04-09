@@ -21,7 +21,7 @@ Tamper detection and device health: `event_type` (`heartbeat`, `tamper_detected`
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `BiometricDeviceOffline` | No heartbeat for 5+ min | [[notifications]] |
+| `BiometricDeviceOffline` | No heartbeat for 5+ min | [[modules/notifications/overview|Notifications]] |
 
 ## API Endpoints
 
@@ -39,13 +39,13 @@ Tamper detection and device health: `event_type` (`heartbeat`, `tamper_detected`
 
 ## Related
 
-- [[identity-verification|Identity Verification Module]]
-- [[biometric-devices/end-to-end-logic|Biometric Devices — End-to-End Logic]]
-- [[biometric-devices/testing|Biometric Devices — Testing]]
-- [[biometric-enrollment/overview|Biometric Enrollment]]
-- [[verification-policies/overview|Verification Policies]]
-- [[data-classification]]
-- [[compliance]]
-- [[auth-architecture]]
-- [[multi-tenancy]]
-- [[WEEK3-identity-verification]]
+- [[modules/identity-verification/overview|Identity Verification Module]]
+- [[modules/identity-verification/biometric-devices/end-to-end-logic|Biometric Devices — End-to-End Logic]]
+- [[modules/identity-verification/biometric-devices/testing|Biometric Devices — Testing]]
+- [[frontend/architecture/overview|Biometric Enrollment]]
+- [[frontend/architecture/overview|Verification Policies]]
+- [[security/data-classification|Data Classification]]
+- [[security/compliance|Compliance]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

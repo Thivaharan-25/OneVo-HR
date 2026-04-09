@@ -51,6 +51,6 @@ public class ConsentServiceTests
 
 ## Related
 
-- [[gdpr-consent|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[Userflow/Auth-Access/gdpr-consent|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

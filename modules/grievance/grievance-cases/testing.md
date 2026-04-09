@@ -51,5 +51,5 @@ public class GrievanceServiceTests
 
 ## Related
 
-- [[grievance-cases]] — feature overview
-- [[testing/README|Testing Standards]] — project-wide testing conventions
+- [[modules/grievance/grievance-cases/overview|Grievance Cases]] — feature overview
+- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions

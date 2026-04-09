@@ -139,7 +139,7 @@ public record PhotoCapturedMessage : IpcMessage
 
 **Service action:** If `skipped == false`, reads the photo file, uploads it to the server via the ingest endpoint with `type: "verification_photo"`. Deletes the local file after successful upload. If `skipped == true`, reports the skip to the server.
 
-See [[photo-capture]] for the full verification flow.
+See [[modules/identity-verification/photo-capture|Photo Capture]] for the full verification flow.
 
 ### `get_status`
 
@@ -527,10 +527,10 @@ public class NamedPipeClient : IAsyncDisposable
 
 ## Related
 
-- [[agent-overview]] — Architecture overview and data flow
-- [[agent-server-protocol]] — Server API endpoints that the Service calls
-- [[photo-capture]] — Photo capture flow triggered via IPC
-- [[tray-app-ui]] — TrayApp UI that sends/receives IPC messages
-- [[data-collection]] — Collectors that run in the Service
-- [[rules]] — Section 10: Desktop Agent Rules (IPC message samples)
-- [[WEEK1-shared-platform]] — Implementation task
+- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview and data flow
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Server API endpoints that the Service calls
+- [[modules/identity-verification/photo-capture|Photo Capture]] — Photo capture flow triggered via IPC
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — TrayApp UI that sends/receives IPC messages
+- [[modules/agent-gateway/data-collection|Data Collection]] — Collectors that run in the Service
+- [[AI_CONTEXT/rules|Rules]] — Section 10: Desktop Agent Rules (IPC message samples)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task

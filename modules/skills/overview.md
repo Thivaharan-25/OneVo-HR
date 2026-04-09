@@ -1,9 +1,13 @@
 # Module: Skills & Learning
 
 **Namespace:** `ONEVO.Modules.Skills`
+**Phase:** 2 — Deferred
 **Pillar:** 1 — HR Management
 **Owner:** Dev 3 + Dev 4 (Week 3)
 **Tables:** 15
+
+> [!WARNING]
+> **This module is deferred to Phase 2. Do not implement.** Skill tracking and learning paths are not core to the employee monitoring product. Specs are preserved here for future reference.
 
 ---
 
@@ -17,8 +21,8 @@ Manages skills taxonomy, employee skill assessments, learning courses, LMS provi
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[core-hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[org-structure]] | `IOrgStructureService` | Job family skill requirements |
+| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context |
+| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Job family skill requirements |
 
 ---
 
@@ -317,20 +321,20 @@ Employee certification records with expiry tracking.
 
 ## Features
 
-- [[skill-taxonomy]] — Skill categories and individual skill definitions with proficiency level labels
-- [[employee-skills]] — Employee-skill mapping with current proficiency and validation status
-- [[skill-assessments]] — Quiz-based assessments (MCQ, text, file upload) and validation requests
-- [[courses-learning]] — Internal and LMS-linked courses with enrollment and progress tracking
-- [[certifications]] — Certification records with expiry tracking and renewal reminders
-- [[development-plans]] — Individual development plans with milestones and linked courses
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — Skill categories and individual skill definitions with proficiency level labels
+- [[modules/skills/employee-skills/overview|Employee Skills]] — Employee-skill mapping with current proficiency and validation status
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] — Quiz-based assessments (MCQ, text, file upload) and validation requests
+- [[modules/skills/courses-learning/overview|Courses Learning]] — Internal and LMS-linked courses with enrollment and progress tracking
+- [[modules/skills/certifications/overview|Certifications]] — Certification records with expiry tracking and renewal reminders
+- [[modules/skills/development-plans/overview|Development Plans]] — Individual development plans with milestones and linked courses
 
 ---
 
 ## Related
 
-- [[multi-tenancy]] — All skill and learning data is tenant-scoped
-- [[compliance]] — Certification expiry tracking supports regulatory compliance
-- [[data-classification]] — Certificate files stored in blob storage via `file_records`
-- [[WEEK4-supporting-bridges]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] — All skill and learning data is tenant-scoped
+- [[security/compliance|Compliance]] — Certification expiry tracking supports regulatory compliance
+- [[security/data-classification|Data Classification]] — Certificate files stored in blob storage via `file_records`
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
 
-See also: [[module-catalog]], [[core-hr]], [[performance]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[database/performance|Performance]]

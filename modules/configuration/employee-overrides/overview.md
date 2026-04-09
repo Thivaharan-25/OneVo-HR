@@ -47,13 +47,13 @@ effectivePolicy.ActivityMonitoring = employeeOverride?.ActivityMonitoring ?? ten
 
 ## Related
 
-- [[configuration|Configuration Module]]
-- [[configuration/monitoring-toggles/overview|Monitoring Toggles]]
-- [[configuration/tenant-settings/overview|Tenant Settings]]
-- [[configuration/integrations/overview|Integrations]]
-- [[configuration/retention-policies/overview|Retention Policies]]
-- [[multi-tenancy]]
-- [[auth-architecture]]
-- [[data-classification]]
-- [[compliance]]
-- [[WEEK1-shared-platform]]
+- [[modules/configuration/overview|Configuration Module]]
+- [[frontend/architecture/overview|Monitoring Toggles]]
+- [[frontend/architecture/overview|Tenant Settings]]
+- [[frontend/architecture/overview|Integrations]]
+- [[frontend/architecture/overview|Retention Policies]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[security/auth-architecture|Auth Architecture]]
+- [[security/data-classification|Data Classification]]
+- [[security/compliance|Compliance]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

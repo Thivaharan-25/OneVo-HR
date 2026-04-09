@@ -65,6 +65,6 @@ public class DocumentServiceTests
 
 ## Related
 
-- [[documents/document-management/overview|Document Management Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[frontend/architecture/overview|Document Management Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

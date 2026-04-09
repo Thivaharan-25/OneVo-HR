@@ -51,6 +51,6 @@ public class UserServiceTests
 
 ## Related
 
-- [[user-management|Overview]]
-- [[testing/README|Testing Standards]]
-- [[migration-patterns]]
+- [[modules/infrastructure/user-management/overview|Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]
+- [[database/migration-patterns|Migration Patterns]]

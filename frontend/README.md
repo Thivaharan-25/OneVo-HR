@@ -21,7 +21,7 @@ Visual language, components, and interaction patterns:
 
 ### Foundations
 - [[frontend/design-system/foundations/color-tokens|Color Tokens]] — brand, semantic, status, severity (light + dark)
-- [[frontend/design-system/foundations/typography|Typography]] — Inter font scale, monospace for data, responsive type
+- [[frontend/design-system/foundations/typography|Typography]] — Outfit + Geist font scale, monospace for data, responsive type
 - [[frontend/design-system/foundations/spacing|Spacing]] — 4px base, layout spacing, component internal spacing
 - [[frontend/design-system/foundations/elevation|Elevation]] — shadow scale, z-index layers, flat-by-default
 - [[frontend/design-system/foundations/motion|Motion]] — duration scale, easing, keyframes, reduced-motion
@@ -32,7 +32,7 @@ Visual language, components, and interaction patterns:
 - [[frontend/design-system/patterns/layout-patterns|Layouts]] — dashboard, list, detail, dashboard page types
 - [[frontend/design-system/patterns/form-patterns|Forms]] — React Hook Form + Zod, multi-step wizard, inline edit, filters
 - [[frontend/design-system/patterns/table-patterns|Tables]] — DataTable, column types, sorting, pagination, bulk actions, export
-- [[frontend/design-system/patterns/navigation-patterns|Navigation]] — sidebar states, topbar, command palette, breadcrumbs, tabs
+- [[frontend/design-system/patterns/navigation-patterns|Navigation]] — sidebar states, topbar, Quick Search, breadcrumbs, tabs
 - [[frontend/design-system/patterns/data-visualization|Data Visualization]] — Recharts + Tremor, chart types per page
 
 ### Theming

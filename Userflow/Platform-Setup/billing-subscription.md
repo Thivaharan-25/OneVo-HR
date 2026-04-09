@@ -8,16 +8,16 @@
 
 ## Preconditions
 
-- Tenant has been provisioned via [[tenant-provisioning|Tenant Provisioning Flow]]
+- Tenant has been provisioned via [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning Flow]]
 - User has `billing:manage` permission
-- Required permissions: [[permission-assignment|Permission Assignment Flow]]
+- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Billing
 - **UI:** Settings sidebar > Billing & Subscription. Dashboard shows: current plan, billing cycle, next invoice date, payment method, usage summary (active employees count)
 - **API:** `GET /api/v1/billing/subscription`
-- **Backend:** `BillingService.GetCurrentSubscriptionAsync()` → [[subscriptions-billing]]
+- **Backend:** `BillingService.GetCurrentSubscriptionAsync()` → [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
 - **Validation:** Permission check for `billing:manage`
 - **DB:** `subscriptions`, `billing_plans`
 
@@ -38,7 +38,7 @@
 ### Step 4: Review and Confirm
 - **UI:** Order summary: plan name, price per employee, estimated monthly total (based on current active employee count), proration amount (if mid-cycle change), next billing date. Checkbox: "I agree to the terms of service"
 - **API:** `POST /api/v1/billing/subscription`
-- **Backend:** `SubscriptionService.CreateOrUpdateSubscriptionAsync()` → [[subscriptions-billing]]
+- **Backend:** `SubscriptionService.CreateOrUpdateSubscriptionAsync()` → [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
   1. Creates Stripe subscription via Stripe API
   2. Stores subscription reference in local DB
   3. If upgrade: immediately charges proration
@@ -88,19 +88,19 @@
 
 ## Events Triggered
 
-- `SubscriptionChangedEvent` → [[event-catalog]] — consumed by feature flag service and notification module
-- `PaymentProcessedEvent` → [[event-catalog]] — consumed by invoice generation
-- `AuditLogEntry` (action: `subscription.changed`) → [[audit-logging]]
+- `SubscriptionChangedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by feature flag service and notification module
+- `PaymentProcessedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by invoice generation
+- `AuditLogEntry` (action: `subscription.changed`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[tenant-provisioning]] — initial tenant setup before billing
-- [[feature-flag-management]] — modules enabled/disabled based on plan
-- [[tenant-settings]] — billing address and tax settings
+- [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]] — initial tenant setup before billing
+- [[Userflow/Platform-Setup/feature-flag-management|Feature Flag Management]] — modules enabled/disabled based on plan
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — billing address and tax settings
 
 ## Module References
 
-- [[subscriptions-billing]] — billing logic and Stripe integration
-- [[external-integrations]] — Stripe payment gateway
-- [[configuration]] — feature flags per tenant
-- [[notifications]] — billing-related email notifications
+- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] — billing logic and Stripe integration
+- [[backend/external-integrations|External Integrations]] — Stripe payment gateway
+- [[modules/configuration/overview|Configuration]] — feature flags per tenant
+- [[modules/notifications/overview|Notifications]] — billing-related email notifications

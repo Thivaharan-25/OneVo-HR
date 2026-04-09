@@ -51,5 +51,5 @@ public class OvertimeServiceTests
 
 ## Related
 
-- [[overtime|Overtime Overview]]
-- [[testing/README|Testing Standards]]
+- [[modules/workforce-presence/overtime/overview|Overtime Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

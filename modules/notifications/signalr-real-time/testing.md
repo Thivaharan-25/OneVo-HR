@@ -51,5 +51,5 @@ public class SignalRNotificationServiceTests
 
 ## Related
 
-- [[notifications/signalr-real-time/overview|SignalR Real-Time Overview]]
-- [[testing/README|Testing Standards]]
+- [[frontend/architecture/overview|SignalR Real-Time Overview]]
+- [[code-standards/testing-strategy|Testing Standards]]

@@ -43,8 +43,8 @@ POST /api/v1/employees/{id}/work-history
 
 ## Related
 
-- [[qualifications|Qualifications Overview]]
-- [[employee-profiles]]
-- [[onboarding]]
-- [[event-catalog]]
-- [[error-handling]]
+- [[modules/core-hr/qualifications/overview|Qualifications Overview]]
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
+- [[modules/core-hr/onboarding/overview|Onboarding]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[backend/messaging/error-handling|Error Handling]]

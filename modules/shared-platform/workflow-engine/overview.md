@@ -43,12 +43,12 @@ Action records: `actor_id`, `action` (`approve`, `reject`, `delegate`, `request_
 
 ## Related
 
-- [[shared-platform|Shared Platform Module]]
-- [[notification-infrastructure]]
-- [[compliance-governance]]
-- [[feature-flags]]
-- [[event-catalog]]
-- [[multi-tenancy]]
-- [[authorization]]
-- [[error-handling]]
-- [[WEEK1-shared-platform]]
+- [[modules/shared-platform/overview|Shared Platform Module]]
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[modules/shared-platform/compliance-governance/overview|Compliance Governance]]
+- [[frontend/cross-cutting/feature-flags|Feature Flags]]
+- [[backend/messaging/event-catalog|Event Catalog]]
+- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[backend/messaging/error-handling|Error Handling]]
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]
