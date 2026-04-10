@@ -1,6 +1,7 @@
 # Succession Planning
 
 **Area:** Performance  
+**Trigger:** HR Admin identifies successors for key positions (user action — strategic)
 **Required Permission(s):** `performance:manage`  
 **Related Permissions:** `employees:read` (view candidate profiles), `skills:read` (view competencies)
 

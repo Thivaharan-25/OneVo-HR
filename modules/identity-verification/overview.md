@@ -19,12 +19,12 @@ Verifies employee identity via photo capture and biometric fingerprint matching.
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext`, `IFileService` | Multi-tenancy, photo storage |
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee profile photos for matching |
-| **Depends on** | [[modules/configuration/overview|Configuration]] | `IConfigurationService` | Verification policy settings |
-| **Consumed by** | [[modules/workforce-presence/overview|Workforce Presence]] | `IIdentityVerificationService` | Confirm identity for presence records |
-| **Consumed by** | [[modules/exception-engine/overview|Exception Engine]] | — (via `VerificationFailed` event) | Alert on failed verifications |
-| **Listens to** | [[modules/agent-gateway/overview|Agent Gateway]] | `AgentCommandCompleted` event | Receives on-demand photo/screenshot results from agent |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext`, `IFileService` | Multi-tenancy, photo storage |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee profile photos for matching |
+| **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Verification policy settings |
+| **Consumed by** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IIdentityVerificationService` | Confirm identity for presence records |
+| **Consumed by** | [[modules/exception-engine/overview\|Exception Engine]] | — (via `VerificationFailed` event) | Alert on failed verifications |
+| **Listens to** | [[modules/agent-gateway/overview\|Agent Gateway]] | `AgentCommandCompleted` event | Receives on-demand photo/screenshot results from agent |
 
 ---
 
@@ -158,10 +158,10 @@ Tamper detection and device health.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `VerificationFailed` | Photo/fingerprint match below threshold | [[modules/exception-engine/overview|Exception Engine]], [[modules/notifications/overview|Notifications]] (alert manager) |
-| `VerificationCompleted` | Successful verification | [[modules/workforce-presence/overview|Workforce Presence]] (confirm identity) |
-| `BiometricDeviceOffline` | No heartbeat for 5+ minutes | [[modules/notifications/overview|Notifications]] (alert admin) |
-| `OnDemandCaptureReceived` | Manager-requested screenshot/photo arrived from agent | [[modules/notifications/overview|Notifications]] (notify requesting manager), [[modules/exception-engine/overview|Exception Engine]] (attach to alert) |
+| `VerificationFailed` | Photo/fingerprint match below threshold | [[modules/exception-engine/overview\|Exception Engine]], [[modules/notifications/overview\|Notifications]] (alert manager) |
+| `VerificationCompleted` | Successful verification | [[modules/workforce-presence/overview\|Workforce Presence]] (confirm identity) |
+| `BiometricDeviceOffline` | No heartbeat for 5+ minutes | [[modules/notifications/overview\|Notifications]] (alert admin) |
+| `OnDemandCaptureReceived` | Manager-requested screenshot/photo arrived from agent | [[modules/notifications/overview\|Notifications]] (notify requesting manager), [[modules/exception-engine/overview\|Exception Engine]] (attach to alert) |
 
 ---
 

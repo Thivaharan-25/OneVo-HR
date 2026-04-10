@@ -1,6 +1,7 @@
 # Employee Transfer
 
 **Area:** Employee Management  
+**Trigger:** HR Admin initiates department/team transfer (user action)
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `org:manage` (cross-department), `attendance:write` (schedule reassignment)
 

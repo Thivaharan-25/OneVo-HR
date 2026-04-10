@@ -1,6 +1,7 @@
 # Payslip View
 
 **Area:** Payroll  
+**Trigger:** Employee navigates to payslip page after payroll run (user action — view only)
 **Required Permission(s):** `payroll:read` (own payslips)  
 **Related Permissions:** `payroll:write` (view all employee payslips)
 

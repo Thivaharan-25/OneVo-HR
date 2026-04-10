@@ -1,6 +1,7 @@
 # Employee Monitoring Override
 
 **Area:** Configuration  
+**Trigger:** Admin overrides settings for specific employee (user action)
 **Required Permission(s):** `monitoring:configure` + `employees:write`  
 **Related Permissions:** `employees:read` (view current settings)
 

@@ -19,12 +19,12 @@ Manages leave types, country/level-specific policies with versioning, entitlemen
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context, hire date for entitlement |
-| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Job level/country for policy matching |
-| **Depends on** | [[modules/shared-platform/overview|Shared Platform]] | Workflow engine | Approval routing |
-| **Depends on** | [[modules/calendar/overview|Calendar]] | `ICalendarConflictService` | Check calendar conflicts during leave submission |
-| **Consumed by** | [[modules/payroll/overview|Payroll]] | `ILeaveService` | Leave days for payroll deductions |
-| **Consumed by** | [[modules/workforce-presence/overview|Workforce Presence]] | `ILeaveService` | Mark presence status as `on_leave` |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context, hire date for entitlement |
+| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Job level/country for policy matching |
+| **Depends on** | [[modules/shared-platform/overview\|Shared Platform]] | Workflow engine | Approval routing |
+| **Depends on** | [[modules/calendar/overview\|Calendar]] | `ICalendarConflictService` | Check calendar conflicts during leave submission |
+| **Consumed by** | [[modules/payroll/overview\|Payroll]] | `ILeaveService` | Leave days for payroll deductions |
+| **Consumed by** | [[modules/workforce-presence/overview\|Workforce Presence]] | `ILeaveService` | Mark presence status as `on_leave` |
 
 ---
 
@@ -112,7 +112,7 @@ Calculated entitlement per employee per year.
 | `status` | `varchar(20)` | `pending`, `approved`, `rejected`, `cancelled` |
 | `approved_by_id` | `uuid` | FK → users |
 | `approved_at` | `timestamptz` | |
-| `conflict_snapshot_json` | `jsonb` | Calendar conflicts at submission time (nullable) — see [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]] |
+| `conflict_snapshot_json` | `jsonb` | Calendar conflicts at submission time (nullable) — see [[Userflow/Calendar/conflict-detection\|Leave-Calendar Conflict Detection]] |
 | `document_file_id` | `uuid` | FK → file_records (nullable) |
 | `created_at` | `timestamptz` | |
 
@@ -138,10 +138,10 @@ Audit trail for balance changes.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `LeaveRequested` | Employee submits request | [[modules/notifications/overview|Notifications]] (notify manager) |
-| `LeaveApproved` | Manager approves | [[modules/notifications/overview|Notifications]], [[modules/workforce-presence/overview|Workforce Presence]] (update status) |
-| `LeaveRejected` | Manager rejects | [[modules/notifications/overview|Notifications]] |
-| `LeaveCancelled` | Employee/manager cancels | [[modules/notifications/overview|Notifications]], entitlement adjustment |
+| `LeaveRequested` | Employee submits request | [[modules/notifications/overview\|Notifications]] (notify manager) |
+| `LeaveApproved` | Manager approves | [[modules/notifications/overview\|Notifications]], [[modules/workforce-presence/overview\|Workforce Presence]] (update status) |
+| `LeaveRejected` | Manager rejects | [[modules/notifications/overview\|Notifications]] |
+| `LeaveCancelled` | Employee/manager cancels | [[modules/notifications/overview\|Notifications]], entitlement adjustment |
 
 ---
 

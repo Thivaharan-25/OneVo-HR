@@ -1,6 +1,7 @@
 # Document Versioning
 
 **Area:** Documents  
+**Trigger:** Admin uploads new version of existing document (user action)
 **Required Permission(s):** `documents:write`  
 **Related Permissions:** `documents:manage` (rollback versions)
 

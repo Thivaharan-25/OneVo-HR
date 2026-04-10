@@ -1,6 +1,7 @@
 # MFA Setup
 
 **Area:** Auth & Access
+**Trigger:** Employee navigates to security settings (user action — self-service)
 **Required Permission(s):** None (any authenticated user can enable MFA on their own account)
 **Related Permissions:** `users:manage` (admin can enforce MFA for all users or reset MFA for a user)
 

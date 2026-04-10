@@ -1,6 +1,7 @@
 # Overtime Management
 
 **Area:** Workforce Presence  
+**Trigger:** Employee requests overtime or system detects overtime hours (user action or system-triggered)
 **Required Permission(s):** `attendance:write` (request) or `attendance:approve` (approve)  
 **Related Permissions:** `payroll:read` (view overtime in payroll)
 

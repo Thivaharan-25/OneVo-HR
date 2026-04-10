@@ -548,37 +548,37 @@ Extract ONLY the overview/metadata from `backend/AI_CONTEXT/current-focus.md` �
 
 | Developer | Module(s) | Task File | Key Deliverables |
 |:----------|:----------|:----------|:----------------|
-| Dev 1 | Infrastructure + Shared Kernel | [[current-focus/DEV1-infrastructure-setup|DEV1: Infrastructure]] | Tenant provisioning, user CRUD, multi-tenancy, EF Core |
-| Dev 2 | Auth & Security | [[current-focus/DEV2-auth-security|DEV2: Auth Security]] | JWT (RS256), RBAC 90+ perms, MFA, audit logging |
-| Dev 3 | Org Structure | [[current-focus/DEV3-org-structure|DEV3: Org Structure]] | Departments, job hierarchy, teams, legal entities |
-| Dev 4 | Shared Platform + Agent Gateway | [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] | SSO, subscriptions, feature flags, Agent Gateway |
+| Dev 1 | Infrastructure + Shared Kernel | [[current-focus/DEV1-infrastructure-setup\|DEV1: Infrastructure]] | Tenant provisioning, user CRUD, multi-tenancy, EF Core |
+| Dev 2 | Auth & Security | [[current-focus/DEV2-auth-security\|DEV2: Auth Security]] | JWT (RS256), RBAC 90+ perms, MFA, audit logging |
+| Dev 3 | Org Structure | [[current-focus/DEV3-org-structure\|DEV3: Org Structure]] | Departments, job hierarchy, teams, legal entities |
+| Dev 4 | Shared Platform + Agent Gateway | [[current-focus/DEV4-shared-platform-agent-gateway\|DEV4: Shared Platform Agent Gateway]] | SSO, subscriptions, feature flags, Agent Gateway |
 
 ### Week 2 (Apr 14–18): Core HR + Workforce Presence
 
 | Developer | Module(s) | Task File | Key Deliverables |
 |:----------|:----------|:----------|:----------------|
-| Dev 1 | Core HR (Profile) | [[current-focus/DEV1-core-hr-profile|DEV1: Core HR Profile]] | Employee CRUD, full profile, salary, bank details |
-| Dev 2 | Core HR (Lifecycle) | [[current-focus/DEV2-core-hr-lifecycle|DEV2: Core HR Lifecycle]] | Onboarding, offboarding, lifecycle events |
-| Dev 3 | Workforce Presence (Setup) | [[current-focus/DEV3-workforce-presence-setup|DEV3: Workforce Presence]] | Shifts, schedules, presence/device sessions, breaks |
-| Dev 4 | Workforce Presence (Biometric) | [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]] | Biometric devices, enrollment, overtime, corrections |
+| Dev 1 | Core HR (Profile) | [[current-focus/DEV1-core-hr-profile\|DEV1: Core HR Profile]] | Employee CRUD, full profile, salary, bank details |
+| Dev 2 | Core HR (Lifecycle) | [[current-focus/DEV2-core-hr-lifecycle\|DEV2: Core HR Lifecycle]] | Onboarding, offboarding, lifecycle events |
+| Dev 3 | Workforce Presence (Setup) | [[current-focus/DEV3-workforce-presence-setup\|DEV3: Workforce Presence]] | Shifts, schedules, presence/device sessions, breaks |
+| Dev 4 | Workforce Presence (Biometric) | [[current-focus/DEV4-identity-verification\|DEV4: Identity Verification]] | Biometric devices, enrollment, overtime, corrections |
 
 ### Week 3 (Apr 21–25): Leave + Performance + Monitoring
 
 | Developer | Module(s) | Task File | Key Deliverables |
 |:----------|:----------|:----------|:----------------|
-| Dev 1 | Leave | [[current-focus/DEV1-leave|DEV1: Leave]] | Leave types, policies, entitlements, request/approval |
-| Dev 2 | Performance | [[current-focus/DEV2-performance|DEV2: Performance]] | Reviews, feedback, goals, recognition, succession |
-| Dev 3 | Activity Monitoring | [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]] | Snapshots, app tracking, meetings, screenshots, aggregation |
-| Dev 4 | Identity Verification | [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]] | Policies, photo capture, biometric matching |
+| Dev 1 | Leave | [[current-focus/DEV1-leave\|DEV1: Leave]] | Leave types, policies, entitlements, request/approval |
+| Dev 2 | Performance | [[current-focus/DEV2-performance\|DEV2: Performance]] | Reviews, feedback, goals, recognition, succession |
+| Dev 3 | Activity Monitoring | [[current-focus/DEV3-activity-monitoring\|DEV3: Activity Monitoring]] | Snapshots, app tracking, meetings, screenshots, aggregation |
+| Dev 4 | Identity Verification | [[current-focus/DEV4-identity-verification\|DEV4: Identity Verification]] | Policies, photo capture, biometric matching |
 
 ### Week 4 (Apr 28–May 2): Exception Engine + Analytics + Payroll
 
 | Developer | Module(s) | Task File | Key Deliverables |
 |:----------|:----------|:----------|:----------------|
-| Dev 1 | Productivity Analytics | [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]] | Daily/weekly/monthly reports, workforce snapshots |
-| Dev 2 | Exception Engine | [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]] | Rules, triggers, alerts, escalation chains |
-| Dev 3 | Payroll | [[current-focus/DEV3-payroll|DEV3: Payroll]] | Providers, tax, allowances, batch execution |
-| Dev 4 | Supporting + Bridges | [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] | Documents, notifications, grievance, expense, bridges |
+| Dev 1 | Productivity Analytics | [[current-focus/DEV1-productivity-analytics\|DEV1: Productivity Analytics]] | Daily/weekly/monthly reports, workforce snapshots |
+| Dev 2 | Exception Engine | [[current-focus/DEV2-exception-engine\|DEV2: Exception Engine]] | Rules, triggers, alerts, escalation chains |
+| Dev 3 | Payroll | [[current-focus/DEV3-payroll\|DEV3: Payroll]] | Providers, tax, allowances, batch execution |
+| Dev 4 | Supporting + Bridges | [[current-focus/DEV4-shared-platform-agent-gateway\|DEV4: Supporting Bridges]] | Documents, notifications, grievance, expense, bridges |
 
 ---
 
@@ -785,9 +785,9 @@ Example for `modules/auth/overview.md` — ensure the Related/Dependencies secti
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `IUserService` | User identity |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `IUserService` | User identity |
 | **Consumed by** | All modules | `ICurrentUser`, `RequirePermissionAttribute` | Auth context |
-| **Consumed by** | [[modules/agent-gateway/overview|Agent Gateway]] | `ITokenService` | Device JWT issuance |
+| **Consumed by** | [[modules/agent-gateway/overview\|Agent Gateway]] | `ITokenService` | Device JWT issuance |
 
 ## Features
 

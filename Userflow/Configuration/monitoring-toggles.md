@@ -1,6 +1,7 @@
 # Monitoring Feature Toggles
 
 **Area:** Configuration  
+**Trigger:** Admin toggles monitoring features on/off (user action — configuration)
 **Required Permission(s):** `monitoring:configure`  
 **Related Permissions:** `settings:admin` (tenant-level)
 

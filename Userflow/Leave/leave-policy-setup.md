@@ -1,6 +1,7 @@
 # Leave Policy Setup
 
 **Area:** Leave Management  
+**Trigger:** Admin creates leave policy for country or entity (user action — configuration)
 **Required Permission(s):** `leave:manage`  
 **Related Permissions:** `org:read` (to view legal entities for assignment)
 

@@ -21,13 +21,13 @@ Receives, stores, and aggregates employee activity data from the desktop agent. 
 
 | Direction       | Module                     | Interface                    | Purpose                             |
 | :-------------- | :------------------------- | :--------------------------- | :---------------------------------- |
-| **Depends on**  | [[modules/infrastructure/overview|Infrastructure]]         | `ITenantContext`             | Multi-tenancy                       |
-| **Depends on**  | [[modules/core-hr/overview|Core Hr]]                | `IEmployeeService`           | Employee/department context         |
-| **Depends on**  | [[modules/configuration/overview|Configuration]]          | `IConfigurationService`      | Feature toggles, retention policies, app allowlist |
-| **Depends on**  | [[modules/workforce-presence/overview|Workforce Presence]]     | `IWorkforcePresenceService`  | Presence window validation (only process data within active sessions) |
-| **Consumed by** | [[modules/exception-engine/overview|Exception Engine]]       | `IActivityMonitoringService` | Latest activity for rule evaluation |
-| **Consumed by** | [[modules/productivity-analytics/overview|Productivity Analytics]] | `IActivityMonitoringService` | Daily summaries for reports         |
-| **Consumed by** | [[database/performance|Performance]]            | `IActivityMonitoringService` | Optional productivity scores        |
+| **Depends on**  | [[modules/infrastructure/overview\|Infrastructure]]         | `ITenantContext`             | Multi-tenancy                       |
+| **Depends on**  | [[modules/core-hr/overview\|Core Hr]]                | `IEmployeeService`           | Employee/department context         |
+| **Depends on**  | [[modules/configuration/overview\|Configuration]]          | `IConfigurationService`      | Feature toggles, retention policies, app allowlist |
+| **Depends on**  | [[modules/workforce-presence/overview\|Workforce Presence]]     | `IWorkforcePresenceService`  | Presence window validation (only process data within active sessions) |
+| **Consumed by** | [[modules/exception-engine/overview\|Exception Engine]]       | `IActivityMonitoringService` | Latest activity for rule evaluation |
+| **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IActivityMonitoringService` | Daily summaries for reports         |
+| **Consumed by** | [[database/performance\|Performance]]            | `IActivityMonitoringService` | Optional productivity scores        |
 
 ---
 
@@ -202,10 +202,10 @@ Device interaction tracking per day.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `ActivitySnapshotReceived` | Raw data processed into snapshot | [[modules/exception-engine/overview|Exception Engine]] (evaluate rules) |
-| `DailySummaryAggregated` | Daily summary job completes | [[modules/productivity-analytics/overview|Productivity Analytics]] (build reports) |
+| `ActivitySnapshotReceived` | Raw data processed into snapshot | [[modules/exception-engine/overview\|Exception Engine]] (evaluate rules) |
+| `DailySummaryAggregated` | Daily summary job completes | [[modules/productivity-analytics/overview\|Productivity Analytics]] (build reports) |
 | `ScreenshotCaptured` | Screenshot stored | Audit trail |
-| `AppAllowlistViolationDetected` | Employee used non-allowed app exceeding threshold | [[modules/exception-engine/overview|Exception Engine]] (fire `non_allowed_app` rule) |
+| `AppAllowlistViolationDetected` | Employee used non-allowed app exceeding threshold | [[modules/exception-engine/overview\|Exception Engine]] (fire `non_allowed_app` rule) |
 
 ---
 

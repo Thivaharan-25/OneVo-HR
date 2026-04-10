@@ -20,11 +20,11 @@ Manages payroll providers, tax engines, allowances, pensions, and batch payroll 
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee salary, bank details |
-| **Depends on** | [[modules/workforce-presence/overview|Workforce Presence]] | `IWorkforcePresenceService` | Actual worked hours |
-| **Depends on** | [[modules/leave/overview|Leave]] | `ILeaveService` | Leave days for deductions |
-| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Legal entity context |
-| **Depends on** | [[modules/activity-monitoring/overview|Activity Monitoring]] | `IActivityMonitoringService` | Activity data feed (read-only): active/idle hours, app usage, meeting time |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee salary, bank details |
+| **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Actual worked hours |
+| **Depends on** | [[modules/leave/overview\|Leave]] | `ILeaveService` | Leave days for deductions |
+| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Legal entity context |
+| **Depends on** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | `IActivityMonitoringService` | Activity data feed (read-only): active/idle hours, app usage, meeting time |
 
 ---
 
@@ -155,7 +155,7 @@ External payroll system connections.
 | `pension_employee` | `decimal(15,2)` | |
 | `pension_employer` | `decimal(15,2)` | |
 | `net_pay` | `decimal(15,2)` | |
-| `worked_hours` | `decimal(7,2)` | From [[modules/workforce-presence/overview|Workforce Presence]] |
+| `worked_hours` | `decimal(7,2)` | From [[modules/workforce-presence/overview\|Workforce Presence]] |
 | `overtime_hours` | `decimal(7,2)` | |
 | `leave_days_deducted` | `decimal(5,1)` | |
 | `activity_active_hours` | `decimal(7,2)` | Read-only from activity-monitoring (informational, not used in calculation) |

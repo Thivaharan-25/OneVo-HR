@@ -1,6 +1,7 @@
 # Payroll Run Execution
 
 **Area:** Payroll  
+**Trigger:** Scheduled payroll date reached or HR Admin manually triggers run (scheduled or user action)
 **Required Permission(s):** `payroll:run` (execute) + `payroll:approve` (final approval)  
 **Related Permissions:** `payroll:read` (view results), `employees:read` (verify employee data)
 

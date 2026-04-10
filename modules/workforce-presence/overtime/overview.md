@@ -18,7 +18,7 @@ Overtime request + approval workflow.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `OvertimeRequested` | Employee requests | [[modules/notifications/overview|Notifications]] |
+| `OvertimeRequested` | Employee requests | [[modules/notifications/overview\|Notifications]] |
 
 ## API Endpoints
 

@@ -1,6 +1,7 @@
 # Expense Claim Submission
 
 **Area:** Expense  
+**Trigger:** Employee submits expense claim with receipts (user action)
 **Required Permission(s):** `expense:create`  
 **Related Permissions:** `documents:write` (upload receipts)
 

@@ -1,6 +1,7 @@
 # Login Flow
 
 **Area:** Auth & Access
+**Trigger:** User navigates to login page (user action — every session)
 **Required Permission(s):** None (public endpoint, any user)
 **Related Permissions:** All — after login, the user's effective permissions determine what they can access
 

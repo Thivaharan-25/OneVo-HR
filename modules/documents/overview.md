@@ -21,8 +21,8 @@ Document management with versioning, categorization (hierarchical), access contr
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `IFileService` | File storage |
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Document ownership |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `IFileService` | File storage |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Document ownership |
 
 ---
 

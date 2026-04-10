@@ -15,9 +15,10 @@
 - [ ] Office location CRUD (linked to legal entity + country)
 - [ ] Department CRUD with hierarchical tree (unlimited nesting via parent_department_id)
 - [ ] Department tree query (returns full hierarchy for a tenant)
-- [ ] Job family CRUD (linked to department)
-- [ ] Job family levels CRUD (rank ordering within family)
-- [ ] Job title CRUD (linked to job family)
+- [ ] Job family CRUD
+- [ ] Job levels CRUD (`job_levels` table — rank ordering, e.g., Junior/Senior/Lead/Director)
+- [ ] Job title CRUD (linked to job family + job level)
+- [ ] Job skill requirements CRUD (`job_skill_requirements` — assign required skills with min proficiency to a job family; depends on [[current-focus/DEV3-skills-core|DEV3 Skills Core]] completing skill taxonomy first)
 - [ ] Team CRUD (linked to department)
 - [ ] Team member management (add/remove employees from teams)
 - [ ] All entities tenant-scoped with proper indexes (see [[infrastructure/multi-tenancy|Multi Tenancy]])
@@ -64,8 +65,9 @@ app/(dashboard)/org/
   - DataTable: team name, department, lead, member count
   - TeamMemberList: team detail with add/remove
 - [ ] Job families page:
-  - Accordion: family -> levels -> titles
+  - Accordion: family → levels → titles
   - CRUD for each level
+  - "Required Skills" tab per family: list required skills with min proficiency badge, add/remove skill requirements (depends on DEV3 Skills Core completing taxonomy)
 - [ ] Legal entities page:
   - DataTable: entity name, country, registration number
   - CRUD dialogs
@@ -100,6 +102,9 @@ app/(dashboard)/org/
 | POST | `/api/v1/org/job-families/{id}/levels` | Create level |
 | GET | `/api/v1/org/job-titles` | List job titles |
 | POST | `/api/v1/org/job-titles` | Create job title |
+| GET | `/api/v1/job-families/{id}/skill-requirements` | Required skills for family |
+| POST | `/api/v1/job-families/{id}/skill-requirements` | Assign skill to family |
+| DELETE | `/api/v1/job-families/{id}/skill-requirements/{reqId}` | Remove skill requirement |
 | GET | `/api/v1/org/legal-entities` | List legal entities |
 | POST | `/api/v1/org/legal-entities` | Create legal entity |
 | GET | `/api/v1/org/locations` | List office locations |
@@ -117,5 +122,6 @@ app/(dashboard)/org/
 
 - [[current-focus/DEV1-infrastructure-setup|DEV1 Infrastructure Setup]] — shared kernel and solution structure this depends on
 - [[current-focus/DEV1-core-hr-profile|DEV1 Core Hr Profile]] — employees reference departments, job titles, teams
+- [[current-focus/DEV3-skills-core|DEV3 Skills Core]] — skill taxonomy must be built before job skill requirements can be assigned (unblocks the Required Skills tab on job families page)
 - Performance — deferred to Phase 2 (team and company goals reference org hierarchy)
 - [[current-focus/DEV1-leave|DEV1 Leave]] — job levels referenced in leave policy matching

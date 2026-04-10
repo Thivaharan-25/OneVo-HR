@@ -21,9 +21,9 @@ Manages expense categories, claims, and individual line items. Uses the [[module
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `IFileService` | Receipt uploads |
-| **Depends on** | [[modules/shared-platform/overview|Shared Platform]] | Workflow engine | Approval routing |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `IFileService` | Receipt uploads |
+| **Depends on** | [[modules/shared-platform/overview\|Shared Platform]] | Workflow engine | Approval routing |
 
 ---
 

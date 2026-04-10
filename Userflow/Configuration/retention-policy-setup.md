@@ -1,6 +1,7 @@
 # Data Retention Policy Setup
 
 **Area:** Configuration  
+**Trigger:** Admin configures data retention rules (user action — configuration)
 **Required Permission(s):** `settings:admin`  
 **Related Permissions:** `monitoring:configure` (monitoring data retention)
 

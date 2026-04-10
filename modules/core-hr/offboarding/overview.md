@@ -18,7 +18,7 @@ Fields: `reason` (`resignation`, `termination`, `retirement`, `contract_end`), `
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeOffboardingStarted` | Offboarding initiated | [[modules/notifications/overview|Notifications]], [[modules/documents/overview|Documents]] |
+| `EmployeeOffboardingStarted` | Offboarding initiated | [[modules/notifications/overview\|Notifications]], [[modules/documents/overview\|Documents]] |
 
 ## API Endpoints
 

@@ -1,6 +1,7 @@
 # Grievance Filing
 
 **Area:** Grievance  
+**Trigger:** Employee files grievance (user action)
 **Required Permission(s):** `grievance:write`  
 **Related Permissions:** `documents:write` (attach evidence)
 

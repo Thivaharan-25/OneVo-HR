@@ -1,6 +1,7 @@
 # Legal Entity Setup
 
 **Area:** Org Structure  
+**Trigger:** Admin creates new legal entity (user action — configuration)
 **Required Permission(s):** `org:manage`  
 **Related Permissions:** `settings:admin` (tenant-level config)
 

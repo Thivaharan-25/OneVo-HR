@@ -35,7 +35,7 @@ Pre-aggregates activity snapshots into daily rollups. **This is the primary tabl
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `DailySummaryAggregated` | Daily summary job completes | [[modules/productivity-analytics/overview|Productivity Analytics]] (build reports) |
+| `DailySummaryAggregated` | Daily summary job completes | [[modules/productivity-analytics/overview\|Productivity Analytics]] (build reports) |
 
 ## Hangfire Jobs
 

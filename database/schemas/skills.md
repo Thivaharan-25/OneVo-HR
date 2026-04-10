@@ -1,8 +1,11 @@
 # Skills & Learning — Schema
 
 **Module:** [[modules/skills/overview|Skills & Learning]]
-**Phase:** Phase 2
-**Tables:** 15
+**Phase:** Mixed — 5 tables Phase 1, 10 tables Phase 2
+**Tables:** 15 (5 Phase 1 · 10 Phase 2)
+
+> **Phase 1 tables** (built with Phase 1 release): `skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, `skill_validation_requests`
+> **Phase 2 tables** (deferred — LMS, courses, assessments, development plans): all others
 
 ---
 
@@ -60,17 +63,17 @@
 
 ## `development_plan_items`
 
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `plan_id` | `uuid` | FK → development_plans |
-| `title` | `varchar(255)` |  |
-| `skill_id` | `uuid` | FK → skills (nullable) |
-| `linked_course_id` | `uuid` | FK → courses (nullable) |
-| `status` | `varchar(20)` | `not_started`, `in_progress`, `completed` |
-| `created_at` | `timestamptz` |  |
-| `updated_at` | `timestamptz` |  |
+| Column             | Type           | Notes                                     |
+| :----------------- | :------------- | :---------------------------------------- |
+| `id`               | `uuid`         | PK                                        |
+| `tenant_id`        | `uuid`         | FK → tenants                              |
+| `plan_id`          | `uuid`         | FK → development_plans                    |
+| `title`            | `varchar(255)` |                                           |
+| `skill_id`         | `uuid`         | FK → skills (nullable)                    |
+| `linked_course_id` | `uuid`         | FK → courses (nullable)                   |
+| `status`           | `varchar(20)`  | `not_started`, `in_progress`, `completed` |
+| `created_at`       | `timestamptz`  |                                           |
+| `updated_at`       | `timestamptz`  |                                           |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `plan_id` → [[#`development_plans`|development_plans]], `skill_id` → [[#`skills`|skills]], `linked_course_id` → [[#`courses`|courses]]
 
@@ -132,7 +135,10 @@
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]], `skill_id` → [[#`skills`|skills]], `proficiency_level` → `5`, `validated_by_id` → [[database/schemas/core-hr#`employees`|employees]], `last_assessed_in_review_id` → [[database/schemas/performance#`review_cycles`|review_cycles]]
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]], `skill_id` → [[#`skills`|skills]], `validated_by_id` → [[database/schemas/core-hr#`employees`|employees]], `last_assessed_in_review_id` → [[database/schemas/performance#`review_cycles`|review_cycles]]
+
+> **Check constraint:** `proficiency_level BETWEEN 1 AND 5`
+> **Phase 1 note:** `last_assessed_in_review_id` is always `null` in Phase 1 — only populated once the Performance module is built.
 
 ---
 

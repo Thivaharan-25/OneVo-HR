@@ -8,10 +8,10 @@ Central index of all database tables across ONEVO modules. This is the **single 
 
 ## Summary
 
-- **Total Tables:** 153
-- **Modules:** 21
-- **Phase 1 Tables:** 106
-- **Phase 2 Tables:** 47
+- **Total Tables:** 163
+- **Modules:** 22
+- **Phase 1 Tables:** 121
+- **Phase 2 Tables:** 42
 
 ## Hub Tables
 
@@ -19,23 +19,23 @@ These tables are referenced by many others — design changes here have wide imp
 
 | Table | Module | Referenced By |
 |:------|:-------|:-------------|
-| [[database/schemas/infrastructure#`tenants`|tenants]] | Infrastructure | 102 tables |
-| [[database/schemas/core-hr#`employees`|employees]] | Core HR | 71 tables |
-| [[database/schemas/infrastructure#`users`|users]] | Infrastructure | 56 tables |
-| [[database/schemas/infrastructure#`file_records`|file_records]] | Infrastructure | 10 tables |
-| [[database/schemas/agent-gateway#`registered_agents`|registered_agents]] | Agent Gateway | 6 tables |
-| [[database/schemas/skills#`skills`|skills]] | Skills & Learning | 6 tables |
-| [[database/schemas/org-structure#`departments`|departments]] | Org Structure | 5 tables |
-| [[database/schemas/org-structure#`legal_entities`|legal_entities]] | Org Structure | 5 tables |
-| [[database/schemas/auth#`roles`|roles]] | Auth & Security | 5 tables |
-| [[database/schemas/skills#`courses`|courses]] | Skills & Learning | 4 tables |
-| [[database/schemas/performance#`review_cycles`|review_cycles]] | Performance | 4 tables |
-| [[database/schemas/infrastructure#`countries`|countries]] | Infrastructure | 4 tables |
-| [[database/schemas/leave#`leave_types`|leave_types]] | Leave | 4 tables |
-| [[database/schemas/identity-verification#`biometric_devices`|biometric_devices]] | Identity Verification | 3 tables |
-| [[database/schemas/documents#`document_categories`|document_categories]] | Documents | 3 tables |
-| [[database/schemas/payroll#`payroll_runs`|payroll_runs]] | Payroll | 3 tables |
-| [[database/schemas/shared-platform#`subscription_plans`|subscription_plans]] | Shared Platform | 3 tables |
+| [[database/schemas/infrastructure#`tenants`\|tenants]] | Infrastructure | 102 tables |
+| [[database/schemas/core-hr#`employees`\|employees]] | Core HR | 71 tables |
+| [[database/schemas/infrastructure#`users`\|users]] | Infrastructure | 56 tables |
+| [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure | 10 tables |
+| [[database/schemas/agent-gateway#`registered_agents`\|registered_agents]] | Agent Gateway | 6 tables |
+| [[database/schemas/skills#`skills`\|skills]] | Skills & Learning | 6 tables |
+| [[database/schemas/org-structure#`departments`\|departments]] | Org Structure | 5 tables |
+| [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure | 5 tables |
+| [[database/schemas/auth#`roles`\|roles]] | Auth & Security | 5 tables |
+| [[database/schemas/skills#`courses`\|courses]] | Skills & Learning | 4 tables |
+| [[database/schemas/performance#`review_cycles`\|review_cycles]] | Performance | 4 tables |
+| [[database/schemas/infrastructure#`countries`\|countries]] | Infrastructure | 4 tables |
+| [[database/schemas/leave#`leave_types`\|leave_types]] | Leave | 4 tables |
+| [[database/schemas/identity-verification#`biometric_devices`\|biometric_devices]] | Identity Verification | 3 tables |
+| [[database/schemas/documents#`document_categories`\|document_categories]] | Documents | 3 tables |
+| [[database/schemas/payroll#`payroll_runs`\|payroll_runs]] | Payroll | 3 tables |
+| [[database/schemas/shared-platform#`subscription_plans`\|subscription_plans]] | Shared Platform | 3 tables |
 
 ---
 
@@ -64,7 +64,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `user_permission_overrides` | 8 | tenant_id→tenants, user_id→users, granted_by→users |
 | `user_roles` | 4 | user_id→users, assigned_by→users |
 
-### [[database/schemas/org-structure|Org Structure]] (8 tables)
+### [[database/schemas/org-structure|Org Structure]] (9 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -74,6 +74,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `job_levels` | 5 | tenant_id→tenants |
 | `job_titles` | 7 | tenant_id→tenants |
 | `legal_entities` | 8 | tenant_id→tenants, country_id→countries |
+| `office_locations` | 8 | tenant_id→tenants, legal_entity_id→legal_entities |
 | `team_members` | 3 | employee_id→employees |
 | `teams` | 7 | tenant_id→tenants, team_lead_id→employees |
 
@@ -94,6 +95,18 @@ These tables are referenced by many others — design changes here have wide imp
 | `offboarding_records` | 10 | — |
 | `onboarding_tasks` | 9 | assigned_to_id→users |
 | `onboarding_templates` | 5 | department_id→departments |
+
+### [[database/schemas/skills|Skills Core]] (5 tables — Phase 1 subset)
+
+> These 5 tables from the Skills & Learning module are built in Phase 1 to support skill taxonomy, job skill requirements, and employee skill profiles. The remaining 10 Skills tables (courses, LMS, assessments, development plans) are Phase 2.
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `employee_skills` | 10 | tenant_id→tenants, employee_id→employees, validated_by_id→employees |
+| `job_skill_requirements` | 7 | tenant_id→tenants, job_family_id→job_families |
+| `skill_categories` | 7 | tenant_id→tenants, created_by_id→users |
+| `skill_validation_requests` | 11 | tenant_id→tenants, employee_id→employees, validator_id→employees |
+| `skills` | 9 | tenant_id→tenants, category_id→skill_categories, created_by_id→users |
 
 ### [[database/schemas/leave|Leave]] (5 tables)
 
@@ -144,13 +157,22 @@ These tables are referenced by many others — design changes here have wide imp
 | `meeting_sessions` | 9 | tenant_id→tenants, employee_id→employees |
 | `screenshots` | 7 | tenant_id→tenants, employee_id→employees, file_record_id→file_records |
 
-### [[database/schemas/workforce-presence|Workforce Presence]] (3 tables)
+### [[database/schemas/workforce-presence|Workforce Presence]] (12 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
+| `attendance_records` | 12 | tenant_id→tenants, employee_id→employees |
 | `break_records` | 8 | tenant_id→tenants, employee_id→employees |
 | `device_sessions` | 9 | tenant_id→tenants, employee_id→employees, device_id→registered_agents |
+| `employee_schedules` | 7 | tenant_id→tenants, employee_id→employees, work_schedule_id→work_schedules |
+| `overtime_records` | 9 | tenant_id→tenants, employee_id→employees, approved_by_id→employees |
 | `presence_sessions` | 12 | tenant_id→tenants, employee_id→employees |
+| `public_holidays` | 6 | country_id→countries |
+| `roster_entries` | 6 | tenant_id→tenants, employee_id→employees, shift_id→shifts |
+| `roster_periods` | 8 | tenant_id→tenants, created_by_id→users |
+| `shift_assignments` | 7 | tenant_id→tenants, employee_id→employees, shift_id→shifts |
+| `shifts` | 9 | tenant_id→tenants |
+| `work_schedules` | 5 | tenant_id→tenants |
 
 ### [[database/schemas/exception-engine|Exception Engine]] (5 tables)
 
@@ -217,6 +239,15 @@ These tables are referenced by many others — design changes here have wide imp
 | `workflow_step_instances` | 8 | assigned_to_id→employees |
 | `workflow_steps` | 9 | approver_role_id→roles |
 
+### [[database/schemas/notifications|Notifications]] (2 tables)
+
+> `notification_templates` and `notification_channels` are physically housed in the shared `AppDbContext` and counted under Shared Platform above. They are listed here for module-level reference.
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `notification_templates` | 7 | tenant_id→tenants |
+| `notification_channels` | 6 | tenant_id→tenants |
+
 ## Phase 2 Modules
 
 > These tables are designed but not built in Phase 1. Schema is defined here so Phase 1 tables can account for future FK dependencies.
@@ -249,7 +280,9 @@ These tables are referenced by many others — design changes here have wide imp
 | `reviews` | 11 | employee_id→employees, reviewer_id→employees |
 | `succession_plans` | 8 | position_id→job_titles, current_holder_id→employees, successor_id→employees |
 
-### [[database/schemas/skills|Skills & Learning]] (15 tables)
+### [[database/schemas/skills|Skills & Learning]] (10 tables — Phase 2 remainder)
+
+> The 5 core skill tables (skill_categories, skills, job_skill_requirements, employee_skills, skill_validation_requests) are built in Phase 1 — see Skills Core section above.
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -259,11 +292,8 @@ These tables are referenced by many others — design changes here have wide imp
 | `development_plan_items` | 9 | tenant_id→tenants |
 | `development_plans` | 9 | tenant_id→tenants, employee_id→employees, created_by_id→users |
 | `employee_certifications` | 14 | tenant_id→tenants, employee_id→employees, certificate_file_record_id→file_records |
-| `employee_skills` | 10 | tenant_id→tenants, employee_id→employees, validated_by_id→employees |
-| `job_skill_requirements` | 7 | tenant_id→tenants, job_family_id→job_families |
 | `lms_providers` | 9 | tenant_id→tenants, created_by_id→users |
 | `skill_assessment_responses` | 10 | tenant_id→tenants, employee_id→employees, file_record_id→file_records |
-| `skill_categories` | 7 | tenant_id→tenants, created_by_id→users |
 | `skill_question_options` | 6 | tenant_id→tenants |
 | `skill_questions` | 11 | tenant_id→tenants, created_by_id→users |
 | `skill_validation_requests` | 12 | tenant_id→tenants, employee_id→employees, validator_id→employees |
@@ -307,8 +337,7 @@ These tables are referenced by many others — design changes here have wide imp
 
 ## Known Issues
 
-- `employee_skills.proficiency_level` references `5` — likely should be an enum, not FK
-- `hardware_terminals.office_location_id` → `office_locations` — table not defined yet
+- **Escalation boundary:** Two escalation systems exist — `escalation_rules` (Shared Platform) handles workflow SLA timeouts (e.g., leave pending >48h → escalate to manager's manager); `escalation_chains` (Exception Engine) handles alert routing for system-detected anomalies (e.g., GPS mismatch → alert security team). These are distinct concerns and not interchangeable.
 
 ## Related
 

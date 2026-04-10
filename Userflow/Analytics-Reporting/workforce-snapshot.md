@@ -1,6 +1,7 @@
 # Workforce Snapshot
 
 **Area:** Analytics & Reporting  
+**Trigger:** HR opens workforce snapshot report (user action — view only)
 **Required Permission(s):** `analytics:view`  
 **Related Permissions:** `employees:read` (headcount detail)
 

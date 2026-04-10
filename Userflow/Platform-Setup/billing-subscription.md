@@ -1,6 +1,7 @@
 # Billing & Subscription Management
 
 **Area:** Platform Setup
+**Trigger:** Admin navigates to billing settings (user action)
 **Required Permission(s):** `billing:manage`
 **Related Permissions:** `settings:admin` (for viewing invoice history and tax settings)
 

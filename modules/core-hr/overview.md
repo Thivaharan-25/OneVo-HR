@@ -19,15 +19,15 @@ The **central hub** of ONEVO. Manages employee profiles, lifecycle events (onboa
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext`, `IUserService`, `IFileService` | Multi-tenancy, user linking, avatar uploads |
-| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Department, job title, team context |
-| **Consumed by** | [[modules/leave/overview|Leave]] | `IEmployeeService` | Employee context for leave |
-| **Consumed by** | [[modules/payroll/overview|Payroll]] | `IEmployeeService` | Employee salary, bank details |
-| **Consumed by** | [[database/performance|Performance]] | `IEmployeeService` | Employee context for reviews |
-| **Consumed by** | [[modules/activity-monitoring/overview|Activity Monitoring]] | `IEmployeeService` | Employee/department context |
-| **Consumed by** | [[modules/workforce-presence/overview|Workforce Presence]] | `IEmployeeService` | Employee context for presence |
-| **Consumed by** | [[modules/exception-engine/overview|Exception Engine]] | `IEmployeeService` | Manager hierarchy for escalation |
-| **Consumed by** | [[modules/productivity-analytics/overview|Productivity Analytics]] | `IEmployeeService` | Employee/department for reports |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext`, `IUserService`, `IFileService` | Multi-tenancy, user linking, avatar uploads |
+| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Department, job title, team context |
+| **Consumed by** | [[modules/leave/overview\|Leave]] | `IEmployeeService` | Employee context for leave |
+| **Consumed by** | [[modules/payroll/overview\|Payroll]] | `IEmployeeService` | Employee salary, bank details |
+| **Consumed by** | [[database/performance\|Performance]] | `IEmployeeService` | Employee context for reviews |
+| **Consumed by** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | `IEmployeeService` | Employee/department context |
+| **Consumed by** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IEmployeeService` | Employee context for presence |
+| **Consumed by** | [[modules/exception-engine/overview\|Exception Engine]] | `IEmployeeService` | Manager hierarchy for escalation |
+| **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IEmployeeService` | Employee/department for reports |
 
 ---
 
@@ -246,12 +246,12 @@ Audit trail for promotions, transfers, salary changes, etc.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeCreated` | New employee added | [[modules/notifications/overview|Notifications]], [[modules/leave/overview|Leave]] (calculate entitlements) |
-| `EmployeePromoted` | Promotion event | [[modules/notifications/overview|Notifications]], [[modules/payroll/overview|Payroll]] |
-| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview|Notifications]] |
-| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview|Leave]] (forfeit unused), [[modules/payroll/overview|Payroll]] (final settlement), [[modules/agent-gateway/overview|Agent Gateway]] (revoke agent) |
-| `EmployeeOnboardingStarted` | Onboarding initiated | [[modules/notifications/overview|Notifications]] |
-| `EmployeeOffboardingStarted` | Offboarding initiated | [[modules/notifications/overview|Notifications]], [[modules/documents/overview|Documents]] |
+| `EmployeeCreated` | New employee added | [[modules/notifications/overview\|Notifications]], [[modules/leave/overview\|Leave]] (calculate entitlements) |
+| `EmployeePromoted` | Promotion event | [[modules/notifications/overview\|Notifications]], [[modules/payroll/overview\|Payroll]] |
+| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview\|Notifications]] |
+| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview\|Leave]] (forfeit unused), [[modules/payroll/overview\|Payroll]] (final settlement), [[modules/agent-gateway/overview\|Agent Gateway]] (revoke agent) |
+| `EmployeeOnboardingStarted` | Onboarding initiated | [[modules/notifications/overview\|Notifications]] |
+| `EmployeeOffboardingStarted` | Offboarding initiated | [[modules/notifications/overview\|Notifications]], [[modules/documents/overview\|Documents]] |
 
 ---
 

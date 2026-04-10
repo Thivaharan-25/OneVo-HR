@@ -1,6 +1,7 @@
 # Payroll Adjustment
 
 **Area:** Payroll  
+**Trigger:** HR Admin creates post-run correction (user action — error recovery)
 **Required Permission(s):** `payroll:write`  
 **Related Permissions:** `payroll:approve` (approve adjustment)
 

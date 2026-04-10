@@ -65,15 +65,15 @@ Read these docs in this order to understand the full agent system:
 | # | Document | What You Learn |
 |:--|:---------|:---------------|
 | 1 | **This file** (`agent-overview`) | Architecture, data flow, setup |
-| 2 | [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] | All 6 API endpoints (register, login, policy, heartbeat, ingest, logout) |
-| 3 | [[modules/agent-gateway/data-collection|Data Collection]] | 5 collectors with Win32 P/Invoke code samples |
-| 4 | [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] | Named Pipes messages between Service and TrayApp |
-| 5 | [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] | Local SQLite schema, offline resilience, encryption |
-| 6 | [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] | Detection and reporting of service manipulation |
-| 7 | [[modules/identity-verification/photo-capture|Photo Capture]] | Camera capture and identity verification flow |
-| 8 | [[modules/agent-gateway/tray-app-ui|Tray App Ui]] | MAUI tray app UI: login, status, photo capture, notifications |
-| 9 | [[modules/agent-gateway/agent-installer|Agent Installer]] | MSIX packaging, silent install, auto-update |
-| 10 | [[modules/agent-gateway/mock-mode|Mock Mode]] | Development without a backend server |
+| 2 | [[modules/agent-gateway/agent-server-protocol\|Agent Server Protocol]] | All 6 API endpoints (register, login, policy, heartbeat, ingest, logout) |
+| 3 | [[modules/agent-gateway/data-collection\|Data Collection]] | 5 collectors with Win32 P/Invoke code samples |
+| 4 | [[modules/agent-gateway/ipc-protocol\|Ipc Protocol]] | Named Pipes messages between Service and TrayApp |
+| 5 | [[modules/agent-gateway/sqlite-buffer\|Sqlite Buffer]] | Local SQLite schema, offline resilience, encryption |
+| 6 | [[modules/agent-gateway/tamper-resistance\|Tamper Resistance]] | Detection and reporting of service manipulation |
+| 7 | [[modules/identity-verification/photo-capture\|Photo Capture]] | Camera capture and identity verification flow |
+| 8 | [[modules/agent-gateway/tray-app-ui\|Tray App Ui]] | MAUI tray app UI: login, status, photo capture, notifications |
+| 9 | [[modules/agent-gateway/agent-installer\|Agent Installer]] | MSIX packaging, silent install, auto-update |
+| 10 | [[modules/agent-gateway/mock-mode\|Mock Mode]] | Development without a backend server |
 
 Also read:
 - [[AI_CONTEXT/rules|Rules]] (Section 10) — Privacy rules, performance budgets, coding standards

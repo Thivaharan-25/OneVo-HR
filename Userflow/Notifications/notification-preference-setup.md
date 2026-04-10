@@ -1,6 +1,7 @@
 # Notification Preference Setup
 
 **Area:** Notifications  
+**Trigger:** User configures notification channels (user action — self-service)
 **Required Permission(s):** `notifications:read` (own preferences)  
 **Related Permissions:** `notifications:manage` (org-wide defaults)
 

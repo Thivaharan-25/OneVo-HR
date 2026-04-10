@@ -1,6 +1,7 @@
 # Scheduled Report Setup
 
 **Area:** Analytics & Reporting  
+**Trigger:** Admin configures recurring report delivery (user action — scheduled)
 **Required Permission(s):** `reports:manage`  
 **Related Permissions:** `reports:create` (create report first)
 

@@ -23,6 +23,8 @@
 
 ## `escalation_chains`
 
+> **Scope:** Alert routing for system-detected anomalies (GPS mismatch, excessive idle, unusual activity). Triggered by `exception_alerts`. See [[database/schemas/shared-platform#`escalation_rules`|escalation_rules]] for workflow SLA timeouts (leave pending >N hours etc.) — those are a separate system.
+
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |

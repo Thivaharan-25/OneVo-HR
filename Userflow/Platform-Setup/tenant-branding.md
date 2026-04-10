@@ -1,6 +1,7 @@
 # Tenant Branding
 
 **Area:** Platform Setup
+**Trigger:** Admin navigates to branding settings (user action — configuration)
 **Required Permission(s):** `settings:admin`
 **Related Permissions:** None
 

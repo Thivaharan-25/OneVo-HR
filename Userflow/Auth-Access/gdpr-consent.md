@@ -1,6 +1,7 @@
 # GDPR Consent Collection
 
 **Area:** Auth & Access  
+**Trigger:** System presents consent prompt on first login or policy change (system-triggered — reaction)
 **Required Permission(s):** Any authenticated user  
 **Related Permissions:** `monitoring:configure` (determines which consent categories appear)
 

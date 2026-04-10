@@ -152,7 +152,7 @@ public async Task<PagedResult<EmployeeDto>> GetEmployeesAsync(PagedRequest reque
 }
 ```
 
-### Result<T>
+### `Result<T>`
 
 ```csharp
 public class Result<T>

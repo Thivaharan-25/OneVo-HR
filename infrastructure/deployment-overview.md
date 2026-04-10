@@ -2,8 +2,8 @@
 
 | Document | Purpose |
 |:---------|:--------|
-| [[infrastructure/ci-cd-pipeline|Ci Cd Pipeline]] | Build, test, deploy pipeline |
-| [[infrastructure/environment-parity|Environment Parity]] | Local/staging/prod parity, Docker Compose |
+| [[infrastructure/ci-cd-pipeline\|Ci Cd Pipeline]] | Build, test, deploy pipeline |
+| [[infrastructure/environment-parity\|Environment Parity]] | Local/staging/prod parity, Docker Compose |
 
 ## Related
 

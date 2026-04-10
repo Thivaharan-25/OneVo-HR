@@ -1,6 +1,7 @@
 # Document Access
 
 **Area:** Documents  
+**Trigger:** User navigates to document library (user action — view only)
 **Required Permission(s):** `documents:read` (own accessible docs) or `documents:manage` (all docs)  
 **Related Permissions:** `employees:read-own` (own employee documents)
 

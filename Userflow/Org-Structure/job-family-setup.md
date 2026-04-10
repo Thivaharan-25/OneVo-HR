@@ -1,6 +1,7 @@
 # Job Family Setup
 
 **Area:** Org Structure  
+**Trigger:** Admin creates job family and levels (user action — configuration)
 **Required Permission(s):** `org:manage`  
 **Related Permissions:** `roles:manage` (to assign default role per level)
 
@@ -37,8 +38,30 @@
 
 ### Step 5: Save
 - **API:** `POST /api/v1/org/job-families`
-- **DB:** `job_families`, `job_family_levels` — records created with role associations
+- **DB:** `job_families`, `job_levels`, `job_titles` — records created with role associations
 - **Result:** When employees are assigned to a job family level during onboarding, they automatically inherit the level's default role and its permissions
+
+### Step 5: Assign Required Skills to Job Family
+- **UI:** Inside the job family detail view, navigate to "Required Skills" tab. Empty state: "No skills assigned yet — add skills this job family requires". Click "Add Skill Requirement". Modal: search and select a skill from the skill taxonomy (requires skills to be set up first — see [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]]). For each skill: set Minimum Proficiency (slider 1–5 with level label), toggle Mandatory / Optional. Save
+- **API:** `POST /api/v1/job-families/{familyId}/skill-requirements`
+  ```json
+  {
+    "skillId": "uuid",
+    "minProficiency": 3,
+    "isMandatory": true
+  }
+  ```
+- **Backend:** `JobSkillRequirementService.AssignAsync()`
+  1. Validate skill exists in tenant's taxonomy
+  2. Validate job family belongs to tenant
+  3. Prevent duplicate skill for same job family
+  4. Create `job_skill_requirements` record
+  5. Create audit log entry
+- **Validation:** Skill must exist and be active. `min_proficiency` must be 1–5. Cannot add the same skill twice to the same family
+- **DB:** `job_skill_requirements`
+- **Result:** Skill gap analysis (`GET /api/v1/skills/gap-analysis/{employeeId}`) now compares employees in this job family against these requirements
+
+> **Note:** Skill taxonomy must be configured before this step. If skills are not yet set up, this step can be completed later without re-running the rest of the flow.
 
 ## Variations
 
@@ -68,6 +91,7 @@
 - [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — permissions come from role assigned to level
 - [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — job family level selected during onboarding
 - [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] — promotion changes job family level and potentially role
+- [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]] — skills must exist before they can be assigned to a job family
 
 ## Module References
 

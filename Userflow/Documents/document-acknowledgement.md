@@ -1,6 +1,7 @@
 # Document Acknowledgement
 
 **Area:** Documents  
+**Trigger:** Employee receives policy document requiring acknowledgement (reaction — triggered by document publish)
 **Required Permission(s):** Any employee (for assigned documents)  
 **Related Permissions:** `documents:manage` (track acknowledgement status)
 

@@ -1,6 +1,7 @@
 # Feature Flag Management
 
 **Area:** Platform Setup
+**Trigger:** Admin toggles module on/off (user action — configuration)
 **Required Permission(s):** `settings:admin`
 **Related Permissions:** `billing:manage` (some features are plan-gated)
 

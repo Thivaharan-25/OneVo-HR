@@ -1,6 +1,7 @@
 # Desktop Agent Deployment
 
 **Area:** Workforce Intelligence  
+**Trigger:** Admin initiates desktop agent install for employee (user action)
 **Required Permission(s):** `agent:manage`  
 **Related Permissions:** `settings:admin` (download installer), `employees:read` (map agents to employees)
 

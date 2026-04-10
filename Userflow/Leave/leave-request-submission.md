@@ -1,6 +1,7 @@
 # Leave Request Submission
 
 **Area:** Leave Management  
+**Trigger:** Employee clicks New Request or selects date on calendar (user action)
 **Required Permission(s):** `leave:create`  
 **Related Permissions:** `leave:read-own` (to view own balance), `calendar:read` (to check calendar conflicts)
 

@@ -1,6 +1,7 @@
 # Presence Session View
 
 **Area:** Workforce Presence  
+**Trigger:** Employee or manager views attendance log (user action — view only)
 **Required Permission(s):** `attendance:read-own` (own) or `attendance:read` (all) or `attendance:read-team` (team)  
 **Related Permissions:** `workforce:view` (live dashboard)
 

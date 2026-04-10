@@ -1,6 +1,7 @@
 # Template Management
 
 **Area:** Documents  
+**Trigger:** Admin creates or manages document templates (user action — configuration)
 **Required Permission(s):** `documents:manage`  
 **Related Permissions:** `employees:read` (merge employee data into templates)
 

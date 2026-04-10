@@ -37,4 +37,4 @@ Tracks time spent per application per day per employee. Applications are categor
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/activity/apps/{employeeId}` | `workforce:view` | Application usage breakdown |
 
-See also: [[activity-monitoring/application-categories]]
+See also: [[database/schemas/activity-monitoring#`application_categories`|Application Categories Schema]]

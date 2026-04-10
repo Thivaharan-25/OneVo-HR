@@ -1,6 +1,7 @@
 # Expense Category Setup
 
 **Area:** Expense  
+**Trigger:** Admin defines expense categories (user action — configuration)
 **Required Permission(s):** `expense:manage`  
 **Related Permissions:** `settings:admin` (global policy)
 

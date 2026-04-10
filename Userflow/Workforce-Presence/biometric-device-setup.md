@@ -1,6 +1,7 @@
 # Biometric Device Setup
 
 **Area:** Workforce Presence  
+**Trigger:** Admin registers biometric device (user action — configuration)
 **Required Permission(s):** `attendance:write` + `settings:admin`  
 **Related Permissions:** `agent:manage` (device-agent integration)
 

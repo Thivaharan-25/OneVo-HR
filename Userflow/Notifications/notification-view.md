@@ -1,6 +1,7 @@
 # Notification View
 
 **Area:** Notifications  
+**Trigger:** User opens notification panel (user action — view only)
 **Required Permission(s):** Any authenticated user  
 **Related Permissions:** `notifications:manage` (manage org notifications)
 

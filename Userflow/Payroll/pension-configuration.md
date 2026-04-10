@@ -1,6 +1,7 @@
 # Pension Configuration
 
 **Area:** Payroll  
+**Trigger:** Admin configures pension scheme (user action — configuration)
 **Required Permission(s):** `payroll:write`  
 **Related Permissions:** `settings:admin` (scheme-level config)
 

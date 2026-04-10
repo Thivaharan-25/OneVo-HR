@@ -551,10 +551,10 @@ The dev builds backend first, then frontend for the same module. Each task file 
 
 | # | Task | Module | Priority | Task File |
 |:--|:-----|:-------|:---------|:----------|
-| 1 | Infrastructure & Foundation | Infrastructure + SharedKernel | Critical | [[current-focus/DEV1-infrastructure-setup|DEV1 Infrastructure Setup]] |
-| 2 | Employee Profile | CoreHR | Critical | [[current-focus/DEV1-core-hr-profile|DEV1 Core Hr Profile]] |
-| 3 | Leave | Leave | High | [[current-focus/DEV1-leave|DEV1 Leave]] |
-| 4 | Productivity Analytics | ProductivityAnalytics | High | [[current-focus/DEV1-productivity-analytics|DEV1 Productivity Analytics]] |
+| 1 | Infrastructure & Foundation | Infrastructure + SharedKernel | Critical | [[current-focus/DEV1-infrastructure-setup\|DEV1 Infrastructure Setup]] |
+| 2 | Employee Profile | CoreHR | Critical | [[current-focus/DEV1-core-hr-profile\|DEV1 Core Hr Profile]] |
+| 3 | Leave | Leave | High | [[current-focus/DEV1-leave\|DEV1 Leave]] |
+| 4 | Productivity Analytics | ProductivityAnalytics | High | [[current-focus/DEV1-productivity-analytics\|DEV1 Productivity Analytics]] |
 
 **Dev 1 Frontend Pages:** Dashboard layout, Employee list/detail/create, Leave management, Productivity reports
 
@@ -564,10 +564,10 @@ The dev builds backend first, then frontend for the same module. Each task file 
 
 | # | Task | Module | Priority | Task File |
 |:--|:-----|:-------|:---------|:----------|
-| 1 | Auth & Security | Auth | Critical | [[current-focus/DEV2-auth-security|DEV2 Auth Security]] |
-| 2 | Employee Lifecycle | CoreHR | Critical | [[current-focus/DEV2-core-hr-lifecycle|DEV2 Core Hr Lifecycle]] |
-| 3 | Exception Engine | ExceptionEngine | Critical | [[current-focus/DEV2-exception-engine|DEV2 Exception Engine]] |
-| 4 | Notifications | Notifications | High | [[current-focus/DEV2-notifications|DEV2 Notifications]] |
+| 1 | Auth & Security | Auth | Critical | [[current-focus/DEV2-auth-security\|DEV2 Auth Security]] |
+| 2 | Employee Lifecycle | CoreHR | Critical | [[current-focus/DEV2-core-hr-lifecycle\|DEV2 Core Hr Lifecycle]] |
+| 3 | Exception Engine | ExceptionEngine | Critical | [[current-focus/DEV2-exception-engine\|DEV2 Exception Engine]] |
+| 4 | Notifications | Notifications | High | [[current-focus/DEV2-notifications\|DEV2 Notifications]] |
 
 **Dev 2 Frontend Pages:** Login/MFA/Password reset, Role/User management, Onboarding/Offboarding, Exception dashboard, Notification bell + preferences
 
@@ -577,10 +577,10 @@ The dev builds backend first, then frontend for the same module. Each task file 
 
 | # | Task | Module | Priority | Task File |
 |:--|:-----|:-------|:---------|:----------|
-| 1 | Org Structure | OrgStructure | Critical | [[current-focus/DEV3-org-structure|DEV3 Org Structure]] |
-| 2 | Calendar | Calendar | High | [[current-focus/DEV3-calendar|DEV3 Calendar]] |
-| 3 | Workforce Presence (Setup) | WorkforcePresence | Critical | [[current-focus/DEV3-workforce-presence-setup|DEV3 Workforce Presence Setup]] |
-| 4 | Activity Monitoring | ActivityMonitoring | Critical | [[current-focus/DEV3-activity-monitoring|DEV3 Activity Monitoring]] |
+| 1 | Org Structure | OrgStructure | Critical | [[current-focus/DEV3-org-structure\|DEV3 Org Structure]] |
+| 2 | Calendar | Calendar | High | [[current-focus/DEV3-calendar\|DEV3 Calendar]] |
+| 3 | Workforce Presence (Setup) | WorkforcePresence | Critical | [[current-focus/DEV3-workforce-presence-setup\|DEV3 Workforce Presence Setup]] |
+| 4 | Activity Monitoring | ActivityMonitoring | Critical | [[current-focus/DEV3-activity-monitoring\|DEV3 Activity Monitoring]] |
 
 **Dev 3 Frontend Pages:** Department/Team/Job management, Unified calendar, Shift/Holiday management, Live workforce dashboard, Activity detail/screenshots
 
@@ -590,10 +590,10 @@ The dev builds backend first, then frontend for the same module. Each task file 
 
 | # | Task | Module | Priority | Task File |
 |:--|:-----|:-------|:---------|:----------|
-| 1 | Shared Platform + Agent Gateway | SharedPlatform + AgentGateway | Critical | [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] |
-| 2 | Configuration | Configuration | High | [[current-focus/DEV4-configuration|DEV4 Configuration]] |
-| 3 | Identity Verification | IdentityVerification | High | [[current-focus/DEV4-identity-verification|DEV4 Identity Verification]] |
-| 4 | Workforce Presence (Biometric) | WorkforcePresence | Critical | [[current-focus/DEV4-workforce-presence-biometric|DEV4 Workforce Presence Biometric]] |
+| 1 | Shared Platform + Agent Gateway | SharedPlatform + AgentGateway | Critical | [[current-focus/DEV4-shared-platform-agent-gateway\|DEV4 Shared Platform Agent Gateway]] |
+| 2 | Configuration | Configuration | High | [[current-focus/DEV4-configuration\|DEV4 Configuration]] |
+| 3 | Identity Verification | IdentityVerification | High | [[current-focus/DEV4-identity-verification\|DEV4 Identity Verification]] |
+| 4 | Workforce Presence (Biometric) | WorkforcePresence | Critical | [[current-focus/DEV4-workforce-presence-biometric\|DEV4 Workforce Presence Biometric]] |
 
 **Dev 4 Frontend Pages:** Settings (monitoring config, tenant settings, integrations, retention), Agent management, Biometric devices, Attendance/Overtime, Verification log
 

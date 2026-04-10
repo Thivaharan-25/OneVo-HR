@@ -1,6 +1,7 @@
 # Calendar Conflict Detection
 
 **Area:** Calendar  
+**Trigger:** System checks for scheduling conflicts on event creation (system-triggered — automatic)
 **Required Permission(s):** `calendar:read`  
 **Related Permissions:** `leave:read` (include leave in conflict check)
 

@@ -1,6 +1,7 @@
 # Tenant Provisioning
 
 **Area:** Platform Setup
+**Trigger:** Super Admin creates new tenant (user action — first-time setup)
 **Required Permission(s):** `settings:admin`
 **Related Permissions:** `billing:manage` (to activate subscription after provisioning)
 

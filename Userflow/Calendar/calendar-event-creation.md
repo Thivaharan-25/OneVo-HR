@@ -1,6 +1,7 @@
 # Calendar Event Creation
 
 **Area:** Calendar  
+**Trigger:** User creates calendar event (user action)
 **Required Permission(s):** `calendar:write`  
 **Related Permissions:** `employees:read` (add participants)
 

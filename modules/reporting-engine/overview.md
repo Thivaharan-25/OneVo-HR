@@ -21,10 +21,10 @@ Scheduled and on-demand report generation serving **both pillars** — HR report
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/productivity-analytics/overview|Productivity Analytics]] | `IProductivityAnalyticsService` | Workforce reports |
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | HR reports |
-| **Depends on** | [[modules/leave/overview|Leave]] | `ILeaveService` | Leave utilization reports |
-| **Depends on** | [[modules/workforce-presence/overview|Workforce Presence]] | `IWorkforcePresenceService` | Attendance reports |
+| **Depends on** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IProductivityAnalyticsService` | Workforce reports |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | HR reports |
+| **Depends on** | [[modules/leave/overview\|Leave]] | `ILeaveService` | Leave utilization reports |
+| **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Attendance reports |
 
 ---
 

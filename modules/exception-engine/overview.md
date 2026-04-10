@@ -19,13 +19,13 @@ Configurable anomaly detection engine that evaluates rules against activity and 
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/activity-monitoring/overview|Activity Monitoring]] | `IActivityMonitoringService` | Latest activity data for rule evaluation |
-| **Depends on** | [[modules/workforce-presence/overview|Workforce Presence]] | `IWorkforcePresenceService` | Presence/idle data for detection |
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee/department context, manager hierarchy |
-| **Depends on** | [[modules/configuration/overview|Configuration]] | `IConfigurationService` | Monitoring toggles |
-| **Consumed by** | [[modules/notifications/overview|Notifications]] | — (via `ExceptionAlertCreated` event) | Send alerts |
-| **Consumed by** | [[modules/productivity-analytics/overview|Productivity Analytics]] | — (via direct query) | Exception counts for reports |
-| **Publishes to** | [[modules/agent-gateway/overview|Agent Gateway]] | `RemoteCaptureRequested` event | Triggers on-demand screenshot/photo capture via agent |
+| **Depends on** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | `IActivityMonitoringService` | Latest activity data for rule evaluation |
+| **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Presence/idle data for detection |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee/department context, manager hierarchy |
+| **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Monitoring toggles |
+| **Consumed by** | [[modules/notifications/overview\|Notifications]] | — (via `ExceptionAlertCreated` event) | Send alerts |
+| **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | — (via direct query) | Exception counts for reports |
+| **Publishes to** | [[modules/agent-gateway/overview\|Agent Gateway]] | `RemoteCaptureRequested` event | Triggers on-demand screenshot/photo capture via agent |
 
 ---
 
@@ -169,10 +169,10 @@ When the engine runs checks.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview|Notifications]] (send alert via escalation chain) |
-| `AlertEscalated` | Unacknowledged alert escalated to next level | [[modules/notifications/overview|Notifications]] (notify next in chain) |
+| `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview\|Notifications]] (send alert via escalation chain) |
+| `AlertEscalated` | Unacknowledged alert escalated to next level | [[modules/notifications/overview\|Notifications]] (notify next in chain) |
 | `AlertAcknowledged` | Manager acknowledges/dismisses alert | Audit trail |
-| `RemoteCaptureRequested` | Manager clicks "Request Screenshot/Photo" on alert | [[modules/agent-gateway/overview|Agent Gateway]] (dispatches capture command to agent) |
+| `RemoteCaptureRequested` | Manager clicks "Request Screenshot/Photo" on alert | [[modules/agent-gateway/overview\|Agent Gateway]] (dispatches capture command to agent) |
 
 ---
 

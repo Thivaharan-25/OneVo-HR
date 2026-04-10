@@ -1,6 +1,7 @@
 # Productivity Dashboard
 
 **Area:** Analytics & Reporting  
+**Trigger:** Manager opens analytics page (user action — view only)
 **Required Permission(s):** `analytics:view`  
 **Related Permissions:** `analytics:export` (download data)
 

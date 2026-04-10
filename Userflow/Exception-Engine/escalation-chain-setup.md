@@ -1,6 +1,7 @@
 # Escalation Chain Setup
 
 **Area:** Exception Engine  
+**Trigger:** Admin configures escalation paths (user action — configuration)
 **Required Permission(s):** `exceptions:manage`  
 **Related Permissions:** `employees:read` (select escalation targets)
 

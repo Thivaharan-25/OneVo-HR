@@ -18,8 +18,8 @@ Cross-cutting platform services: SSO provider management, subscription/billing (
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Consumed by** | [[modules/leave/overview|Leave]], [[modules/core-hr/overview|Core Hr]], [[modules/expense/overview|Expense]] | Workflow engine | Approval routing |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
+| **Consumed by** | [[modules/leave/overview\|Leave]], [[modules/core-hr/overview\|Core Hr]], [[modules/expense/overview\|Expense]] | Workflow engine | Approval routing |
 | **Consumed by** | All modules | Feature flags | Feature toggle checks |
 
 ---

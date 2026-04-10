@@ -19,10 +19,10 @@ Company-wide and team calendar events. Aggregates leave, holidays, review cycles
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/leave/overview|Leave]] | `ILeaveService` | Approved leave for calendar |
-| **Depends on** | [[modules/workforce-presence/overview|Workforce Presence]] | — | Holidays |
-| **Depends on** | [[database/performance|Performance]] | — | Review cycle dates |
-| **Consumed by** | [[modules/leave/overview|Leave]] | `ICalendarConflictService` | Conflict detection for leave requests |
+| **Depends on** | [[modules/leave/overview\|Leave]] | `ILeaveService` | Approved leave for calendar |
+| **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | — | Holidays |
+| **Depends on** | [[database/performance\|Performance]] | — | Review cycle dates |
+| **Consumed by** | [[modules/leave/overview\|Leave]] | `ICalendarConflictService` | Conflict detection for leave requests |
 
 ---
 

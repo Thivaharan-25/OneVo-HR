@@ -24,10 +24,10 @@ Key columns: `employee_id`, `leave_type_id`, `start_date`, `end_date`, `total_da
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `LeaveRequested` | Employee submits | [[modules/notifications/overview|Notifications]] |
-| `LeaveApproved` | Manager approves | [[modules/notifications/overview|Notifications]], [[modules/workforce-presence/overview|Workforce Presence]] |
-| `LeaveRejected` | Manager rejects | [[modules/notifications/overview|Notifications]] |
-| `LeaveCancelled` | Cancellation | [[modules/notifications/overview|Notifications]], entitlement adjustment |
+| `LeaveRequested` | Employee submits | [[modules/notifications/overview\|Notifications]] |
+| `LeaveApproved` | Manager approves | [[modules/notifications/overview\|Notifications]], [[modules/workforce-presence/overview\|Workforce Presence]] |
+| `LeaveRejected` | Manager rejects | [[modules/notifications/overview\|Notifications]] |
+| `LeaveCancelled` | Cancellation | [[modules/notifications/overview\|Notifications]], entitlement adjustment |
 
 ## API Endpoints
 

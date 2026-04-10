@@ -1,6 +1,7 @@
 # Leave Balance View
 
 **Area:** Leave Management  
+**Trigger:** Employee navigates to leave balance page (user action — view only)
 **Required Permission(s):** `leave:read-own` (own balances) or `leave:read` (team/all balances)  
 **Related Permissions:** `leave:create` (to initiate new request from balance view)
 

@@ -1,6 +1,7 @@
 # Break Tracking
 
 **Area:** Workforce Presence  
+**Trigger:** Employee starts or ends break via clock widget (user action)
 **Required Permission(s):** `attendance:read` (view breaks)  
 **Related Permissions:** `attendance:write` (manual break entry)
 
@@ -36,7 +37,7 @@
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | No break policy | Breaks tracked but not enforced | No warnings |
-| Excessive breaks | Exception triggered | Manager sees alert → [[Userflow/Exception-Engine/alert-review|Alert Review]] |
+| Excessive breaks | Exception triggered | Manager sees alert → [[Userflow/Exception-Engine/alert-review\|Alert Review]] |
 
 ## Events Triggered
 

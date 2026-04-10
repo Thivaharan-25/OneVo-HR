@@ -1,6 +1,7 @@
 # Leave Cancellation
 
 **Area:** Leave Management  
+**Trigger:** Employee cancels submitted or approved leave (user action)
 **Required Permission(s):** `leave:create` (own requests) or `leave:manage` (admin cancellation of any request)  
 **Related Permissions:** `leave:read-own`, `leave:read`
 

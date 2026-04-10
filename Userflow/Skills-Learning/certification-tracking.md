@@ -1,6 +1,7 @@
 # Certification Tracking
 
 **Area:** Skills & Learning  
+**Trigger:** Employee uploads certification (user action — self-service)
 **Required Permission(s):** `skills:write` (own) or `skills:manage` (admin)  
 **Related Permissions:** `documents:write` (upload certificate)
 

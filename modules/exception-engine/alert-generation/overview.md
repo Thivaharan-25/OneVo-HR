@@ -21,7 +21,7 @@ Audit trail: `alert_id`, `acknowledged_by_id`, `action` (`acknowledged`, `dismis
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview|Notifications]] |
+| `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview\|Notifications]] |
 | `AlertAcknowledged` | Manager acknowledges/dismisses | Audit trail |
 
 ## SignalR Integration

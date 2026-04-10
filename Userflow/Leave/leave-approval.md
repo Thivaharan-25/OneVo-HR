@@ -1,6 +1,7 @@
 # Leave Approval
 
 **Area:** Leave Management  
+**Trigger:** Approver receives notification or opens approval queue (reaction — triggered by leave request)
 **Required Permission(s):** `leave:approve`  
 **Related Permissions:** `leave:read` (to view team leave details), `calendar:read` (to check calendar impact)
 

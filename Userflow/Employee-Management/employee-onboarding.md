@@ -1,6 +1,7 @@
 # Employee Onboarding
 
 **Area:** Employee Management  
+**Trigger:** HR Admin clicks Add Employee (user action)
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `roles:manage` (override default role), `org:manage` (change department), `payroll:write` (set compensation)
 

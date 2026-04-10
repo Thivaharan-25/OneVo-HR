@@ -1,6 +1,7 @@
 # Department Hierarchy
 
 **Area:** Org Structure  
+**Trigger:** Admin creates or modifies department structure (user action — configuration)
 **Required Permission(s):** `org:manage`  
 **Related Permissions:** `employees:read` (to assign department head)
 

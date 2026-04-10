@@ -19,7 +19,7 @@ Foundational module managing tenants, users (authentication identity), file uplo
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[backend/shared-kernel|Shared Kernel]] | `BaseEntity`, `BaseRepository`, `ITenantContext` | Foundation |
+| **Depends on** | [[backend/shared-kernel\|Shared Kernel]] | `BaseEntity`, `BaseRepository`, `ITenantContext` | Foundation |
 | **Consumed by** | All modules | `ITenantContext`, `IFileService`, `IUserService` | Multi-tenancy, files, users |
 
 ---

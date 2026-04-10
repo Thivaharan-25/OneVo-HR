@@ -21,7 +21,7 @@ Tamper detection and device health: `event_type` (`heartbeat`, `tamper_detected`
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `BiometricDeviceOffline` | No heartbeat for 5+ min | [[modules/notifications/overview|Notifications]] |
+| `BiometricDeviceOffline` | No heartbeat for 5+ min | [[modules/notifications/overview\|Notifications]] |
 
 ## API Endpoints
 

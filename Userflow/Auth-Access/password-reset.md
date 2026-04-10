@@ -1,6 +1,7 @@
 # Password Reset
 
 **Area:** Auth & Access  
+**Trigger:** User clicks Forgot Password or admin initiates reset (user action)
 **Required Permission(s):** Any user (self-service) or `users:manage` (admin-initiated)  
 **Related Permissions:** `settings:admin` (configure password policy)
 

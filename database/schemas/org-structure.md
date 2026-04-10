@@ -2,7 +2,24 @@
 
 **Module:** [[modules/org-structure/overview|Org Structure]]
 **Phase:** Phase 1
-**Tables:** 8
+**Tables:** 9
+
+---
+
+## `office_locations`
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `legal_entity_id` | `uuid` | FK → legal_entities |
+| `name` | `varchar(100)` | e.g., "Kuala Lumpur HQ — Floor 12" |
+| `address_json` | `jsonb` | Street, city, state, postcode, country |
+| `timezone` | `varchar(50)` | IANA timezone, e.g., `Asia/Kuala_Lumpur` |
+| `is_active` | `boolean` |  |
+| `created_at` | `timestamptz` |  |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `legal_entity_id` → [[#`legal_entities`|legal_entities]]
 
 ---
 

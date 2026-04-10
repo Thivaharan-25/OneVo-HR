@@ -1,6 +1,7 @@
 # Document Upload
 
 **Area:** Documents  
+**Trigger:** Admin or employee uploads document (user action)
 **Required Permission(s):** `documents:write`  
 **Related Permissions:** `documents:manage` (set access control)
 

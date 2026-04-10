@@ -1,13 +1,15 @@
 # Module: Skills & Learning
 
 **Namespace:** `ONEVO.Modules.Skills`
-**Phase:** 2 — Deferred
+**Phase:** Mixed — 5 tables Phase 1, 10 tables Phase 2
 **Pillar:** 1 — HR Management
-**Owner:** Dev 3 + Dev 4 (Week 3)
-**Tables:** 15
+**Owner:** Dev 3 + Dev 4
+**Tables:** 15 (5 Phase 1 · 10 Phase 2)
 
-> [!WARNING]
-> **This module is deferred to Phase 2. Do not implement.** Skill tracking and learning paths are not core to the employee monitoring product. Specs are preserved here for future reference.
+> [!NOTE]
+> **Phase 1 (build now):** `skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, `skill_validation_requests` — supports skill taxonomy setup, assigning required skills to job families, manager adding/validating employee skills, and employee skill declarations.
+>
+> **Phase 2 (deferred):** LMS integrations, courses, course enrollments, quiz-based assessments, development plans, certifications. Do not implement these in Phase 1.
 
 ---
 
@@ -21,8 +23,8 @@ Manages skills taxonomy, employee skill assessments, learning courses, LMS provi
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Job family skill requirements |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
+| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Job family skill requirements |
 
 ---
 
@@ -41,6 +43,8 @@ public interface ISkillsService
 ---
 
 ## Database Tables (15)
+
+### Phase 1 Tables — Build Now
 
 ### `skill_categories`
 
@@ -82,10 +86,10 @@ Employee-skill mapping with current proficiency level.
 | `tenant_id` | `uuid` | FK → tenants |
 | `employee_id` | `uuid` | FK → employees |
 | `skill_id` | `uuid` | FK → skills |
-| `proficiency_level` | `integer` | 1 (Beginner) → 5 (Expert) |
+| `proficiency_level` | `integer` | 1 (Beginner) → 5 (Expert) — check `BETWEEN 1 AND 5` |
 | `status` | `varchar(20)` | `pending`, `validated`, `expired` |
 | `validated_by_id` | `uuid` | FK → employees (nullable) |
-| `last_assessed_in_review_id` | `uuid` | FK → review_cycles (nullable) |
+| `last_assessed_in_review_id` | `uuid` | FK → review_cycles (nullable — **null in Phase 1**) |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
@@ -99,11 +103,13 @@ Required skills per job family with minimum proficiency.
 | `tenant_id` | `uuid` | FK → tenants |
 | `job_family_id` | `uuid` | FK → job_families |
 | `skill_id` | `uuid` | FK → skills |
-| `min_proficiency` | `integer` | Minimum required level (1–5) |
+| `min_proficiency` | `integer` | Minimum required level (1–5) — check `BETWEEN 1 AND 5` |
 | `is_mandatory` | `boolean` | |
 | `created_at` | `timestamptz` | |
 
 > **Note:** HTML ERD uses `job_family_required_skills` — renamed to match module convention.
+
+### Phase 2 Tables — Deferred
 
 ### `lms_providers`
 
@@ -308,21 +314,40 @@ Employee certification records with expiry tracking.
 
 ## API Endpoints
 
-| Method | Route                                      | Permission        | Description             |
-| :----- | :----------------------------------------- | :---------------- | :---------------------- |
-| GET    | `/api/v1/skills`                           | `skills:read`     | List all skills         |
-| GET    | `/api/v1/skills/employee/{employeeId}`     | `skills:read`     | Employee skills profile |
-| POST   | `/api/v1/skills/assess`                    | `skills:write`    | Submit assessment       |
-| POST   | `/api/v1/skills/validate`                  | `skills:validate` | Validate/endorse skill  |
-| GET    | `/api/v1/courses`                          | `skills:read`     | List courses            |
-| POST   | `/api/v1/courses/enroll`                   | `skills:write`    | Enroll in course        |
-| GET    | `/api/v1/skills/gap-analysis/{employeeId}` | `skills:manage`   | Skill gap report        |
-| GET    | `/api/v1/development-plans/{employeeId}`   | `skills:read`     | Development plan        |
+### Phase 1
+
+| Method | Route | Permission | Description |
+| :----- | :---- | :--------- | :---------- |
+| GET    | `/api/v1/skills` | `skills:read` | List all skills (taxonomy) |
+| GET    | `/api/v1/skills/categories` | `skills:read` | List skill categories |
+| POST   | `/api/v1/skills/categories` | `skills:manage` | Create skill category |
+| POST   | `/api/v1/skills` | `skills:manage` | Create skill in category |
+| GET    | `/api/v1/job-families/{familyId}/skill-requirements` | `skills:read` | Required skills for a job family |
+| POST   | `/api/v1/job-families/{familyId}/skill-requirements` | `skills:manage` | Assign required skill to job family |
+| DELETE | `/api/v1/job-families/{familyId}/skill-requirements/{id}` | `skills:manage` | Remove skill requirement from job family |
+| GET    | `/api/v1/employees/{employeeId}/skills` | `skills:read` | Employee skills profile |
+| POST   | `/api/v1/employees/me/skills` | `skills:write` | Employee self-declares a skill |
+| POST   | `/api/v1/employees/{employeeId}/skills` | `skills:write-team` | Manager directly adds skill to employee profile |
+| PUT    | `/api/v1/employees/{employeeId}/skills/{skillId}/validate` | `skills:validate` | Manager validates employee skill |
+| GET    | `/api/v1/skills/gap-analysis/{employeeId}` | `skills:manage` | Skill gap vs job family requirements |
+| GET    | `/api/v1/skills/validation-requests` | `skills:validate` | Pending validation requests for team |
+
+### Phase 2 (deferred)
+
+| Method | Route | Permission | Description |
+| :----- | :---- | :--------- | :---------- |
+| GET    | `/api/v1/courses` | `skills:read` | List courses |
+| POST   | `/api/v1/courses/enroll` | `skills:write` | Enroll in course |
+| GET    | `/api/v1/development-plans/{employeeId}` | `skills:read` | Development plan |
 
 ## Features
 
-- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — Skill categories and individual skill definitions with proficiency level labels
-- [[modules/skills/employee-skills/overview|Employee Skills]] — Employee-skill mapping with current proficiency and validation status
+### Phase 1
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — Skill categories and individual skill definitions with proficiency level labels (1–5)
+- [[modules/skills/employee-skills/overview|Employee Skills]] — Employee-skill mapping with current proficiency and validation status; supports employee self-declaration, manager direct-add, and manager validation
+- Job Skill Requirements — Assign mandatory/optional skills with minimum proficiency level to job families
+
+### Phase 2 (deferred)
 - [[modules/skills/skill-assessments/overview|Skill Assessments]] — Quiz-based assessments (MCQ, text, file upload) and validation requests
 - [[modules/skills/courses-learning/overview|Courses Learning]] — Internal and LMS-linked courses with enrollment and progress tracking
 - [[modules/skills/certifications/overview|Certifications]] — Certification records with expiry tracking and renewal reminders
@@ -335,6 +360,6 @@ Employee certification records with expiry tracking.
 - [[infrastructure/multi-tenancy|Multi Tenancy]] — All skill and learning data is tenant-scoped
 - [[security/compliance|Compliance]] — Certification expiry tracking supports regulatory compliance
 - [[security/data-classification|Data Classification]] — Certificate files stored in blob storage via `file_records`
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
+- [[current-focus/DEV3-skills-core|DEV3: Skills Core]] — Phase 1 implementation task (5 core tables)
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[database/performance|Performance]]

@@ -1,6 +1,7 @@
 # Live Workforce Dashboard
 
 **Area:** Workforce Intelligence  
+**Trigger:** Manager opens real-time workforce view (user action — view only)
 **Required Permission(s):** `workforce:view`  
 **Related Permissions:** `workforce:manage` (take actions), `attendance:read-team` (team-scoped)
 

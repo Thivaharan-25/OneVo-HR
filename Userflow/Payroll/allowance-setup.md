@@ -1,6 +1,7 @@
 # Allowance Setup
 
 **Area:** Payroll  
+**Trigger:** Admin defines allowance types (user action — configuration)
 **Required Permission(s):** `payroll:write`  
 **Related Permissions:** `employees:write` (assign to employees)
 

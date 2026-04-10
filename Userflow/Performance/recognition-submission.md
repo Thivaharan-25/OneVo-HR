@@ -1,6 +1,7 @@
 # Recognition Submission
 
 **Area:** Performance  
+**Trigger:** Employee or manager submits recognition (user action)
 **Required Permission(s):** `performance:write` (any authenticated employee)  
 **Related Permissions:** `performance:manage` (view all recognitions)
 

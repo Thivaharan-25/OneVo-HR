@@ -1,6 +1,7 @@
 # User Invitation
 
 **Area:** Auth & Access
+**Trigger:** Admin clicks Invite User (user action)
 **Required Permission(s):** `users:manage`
 **Related Permissions:** `roles:manage` (to create new roles during invitation), `employees:write` (to create employee profile simultaneously)
 

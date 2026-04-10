@@ -1,6 +1,7 @@
 # Performance Improvement Plan (PIP)
 
 **Area:** Performance  
+**Trigger:** Manager creates PIP after performance review (user action — post-review)
 **Required Permission(s):** `performance:manage`  
 **Related Permissions:** `employees:write` (update employee record)
 

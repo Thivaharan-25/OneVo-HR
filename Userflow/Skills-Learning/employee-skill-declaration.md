@@ -1,6 +1,8 @@
 # Employee Skill Declaration
 
 **Area:** Skills & Learning  
+**Phase:** Phase 1
+**Trigger:** Employee adds own skills to profile (user action — self-service)
 **Required Permission(s):** `skills:write` (own profile)  
 **Related Permissions:** `skills:read` (to browse taxonomy), `skills:validate` (manager validation)
 
@@ -20,7 +22,7 @@
 - **API:** `GET /api/v1/employees/me/skills`
 - **Backend:** `EmployeeSkillService.GetByEmployeeAsync()` → [[skills]]
 - **Validation:** Permission check for `skills:write` scoped to own profile
-- **DB:** `employee_skills`, `skills`, `skill_categories`, `proficiency_levels`
+- **DB:** `employee_skills`, `skills`, `skill_categories`
 
 ### Step 2: Add Skill
 - **UI:** Modal opens with search-first interface. Search box with typeahead: type to search across all skills (e.g., typing "Py" shows "Python", "PyTorch"). Below search: browse by category accordion (Programming Languages, Project Management, etc.). Click a skill to select it. If skill not found: "Request New Skill" link (sends request to admin)
@@ -37,26 +39,24 @@
 - **DB:** None
 
 ### Step 4: Save Declaration
-- **UI:** Click "Save". Skill card appears in profile with status badge "Pending Validation". Toast: "Skill added successfully. Your manager will be notified for validation"
+- **UI:** Click "Save". Skill card appears in profile with status badge "Pending". Toast: "Skill added successfully. Your manager will be notified for validation"
 - **API:** `POST /api/v1/employees/me/skills`
   ```json
   {
     "skillId": "uuid",
-    "proficiencyLevelId": "uuid",
-    "yearsOfExperience": 3,
+    "proficiencyLevel": 2,
     "notes": "Used Python for 3 years in data pipeline development"
   }
   ```
 - **Backend:** `EmployeeSkillService.DeclareSkillAsync()` → [[skills]]
   1. Validate skill exists and is active in taxonomy
   2. Validate employee hasn't already declared this skill
-  3. Create `employee_skills` record with status `pending_validation`
-  4. Set `self_rated_proficiency` to selected level
-  5. Notify direct manager via [[backend/notification-system|Notification System]]
-  6. Publish `SkillDeclaredEvent`
-  7. Create audit log entry
-- **Validation:** Skill must exist in taxonomy. No duplicate declarations. Proficiency level must be valid
-- **DB:** `employee_skills`, `notifications`, `audit_logs`
+  3. Create `employee_skills` record with `proficiency_level = 2`, `status = 'pending'`
+  4. Notify direct manager via [[backend/notification-system|Notification System]]
+  5. Publish `SkillDeclaredEvent`
+  6. Create audit log entry
+- **Validation:** Skill must exist in taxonomy. No duplicate declarations. `proficiencyLevel` must be integer 1–5
+- **DB:** `employee_skills`, `audit_logs`
 
 ### Step 5: Skill Visible on Profile
 - **UI:** Skill now appears on employee's public profile (visible to managers and HR). In team views, manager can see aggregated skill data. Skill contributes to team skill matrix and gap analysis
@@ -79,7 +79,21 @@
 - Soft-deleted, removed from profile view
 - Historical record retained for analytics
 
-### When skill is linked to a completed course
+### When manager directly adds a skill to an employee's profile
+- Manager navigates to employee profile → Skills tab → "Add Skill" (only visible to users with `skills:write-team`)
+- Same modal as employee self-declaration but scoped to the employee
+- **API:** `POST /api/v1/employees/{employeeId}/skills`
+  ```json
+  {
+    "skillId": "uuid",
+    "proficiencyLevel": 3
+  }
+  ```
+- Creates `employee_skills` record with `status = 'validated'` and `validated_by_id = managerId` immediately — no pending step
+- Employee receives in-app notification: "Your manager [Name] has added [Skill] to your profile at [Level]"
+- **DB:** `employee_skills`, `audit_logs`
+
+### When skill is linked to a completed course *(Phase 2)*
 - If employee completes a course that maps to a skill, system auto-suggests declaring that skill
 - Pre-fills proficiency based on course level
 

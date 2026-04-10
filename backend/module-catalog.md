@@ -60,42 +60,45 @@ ONEVO.sln
 
 ### Pillar 1: HR Management
 
-| #   | Module            | Detailed Doc       | Tables | Owner   | Build Week |
-| :-- | :---------------- | :----------------- | :----- | :------ | :--------- |
-| 1   | Infrastructure    | [[modules/infrastructure/overview|Infrastructure]] | 4      | Dev 1   | Week 1     |
-| 2   | Auth & Security   | [[modules/auth/overview|Auth]]           | 8      | Dev 2   | Week 1     |
-| 3   | Org Structure     | [[modules/org-structure/overview|Org Structure]]  | 8      | Dev 3   | Week 1     |
-| 4   | Core HR           | [[modules/core-hr/overview|Core Hr]]        | 13     | Dev 1+2 | Week 2     |
-| 5   | Leave             | [[modules/leave/overview|Leave]]          | 5      | Dev 1   | Week 3     |
-| 6   | Payroll           | [[modules/payroll/overview|Payroll]]        | 11     | Dev 3   | Week 4     |
-| 7   | Performance       | [[database/performance|Performance]]    | 7      | Dev 2   | Week 3     |
-| 8   | Skills & Learning | [[skills]]         | 15     | Dev 3+4 | Week 3     |
-| 9   | Documents         | [[modules/documents/overview|Documents]]      | 5      | Dev 4   | Week 4     |
+| #   | Module            | Detailed Doc       | Tables | Phase   | Owner   | Build Week |
+| :-- | :---------------- | :----------------- | :----- | :------ | :------ | :--------- |
+| 1   | Infrastructure    | [[modules/infrastructure/overview\|Infrastructure]] | 4      | Phase 1 | Dev 1   | Week 1     |
+| 2   | Auth & Security   | [[modules/auth/overview\|Auth]]           | 9      | Phase 1 | Dev 2   | Week 1     |
+| 3   | Org Structure     | [[modules/org-structure/overview\|Org Structure]]  | 9      | Phase 1 | Dev 3   | Week 1     |
+| 4   | Core HR           | [[modules/core-hr/overview\|Core Hr]]        | 13     | Phase 1 | Dev 1+2 | Week 2     |
+| 5   | Leave             | [[modules/leave/overview\|Leave]]          | 5      | Phase 1 | Dev 1   | Week 3     |
+| 6   | Payroll           | [[modules/payroll/overview\|Payroll]]        | 11     | Phase 2 | Dev 3   | —          |
+| 7   | Performance       | [[database/performance\|Performance]]    | 7      | Phase 2 | Dev 2   | —          |
+| 8   | Skills & Learning | [[skills]]         | 15 (5 Phase 1²) | Phase 2 | Dev 3+4 | — |
+| 9   | Documents         | [[modules/documents/overview\|Documents]]      | 6      | Phase 2 | Dev 4   | —          |
 
 ### Pillar 2: Workforce Intelligence
 
-| # | Module | Detailed Doc | Tables | Owner | Build Week |
-|:--|:-------|:-------------|:-------|:------|:-----------|
-| 10 | Workforce Presence | [[modules/workforce-presence/overview|Workforce Presence]] | 12 | Dev 3+4 | Week 2 |
-| 11 | Activity Monitoring | [[modules/activity-monitoring/overview|Activity Monitoring]] | 8 | Dev 3 | Week 3 |
-| 12 | Identity Verification | [[modules/identity-verification/overview|Identity Verification]] | 6 | Dev 4 | Week 3 |
-| 13 | Exception Engine | [[modules/exception-engine/overview|Exception Engine]] | 5 | Dev 2 | Week 4 |
-| 14 | Productivity Analytics | [[modules/productivity-analytics/overview|Productivity Analytics]] | 4 | Dev 1 | Week 4 |
+| # | Module | Detailed Doc | Tables | Phase | Owner | Build Week |
+|:--|:-------|:-------------|:-------|:------|:------|:-----------|
+| 10 | Workforce Presence | [[modules/workforce-presence/overview\|Workforce Presence]] | 12 | Phase 1 | Dev 3+4 | Week 2 |
+| 11 | Activity Monitoring | [[modules/activity-monitoring/overview\|Activity Monitoring]] | 8 | Phase 1 | Dev 3 | Week 3 |
+| 12 | Identity Verification | [[modules/identity-verification/overview\|Identity Verification]] | 6 | Phase 1 | Dev 4 | Week 3 |
+| 13 | Exception Engine | [[modules/exception-engine/overview\|Exception Engine]] | 5 | Phase 1 | Dev 2 | Week 4 |
+| 14 | Productivity Analytics | [[modules/productivity-analytics/overview\|Productivity Analytics]] | 4 | Phase 1 | Dev 1 | Week 4 |
 
 ### Shared Foundation
 
-| # | Module | Detailed Doc | Tables | Owner | Build Week |
-|:--|:-------|:-------------|:-------|:------|:-----------|
-| 15 | Shared Platform | [[modules/shared-platform/overview|Shared Platform]] | 21 | Dev 4 | Week 1+4 |
-| 16 | Notifications | [[modules/notifications/overview|Notifications]] | 2 | Dev 4 | Week 4 |
-| 17 | Configuration | [[modules/configuration/overview|Configuration]] | 5 | Dev 1 | Week 4 |
-| 18 | Calendar | [[modules/calendar/overview|Calendar]] | 1 | Dev 1 | Week 4 |
-| 19 | Reporting Engine | [[modules/reporting-engine/overview|Reporting Engine]] | 3 | Dev 1 | Week 4 |
-| 20 | Grievance | [[modules/grievance/overview|Grievance]] | 2 | Dev 2 | Week 4 |
-| 21 | Expense | [[modules/expense/overview|Expense]] | 3 | Dev 2 | Week 4 |
-| 22 | Agent Gateway | [[modules/agent-gateway/overview|Agent Gateway]] | 3 | Dev 4 | Week 1 |
+| # | Module | Detailed Doc | Tables | Phase | Owner | Build Week |
+|:--|:-------|:-------------|:-------|:------|:------|:-----------|
+| 15 | Shared Platform | [[modules/shared-platform/overview\|Shared Platform]] | 30 | Phase 1 | Dev 4 | Week 1+4 |
+| 16 | Notifications | [[modules/notifications/overview\|Notifications]] | — | Phase 1 | Dev 4 | Week 4 |
+| 17 | Configuration | [[modules/configuration/overview\|Configuration]] | 6 | Phase 1 | Dev 1 | Week 4 |
+| 18 | Calendar | [[modules/calendar/overview\|Calendar]] | 1 | Phase 1 | Dev 1 | Week 4 |
+| 19 | Reporting Engine | [[modules/reporting-engine/overview\|Reporting Engine]] | 3 | Phase 2 | Dev 1 | — |
+| 20 | Grievance | [[modules/grievance/overview\|Grievance]] | 2 | Phase 2 | Dev 2 | — |
+| 21 | Expense | [[modules/expense/overview\|Expense]] | 3 | Phase 2 | Dev 2 | — |
+| 22 | Agent Gateway | [[modules/agent-gateway/overview\|Agent Gateway]] | 4 | Phase 1 | Dev 4 | Week 1 |
 
-**Total: 22 modules, 163 tables**
+> Notifications tables (`notification_templates`, `notification_channels`) are physically housed in Shared Platform's `AppDbContext` and counted in row 15. No additional tables.
+> ² Skills & Learning: 5 of its 15 tables (`skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, `skill_validation_requests`) are built in Phase 1. The remaining 10 (courses, LMS, assessments, development plans) are Phase 2.
+
+**Total: 22 modules, 163 tables (116 Phase 1 · 47 Phase 2)**
 
 ## Module Dependency Map
 

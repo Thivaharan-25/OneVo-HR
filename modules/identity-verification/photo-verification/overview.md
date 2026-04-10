@@ -24,8 +24,8 @@ Key columns: `employee_id`, `verified_at`, `method` (`photo`, `fingerprint`), `p
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `VerificationFailed` | Match below threshold | [[modules/exception-engine/overview|Exception Engine]], [[modules/notifications/overview|Notifications]] |
-| `VerificationCompleted` | Successful verification | [[modules/workforce-presence/overview|Workforce Presence]] |
+| `VerificationFailed` | Match below threshold | [[modules/exception-engine/overview\|Exception Engine]], [[modules/notifications/overview\|Notifications]] |
+| `VerificationCompleted` | Successful verification | [[modules/workforce-presence/overview\|Workforce Presence]] |
 
 ## API Endpoints
 

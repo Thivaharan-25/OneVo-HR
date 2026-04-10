@@ -25,14 +25,14 @@ Agent Gateway uses **device-level JWT authentication**, separate from user JWT. 
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/auth/overview|Auth]] | `ITokenService` | Issue device JWT at registration |
-| **Depends on** | [[modules/configuration/overview|Configuration]] | `IConfigurationService` | Build monitoring policy for agent |
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Link employee to device at login |
-| **Consumed by** | [[modules/activity-monitoring/overview|Activity Monitoring]] | — (writes to raw buffer) | Raw activity data |
-| **Consumed by** | [[modules/workforce-presence/overview|Workforce Presence]] | — (writes device sessions) | Device session data |
-| **Consumed by** | [[modules/identity-verification/overview|Identity Verification]] | — (routes verification photos) | Photo verification requests |
-| **Listens to** | [[modules/workforce-presence/overview|Workforce Presence]] | `PresenceSessionStarted/Ended`, `BreakStarted/Ended` | Controls agent monitoring lifecycle |
-| **Listens to** | [[modules/exception-engine/overview|Exception Engine]] | `RemoteCaptureRequested` | Dispatches capture command to agent |
+| **Depends on** | [[modules/auth/overview\|Auth]] | `ITokenService` | Issue device JWT at registration |
+| **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Build monitoring policy for agent |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Link employee to device at login |
+| **Consumed by** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | — (writes to raw buffer) | Raw activity data |
+| **Consumed by** | [[modules/workforce-presence/overview\|Workforce Presence]] | — (writes device sessions) | Device session data |
+| **Consumed by** | [[modules/identity-verification/overview\|Identity Verification]] | — (routes verification photos) | Photo verification requests |
+| **Listens to** | [[modules/workforce-presence/overview\|Workforce Presence]] | `PresenceSessionStarted/Ended`, `BreakStarted/Ended` | Controls agent monitoring lifecycle |
+| **Listens to** | [[modules/exception-engine/overview\|Exception Engine]] | `RemoteCaptureRequested` | Dispatches capture command to agent |
 
 ---
 
@@ -174,13 +174,13 @@ Pending and completed commands sent from server to agent.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AgentRegistered` | New device registered | [[modules/configuration/overview|Configuration]] (push initial policy) |
-| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview|Exception Engine]] (flag offline agent) |
+| `AgentRegistered` | New device registered | [[modules/configuration/overview\|Configuration]] (push initial policy) |
+| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview\|Exception Engine]] (flag offline agent) |
 | `AgentRevoked` | Admin revokes agent access | Agent receives 401 on next request |
 | `AgentCommandDispatched` | Command sent to agent via SignalR | Audit log |
-| `AgentCommandCompleted` | Agent reports command result | [[modules/identity-verification/overview|Identity Verification]] (photo result), [[modules/exception-engine/overview|Exception Engine]] (screenshot result) |
-| `MonitoringStarted` | Agent confirmed monitoring active | [[modules/activity-monitoring/overview|Activity Monitoring]] (begin accepting snapshots) |
-| `MonitoringStopped` | Agent confirmed monitoring stopped | [[modules/activity-monitoring/overview|Activity Monitoring]] (stop accepting snapshots) |
+| `AgentCommandCompleted` | Agent reports command result | [[modules/identity-verification/overview\|Identity Verification]] (photo result), [[modules/exception-engine/overview\|Exception Engine]] (screenshot result) |
+| `MonitoringStarted` | Agent confirmed monitoring active | [[modules/activity-monitoring/overview\|Activity Monitoring]] (begin accepting snapshots) |
+| `MonitoringStopped` | Agent confirmed monitoring stopped | [[modules/activity-monitoring/overview\|Activity Monitoring]] (stop accepting snapshots) |
 
 ---
 

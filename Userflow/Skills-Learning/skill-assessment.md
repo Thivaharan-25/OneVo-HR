@@ -1,6 +1,8 @@
 # Skill Assessment
 
 **Area:** Skills & Learning  
+**Phase:** Phase 1
+**Trigger:** Manager validates employee declared skills (reaction — triggered by skill declaration)
 **Required Permission(s):** `skills:validate`  
 **Related Permissions:** `skills:read` (to view skills), `employees:read-team` (to view team members)
 
@@ -8,7 +10,7 @@
 
 ## Preconditions
 
-- Employee has declared at least one skill with status `pending_validation`: [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration Flow]]
+- Employee has declared at least one skill with status `pending`: [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration Flow]]
 - Assessor (manager) has the employee in their reporting line
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
@@ -16,17 +18,17 @@
 
 ### Step 1: Navigate to Team Skills
 - **UI:** Team → Skills. Table view showing all direct reports with: Employee Name, Total Skills Declared, Pending Validation (count with badge), Last Assessment Date. Filter by: validation status (Pending, Validated, All). Sort by pending count descending to prioritize. Notification badge shows total pending validations across team
-- **API:** `GET /api/v1/teams/me/skills?status=pending_validation`
+- **API:** `GET /api/v1/teams/me/skills?status=pending`
 - **Backend:** `TeamSkillService.GetTeamSkillSummaryAsync()` → [[skills]]
-- **Validation:** Permission check for `skills:validate`. Scoped to manager's direct reports only
-- **DB:** `employee_skills`, `employees`, `reporting_lines`
+- **Validation:** Permission check for `skills:validate`. Scoped to manager's direct reports (resolved from `employees.reporting_manager_id` chain)
+- **DB:** `employee_skills`, `employees`
 
 ### Step 2: Select Employee
 - **UI:** Click employee row to expand or navigate to employee skill detail view. Shows all declared skills for that employee in a list: Skill Name, Category, Self-Rated Proficiency (visual bar), Years of Experience, Employee Notes, Status (Pending / Validated / Rejected). Pending skills highlighted with amber indicator
 - **API:** `GET /api/v1/employees/{employeeId}/skills`
 - **Backend:** `EmployeeSkillService.GetByEmployeeAsync()` → [[skills]]
 - **Validation:** Manager must have reporting line to employee
-- **DB:** `employee_skills`, `skills`, `proficiency_levels`
+- **DB:** `employee_skills`, `skills`
 
 ### Step 3: Review and Assess Skill
 - **UI:** Click pending skill to open assessment panel. Shows: Employee's self-rating (read-only), Manager's proficiency rating (slider/radio — same levels as self-rating), Assessment Notes (text area, e.g., "Demonstrated advanced Python skills in Q3 project. Agree with self-assessment"), Assessment Date (auto-set to today). Side panel shows context: employee's related certifications, completed courses for this skill, project history if available
@@ -37,25 +39,23 @@
 
 ### Step 4: Submit Validation
 - **UI:** Three action buttons: "Validate" (accept — uses manager rating or agrees with self-rating), "Adjust & Validate" (accept with different proficiency), "Reject" (skill not demonstrated — requires reason). Click chosen action. Confirmation dialog for reject. Toast: "Skill assessment saved"
-- **API:** `PUT /api/v1/employees/{employeeId}/skills/{skillId}/assess`
+- **API:** `PUT /api/v1/employees/{employeeId}/skills/{skillId}/validate`
   ```json
   {
     "action": "validate",
-    "managerProficiencyLevelId": "uuid",
-    "assessmentNotes": "Demonstrated advanced Python skills in Q3 project",
-    "assessmentDate": "2026-04-07"
+    "proficiencyLevel": 3,
+    "notes": "Demonstrated advanced Python skills in Q3 project"
   }
   ```
-- **Backend:** `SkillAssessmentService.AssessAsync()` → [[skills]]
-  1. Validate manager has reporting line to employee
-  2. Update `employee_skills` record: set `validated_proficiency`, `assessment_notes`, `assessed_by`, `assessed_at`
-  3. Update status to `validated` or `rejected`
-  4. If validated: effective proficiency = manager rating (overrides self-rating for reporting)
-  5. Notify employee of assessment result via [[backend/notification-system|Notification System]]
-  6. Publish `SkillAssessedEvent`
-  7. Create audit log entry
-- **Validation:** Assessor must be in employee's reporting chain. Proficiency level must be valid. Rejection requires notes
-- **DB:** `employee_skills`, `skill_assessments`, `notifications`, `audit_logs`
+- **Backend:** `EmployeeSkillService.ValidateAsync()` → [[skills]]
+  1. Validate manager is in employee's reporting chain
+  2. Update `employee_skills`: set `proficiency_level` to manager's rating, `validated_by_id` to manager, `status = 'validated'`
+  3. For reject: set `status = 'pending'`, leave `validated_by_id` null
+  4. Notify employee of result via [[backend/notification-system|Notification System]]
+  5. Publish `SkillValidatedEvent` or `SkillRejectedEvent`
+  6. Create audit log entry
+- **Validation:** Assessor must be manager of employee. `proficiencyLevel` must be integer 1–5. Rejection requires notes
+- **DB:** `employee_skills`, `audit_logs`
 
 ### Step 5: Employee Notified
 - **UI:** Employee receives in-app notification: "Your [Skill Name] skill has been validated by [Manager Name] at [Proficiency Level]" or "Your [Skill Name] skill declaration was rejected: [reason]". Clicking notification navigates to skill on profile. Validated skills show green checkmark badge. Rejected skills show option to re-declare with updated proficiency
@@ -74,9 +74,8 @@
 
 ### When reassessing a previously validated skill
 - Manager can reassess a validated skill (e.g., after performance review)
-- Opens same assessment panel with previous assessment shown
-- New assessment creates a new `skill_assessments` record (history preserved)
-- Previous proficiency shown for comparison
+- Opens same assessment panel with previous proficiency shown
+- Updates `employee_skills.proficiency_level` and `validated_by_id` in place (no separate history table in Phase 1 — full history is in `audit_logs`)
 
 ### When employee is in a dotted-line reporting relationship
 - Both direct and dotted-line managers with `skills:validate` can assess

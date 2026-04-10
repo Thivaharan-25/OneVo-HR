@@ -20,7 +20,7 @@ Example for `critical`: 1. reporting_manager (0 min) → 2. hr (30 min) → 3. c
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AlertEscalated` | Unacknowledged alert escalated | [[modules/notifications/overview|Notifications]] |
+| `AlertEscalated` | Unacknowledged alert escalated | [[modules/notifications/overview\|Notifications]] |
 
 ## Key Business Rules
 

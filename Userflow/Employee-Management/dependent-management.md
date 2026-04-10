@@ -1,6 +1,7 @@
 # Dependent Management
 
 **Area:** Employee Management  
+**Trigger:** Employee adds or edits dependents (user action — self-service)
 **Required Permission(s):** `employees:read-own` (own dependents) or `employees:write` (admin)  
 **Related Permissions:** `payroll:read` (view dependent-related benefits)
 

@@ -1,6 +1,7 @@
 # Leave Type Configuration
 
 **Area:** Leave Management  
+**Trigger:** Admin creates or configures leave type (user action — configuration)
 **Required Permission(s):** `leave:manage`  
 **Related Permissions:** `settings:admin` (for global defaults)
 

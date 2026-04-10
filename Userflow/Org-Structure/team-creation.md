@@ -1,6 +1,7 @@
 # Team Creation
 
 **Area:** Org Structure  
+**Trigger:** Admin creates team and assigns lead (user action)
 **Required Permission(s):** `org:manage`  
 **Related Permissions:** `employees:read` (to assign members)
 

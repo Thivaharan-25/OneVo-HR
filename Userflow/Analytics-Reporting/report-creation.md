@@ -1,6 +1,7 @@
 # Custom Report Creation
 
 **Area:** Analytics & Reporting  
+**Trigger:** User creates custom report (user action)
 **Required Permission(s):** `reports:create`  
 **Related Permissions:** `reports:manage` (save as template, schedule)
 

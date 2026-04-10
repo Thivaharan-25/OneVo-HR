@@ -18,7 +18,7 @@ Key columns: `employee_id`, `date`, `total_hours`, `active_hours`, `idle_hours`,
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `DailyReportReady` | Aggregation complete | [[modules/notifications/overview|Notifications]] |
+| `DailyReportReady` | Aggregation complete | [[modules/notifications/overview\|Notifications]] |
 
 ## Hangfire Jobs
 

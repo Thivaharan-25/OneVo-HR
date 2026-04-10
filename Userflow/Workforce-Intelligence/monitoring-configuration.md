@@ -1,6 +1,7 @@
 # Monitoring Configuration
 
 **Area:** Workforce Intelligence  
+**Trigger:** Admin enables or configures monitoring settings (user action — configuration)
 **Required Permission(s):** `monitoring:configure`  
 **Related Permissions:** `settings:admin` (tenant-level), `employees:write` (employee overrides)
 

@@ -1,6 +1,7 @@
 # Course Enrollment
 
 **Area:** Skills & Learning  
+**Trigger:** Employee browses and enrolls in course (user action)
 **Required Permission(s):** `skills:read` (to browse courses) + employee self-enrollment  
 **Related Permissions:** `skills:manage` (admin can assign courses), `skills:write` (to update skills on completion)
 

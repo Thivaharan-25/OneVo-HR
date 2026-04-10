@@ -1,6 +1,7 @@
 # Permission Assignment
 
 **Area:** Auth & Access
+**Trigger:** Admin assigns permission to role or employee (user action)
 **Required Permission(s):** `roles:manage`
 **Related Permissions:** `users:manage` (to access employee profiles for per-employee overrides), `employees:write` (to modify employee records)
 

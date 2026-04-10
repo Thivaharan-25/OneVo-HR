@@ -1,6 +1,7 @@
 # Identity Verification Setup
 
 **Area:** Workforce Intelligence  
+**Trigger:** Admin configures photo capture intervals (user action — configuration)
 **Required Permission(s):** `verification:configure`  
 **Related Permissions:** `monitoring:configure` (part of monitoring config)
 

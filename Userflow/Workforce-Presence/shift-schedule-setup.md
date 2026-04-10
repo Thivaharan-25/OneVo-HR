@@ -1,6 +1,7 @@
 # Shift & Schedule Setup
 
 **Area:** Workforce Presence  
+**Trigger:** Admin defines shift patterns and assigns schedules (user action — configuration)
 **Required Permission(s):** `attendance:write`  
 **Related Permissions:** `org:manage` (department-wide assignment)
 

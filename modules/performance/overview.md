@@ -22,9 +22,9 @@ Manages performance review cycles, multi-rater reviews, peer feedback, goals (OK
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[modules/org-structure/overview|Org Structure]] | `IOrgStructureService` | Department hierarchy for cascade goals |
-| **Depends on** | [[modules/productivity-analytics/overview|Productivity Analytics]] | `IProductivityAnalyticsService` | Optional productivity scores for reviews |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
+| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Department hierarchy for cascade goals |
+| **Depends on** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IProductivityAnalyticsService` | Optional productivity scores for reviews |
 
 ---
 

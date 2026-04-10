@@ -1,6 +1,7 @@
 # Development Plan
 
 **Area:** Skills & Learning  
+**Trigger:** Manager or employee creates learning path (user action)
 **Required Permission(s):** `skills:manage` (create for team) or `skills:write` (own)  
 **Related Permissions:** `performance:manage` (link to performance reviews)
 

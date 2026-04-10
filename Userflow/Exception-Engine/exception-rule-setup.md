@@ -1,6 +1,7 @@
 # Exception Rule Setup
 
 **Area:** Exception Engine  
+**Trigger:** Admin defines anomaly detection rules (user action — configuration)
 **Required Permission(s):** `exceptions:manage`  
 **Related Permissions:** `monitoring:configure` (requires monitoring enabled)
 

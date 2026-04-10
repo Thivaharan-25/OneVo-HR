@@ -28,10 +28,10 @@ Audit trail for promotions, transfers, salary changes, suspensions, terminations
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeCreated` | New employee added | [[modules/notifications/overview|Notifications]], [[modules/leave/overview|Leave]] |
-| `EmployeePromoted` | Promotion event | [[modules/notifications/overview|Notifications]], [[modules/payroll/overview|Payroll]] |
-| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview|Notifications]] |
-| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview|Leave]], [[modules/payroll/overview|Payroll]], [[modules/agent-gateway/overview|Agent Gateway]] |
+| `EmployeeCreated` | New employee added | [[modules/notifications/overview\|Notifications]], [[modules/leave/overview\|Leave]] |
+| `EmployeePromoted` | Promotion event | [[modules/notifications/overview\|Notifications]], [[modules/payroll/overview\|Payroll]] |
+| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview\|Notifications]] |
+| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview\|Leave]], [[modules/payroll/overview\|Payroll]], [[modules/agent-gateway/overview\|Agent Gateway]] |
 
 ## API Endpoints
 

@@ -18,9 +18,9 @@ Fields: `employee_id`, `break_start`, `break_end` (null if ongoing), `break_type
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `BreakStarted` | Employee starts break (manual or auto-detected from idle) | [[modules/agent-gateway/overview|Agent Gateway]] (pause monitoring — NO data collection during break) |
-| `BreakEnded` | Employee ends break (manual or activity resumes) | [[modules/agent-gateway/overview|Agent Gateway]] (resume monitoring) |
-| `BreakExceeded` | Break exceeds allowed duration | [[modules/exception-engine/overview|Exception Engine]] |
+| `BreakStarted` | Employee starts break (manual or auto-detected from idle) | [[modules/agent-gateway/overview\|Agent Gateway]] (pause monitoring — NO data collection during break) |
+| `BreakEnded` | Employee ends break (manual or activity resumes) | [[modules/agent-gateway/overview\|Agent Gateway]] (resume monitoring) |
+| `BreakExceeded` | Break exceeds allowed duration | [[modules/exception-engine/overview\|Exception Engine]] |
 
 **Break → Agent lifecycle:** When `BreakStarted` fires, agent-gateway sends `PauseMonitoring` to the desktop agent. The agent stops ALL collectors — zero data captured during breaks. This is a GDPR requirement for employee break privacy. When `BreakEnded` fires, agent-gateway sends `ResumeMonitoring` and data collection resumes.
 

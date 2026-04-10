@@ -21,8 +21,8 @@ Manages employee grievance cases and disciplinary actions. Supports anonymous re
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[modules/shared-platform/overview|Shared Platform]] | Workflow engine | Resolution approval |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
+| **Depends on** | [[modules/shared-platform/overview\|Shared Platform]] | Workflow engine | Resolution approval |
 
 ---
 

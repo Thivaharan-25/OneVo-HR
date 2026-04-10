@@ -26,13 +26,13 @@ Produces `presence_sessions` — one unified row per employee per day — consum
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee context, manager hierarchy |
-| **Depends on** | [[modules/configuration/overview|Configuration]] | `IConfigurationService` | Monitoring toggles, employee overrides |
-| **Consumed by** | [[modules/payroll/overview|Payroll]] | `IWorkforcePresenceService` | Actual worked hours for payroll runs |
-| **Consumed by** | [[modules/productivity-analytics/overview|Productivity Analytics]] | `IWorkforcePresenceService` | Attendance data for reports |
-| **Consumed by** | [[modules/exception-engine/overview|Exception Engine]] | `IWorkforcePresenceService` | Idle detection, absence anomalies |
-| **Consumed by** | [[modules/agent-gateway/overview|Agent Gateway]] | Domain events | Monitoring lifecycle control (start/stop/pause/resume agent) |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context, manager hierarchy |
+| **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Monitoring toggles, employee overrides |
+| **Consumed by** | [[modules/payroll/overview\|Payroll]] | `IWorkforcePresenceService` | Actual worked hours for payroll runs |
+| **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IWorkforcePresenceService` | Attendance data for reports |
+| **Consumed by** | [[modules/exception-engine/overview\|Exception Engine]] | `IWorkforcePresenceService` | Idle detection, absence anomalies |
+| **Consumed by** | [[modules/agent-gateway/overview\|Agent Gateway]] | Domain events | Monitoring lifecycle control (start/stop/pause/resume agent) |
 
 ---
 
@@ -132,12 +132,12 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `PresenceSessionStarted` | Employee clocks in (biometric/manual/agent auto-detect) | [[modules/agent-gateway/overview|Agent Gateway]] (send `StartMonitoring` to agent), [[modules/notifications/overview|Notifications]] (team online status) |
-| `PresenceSessionEnded` | Employee clocks out (biometric/manual/auto-close) | [[modules/agent-gateway/overview|Agent Gateway]] (send `StopMonitoring` to agent), [[modules/activity-monitoring/overview|Activity Monitoring]] (close day tracking) |
-| `BreakStarted` | Employee starts break (manual or auto-detected from idle threshold) | [[modules/agent-gateway/overview|Agent Gateway]] (send `PauseMonitoring` — agent stops ALL data collection) |
-| `BreakEnded` | Employee ends break (manual or activity resumes after auto-detected break) | [[modules/agent-gateway/overview|Agent Gateway]] (send `ResumeMonitoring` — agent resumes data collection) |
-| `BreakExceeded` | Break exceeds allowed duration | [[modules/exception-engine/overview|Exception Engine]] (flag long break) |
-| `OvertimeRequested` | Employee requests overtime | [[modules/notifications/overview|Notifications]] (approval workflow) |
+| `PresenceSessionStarted` | Employee clocks in (biometric/manual/agent auto-detect) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StartMonitoring` to agent), [[modules/notifications/overview\|Notifications]] (team online status) |
+| `PresenceSessionEnded` | Employee clocks out (biometric/manual/auto-close) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StopMonitoring` to agent), [[modules/activity-monitoring/overview\|Activity Monitoring]] (close day tracking) |
+| `BreakStarted` | Employee starts break (manual or auto-detected from idle threshold) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `PauseMonitoring` — agent stops ALL data collection) |
+| `BreakEnded` | Employee ends break (manual or activity resumes after auto-detected break) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `ResumeMonitoring` — agent resumes data collection) |
+| `BreakExceeded` | Break exceeds allowed duration | [[modules/exception-engine/overview\|Exception Engine]] (flag long break) |
+| `OvertimeRequested` | Employee requests overtime | [[modules/notifications/overview\|Notifications]] (approval workflow) |
 | `AttendanceCorrected` | Manager corrects attendance | Audit trail |
 
 **Monitoring lifecycle:** The `PresenceSessionStarted`/`Ended` and `BreakStarted`/`Ended` events are the **control signals** that govern when the desktop agent collects data. No data is captured before clock-in, during breaks, or after clock-out. See [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] for the full flow.

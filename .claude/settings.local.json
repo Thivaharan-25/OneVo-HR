@@ -23,7 +23,10 @@
       "Bash(git rm:*)",
       "Bash(find modules/payroll -name \"*.md\" -exec sed -i 's#\\\\[\\\\[current-focus/DEV3-payroll|DEV3: Payroll\\\\]\\\\]#Payroll task file \\(deferred to Phase 2\\)#g' {} +)",
       "Bash(find modules/performance -name \"*.md\" -exec sed -i 's#\\\\[\\\\[current-focus/DEV2-performance|DEV2: Performance\\\\]\\\\]#Performance task file \\(deferred to Phase 2\\)#g' {} +)",
-      "Bash(ls current-focus/*.md)"
+      "Bash(ls current-focus/*.md)",
+      "Bash(xargs tail:*)",
+      "Bash(find . -name \"*.md\" -type f -exec grep -l \"\\\\[\\\\[\" {} \\\\;)",
+      "mcp__plugin_context-mode_context-mode__ctx_stats"
     ]
   }
 }

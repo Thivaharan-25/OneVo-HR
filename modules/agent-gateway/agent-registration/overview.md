@@ -40,7 +40,7 @@ Handles desktop agent registration and employee linking. New devices register us
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AgentRegistered` | New device registered | [[modules/configuration/overview|Configuration]] (push initial policy) |
+| `AgentRegistered` | New device registered | [[modules/configuration/overview\|Configuration]] (push initial policy) |
 | `AgentRevoked` | Admin revokes agent access | Agent receives 401 on next request |
 
 ## API Endpoints

@@ -1,6 +1,7 @@
 # Tax Configuration
 
 **Area:** Payroll  
+**Trigger:** Admin sets up country-specific tax rules (user action — configuration)
 **Required Permission(s):** `payroll:write`  
 **Related Permissions:** `settings:admin` (country-level config)
 

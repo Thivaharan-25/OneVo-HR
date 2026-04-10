@@ -1,6 +1,7 @@
 # Profile Management
 
 **Area:** Employee Management  
+**Trigger:** Employee or admin views/edits profile (user action — self-service or admin)
 **Required Permission(s):** `employees:read-own` (own profile) or `employees:read` (any employee)  
 **Related Permissions:** `employees:write` (edit), `employees:read-team` (team profiles)
 

@@ -1,6 +1,7 @@
 # Attendance Correction
 
 **Area:** Workforce Presence  
+**Trigger:** Employee submits correction or admin corrects on behalf (user action)
 **Required Permission(s):** `attendance:write` (submit correction) or `attendance:approve` (approve correction)  
 **Related Permissions:** `attendance:read-own` (view own sessions)
 

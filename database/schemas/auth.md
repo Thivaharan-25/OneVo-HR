@@ -33,14 +33,16 @@
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
 | `grantee_type` | `varchar(10)` | `role` or `employee` |
-| `grantee_id` | `uuid` | FK → roles.id OR users.id |
+| `grantee_id` | `uuid` | FK → roles.id OR employees.id (polymorphic, depends on grantee_type) |
 | `module` | `varchar(50)` | Module code: `leave`, `payroll`, `performance`, etc. |
 | `is_enabled` | `boolean` |  |
 | `granted_by` | `uuid` | FK → users |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `grantee_id` → [[#`roles`|roles]], `granted_by` → [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `granted_by` → [[database/schemas/infrastructure#`users`|users]]
+
+> **Polymorphic FK — enforced at application layer:** when `grantee_type = 'role'`, `grantee_id` references [[#`roles`|roles]]; when `grantee_type = 'employee'`, `grantee_id` references [[database/schemas/core-hr#`employees`|employees]]. No DB-level FK constraint on `grantee_id`.
 
 ---
 

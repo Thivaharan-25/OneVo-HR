@@ -64,6 +64,8 @@
 
 ## `escalation_rules`
 
+> **Scope:** Workflow SLA timeouts — fires when a workflow item (leave request, expense claim, etc.) sits in a pending state longer than `sla_hours`. See [[database/schemas/exception-engine#`escalation_chains`|escalation_chains]] for alert routing on system-detected anomalies — that is a separate system.
+
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
@@ -115,7 +117,7 @@
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `office_location_id` → `office_locations`
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `office_location_id` → [[database/schemas/org-structure#`office_locations`|office_locations]]
 
 ---
 

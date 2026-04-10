@@ -1,6 +1,8 @@
 # Skill Taxonomy Setup
 
 **Area:** Skills & Learning  
+**Phase:** Phase 1
+**Trigger:** Admin defines skill categories and levels (user action — configuration)
 **Required Permission(s):** `skills:manage`  
 **Related Permissions:** `skills:read` (to view taxonomy without editing)
 
@@ -57,28 +59,28 @@
   3. If bulk add: process each skill in a transaction
   4. Publish `SkillCreatedEvent` for each
 - **Validation:** Skill name unique within category. Max 100 characters per name
-- **DB:** `skills`, `skill_tags`
+- **DB:** `skills`
 
-### Step 4: Define Proficiency Levels
-- **UI:** Navigate to Taxonomy → Proficiency Levels (global setting). Default levels shown: Beginner (1), Intermediate (2), Advanced (3), Expert (4). Each level has: Name, Numeric Value (1-5), Description (e.g., "Beginner — Can perform basic tasks with guidance"), Color indicator. Admin can add, edit, reorder, or remove levels. Warning shown if removing a level that employees have already used
-- **API:** `PUT /api/v1/skills/proficiency-levels`
+### Step 4: Define Proficiency Level Labels Per Skill
+- **UI:** Inside a skill's detail view, click "Edit Proficiency Levels". Shows 5 level slots (1–5, fixed count). For each level: Name (e.g., "Beginner", "Intermediate", "Advanced", "Expert", "Master"), Description (e.g., "Can perform basic tasks with guidance"). Levels 1–5 are always present — admin customises the labels and descriptions. Save applies to this skill only
+- **API:** `PUT /api/v1/skills/{skillId}/proficiency-levels`
   ```json
   {
     "levels": [
-      { "name": "Beginner", "value": 1, "description": "Can perform basic tasks with guidance", "color": "#90CAF9" },
-      { "name": "Intermediate", "value": 2, "description": "Can work independently on standard tasks", "color": "#42A5F5" },
-      { "name": "Advanced", "value": 3, "description": "Can handle complex tasks and mentor others", "color": "#1E88E5" },
-      { "name": "Expert", "value": 4, "description": "Industry-level expertise, drives innovation", "color": "#1565C0" }
+      { "value": 1, "name": "Beginner", "description": "Can perform basic tasks with guidance" },
+      { "value": 2, "name": "Intermediate", "description": "Can work independently on standard tasks" },
+      { "value": 3, "name": "Advanced", "description": "Can handle complex tasks and mentor others" },
+      { "value": 4, "name": "Expert", "description": "Industry-level expertise" },
+      { "value": 5, "name": "Master", "description": "Drives innovation and defines best practices" }
     ]
   }
   ```
-- **Backend:** `ProficiencyLevelService.UpdateLevelsAsync()` → [[skills]]
-  1. Validate no duplicate values or names
-  2. Check if any removed levels are in use by employees
-  3. Upsert all levels in transaction
-  4. Publish `ProficiencyLevelsUpdatedEvent`
-- **Validation:** At least 2 levels required. Values must be sequential positive integers. Names must be unique
-- **DB:** `proficiency_levels`, `employee_skills` (impact check)
+- **Backend:** `SkillService.UpdateProficiencyLabelsAsync()`
+  1. Validate exactly 5 levels provided, values 1–5
+  2. Update `skills.proficiency_levels` jsonb column for this skill
+  3. Publish `SkillUpdatedEvent`
+- **Validation:** Exactly 5 levels required (values 1–5 are fixed). Names must be unique within the skill. Max 50 characters per name
+- **DB:** `skills` (updates `proficiency_levels` jsonb column)
 
 ### Step 5: Save and Publish Taxonomy
 - **UI:** Taxonomy tree updates in real-time as changes are made. "Published" badge shown next to categories with at least one skill. Employees can immediately browse and declare skills from published categories. Toast notification: "Taxonomy updated successfully"

@@ -1,6 +1,7 @@
 # Role Creation
 
 **Area:** Auth & Access
+**Trigger:** Admin clicks Create Role (user action — configuration)
 **Required Permission(s):** `roles:manage`
 **Related Permissions:** `users:manage` (to assign the new role to users)
 

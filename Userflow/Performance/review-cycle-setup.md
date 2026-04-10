@@ -1,6 +1,7 @@
 # Review Cycle Setup
 
 **Area:** Performance  
+**Trigger:** HR Admin creates review cycle (user action — configuration)
 **Required Permission(s):** `performance:manage`  
 **Related Permissions:** `employees:read` (select participants)
 

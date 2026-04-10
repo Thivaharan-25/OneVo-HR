@@ -1,6 +1,7 @@
 # Tenant Settings
 
 **Area:** Configuration  
+**Trigger:** Admin opens global settings (user action — configuration)
 **Required Permission(s):** `settings:admin`  
 **Related Permissions:** `settings:read` (view only)
 

@@ -1,6 +1,7 @@
 # Identity Verification Review
 
 **Area:** Workforce Intelligence  
+**Trigger:** System flags verification failure for review (system-triggered — anomaly detection)
 **Required Permission(s):** `verification:view`  
 **Related Permissions:** `exceptions:manage` (escalate confirmed mismatches)
 

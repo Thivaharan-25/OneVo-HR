@@ -36,15 +36,15 @@
 | Vulnerability | Mitigation |
 |:-------------|:-----------|
 | Injection | Parameterized queries via EF Core; no raw SQL |
-| Broken Auth | JWT RS256, refresh token rotation, MFA support — see [[security/auth-architecture|Auth Architecture]] |
-| Sensitive Data Exposure | AES-256 encryption, PII log scrubbing — see [[security/data-classification|Data Classification]] |
+| Broken Auth | JWT RS256, refresh token rotation, MFA support — see [[security/auth-architecture\|Auth Architecture]] |
+| Sensitive Data Exposure | AES-256 encryption, PII log scrubbing — see [[security/data-classification\|Data Classification]] |
 | XXE | JSON-only API (no XML parsing) |
-| Broken Access Control | RBAC with 80+ permissions, RLS — see [[infrastructure/multi-tenancy|Multi Tenancy]] |
+| Broken Access Control | RBAC with 80+ permissions, RLS — see [[infrastructure/multi-tenancy\|Multi Tenancy]] |
 | Security Misconfiguration | Hardened defaults, HSTS, CSP headers |
 | XSS | Content-Type enforcement, CSP headers |
 | Insecure Deserialization | System.Text.Json with strict options |
 | Known Vulnerabilities | Dependabot alerts, regular dependency updates |
-| Insufficient Logging | Serilog structured logging, audit trail — see [[code-standards/logging-standards|Logging Standards]] |
+| Insufficient Logging | Serilog structured logging, audit trail — see [[code-standards/logging-standards\|Logging Standards]] |
 
 ### Security Headers
 

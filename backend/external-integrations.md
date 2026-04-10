@@ -55,7 +55,7 @@ services.AddHttpClient<IBiometricClient>("BiometricApi")
 | **Module** | IdentityVerification (device management) → WorkforcePresence (event consumption) |
 | **Auth** | HMAC-SHA256 signed webhooks |
 | **Purpose** | Clock-in/out events from physical terminals |
-| **Tables** | `biometric_devices`, `biometric_enrollments`, `biometric_events` (in [[modules/identity-verification/overview|Identity Verification]]) |
+| **Tables** | `biometric_devices`, `biometric_enrollments`, `biometric_events` (in [[modules/identity-verification/overview\|Identity Verification]]) |
 
 **Webhook Verification:**
 ```csharp

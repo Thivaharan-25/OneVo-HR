@@ -1,6 +1,7 @@
 # Employee Offboarding
 
 **Area:** Employee Management  
+**Trigger:** HR Admin initiates offboarding (user action)
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `payroll:write` (final pay), `documents:manage` (exit documents)
 

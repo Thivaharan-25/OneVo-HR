@@ -1,6 +1,7 @@
 # Self-Assessment
 
 **Area:** Performance  
+**Trigger:** Employee opens self-assessment during review cycle (reaction — triggered by cycle launch)
 **Required Permission(s):** `performance:read-own`  
 **Related Permissions:** `performance:write` (save draft)
 

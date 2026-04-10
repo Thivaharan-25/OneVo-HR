@@ -18,7 +18,7 @@ Centralized notification pipeline for the entire platform. Handles in-app notifi
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext` | Multi-tenancy |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
 | **Consumed by** | All modules | — (via domain events) | Notification delivery |
 
 ---

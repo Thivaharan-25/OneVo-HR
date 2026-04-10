@@ -2,28 +2,37 @@
 
 **Module:** Skills & Learning  
 **Feature:** Employee Skills
+**Phase:** Phase 1
 
 ---
 
 ## Purpose
 
-Employee-skill mapping with current proficiency levels and validation status.
+Employee-skill mapping with current proficiency levels and validation status. Supports three write paths: employee self-declaration (creates `pending` record), manager direct-add (creates `validated` record), and manager validation of a pending declaration.
 
 ## Database Tables
 
 ### `employee_skills`
-Fields: `employee_id`, `skill_id`, `proficiency_level` (1-5), `status` (`pending`, `validated`, `expired`), `validated_by_id`.
+Fields: `employee_id`, `skill_id`, `proficiency_level` (integer 1–5, check `BETWEEN 1 AND 5`), `status` (`pending`, `validated`, `expired`), `validated_by_id` (nullable — set when manager validates or directly adds).
+
+`last_assessed_in_review_id` is always `null` in Phase 1 — populated once Performance module is live.
 
 ### `skill_validation_requests`
-Level upgrade requests: `from_level`, `to_level`, `evidence_url`, `validator_id`, `status`, `review_note`.
+Employee-initiated upgrade requests: `from_level`, `to_level`, `evidence_url`, `validator_id` (FK → employees), `status` (`pending`, `approved`, `rejected`), `review_note`.
+
+When approved: `employee_skills.proficiency_level` is updated to `to_level` and status set to `validated`.
 
 ## API Endpoints
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/skills/employee/{employeeId}` | `skills:read` | Skills profile |
-| POST | `/api/v1/skills/validate` | `skills:validate` | Validate/endorse |
-| GET | `/api/v1/skills/gap-analysis/{employeeId}` | `skills:manage` | Skill gap report |
+| GET | `/api/v1/employees/{employeeId}/skills` | `skills:read` | Skills profile |
+| POST | `/api/v1/employees/me/skills` | `skills:write` | Employee self-declares a skill |
+| POST | `/api/v1/employees/{employeeId}/skills` | `skills:write-team` | Manager directly adds skill to employee (status → `validated`) |
+| PUT | `/api/v1/employees/{employeeId}/skills/{skillId}/validate` | `skills:validate` | Manager validates a pending employee declaration |
+| GET | `/api/v1/skills/validation-requests` | `skills:validate` | List pending requests for manager's team |
+| PUT | `/api/v1/skills/validation-requests/{id}` | `skills:validate` | Approve or reject employee upgrade request |
+| GET | `/api/v1/skills/gap-analysis/{employeeId}` | `skills:manage` | Skill gap vs job family requirements |
 
 ## Related
 
@@ -36,4 +45,4 @@ Level upgrade requests: `from_level`, `to_level`, `evidence_url`, `validator_id`
 - [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped employee skill profiles
 - [[backend/messaging/event-catalog|Event Catalog]] — SkillValidated, SkillExpired events
 - [[backend/messaging/error-handling|Error Handling]] — validation request state machine errors
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task
+- [[current-focus/DEV3-skills-core|DEV3: Skills Core]] — Phase 1 implementation task

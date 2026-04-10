@@ -20,10 +20,10 @@ The dev builds backend first, then frontend for the same module. Each task file 
 
 | # | Task | Module | Priority | Task File |
 |:--|:-----|:-------|:---------|:----------|
-| 1 | Infrastructure & Foundation | Infrastructure + SharedKernel | Critical | [[current-focus/DEV1-infrastructure-setup|DEV1 Infrastructure Setup]] |
-| 2 | Employee Profile | CoreHR | Critical | [[current-focus/DEV1-core-hr-profile|DEV1 Core Hr Profile]] |
-| 3 | Leave | Leave | High | [[current-focus/DEV1-leave|DEV1 Leave]] |
-| 4 | Productivity Analytics | ProductivityAnalytics | High | [[current-focus/DEV1-productivity-analytics|DEV1 Productivity Analytics]] |
+| 1 | Infrastructure & Foundation | Infrastructure + SharedKernel | Critical | [[current-focus/DEV1-infrastructure-setup\|DEV1 Infrastructure Setup]] |
+| 2 | Employee Profile | CoreHR | Critical | [[current-focus/DEV1-core-hr-profile\|DEV1 Core Hr Profile]] |
+| 3 | Leave | Leave | High | [[current-focus/DEV1-leave\|DEV1 Leave]] |
+| 4 | Productivity Analytics | ProductivityAnalytics | High | [[current-focus/DEV1-productivity-analytics\|DEV1 Productivity Analytics]] |
 
 **Dev 1 Frontend Pages:** Dashboard layout, Employee list/detail/create, Leave management, Productivity reports
 
@@ -33,10 +33,10 @@ The dev builds backend first, then frontend for the same module. Each task file 
 
 | # | Task | Module | Priority | Task File |
 |:--|:-----|:-------|:---------|:----------|
-| 1 | Auth & Security | Auth | Critical | [[current-focus/DEV2-auth-security|DEV2 Auth Security]] |
-| 2 | Employee Lifecycle | CoreHR | Critical | [[current-focus/DEV2-core-hr-lifecycle|DEV2 Core Hr Lifecycle]] |
-| 3 | Exception Engine | ExceptionEngine | Critical | [[current-focus/DEV2-exception-engine|DEV2 Exception Engine]] |
-| 4 | Notifications | Notifications | High | [[current-focus/DEV2-notifications|DEV2 Notifications]] |
+| 1 | Auth & Security | Auth | Critical | [[current-focus/DEV2-auth-security\|DEV2 Auth Security]] |
+| 2 | Employee Lifecycle | CoreHR | Critical | [[current-focus/DEV2-core-hr-lifecycle\|DEV2 Core Hr Lifecycle]] |
+| 3 | Exception Engine | ExceptionEngine | Critical | [[current-focus/DEV2-exception-engine\|DEV2 Exception Engine]] |
+| 4 | Notifications | Notifications | High | [[current-focus/DEV2-notifications\|DEV2 Notifications]] |
 
 **Dev 2 Frontend Pages:** Login/MFA/Password reset, Role/User management, Onboarding/Offboarding, Exception dashboard, Notification bell + preferences
 
@@ -46,12 +46,15 @@ The dev builds backend first, then frontend for the same module. Each task file 
 
 | # | Task | Module | Priority | Task File |
 |:--|:-----|:-------|:---------|:----------|
-| 1 | Org Structure | OrgStructure | Critical | [[current-focus/DEV3-org-structure|DEV3 Org Structure]] |
-| 2 | Calendar | Calendar | High | [[current-focus/DEV3-calendar|DEV3 Calendar]] |
-| 3 | Workforce Presence (Setup) | WorkforcePresence | Critical | [[current-focus/DEV3-workforce-presence-setup|DEV3 Workforce Presence Setup]] |
-| 4 | Activity Monitoring | ActivityMonitoring | Critical | [[current-focus/DEV3-activity-monitoring|DEV3 Activity Monitoring]] |
+| 1 | Org Structure | OrgStructure | Critical | [[current-focus/DEV3-org-structure\|DEV3 Org Structure]] |
+| 2 | Skills Core (Phase 1) | Skills (5 tables) | High | [[current-focus/DEV3-skills-core\|DEV3 Skills Core]] |
+| 3 | Calendar | Calendar | High | [[current-focus/DEV3-calendar\|DEV3 Calendar]] |
+| 4 | Workforce Presence (Setup) | WorkforcePresence | Critical | [[current-focus/DEV3-workforce-presence-setup\|DEV3 Workforce Presence Setup]] |
+| 5 | Activity Monitoring | ActivityMonitoring | Critical | [[current-focus/DEV3-activity-monitoring\|DEV3 Activity Monitoring]] |
 
-**Dev 3 Frontend Pages:** Department/Team/Job management, Unified calendar, Shift/Holiday management, Live workforce dashboard, Activity detail/screenshots
+> Task 2 (Skills Core) depends on Task 1 (Org Structure) completing job families first. The job skill requirements UI on the job families page is the connection point.
+
+**Dev 3 Frontend Pages:** Department/Team/Job management, Skill taxonomy admin, Employee skills profile, My Skills self-service, Unified calendar, Shift/Holiday management, Live workforce dashboard, Activity detail/screenshots
 
 ---
 
@@ -59,10 +62,10 @@ The dev builds backend first, then frontend for the same module. Each task file 
 
 | # | Task | Module | Priority | Task File |
 |:--|:-----|:-------|:---------|:----------|
-| 1 | Shared Platform + Agent Gateway | SharedPlatform + AgentGateway | Critical | [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] |
-| 2 | Configuration | Configuration | High | [[current-focus/DEV4-configuration|DEV4 Configuration]] |
-| 3 | Identity Verification | IdentityVerification | High | [[current-focus/DEV4-identity-verification|DEV4 Identity Verification]] |
-| 4 | Workforce Presence (Biometric) | WorkforcePresence | Critical | [[current-focus/DEV4-workforce-presence-biometric|DEV4 Workforce Presence Biometric]] |
+| 1 | Shared Platform + Agent Gateway | SharedPlatform + AgentGateway | Critical | [[current-focus/DEV4-shared-platform-agent-gateway\|DEV4 Shared Platform Agent Gateway]] |
+| 2 | Configuration | Configuration | High | [[current-focus/DEV4-configuration\|DEV4 Configuration]] |
+| 3 | Identity Verification | IdentityVerification | High | [[current-focus/DEV4-identity-verification\|DEV4 Identity Verification]] |
+| 4 | Workforce Presence (Biometric) | WorkforcePresence | Critical | [[current-focus/DEV4-workforce-presence-biometric\|DEV4 Workforce Presence Biometric]] |
 
 **Dev 4 Frontend Pages:** Settings (monitoring config, tenant settings, integrations, retention), Agent management, Biometric devices, Attendance/Overtime, Verification log
 
@@ -84,10 +87,13 @@ These two tasks **must be completed first** before other devs can make progress.
 ### Cross-Dev Dependencies
 
 ```
-DEV3 Calendar (task 2) ──> unblocks DEV1 Leave (task 3)
-DEV3 Workforce Presence Setup (task 3) ──> unblocks DEV4 Biometric (task 4)
-DEV3 Activity Monitoring (task 4) ──> unblocks DEV1 Productivity Analytics (task 4)
+DEV3 Org Structure (task 1) ──> unblocks DEV3 Skills Core (task 2) [job families needed for skill requirements]
+DEV3 Skills Core (task 2) ──> unblocks Required Skills tab in DEV3 Org Structure job families page
+DEV3 Calendar (task 3) ──> unblocks DEV1 Leave (task 3)
+DEV3 Workforce Presence Setup (task 4) ──> unblocks DEV4 Biometric (task 4)
+DEV3 Activity Monitoring (task 5) ──> unblocks DEV1 Productivity Analytics (task 4)
 DEV4 Shared Platform (task 1) ──> unblocks DEV2 Notifications (task 4)
+DEV1 Core HR Profile (task 2) ──> needed by DEV3 Skills Core (employees table for employee_skills)
 ```
 
 ---
@@ -100,7 +106,7 @@ DEV4 Shared Platform (task 1) ──> unblocks DEV2 Notifications (task 4)
 - **Grievance** — deferred to Phase 2
 - **Expense** — deferred to Phase 2
 - **Reporting Engine** — deferred to Phase 2
-- **Skills & Learning** — deferred to Phase 2
+- **Skills & Learning (partial)** — 5 core tables (`skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, `skill_validation_requests`) are Phase 1 (see [[current-focus/DEV3-skills-core|DEV3 Skills Core]]). LMS integrations, courses, assessments, development plans, certifications — deferred to Phase 2
 - **AI Chatbot (Nexis)** — deferred to Phase 2
 - **Mobile Application (Flutter)** — deferred to Phase 2
 - **WorkManage Pro Bridges** — deferred to Phase 2

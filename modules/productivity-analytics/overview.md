@@ -24,12 +24,12 @@ Aggregates data from [[modules/activity-monitoring/overview|Activity Monitoring]
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/activity-monitoring/overview|Activity Monitoring]] | `IActivityMonitoringService` | Daily summaries for aggregation |
-| **Depends on** | [[modules/workforce-presence/overview|Workforce Presence]] | `IWorkforcePresenceService` | Attendance/hours data |
-| **Depends on** | [[modules/core-hr/overview|Core Hr]] | `IEmployeeService` | Employee/department context |
-| **Depends on** | [[modules/exception-engine/overview|Exception Engine]] | `IExceptionEngineService` | Exception counts per day |
-| **Consumed by** | [[database/performance|Performance]] | `IProductivityAnalyticsService` | Productivity scores for reviews |
-| **Consumed by** | [[modules/reporting-engine/overview|Reporting Engine]] | — (via query) | Scheduled report generation |
+| **Depends on** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | `IActivityMonitoringService` | Daily summaries for aggregation |
+| **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Attendance/hours data |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee/department context |
+| **Depends on** | [[modules/exception-engine/overview\|Exception Engine]] | `IExceptionEngineService` | Exception counts per day |
+| **Consumed by** | [[database/performance\|Performance]] | `IProductivityAnalyticsService` | Productivity scores for reviews |
+| **Consumed by** | [[modules/reporting-engine/overview\|Reporting Engine]] | — (via query) | Scheduled report generation |
 
 ---
 
@@ -147,9 +147,9 @@ Tenant-wide daily metrics.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `DailyReportReady` | Daily report aggregation complete | [[modules/notifications/overview|Notifications]] (send summary to managers) |
-| `WeeklyReportReady` | Weekly report aggregation complete | [[modules/notifications/overview|Notifications]] (send weekly digest) |
-| `MonthlyReportReady` | Monthly report aggregation complete | [[modules/notifications/overview|Notifications]] |
+| `DailyReportReady` | Daily report aggregation complete | [[modules/notifications/overview\|Notifications]] (send summary to managers) |
+| `WeeklyReportReady` | Weekly report aggregation complete | [[modules/notifications/overview\|Notifications]] (send weekly digest) |
+| `MonthlyReportReady` | Monthly report aggregation complete | [[modules/notifications/overview\|Notifications]] |
 
 ---
 

@@ -1,6 +1,7 @@
 # Expense Approval
 
 **Area:** Expense  
+**Trigger:** Approver reviews submitted expense claim (reaction — triggered by expense submission)
 **Required Permission(s):** `expense:approve`  
 **Related Permissions:** `expense:manage` (override limits)
 

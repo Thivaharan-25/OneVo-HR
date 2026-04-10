@@ -21,9 +21,9 @@ Handles authentication (JWT RS256), authorization (**hybrid permission control**
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `IUserService` | User identity |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `IUserService` | User identity |
 | **Consumed by** | All modules | `ICurrentUser`, `RequirePermissionAttribute` | Auth context |
-| **Consumed by** | [[modules/agent-gateway/overview|Agent Gateway]] | `ITokenService` | Device JWT issuance |
+| **Consumed by** | [[modules/agent-gateway/overview\|Agent Gateway]] | `ITokenService` | Device JWT issuance |
 
 ---
 

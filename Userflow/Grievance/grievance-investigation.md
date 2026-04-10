@@ -1,6 +1,7 @@
 # Grievance Investigation
 
 **Area:** Grievance  
+**Trigger:** HR Admin reviews filed grievance (reaction — triggered by grievance filing)
 **Required Permission(s):** `grievance:manage`  
 **Related Permissions:** `employees:read` (view involved parties)
 

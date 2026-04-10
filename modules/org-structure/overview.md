@@ -19,11 +19,11 @@ Manages the organizational hierarchy: legal entities, departments (hierarchical 
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Consumed by** | [[modules/core-hr/overview|Core Hr]] | `IOrgStructureService` | Department, job context for employees |
-| **Consumed by** | [[modules/leave/overview|Leave]] | `IOrgStructureService` | Leave policies per job level/country |
-| **Consumed by** | [[modules/payroll/overview|Payroll]] | `IOrgStructureService` | Legal entity for payroll processing |
-| **Consumed by** | [[modules/exception-engine/overview|Exception Engine]] | `IOrgStructureService` | Department-scoped exception rules |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
+| **Consumed by** | [[modules/core-hr/overview\|Core Hr]] | `IOrgStructureService` | Department, job context for employees |
+| **Consumed by** | [[modules/leave/overview\|Leave]] | `IOrgStructureService` | Leave policies per job level/country |
+| **Consumed by** | [[modules/payroll/overview\|Payroll]] | `IOrgStructureService` | Legal entity for payroll processing |
+| **Consumed by** | [[modules/exception-engine/overview\|Exception Engine]] | `IOrgStructureService` | Department-scoped exception rules |
 
 ---
 

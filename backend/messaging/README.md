@@ -11,9 +11,9 @@ ONEVO uses a two-phase messaging strategy:
 
 | Document | Purpose |
 |:---------|:--------|
-| [[backend/messaging/event-catalog|Event Catalog]] | Every domain event, publishers, consumers, and payloads |
-| [[backend/messaging/exchange-topology|Exchange Topology]] | How events flow between modules (MediatR now, RabbitMQ later) |
-| [[backend/messaging/error-handling|Error Handling]] | Retry policies, dead-letter handling, idempotency patterns |
+| [[backend/messaging/event-catalog\|Event Catalog]] | Every domain event, publishers, consumers, and payloads |
+| [[backend/messaging/exchange-topology\|Exchange Topology]] | How events flow between modules (MediatR now, RabbitMQ later) |
+| [[backend/messaging/error-handling\|Error Handling]] | Retry policies, dead-letter handling, idempotency patterns |
 
 ## Quick Reference
 

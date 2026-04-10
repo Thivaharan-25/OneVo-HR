@@ -1,6 +1,7 @@
 # Cost Center Setup
 
 **Area:** Org Structure  
+**Trigger:** Admin creates cost center (user action — configuration)
 **Required Permission(s):** `org:manage`  
 **Related Permissions:** `payroll:read` (view cost allocation)
 

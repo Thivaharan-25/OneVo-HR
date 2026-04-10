@@ -223,13 +223,13 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | Pattern | Where Used |
 |:--------|:-----------|
 | CQRS | Write/read separation across modules |
-| Event Sourcing | Audit trails (`audit_logs` with JSON diffs) — see [[backend/messaging/event-catalog|Event Catalog]] |
-| [[exchange-topology\|Transactional Outbox]] | Reliable domain event delivery |
-| Repository Pattern | Data access via `BaseRepository<T>` — see [[backend/shared-kernel|Shared Kernel]] |
+| Event Sourcing | Audit trails (`audit_logs` with JSON diffs) — see [[backend/messaging/event-catalog\|Event Catalog]] |
+| [[backend/messaging/exchange-topology\|Transactional Outbox]] | Reliable domain event delivery |
+| Repository Pattern | Data access via `BaseRepository<T>` — see [[backend/shared-kernel\|Shared Kernel]] |
 | Unit of Work | EF Core `DbContext` per request |
-| Mediator (MediatR) | Command/Query handling within modules — see [[backend/module-boundaries|Module Boundaries]] |
+| Mediator (MediatR) | Command/Query handling within modules — see [[backend/module-boundaries\|Module Boundaries]] |
 | Specification Pattern | Complex query composition |
-| Result Pattern | `Result<T, Error>` for explicit error handling — see [[backend/shared-kernel|Shared Kernel]] |
+| Result Pattern | `Result<T, Error>` for explicit error handling — see [[backend/shared-kernel\|Shared Kernel]] |
 | Time-Series Buffer | Raw activity data → buffer table (partitioned, purged 48h) → aggregated summaries |
 | Tiered Real-Time | Agent→server (2-3 min), exception engine (5 min), dashboard (30s polling / SignalR push) |
 

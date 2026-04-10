@@ -1,6 +1,7 @@
 # Alert Review
 
 **Area:** Exception Engine  
+**Trigger:** Reviewer opens flagged alert (reaction — triggered by exception detection)
 **Required Permission(s):** `exceptions:view` + `exceptions:acknowledge`  
 **Related Permissions:** `workforce:view` (see supporting activity data)
 

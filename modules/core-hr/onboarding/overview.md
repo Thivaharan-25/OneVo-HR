@@ -21,7 +21,7 @@ Reusable templates with `tasks_json`. Can be global or department-specific.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeOnboardingStarted` | Onboarding initiated | [[modules/notifications/overview|Notifications]] |
+| `EmployeeOnboardingStarted` | Onboarding initiated | [[modules/notifications/overview\|Notifications]] |
 
 ## API Endpoints
 

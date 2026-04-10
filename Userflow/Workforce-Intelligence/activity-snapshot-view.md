@@ -1,6 +1,7 @@
 # Activity Snapshot View
 
 **Area:** Workforce Intelligence  
+**Trigger:** Manager views employee activity data (user action — view only)
 **Required Permission(s):** `workforce:view`  
 **Related Permissions:** `workforce:manage` (export raw data)
 

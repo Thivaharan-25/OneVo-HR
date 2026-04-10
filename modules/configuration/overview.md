@@ -18,11 +18,11 @@ Tenant-level settings, external integration connections, and **monitoring config
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/infrastructure/overview|Infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Consumed by** | [[modules/agent-gateway/overview|Agent Gateway]] | `IConfigurationService` | Build agent monitoring policy |
-| **Consumed by** | [[modules/activity-monitoring/overview|Activity Monitoring]] | `IConfigurationService` | Check feature toggles before processing |
-| **Consumed by** | [[modules/exception-engine/overview|Exception Engine]] | `IConfigurationService` | Check if monitoring enabled for employee |
-| **Consumed by** | [[modules/identity-verification/overview|Identity Verification]] | `IConfigurationService` | Check verification policy |
+| **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
+| **Consumed by** | [[modules/agent-gateway/overview\|Agent Gateway]] | `IConfigurationService` | Build agent monitoring policy |
+| **Consumed by** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | `IConfigurationService` | Check feature toggles before processing |
+| **Consumed by** | [[modules/exception-engine/overview\|Exception Engine]] | `IConfigurationService` | Check if monitoring enabled for employee |
+| **Consumed by** | [[modules/identity-verification/overview\|Identity Verification]] | `IConfigurationService` | Check verification policy |
 
 ---
 

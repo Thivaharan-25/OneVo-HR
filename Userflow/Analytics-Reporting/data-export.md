@@ -1,6 +1,7 @@
 # Data Export
 
 **Area:** Analytics & Reporting  
+**Trigger:** User exports data to CSV or Excel (user action)
 **Required Permission(s):** `analytics:export`  
 **Related Permissions:** `analytics:view` (view data first)
 

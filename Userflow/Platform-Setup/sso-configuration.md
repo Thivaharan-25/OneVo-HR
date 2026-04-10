@@ -1,6 +1,7 @@
 # SSO Configuration
 
 **Area:** Platform Setup
+**Trigger:** Admin navigates to SSO settings (user action — configuration)
 **Required Permission(s):** `settings:admin`
 **Related Permissions:** `users:manage` (to enforce SSO-only login for specific users)
 

@@ -558,7 +558,7 @@ Update to clarify FYI-only role (actionable items go to Inbox):
 ```markdown
 ### Notification Bell
 
-FYI-only updates — actionable items live in [[Inbox]].
+FYI-only updates — actionable items live in [[Userflow/Notifications/inbox|Inbox]].
 
 ```tsx
 function NotificationBell() {

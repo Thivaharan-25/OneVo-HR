@@ -1,6 +1,7 @@
 # Peer Feedback
 
 **Area:** Performance  
+**Trigger:** Nominated peer receives feedback request (reaction — triggered by cycle configuration)
 **Required Permission(s):** `performance:read-own` (for nominated employees)  
 **Related Permissions:** `performance:manage` (configure 360-degree reviews)
 
