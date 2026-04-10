@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Overview Layout</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #050810;
+  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  padding: 24px;
+  min-height: 100vh;
+}
+
+/* ── PAGE HEADER ── */
+.page-header { margin-bottom: 20px; }
+.page-header h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+.page-header p { font-size: 12px; color: #64748b; margin-top: 3px; }
+
+/* ── PERMISSION TOGGLE ── */
+.perm-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+.perm-label { font-size: 11px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
+.perm-pill {
+  padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  border: 1px solid transparent; cursor: pointer; transition: all 0.15s;
+}
+.perm-pill.active { background: #1e293b; border-color: #334155; color: #f1f5f9; }
+.perm-pill.inactive { background: transparent; border-color: #1e293b; color: #475569; }
+.perm-pill:hover { border-color: #475569; color: #94a3b8; }
+
+/* ── DASHBOARD SHELL ── */
+.shell {
+  display: flex;
+  height: calc(100vh - 160px);
+  min-height: 600px;
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 56px;
+  background: #090e1a;
+  border-right: 1px solid #161d2e;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px 0; gap: 4px;
+  flex-shrink: 0;
+}
+.sb-logo {
+  width: 30px; height: 30px; border-radius: 7px;
+  background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 12px; color: #fff; margin-bottom: 12px;
+}
+.sb-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; cursor: pointer; position: relative;
+  transition: background 0.15s;
+}
+.sb-icon:hover { background: #1e293b; }
+.sb-icon.active { background: #1e3a5f; }
+.sb-icon .badge {
+  position: absolute; top: 4px; right: 4px;
+  width: 8px; height: 8px; background: #ef4444; border-radius: 50%;
+  border: 1px solid #090e1a;
+}
+.sb-divider { width: 24px; height: 1px; background: #1e293b; margin: 4px 0; }
+.sb-spacer { flex: 1; }
+
+/* ── MAIN AREA ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 48px; background: #090e1a;
+  border-bottom: 1px solid #161d2e;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px; flex-shrink: 0; gap: 12px;
+}
+.topbar-left { display: flex; align-items: center; gap: 8px; }
+.breadcrumb { font-size: 11px; color: #475569; }
+.breadcrumb span { color: #94a3b8; font-weight: 600; }
+.topbar-search {
+  flex: 1; max-width: 260px;
+  background: #0f1623; border: 1px solid #1e293b;
+  border-radius: 7px; padding: 5px 10px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: #475569; cursor: text;
+}
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.topbar-btn {
+  width: 30px; height: 30px; border-radius: 7px;
+  background: #0f1623; border: 1px solid #1e293b;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; cursor: pointer; position: relative;
+}
+.topbar-btn .badge { position: absolute; top: 3px; right: 3px; width: 7px; height: 7px; background: #ef4444; border-radius: 50%; border: 1px solid #090e1a; }
+.avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; cursor: pointer; }
+
+/* ── CONTENT AREA ── */
+.content {
+  flex: 1; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
+  scrollbar-width: thin; scrollbar-color: #1e293b transparent;
+}
+
+/* ── ZONE LABELS ── */
+.zone-label {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.zone-num {
+  width: 18px; height: 18px; border-radius: 50%;
+  font-size: 9px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.zone-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.zone-desc { font-size: 10px; color: #475569; margin-left: auto; }
+
+/* ── ZONE 1: ALERT STRIP ── */
+.zone-alert {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-left: 3px solid #ef4444;
+  border-radius: 8px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 10px;
+  transition: opacity 0.3s;
+}
+.zone-alert.hidden { display: none; }
+.alert-icon { font-size: 13px; }
+.alert-text { flex: 1; font-size: 11px; }
+.alert-text strong { color: #fca5a5; }
+.alert-text span { color: #64748b; }
+.alert-actions { display: flex; gap: 6px; }
+.alert-btn {
+  padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 600; cursor: pointer; border: none;
+}
+.alert-btn.primary { background: #ef4444; color: #fff; }
+.alert-btn.ghost { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+
+/* ── ZONE 2: KPI CARDS ── */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.kpi-card {
+  background: #0f1623; border: 1px solid #1e293b; border-radius: 10px;
+  padding: 12px 14px; position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.kpi-card:hover { border-color: #334155; }
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  border-radius: 10px 10px 0 0;
+}
+.kpi-card.green::before { background: #22c55e; }
+.kpi-card.cyan::before { background: #06b6d4; }
+.kpi-card.amber::before { background: #f59e0b; }
+.kpi-card.red::before { background: #ef4444; }
+.kpi-label { font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-bottom: 6px; }
+.kpi-value { font-size: 26px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+.kpi-card.green .kpi-value { color: #22c55e; }
+.kpi-card.cyan .kpi-value { color: #06b6d4; }
+.kpi-card.amber .kpi-value { color: #f59e0b; }
+.kpi-card.red .kpi-value { color: #ef4444; }
+.kpi-sub { font-size: 9px; color: #475569; margin-top: 5px; }
+.kpi-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+.kpi-badge.up { background: rgba(34,197,94,0.1); color: #22c55e; }
+.kpi-badge.down { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+/* ── MIDDLE ROW ── */
+.mid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── ZONE 3: PENDING ACTIONS ── */
+.panel {
+  background: #0f1623; border: 1px solid #1e293b; border-radius: 10px;
+  padding: 12px 14px;
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.panel-title { font-size: 11px; font-weight: 700; color: #94a3b8; }
+.panel-link { font-size: 10px; color: #06b6d4; cursor: pointer; }
+.panel-link:hover { text-decoration: underline; }
+
+.action-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 0; border-bottom: 1px solid #161d2e;
+  cursor: pointer; transition: background 0.1s;
+}
+.action-item:last-child { border-bottom: none; }
+.action-item:hover { background: rgba(255,255,255,0.02); }
+.action-icon { font-size: 13px; width: 24px; text-align: center; }
+.action-text { flex: 1; }
+.action-name { font-size: 11px; font-weight: 600; }
+.action-meta { font-size: 9px; color: #475569; margin-top: 1px; }
+.action-count {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 4px;
+}
+.action-count.urgent { background: rgba(239,68,68,0.15); color: #f87171; }
+.action-count.normal { background: rgba(6,182,212,0.1); color: #06b6d4; }
+.action-count.soft { background: rgba(99,102,241,0.1); color: #818cf8; }
+
+/* ── ZONE 4: WORKFORCE LIVE ── */
+.live-header {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
+}
+.live-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.presence-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; margin-bottom: 8px; }
+.pb-seg { border-radius: 3px; transition: flex 0.5s ease; }
+
+.presence-legend { display: flex; gap: 12px; margin-bottom: 10px; }
+.leg-item { display: flex; align-items: center; gap: 4px; font-size: 9px; color: #64748b; }
+.leg-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+.employee-list { display: flex; flex-direction: column; gap: 4px; }
+.emp-row {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 6px; border-radius: 6px; cursor: pointer;
+  transition: background 0.1s;
+}
+.emp-row:hover { background: rgba(255,255,255,0.03); }
+.emp-avatar {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.emp-name { flex: 1; font-size: 10px; font-weight: 600; }
+.emp-dept { font-size: 9px; color: #475569; }
+.emp-status { font-size: 9px; font-weight: 600; }
+.emp-score { font-size: 10px; font-weight: 700; font-family: monospace; }
+.s-active { color: #22c55e; }
+.s-idle { color: #f59e0b; }
+.s-offline { color: #475569; }
+.s-alert { color: #ef4444; }
+
+/* ── BOTTOM ROW ── */
+.bottom-row { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+
+/* ── ZONE 5: CHARTS ── */
+.chart-area { height: 90px; display: flex; align-items: flex-end; gap: 3px; padding: 0 4px; }
+.bar {
+  flex: 1; border-radius: 3px 3px 0 0;
+  background: rgba(6,182,212,0.25);
+  position: relative; cursor: pointer; transition: background 0.15s;
+  min-height: 8px;
+}
+.bar:hover { background: rgba(6,182,212,0.5); }
+.bar.today { background: rgba(6,182,212,0.7); }
+.bar.today:hover { background: #06b6d4; }
+
+.chart-line-area { height: 70px; position: relative; margin: 0 4px; }
+.chart-svg { width: 100%; height: 100%; }
+
+.chart-labels { display: flex; justify-content: space-between; padding: 0 4px; margin-top: 4px; }
+.chart-label { font-size: 8px; color: #334155; }
+
+/* ── ZONE 6: EVENTS ── */
+.event-item {
+  display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid #161d2e;
+}
+.event-item:last-child { border-bottom: none; }
+.event-time-col { display: flex; flex-direction: column; align-items: center; width: 28px; flex-shrink: 0; }
+.event-time { font-size: 8px; color: #475569; font-family: monospace; }
+.event-line { flex: 1; width: 1px; background: #1e293b; margin: 2px 0; min-height: 8px; }
+.event-content { flex: 1; }
+.event-title { font-size: 10px; font-weight: 600; }
+.event-meta { font-size: 9px; color: #475569; margin-top: 1px; }
+.event-tag {
+  display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700;
+  margin-top: 3px;
+}
+.tag-hire { background: rgba(34,197,94,0.1); color: #22c55e; }
+.tag-leave { background: rgba(245,158,11,0.1); color: #f59e0b; }
+.tag-review { background: rgba(99,102,241,0.1); color: #818cf8; }
+.tag-meeting { background: rgba(6,182,212,0.1); color: #06b6d4; }
+.tag-renewal { background: rgba(239,68,68,0.1); color: #f87171; }
+
+/* ── PERMISSION OVERLAY (hidden zones) ── */
+.zone-wrap { position: relative; }
+.zone-locked {
+  position: absolute; inset: 0; z-index: 10;
+  background: rgba(5,8,16,0.75); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(2px); flex-direction: column; gap: 4px;
+  font-size: 11px; color: #334155;
+}
+.zone-locked-icon { font-size: 18px; opacity: 0.4; }
+.zone-locked.hidden { display: none; }
+
+/* Highlight ring when hovering zone */
+.zone-wrap:hover .zone-label .zone-title { opacity: 1; }
+
+/* ── RESPONSIVE LABELS ── */
+.z1 .zone-num { background: rgba(239,68,68,0.2); color: #f87171; }
+.z1 .zone-title { color: #f87171; }
+.z2 .zone-num { background: rgba(6,182,212,0.15); color: #06b6d4; }
+.z2 .zone-title { color: #06b6d4; }
+.z3 .zone-num { background: rgba(99,102,241,0.15); color: #818cf8; }
+.z3 .zone-title { color: #818cf8; }
+.z4 .zone-num { background: rgba(34,197,94,0.15); color: #22c55e; }
+.z4 .zone-title { color: #22c55e; }
+.z5 .zone-num { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.z5 .zone-title { color: #f59e0b; }
+.z6 .zone-num { background: rgba(148,163,184,0.15); color: #94a3b8; }
+.z6 .zone-title { color: #94a3b8; }
+
+/* scrollbar */
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-track { background: transparent; }
+.content::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h2>Dashboard Overview — Layout & Priority</h2>
+  <p>Switch persona to see how the page adapts. Locked zones = no permission for that view.</p>
+</div>
+
+<!-- PERSONA SWITCHER -->
+<div class="perm-bar">
+  <span class="perm-label">View as →</span>
+  <button class="perm-pill active" onclick="setPersona('superadmin', this)">🔑 Super Admin</button>
+  <button class="perm-pill inactive" onclick="setPersona('hrmanager', this)">👥 HR Manager</button>
+  <button class="perm-pill inactive" onclick="setPersona('teamlead', this)">📋 Team Lead</button>
+  <button class="perm-pill inactive" onclick="setPersona('employee', this)">👤 Employee</button>
+  <button class="perm-pill inactive" onclick="setPersona('wfmonitor', this)">📡 WF Monitor</button>
+</div>
+
+<!-- DASHBOARD SHELL -->
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo">A</div>
+    <div class="sb-icon active" title="Overview">🏠</div>
+    <div class="sb-icon" id="sb-people" title="People">👥</div>
+    <div class="sb-icon" id="sb-workforce" title="Workforce Live">📡</div>
+    <div class="sb-icon" id="sb-org" title="Org">🏢</div>
+    <div class="sb-icon" title="Calendar">📅</div>
+    <div class="sb-icon" title="Inbox"><span>📥</span><span class="badge"></span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-icon" id="sb-admin" title="Admin">🔧</div>
+    <div class="sb-spacer"></div>
+    <div class="sb-icon" title="Settings">⚙️</div>
+    <div class="avatar" style="width:30px;height:30px;">SA</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Overview <span>/ Dashboard</span></div>
+      </div>
+      <div class="topbar-search">⌘ <span>Search anything... (⌘K)</span></div>
+      <div class="topbar-right">
+        <div class="topbar-btn">🔔<span class="badge"></span></div>
+        <div class="topbar-btn">📥</div>
+        <div class="avatar">SA</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ZONE 1: ALERT STRIP -->
+      <div class="zone-wrap z1">
+        <div class="zone-label">
+          <div class="zone-num">1</div>
+          <div class="zone-title">Exception Alerts</div>
+          <div class="zone-desc">Urgent — always visible if active</div>
+        </div>
+        <div class="zone-alert" id="alert-strip">
+          <div class="alert-icon">⚡</div>
+          <div class="alert-text">
+            <strong>3 active exceptions</strong>
+            <span> · Sara M. idle 52min · David K. low activity · Workspace-07 disconnected</span>
+          </div>
+          <div class="alert-actions">
+            <button class="alert-btn primary">Review Now</button>
+            <button class="alert-btn ghost">Dismiss</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ZONE 2: KPI CARDS -->
+      <div class="zone-wrap z2">
+        <div class="zone-label">
+          <div class="zone-num">2</div>
+          <div class="zone-title">KPI Cards — State of Org Right Now</div>
+          <div class="zone-desc">Big numbers, one glance</div>
+        </div>
+        <div class="kpi-row" id="kpi-row">
+          <div class="kpi-card green">
+            <div class="kpi-label">Active Now</div>
+            <div class="kpi-value">1,089</div>
+            <div class="kpi-sub"><span class="kpi-badge up">↑ 42</span> vs yesterday</div>
+          </div>
+          <div class="kpi-card amber">
+            <div class="kpi-label">On Leave Today</div>
+            <div class="kpi-value">143</div>
+            <div class="kpi-sub">14 pending approval</div>
+          </div>
+          <div class="kpi-card red" id="kpi-exceptions">
+            <div class="kpi-label">Open Exceptions</div>
+            <div class="kpi-value">7</div>
+            <div class="kpi-sub"><span class="kpi-badge down">↑ 3</span> since yesterday</div>
+          </div>
+          <div class="kpi-card cyan" id="kpi-score">
+            <div class="kpi-label">Avg Productivity</div>
+            <div class="kpi-value">87%</div>
+            <div class="kpi-sub"><span class="kpi-badge up">↑ 2.1%</span> this week</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE ROW -->
+      <div class="mid-row">
+
+        <!-- ZONE 3: PENDING ACTIONS -->
+        <div class="zone-wrap z3">
+          <div class="zone-label">
+            <div class="zone-num">3</div>
+            <div class="zone-title">Pending Actions</div>
+            <div class="zone-desc">Your inbox — what needs doing today</div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Needs Your Attention</div>
+              <div class="panel-link">View all →</div>
+            </div>
+            <div class="action-item">
+              <div class="action-icon">📋</div>
+              <div class="action-text">
+                <div class="action-name">Leave Requests</div>
+                <div class="action-meta">Oldest: 2 days ago · 3 urgent</div>
+              </div>
+              <div class="action-count urgent">14 pending</div>
+            </div>
+            <div class="action-item">
+              <div class="action-icon">💰</div>
+              <div class="action-text">
+                <div class="action-name">Expense Claims</div>
+                <div class="action-meta">Total: RM 12,450 awaiting</div>
+              </div>
+              <div class="action-count normal">8 pending</div>
+            </div>
+            <div class="action-item" id="action-onboard">
+              <div class="action-icon">🎉</div>
+              <div class="action-text">
+                <div class="action-name">Onboardings Today</div>
+                <div class="action-meta">3 new hires starting — checklist incomplete</div>
+              </div>
+              <div class="action-count soft">3 due</div>
+            </div>
+            <div class="action-item" id="action-payroll">
+              <div class="action-icon">💳</div>
+              <div class="action-text">
+                <div class="action-name">Payroll Run Due</div>
+                <div class="action-meta">End of month · 2 days remaining</div>
+              </div>
+              <div class="action-count urgent">Action needed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ZONE 4: WORKFORCE LIVE -->
+        <div class="zone-wrap z4">
+          <div class="zone-label">
+            <div class="zone-num">4</div>
+            <div class="zone-title">Workforce Live</div>
+            <div class="zone-desc">Who's active, idle, offline right now</div>
+          </div>
+          <div class="panel" id="zone4-panel">
+            <div class="panel-header">
+              <div class="live-header">
+                <div class="live-dot"></div>
+                <div class="panel-title">Live Presence</div>
+              </div>
+              <div class="panel-link">Full view →</div>
+            </div>
+
+            <div class="presence-bar">
+              <div class="pb-seg" style="flex:1089;background:#22c55e;opacity:0.7;"></div>
+              <div class="pb-seg" style="flex:143;background:#f59e0b;opacity:0.7;"></div>
+              <div class="pb-seg" style="flex:7;background:#ef4444;opacity:0.8;"></div>
+              <div class="pb-seg" style="flex:8;background:#475569;opacity:0.5;"></div>
+            </div>
+            <div class="presence-legend">
+              <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div>Active 1,089</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Idle 143</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Alert 7</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#475569"></div>Offline 8</div>
+            </div>
+
+            <div class="employee-list">
+              <div class="emp-row">
+                <div class="emp-avatar" style="background:#6366f1">AK</div>
+                <div class="emp-name">Ahmed K.</div>
+                <div class="emp-dept">Engineering</div>
+                <div class="emp-score s-active">91%</div>
+              </div>
+              <div class="emp-row">
+                <div class="emp-avatar" style="background:#8b5cf6">SM</div>
+                <div class="emp-name">Sara M.</div>
+                <div class="emp-dept">Design</div>
+                <div class="emp-score s-alert">⚡ Alert</div>
+              </div>
+              <div class="emp-row">
+                <div class="emp-avatar" style="background:#0ea5e9">DK</div>
+                <div class="emp-name">David K.</div>
+                <div class="emp-dept">Sales</div>
+                <div class="emp-score s-idle">Idle 12m</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM ROW -->
+      <div class="bottom-row">
+
+        <!-- ZONE 5: CHARTS -->
+        <div class="zone-wrap z5">
+          <div class="zone-label">
+            <div class="zone-num">5</div>
+            <div class="zone-title">Trends & Charts</div>
+            <div class="zone-desc">Analysis — patterns over time</div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Productivity — Last 14 Days</div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <div class="panel-link">Attendance</div>
+                <div class="panel-link">Leave</div>
+                <div class="panel-link">Full report →</div>
+              </div>
+            </div>
+            <!-- Bar chart mockup -->
+            <div class="chart-area">
+              <div class="bar" style="height:62%"></div>
+              <div class="bar" style="height:70%"></div>
+              <div class="bar" style="height:55%"></div>
+              <div class="bar" style="height:80%"></div>
+              <div class="bar" style="height:74%"></div>
+              <div class="bar" style="height:68%"></div>
+              <div class="bar" style="height:90%"></div>
+              <div class="bar" style="height:85%"></div>
+              <div class="bar" style="height:78%"></div>
+              <div class="bar" style="height:72%"></div>
+              <div class="bar" style="height:88%"></div>
+              <div class="bar" style="height:82%"></div>
+              <div class="bar" style="height:76%"></div>
+              <div class="bar today" style="height:87%"></div>
+            </div>
+            <div class="chart-labels">
+              <span class="chart-label">Apr 1</span>
+              <span class="chart-label">Apr 5</span>
+              <span class="chart-label">Apr 9</span>
+              <span class="chart-label">Today</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ZONE 6: WORKFORCE EVENTS -->
+        <div class="zone-wrap z6">
+          <div class="zone-label">
+            <div class="zone-num">6</div>
+            <div class="zone-title">Workforce Events</div>
+            <div class="zone-desc">NOT personal meetings</div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Today & This Week</div>
+              <div class="panel-link">Calendar →</div>
+            </div>
+            <div class="event-item">
+              <div class="event-time-col">
+                <div class="event-time">Now</div>
+                <div class="event-line"></div>
+              </div>
+              <div class="event-content">
+                <div class="event-title">3 New Hires Starting</div>
+                <div class="event-meta">Engineering · Design · Sales</div>
+                <span class="event-tag tag-hire">New Hire</span>
+              </div>
+            </div>
+            <div class="event-item">
+              <div class="event-time-col">
+                <div class="event-time">EOD</div>
+                <div class="event-line"></div>
+              </div>
+              <div class="event-content">
+                <div class="event-title">Payroll Cutoff</div>
+                <div class="event-meta">April 2026 run — 2 days left</div>
+                <span class="event-tag tag-renewal">Deadline</span>
+              </div>
+            </div>
+            <div class="event-item">
+              <div class="event-time-col">
+                <div class="event-time">Fri</div>
+                <div class="event-line"></div>
+              </div>
+              <div class="event-content">
+                <div class="event-title">Q1 Performance Reviews</div>
+                <div class="event-meta">12 employees · cycle closing</div>
+                <span class="event-tag tag-review">Review</span>
+              </div>
+            </div>
+            <div class="event-item">
+              <div class="event-time-col">
+                <div class="event-time">Mon</div>
+                <div class="event-line"></div>
+              </div>
+              <div class="event-content">
+                <div class="event-title">14 on Annual Leave</div>
+                <div class="event-meta">Approved · Starts Monday</div>
+                <span class="event-tag tag-leave">Leave</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- end content -->
+  </div><!-- end main -->
+</div><!-- end shell -->
+
+<script>
+// What each persona actually sees — absence = zone doesn't render at all
+const personas = {
+  superadmin: {
+    alert: true,
+    kpiOrgWide: true,       // all 4 KPIs
+    kpiExceptions: true,
+    kpiScore: true,
+    pendingPayroll: true,
+    pendingOnboard: true,
+    wfLive: true,           // zone 4
+    adminSidebar: true,
+    wfSidebar: true,
+  },
+  hrmanager: {
+    alert: false,           // no WI = no exception alerts
+    kpiOrgWide: true,       // headcount, leave — yes
+    kpiExceptions: false,   // no WI module
+    kpiScore: false,        // no WI module
+    pendingPayroll: true,
+    pendingOnboard: true,
+    wfLive: false,          // entire zone removed
+    adminSidebar: false,
+    wfSidebar: false,
+  },
+  teamlead: {
+    alert: false,
+    kpiOrgWide: false,      // sees team KPIs only — org-wide cards removed
+    kpiExceptions: true,    // their team's exceptions
+    kpiScore: true,         // their team's score
+    pendingPayroll: false,
+    pendingOnboard: false,
+    wfLive: true,           // their team's live presence
+    adminSidebar: false,
+    wfSidebar: true,
+  },
+  employee: {
+    alert: false,
+    kpiOrgWide: false,
+    kpiExceptions: false,
+    kpiScore: false,
+    pendingPayroll: false,
+    pendingOnboard: false,
+    wfLive: false,
+    adminSidebar: false,
+    wfSidebar: false,
+  },
+  wfmonitor: {
+    alert: true,
+    kpiOrgWide: true,
+    kpiExceptions: true,
+    kpiScore: true,
+    pendingPayroll: false,
+    pendingOnboard: false,
+    wfLive: true,
+    adminSidebar: false,
+    wfSidebar: true,
+  },
+};
+
+// Team-scoped KPI labels for teamlead
+const teamKpis = {
+  active:  { label: 'My Team Active', value: '23', sub: '↑ 2 vs yesterday', cls: 'green' },
+  leave:   { label: 'My Team On Leave', value: '3', sub: '1 pending approval', cls: 'amber' },
+};
+const orgKpis = {
+  active:  { label: 'Active Now', value: '1,089', sub: '↑ 42 vs yesterday', cls: 'green' },
+  leave:   { label: 'On Leave Today', value: '143', sub: '14 pending approval', cls: 'amber' },
+};
+
+function show(id) { const el = document.getElementById(id); if(el) el.style.display = ''; }
+function hide(id) { const el = document.getElementById(id); if(el) el.style.display = 'none'; }
+function showEl(el) { if(el) el.style.display = ''; }
+function hideEl(el) { if(el) el.style.display = 'none'; }
+
+function setPersona(key, btn) {
+  document.querySelectorAll('.perm-pill').forEach(p => {
+    p.classList.remove('active'); p.classList.add('inactive');
+  });
+  btn.classList.remove('inactive'); btn.classList.add('active');
+
+  const p = personas[key];
+
+  // ── Alert strip ──
+  p.alert ? show('alert-strip') : hide('alert-strip');
+
+  // ── KPI cards ──
+  const kpiRow = document.getElementById('kpi-row');
+  const kpiExceptions = document.getElementById('kpi-exceptions');
+  const kpiScore = document.getElementById('kpi-score');
+
+  // Show/hide entire KPI zone based on whether user sees anything
+  const anyKpi = p.kpiOrgWide || p.kpiExceptions || p.kpiScore;
+  document.querySelector('.z2').style.display = anyKpi ? '' : 'none';
+
+  // Org-wide cards (active + leave) — first two cards
+  const kpiCards = kpiRow.querySelectorAll('.kpi-card');
+  kpiCards[0].style.display = p.kpiOrgWide ? '' : 'none'; // Active Now
+  kpiCards[1].style.display = p.kpiOrgWide ? '' : 'none'; // On Leave
+
+  // Exceptions + score KPIs
+  kpiExceptions.style.display = p.kpiExceptions ? '' : 'none';
+  kpiScore.style.display = p.kpiScore ? '' : 'none';
+
+  // Team lead gets relabelled KPIs
+  if (key === 'teamlead') {
+    kpiCards[0].querySelector('.kpi-label').textContent = teamKpis.active.label;
+    kpiCards[0].querySelector('.kpi-value').textContent = teamKpis.active.value;
+    kpiCards[1].querySelector('.kpi-label').textContent = teamKpis.leave.label;
+    kpiCards[1].querySelector('.kpi-value').textContent = teamKpis.leave.value;
+  } else {
+    kpiCards[0].querySelector('.kpi-label').textContent = orgKpis.active.label;
+    kpiCards[0].querySelector('.kpi-value').textContent = orgKpis.active.value;
+    kpiCards[1].querySelector('.kpi-label').textContent = orgKpis.leave.label;
+    kpiCards[1].querySelector('.kpi-value').textContent = orgKpis.leave.value;
+  }
+
+  // ── Pending actions ──
+  document.getElementById('action-payroll').style.display = p.pendingPayroll ? '' : 'none';
+  document.getElementById('action-onboard').style.display = p.pendingOnboard ? '' : 'none';
+
+  // ── Zone 4: Workforce Live — entire zone removed if no permission ──
+  document.querySelector('.z4').style.display = p.wfLive ? '' : 'none';
+  // If zone 4 is gone, mid-row becomes single column
+  document.querySelector('.mid-row').style.gridTemplateColumns = p.wfLive ? '1fr 1fr' : '1fr';
+
+  // ── Sidebar ──
+  document.getElementById('sb-admin').style.opacity = p.adminSidebar ? '1' : '0.25';
+  document.getElementById('sb-admin').style.pointerEvents = p.adminSidebar ? '' : 'none';
+  document.getElementById('sb-workforce').style.opacity = p.wfSidebar ? '1' : '0.25';
+  document.getElementById('sb-workforce').style.pointerEvents = p.wfSidebar ? '' : 'none';
+}
+</script>
+</body>
+</html>

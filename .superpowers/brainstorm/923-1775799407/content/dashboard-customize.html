@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Customization Mode</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #050810; color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  padding: 20px; min-height: 100vh;
+}
+
+/* ── PAGE HEADER ── */
+.page-header { margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.page-header h2 { font-size: 17px; font-weight: 800; letter-spacing: -0.5px; }
+.page-header p { font-size: 11px; color: #475569; margin-top: 2px; }
+.mode-toggle { display: flex; gap: 8px; }
+.toggle-btn {
+  padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid transparent; transition: all 0.15s;
+}
+.toggle-btn.normal { background: #0f1623; border-color: #1e293b; color: #64748b; }
+.toggle-btn.normal:hover { border-color: #334155; color: #94a3b8; }
+.toggle-btn.edit { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.4); color: #818cf8; }
+.toggle-btn.save { background: #6366f1; border-color: #6366f1; color: #fff; }
+.toggle-btn.save:hover { background: #818cf8; }
+.toggle-btn.reset { background: transparent; border-color: #1e293b; color: #475569; font-size: 11px; }
+
+/* ── SHELL ── */
+.shell {
+  display: flex;
+  height: calc(100vh - 110px); min-height: 580px;
+  border: 1px solid #1e293b; border-radius: 14px; overflow: hidden;
+  background: #0d1117; position: relative;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 52px; background: #090e1a; border-right: 1px solid #161d2e;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px 0; gap: 4px; flex-shrink: 0;
+}
+.sb-logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,#0ea5e9,#06b6d4); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:12px; color:#fff; margin-bottom:10px; }
+.sb-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer; transition:background 0.15s; }
+.sb-icon:hover { background:#1e293b; }
+.sb-icon.active { background:#1e3a5f; }
+.sb-spacer { flex:1; }
+
+/* ── MAIN ── */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+
+/* ── TOPBAR ── */
+.topbar {
+  height:46px; background:#090e1a; border-bottom:1px solid #161d2e;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; flex-shrink:0; gap:10px;
+}
+.breadcrumb { font-size:11px; color:#475569; }
+.breadcrumb span { color:#94a3b8; font-weight:600; }
+.topbar-search { flex:1; max-width:240px; background:#0f1623; border:1px solid #1e293b; border-radius:7px; padding:4px 10px; display:flex; align-items:center; gap:6px; font-size:11px; color:#475569; }
+.topbar-right { display:flex; align-items:center; gap:8px; }
+.topbar-btn { width:28px; height:28px; border-radius:7px; background:#0f1623; border:1px solid #1e293b; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; position:relative; }
+.topbar-btn .badge { position:absolute; top:3px; right:3px; width:6px; height:6px; background:#ef4444; border-radius:50%; }
+.avatar { width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#fff; cursor:pointer; }
+
+/* ── CUSTOMIZE BAR (appears in edit mode) ── */
+.customize-bar {
+  display: none;
+  background: linear-gradient(90deg, rgba(99,102,241,0.08), rgba(99,102,241,0.04));
+  border-bottom: 1px solid rgba(99,102,241,0.2);
+  padding: 8px 16px;
+  align-items: center; gap: 10px;
+  animation: slideDown 0.2s ease;
+}
+.customize-bar.visible { display: flex; }
+.cb-icon { font-size: 14px; }
+.cb-text { font-size: 11px; color: #818cf8; flex: 1; }
+.cb-text strong { color: #a5b4fc; }
+.cb-hint { font-size: 10px; color: #475569; }
+
+@keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+
+/* ── CONTENT WRAPPER ── */
+.content-wrap { display:flex; flex:1; overflow:hidden; }
+
+/* ── CONTENT ── */
+.content {
+  flex:1; overflow-y:auto; padding:14px 16px;
+  display:flex; flex-direction:column; gap:10px;
+  transition: margin-right 0.25s ease;
+  scrollbar-width:thin; scrollbar-color:#1e293b transparent;
+}
+.content::-webkit-scrollbar { width:4px; }
+.content::-webkit-scrollbar-thumb { background:#1e293b; border-radius:4px; }
+
+/* ── WIDGET PANEL ── */
+.widget-panel {
+  width: 0; overflow: hidden;
+  background: #090e1a; border-left: 1px solid #161d2e;
+  flex-shrink: 0;
+  transition: width 0.25s ease;
+  display: flex; flex-direction: column;
+}
+.widget-panel.open { width: 240px; }
+.wp-header {
+  padding: 14px 14px 10px; border-bottom: 1px solid #161d2e; flex-shrink:0;
+}
+.wp-title { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 2px; }
+.wp-sub { font-size: 10px; color: #334155; }
+.wp-search {
+  margin: 10px 14px 6px; background: #0f1623; border: 1px solid #1e293b;
+  border-radius: 6px; padding: 5px 8px; font-size: 10px; color: #475569;
+  display: flex; align-items: center; gap: 5px;
+}
+.wp-body { flex:1; overflow-y:auto; padding: 0 10px 14px; }
+.wp-section-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  color: #334155; padding: 10px 4px 5px;
+}
+.wp-widget {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 8px; border-radius: 7px; cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+  margin-bottom: 3px;
+}
+.wp-widget:hover { background: rgba(255,255,255,0.03); border-color: #1e293b; }
+.wp-widget.added { background: rgba(99,102,241,0.06); border-color: rgba(99,102,241,0.2); }
+.wp-widget.added:hover { background: rgba(99,102,241,0.1); }
+.wp-widget-icon { font-size: 14px; width: 24px; text-align: center; flex-shrink:0; }
+.wp-widget-info { flex:1; }
+.wp-widget-name { font-size: 10px; font-weight: 600; }
+.wp-widget-desc { font-size: 9px; color: #475569; margin-top: 1px; }
+.wp-widget-perm { font-size: 8px; color: #334155; margin-top: 2px; font-family: monospace; }
+.wp-add-btn {
+  width: 20px; height: 20px; border-radius: 5px; flex-shrink:0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+.wp-add-btn.add { background: rgba(99,102,241,0.15); color: #818cf8; }
+.wp-add-btn.add:hover { background: rgba(99,102,241,0.3); }
+.wp-add-btn.remove { background: rgba(239,68,68,0.1); color: #f87171; }
+.wp-add-btn.remove:hover { background: rgba(239,68,68,0.2); }
+
+/* ── ZONE STYLES ── */
+.zone-wrap { position: relative; }
+.zone-label {
+  display:flex; align-items:center; gap:7px; margin-bottom:5px;
+}
+.zone-num { width:16px; height:16px; border-radius:50%; font-size:8px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.zone-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+.zone-desc { font-size:9px; color:#475569; margin-left:auto; }
+
+/* Edit mode handles */
+.drag-handle {
+  display: none; cursor: grab; color: #334155;
+  font-size: 14px; margin-right: 4px;
+  user-select: none;
+}
+.drag-handle:active { cursor: grabbing; }
+.edit-mode .drag-handle { display: block; }
+.edit-mode .zone-label { cursor: grab; }
+.edit-mode .zone-wrap {
+  border: 1px dashed rgba(99,102,241,0.25);
+  border-radius: 10px; padding: 6px; margin: -6px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.edit-mode .zone-wrap:hover { border-color: rgba(99,102,241,0.5); background: rgba(99,102,241,0.03); }
+
+/* Remove button (edit mode only) */
+.zone-remove {
+  display: none; margin-left: 6px;
+  width: 18px; height: 18px; border-radius: 4px;
+  background: rgba(239,68,68,0.1); color: #f87171;
+  border: none; cursor: pointer; font-size: 11px;
+  align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.edit-mode .zone-remove { display: flex; }
+.zone-remove:hover { background: rgba(239,68,68,0.25); }
+
+/* Pinned badge */
+.pin-badge {
+  display: none; font-size: 8px; color: #334155;
+  background: #0f1623; border: 1px solid #1e293b;
+  padding: 1px 5px; border-radius: 3px; font-weight: 600;
+}
+.edit-mode .pin-badge { display: inline-block; }
+
+/* ── ALERT STRIP ── */
+.zone-alert { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-left:3px solid #ef4444; border-radius:8px; padding:7px 12px; display:flex; align-items:center; gap:10px; }
+.alert-text { flex:1; font-size:11px; }
+.alert-text strong { color:#fca5a5; }
+.alert-text span { color:#64748b; }
+.alert-actions { display:flex; gap:5px; }
+.alert-btn { padding:3px 8px; border-radius:5px; font-size:10px; font-weight:600; cursor:pointer; border:none; }
+.alert-btn.primary { background:#ef4444; color:#fff; }
+.alert-btn.ghost { background:rgba(239,68,68,0.1); color:#fca5a5; border:1px solid rgba(239,68,68,0.2); }
+
+/* ── KPI ROW ── */
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.kpi-card { background:#0f1623; border:1px solid #1e293b; border-radius:9px; padding:11px 13px; position:relative; overflow:hidden; }
+.kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; border-radius:9px 9px 0 0; }
+.kpi-card.green::before { background:#22c55e; } .kpi-card.amber::before { background:#f59e0b; } .kpi-card.red::before { background:#ef4444; } .kpi-card.cyan::before { background:#06b6d4; }
+.kpi-label { font-size:9px; color:#475569; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; margin-bottom:5px; }
+.kpi-value { font-size:24px; font-weight:900; letter-spacing:-1px; line-height:1; }
+.kpi-card.green .kpi-value { color:#22c55e; } .kpi-card.amber .kpi-value { color:#f59e0b; } .kpi-card.red .kpi-value { color:#ef4444; } .kpi-card.cyan .kpi-value { color:#06b6d4; }
+.kpi-sub { font-size:9px; color:#475569; margin-top:4px; }
+
+/* ── MID ROW ── */
+.mid-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.panel { background:#0f1623; border:1px solid #1e293b; border-radius:9px; padding:11px 13px; }
+.panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+.panel-title { font-size:11px; font-weight:700; color:#94a3b8; }
+.panel-link { font-size:10px; color:#06b6d4; cursor:pointer; }
+.action-item { display:flex; align-items:center; gap:7px; padding:6px 0; border-bottom:1px solid #161d2e; }
+.action-item:last-child { border-bottom:none; }
+.action-icon { font-size:12px; width:22px; text-align:center; }
+.action-text { flex:1; }
+.action-name { font-size:10px; font-weight:600; }
+.action-meta { font-size:9px; color:#475569; margin-top:1px; }
+.action-count { font-size:9px; font-weight:700; padding:2px 5px; border-radius:4px; }
+.action-count.urgent { background:rgba(239,68,68,0.12); color:#f87171; }
+.action-count.normal { background:rgba(6,182,212,0.1); color:#06b6d4; }
+.action-count.soft { background:rgba(99,102,241,0.1); color:#818cf8; }
+
+.live-dot { width:5px; height:5px; background:#22c55e; border-radius:50%; animation:blink 2s infinite; display:inline-block; margin-right:5px; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.presence-bar { display:flex; height:8px; border-radius:4px; overflow:hidden; gap:2px; margin-bottom:7px; }
+.pb-seg { border-radius:3px; }
+.presence-legend { display:flex; gap:10px; margin-bottom:8px; }
+.leg-item { display:flex; align-items:center; gap:4px; font-size:9px; color:#64748b; }
+.leg-dot { width:6px; height:6px; border-radius:50%; }
+.emp-row { display:flex; align-items:center; gap:6px; padding:4px 5px; border-radius:6px; }
+.emp-avatar { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; color:#fff; flex-shrink:0; }
+.emp-name { flex:1; font-size:10px; font-weight:600; }
+.emp-score { font-size:9px; font-weight:700; }
+.s-active { color:#22c55e; } .s-alert { color:#ef4444; } .s-idle { color:#f59e0b; }
+
+/* ── BOTTOM ROW ── */
+.bottom-row { display:grid; grid-template-columns:2fr 1fr; gap:10px; }
+.chart-area { height:70px; display:flex; align-items:flex-end; gap:3px; padding:0 4px; }
+.bar { flex:1; border-radius:3px 3px 0 0; background:rgba(6,182,212,0.22); min-height:6px; cursor:pointer; transition:background 0.15s; }
+.bar:hover,.bar.today { background:rgba(6,182,212,0.6); }
+.chart-labels { display:flex; justify-content:space-between; padding:0 4px; margin-top:3px; }
+.chart-label { font-size:8px; color:#334155; }
+.event-item { display:flex; gap:7px; padding:5px 0; border-bottom:1px solid #161d2e; }
+.event-item:last-child { border-bottom:none; }
+.event-time { font-size:8px; color:#475569; font-family:monospace; width:26px; flex-shrink:0; }
+.event-content { flex:1; }
+.event-title { font-size:10px; font-weight:600; }
+.event-meta { font-size:9px; color:#475569; margin-top:1px; }
+.event-tag { display:inline-block; padding:1px 4px; border-radius:3px; font-size:8px; font-weight:700; margin-top:2px; }
+.tag-hire { background:rgba(34,197,94,0.1); color:#22c55e; }
+.tag-leave { background:rgba(245,158,11,0.1); color:#f59e0b; }
+.tag-review { background:rgba(99,102,241,0.1); color:#818cf8; }
+
+/* ── EXTRA WIDGETS (can be added) ── */
+.extra-widget { background:#0f1623; border:1px solid #1e293b; border-radius:9px; padding:11px 13px; }
+.ew-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.ew-title { font-size:11px; font-weight:700; color:#94a3b8; }
+.perf-row { display:flex; align-items:center; gap:7px; padding:4px 0; border-bottom:1px solid #161d2e; }
+.perf-row:last-child { border-bottom:none; }
+.perf-rank { font-size:10px; font-weight:800; color:#334155; width:14px; }
+.perf-avatar { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; color:#fff; flex-shrink:0; }
+.perf-name { flex:1; font-size:10px; font-weight:600; }
+.perf-score { font-size:11px; font-weight:800; color:#22c55e; }
+
+.dept-row { display:flex; align-items:center; gap:6px; padding:4px 0; }
+.dept-name { font-size:10px; color:#64748b; width:70px; flex-shrink:0; }
+.dept-bar-track { flex:1; height:5px; background:#161d2e; border-radius:3px; overflow:hidden; }
+.dept-bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,#6366f1,#8b5cf6); }
+.dept-count { font-size:9px; color:#475569; width:24px; text-align:right; }
+
+/* Zone colour accents */
+.z1 .zone-num{background:rgba(239,68,68,0.2);color:#f87171;} .z1 .zone-title{color:#f87171;}
+.z2 .zone-num{background:rgba(6,182,212,0.15);color:#06b6d4;} .z2 .zone-title{color:#06b6d4;}
+.z3 .zone-num{background:rgba(99,102,241,0.15);color:#818cf8;} .z3 .zone-title{color:#818cf8;}
+.z4 .zone-num{background:rgba(34,197,94,0.15);color:#22c55e;} .z4 .zone-title{color:#22c55e;}
+.z5 .zone-num{background:rgba(245,158,11,0.15);color:#f59e0b;} .z5 .zone-title{color:#f59e0b;}
+.z6 .zone-num{background:rgba(148,163,184,0.15);color:#94a3b8;} .z6 .zone-title{color:#94a3b8;}
+.zx .zone-num{background:rgba(168,85,247,0.15);color:#c084fc;} .zx .zone-title{color:#c084fc;}
+</style>
+</head>
+<body>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div>
+    <h2>Dashboard Customization</h2>
+    <p>Edit mode shows drag handles, remove buttons, and the widget picker panel</p>
+  </div>
+  <div class="mode-toggle">
+    <button class="toggle-btn reset" id="btn-reset" onclick="resetDash()" style="display:none;">↺ Reset to default</button>
+    <button class="toggle-btn normal" id="btn-normal" onclick="setMode('normal')">Normal View</button>
+    <button class="toggle-btn edit" id="btn-edit" onclick="setMode('edit')">✏️ Customize Dashboard</button>
+    <button class="toggle-btn save" id="btn-save" onclick="setMode('normal')" style="display:none;">✓ Save Layout</button>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div class="shell">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo">A</div>
+    <div class="sb-icon active">🏠</div>
+    <div class="sb-icon">👥</div>
+    <div class="sb-icon">📡</div>
+    <div class="sb-icon">🏢</div>
+    <div class="sb-icon">📅</div>
+    <div class="sb-icon">📥</div>
+    <div class="sb-divider" style="width:22px;height:1px;background:#1e293b;margin:3px 0;"></div>
+    <div class="sb-icon">🔧</div>
+    <div class="sb-spacer"></div>
+    <div class="sb-icon">⚙️</div>
+    <div class="avatar">SA</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="main-area">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="breadcrumb">Overview <span>/ Dashboard</span></div>
+      <div class="topbar-search">⌘ <span>Search anything... (⌘K)</span></div>
+      <div class="topbar-right">
+        <div class="topbar-btn">🔔<span class="badge"></span></div>
+        <div class="topbar-btn">📥</div>
+        <div class="avatar">SA</div>
+      </div>
+    </div>
+
+    <!-- CUSTOMIZE BAR -->
+    <div class="customize-bar" id="customize-bar">
+      <span class="cb-icon">✏️</span>
+      <span class="cb-text"><strong>Customize mode</strong> — drag zones to reorder, click × to hide, or add new widgets from the panel →</span>
+      <span class="cb-hint">Changes only apply to your view</span>
+    </div>
+
+    <!-- CONTENT WRAP -->
+    <div class="content-wrap">
+      <div class="content" id="dashboard-content">
+
+        <!-- ZONE 1: ALERT STRIP (pinned) -->
+        <div class="zone-wrap z1" id="z1">
+          <div class="zone-label">
+            <span class="drag-handle">⠿</span>
+            <div class="zone-num">1</div>
+            <div class="zone-title">Exception Alerts</div>
+            <span class="pin-badge">📌 pinned</span>
+            <div class="zone-desc">Always on top — safety critical</div>
+          </div>
+          <div class="zone-alert">
+            <span style="font-size:12px;">⚡</span>
+            <div class="alert-text">
+              <strong>3 active exceptions</strong>
+              <span> · Sara M. idle 52min · David K. low activity · Workspace-07 disconnected</span>
+            </div>
+            <div class="alert-actions">
+              <button class="alert-btn primary">Review Now</button>
+              <button class="alert-btn ghost">Dismiss</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ZONE 2: KPI CARDS -->
+        <div class="zone-wrap z2" id="z2">
+          <div class="zone-label">
+            <span class="drag-handle">⠿</span>
+            <div class="zone-num">2</div>
+            <div class="zone-title">KPI Cards</div>
+            <button class="zone-remove" onclick="removeZone('z2')" title="Hide this zone">×</button>
+            <div class="zone-desc">State of org right now</div>
+          </div>
+          <div class="kpi-row">
+            <div class="kpi-card green"><div class="kpi-label">Active Now</div><div class="kpi-value">1,089</div><div class="kpi-sub">↑ 42 vs yesterday</div></div>
+            <div class="kpi-card amber"><div class="kpi-label">On Leave Today</div><div class="kpi-value">143</div><div class="kpi-sub">14 pending approval</div></div>
+            <div class="kpi-card red"><div class="kpi-label">Open Exceptions</div><div class="kpi-value">7</div><div class="kpi-sub">↑ 3 since yesterday</div></div>
+            <div class="kpi-card cyan"><div class="kpi-label">Avg Productivity</div><div class="kpi-value">87%</div><div class="kpi-sub">↑ 2.1% this week</div></div>
+          </div>
+        </div>
+
+        <!-- ZONE 3+4: MID ROW -->
+        <div class="mid-row" id="mid-row">
+          <div class="zone-wrap z3" id="z3">
+            <div class="zone-label">
+              <span class="drag-handle">⠿</span>
+              <div class="zone-num">3</div>
+              <div class="zone-title">Pending Actions</div>
+              <button class="zone-remove" onclick="removeZone('z3')" title="Hide this zone">×</button>
+            </div>
+            <div class="panel">
+              <div class="panel-header"><div class="panel-title">Needs Your Attention</div><div class="panel-link">View all →</div></div>
+              <div class="action-item"><div class="action-icon">📋</div><div class="action-text"><div class="action-name">Leave Requests</div><div class="action-meta">Oldest: 2 days · 3 urgent</div></div><div class="action-count urgent">14 pending</div></div>
+              <div class="action-item"><div class="action-icon">💰</div><div class="action-text"><div class="action-name">Expense Claims</div><div class="action-meta">Total RM 12,450 awaiting</div></div><div class="action-count normal">8 pending</div></div>
+              <div class="action-item"><div class="action-icon">🎉</div><div class="action-text"><div class="action-name">Onboardings Today</div><div class="action-meta">3 new hires — checklist incomplete</div></div><div class="action-count soft">3 due</div></div>
+              <div class="action-item"><div class="action-icon">💳</div><div class="action-text"><div class="action-name">Payroll Run Due</div><div class="action-meta">End of month · 2 days remaining</div></div><div class="action-count urgent">Action needed</div></div>
+            </div>
+          </div>
+          <div class="zone-wrap z4" id="z4">
+            <div class="zone-label">
+              <span class="drag-handle">⠿</span>
+              <div class="zone-num">4</div>
+              <div class="zone-title">Workforce Live</div>
+              <button class="zone-remove" onclick="removeZone('z4')" title="Hide this zone">×</button>
+            </div>
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title"><span class="live-dot"></span>Live Presence</div>
+                <div class="panel-link">Full view →</div>
+              </div>
+              <div class="presence-bar">
+                <div class="pb-seg" style="flex:1089;background:#22c55e;opacity:0.7;"></div>
+                <div class="pb-seg" style="flex:143;background:#f59e0b;opacity:0.7;"></div>
+                <div class="pb-seg" style="flex:7;background:#ef4444;opacity:0.8;"></div>
+              </div>
+              <div class="presence-legend">
+                <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div>Active 1,089</div>
+                <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Idle 143</div>
+                <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Alert 7</div>
+              </div>
+              <div class="emp-row"><div class="emp-avatar" style="background:#6366f1">AK</div><div class="emp-name">Ahmed K.</div><div class="emp-score s-active">91%</div></div>
+              <div class="emp-row"><div class="emp-avatar" style="background:#8b5cf6">SM</div><div class="emp-name">Sara M.</div><div class="emp-score s-alert">⚡ Alert</div></div>
+              <div class="emp-row"><div class="emp-avatar" style="background:#0ea5e9">DK</div><div class="emp-name">David K.</div><div class="emp-score s-idle">Idle 12m</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ZONE 5+6: BOTTOM ROW -->
+        <div class="bottom-row" id="bottom-row">
+          <div class="zone-wrap z5" id="z5">
+            <div class="zone-label">
+              <span class="drag-handle">⠿</span>
+              <div class="zone-num">5</div>
+              <div class="zone-title">Trends & Charts</div>
+              <button class="zone-remove" onclick="removeZone('z5')" title="Hide this zone">×</button>
+            </div>
+            <div class="panel">
+              <div class="panel-header"><div class="panel-title">Productivity — Last 14 Days</div><div class="panel-link">Full report →</div></div>
+              <div class="chart-area">
+                <div class="bar" style="height:62%"></div><div class="bar" style="height:70%"></div><div class="bar" style="height:55%"></div><div class="bar" style="height:80%"></div><div class="bar" style="height:74%"></div><div class="bar" style="height:68%"></div><div class="bar" style="height:90%"></div><div class="bar" style="height:85%"></div><div class="bar" style="height:78%"></div><div class="bar" style="height:72%"></div><div class="bar" style="height:88%"></div><div class="bar" style="height:82%"></div><div class="bar" style="height:76%"></div><div class="bar today" style="height:87%"></div>
+              </div>
+              <div class="chart-labels"><span class="chart-label">Apr 1</span><span class="chart-label">Apr 7</span><span class="chart-label">Apr 14</span><span class="chart-label">Today</span></div>
+            </div>
+          </div>
+          <div class="zone-wrap z6" id="z6">
+            <div class="zone-label">
+              <span class="drag-handle">⠿</span>
+              <div class="zone-num">6</div>
+              <div class="zone-title">Workforce Events</div>
+              <button class="zone-remove" onclick="removeZone('z6')" title="Hide this zone">×</button>
+            </div>
+            <div class="panel">
+              <div class="panel-header"><div class="panel-title">Today & This Week</div><div class="panel-link">Calendar →</div></div>
+              <div class="event-item"><div class="event-time">Now</div><div class="event-content"><div class="event-title">3 New Hires Starting</div><div class="event-meta">Engineering · Design</div><span class="event-tag tag-hire">New Hire</span></div></div>
+              <div class="event-item"><div class="event-time">EOD</div><div class="event-content"><div class="event-title">Payroll Cutoff</div><div class="event-meta">April 2026 run</div><span class="event-tag tag-leave">Deadline</span></div></div>
+              <div class="event-item"><div class="event-time">Fri</div><div class="event-content"><div class="event-title">Q1 Performance Reviews</div><div class="event-meta">12 employees</div><span class="event-tag tag-review">Review</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXTRA WIDGETS (added by user) — hidden by default, shown when added -->
+        <div class="bottom-row" id="extra-row" style="display:none;">
+          <div class="zone-wrap zx" id="z-top-perf" style="display:none;">
+            <div class="zone-label">
+              <span class="drag-handle">⠿</span>
+              <div class="zone-num">+</div>
+              <div class="zone-title">Top Performers</div>
+              <button class="zone-remove" onclick="removeExtra('z-top-perf','wp-top-perf')" title="Hide this zone">×</button>
+            </div>
+            <div class="extra-widget">
+              <div class="ew-header"><div class="ew-title">🏆 Top Performers — This Week</div><div class="panel-link">See all →</div></div>
+              <div class="perf-row"><div class="perf-rank">1</div><div class="perf-avatar" style="background:#f59e0b">RJ</div><div class="perf-name">Ravi J.</div><div class="perf-score">98%</div></div>
+              <div class="perf-row"><div class="perf-rank">2</div><div class="perf-avatar" style="background:#6366f1">NL</div><div class="perf-name">Nina L.</div><div class="perf-score">95%</div></div>
+              <div class="perf-row"><div class="perf-rank">3</div><div class="perf-avatar" style="background:#0ea5e9">AK</div><div class="perf-name">Ahmed K.</div><div class="perf-score">91%</div></div>
+            </div>
+          </div>
+          <div class="zone-wrap zx" id="z-dept" style="display:none;">
+            <div class="zone-label">
+              <span class="drag-handle">⠿</span>
+              <div class="zone-num">+</div>
+              <div class="zone-title">Dept Breakdown</div>
+              <button class="zone-remove" onclick="removeExtra('z-dept','wp-dept')" title="Hide this zone">×</button>
+            </div>
+            <div class="extra-widget">
+              <div class="ew-header"><div class="ew-title">🏢 Headcount by Dept</div></div>
+              <div class="dept-row"><div class="dept-name">Engineering</div><div class="dept-bar-track"><div class="dept-bar-fill" style="width:82%"></div></div><div class="dept-count">342</div></div>
+              <div class="dept-row"><div class="dept-name">Sales</div><div class="dept-bar-track"><div class="dept-bar-fill" style="width:54%;background:linear-gradient(90deg,#06b6d4,#0ea5e9)"></div></div><div class="dept-count">225</div></div>
+              <div class="dept-row"><div class="dept-name">Design</div><div class="dept-bar-track"><div class="dept-bar-fill" style="width:30%;background:linear-gradient(90deg,#8b5cf6,#a855f7)"></div></div><div class="dept-count">124</div></div>
+              <div class="dept-row"><div class="dept-name">Finance</div><div class="dept-bar-track"><div class="dept-bar-fill" style="width:18%;background:linear-gradient(90deg,#f59e0b,#f97316)"></div></div><div class="dept-count">76</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end content -->
+
+      <!-- WIDGET PANEL -->
+      <div class="widget-panel" id="widget-panel">
+        <div class="wp-header">
+          <div class="wp-title">Widget Library</div>
+          <div class="wp-sub">Add or remove from your dashboard</div>
+        </div>
+        <div class="wp-search">🔍 <span>Search widgets...</span></div>
+        <div class="wp-body">
+
+          <div class="wp-section-label">On your dashboard</div>
+
+          <div class="wp-widget added">
+            <div class="wp-widget-icon">📊</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">KPI Cards</div>
+              <div class="wp-widget-desc">Active, leave, exceptions, score</div>
+            </div>
+            <button class="wp-add-btn remove" onclick="removeZone('z2')">×</button>
+          </div>
+          <div class="wp-widget added">
+            <div class="wp-widget-icon">📋</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Pending Actions</div>
+              <div class="wp-widget-desc">Leave, expense, payroll due</div>
+            </div>
+            <button class="wp-add-btn remove" onclick="removeZone('z3')">×</button>
+          </div>
+          <div class="wp-widget added">
+            <div class="wp-widget-icon">📡</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Workforce Live</div>
+              <div class="wp-widget-desc">Real-time presence</div>
+            </div>
+            <button class="wp-add-btn remove" onclick="removeZone('z4')">×</button>
+          </div>
+          <div class="wp-widget added">
+            <div class="wp-widget-icon">📈</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Trends & Charts</div>
+              <div class="wp-widget-desc">14-day productivity</div>
+            </div>
+            <button class="wp-add-btn remove" onclick="removeZone('z5')">×</button>
+          </div>
+          <div class="wp-widget added">
+            <div class="wp-widget-icon">📅</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Workforce Events</div>
+              <div class="wp-widget-desc">Hires, deadlines, reviews</div>
+            </div>
+            <button class="wp-add-btn remove" onclick="removeZone('z6')">×</button>
+          </div>
+
+          <div class="wp-section-label">Available to add</div>
+
+          <div class="wp-widget" id="wp-top-perf">
+            <div class="wp-widget-icon">🏆</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Top Performers</div>
+              <div class="wp-widget-desc">Weekly leaderboard</div>
+              <div class="wp-widget-perm">productivity:read</div>
+            </div>
+            <button class="wp-add-btn add" onclick="addExtra('z-top-perf','wp-top-perf')">+</button>
+          </div>
+
+          <div class="wp-widget" id="wp-dept">
+            <div class="wp-widget-icon">🏢</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Dept Breakdown</div>
+              <div class="wp-widget-desc">Headcount by department</div>
+              <div class="wp-widget-perm">employees:read</div>
+            </div>
+            <button class="wp-add-btn add" onclick="addExtra('z-dept','wp-dept')">+</button>
+          </div>
+
+          <div class="wp-widget">
+            <div class="wp-widget-icon">📆</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Leave Calendar</div>
+              <div class="wp-widget-desc">Monthly leave overview</div>
+              <div class="wp-widget-perm">leave:read</div>
+            </div>
+            <button class="wp-add-btn add">+</button>
+          </div>
+
+          <div class="wp-widget">
+            <div class="wp-widget-icon">📝</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Recent Audit Log</div>
+              <div class="wp-widget-desc">Last 10 system events</div>
+              <div class="wp-widget-perm">audit:read</div>
+            </div>
+            <button class="wp-add-btn add">+</button>
+          </div>
+
+          <div class="wp-widget">
+            <div class="wp-widget-icon">⚠️</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Grievance Summary</div>
+              <div class="wp-widget-desc">Open cases by status</div>
+              <div class="wp-widget-perm">grievance:read</div>
+            </div>
+            <button class="wp-add-btn add">+</button>
+          </div>
+
+          <div class="wp-widget">
+            <div class="wp-widget-icon">🔄</div>
+            <div class="wp-widget-info">
+              <div class="wp-widget-name">Contract Renewals</div>
+              <div class="wp-widget-desc">Expiring within 30 days</div>
+              <div class="wp-widget-perm">employees:read</div>
+            </div>
+            <button class="wp-add-btn add">+</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- end content-wrap -->
+  </div><!-- end main -->
+</div><!-- end shell -->
+
+<script>
+let editMode = false;
+
+function setMode(mode) {
+  editMode = mode === 'edit';
+  const content = document.getElementById('dashboard-content');
+  const bar = document.getElementById('customize-bar');
+  const panel = document.getElementById('widget-panel');
+  const btnEdit = document.getElementById('btn-edit');
+  const btnSave = document.getElementById('btn-save');
+  const btnNormal = document.getElementById('btn-normal');
+  const btnReset = document.getElementById('btn-reset');
+
+  if (editMode) {
+    content.classList.add('edit-mode');
+    bar.classList.add('visible');
+    panel.classList.add('open');
+    btnEdit.style.display = 'none';
+    btnSave.style.display = 'inline-flex';
+    btnNormal.style.display = 'none';
+    btnReset.style.display = 'inline-flex';
+  } else {
+    content.classList.remove('edit-mode');
+    bar.classList.remove('visible');
+    panel.classList.remove('open');
+    btnEdit.style.display = 'inline-flex';
+    btnSave.style.display = 'none';
+    btnNormal.style.display = 'inline-flex';
+    btnReset.style.display = 'none';
+  }
+}
+
+function removeZone(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.opacity = '0';
+    el.style.transform = 'scale(0.95)';
+    el.style.transition = 'opacity 0.2s, transform 0.2s';
+    setTimeout(() => { el.style.display = 'none'; }, 200);
+  }
+}
+
+function addExtra(zoneId, panelId) {
+  const zone = document.getElementById(zoneId);
+  const extraRow = document.getElementById('extra-row');
+  const panelItem = document.getElementById(panelId);
+
+  extraRow.style.display = 'grid';
+  zone.style.display = '';
+  zone.style.opacity = '0';
+  zone.style.transform = 'scale(0.97)';
+  setTimeout(() => {
+    zone.style.transition = 'opacity 0.25s, transform 0.25s';
+    zone.style.opacity = '1';
+    zone.style.transform = '';
+  }, 10);
+
+  // Mark as added in panel
+  if (panelItem) {
+    panelItem.classList.add('added');
+    const btn = panelItem.querySelector('.wp-add-btn');
+    btn.classList.remove('add');
+    btn.classList.add('remove');
+    btn.textContent = '×';
+    btn.onclick = () => removeExtra(zoneId, panelId);
+  }
+}
+
+function removeExtra(zoneId, panelId) {
+  const zone = document.getElementById(zoneId);
+  const panelItem = document.getElementById(panelId);
+
+  if (zone) {
+    zone.style.opacity = '0';
+    zone.style.transform = 'scale(0.95)';
+    zone.style.transition = 'opacity 0.2s, transform 0.2s';
+    setTimeout(() => { zone.style.display = 'none'; }, 200);
+  }
+  if (panelItem) {
+    panelItem.classList.remove('added');
+    const btn = panelItem.querySelector('.wp-add-btn');
+    btn.classList.add('add');
+    btn.classList.remove('remove');
+    btn.textContent = '+';
+    btn.onclick = () => addExtra(zoneId, panelId);
+  }
+}
+
+function resetDash() {
+  ['z2','z3','z4','z5','z6'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = ''; el.style.opacity = '1'; el.style.transform = ''; }
+  });
+  ['z-top-perf','z-dept'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById('extra-row').style.display = 'none';
+  ['wp-top-perf','wp-dept'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('added');
+      const btn = el.querySelector('.wp-add-btn');
+      if (btn) { btn.className = 'wp-add-btn add'; btn.textContent = '+'; }
+    }
+  });
+}
+</script>
+</body>
+</html>
