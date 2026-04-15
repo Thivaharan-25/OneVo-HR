@@ -27,18 +27,27 @@
 
 #### Agent Gateway
 - [ ] `registered_agents` table + CRUD
-- [ ] `agent_policies` table — policy JSON schema validated
+- [ ] `agent_policies` table — policy JSON schema validated; includes `document_tracking`, `communication_tracking`, `browser_extension_enabled` flags
 - [ ] `agent_health_logs` table
 - [ ] `POST /api/v1/agent/register` — register device, return device JWT
 - [ ] `POST /api/v1/agent/heartbeat` — update last_heartbeat_at, report health
 - [ ] `GET /api/v1/agent/policy` — fetch monitoring policy (merged tenant toggles + employee overrides)
-- [ ] `POST /api/v1/agent/ingest` — high-throughput data ingestion (202 Accepted, async processing)
+- [ ] `POST /api/v1/agent/ingest` — high-throughput data ingestion (202 Accepted, async processing); handles `document_usage` and `communication_usage` batch types in addition to existing types
 - [ ] `POST /api/v1/agent/login` — link employee to device
 - [ ] `POST /api/v1/agent/logout` — unlink employee
 - [ ] Device JWT authentication (separate from user JWT, `type: "agent"` claim) — see [[modules/auth/authentication/overview|authentication]]
 - [ ] Rate limiting per device (30 req/min/device)
 - [ ] `DetectOfflineAgentsJob` Hangfire job — flag agents with no heartbeat for 5+ min
 - [ ] Policy merge logic: tenant toggles + employee overrides — see [[modules/configuration/monitoring-toggles/overview|configuration]]
+
+#### WorkPulse Agent — Windows Client
+- [ ] `DocumentTracker.cs` — foreground process matching for Word/Excel/PPT/Figma/Photoshop
+- [ ] `CommunicationTracker.cs` — Outlook/Slack/Teams active time + UIAutomation send event counts
+- [ ] Screenshot trigger: `manual` and `on_demand` only — remove any `scheduled`/`random` trigger logic
+- [ ] MSIX package: update `DisplayName` to "WorkPulse Agent" in `Package.appxmanifest`
+- [ ] Personal break toggle in TrayApp — pauses all collectors, records period as "Personal Time"
+
+> **macOS Phase 2 — Do NOT build in Phase 1.** Architecture documented in [[modules/agent-gateway/agent-overview|Agent Overview]] macOS section.
 
 ### Backend References
 

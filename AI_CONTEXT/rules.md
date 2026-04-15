@@ -409,31 +409,35 @@ export function CreateEmployeeForm() {
 
 ---
 
-## 11. Desktop Agent Rules
+## 11. WorkPulse Agent Rules
 
 ### Privacy & Security — NON-NEGOTIABLE
 
 **What We Collect:**
 - Keyboard **event counts** (how many key presses) — NOT keystrokes/content
 - Mouse **event counts** — NOT coordinates or click targets
-- Foreground application **name** — e.g., "Google Chrome"
+- Foreground application **name** — e.g., "Google Chrome", "Microsoft Excel"
 - Window title — **hashed (SHA-256) before storage or transmission**
 - Idle time (seconds since last input)
-- Meeting app process detection (Teams.exe, zoom.exe)
+- Meeting app process detection (Teams.exe, zoom.exe, Google Meet via browser extension)
 - Camera/mic **active status** (boolean) — NOT audio/video content
 - Device active/idle cycles
+- Document tool active time (Word, Excel, PowerPoint, Figma — process name only)
+- Communication tool active time + **send event counts** (Outlook, Slack — count only, zero content)
+- Browser **domain name only** (when browser extension enabled) — e.g., `github.com` — NEVER full URL or page content
 
 **What We NEVER Collect:**
 - Keystroke content (what was typed)
 - Mouse coordinates or click targets
 - Window title plaintext (always hash)
-- Screen content (unless screenshot feature is policy-enabled)
+- Screen content (screenshots only on explicit remote command — never scheduled)
 - Audio or video content
-- File contents or file system browsing
+- File names, file contents, or file system browsing
 - Network traffic content
-- Browser history or URLs
+- Browser URL paths, page text, or search queries
 - Clipboard content
-- Email content
+- Email subject lines, recipients, or message content
+- Message text from Slack, Teams, or any chat tool
 
 **Security Rules:**
 1. **Device JWT stored via DPAPI** (Windows Data Protection API) — never plaintext

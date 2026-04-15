@@ -3,7 +3,7 @@
 **Assignee:** Dev 3
 **Module:** ActivityMonitoring
 **Priority:** Critical
-**Dependencies:** [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] (agent gateway is data source)
+**Dependencies:** [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] (agent gateway is data source, includes document_usage + communication_usage batch types)
 
 ---
 
@@ -13,15 +13,18 @@
 
 #### Data Pipeline
 - [ ] `activity_raw_buffer` table — partitioned daily via `pg_partman`, batch INSERT via `COPY`/`unnest()`
-- [ ] `ProcessRawBufferJob` Hangfire job (every 2 min) — parse raw -> snapshots + app usage + meetings
+- [ ] `ProcessRawBufferJob` Hangfire job (every 2 min) — parse raw -> snapshots + app usage + meetings + document usage + communication usage
 - [ ] `activity_snapshots` table — partitioned monthly, 90-day retention
 - [ ] Intensity score calculation: `(keyboard + mouse) / max_expected * 100`, capped at 100
-- [ ] `application_usage` table — time per app per day
+- [ ] `application_usage` table — time per app per day, with `app_category_type` and optional `browser_domain`
 - [ ] Window title hashing (SHA-256) — never store raw titles
-- [ ] `meeting_sessions` table — Phase 1: process name matching (Teams.exe, zoom.exe)
+- [ ] `meeting_sessions` table — Phase 1: process name matching (Teams.exe, zoom.exe); platform enum includes `meet_browser`, `teams_browser`
 - [ ] Camera/mic detection via process inspection
 - [ ] `device_tracking` table — laptop active minutes, estimated mobile
 - [ ] `activity_daily_summary` table — INSERT or UPDATE on conflict `(tenant_id, employee_id, date)`
+- [ ] `activity_daily_summary` new columns: `document_time_minutes`, `communication_time_minutes`, `deep_focus_sessions_count`, `data_source`
+- [ ] `browser_activity` table — domain + classification + seconds + source (populated by browser extension, nullable)
+- [ ] `discrepancy_events` table — populated by `DiscrepancyEngineJob` (daily EOD), manager-only visibility enforced at query level
 
 #### Screenshots
 - [ ] `screenshots` table — metadata only, files in blob storage via `IFileService`

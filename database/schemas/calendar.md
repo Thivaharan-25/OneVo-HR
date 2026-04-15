@@ -20,6 +20,8 @@
 | `source_type` | `varchar(30)` | `manual`, `leave_request`, `holiday`, `review_cycle` |
 | `source_id` | `uuid` | Polymorphic reference |
 | `visibility` | `varchar(20)` | `public`, `team`, `private` |
+| `external_id` | `varchar(255)` | Nullable — external system event ID (e.g. Google Calendar event ID). Used for deduplication when Phase 2 Google Calendar sync is enabled. |
+| `external_source` | `varchar(30)` | Nullable — `google_calendar`, `outlook`, `ical`. Null for internally created events. |
 | `created_by_id` | `uuid` | FK → users |
 | `created_at` | `timestamptz` |  |
 

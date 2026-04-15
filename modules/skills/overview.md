@@ -88,6 +88,7 @@ Employee-skill mapping with current proficiency level.
 | `skill_id` | `uuid` | FK → skills |
 | `proficiency_level` | `integer` | 1 (Beginner) → 5 (Expert) — check `BETWEEN 1 AND 5` |
 | `status` | `varchar(20)` | `pending`, `validated`, `expired` |
+| `source` | `varchar(30)` | `self_declared`, `manager_validated`, `wms_observed`, `assessment_result` — default `self_declared`. Required to distinguish WMS-flagged gaps from internal assessments. |
 | `validated_by_id` | `uuid` | FK → employees (nullable) |
 | `last_assessed_in_review_id` | `uuid` | FK → review_cycles (nullable — **null in Phase 1**) |
 | `created_at` | `timestamptz` | |

@@ -33,7 +33,7 @@
 | `employee_emergency_contacts` | `phone` | Phone numbers | Scrubbed in logs |
 | `employee_addresses` | All address fields | Home addresses | Scrubbed in logs |
 | `employee_dependents` | `first_name`, `last_name`, `date_of_birth` | Family member info | Scrubbed in logs |
-| `user_sessions` | `ip_address` | User IP addresses | Scrubbed in logs |
+| `sessions` | `ip_address` | User IP addresses | Scrubbed in logs |
 
 ### Serilog PII Scrubbing
 

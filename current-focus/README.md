@@ -109,7 +109,7 @@ DEV1 Core HR Profile (task 2) ──> needed by DEV3 Skills Core (employees tabl
 - **Skills & Learning (partial)** — 5 core tables (`skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, `skill_validation_requests`) are Phase 1 (see [[current-focus/DEV3-skills-core|DEV3 Skills Core]]). LMS integrations, courses, assessments, development plans, certifications — deferred to Phase 2
 - **AI Chatbot (Nexis)** — deferred to Phase 2
 - **Mobile Application (Flutter)** — deferred to Phase 2
-- **WorkManage Pro Bridges** — deferred to Phase 2
+- **WorkManage Pro Bridges (Phase 2)** — Productivity Metrics + Skills bidirectional bridges are Phase 2. **People Sync, Availability, and Work Activity bridges are Phase 1** — see [[current-focus/WMS-bridge-integration|WMS Bridge Integration]]
 - **Desktop Agent code** — in scope, follows Agent Gateway completion (see `agent/AI_CONTEXT/`)
 - **Teams Graph API deep integration** — Phase 2; Phase 1 uses process name detection
 - **Meilisearch** — PostgreSQL FTS sufficient for Phase 1
@@ -150,6 +150,22 @@ Each dev builds the frontend for their module **immediately after** completing t
 4. **HR pages** — employees, leave, calendar (DEV1 + DEV3)
 5. **Settings** — monitoring configuration, tenant settings (DEV4)
 6. **Employee self-service** — own dashboard, own leave (DEV1)
+
+---
+
+## WMS Bridge Integration (Cross-Dev)
+
+| Task | Owner | Phase | Task File |
+|:-----|:------|:------|:----------|
+| Knowledge Brain Fixes (docs only) | All devs | Before code | [[docs/wms-integration-analysis\|WMS Integration Analysis]] |
+| People Sync Bridge | Dev 2 | Phase 1 | [[current-focus/WMS-bridge-integration\|WMS Bridge Integration]] |
+| Availability Bridge | Dev 1 | Phase 1 | [[current-focus/WMS-bridge-integration\|WMS Bridge Integration]] |
+| Work Activity Bridge | Dev 1 | Phase 1 | [[current-focus/WMS-bridge-integration\|WMS Bridge Integration]] |
+| Productivity Metrics Bridge | Dev 1 | Phase 2 | [[current-focus/WMS-bridge-integration\|WMS Bridge Integration]] |
+| Skills Bridge (bidirectional) | Dev 3 | Phase 2 | [[current-focus/WMS-bridge-integration\|WMS Bridge Integration]] |
+| WMS Tenant Provisioning + Role Mapping | Dev 4 | Phase 1 | [[current-focus/WMS-bridge-integration\|WMS Bridge Integration]] |
+
+> **⚠ Knowledge brain fixes must be done before any bridge code is written.** See [[docs/wms-integration-analysis|WMS Integration Analysis]] for the full issue list and open questions.
 
 ---
 

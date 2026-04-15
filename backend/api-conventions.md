@@ -22,6 +22,15 @@ All endpoints require JWT Bearer token (except `/api/v1/auth/login`, `/api/v1/au
 Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
 ```
 
+#### Bridge API Authentication (service-to-service)
+
+`/api/v1/bridges/*` endpoints use a **separate bridge JWT** — user tokens are rejected.
+
+1. Obtain a bridge JWT via `POST /api/v1/auth/bridge/token` (OAuth 2.0 Client Credentials)
+2. Include it as `Authorization: Bearer <bridge_jwt>` on all bridge endpoint calls
+
+Bridge JWT audience is `"onevo-bridge"` (user JWT audience is `"onevo-api"`). The bridge JWT carries a `bridges` claim listing which bridge endpoints the client may call. Middleware validates audience, claim, and bridge scope — user JWTs on bridge endpoints return `403`. See [[backend/bridge-api-contracts|Bridge API Contracts]] for the full auth flow.
+
 ### Authorization (Hybrid Permission Control)
 
 Every endpoint must specify required permission. Permissions are checked against the user's **effective permissions** (role + individual overrides, filtered by feature grants). Data is automatically scoped to the user's **org hierarchy** (they only see employees below them).

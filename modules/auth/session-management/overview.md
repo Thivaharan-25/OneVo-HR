@@ -25,6 +25,19 @@ Tracks active user sessions with IP, user agent, and expiry.
 | `expires_at` | `timestamptz` | |
 | `is_revoked` | `boolean` | |
 
+## Permission Revocation
+
+When a user's permissions change (role assigned, permission revoked, role expired), their existing access token becomes stale. The system uses a **Redis permission version counter** to invalidate stale tokens immediately:
+
+1. Any permission change → `INCR perm_version:{user_id}` in Redis
+2. Auth middleware compares JWT `perm_ver` claim to Redis counter on every request
+3. Mismatch → `401` with `code: "permissions_changed"` → frontend silently refreshes
+4. New access token issued with fresh permissions from DB and updated `perm_ver`
+
+**Result:** Revocation propagates within one request cycle (≤1 second for active users). The `sessions` table `is_revoked` flag handles full session termination (logout, security incident). The Redis counter handles mid-session permission changes without forcing full re-login.
+
+See [[security/auth-architecture|Auth Architecture — Permission Revocation]] for the full design and `IPermissionVersionService` interface.
+
 ## Related
 
 - [[modules/auth/overview|Auth Module]]

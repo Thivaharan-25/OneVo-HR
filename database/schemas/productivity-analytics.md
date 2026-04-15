@@ -2,7 +2,7 @@
 
 **Module:** [[modules/productivity-analytics/overview|Productivity Analytics]]
 **Phase:** Phase 1
-**Tables:** 4
+**Tables:** 5
 
 ---
 
@@ -93,6 +93,35 @@
 | `created_at` | `timestamptz` |  |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+
+---
+
+## `wms_productivity_snapshots`
+
+WMS-submitted task productivity metrics per employee per period. Populated via the Productivity Metrics bridge (`POST /api/v1/bridges/productivity-metrics/snapshots`). This is the Phase 1 landing table for WMS performance data — allows the bridge to receive data immediately without waiting for the Phase 2 Performance module. Phase 2 Performance module reads from this table alongside agent-based scores.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `employee_id` | `uuid` | FK → employees |
+| `period_type` | `varchar(10)` | `daily`, `weekly`, `monthly` |
+| `period_start` | `date` | |
+| `period_end` | `date` | |
+| `tasks_completed` | `int` | |
+| `tasks_on_time` | `int` | |
+| `on_time_delivery_rate` | `decimal(5,2)` | 0–100 percentage |
+| `productivity_score` | `decimal(5,2)` | WMS-calculated composite score (0–100) |
+| `active_projects_count` | `int` | |
+| `velocity_story_points` | `int` | Nullable — only for agile teams |
+| `submitted_at` | `timestamptz` | When WMS submitted this snapshot |
+| `created_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+
+**Index:** `(tenant_id, employee_id, period_type, period_start)` UNIQUE
+
+**Visibility:** Admin and Reporting Manager only. Not surfaced to the employee directly.
 
 ---
 

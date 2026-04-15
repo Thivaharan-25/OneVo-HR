@@ -2,7 +2,7 @@
 
 **Module:** [[modules/agent-gateway/overview|Agent Gateway]]
 **Phase:** Phase 1
-**Tables:** 4
+**Tables:** 5
 
 ---
 
@@ -81,9 +81,32 @@
 
 ---
 
+## `agent_sessions`
+
+Tracks which employee is currently logged in on each device. Used by the ingest endpoint to validate `employee_id` in the payload.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `device_id` | `uuid` | FK → registered_agents.device_id |
+| `tenant_id` | `uuid` | FK → tenants |
+| `employee_id` | `uuid` | FK → employees — the currently logged-in employee |
+| `is_active` | `boolean` | Only one active session per device at a time |
+| `created_at` | `timestamptz` | When employee logged in via tray app |
+| `ended_at` | `timestamptz` | Nullable — set on logout or next login |
+
+UNIQUE partial index: `(device_id) WHERE is_active = true` — enforces one active session per device.
+
+**Flow:** Employee login via tray app → Service calls `POST /api/v1/agent/session/login` → previous session deactivated, new row inserted. Ingest endpoint looks up `agent_sessions` by `device_id` from Device JWT to resolve and validate the `employee_id` in the payload.
+
+**Foreign Keys:** `device_id` → [[#`registered_agents`|registered_agents]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+
+---
+
 ## Related
 
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
+- [[modules/agent-gateway/data-collection|Data Collection]] — employee-device binding flow
 - [[database/schema-catalog|Schema Catalog]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[database/performance|Performance]]

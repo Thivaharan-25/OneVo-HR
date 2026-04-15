@@ -88,6 +88,16 @@ public class TenantRlsInterceptor : DbConnectionInterceptor
 }
 ```
 
+> **Safety note — string interpolation in RLS interceptor:**
+> The interpolation above is safe **only** because `TenantId` is a `Guid`. A `Guid` can only contain hex digits and hyphens — it is structurally incapable of containing SQL injection characters (quotes, semicolons, etc.). PostgreSQL will reject any malformed UUID before it reaches the `SET LOCAL` command.
+>
+> **Do NOT copy this pattern for any non-`Guid` value.** If you ever need to set a `SET LOCAL` variable from a string (e.g., a tenant name, a user-supplied label), use a parameterized command:
+> ```csharp
+> cmd.CommandText = "SELECT set_config('app.current_tenant_id', $1, true)";
+> cmd.Parameters.Add(new NpgsqlParameter { Value = tenantId.ToString() });
+> ```
+> The RLS policy itself is a defence-in-depth safety net — the application-level `BaseRepository<T>` filter is the primary enforcement layer.
+
 ## Layer 4: ArchUnitNET Compile-Time Tests
 
 ```csharp

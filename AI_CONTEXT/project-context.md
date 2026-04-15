@@ -3,7 +3,7 @@
 ## 1. Platform Overview
 
 - **Project Name:** ONEVO
-- **Short Description:** A production-grade, multi-tenant SaaS platform combining HR Management, Workforce Intelligence, and optional Work/Task Management into a unified ecosystem.
+- **Short Description:** A production-grade, multi-tenant **white-label SaaS** platform combining HR Management, Workforce Intelligence, and optional Work/Task Management into a unified ecosystem. Customers deploy it under their own brand; the platform is cloud-hosted and multi-tenant.
 - **Vision:** Become the go-to integrated HR + Workforce Monitoring platform for SMBs and mid-market companies.
 - **Mission:** Provide accurate, automated, and unbiased visibility of employee work behaviour alongside seamless employee lifecycle management.
 - **Key Stakeholders:** Product Owner, 4-member development team, enterprise clients
@@ -60,9 +60,9 @@ ONEVO is designed around **two core pillars** sold in multiple configurations:
 └─────────────────────────────────────────────────────────────────┘
          ▲                                          ▲
          │                                          │
-    WorkManage Pro                          Desktop Agent
-    (separate product)                     (.NET Windows Service
-                                            + MAUI tray app)
+    WorkManage Pro                          WorkPulse Agent
+    (separate product)                     (MSIX package · Windows Phase 1
+                                            macOS Phase 2)
 ```
 
 ### Architecture Style
@@ -75,7 +75,7 @@ ONEVO is designed around **two core pillars** sold in multiple configurations:
 
 ## 4. Key Stats
 
-- **~138 database tables** across 22 modules
+- **168 database tables** across 22 modules (128 Phase 1, 40 Phase 2)
 - **90+ permissions** in RBAC system
 - **40+ notification events** across 3 channels
 - **18 subscribable webhook events**
@@ -161,15 +161,19 @@ See [[backend/external-integrations|External Integrations]] for API contracts.
 
 ---
 
-## 9. Desktop Agent
+## 9. WorkPulse Agent
 
-The ONEVO Desktop Agent is a Windows application that runs on employee laptops to capture workforce activity data. It is part of **Pillar 2: Workforce Intelligence**.
+The **WorkPulse Agent** is the ONEVO activity monitoring package deployed to employee devices. It is part of **Pillar 2: Workforce Intelligence** and is distributed as an **MSIX package** (Windows Phase 1). Unlike a traditional desktop application installer, it deploys silently via MDM (Intune/GPO) or through the HRMS onboarding flow with no user interaction required.
 
-### Two Components
+**Key difference from a desktop application:** The WorkPulse Agent is not a GUI application that users open. It is a background service package — it runs silently, surfaces only via a system tray icon, and requires zero interaction from the employee during normal operation.
+
+**Phase 1: Windows only. Phase 2: macOS.** See [[modules/agent-gateway/agent-overview|Agent Overview]].
+
+### Components
 
 **Background Service (Windows Service)**
 
-Always-on data collector running as a Windows Service (`Microsoft.Extensions.Hosting.WindowsServices`) — starts on boot, survives logoff, tamper-resistant.
+Always-on data collector running as a Windows Service — starts on boot, survives logoff, tamper-resistant.
 
 Captures:
 - Keyboard event counts (NOT keystrokes — just how many key presses)
@@ -179,6 +183,8 @@ Captures:
 - Meeting detection (Teams, Zoom, Meet process detection)
 - Device active/idle cycles
 - Camera/microphone activity status
+- **Document tool time** — Word, Excel, PowerPoint, Figma, Photoshop (process name only)
+- **Communication tool time** — Outlook, Slack, Teams active time + send event counts (count only)
 
 **Tray App (MAUI)**
 
@@ -186,8 +192,8 @@ Minimal UI in the system tray providing:
 - Employee login/logout (links employee identity to device)
 - Photo capture for identity verification (when policy requires)
 - Status indicator (connected/disconnected/syncing)
+- Personal break toggle (pauses all collection during declared break)
 - "What's being tracked" transparency display (per privacy mode)
-- Policy display (which features are active)
 
 **IPC Between Components**
 
@@ -240,10 +246,11 @@ The agent uses **Device JWT** — separate from user JWT:
 ### Key Constraints
 
 1. Minimal resource footprint — < 2% CPU, < 50MB RAM
-2. Network resilience — buffer locally, retry with exponential backoff
-3. Privacy first — only collect what policy allows, hash window titles
-4. Tamper resistant — detect service stops, report to server
-5. Silent install — MSIX package, no user interaction required
+2. Network resilience — buffer locally (SQLite), retry with exponential backoff
+3. Privacy first — only collect what policy allows, hash window titles, never capture content
+4. Tamper resistant — detect service stops, report to server on next heartbeat
+5. Silent install — MSIX package, MDM/GPO push, no user interaction required
+6. Consent first — employee must complete HRMS consent flow before agent activates
 
 See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API contract.
 

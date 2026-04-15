@@ -2,7 +2,7 @@
 
 **Module:** [[modules/infrastructure/overview|Infrastructure]]
 **Phase:** Phase 1
-**Tables:** 4
+**Tables:** 5
 
 ---
 
@@ -71,9 +71,33 @@
 
 ---
 
+## `bridge_clients`
+
+OAuth 2.0 clients for service-to-service bridge API access. Managed by Auth module.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK — used as `client_id` in OAuth flow |
+| `tenant_id` | `uuid` | FK → tenants |
+| `name` | `varchar(100)` | e.g., "WorkManage Pro" |
+| `client_secret_hash` | `varchar(255)` | Argon2id hash of the secret (shown once at registration) |
+| `allowed_bridges` | `text[]` | Bridge names allowed: e.g., `["people-sync", "availability"]` |
+| `is_active` | `boolean` | False = revoked |
+| `created_by` | `uuid` | FK → users |
+| `created_at` | `timestamptz` | |
+| `last_used_at` | `timestamptz` | Updated on each token issuance |
+
+UNIQUE: `(tenant_id, name)`
+
+**Foreign Keys:** `tenant_id` → [[#`tenants`|tenants]], `created_by` → [[#`users`|users]]
+
+---
+
 ## Related
 
 - [[modules/infrastructure/overview|Infrastructure Module]]
+- [[modules/auth/overview|Auth Module]] — `IBridgeAuthService` uses this table
+- [[backend/bridge-api-contracts|Bridge API Contracts]] — auth flow and endpoint contracts
 - [[database/schema-catalog|Schema Catalog]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[database/performance|Performance]]

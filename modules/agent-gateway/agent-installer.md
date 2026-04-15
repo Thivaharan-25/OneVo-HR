@@ -1,8 +1,10 @@
-# Agent Installer — MSIX Packaging & Deployment
+# WorkPulse Agent — MSIX Packaging & Deployment
 
 ## Overview
 
-The ONEVO Desktop Agent is packaged as an **MSIX bundle** containing both the Windows Service and the MAUI Tray App. MSIX provides clean install/uninstall, auto-update support, and a signed package identity.
+The WorkPulse Agent is packaged as an **MSIX bundle** containing both the Windows Service and the MAUI Tray App. MSIX provides clean install/uninstall, built-in auto-update, MDM silent deployment, and a signed package identity — making it the enterprise-native distribution method. No Node.js, no installer wizards, no manual configuration required.
+
+**Phase 1: Windows MSIX only.** macOS `.pkg` packaging is Phase 2. See [[modules/agent-gateway/agent-overview|Agent Overview]] for the macOS Phase 2 architecture.
 
 ---
 
@@ -37,7 +39,7 @@ ONEVO.Agent.msixbundle
             ProcessorArchitecture="x64" />
 
   <Properties>
-    <DisplayName>ONEVO Desktop Agent</DisplayName>
+    <DisplayName>WorkPulse Agent</DisplayName>
     <PublisherDisplayName>ONEVO</PublisherDisplayName>
   </Properties>
 
@@ -267,6 +269,61 @@ Get-AppxPackage "ONEVO.Agent" | Remove-AppxPackage
 6. Local data (`%LOCALAPPDATA%\ONEVO\Agent\`) is removed by MSIX
 7. Server detects missing heartbeat after 5 minutes, fires `AgentHeartbeatLost` event
 8. Admin sees "Agent Offline" status in the ONEVO dashboard
+
+---
+
+## macOS Phase 2 — `.pkg` Packaging
+
+macOS distribution uses a signed `.pkg` installer (requires Apple Developer ID certificate).
+
+### Key Differences from Windows MSIX
+
+| Step | Windows (MSIX) | macOS (.pkg) |
+|:-----|:---------------|:-------------|
+| Install | `Add-AppxPackage` via PowerShell / Intune | `installer -pkg WorkPulse.pkg -target /` |
+| Service registration | MSIX `desktop6:Service` extension (automatic) | `launchd` plist placed in `~/Library/LaunchAgents/` |
+| Auto-start | MSIX startup task (automatic) | LaunchAgent plist (automatic after install) |
+| MDM silent deploy | Microsoft Intune (fully silent) | Jamf Pro / Mosyle / Kandji (silent install, but Accessibility permission still requires one user action) |
+| Uninstall | `Get-AppxPackage "ONEVO.WorkPulse" \| Remove-AppxPackage` | `pkgutil --forget` + remove LaunchAgent plist |
+| Secure token storage | DPAPI (`ProtectedData`) | macOS Keychain (`SecKeychainItem`) |
+
+### macOS LaunchAgent Plist
+
+```xml
+<!-- ~/Library/LaunchAgents/com.onevo.workpulse.plist -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.onevo.workpulse</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/onevo-workpulse-agent</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>~/Library/Logs/WorkPulse/agent.log</string>
+    <key>StandardErrorPath</key>
+    <string>~/Library/Logs/WorkPulse/agent-error.log</string>
+</dict>
+</plist>
+```
+
+### macOS Data Storage Location
+
+```
+~/Library/Application Support/WorkPulse/
+├── agent.db          # SQLite buffer (encrypted)
+├── config.json       # Agent configuration
+└── logs/
+    └── agent.log     # Rolling log (7 days)
+```
+
+> **Accessibility permission:** macOS requires the employee to manually grant Accessibility permission (System Settings → Privacy & Security → Accessibility → WorkPulse Agent → toggle on). This is enforced by Apple and cannot be automated by any MDM or installer. Plan for this in the employee onboarding flow.
 
 ### Data After Uninstall
 

@@ -1,13 +1,17 @@
-# Desktop Agent — Start Here
+# WorkPulse Agent — Start Here
 
-## What Is the ONEVO Desktop Agent?
+## What Is the WorkPulse Agent?
 
-The ONEVO Desktop Agent is a Windows application that monitors employee activity on company devices. It consists of three components:
+The **WorkPulse Agent** is the ONEVO activity monitoring package deployed to employee devices. It is distributed as an **MSIX package** (Windows Phase 1) and runs silently in the system tray, capturing OS-level activity data independently of which application the employee is using. This makes it the only layer capable of covering every employee type in the organisation — developers, HR managers, finance, sales, and operations.
+
+**Phase 1: Windows only.** Phase 2 adds macOS support. See the [macOS Phase 2](#macos-phase-2) section at the bottom of this doc.
+
+The agent consists of three components:
 
 | Component | Project | Purpose |
 |:----------|:--------|:--------|
 | **Windows Service** | `ONEVO.Agent.Service` | Always-on background data collector. Runs as a Windows Service. Captures activity data, buffers locally, syncs to server. |
-| **MAUI Tray App** | `ONEVO.Agent.TrayApp` | System tray UI. Handles employee login/logout, photo capture for identity verification, status display. |
+| **MAUI Tray App** | `ONEVO.Agent.TrayApp` | System tray UI. Handles employee login/logout, photo capture for identity verification, status display, personal break toggle. |
 | **Shared Library** | `ONEVO.Agent.Shared` | Shared types (IPC messages, models, constants) used by both Service and TrayApp. |
 
 The Service and TrayApp are separate processes that communicate via **Named Pipes** (IPC). See [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] for the full message contract.
@@ -47,9 +51,9 @@ The Service and TrayApp are separate processes that communicate via **Named Pipe
 
 ### Step-by-Step Flow
 
-1. **Install** — MSIX package installs the Service + TrayApp. Service registers with the server via `POST /api/v1/agent/register`, receives a device JWT. See [[modules/agent-gateway/agent-installer|Agent Installer]].
+1. **Install** — MSIX package installs the Service + TrayApp silently (MDM/GPO or HRMS onboarding gate). Service registers with the server via `POST /api/v1/agent/register`, receives a device JWT. See [[modules/agent-gateway/agent-installer|Agent Installer]].
 2. **Employee Login** — Employee opens tray app, enters email + password. TrayApp sends `employee_login` IPC message to Service. Service calls `POST /api/v1/agent/login`, receives monitoring policy. See [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]].
-3. **Collectors Start** — Based on the received policy, the Service starts the enabled collectors (activity, app tracking, idle, meeting, device). See [[modules/agent-gateway/data-collection|Data Collection]].
+3. **Collectors Start** — Based on the received policy, the Service starts the enabled collectors (activity, app tracking, idle, meeting, device, document, communication). See [[modules/agent-gateway/data-collection|Data Collection]].
 4. **Buffer Locally** — Collected data is written to the local SQLite buffer immediately. See [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]].
 5. **Sync to Server** — Every `snapshot_interval_seconds` (default 150s), the Sync Service reads unsent rows from the buffer, batches them, and sends via `POST /api/v1/agent/ingest`. Server returns 202 Accepted.
 6. **Heartbeat** — Every 60 seconds, the Service sends a heartbeat to `POST /api/v1/agent/heartbeat` with CPU usage, memory, buffer count, and any errors.
@@ -91,7 +95,9 @@ ONEVO.Agent/
 │   │   ├── AppTracker.cs          # Foreground app detection
 │   │   ├── IdleDetector.cs        # Idle period detection
 │   │   ├── MeetingDetector.cs     # Meeting app process detection
-│   │   └── DeviceTracker.cs       # Device active/idle cycle tracking
+│   │   ├── DeviceTracker.cs       # Device active/idle cycle tracking
+│   │   ├── DocumentTracker.cs     # Word/Excel/PowerPoint/Google Docs time tracking
+│   │   └── CommunicationTracker.cs # Outlook/Slack active time + send event counts
 │   ├── Buffer/
 │   │   ├── SqliteBuffer.cs        # Local SQLite storage
 │   │   └── BufferCleanup.cs       # Purge sent data
@@ -211,10 +217,46 @@ From [[AI_CONTEXT/rules|Rules]] Section 10:
 
 ---
 
+---
+
+## macOS Phase 2
+
+macOS support is **Phase 2**. The Win32 APIs used in Phase 1 (`GetForegroundWindow`, `WH_KEYBOARD_LL`, `GetLastInputInfo`) are not portable. macOS requires a parallel implementation:
+
+| Capability | Windows (Phase 1) | macOS (Phase 2) |
+|:-----------|:------------------|:----------------|
+| Background service | Windows Service (`sc.exe`) | `launchd` plist in `~/Library/LaunchAgents/` |
+| Foreground app detection | `GetForegroundWindow` (Win32) | `NSWorkspace.shared.frontmostApplication` |
+| Keyboard/mouse counts | `SetWindowsHookEx` (WH_KEYBOARD_LL) | `CGEventTap` (requires Accessibility permission) |
+| Idle detection | `GetLastInputInfo` (Win32) | `IOHIDGetParameter` or `CGEventSource.secondsSinceLastEventType` |
+| Tray icon | MAUI `CommunityToolkit.Maui` | `NSStatusBar` / `NSStatusItem` (AppKit) |
+| Auto-start | MSIX startup task | `launchd` plist (user scope) |
+| Secure storage | DPAPI (`ProtectedData`) | Keychain (`SecKeychainItem`) |
+| Installer | MSIX bundle | `.pkg` installer (signed with Apple Developer ID) |
+
+**macOS permission requirements:** Accessibility permission must be granted manually by the employee via System Settings → Privacy & Security → Accessibility. This is an Apple-enforced requirement that cannot be bypassed or automated — even via MDM. MDM can install the app silently but the employee must grant this permission on first launch.
+
+**Phase 2 project structure addition:**
+```
+ONEVO.Agent.macOS/           # macOS daemon (parallel to ONEVO.Agent.Service)
+├── Collectors/
+│   ├── ActivityCollector.cs  # CGEventTap keyboard/mouse counts
+│   ├── AppTracker.cs         # NSWorkspace frontmost app detection
+│   ├── IdleDetector.cs       # IOHIDGetParameter idle time
+│   ├── MeetingDetector.cs    # NSRunningApplication process matching
+│   ├── DocumentTracker.cs    # Process name matching (same logic as Windows)
+│   └── CommunicationTracker.cs
+├── TrayApp/                  # NSStatusBar menu bar icon (AppKit)
+└── Installer/                # .pkg packaging
+```
+
+---
+
 ## Related
 
 - [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Full API contract (6 endpoints)
-- [[modules/agent-gateway/data-collection|Data Collection]] — 5 collectors with code samples
+- [[modules/agent-gateway/data-collection|Data Collection]] — 7 collectors with code samples
+- [[modules/agent-gateway/browser-extension|Browser Extension]] — Chrome/Edge/Firefox extension for domain tracking
 - [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Detection and reporting
 - [[modules/identity-verification/photo-capture|Photo Capture]] — Camera and identity verification flow
 - [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — Named Pipes IPC between Service and TrayApp
@@ -222,7 +264,7 @@ From [[AI_CONTEXT/rules|Rules]] Section 10:
 - [[modules/agent-gateway/agent-installer|Agent Installer]] — MSIX packaging and deployment
 - [[modules/agent-gateway/mock-mode|Mock Mode]] — Development without a backend
 - [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — MAUI tray app UI
-- [[AI_CONTEXT/tech-stack|Tech Stack]] — Full technology stack (Section 4: Desktop Agent)
-- [[AI_CONTEXT/rules|Rules]] — Desktop Agent rules (Section 10)
+- [[AI_CONTEXT/tech-stack|Tech Stack]] — Full technology stack (Section 4: WorkPulse Agent)
+- [[AI_CONTEXT/rules|Rules]] — WorkPulse Agent rules (Section 11)
 - [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task
 - [[modules/agent-gateway/overview|Agent Gateway Module]] — Server-side module

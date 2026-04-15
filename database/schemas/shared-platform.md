@@ -2,7 +2,7 @@
 
 **Module:** [[modules/shared-platform/overview|Shared Platform]]
 **Phase:** Phase 1
-**Tables:** 30
+**Tables:** 33
 
 ---
 
@@ -546,6 +546,75 @@
 | `on_timeout_action` | `varchar(30)` | `escalate`, `auto_approve`, `auto_reject` |
 
 **Foreign Keys:** `workflow_definition_id` → [[#`workflow_definitions`|workflow_definitions]], `approver_role_id` → [[database/schemas/auth#`roles`|roles]]
+
+---
+
+## `bridge_api_keys`
+
+API keys issued to external systems (WMS and other integrations) for bridge endpoint authentication. Stored hashed — the raw key is shown once at creation. Scoped to bridge permissions only, cannot access HR data.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `name` | `varchar(100)` | Human label, e.g. "WorkManage Pro" |
+| `key_hash` | `varchar(255)` | bcrypt hash of the key |
+| `key_prefix` | `varchar(8)` | First 8 chars for display (e.g., `onv_brdg`) |
+| `scopes` | `varchar[]` | e.g., `["bridges:read", "bridges:write"]` |
+| `last_used_at` | `timestamptz` | Nullable |
+| `expires_at` | `timestamptz` | Nullable — null = no expiry |
+| `created_by_id` | `uuid` | FK → users |
+| `created_at` | `timestamptz` | |
+| `revoked_at` | `timestamptz` | Nullable — soft revocation |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `created_by_id` → [[database/schemas/infrastructure#`users`|users]]
+
+**Index:** `(tenant_id, key_prefix)`, `(key_hash)` UNIQUE (for lookup during auth)
+
+---
+
+## `wms_role_mappings`
+
+Maps ONEVO roles to WMS permission sets. Used by the People Sync bridge to push the correct WMS permissions when an employee's role changes. Populated by the tenant admin in Settings → Integrations.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `onevo_role_id` | `uuid` | FK → roles |
+| `wms_role_identifier` | `varchar(100)` | The WMS-side role name/ID (defined by WMS team) |
+| `wms_permissions_json` | `jsonb` | Which WMS features are enabled for this ONEVO role |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `onevo_role_id` → [[database/schemas/auth#`roles`|roles]]
+
+**Index:** `(tenant_id, onevo_role_id)` UNIQUE
+
+---
+
+## `wms_tenant_links`
+
+Links an ONEVO tenant to a WMS tenant. Created when a customer purchases both products (auto-provisioned) or manually links existing accounts via Settings → Integrations.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants (ONEVO side) |
+| `wms_tenant_id` | `varchar(255)` | WMS-assigned tenant identifier |
+| `wms_base_url` | `varchar(500)` | WMS API base URL for this tenant |
+| `bridge_api_key_id` | `uuid` | FK → bridge_api_keys (the key ONEVO uses to call WMS) |
+| `sync_enabled` | `boolean` | Master toggle for all bridge sync |
+| `people_sync_enabled` | `boolean` | |
+| `availability_sync_enabled` | `boolean` | |
+| `work_activity_sync_enabled` | `boolean` | |
+| `linked_at` | `timestamptz` | |
+| `linked_by_id` | `uuid` | FK → users |
+| `created_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `bridge_api_key_id` → [[#`bridge_api_keys`|bridge_api_keys]], `linked_by_id` → [[database/schemas/infrastructure#`users`|users]]
+
+**Index:** `(tenant_id)` UNIQUE — one WMS link per ONEVO tenant
 
 ---
 
