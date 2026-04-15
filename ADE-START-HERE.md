@@ -51,7 +51,7 @@ These are the modules to implement. Each links to its full spec.
 | 11 | **Exception Engine** | Anomaly detection rules, alerts, escalation, remote capture trigger | [[modules/exception-engine/overview\|Exception Engine]] |
 | 12 | **Notifications** | In-app, email (Resend), SignalR real-time push | [[modules/notifications/overview\|Notifications]] |
 | 13 | **Leave** | Leave types, policies, entitlements, approval workflow | [[modules/leave/overview\|Leave]] |
-| 14 | **Payroll** | Providers, tax, payslips + activity data feed (read-only, informational) | [[modules/payroll/overview\|Payroll]] |
+| 14 | **Calendar** | Company events, leave-conflict checks via `ICalendarConflictService` | [[modules/calendar/overview\|Calendar]] |
 | 15 | **Productivity Analytics** | Daily/weekly/monthly reports, manager/CEO/employee dashboards | [[modules/productivity-analytics/overview\|Productivity Analytics]] |
 
 ---
@@ -67,7 +67,7 @@ Specs exist but are explicitly deferred. Each module overview has a `**Phase:** 
 | **Grievance** | Case tracking — not monitoring |
 | **Expense** | Claims / routing — not monitoring |
 | **Documents** | File management / versioning — not monitoring |
-| **Calendar** | Company events — not monitoring |
+| **Payroll** | Full payroll engine — Phase 2 only; activity data feed is read-only in Phase 1 |
 | **Reporting Engine** | Subsumed by Productivity Analytics for Phase 1 |
 
 **Also deferred (Phase 2 features inside Phase 1 modules):**
@@ -102,10 +102,10 @@ Week 3 (Intelligence):
   DEV3: Activity Monitoring
   DEV4: Identity Verification
 
-Week 4 (Analytics + Payroll):
+Week 4 (Analytics + Calendar):
   DEV1: Productivity Analytics
   DEV2: Exception Engine (continued)
-  DEV3: Payroll
+  DEV3: Calendar
   DEV4: Notifications + Configuration
 ```
 
@@ -183,7 +183,7 @@ Each developer has task files in `current-focus/` with self-contained instructio
 
 - **Dev 1:** [[current-focus/DEV1-infrastructure-setup|Infrastructure]], [[current-focus/DEV1-core-hr-profile|Core HR Profile]], [[current-focus/DEV1-leave|Leave]], [[current-focus/DEV1-productivity-analytics|Productivity Analytics]]
 - **Dev 2:** [[current-focus/DEV2-auth-security|Auth]], [[current-focus/DEV2-core-hr-lifecycle|Core HR Lifecycle]], [[current-focus/DEV2-exception-engine|Exception Engine]]
-- **Dev 3:** [[current-focus/DEV3-org-structure|Org Structure]], [[current-focus/DEV3-workforce-presence-setup|Workforce Presence]], [[current-focus/DEV3-activity-monitoring|Activity Monitoring]], [[current-focus/DEV3-payroll|Payroll]]
+- **Dev 3:** [[current-focus/DEV3-org-structure|Org Structure]], [[current-focus/DEV3-workforce-presence-setup|Workforce Presence]], [[current-focus/DEV3-activity-monitoring|Activity Monitoring]], [[current-focus/DEV3-calendar|Calendar]]
 - **Dev 4:** [[current-focus/DEV4-shared-platform-agent-gateway|Shared Platform + Agent Gateway]], [[current-focus/DEV4-workforce-presence-biometric|Workforce Presence Biometric]], [[current-focus/DEV4-identity-verification|Identity Verification]]
 
 **Deadline:** 2026-05-05 (1 month from start)

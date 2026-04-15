@@ -82,20 +82,40 @@
 
 ---
 
-## 4. Desktop Agent
+## 4. WorkPulse Agent
+
+The WorkPulse Agent is the ONEVO activity monitoring package distributed as an **MSIX bundle** to employee devices. It covers every employee type — not just developers.
+
+**Phase 1: Windows only. Phase 2: macOS.** See [[modules/agent-gateway/agent-overview|Agent Overview]] for the macOS Phase 2 architecture.
+
+### Phase 1 — Windows
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
 | Background Service | .NET Windows Service | 9.0 | `Microsoft.Extensions.Hosting.WindowsServices` — always-on data collector |
-| Tray App UI | .NET MAUI | 9.0 | System tray icon, photo capture, employee login |
+| Tray App UI | .NET MAUI | 9.0 | System tray icon, photo capture, employee login, break toggle |
 | Language | C# | 13 | Same as backend |
 | Local Storage | SQLite | via `Microsoft.Data.Sqlite` | Offline buffer for activity data |
 | Activity Capture | Win32 APIs (user32.dll) | - | `SetWindowsHookEx` for keyboard/mouse event COUNTS (not keystrokes) |
 | App Detection | Win32 APIs | - | `GetForegroundWindow`, `GetWindowText`, process enumeration |
 | Idle Detection | Win32 APIs | - | `GetLastInputInfo` |
+| Document Tracking | Process name matching | - | `WINWORD.EXE`, `EXCEL.EXE`, `POWERPNT.EXE`, Figma, Photoshop |
+| Communication Tracking | Process name + UIAutomation | - | Outlook, Slack, Teams active time + send event counts (count only) |
 | IPC | Named Pipes | `System.IO.Pipes` | Service ↔ MAUI tray app communication |
-| Installer | MSIX | Windows SDK | Silent install, auto-update |
+| Installer | MSIX bundle | Windows SDK | Silent MDM install (Intune/GPO), built-in auto-update, signed |
 | HTTP Client | HttpClient + Polly | Built-in | Retry + circuit breaker for Agent Gateway |
+
+### Phase 2 — macOS (Do NOT Build in Phase 1)
+
+| Category | Technology | Notes |
+|:---------|:-----------|:------|
+| Background Service | `launchd` daemon | `~/Library/LaunchAgents/com.onevo.workpulse.plist` |
+| Tray App UI | AppKit `NSStatusBar` | macOS menu bar icon |
+| App Detection | `NSWorkspace.shared.frontmostApplication` | Requires Accessibility permission |
+| Activity Capture | `CGEventTap` | Requires Accessibility permission (user must grant manually) |
+| Idle Detection | `CGEventSource.secondsSinceLastEventType` | |
+| Secure Storage | macOS Keychain (`SecKeychainItem`) | Replaces DPAPI |
+| Installer | `.pkg` (Apple Developer ID signed) | Replaces MSIX |
 
 ### Win32 APIs (P/Invoke)
 
@@ -128,7 +148,9 @@ ONEVO.Agent/
 │   │   ├── AppTracker.cs          # Foreground app detection
 │   │   ├── IdleDetector.cs        # Idle period detection
 │   │   ├── MeetingDetector.cs     # Meeting app process detection
-│   │   └── DeviceTracker.cs       # Device active/idle cycle tracking
+│   │   ├── DeviceTracker.cs       # Device active/idle cycle tracking
+│   │   ├── DocumentTracker.cs     # Word/Excel/PPT/Figma/Photoshop time tracking
+│   │   └── CommunicationTracker.cs # Outlook/Slack/Teams active time + send counts
 │   ├── Buffer/
 │   │   ├── SqliteBuffer.cs        # Local SQLite storage
 │   │   └── BufferCleanup.cs       # Purge sent data
@@ -246,6 +268,8 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | RabbitMQ | Using in-process domain events initially; RabbitMQ for scale later |
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
 | Teams Graph API (deep) | Basic meeting detection via process name sufficient for Phase 1 |
+| macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` — a parallel implementation. Phase 2. |
+| Browser Extension | Optional browser domain tracking via Chrome/Edge/Firefox extension. Phase 2. |
 
 ## Related
 

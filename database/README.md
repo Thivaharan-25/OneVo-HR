@@ -4,7 +4,7 @@
 
 - **RDBMS:** PostgreSQL 16
 - **ORM:** Entity Framework Core 9
-- **Total Tables:** ~153 across 22 modules (see [[database/schema-catalog|Schema Catalog]])
+- **Total Tables:** 170 across 22 modules — 128 Phase 1, 42 Phase 2 (see [[database/schema-catalog|Schema Catalog]])
 - **Multi-tenancy:** `tenant_id` on all tenant-scoped tables + PostgreSQL RLS
 - **Connection Pooling:** PgBouncer
 - **Partitioning:** `pg_partman` for time-series tables
@@ -89,7 +89,7 @@ All encrypted via `IEncryptionService` (AES-256) in [[backend/shared-kernel|Shar
 
 | Document | Purpose |
 |:---------|:--------|
-| [[database/schema-catalog\|Schema Catalog]] | Master index of all ~153 tables, grouped by module with phase tags |
+| [[database/schema-catalog\|Schema Catalog]] | Master index of all 170 tables (128 Phase 1, 42 Phase 2), grouped by module with phase tags |
 | [[database/cross-module-relationships\|Cross-Module Relationships]] | FK dependencies across module boundaries + migration order |
 | [[database/migration-patterns\|Migration Patterns]] | EF Core migrations, zero-downtime strategies |
 | [[database/performance\|Performance]] | Indexing, query optimization, N+1 prevention |

@@ -247,6 +247,8 @@ Shown when the user clicks "Status" from the tray menu or double-clicks the tray
 │  Idle Detector       ● Running         │
 │  Meeting Detector    ● Running         │
 │  Device Tracker      ● Running         │
+│  Document Tracker    ● Running         │
+│  Comm Tracker        ● Running         │
 │                                        │
 │  ── Sync ────────────────────────────  │
 │  Last sync:    2 minutes ago           │
@@ -256,10 +258,11 @@ Shown when the user clicks "Status" from the tray menu or double-clicks the tray
 │  ── Monitoring ──────────────────────  │
 │  This device is monitoring:            │
 │  ✓ Keyboard/mouse activity counts      │
-│  ✓ Application usage                   │
+│  ✓ Application & document usage        │
 │  ✓ Idle time                           │
 │  ✓ Meeting detection                   │
-│  ✗ Screenshots                         │
+│  ✓ Communication app activity          │
+│  ✗ Screenshots (manager request only)  │
 │                                        │
 │               [Close]                  │
 └────────────────────────────────────────┘

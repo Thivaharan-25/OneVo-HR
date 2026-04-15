@@ -27,7 +27,8 @@ ONEVO.SharedKernel/
 │   ├── ICurrentUser.cs            # Current user context (UserId, TenantId, EffectivePermissions, GrantedModules, HierarchyScope)
 │   ├── RequirePermissionAttribute.cs # [RequirePermission("resource:action")] — checks effective permissions
 │   ├── IHierarchyScope.cs         # Resolves subordinate IDs for hierarchy-scoped data access
-│   └── HierarchyScopeFilter.cs    # Auto-applies hierarchy WHERE clause to queries
+│   ├── HierarchyScopeFilter.cs    # Auto-applies hierarchy WHERE clause to queries
+│   └── HierarchyFilter.cs         # Value object: All | SubordinatesOf(managerId) | OwnOnly(employeeId)
 ├── Events/
 │   ├── DomainEvent.cs             # Base domain event (Id, OccurredAt, TenantId)
 │   ├── IDomainEventHandler.cs     # MediatR INotificationHandler wrapper
@@ -129,28 +130,27 @@ public interface ICurrentUser
 }
 ```
 
-### IHierarchyScope (Data Access Scoping)
+### HierarchyFilter (Data Access Scoping)
+
+A value object passed into repository methods to scope queries to the org hierarchy. **Never materialize a list of IDs** — pass the filter to the repository and let it compose the SQL.
 
 ```csharp
-public interface IHierarchyScope
-{
-    /// Returns IDs of all employees below this user in the reporting chain.
-    /// Super Admin returns null (meaning no filter — access all).
-    Task<HashSet<Guid>?> GetSubordinateIdsAsync(CancellationToken ct);
-}
+// Three cases (defined in HierarchyFilter.cs):
+HierarchyFilter.All                         // Super Admin: no restriction, skip CTE entirely
+HierarchyFilter.SubordinatesOf(managerId)   // Manager: recursive CTE, one DB round-trip
+HierarchyFilter.OwnOnly(employeeId)         // Employee: WHERE id = @employeeId
 
-// Usage in any service that returns employee data:
-public async Task<PagedResult<EmployeeDto>> GetEmployeesAsync(PagedRequest request, CancellationToken ct)
-{
-    var subordinateIds = await _hierarchyScope.GetSubordinateIdsAsync(ct);
-    
-    var query = _repository.Query;
-    if (subordinateIds != null) // null = Super Admin, no filtering
-        query = query.Where(e => subordinateIds.Contains(e.Id));
-    
-    return await query.ApplyPaging(request).ToPagedResultAsync(ct);
-}
+// Resolved by IHierarchyScopeService (Auth module public interface):
+var filter = await _hierarchyScopeService.GetFilterAsync(ct);
+
+// Applied inside repository via BaseRepository.ApplyHierarchyFilter():
+var query = ApplyHierarchyFilter(_repository.Query, filter);
+return await query.ApplyPaging(request).ToPagedResultAsync(ct);
 ```
+
+**Why not `HashSet<Guid>`:** A CEO with 400+ reports generates a large `WHERE id IN (...)` clause on every query. `HierarchyFilter.SubordinatesOf` pushes the recursive CTE into the SQL itself — one round-trip, no list size limit.
+
+Supporting index: `idx_employees_reports_to_id ON employees(reports_to_id, tenant_id) WHERE is_deleted = false`
 
 ### `Result<T>`
 

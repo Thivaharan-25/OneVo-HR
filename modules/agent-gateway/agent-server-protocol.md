@@ -152,6 +152,29 @@ Response 202 Accepted
 
 **Important:** Server returns 202 immediately. Processing is async. Do NOT wait for processing confirmation.
 
+**GDPR Consent Gate:** Before processing any batch, the server verifies that the employee has an active `monitoring` consent record in `gdpr_consent_records`. If missing or `consented = false`, the request is rejected with `403 Forbidden`. The agent must stop collection and show a consent-required prompt in the tray app. See [[modules/auth/gdpr-consent/overview|GDPR Consent]] for the full gate flow.
+
+**Ingest Payload Validation — Server-Side Rules:**
+
+The ingest endpoint validates every batch before queuing it. Violations return `422 Unprocessable Entity`.
+
+| Field | Rule | Rejection reason |
+|:------|:-----|:----------------|
+| `batch` array length | Max 200 items per request | Prevents oversized payloads from overwhelming the queue |
+| `timestamp` (root) | Must be within ±10 minutes of server UTC time | Rejects replayed or far-future payloads |
+| `batch[].type` | Must be one of: `activity_snapshot`, `app_usage`, `meeting`, `device_session`, `screenshot_capture`, `verification_photo` | Rejects unknown type strings |
+| `keyboard_events_count` | Integer, 0–50,000 | Physical limit: ~400 WPM × 150s ≈ 15,000 keystrokes max realistic |
+| `mouse_events_count` | Integer, 0–100,000 | Physical limit: generous ceiling for fast movers |
+| `active_seconds` | Integer, 0–`snapshot_interval_seconds` | Cannot exceed the collection window |
+| `idle_seconds` | Integer, 0–`snapshot_interval_seconds` | Cannot exceed the collection window |
+| `active_seconds + idle_seconds` | ≤ `snapshot_interval_seconds` + 5 (5s tolerance) | Sum cannot exceed the snapshot interval |
+| `duration_seconds` (app_usage) | Integer, 0–`snapshot_interval_seconds` | Cannot exceed the collection window |
+| `application_name` | Max 200 characters, non-empty | Prevents oversized strings |
+| `window_title_hash` | Exactly 64 hex characters (SHA-256) | Validates hash integrity |
+| `employee_id` | Must match active `agent_sessions` record for this `device_id` | See Employee-Device Binding in [[modules/agent-gateway/data-collection\|Data Collection]] |
+
+**Implementation note:** Use a `FluentValidation` validator on `IngestBatchRequest`. The `snapshot_interval_seconds` comes from the agent's current policy stored server-side in `agent_policies` — look it up by `device_id` from the Device JWT.
+
 ### 6. Employee Logout
 
 **When:** Employee logs out via MAUI tray app.

@@ -69,7 +69,7 @@
 - **DB:** `notification_logs`
 
 ### Step 5: User Accepts Invitation
-- **UI:** Clicking the link opens the registration page: pre-filled email (read-only), set password (with strength meter: min 8 chars, uppercase, lowercase, number, special char), confirm password, optional: phone number. "Create Account" button
+- **UI:** Clicking the link opens the registration page: pre-filled email (read-only), set password (with strength meter: min 12 chars, uppercase, lowercase, number, special char), confirm password, optional: phone number. "Create Account" button
 - **API:** `POST /api/v1/auth/accept-invitation`
   ```json
   {
@@ -80,7 +80,7 @@
   ```
 - **Backend:** `UserInvitationService.AcceptInvitationAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
   1. Validate invitation token (not expired, not already used)
-  2. Hash password with bcrypt (cost factor 12)
+  2. Hash password with Argon2id (memory: 64MB, iterations: 3, parallelism: 1)
   3. Update user status from `invited` to `active`
   4. Mark invitation token as used
   5. Issue JWT access token + refresh token
@@ -126,7 +126,7 @@
 | Invalid role ID | `404 Not Found` returned | "The selected role does not exist" |
 | Email delivery fails | User created but marked `invite_pending` | Admin sees: "Invitation created but email delivery failed. Click to retry" |
 | Expired invitation token | `410 Gone` returned | "This invitation has expired. Please contact your administrator" |
-| Weak password | `400 Bad Request` returned | "Password must be at least 8 characters with uppercase, lowercase, number, and special character" |
+| Weak password | `400 Bad Request` returned | "Password must be at least 12 characters with uppercase, lowercase, number, and special character" |
 
 ## Events Triggered
 

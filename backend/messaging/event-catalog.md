@@ -37,11 +37,11 @@ public abstract record DomainEvent
 
 | Event | Publisher | Payload | Consumers |
 |:------|:---------|:--------|:----------|
-| `EmployeeHired` | CoreHR | EmployeeId, TenantId, DepartmentId, JobFamilyId | WorkforcePresence (assign default schedule), Leave (calculate entitlements), Skills (assess gaps), Documents (assign onboarding docs), Calendar (add start date), Notifications (welcome) |
-| `EmployeePromoted` | CoreHR | EmployeeId, OldLevel, NewLevel, OldDeptId, NewDeptId | Performance (update succession), Leave (recalculate entitlements), Skills (new required skills), Notifications |
-| `EmployeeTransferred` | CoreHR | EmployeeId, FromDeptId, ToDeptId | Attendance (reassign schedule), Notifications |
+| `EmployeeHired` | CoreHR | EmployeeId, TenantId, DepartmentId, JobFamilyId | WorkforcePresence (assign default schedule), Leave (calculate entitlements), Skills (assess gaps), Documents (assign onboarding docs), Calendar (add start date), Notifications (welcome), **WMS People Sync** (auto-provision WMS account if tenant has WMS linked) |
+| `EmployeePromoted` | CoreHR | EmployeeId, OldLevel, NewLevel, OldDeptId, NewDeptId | Performance (update succession), Leave (recalculate entitlements), Skills (new required skills), Notifications, **WMS People Sync** (update WMS permission level via `wms_role_mappings`) |
+| `EmployeeTransferred` | CoreHR | EmployeeId, FromDeptId, ToDeptId | Attendance (reassign schedule), Notifications, **WMS People Sync** (re-map task scope to new team/department) |
 | `SalaryChanged` | CoreHR | EmployeeId, OldSalary, NewSalary, Currency, EffectiveDate | Payroll (update calculations), Notifications |
-| `EmployeeOffboarded` | CoreHR | EmployeeId, LastWorkingDay, Reason | All modules (cleanup), AgentGateway (revoke agent), Notifications |
+| `EmployeeOffboarded` | CoreHR | EmployeeId, LastWorkingDay, Reason | All modules (cleanup), AgentGateway (revoke agent), Notifications, **WMS People Sync** (deactivate WMS access + trigger task reassignment alert to Team Lead) |
 | `OnboardingStepCompleted` | CoreHR | EmployeeId, StepName | Notifications |
 
 ## Workforce Presence Events (replaces Attendance)

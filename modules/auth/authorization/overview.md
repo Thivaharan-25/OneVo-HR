@@ -130,6 +130,22 @@ Every data query is scoped to the employee's position in the org hierarchy:
 - **Super Admin** bypasses hierarchy scoping entirely
 - The hierarchy is resolved from `employees.reports_to_id` — a recursive CTE walks the tree
 
+### Implementation — `HierarchyFilter`
+
+`IHierarchyScopeService.GetFilterAsync()` (Auth module public interface) returns a `HierarchyFilter` value object. Pass it to repository methods — **never materialize a list of IDs**.
+
+| User type | Filter returned | SQL mechanism |
+|:----------|:----------------|:--------------|
+| Super Admin | `HierarchyFilter.All` | No additional filter — skip CTE entirely |
+| Manager (has `employees:read-team`) | `HierarchyFilter.SubordinatesOf(managerId)` | Recursive CTE in one query |
+| Employee | `HierarchyFilter.OwnOnly(employeeId)` | `WHERE id = @employeeId` |
+
+The CTE includes the manager themselves + all employees below in the reporting chain — one DB round-trip, no `WHERE IN (...)` list regardless of org size.
+
+Supporting index: `idx_employees_reports_to_id ON employees(reports_to_id, tenant_id) WHERE is_deleted = false`
+
+See [[backend/shared-kernel|Shared Kernel]] for `HierarchyFilter` definition and `BaseRepository.ApplyHierarchyFilter()`.
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |

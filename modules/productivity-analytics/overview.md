@@ -4,7 +4,7 @@
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 1 (Week 4)
-**Tables:** 4
+**Tables:** 5
 **Task File:** [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]
 
 ---
@@ -28,6 +28,7 @@ Aggregates data from [[modules/activity-monitoring/overview|Activity Monitoring]
 | **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Attendance/hours data |
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee/department context |
 | **Depends on** | [[modules/exception-engine/overview\|Exception Engine]] | `IExceptionEngineService` | Exception counts per day |
+| **Depends on** | WMS Bridge | `POST /api/v1/bridges/productivity-metrics/snapshots` | Inbound task completion + productivity scores from WorkManage Pro |
 | **Consumed by** | [[database/performance\|Performance]] | `IProductivityAnalyticsService` | Productivity scores for reviews |
 | **Consumed by** | [[modules/reporting-engine/overview\|Reporting Engine]] | — (via query) | Scheduled report generation |
 
@@ -49,7 +50,7 @@ public interface IProductivityAnalyticsService
 
 ---
 
-## Database Tables (4)
+## Database Tables (5)
 
 ### `daily_employee_report`
 
@@ -141,6 +142,31 @@ Tenant-wide daily metrics.
 
 **Indexes:** `(tenant_id, date)` UNIQUE
 
+### `wms_productivity_snapshots`
+
+Inbound productivity data from WorkManage Pro (Phase 2 bridge). One row per employee per period.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `employee_id` | `uuid` | FK → employees |
+| `period_type` | `varchar(10)` | `daily`, `weekly`, `monthly` |
+| `period_start` | `date` | Start of period |
+| `period_end` | `date` | End of period |
+| `tasks_completed` | `int` | Total tasks completed in period |
+| `tasks_on_time` | `int` | Tasks completed by deadline |
+| `on_time_delivery_rate` | `decimal(5,2)` | `(tasks_on_time / tasks_completed) * 100` |
+| `productivity_score` | `decimal(5,2)` | WMS-computed composite score (0–100) |
+| `active_projects_count` | `int` | Projects active during period |
+| `velocity_story_points` | `int` | nullable — story points if WMS uses them |
+| `submitted_at` | `timestamptz` | When WMS submitted this snapshot |
+| `created_at` | `timestamptz` | |
+
+**Indexes:** `(tenant_id, employee_id, period_type, period_start)` UNIQUE
+
+> **Phase note:** This table is created in Phase 1 so the bridge can start receiving WMS data immediately. The Performance module (Phase 2) reads it via `IProductivityAnalyticsService.GetProductivityScoreAsync()` which combines agent-based scores with this WMS data.
+
 ---
 
 ## Domain Events
@@ -201,7 +227,8 @@ Tenant-wide daily metrics.
 
 - **This module does NOT collect data.** It only aggregates data from other modules.
 - **For real-time dashboard data**, the frontend queries [[modules/workforce-presence/overview|Workforce Presence]] `GetLiveWorkforceStatusAsync()` — not this module. This module serves historical/aggregated reports.
-- **Performance module integration:** [[database/performance|Performance]] can pull `GetProductivityScoreAsync()` to include productivity data in performance reviews (optional, configurable by tenant).
+- **Performance module integration:** [[database/performance|Performance]] can pull `GetProductivityScoreAsync()` to include productivity data in performance reviews (optional, configurable by tenant). This score combines agent-based reports (`daily_employee_report`) with WMS task data (`wms_productivity_snapshots`) when available.
+- **WMS bridge is optional.** If the tenant has no WMS integration, `wms_productivity_snapshots` is empty and `GetProductivityScoreAsync()` uses agent-based data only. No configuration change needed — the service handles the null case gracefully.
 
 ## Features
 

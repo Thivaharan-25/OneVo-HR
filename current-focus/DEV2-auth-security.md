@@ -18,7 +18,7 @@
 - [ ] Default roles created: Employee, Manager, HR_Admin, Org_Owner
 - [ ] **Device JWT** support for Agent Gateway (`type: "agent"` claim, device_id + tenant_id, no user permissions) — see [[modules/agent-gateway/overview|agent-gateway]]
 - [ ] GDPR consent type `monitoring` for employee monitoring opt-in
-- [ ] Session management (user_sessions with device tracking)
+- [ ] Session management (`sessions` table with device tracking)
 - [ ] MFA setup support (TOTP, Email OTP)
 - [ ] Audit log interceptor (JSON diffs of old/new values)
 - [ ] GDPR consent records (type, version, timestamp)

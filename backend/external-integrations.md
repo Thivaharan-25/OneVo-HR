@@ -112,7 +112,7 @@ These are NOT external integrations — they are internal API contracts for the 
 |:-------|:----------|:-------------|
 | **People Sync** | HR → Work | `GET /api/v1/bridges/people-sync/employees` (paginated employee data) |
 | **Availability** | HR → Work | `GET /api/v1/bridges/availability/{employeeId}` (leave + presence data) |
-| **Performance** | Work → HR | `POST /api/v1/bridges/performance/metrics` (work metrics for reviews) |
+| **Productivity Metrics** | Work → HR | `POST /api/v1/bridges/productivity-metrics/snapshots` (task completion rates, on-time delivery, productivity score) |
 | **Skills** | Bidirectional | `GET/POST /api/v1/bridges/skills/{employeeId}` (skill data exchange) |
 | **Work Activity** (NEW) | Work → HR | `POST /api/v1/bridges/work-activity/time-logs` (time logged per task/project, active task context) |
 

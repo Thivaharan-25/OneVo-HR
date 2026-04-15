@@ -130,6 +130,7 @@
 | `skill_id` | `uuid` | FK → skills |
 | `proficiency_level` | `integer` | 1 (Beginner) → 5 (Expert) |
 | `status` | `varchar(20)` | `pending`, `validated`, `expired` |
+| `source` | `varchar(30)` | `self_declared`, `manager_validated`, `wms_observed`, `assessment_result` — DEFAULT `self_declared` |
 | `validated_by_id` | `uuid` | FK → employees (nullable) |
 | `last_assessed_in_review_id` | `uuid` | FK → review_cycles (nullable) |
 | `created_at` | `timestamptz` |  |
@@ -139,6 +140,7 @@
 
 > **Check constraint:** `proficiency_level BETWEEN 1 AND 5`
 > **Phase 1 note:** `last_assessed_in_review_id` is always `null` in Phase 1 — only populated once the Performance module is built.
+> **Phase 2 note:** `source` column added in Phase 1 as a non-breaking migration (default `self_declared`). Required before Phase 2 WMS skill gap sync — prevents WMS-observed gaps from overwriting manager-validated entries.
 
 ---
 

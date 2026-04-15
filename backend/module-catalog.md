@@ -68,8 +68,8 @@ ONEVO.sln
 | 4   | Core HR           | [[modules/core-hr/overview\|Core Hr]]        | 13     | Phase 1 | Dev 1+2 | Week 2     |
 | 5   | Leave             | [[modules/leave/overview\|Leave]]          | 5      | Phase 1 | Dev 1   | Week 3     |
 | 6   | Payroll           | [[modules/payroll/overview\|Payroll]]        | 11     | Phase 2 | Dev 3   | —          |
-| 7   | Performance       | [[database/performance\|Performance]]    | 7      | Phase 2 | Dev 2   | —          |
-| 8   | Skills & Learning | [[skills]]         | 15 (5 Phase 1²) | Phase 2 | Dev 3+4 | — |
+| 7   | Performance       | [[modules/performance/overview\|Performance]]    | 7      | Phase 2 | Dev 2   | —          |
+| 8   | Skills & Learning | [[modules/skills/overview\|Skills]]         | 15 (5 Phase 1, 10 Phase 2) | Mixed | Dev 3+4 | P1: Week 2 |
 | 9   | Documents         | [[modules/documents/overview\|Documents]]      | 6      | Phase 2 | Dev 4   | —          |
 
 ### Pillar 2: Workforce Intelligence
@@ -77,16 +77,16 @@ ONEVO.sln
 | # | Module | Detailed Doc | Tables | Phase | Owner | Build Week |
 |:--|:-------|:-------------|:-------|:------|:------|:-----------|
 | 10 | Workforce Presence | [[modules/workforce-presence/overview\|Workforce Presence]] | 12 | Phase 1 | Dev 3+4 | Week 2 |
-| 11 | Activity Monitoring | [[modules/activity-monitoring/overview\|Activity Monitoring]] | 8 | Phase 1 | Dev 3 | Week 3 |
+| 11 | Activity Monitoring | [[modules/activity-monitoring/overview\|Activity Monitoring]] | 11 | Phase 1 | Dev 3 | Week 3 |
 | 12 | Identity Verification | [[modules/identity-verification/overview\|Identity Verification]] | 6 | Phase 1 | Dev 4 | Week 3 |
 | 13 | Exception Engine | [[modules/exception-engine/overview\|Exception Engine]] | 5 | Phase 1 | Dev 2 | Week 4 |
-| 14 | Productivity Analytics | [[modules/productivity-analytics/overview\|Productivity Analytics]] | 4 | Phase 1 | Dev 1 | Week 4 |
+| 14 | Productivity Analytics | [[modules/productivity-analytics/overview\|Productivity Analytics]] | 5 | Phase 1 | Dev 1 | Week 4 |
 
 ### Shared Foundation
 
 | # | Module | Detailed Doc | Tables | Phase | Owner | Build Week |
 |:--|:-------|:-------------|:-------|:------|:------|:-----------|
-| 15 | Shared Platform | [[modules/shared-platform/overview\|Shared Platform]] | 30 | Phase 1 | Dev 4 | Week 1+4 |
+| 15 | Shared Platform | [[modules/shared-platform/overview\|Shared Platform]] | 33 | Phase 1 | Dev 4 | Week 1+4 |
 | 16 | Notifications | [[modules/notifications/overview\|Notifications]] | — | Phase 1 | Dev 4 | Week 4 |
 | 17 | Configuration | [[modules/configuration/overview\|Configuration]] | 6 | Phase 1 | Dev 1 | Week 4 |
 | 18 | Calendar | [[modules/calendar/overview\|Calendar]] | 1 | Phase 1 | Dev 1 | Week 4 |
@@ -98,7 +98,9 @@ ONEVO.sln
 > Notifications tables (`notification_templates`, `notification_channels`) are physically housed in Shared Platform's `AppDbContext` and counted in row 15. No additional tables.
 > ² Skills & Learning: 5 of its 15 tables (`skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, `skill_validation_requests`) are built in Phase 1. The remaining 10 (courses, LMS, assessments, development plans) are Phase 2.
 
-**Total: 22 modules, 163 tables (116 Phase 1 · 47 Phase 2)**
+**Total: 22 modules, 168 tables (128 Phase 1 · 40 Phase 2)**
+
+> Phase split corrected: Activity Monitoring was missing `browser_activity` and `discrepancy_events` from schema-catalog (both Phase 1). Skills Phase 2 had 2 duplicate entries removed. 5 new WMS integration tables added to Phase 1. Schema catalog is the canonical source of truth.
 
 ## Module Dependency Map
 

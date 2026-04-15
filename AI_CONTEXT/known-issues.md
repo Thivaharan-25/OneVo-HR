@@ -20,6 +20,8 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 - **[[infrastructure/multi-tenancy|Multi-Tenancy]] Everywhere:** Every single query MUST be tenant-scoped. The `BaseRepository<T>` handles this via `ITenantContext` (see [[backend/shared-kernel|Shared Kernel]]), but if you write raw SQL or use `DbContext` directly, you MUST include `WHERE tenant_id = @tenantId`. PostgreSQL RLS is a safety net, not a replacement for application-level filtering.
 
+- **RLS Interceptor — Guid-only string interpolation:** The `TenantRlsInterceptor` uses `$"SET LOCAL app.current_tenant_id = '{_tenantContext.TenantId}'"`. This is safe **only** because `TenantId` is a `Guid` (hex + hyphens — cannot contain SQL injection characters). **Never copy this pattern for string values.** For any non-`Guid` SET LOCAL, use `SELECT set_config('app.current_tenant_id', $1, true)` with a parameterized `NpgsqlParameter`. See [[infrastructure/multi-tenancy|Multi-Tenancy]] for the safe parameterized alternative.
+
 - **Employee vs User:** `users` is the login identity (authentication). `employees` is the HR identity (business data). They are 1:1 linked via `user_id`. When working with HR features, always query through `employees`, not `users`. The `employees` table is the central hub.
 
 - **organisation_id vs tenant_id (RESOLVED):** Previously some tables used `organisation_id` instead of `tenant_id`. This has been fixed — all tables now use `tenant_id` consistently. No EF Core column mapping workarounds needed. Frontend types should use `tenantId` everywhere as well.
@@ -40,7 +42,7 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 - **Raw Buffer Purge:** `activity_raw_buffer` is partitioned by day and auto-purged after 48 hours by a Hangfire daily job. **Never query this table for reporting** — use `activity_daily_summary` instead. See [[modules/activity-monitoring/overview|Activity Monitoring]].
 
-- **Agent Authentication vs User Authentication:** Desktop agents use a separate device-level JWT (issued at registration). This is NOT the same as user JWT. Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. Employee context is linked at login time via the MAUI tray app. See [[modules/agent-gateway/overview|Agent Gateway]] and [[security/auth-architecture|Auth Architecture]].
+- **Agent Authentication vs User Authentication:** Desktop agents use a separate device-level JWT (issued at registration). This is NOT the same as user JWT. Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. Employee context is established at login via the MAUI tray app → the Service calls `POST /api/v1/agent/session/login` which creates a server-side `agent_sessions` record (`device_id → employee_id`). The ingest endpoint validates `payload.employee_id` against this record for every batch — mismatch or missing session returns `403`. See [[modules/agent-gateway/data-collection|Data Collection — Employee-Device Binding]] and [[database/schemas/agent-gateway|Agent Gateway Schema]].
 
 - **Monitoring Feature Toggles:** Always check `monitoring_feature_toggles` (tenant-level) and `employee_monitoring_overrides` (employee-level) before processing any monitoring data. The desktop agent checks its policy on login, but the **server must double-validate**. See [[modules/configuration/overview|Configuration]].
 

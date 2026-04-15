@@ -246,10 +246,10 @@ Audit trail for promotions, transfers, salary changes, etc.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeCreated` | New employee added | [[modules/notifications/overview\|Notifications]], [[modules/leave/overview\|Leave]] (calculate entitlements) |
-| `EmployeePromoted` | Promotion event | [[modules/notifications/overview\|Notifications]], [[modules/payroll/overview\|Payroll]] |
-| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview\|Notifications]] |
-| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview\|Leave]] (forfeit unused), [[modules/payroll/overview\|Payroll]] (final settlement), [[modules/agent-gateway/overview\|Agent Gateway]] (revoke agent) |
+| `EmployeeCreated` | New employee added | [[modules/notifications/overview\|Notifications]], [[modules/leave/overview\|Leave]] (calculate entitlements), **WMS People Sync** (auto-provision WMS account) |
+| `EmployeePromoted` | Promotion event | [[modules/notifications/overview\|Notifications]], [[modules/payroll/overview\|Payroll]], **WMS People Sync** (permission level auto-upgrade via `wms_role_mappings`) |
+| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview\|Notifications]], **WMS People Sync** (task scope re-mapped to new team) |
+| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview\|Leave]] (forfeit unused), [[modules/payroll/overview\|Payroll]] (final settlement), [[modules/agent-gateway/overview\|Agent Gateway]] (revoke agent), **WMS People Sync** (deactivate access + reassignment alert to Team Lead) |
 | `EmployeeOnboardingStarted` | Onboarding initiated | [[modules/notifications/overview\|Notifications]] |
 | `EmployeeOffboardingStarted` | Offboarding initiated | [[modules/notifications/overview\|Notifications]], [[modules/documents/overview\|Documents]] |
 

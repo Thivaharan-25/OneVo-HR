@@ -148,9 +148,124 @@ if (meetingProcess != null)
 - Session splits when idle exceeds threshold
 - Session ends on logout/shutdown
 
-### 6. Screenshot Capturer (`ScreenshotCapturer.cs`)
+### 6. Document Tracker (`DocumentTracker.cs`)
 
-**What:** Captures screenshot of the primary display on remote command from manager/CEO.
+**What:** Tracks time spent in document editing applications by monitoring the foreground process name. Covers non-developer roles (HR, Finance, Operations, Sales, Management).
+
+**Applications tracked by process name:**
+
+| Process | Application | Category |
+|:--------|:------------|:---------|
+| `WINWORD.EXE` | Microsoft Word | Document |
+| `EXCEL.EXE` | Microsoft Excel | Spreadsheet |
+| `POWERPNT.EXE` | Microsoft PowerPoint | Presentation |
+| `chrome` / `msedge` / `firefox` | Google Docs/Sheets/Slides (via browser extension domain match) | Document |
+| `Figma` / `figma_agent` | Figma | Design |
+| `Photoshop` | Adobe Photoshop | Design |
+| `Illustrator` | Adobe Illustrator | Design |
+
+**How:**
+```csharp
+// ONEVO.Agent.Service/Collectors/DocumentTracker.cs
+public class DocumentTracker : ICollector
+{
+    private static readonly Dictionary<string, DocumentCategory> DocumentProcessMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "WINWORD", DocumentCategory.Document },
+        { "EXCEL", DocumentCategory.Spreadsheet },
+        { "POWERPNT", DocumentCategory.Presentation },
+        { "Figma", DocumentCategory.Design },
+        { "Photoshop", DocumentCategory.Design },
+        { "Illustrator", DocumentCategory.Design },
+    };
+
+    public DocumentSession? GetCurrentDocumentSession()
+    {
+        var hwnd = GetForegroundWindow();
+        GetWindowThreadProcessId(hwnd, out var processId);
+        var process = Process.GetProcessById((int)processId);
+
+        if (DocumentProcessMap.TryGetValue(process.ProcessName, out var category))
+        {
+            return new DocumentSession
+            {
+                ProcessName = process.ProcessName,
+                Category = category,
+                StartedAt = _sessionStart ?? DateTime.UtcNow
+            };
+        }
+
+        return null;
+    }
+}
+
+public enum DocumentCategory { Document, Spreadsheet, Presentation, Design, Unknown }
+```
+
+**Output:**
+```json
+{
+  "application_name": "Microsoft Excel",
+  "document_category": "spreadsheet",
+  "duration_seconds": 1800
+}
+```
+
+**Frequency:** Polled every 5 seconds (same timer as AppTracker). Aggregated per app per snapshot interval.
+
+**Privacy:** Process name only. File name and document contents are NEVER captured.
+
+---
+
+### 7. Communication Tracker (`CommunicationTracker.cs`)
+
+**What:** Tracks active time in communication tools and counts of send events (message count, email count). Content is NEVER captured.
+
+**Applications tracked:**
+
+| Process | Application | What's Counted |
+|:--------|:------------|:---------------|
+| `Teams` | Microsoft Teams | Active foreground time; meeting detection |
+| `slack` | Slack | Active foreground time; message send count via accessibility API |
+| `OUTLOOK` | Microsoft Outlook | Active foreground time; email send count via accessibility API |
+| `zoom` / `Zoom` | Zoom | Active foreground time (meeting detection handled by MeetingDetector) |
+
+**How (active time — same as AppTracker):**
+```csharp
+// Active time reuses foreground window detection from AppTracker.
+// CommunicationTracker is a specialised view over AppTracker output.
+public class CommunicationTracker : ICollector
+{
+    private static readonly HashSet<string> CommunicationProcesses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Teams", "slack", "OUTLOOK", "zoom", "Zoom"
+    };
+
+    public bool IsActiveCommunicationApp(string processName)
+        => CommunicationProcesses.Contains(processName);
+}
+```
+
+**Message/email send count:** Detected via OS Accessibility API (UIAutomation) — counts send button activation events. **Content is technically impossible to capture** using this method; only the count is recorded.
+
+**Output:**
+```json
+{
+  "application_name": "Microsoft Outlook",
+  "active_seconds": 3600,
+  "send_event_count": 12
+}
+```
+
+**Privacy:** Zero content capture. Count of interactions only. This is a hard technical constraint, not a policy setting.
+
+---
+
+### 8. Screenshot Capturer (`ScreenshotCapturer.cs`)
+
+**What:** Captures screenshot of the primary display **only on explicit remote command** from a manager or HR Admin.
+
+**Trigger:** ONLY via remote command (`capture_screenshot` from `agent_commands` table). **NEVER automated, NEVER scheduled, NEVER random.** The `screenshots` table accepts only `manual` and `on_demand` trigger types.
 
 **How:**
 ```csharp
@@ -158,12 +273,12 @@ public class ScreenshotCapturer
 {
     public async Task<string?> CaptureScreenshotAsync(string reason, CancellationToken ct)
     {
-        // 1. Show employee notification (GDPR requirement)
+        // 1. Show employee notification (GDPR requirement — mandatory)
         await _notificationService.ShowToastAsync(
-            "Verification Request",
+            "Screen Capture Requested",
             $"Your manager has requested a screen capture. Reason: {reason}");
         
-        // 2. Wait 3 seconds (give employee awareness)
+        // 2. Wait 3 seconds (mandatory awareness window — do not reduce)
         await Task.Delay(3000, ct);
         
         // 3. Capture primary screen
@@ -172,7 +287,7 @@ public class ScreenshotCapturer
         using var graphics = Graphics.FromImage(bitmap);
         graphics.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
         
-        // 4. Compress and save
+        // 4. Compress and save temporarily
         var path = Path.Combine(Path.GetTempPath(), $"onevo_capture_{Guid.NewGuid()}.jpg");
         bitmap.Save(path, ImageFormat.Jpeg);
         
@@ -181,9 +296,7 @@ public class ScreenshotCapturer
 }
 ```
 
-**Trigger:** Only via remote command (`capture_screenshot` from `agent_commands`). NEVER automated or scheduled.
-
-**Privacy:** Employee always sees notification BEFORE capture. 3-second delay is mandatory (GDPR compliance).
+**Privacy:** Employee always sees notification BEFORE capture. 3-second delay is mandatory (GDPR compliance). Local file is deleted immediately after confirmed upload.
 
 **Upload:** After capture, image is uploaded via `POST /api/v1/agent/ingest` with type `screenshot_capture`, then local file is deleted.
 
@@ -221,6 +334,23 @@ Data is batched into the ingestion payload format expected by Agent Gateway:
 ```
 
 See [[AI_CONTEXT/rules|Rules]] (Section 10: Desktop Agent Rules) for privacy rules and [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] for the server-side API contract.
+
+## Employee-Device Binding
+
+The batch payload includes `employee_id`. The ingest endpoint validates this against the `agent_sessions` table before accepting any data.
+
+**Flow:**
+1. Employee opens tray app and enters credentials in the login window
+2. Tray app → Service (IPC): `{type: "employee_login", email: "...", password: "..."}`
+3. Service authenticates the employee against ONEVO and calls `POST /api/v1/agent/session/login` (Device JWT)
+4. Server creates an `agent_sessions` record linking `device_id → employee_id`
+5. Agent includes `employee_id` in every ingest batch payload
+6. Server validates: `payload.employee_id == agent_sessions[device_id].employee_id`
+7. Mismatch or no active session → `403` — batch rejected
+
+This prevents a registered device from submitting data attributed to a different employee, even if the payload is crafted manually.
+
+**Multiple users on one machine:** Different employees can log into the same device over time. Each login deactivates the previous `agent_sessions` record and creates a new one. Only one active session per device at a time.
 
 ## Related
 

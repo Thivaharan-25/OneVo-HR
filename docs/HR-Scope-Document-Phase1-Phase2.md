@@ -170,7 +170,7 @@ The following items are explicitly excluded from Phase 1 and Phase 2:
 | **Database** | PostgreSQL 16 with row-level security for tenant isolation |
 | **Real-time** | SignalR for live dashboards and alerts |
 | **Security** | Multi-tenant isolation at every layer, encrypted data at rest and in transit, GDPR-compliant data handling |
-| **Scale** | Designed for 153 database tables (106 Phase 1, 47 Phase 2), 22 modules, 90+ permissions |
+| **Scale** | Designed for 170 database tables (128 Phase 1, 42 Phase 2), 22 modules, 90+ permissions |
 
 ---
 

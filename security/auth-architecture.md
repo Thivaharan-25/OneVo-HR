@@ -26,7 +26,7 @@ User                    Frontend                  Auth Module              Datab
 |:------|:-----|:---------|:--------|:--------|
 | Access token | JWT (RS256) | 15 minutes | Memory (frontend) | Via refresh token |
 | Refresh token | Opaque (hashed in DB) | 7 days | HttpOnly Secure cookie | Rotated on use |
-| Session | UUID | 24 hours | `user_sessions` table | Extended on activity |
+| Session | UUID | 24 hours | `sessions` table | Extended on activity |
 
 ### JWT Structure
 
@@ -183,12 +183,60 @@ var userRole = new UserRole
 
 Expired roles are cleaned up by a Hangfire daily job.
 
+### Permission Revocation — Real-Time Propagation
+
+**The problem:** JWTs contain permissions baked-in at issue time. With a 15-minute access token lifetime, a revoked permission remains effective for up to 15 minutes after revocation.
+
+**The solution: Redis Permission Version Counter**
+
+Each user has a version counter in Redis: `perm_version:{user_id}` (integer, default 0).
+
+```
+On permission grant or revoke:
+  → INCR perm_version:{user_id}   (atomic, TTL: 24h)
+  → Log audit event
+
+On JWT issue (login or token refresh):
+  → Read current perm_version from Redis
+  → Embed as claim: "perm_ver": <current_version>
+
+On every authenticated request (middleware):
+  → Read "perm_ver" from JWT
+  → GET perm_version:{user_id} from Redis
+  → If JWT perm_ver < Redis version → reject with 401 + {"code": "permissions_changed"}
+  → Frontend receives 401 → silently refresh access token
+  → New JWT issued with fresh permissions from DB + new perm_ver
+
+On token refresh:
+  → Re-read all permissions from DB (fresh)
+  → GET current perm_version:{user_id} from Redis
+  → Embed fresh perm_ver in new JWT
+```
+
+**Propagation latency:** Revocation propagates within one request cycle — the next API call after a permission change triggers a 401 → silent refresh → new token with updated permissions. In practice: ≤1 second for active users.
+
+**Redis failure fallback:** If Redis is unavailable (circuit open), fall back to permitting the existing JWT permissions (fail-open). Log a warning. Do NOT fall back to DB permission lookup per request — that defeats the purpose of baking permissions into the JWT. The 15-minute window is acceptable during Redis outages.
+
+| Key | Type | TTL | Set when | Incremented when |
+|:----|:-----|:----|:---------|:----------------|
+| `perm_version:{user_id}` | String (integer) | 24h (reset on activity) | User first logs in | Any permission grant, revoke, role change, or role expiry |
+
+**Implementation:** `IPermissionVersionService` wraps the Redis calls. Injected into `AuthorizationMiddleware` and `TokenService`.
+
+```csharp
+public interface IPermissionVersionService
+{
+    Task<long> GetCurrentVersionAsync(Guid userId, CancellationToken ct);
+    Task<long> IncrementVersionAsync(Guid userId, CancellationToken ct);
+}
+```
+
 ## Password Security
 
 | Policy | Value |
 |:-------|:------|
 | Hashing | Argon2id (memory: 64MB, iterations: 3, parallelism: 1) |
-| Min length | 8 characters |
+| Min length | 12 characters |
 | Complexity | 1 uppercase, 1 lowercase, 1 digit, 1 special character |
 | Rate limiting | 5 attempts/minute per IP |
 | Account lockout | 10 failed attempts → 30 min lockout |
@@ -213,7 +261,7 @@ Multiple methods per user via `user_mfa` table:
 | Session rotation | On role change | Prevents session fixation |
 | Idle timeout | 30 minutes | Limits exposure window |
 | Absolute timeout | 24 hours | Forces re-authentication |
-| Device tracking | `user_sessions.device_type` + `ip_address` | Anomaly detection |
+| Device tracking | `sessions.device_type` + `ip_address` | Anomaly detection |
 
 ## Related
 

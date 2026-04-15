@@ -102,8 +102,10 @@ Policy pushed to each agent — defines what features are enabled for the linked
 {
   "activity_monitoring": true,
   "application_tracking": true,
+  "document_tracking": true,
+  "communication_tracking": true,
+  "browser_extension_enabled": false,
   "screenshot_capture": false,
-  "screenshot_interval_minutes": 10,
   "meeting_detection": true,
   "device_tracking": true,
   "identity_verification": true,
@@ -124,6 +126,9 @@ Policy pushed to each agent — defines what features are enabled for the linked
     "violation_threshold_minutes": 5
   }
 }
+
+// Note: screenshot_capture = false by default. No screenshot_interval — screenshots are
+// ONLY triggered via remote command (manual/on_demand). Never scheduled or automated.
 ```
 
 Policy is computed by merging three tiers: `monitoring_feature_toggles` (tenant default) → `role_app_policies` (role override) → `employee_monitoring_overrides` (employee override). Most specific wins. See [[modules/configuration/employee-overrides/overview|App Allowlist Configuration]].
@@ -274,7 +279,24 @@ Pending and completed commands sent from server to agent.
       "data": {
         "application_name": "Google Chrome",
         "window_title_hash": "sha256...",
-        "duration_seconds": 45
+        "duration_seconds": 45,
+        "app_category_type": "browser"
+      }
+    },
+    {
+      "type": "document_usage",
+      "data": {
+        "application_name": "Microsoft Excel",
+        "document_category": "spreadsheet",
+        "duration_seconds": 1800
+      }
+    },
+    {
+      "type": "communication_usage",
+      "data": {
+        "application_name": "Microsoft Outlook",
+        "active_seconds": 3600,
+        "send_event_count": 12
       }
     },
     {
@@ -318,17 +340,18 @@ Pending and completed commands sent from server to agent.
 - [[modules/agent-gateway/remote-commands/overview|Remote Commands]] — Bidirectional SignalR command channel for server→agent push (capture requests, monitoring lifecycle, policy refresh)
 - [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] — Listens to workforce-presence events, sends start/stop/pause/resume commands to agent
 
-## Desktop Agent Docs
+## WorkPulse Agent Docs
 
-- [[modules/agent-gateway/agent-overview|Agent Overview]] — Start here: two-component architecture, data flow, setup
+- [[modules/agent-gateway/agent-overview|Agent Overview]] — Start here: architecture, data flow, macOS Phase 2 plan
 - [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Full API contract (6 endpoints, payloads, error handling)
-- [[modules/agent-gateway/data-collection|Data Collection]] — 5 collectors with Win32 P/Invoke code samples
+- [[modules/agent-gateway/data-collection|Data Collection]] — 7 collectors with Win32 P/Invoke code samples
+- [[modules/agent-gateway/browser-extension|Browser Extension]] — Optional Chrome/Edge/Firefox extension for domain tracking (Phase 2)
 - [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — Named Pipes protocol between Service and TrayApp
 - [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] — Local SQLite buffer schema, offline resilience
 - [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Detection strategy, service recovery, reporting
 - [[modules/identity-verification/photo-capture|Photo Capture]] — Camera capture flow for identity verification
 - [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — MAUI tray app UI states, windows, notifications
-- [[modules/agent-gateway/agent-installer|Agent Installer]] — MSIX packaging, silent install, auto-update
+- [[modules/agent-gateway/agent-installer|Agent Installer]] — MSIX packaging (Windows Phase 1), macOS .pkg (Phase 2)
 - [[modules/agent-gateway/mock-mode|Mock Mode]] — Development without backend (MockGatewayClient)
 
 ---
