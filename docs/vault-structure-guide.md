@@ -63,7 +63,7 @@ modules/
 ├── documents/               ← File management, templates (Phase 2)
 ├── grievance/               ← Case tracking, disciplinary (Phase 2)
 ├── expense/                 ← Claims, approvals (Phase 2)
-├── calendar/                ← Company events (Phase 2)
+├── calendar/                ← Company events (Phase 1)
 ├── notifications/           ← In-app, email, real-time push
 ├── configuration/           ← Monitoring toggles, app allowlist, retention
 ├── agent-gateway/           ← Desktop agent communication (SignalR)
@@ -141,7 +141,7 @@ database/
 │   ├── activity-monitoring.md     ← activity_snapshots, app_usage
 │   ├── ... (one per module)
 │   └── infrastructure.md          ← tenants, files, reference_data
-├── schema-catalog.md              ← Quick index of all ~138 tables
+├── schema-catalog.md              ← Quick index of all 163 tables
 ├── cross-module-relationships.md  ← How tables reference each other
 ├── migration-patterns.md          ← How to write EF Core migrations
 └── performance.md                 ← Indexing strategies, query patterns
