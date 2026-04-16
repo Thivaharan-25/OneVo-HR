@@ -148,6 +148,9 @@ var sql = $"SELECT * FROM employees WHERE id = '{id}'"; // BAD
    var effectivePolicy = tenantPolicy.MergeWith(employeeOverride);
    ```
 
+7. **Covert mode requires disclosure — GDPR/privacy law obligation:**
+   "Covert" privacy mode hides monitoring data from employee self-service views. It does **NOT** exempt the tenant from informing employees that monitoring exists. Tenant onboarding **MUST** include a mandatory data processing disclosure step regardless of privacy mode. Never implement the privacy transparency mode feature without gating the `covert` option behind this disclosure confirmation. See [[security/compliance|Compliance]].
+
 ### RBAC Permissions — Full List
 
 ```
@@ -254,7 +257,7 @@ The following modules are **Phase 2 deferred**. Workers MUST NOT build routes, p
 - **Checkbox tracking:** When a feature or acceptance criterion is implemented, mark its checkbox `- [ ]` → `- [x]` in the relevant task file under `current-focus/`
 - **Status updates:** Update the task file's **Status** field as work progresses: `Planned` → `In Progress` → `Complete`
 - **Changelog logging:** After completing significant work, create a new entry in `AI_CONTEXT/changelog/` with format `YYYY-MM-DD-<description>.md`
-- **One source of truth:** Checkboxes live ONLY in individual task files (`current-focus/WEEK*.md`), NOT in `current-focus/README.md`. The README tracks high-level status only.
+- **One source of truth:** Checkboxes live ONLY in individual task files (`current-focus/DEV*.md`), NOT in `current-focus/README.md`. The README tracks high-level status only.
 - **Cross-reference:** When checking a box, verify the related module feature docs are up-to-date with any implementation changes.
 
 ---

@@ -28,7 +28,7 @@ ONEVO is a **multi-tenant employee monitoring SaaS** product. It tracks workforc
 | **Auth** | JWT + refresh tokens, MFA (TOTP) |
 | **Search** | PostgreSQL FTS (Phase 1) |
 
-**Architecture:** Monolithic + service-oriented. All modules in one .NET solution with strict namespace boundaries (`ONEVO.Modules.{ModuleName}`). Cross-module communication via domain events only — never direct service calls.
+**Architecture:** Monolithic + service-oriented. All modules in one .NET solution with strict namespace boundaries (`ONEVO.Modules.{ModuleName}`). Cross-module communication: **direct interface calls** for synchronous queries (e.g., `ICalendarConflictService`), **domain events** for async side effects. Never import another module's internal classes.
 
 ---
 
@@ -48,6 +48,7 @@ These are the modules to implement. Each links to its full spec.
 | 8 | **Workforce Presence** | Clock in/out, biometric events, breaks, unified presence sessions | [[modules/workforce-presence/overview\|Workforce Presence]] |
 | 9 | **Identity Verification** | Photo/fingerprint verification, on-demand capture from manager alerts | [[modules/identity-verification/overview\|Identity Verification]] |
 | 10 | **Activity Monitoring** | App/device/meeting tracking, screenshots, daily summaries | [[modules/activity-monitoring/overview\|Activity Monitoring]] |
+| 11a | **Discrepancy Engine** | WMS time log vs agent activity cross-check, discrepancy events | [[modules/discrepancy-engine/overview\|Discrepancy Engine]] |
 | 11 | **Exception Engine** | Anomaly detection rules, alerts, escalation, remote capture trigger | [[modules/exception-engine/overview\|Exception Engine]] |
 | 12 | **Notifications** | In-app, email (Resend), SignalR real-time push | [[modules/notifications/overview\|Notifications]] |
 | 13 | **Leave** | Leave types, policies, entitlements, approval workflow | [[modules/leave/overview\|Leave]] |
@@ -56,19 +57,48 @@ These are the modules to implement. Each links to its full spec.
 
 ---
 
-## Phase 2 — Do NOT Build These (7 Modules)
+## Phase 1 — Partial Module (Skills Core)
+
+5 Skills tables are built in Phase 1 as part of **Dev 3's** work (after Org Structure):
+
+| Tables (Phase 1 only) | Purpose |
+|:----------------------|:--------|
+| `skill_categories` | Taxonomy root |
+| `skills` | Individual skill records |
+| `job_skill_requirements` | Required skills per job title |
+| `employee_skills` | Employee skill proficiency |
+| `skill_validation_requests` | Peer/manager validation requests |
+
+See [[current-focus/DEV3-skills-core|DEV3 Skills Core]] for the full task. The remaining 10 Skills tables (courses, LMS, assessments, dev plans, certifications) are Phase 2.
+
+---
+
+## Phase 1 — Reporting Engine Tables (within Productivity Analytics)
+
+3 Reporting Engine tables are built in Phase 1 as part of **Dev 1's** Productivity Analytics work. They live in the `ONEVO.Modules.ProductivityAnalytics` namespace, not a separate project.
+
+| Tables (Phase 1 only) | Purpose |
+|:----------------------|:--------|
+| `report_definitions` | Configurable report types with cron schedule |
+| `report_executions` | Execution log per report run |
+| `report_templates` | Column definitions + default filters |
+
+See [[current-focus/DEV1-productivity-analytics|DEV1 Productivity Analytics]] for the full task. The remaining Reporting Engine features (webhook delivery, advanced scheduling) are Phase 2.
+
+---
+
+## Phase 2 — Do NOT Build These (5 Full Modules + Skills LMS)
 
 Specs exist but are explicitly deferred. Each module overview has a `**Phase:** 2 — Deferred` marker and a warning box.
 
 | Module | Reason Deferred |
 |:-------|:----------------|
 | **Performance** | Performance reviews not core to monitoring |
-| **Skills** | Skill tracking / learning paths — not monitoring |
+| **Skills LMS** | Courses, assessments, dev plans, certifications — 10 remaining tables; core 5 tables are Phase 1 (see above) |
 | **Grievance** | Case tracking — not monitoring |
 | **Expense** | Claims / routing — not monitoring |
 | **Documents** | File management / versioning — not monitoring |
 | **Payroll** | Full payroll engine — Phase 2 only; activity data feed is read-only in Phase 1 |
-| **Reporting Engine** | Subsumed by Productivity Analytics for Phase 1 |
 
 **Also deferred (Phase 2 features inside Phase 1 modules):**
 - Teams Graph API meeting participation analysis (Activity Monitoring)
@@ -137,8 +167,12 @@ Tenant default → Role override → Employee override. Most specific wins. See 
 
 See [[modules/agent-gateway/remote-commands/overview|Remote Commands]].
 
-### Domain Events (Not Direct Calls)
-Modules communicate via MediatR domain events. Module A publishes `PresenceSessionStarted`, Module B handles it. No module imports another module's internals. See [[backend/messaging/event-catalog|Event Catalog]].
+### Cross-Module Communication
+Modules communicate in two ways:
+- **Domain events** (MediatR) for async side effects — Module A publishes `PresenceSessionStarted`, Module B handles it
+- **Direct interface calls** for synchronous queries — Module A calls `ICalendarConflictService.CheckConflictsAsync()` directly via DI
+
+No module imports another module's internal classes — only public interfaces. See [[backend/messaging/event-catalog|Event Catalog]].
 
 ---
 
@@ -168,12 +202,13 @@ Every module overview (`modules/*/overview.md`) follows the same structure:
 | **Tech Stack** | All technology choices with versions | [[AI_CONTEXT/tech-stack\|Tech Stack]] |
 | **Rules** | AI coding standards and conventions | [[AI_CONTEXT/rules\|Rules]] |
 | **Current Focus** | Dev assignments, deadlines, task files | [[current-focus/README\|Current Focus]] |
-| **Module Catalog** | Quick index of all 22 modules | [[backend/module-catalog\|Module Catalog]] |
+| **Module Catalog** | Quick index of all 23 modules | [[backend/module-catalog\|Module Catalog]] |
 | **Shared Kernel** | Cross-cutting code (Result, AuditableEntity, etc.) | [[backend/shared-kernel\|Shared Kernel]] |
 | **API Conventions** | REST patterns, pagination, error format | [[backend/api-conventions\|API Conventions]] |
 | **Event Catalog** | All domain events across modules | [[backend/messaging/event-catalog\|Event Catalog]] |
 | **Multi-Tenancy** | Tenant isolation patterns | [[infrastructure/multi-tenancy\|Multi-Tenancy]] |
 | **Known Issues** | Gotchas and deprecated patterns | [[AI_CONTEXT/known-issues\|Known Issues]] |
+| **WMS Bridge Integration** | Phase 1 bridges: People Sync, Availability, Work Activity | [[current-focus/WMS-bridge-integration\|WMS Bridge Integration]] |
 
 ---
 
@@ -198,3 +233,4 @@ Each developer has task files in `current-focus/` with self-contained instructio
 4. **Do not use Meilisearch** — PostgreSQL FTS is sufficient
 5. **Do not import one module's internals into another** — use public interfaces and domain events only
 6. **Do not capture agent data outside monitoring lifecycle** — no data before clock-in, during breaks, or after clock-out
+7. **Do not build Phase 2 WMS bridges** — Productivity Metrics and Skills bridges are Phase 2. Only People Sync, Availability, Work Activity, and Tenant Provisioning are Phase 1. See [[current-focus/WMS-bridge-integration|WMS Bridge Integration]]
