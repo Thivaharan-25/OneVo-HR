@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "379d1fa0cf7d2a3b",
+        "id": "bf4b21253468856e",
         "type": "tabs",
         "children": [
           {
-            "id": "cc52d09eebc2d958",
+            "id": "d9e9837060ca6b3d",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "AI_CONTEXT/project-context.md",
+                "file": "Userflow/Workforce-Intelligence/identity-verification-setup.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "project-context"
+              "title": "identity-verification-setup"
             }
           }
         ]
@@ -183,15 +183,25 @@
       "bases:Create new base": false
     }
   },
-  "active": "cc52d09eebc2d958",
+  "active": "d9e9837060ca6b3d",
   "lastOpenFiles": [
-    "database/schemas/exception-engine.md",
+    "Userflow/Documents/document-upload.md",
+    "ADE-START-HERE.md",
+    "AI_CONTEXT/rules.md",
+    "current-focus/DEV3-activity-monitoring.md",
+    "current-focus/DEV3-skills-core.md",
     "docs/ade-dev1-reading-flow.md",
+    "docs/ade-dev4-reading-flow.md",
+    "docs/ade-dev3-reading-flow.md",
+    "backend/messaging/event-catalog.md",
+    "docs/ade-dev2-reading-flow.md",
+    "backend/module-catalog.md",
+    "AI_CONTEXT/project-context.md",
+    "database/schemas/exception-engine.md",
     "docs/system-scan-report-2026-04-16.md",
     "database/schemas/discrepancy-engine.md",
     "database/schemas/activity-monitoring.md",
     "modules/shared-platform/overview.md",
-    "backend/module-catalog.md",
     "backend/module-boundaries.md",
     "database/README.md",
     "backend/external-integrations.md",
@@ -201,17 +211,7 @@
     "backend/api-conventions.md",
     "modules/agent-gateway/monitoring-lifecycle/overview.md",
     "modules/agent-gateway/agent-registration/overview.md",
-    "modules/agent-gateway/heartbeat-monitoring/overview.md",
-    "modules/agent-gateway/overview.md",
-    "modules/agent-gateway/sqlite-buffer.md",
-    "modules/analytics/overview.md",
     "modules/analytics",
-    "security/secrets-management.md",
-    "docs/superpowers/plans/2026-04-15-architecture-gap-fixes.md",
-    "backend/shared-kernel.md",
-    "Userflow/Employee-Management/profile-management.md",
-    "backend/search-architecture.md",
-    "AI_CONTEXT/project-context.md",
     "database/schema-catalog.md.tmp.32360.1776241379916",
     "database/schemas/calendar.md.tmp.32360.1776241177179",
     "database/schemas/productivity-analytics.md.tmp.32360.1776241175383",

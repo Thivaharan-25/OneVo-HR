@@ -46,14 +46,14 @@ public abstract record DomainEvent
 
 ## Workforce Presence Events (replaces Attendance)
 
-| Event | Publisher | Payload | Consumers |
-|:------|:---------|:--------|:----------|
-| `PresenceSessionStarted` | WorkforcePresence | EmployeeId, Date, Source | Notifications (team online status) |
-| `PresenceSessionEnded` | WorkforcePresence | EmployeeId, Date, TotalMinutes | ActivityMonitoring (close day tracking) |
-| `BreakExceeded` | WorkforcePresence | EmployeeId, BreakId, Duration | ExceptionEngine (flag long break) |
-| `OvertimeRequested` | WorkforcePresence | EmployeeId, RequestId, Hours | Notifications, SharedPlatform (approval) |
-| `OvertimeApproved` | WorkforcePresence | EmployeeId, RequestId, Hours | Payroll (overtime pay), Notifications |
-| `AttendanceCorrected` | WorkforcePresence | EmployeeId, Date, CorrectedBy | Audit (log correction) |
+| Event                    | Publisher         | Payload                        | Consumers                                |
+| :----------------------- | :---------------- | :----------------------------- | :--------------------------------------- |
+| `PresenceSessionStarted` | WorkforcePresence | EmployeeId, Date, Source       | Notifications (team online status)       |
+| `PresenceSessionEnded`   | WorkforcePresence | EmployeeId, Date, TotalMinutes | ActivityMonitoring (close day tracking)  |
+| `BreakExceeded`          | WorkforcePresence | EmployeeId, BreakId, Duration  | ExceptionEngine (flag long break)        |
+| `OvertimeRequested`      | WorkforcePresence | EmployeeId, RequestId, Hours   | Notifications, SharedPlatform (approval) |
+| `OvertimeApproved`       | WorkforcePresence | EmployeeId, RequestId, Hours   | Payroll (overtime pay), Notifications    |
+| `AttendanceCorrected`    | WorkforcePresence | EmployeeId, Date, CorrectedBy  | Audit (log correction)                   |
 
 ## Agent Gateway Events
 

@@ -3,7 +3,7 @@
 **Assignee:** Dev 4
 **Module:** WorkforcePresence + IdentityVerification (biometric tables only)
 **Priority:** Critical
-**Dependencies:** [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] (agent gateway, workflow engine), [[current-focus/DEV2-auth-security|DEV2 Auth Security]] (HMAC webhook auth), [[current-focus/DEV3-workforce-presence-setup|DEV3 Workforce Presence Setup]] (presence session schema)
+**Dependencies:** [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] (agent gateway, workflow engine), [[current-focus/DEV2-auth-security|DEV2 Auth Security]] (HMAC webhook auth), [[current-focus/DEV3-workforce-presence-setup|DEV3 Workforce Presence Setup]] (presence session schema), [[current-focus/DEV4-identity-verification|DEV4 Identity Verification]] (biometric_devices table)
 
 ---
 

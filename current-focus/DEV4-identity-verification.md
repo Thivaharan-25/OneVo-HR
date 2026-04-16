@@ -3,7 +3,7 @@
 **Assignee:** Dev 4
 **Module:** IdentityVerification
 **Priority:** High
-**Dependencies:** [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] (agent gateway for photo capture), [[current-focus/DEV4-workforce-presence-biometric|DEV4 Workforce Presence Biometric]] (biometric_devices table)
+**Dependencies:** [[current-focus/DEV1-infrastructure-setup|DEV1 Infrastructure Setup]] (shared kernel), [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] (agent gateway for photo capture)
 
 ---
 
@@ -11,6 +11,7 @@
 
 ### Acceptance Criteria
 
+- [ ] `biometric_devices` table + CRUD — device registration, type (fingerprint/face/card), location, `api_key_hash` (HMAC-SHA256), `is_active` flag, tenant-scoped
 - [ ] `verification_policies` table — per-tenant config (login/logout/interval, match threshold)
 - [ ] `verification_records` table — each verification event with confidence score
 - [ ] Photo verification endpoint: agent sends photo -> compare against employee avatar -> return match result
