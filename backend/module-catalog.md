@@ -11,7 +11,7 @@ Inter-module communication:
 - **Async (domain events):** Module A publishes, Module B handles via MediatR
 - **Future:** RabbitMQ for scale when in-process events are insufficient
 
-See [[backend/module-boundaries|Module Boundaries]] for boundary rules. Each module has its own detailed doc in `docs/architecture/modules/`.
+See [[backend/module-boundaries|Module Boundaries]] for boundary rules. Each module has its own detailed doc at `modules/{module-name}/overview.md`.
 
 ## Solution Structure
 
@@ -77,7 +77,8 @@ ONEVO.sln
 | # | Module | Detailed Doc | Tables | Phase | Owner | Build Week |
 |:--|:-------|:-------------|:-------|:------|:------|:-----------|
 | 10 | Workforce Presence | [[modules/workforce-presence/overview\|Workforce Presence]] | 12 | Phase 1 | Dev 3+4 | Week 2 |
-| 11 | Activity Monitoring | [[modules/activity-monitoring/overview\|Activity Monitoring]] | 11 | Phase 1 | Dev 3 | Week 3 |
+| 11 | Activity Monitoring | [[modules/activity-monitoring/overview\|Activity Monitoring]] | 9 | Phase 1 | Dev 3 | Week 3 |
+| 11a | Discrepancy Engine | [[modules/discrepancy-engine/overview\|Discrepancy Engine]] | 2 | Phase 1 | Dev 3 | Week 3 |
 | 12 | Identity Verification | [[modules/identity-verification/overview\|Identity Verification]] | 6 | Phase 1 | Dev 4 | Week 3 |
 | 13 | Exception Engine | [[modules/exception-engine/overview\|Exception Engine]] | 5 | Phase 1 | Dev 2 | Week 4 |
 | 14 | Productivity Analytics | [[modules/productivity-analytics/overview\|Productivity Analytics]] | 5 | Phase 1 | Dev 1 | Week 4 |
@@ -98,9 +99,9 @@ ONEVO.sln
 > Notifications tables (`notification_templates`, `notification_channels`) are physically housed in Shared Platform's `AppDbContext` and counted in row 15. No additional tables.
 > ² Skills & Learning: 5 of its 15 tables (`skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, `skill_validation_requests`) are built in Phase 1. The remaining 10 (courses, LMS, assessments, development plans) are Phase 2.
 
-**Total: 22 modules, 168 tables (128 Phase 1 · 40 Phase 2)**
+**Total: 23 modules, 170 tables (128 Phase 1 · 42 Phase 2)**
 
-> Phase split corrected: Activity Monitoring was missing `browser_activity` and `discrepancy_events` from schema-catalog (both Phase 1). Skills Phase 2 had 2 duplicate entries removed. 5 new WMS integration tables added to Phase 1. Schema catalog is the canonical source of truth.
+> Discrepancy Engine is its own module (`ONEVO.Modules.DiscrepancyEngine`, 2 tables: `discrepancy_events` + `wms_daily_time_logs`). Both tables were previously grouped under Activity Monitoring schema — split into `database/schemas/discrepancy-engine.md`. Activity Monitoring is now 9 tables. Skills Phase 2 had 2 duplicate entries removed. 5 new WMS integration tables added to Phase 1. Schema catalog is the canonical source of truth.
 
 ## Module Dependency Map
 
@@ -134,10 +135,10 @@ Leave Perf.   Skills Docs Griev. Expense  Workforce
                         Activity      Identity       Agent
                         Monitoring    Verification   Gateway
                               │
-                    ┌─────────┼──────────┐
-                    ▼                    ▼
-              Exception           Productivity
-              Engine              Analytics
+                    ┌─────────┼──────────────────┐
+                    ▼         ▼                   ▼
+              Exception  Discrepancy        Productivity
+              Engine     Engine             Analytics
 
 Cross-cutting: Notifications, Configuration, Calendar, Reporting Engine
 ```
@@ -145,7 +146,7 @@ Cross-cutting: Notifications, Configuration, Calendar, Reporting Engine
 ## Adding a New Module
 
 1. Create the project: `ONEVO.Modules.{Name}` under `src/`
-2. Create the module doc: `docs/architecture/modules/{name}.md`
+2. Create the module doc: `modules/{name}/overview.md`
 3. Define the public API in `Public/` folder
 4. Register services: `Add{Name}Module()`
 5. Update this catalog

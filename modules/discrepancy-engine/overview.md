@@ -3,7 +3,7 @@
 **Namespace:** `ONEVO.Modules.DiscrepancyEngine`
 **Phase:** 1 — Build
 **Pillar:** Workforce Intelligence
-**Tables:** 1 (`discrepancy_events`)
+**Tables:** 2 (`discrepancy_events`, `wms_daily_time_logs`)
 **Task File:** [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]] (Discrepancy Engine section)
 
 ---
@@ -181,7 +181,7 @@ private async Task NotifyIfRequiredAsync(Employee employee, DiscrepancySeverity 
 
 ## Database Table
 
-See [[database/schemas/activity-monitoring|Activity Monitoring Schema]] — `discrepancy_events` table.
+See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discrepancy_events` and `wms_daily_time_logs` tables.
 
 ---
 
@@ -213,7 +213,7 @@ See [[database/schemas/activity-monitoring|Activity Monitoring Schema]] — `dis
 
 ## Related
 
-- [[database/schemas/activity-monitoring|Activity Monitoring Schema]] — `discrepancy_events` table definition
+- [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discrepancy_events` and `wms_daily_time_logs` table definitions
 - [[modules/activity-monitoring/overview|Activity Monitoring]] — provides `activity_daily_summary`
 - [[modules/calendar/overview|Calendar]] — provides meeting/event time
 - [[modules/notifications/overview|Notifications]] — delivers discrepancy alerts

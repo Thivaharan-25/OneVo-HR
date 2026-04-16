@@ -155,5 +155,5 @@
 ## Module References
 
 - [[frontend/cross-cutting/authorization|Authorization]] — `useJwtClaims()` for widget permission gating
-- [[modules/dashboard/overview|Dashboard]] — `UserDashboardPrefsRepository`, `DashboardPreference.Default()`
-- [[frontend/design-system/interactions/drag-and-drop|Drag and Drop]] — `@dnd-kit/core` sortable context
+- [[modules/shared-platform/overview|Shared Platform]] — `UserDashboardPrefsRepository`, `DashboardPreference.Default()` (no separate Dashboard module; prefs housed in SharedPlatform)
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — drag-and-drop zone reordering via `@dnd-kit/core` sortable context
