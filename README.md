@@ -15,7 +15,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 
 - **Pillar 1: HR Management** — Employee lifecycle, leave, performance, payroll, skills
 - **Pillar 2: Workforce Intelligence** — Activity monitoring, presence tracking, identity verification, exception detection, productivity analytics
-- **~163 database tables** across **22 modules**
+- **170 database tables** across **23 modules**
 - **.NET 9** backend (Modular Monolith)
 - **.NET MAUI + Windows Service** desktop agent
 - **Next.js 14** frontend (React)
@@ -63,7 +63,6 @@ onevo-hr-brain/
 │   └── WEEK*.md                 # Individual task files with checkboxes
 ├── .cursor/rules/               # Cursor AI auto-injected context
 ├── decisions/                   # Architecture decision records
-├── meetings/                    # Meeting notes
 └── scripts/                     # Automation scripts (brain-sync, jira-sync)
 ```
 
@@ -86,7 +85,7 @@ onevo-hr-brain/
 |:-----|:------|:-----------|
 | Week 1 (Apr 7-11) | Foundation | Infrastructure, Auth, Org Structure, Shared Platform, Agent Gateway |
 | Week 2 (Apr 14-18) | Core HR + Workforce Presence | Employee lifecycle, shifts, biometric, presence tracking |
-| Week 3 (Apr 21-25) | Leave + Performance + Monitoring | Leave policies, reviews, activity monitoring, identity verification |
+| Week 3 (Apr 21-25) | Leave + Monitoring | Leave policies, activity monitoring, identity verification, exception engine |
 | Week 4 (Apr 28-May 2) | Supporting + Analytics + Payroll | Exception engine, productivity analytics, payroll, documents, bridges |
 
 ## Key Principles

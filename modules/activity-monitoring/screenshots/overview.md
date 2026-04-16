@@ -29,6 +29,7 @@ Optional periodic screenshot capture. **RESTRICTED data classification.** Screen
 
 1. Screenshots require feature toggle enabled via `IConfigurationService`.
 2. RESTRICTED data classification — encrypted at rest, access-logged.
+3. **Screenshot URLs are time-limited SAS tokens only** (Azure Blob Shared Access Signature, 15-minute expiry). The `/view` endpoint calls `IFileService.GetTemporaryUrlAsync(fileRecordId, expiry: TimeSpan.FromMinutes(15))` and returns the signed URL — it never redirects to or returns a permanent blob URL. This ensures RBAC revocation is effective: a revoked `workforce:view` permission stops access on the next request.
 
 ## Domain Events
 
@@ -47,7 +48,7 @@ Optional periodic screenshot capture. **RESTRICTED data classification.** Screen
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/activity/screenshots/{employeeId}` | `workforce:view` | Screenshot list (metadata only) |
-| GET | `/api/v1/activity/screenshots/{id}/view` | `workforce:view` | View screenshot (redirect to blob URL) |
+| GET | `/api/v1/activity/screenshots/{id}/view` | `workforce:view` | Returns 15-minute SAS URL for screenshot blob (never a permanent URL) |
 
 ## Related
 

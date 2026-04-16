@@ -75,7 +75,7 @@ ONEVO is designed around **two core pillars** sold in multiple configurations:
 
 ## 4. Key Stats
 
-- **168 database tables** across 22 modules (128 Phase 1, 40 Phase 2)
+- **170 database tables** across 23 modules (128 Phase 1, 42 Phase 2)
 - **90+ permissions** in RBAC system
 - **40+ notification events** across 3 channels
 - **18 subscribable webhook events**

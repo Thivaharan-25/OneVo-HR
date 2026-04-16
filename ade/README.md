@@ -126,6 +126,16 @@ Where:
 
 ---
 
+## Concurrent Brain Repo Writes
+
+When multiple dev ADE sessions run in parallel, each session edits only its own task file (`DEV1-*.md`, `DEV3-*.md`, etc.). No two sessions share a task file, so conflicts on task files are impossible.
+
+If a conflict occurs on `current-focus/README.md` (high-level status only — no checkboxes), accept the latest version from the running session.
+
+If a push conflict occurs: pull, resolve `current-focus/README.md` by keeping both sets of status updates, then re-push.
+
+---
+
 ## Related
 
 - [[current-focus/README|Current Focus]] — Task assignments and dependency chain

@@ -39,7 +39,7 @@ These bridges are needed during Phase 1 because Discrepancy Engine and People Sy
 **Endpoint:** `GET /api/v1/bridges/people-sync/employees`
 
 #### Acceptance Criteria
-- [ ] Paginated employee list with: `id`, `full_name`, `email`, `role`, `department`, `team`, `job_title`, `status`, `wms_role_identifier` (from `wms_role_mappings`)
+- [ ] Paginated employee list with: `id`, `full_name`, `email`, `role`, `department_id`, `department_name`, `team`, `job_title`, `status`, `wms_role_identifier` (from `wms_role_mappings`), `direct_manager_id`, `is_department_head`
 - [ ] Authenticated via bridge API key (not user JWT) — `Authorization: Bridge <key>`
 - [ ] Tenant-scoped — key maps to a single tenant
 - [ ] Query params: `?updatedSince=<ISO8601>` for delta sync, `?page=`, `?pageSize=` (max 100)
@@ -246,7 +246,7 @@ bridge_api_keys
 - id (uuid)
 - tenant_id (uuid)
 - name (varchar 100) — human label e.g. "WorkManage Pro"
-- key_hash (varchar) — bcrypt hash of the key
+- key_hash (varchar) — SHA-256 hash of the key (hex-encoded, constant-time verified via CryptographicOperations.FixedTimeEquals)
 - key_prefix (varchar 8) — first 8 chars for display
 - scopes (varchar[]) — e.g. ["bridges:read", "bridges:write"]
 - last_used_at (timestamptz)

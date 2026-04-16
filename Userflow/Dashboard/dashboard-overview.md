@@ -218,9 +218,10 @@
 ## Module References
 
 - [[frontend/cross-cutting/authorization|Authorization]] — `hasPermission()`, `useJwtClaims()`, `IHierarchyScope`
-- [[modules/dashboard/overview|Dashboard]] — `DashboardService`, `GetEnabledZonesAsync()`, `GetKpisAsync()`
+- [[modules/shared-platform/overview|Shared Platform]] — `DashboardService`, `UserDashboardPrefsRepository`, `GetEnabledZonesAsync()`, `GetKpisAsync()` (dashboard prefs live here; no separate Dashboard module exists)
 - [[modules/exception-engine/overview|Exception Engine]] — Zone 1 exception count data
-- [[modules/workforce-intelligence/overview|Workforce Intelligence]] — Zone 4 live presence data
-- [[modules/analytics/overview|Analytics]] — Zone 5 trend data
+- [[modules/workforce-presence/overview|Workforce Presence]] — Zone 4 live presence data (`presence_records`)
+- [[modules/activity-monitoring/overview|Activity Monitoring]] — Zone 4 live activity data (`activity_snapshots`)
+- [[modules/productivity-analytics/overview|Productivity Analytics]] — Zone 5 trend data (`AnalyticsService.GetTrendAsync()`)
 - [[modules/calendar/overview|Calendar]] — Zone 6 workforce events
 - [[modules/notifications/overview|Notifications]] — SignalR push for Zone 1 real-time updates

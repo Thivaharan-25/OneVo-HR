@@ -74,13 +74,15 @@ The bridge JWT carries:
       "full_name": "Amara Nwosu",
       "email": "amara.nwosu@company.com",
       "status": "active",
-      "department": "Engineering",
+      "department_id": "uuid-of-department",
+      "department_name": "Engineering",
       "team": "Backend",
       "job_title": "Senior Software Engineer",
       "job_family": "Engineering",
       "role_name": "Team Lead",
       "wms_role_identifier": "team_lead",
       "direct_manager_id": "uuid-of-manager",
+      "is_department_head": false,
       "hire_date": "2023-03-15",
       "last_modified_at": "2026-04-14T09:22:00Z"
     }
@@ -116,6 +118,18 @@ Sourced from `wms_role_mappings` table. Configured by tenant admin. Examples:
 | `contractor` | Contractor |
 
 > If no WMS role mapping is configured for a role, `wms_role_identifier` is `null`. WMS should default to `employee` in this case.
+
+### `department_id` / `department_name`
+
+`department_id` is a stable UUID — use this as the grouping key in WMS, not `department_name`. The name can change in ONEVO (e.g. "Engineering" → "Technology"); the UUID never changes.
+
+### `is_department_head`
+
+`true` when this employee is the designated head of their department (sourced from `departments.head_employee_id`). WMS uses this to scope department-level views:
+
+- Department head sees all employees where `direct_manager_id` chains back to their own `id`, across any depth
+- Department head sees all WMS projects assigned to those employees
+- Only one employee per department will have `is_department_head: true` at any time
 
 ### Error responses
 
