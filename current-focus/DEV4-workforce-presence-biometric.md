@@ -1,7 +1,7 @@
 # Task: Workforce Presence — Biometric + Agent Integration
 
 **Assignee:** Dev 4
-**Module:** WorkforcePresence + IdentityVerification (biometric tables only)
+**Module:** WorkforcePresence
 **Priority:** Critical
 **Dependencies:** [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] (agent gateway, workflow engine), [[current-focus/DEV2-auth-security|DEV2 Auth Security]] (HMAC webhook auth), [[current-focus/DEV3-workforce-presence-setup|DEV3 Workforce Presence Setup]] (presence session schema), [[current-focus/DEV4-identity-verification|DEV4 Identity Verification]] (biometric_devices table)
 
@@ -12,7 +12,6 @@
 ### Acceptance Criteria
 
 #### Biometric Integration
-- [ ] `biometric_devices` table + CRUD (from identity verification module)
 - [ ] `biometric_enrollments` table — employee fingerprint enrollment with consent tracking
 - [ ] `biometric_events` table — raw clock-in/out events from terminals
 - [ ] `biometric_audit_logs` table — tamper detection, device health
@@ -123,6 +122,6 @@ app/(dashboard)/workforce/presence/
 - [[current-focus/DEV4-shared-platform-agent-gateway|DEV4 Shared Platform Agent Gateway]] — workflow engine for overtime approvals; agent data source
 - [[current-focus/DEV2-auth-security|DEV2 Auth Security]] — HMAC-SHA256 webhook secret management
 - [[current-focus/DEV3-workforce-presence-setup|DEV3 Workforce Presence Setup]] — presence_sessions and device_sessions tables
-- [[current-focus/DEV4-identity-verification|DEV4 Identity Verification]] — biometric_devices table shared
+- [[current-focus/DEV4-identity-verification|DEV4 Identity Verification]] — biometric_devices table defined there; this task adds enrollments, events, and webhook ingest
 - [[current-focus/DEV2-exception-engine|DEV2 Exception Engine]] — consumes BreakExceeded events
 - Payroll — deferred to Phase 2 (approved overtime_requests consumed by payroll)
