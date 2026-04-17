@@ -96,7 +96,7 @@ The dev re-runs the ADE manually when blocking dependencies are delivered.
 
 ## Parallelism
 
-- **Dev-scoped sequential:** Each dev's ADE session runs tasks 1 → 2 → 3 → 4 sequentially
+- **Dev-scoped sequential:** Each dev's ADE session runs tasks 1 → 2 → 3 → ... → N sequentially (N = task count per dev, read from current-focus/README.md)
 - **Cross-dev parallel:** Multiple devs can run their ADE sessions simultaneously (different modules, no conflicts)
 - **Step-scoped sequential:** Within each task, Step 1 (backend) completes before Step 2 (frontend) starts
 

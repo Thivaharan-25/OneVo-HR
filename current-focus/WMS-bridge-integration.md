@@ -185,7 +185,6 @@ Index: (tenant_id, employee_id, date) UNIQUE
 **Endpoint:** `POST /api/v1/bridges/talent-signals`
 
 **What WMS sends:**
-- **Sentiment / engagement signals** — computed from task behavior: assignment response time, collaboration frequency (comments/updates on tasks), task avoidance patterns (repeated deadline pushes on specific task types)
 - **Burnout risk signals** — computed from work patterns: consecutive overtime weeks, simultaneous task overload, declining output per logged hour, no logged breaks within shift
 
 #### Acceptance Criteria
@@ -195,10 +194,6 @@ Index: (tenant_id, employee_id, date) UNIQUE
     "employee_id": "uuid",
     "period_start": "2026-04-01",
     "period_end": "2026-04-30",
-    "sentiment": {
-      "score": 62,
-      "indicators": ["slow_assignment_response", "declining_task_comments"]
-    },
     "burnout_risk": {
       "level": "medium",
       "indicators": ["consecutive_overtime_3wks", "task_overload_active_8"]
@@ -207,7 +202,6 @@ Index: (tenant_id, employee_id, date) UNIQUE
   ```
 - [ ] Writes to `wms_talent_signals` table (new — Productivity Analytics module)
 - [ ] Visible to HR Admin and Reporting Manager only — not exposed to employee
-- [ ] HR uses sentiment score for engagement tracking and training triggers
 - [ ] HR uses burnout risk level for early intervention before health deteriorates
 
 **New table needed:** `wms_talent_signals`
@@ -218,8 +212,6 @@ wms_talent_signals
 - employee_id (uuid) — FK → employees
 - period_start (date)
 - period_end (date)
-- sentiment_score (integer) — nullable, 0–100
-- sentiment_indicators (jsonb) — array of indicator strings
 - burnout_risk_level (varchar 10) — 'low', 'medium', 'high', nullable
 - burnout_indicators (jsonb) — array of indicator strings
 - created_at (timestamptz)

@@ -1,6 +1,6 @@
 # Task: Skills Core (Phase 1)
 
-**Assignee:** Dev 3 (+ Dev 4 for employee skills frontend)
+**Assignee:** Dev 3
 **Module:** Skills (Phase 1 subset — 5 tables)
 **Priority:** High
 **Dependencies:**
