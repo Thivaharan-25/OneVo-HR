@@ -11,3 +11,6 @@ Thumbs.db
 # Temp
 *.tmp
 *.log
+
+# Worktrees
+.worktrees/
