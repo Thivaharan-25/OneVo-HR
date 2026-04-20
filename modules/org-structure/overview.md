@@ -42,7 +42,7 @@ public interface IOrgStructureService
 
 ---
 
-## Database Tables (8)
+## Database Tables (10)
 
 ### `legal_entities`
 
@@ -138,6 +138,40 @@ Self-referencing hierarchy via `parent_department_id`.
 | `cost_center_code` | `varchar(20)` | |
 | `budget_amount` | `decimal(15,2)` | |
 | `fiscal_year` | `int` | |
+
+### `hierarchy_scope_exceptions`
+
+Cross-feature bypass grants that expand `IHierarchyScope` results for a specific employee.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `granted_to_employee_id` | `uuid` | FK → employees — who receives the bypass |
+| `scope_type` | `varchar(20)` | `department` \| `people` \| `role` |
+| `scope_id` | `uuid` | FK → departments / employees / roles depending on `scope_type` — always required |
+| `applies_to` | `varchar(50)` | nullable — `null` = all features (root admin only); e.g. `'calendar'`, `'teams'` |
+| `granted_by_employee_id` | `uuid` | FK → employees — audit trail |
+| `created_at` | `timestamptz` | |
+| `expires_at` | `timestamptz` | nullable |
+
+Resolved by `IHierarchyScope.GetSubordinateIdsAsync()` — bypass targets are appended to `bypassIds` in the result. See [[modules/auth/authorization/end-to-end-logic|Authorization — Hierarchy Scoping]].
+
+### `permission_delegation_scopes`
+
+Records the module whitelist for employees who were granted `roles:manage` via delegation (not as base role).
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `delegated_to_employee_id` | `uuid` | FK → employees |
+| `module_scope` | `text[]` | Modules this person can manage permissions and bypass grants for |
+| `delegated_by_employee_id` | `uuid` | FK → employees — audit trail |
+| `created_at` | `timestamptz` | |
+| `expires_at` | `timestamptz` | nullable |
+
+**Ceiling rule:** `module_scope` must be a strict subset of the granter's own `module_scope`. Employees with `roles:manage` from their base role (no `permission_delegation_scopes` record) are treated as root admins with unrestricted scope.
 
 ---
 
