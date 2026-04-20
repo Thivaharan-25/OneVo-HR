@@ -113,6 +113,91 @@
 - **Validation:** N/A
 - **DB:** None
 
+### Path C: Grant Hierarchy Bypass to an Employee
+
+#### Step C1: Navigate to Employee Security Tab
+- **UI:** Employees > search employee > click profile > Security tab > scroll to **"Bypass Grants"** section (below Override Permissions panel)
+- **API:** `GET /api/v1/employees/{employeeId}/bypass-grants`
+- **Backend:** `BypassGrantService.GetByEmployeeAsync()` → [[modules/auth/authorization/end-to-end-logic|Authorization]]
+- **Validation:** Permission check for `roles:manage`. Granter must have an active `permission_delegation_scopes` record or be a root admin.
+- **DB:** `hierarchy_scope_exceptions`, `permission_delegation_scopes`
+
+#### Step C2: Add a Bypass Grant
+- **UI:** Click **"Add Bypass Grant"**. A panel appears with three fields:
+  1. **Scope Type** — dropdown: `Department` / `Person` / `Role`
+  2. **Scope Target** — searchable picker:
+     - Department: dept tree filtered to granter's accessible depts
+     - Person: employee search filtered to granter's accessible employees
+     - Role: role list
+  3. **Applies To** — dropdown:
+     - Root admin sees: `All Features` + individual feature names (e.g., `Calendar`, `Teams`)
+     - Delegated granter sees: only features within their own `module_scope` — no "All Features" option
+  4. **Expires At** — optional date picker
+- **Validation:** Scope target must be within the granter's own accessible scope (ceiling rule). Delegated granters cannot set `Applies To = All Features`.
+- **DB:** None (client-side selection)
+
+#### Step C3: Save Bypass Grant
+- **UI:** Click "Save Grant"
+- **API:** `POST /api/v1/employees/{employeeId}/bypass-grants`
+  ```json
+  {
+    "scopeType": "department",
+    "scopeId": "uuid",
+    "appliesTo": "calendar"
+  }
+  ```
+- **Backend:** `BypassGrantService.CreateAsync()`
+  1. Validate granter's scope (ceiling rule): target must be in granter's accessible scope
+  2. Validate `appliesTo`: if granter is delegated, check `permission_delegation_scopes.module_scope`
+  3. Insert `hierarchy_scope_exceptions` record
+  4. Audit log entry
+- **DB:** `hierarchy_scope_exceptions`, `audit_logs`
+
+#### Step C4: Confirmation
+- **UI:** Toast: "Bypass grant saved. [Employee] can now include [target] in [applies_to] operations."
+- Bypass Grants section refreshes showing the new grant with scope type, target name, applies to, and expiry
+
+---
+
+### Path D: Delegate `roles:manage` with Module Scope
+
+Triggered automatically when granting `roles:manage` to an employee via role assignment or per-employee override (Path A or Path B).
+
+#### Step D1: Module Scope Panel Appears
+- **UI:** After selecting the `roles:manage` permission in the permission browser, a **"Delegation Scope"** panel appears below automatically.
+  - Module checklist is shown — one checkbox per module
+  - Root admin sees all modules
+  - Delegated granter sees only modules within their own `module_scope` (ceiling rule — cannot delegate beyond own scope)
+- **Validation:** At least one module must be selected before save is enabled.
+- **DB:** None (client-side)
+
+#### Step D2: Save Delegation
+- **UI:** Included in the existing "Save Changes" or "Save Overrides" action — no separate save step
+- **API:** Existing permission save endpoints (`PUT /api/v1/roles/{roleId}/permissions` or `PUT /api/v1/employees/{employeeId}/permission-overrides`) receive an additional `delegationScope` field:
+  ```json
+  {
+    "permissionIds": ["roles-manage-uuid"],
+    "delegationScope": {
+      "moduleScope": ["calendar", "hr"]
+    }
+  }
+  ```
+- **Backend:** After saving the permission, atomically insert `permission_delegation_scopes` record
+  - Ceiling check: `moduleScope` must be subset of granter's own `module_scope`
+  - If granter is root admin (no `permission_delegation_scopes` record), any modules are allowed
+- **DB:** `user_permission_overrides` or `role_permissions` (existing) + `permission_delegation_scopes` (new)
+
+#### Step D3: Combined Scope Effect
+- The saved `module_scope` automatically governs two things:
+  1. Which modules the recipient can manage permissions for
+  2. Which `applies_to` values they can use when creating bypass grants (Path C)
+- No separate configuration needed — one setting covers both.
+
+#### Step D4: Confirmation
+- **UI:** Toast: "Permissions updated. [Employee] can now manage permissions for: Calendar, HR."
+
+---
+
 ## Permission Resolution Order
 
 The system resolves effective permissions in this order:
@@ -152,6 +237,9 @@ This effective permission set is embedded in the JWT access token claims.
 | Employee not found | `404 Not Found` returned | "Employee not found" |
 | Circular permission removal | Save blocked | "This change would lock out the last administrator. Operation cancelled" |
 | Concurrent edit conflict | `409 Conflict` returned | "Permissions were modified by another admin. Please refresh and try again" |
+| Bypass grant target outside granter's scope | Scope picker filters silently | Picker only shows accessible targets |
+| Delegated granter sets `All Features` bypass | Save blocked | "All Features bypass can only be granted by root administrators" |
+| Delegation scope exceeds granter's own scope | Save blocked | "You can only delegate modules within your own scope" |
 
 ## Events Triggered
 
@@ -160,6 +248,8 @@ This effective permission set is embedded in the JWT access token claims.
 - `AuditLogEntry` (action: `role.permissions.updated` or `user.permissions.overridden`) → [[modules/auth/audit-logging/overview|Audit Logging]]
 - SignalR: `permissions-changed` event to affected clients
 - SignalR: `force-token-refresh` event to specific user (for per-employee overrides)
+- `BypassGrantCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]]
+- `PermissionDelegationScopeCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
