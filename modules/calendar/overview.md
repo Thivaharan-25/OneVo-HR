@@ -69,6 +69,7 @@ public interface ICalendarConflictService
 
 1. **Unified calendar** — aggregates leave, holidays, review cycles, and custom events into one view via `source_type` + `source_id` polymorphic references.
 2. **Conflict detection** — `ICalendarConflictService` queries overlapping events for a given employee + date range. Excludes `leave` and `holiday` event types (holidays are already factored into leave day count). Severity: `review` and `company` events are **high**, `team` and `personal` are **medium**. See [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]].
+3. **WMS calendar — frontend merge only, no shared DB** — WMS project events (sprint starts, milestones, releases) are owned by the WMS backend. The ONEVO frontend calendar page fetches both ONEVO events (`GET /api/v1/calendar/events`) and WMS events (`GET {WMS_API}/calendar/events`) and merges them client-side. No sync job, no shared `calendar_events` table. WMS events are only fetched when `wms_access: true` in the user's JWT.
 
 ---
 

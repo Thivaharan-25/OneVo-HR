@@ -9,6 +9,8 @@
 
 Shift definitions, weekly schedule patterns, templates, and employee-specific assignments/overrides.
 
+**WMS bridge:** WMS reads shift data via the Availability bridge (`GET /api/v1/bridges/availability/{employeeId}`) to support sprint capacity planning and task assignment. The bridge exposes `shift.daily_start`, `shift.daily_end`, `shift.expected_daily_hours`, and `shift.working_days` — WMS uses these to calculate available capacity during a sprint period. ONEVO is canonical; WMS never stores shift data.
+
 ## Database Tables
 
 ### `shifts`
