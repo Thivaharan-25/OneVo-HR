@@ -125,15 +125,19 @@
 #### Step C2: Add a Bypass Grant
 - **UI:** Click **"Add Bypass Grant"**. A panel appears with three fields:
   1. **Scope Type** — dropdown: `Department` / `Person` / `Role`
-  2. **Scope Target** — searchable picker:
+  2. **Scope Target** — searchable picker (required — Save is blocked until a target is selected):
      - Department: dept tree filtered to granter's accessible depts
-     - Person: employee search filtered to granter's accessible employees
-     - Role: role list
+     - Person: employee search filtered to granter's accessible employee pool — all employees below the granter in the `reports_to_id` chain **plus** employees reachable via the granter's own broad (`applies_to IS NULL`) bypass grants. Feature-scoped bypasses (e.g. `applies_to = 'calendar'`) are excluded from this pool — a granter cannot re-delegate access they only have via a feature-specific bypass.
+     - Role: role list (picker not yet implemented in v1 — blocked at save until implemented)
   3. **Applies To** — dropdown:
      - Root admin sees: `All Features` + individual feature names (e.g., `Calendar`, `Teams`)
      - Delegated granter sees: only features within their own `module_scope` — no "All Features" option
   4. **Expires At** — optional date picker
-- **Validation:** Scope target must be within the granter's own accessible scope (ceiling rule). Delegated granters cannot set `Applies To = All Features`.
+- **Validation:**
+  - Scope target is required — the Save button is disabled until a valid target is selected for the chosen scope type.
+  - Scope target must be within the granter's own accessible scope (ceiling rule).
+  - Delegated granters cannot set `Applies To = All Features`.
+  - For Person scope: selected employee must be in granter's subordinate chain or reachable via a broad (`applies_to IS NULL`) bypass grant. Feature-scoped bypasses do not extend the Person picker pool.
 - **DB:** None (client-side selection)
 
 #### Step C3: Save Bypass Grant
