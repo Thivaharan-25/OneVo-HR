@@ -128,7 +128,7 @@
   2. **Scope Target** — searchable picker (required — Save is blocked until a target is selected):
      - Department: dept tree filtered to granter's accessible depts
      - Person: employee search filtered to granter's accessible employee pool — all employees below the granter in the `reports_to_id` chain **plus** employees reachable via the granter's own broad (`applies_to IS NULL`) bypass grants. Feature-scoped bypasses (e.g. `applies_to = 'calendar'`) are excluded from this pool — a granter cannot re-delegate access they only have via a feature-specific bypass.
-     - Role: role list (picker not yet implemented in v1 — blocked at save until implemented)
+     - Role: role list (picker not yet implemented in v1 — the Role option is visible in the Scope Type dropdown but selecting it leaves Scope Target empty, so the Save button remains disabled until a role picker is implemented)
   3. **Applies To** — dropdown:
      - Root admin sees: `All Features` + individual feature names (e.g., `Calendar`, `Teams`)
      - Delegated granter sees: only features within their own `module_scope` — no "All Features" option
