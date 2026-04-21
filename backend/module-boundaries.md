@@ -172,3 +172,62 @@ public void All_Repositories_Should_Extend_BaseRepository()
 - Reject any PR that adds a direct `DbContext.Set<T>()` call for another module's entity
 - Reject any PR that introduces a circular dependency
 - Reject any PR that adds business logic to SharedKernel
+
+## Module Independence Framework
+
+Every optional module follows this three-level contract:
+
+1. **STANDALONE** — Works with only Mandatory Core (Infrastructure + Auth + CoreHR identity). No optional module should hard-depend on another optional module.
+2. **INTEGRATION** — Registers event handlers for other modules' events when both are active for the tenant.
+3. **GRACEFUL DEGRADATION** — If a paired module is disabled, this module still works. The integration handler simply doesn't register.
+
+**Example — Leave module:**
+
+```
+Standalone:  Leave requests work without Payroll, without WMS, without WorkforcePresence
++ Payroll:   LeaveApproved → PayrollAdjustment handler activates
++ WMS:       LeaveApproved → WMS capacity warning handler activates
++ WorkforcePresence: LeaveApproved → shift marked absent
+Missing any: Leave still processes correctly, that integration just skips
+```
+
+### Integration Activation Rule
+
+A handler is registered **only if** both modules are enabled for the tenant:
+
+```csharp
+// In Leave module registration
+if (moduleRegistry.IsEnabled(tenantId, ModuleNames.Payroll))
+{
+    services.AddScoped<INotificationHandler<LeaveApprovedEvent>, 
+                       PayrollAdjustmentOnLeaveApprovedHandler>();
+}
+
+if (moduleRegistry.IsEnabled(tenantId, ModuleNames.WorkforcePresence))
+{
+    services.AddScoped<INotificationHandler<LeaveApprovedEvent>,
+                       MarkShiftAbsentOnLeaveApprovedHandler>();
+}
+```
+
+`ModuleRegistry.IsEnabled(tenantId, module)` is checked at startup per tenant and cached in Redis. Changing a tenant's module configuration clears the cache and re-evaluates on next request.
+
+## Integration Registry
+
+Auto-enabled integrations when both modules are active for a tenant. Each row is: Module A publishes domain event → Integration handler in Module B reacts → Module B updates state.
+
+| Module A | + Module B | Auto-enabled integration |
+|----------|------------|--------------------------|
+| Leave | WorkforcePresence | Approved leave marks shift as absent |
+| Leave | WMS (via bridge) | Leave approved → WMS capacity warning webhook |
+| Leave | Payroll | Approved unpaid leave → payroll deduction entry |
+| WorkforcePresence | ActivityMonitoring | Presence session correlates agent snapshots |
+| WorkforcePresence | WMS (time logs) | Overtime engine: presence + WMS task logs → `overtime_entry` |
+| ActivityMonitoring | ExceptionEngine | Agent snapshots → anomaly rule evaluation |
+| WMS (time logs) | Payroll | Overtime entries from WMS data → payroll line item |
+| WMS (productivity) | Performance | Monthly WMS scores → appraisal composite input |
+| WMS (productivity) | Payroll | Approved `bonus_grant` → payroll bonus line item |
+| CoreHR | WMS (via bridge) | EmployeeCreated/Terminated → WMS access provision/revoke webhook |
+| Skills | WMS (resource) | ONEVO validated skills → WMS resource matching (Skills bridge) |
+
+> **WMS integrations** are implemented as bridge webhooks, not in-process MediatR handlers. When ONEVO fires a domain event (e.g. `LeaveApprovedEvent`) and WMS is enabled for the tenant, a bridge handler calls the WMS webhook endpoint with the relevant payload.
