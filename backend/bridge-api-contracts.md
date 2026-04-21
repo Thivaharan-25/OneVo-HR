@@ -763,18 +763,18 @@ All bridge endpoints are versioned under `/api/v1/`. Breaking changes will be re
 
 ---
 
-## Phase 0 — Pending Sign-Off
+## Phase 0 — Sign-Off Record
 
-No Phase 1 backend code starts until all items below are marked ✅. These cannot be decided by the ONEVO team alone.
+All 6 decisions confirmed 2026-04-21. **Design Freeze: SIGNED. Phase 1 backend code may now begin.**
 
-| # | Question | Status | Owner |
-|---|----------|--------|-------|
-| 1 | **Bridge key scope:** Per-tenant (each tenant has its own bridge key) or per-system (one key for all WMS-to-ONEVO calls)? Per-tenant is more secure and recommended. | ⏳ Open | Both |
-| 2 | **WMS webhook URL + auth:** When ONEVO pushes to WMS (EmployeeCreated, LeaveApproved, etc.), what endpoint does WMS expose and what auth method (shared secret or API key)? | ⏳ Open | WMS Team |
-| 3 | **Retry policy:** If WMS posts time logs and ONEVO is down, does WMS retry? Proposed: exponential backoff, max 3 retries, 24h TTL. | ⏳ Open | Both |
-| 4 | **WMS foreign key format:** WMS task assignees MUST reference ONEVO `employee_id` (UUID), not `user_id` or email. WMS team must confirm this is stored correctly throughout. | ⏳ Open | WMS Team |
-| 5 | **Tenant linkage flow:** ONEVO creates tenant first → generates `tenant_id` → WMS stores as `onevo_tenant_id`. WMS team must confirm this storage pattern. | ⏳ Open | WMS Team |
-| 6 | **People Sync polling rate:** Max 1 poll/hour agreed? ONEVO pushes webhooks (EmployeeCreated, EmployeeTerminated) for real-time changes. | ⏳ Open | Both |
+| # | Decision | Status | Detail |
+|---|----------|--------|--------|
+| 1 | **Bridge key scope: per-tenant** | ✅ Confirmed | Each customer org gets its own bridge key. |
+| 2 | **WMS webhook auth: HMAC-SHA256 shared secret** | ✅ Confirmed | WMS generates secret, gives to ONEVO once. ONEVO signs every outbound webhook request body with HMAC-SHA256. WMS verifies. Prevents replay attacks and payload tampering. |
+| 3 | **Retry policy: exponential backoff, max 3 retries, 24h TTL** | ✅ Confirmed | WMS retries failed posts with exponential backoff. Entries expire after 24h. |
+| 4 | **WMS FK = ONEVO `employee_id` (UUID)** | ✅ Confirmed | Every user gets an `employees` row (even WMS-only users get a minimal identity shell). `employee_id` is the universal person identifier. WMS uses this UUID — not `user_id`, not email — as FK in tasks, time logs, project members, etc. |
+| 5 | **Tenant linkage: `onevo_tenant_id` in WMS workspace table only** | ✅ Confirmed | ONEVO creates tenant first → `tenant_id` → WMS stores as `onevo_tenant_id` in their root workspace table only. All other WMS tables chain through workspace membership. `tenant_id` also present in every JWT. |
+| 6 | **People Sync polling: max 1 poll/hour** | ✅ Confirmed | ONEVO pushes webhooks (EmployeeCreated, EmployeeTerminated) for real-time changes. Polling is a safety-net fallback only. |
 
 ---
 
