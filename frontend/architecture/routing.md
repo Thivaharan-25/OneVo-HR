@@ -11,6 +11,44 @@ Next.js App Router route groups organize the app into distinct layout contexts:
 
 > **No separate `(employee)` route group.** Employee self-service uses the same `(dashboard)` pages with permission-driven views. For example, `/people/leave/` shows own leave with `leave:read-own` and team leave with `leave:read-team`. This avoids duplicate pages and keeps the routing simple.
 
+## Two-Sidebar Architecture
+
+The ONEVO frontend has two distinct sidebar pillars, each backed by a different API source:
+
+| Sidebar | Route Prefix | API Source | Feature Gate |
+|:--------|:------------|:-----------|:-------------|
+| **HR Sidebar** | `/people`, `/org`, `/calendar` | ONEVO Backend | Always active |
+| **Workforce Sidebar** | `/workforce` | ONEVO Backend (presence, monitoring) + WMS API (projects, tasks) | `workforce` and/or `wms_access` |
+
+The Workforce sidebar has two sub-sections:
+
+```
+/workforce/
+  presence/     ← ONEVO Backend (WorkforcePresence module)
+  monitoring/   ← ONEVO Backend (ActivityMonitoring module)
+  wms/          ← WMS Backend (Projects, Tasks, Sprints, Chat, OKR)
+    projects/
+    tasks/
+    sprints/
+    chat/
+    okr/
+```
+
+**`/workforce/wms/*` is only rendered when `wms_access: true` in the JWT.** If the tenant does not have WMS enabled, the WMS sub-section is hidden from the sidebar and route access redirects to the Workforce home.
+
+### Unified Calendar View
+
+The calendar page aggregates HR events and WMS project events — no shared DB, frontend merge only:
+
+```typescript
+// app/(dashboard)/calendar/page.tsx
+const [hrEvents] = useQuery('/api/v1/calendar/events')       // ONEVO API
+const [wmsEvents] = useQuery(`${WMS_API_URL}/calendar/events`) // WMS API — only if wms_access
+const unified = mergeAndSort([...hrEvents, ...(wmsEvents ?? [])])
+```
+
+WMS events only fetched when `wms_access: true`. If WMS is unavailable, HR events still render.
+
 ## Route Guard Architecture
 
 ### Layer 1: Middleware (Edge Runtime)

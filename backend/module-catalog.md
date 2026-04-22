@@ -13,6 +13,42 @@ Inter-module communication:
 
 See [[backend/module-boundaries|Module Boundaries]] for boundary rules. Each module has its own detailed doc at `modules/{module-name}/overview.md`.
 
+## Unified Platform Model
+
+ONEVO and WMS coexist as **one platform** with two backends. The ONEVO frontend (Next.js) renders both an HR sidebar and a Workforce/WMS sidebar, consuming both backends.
+
+```
+ONEVO PLATFORM
+  ONEVO Frontend (Next.js)
+    ├── HR Sidebar          → ONEVO Backend (.NET 9)
+    └── Workforce Sidebar   → ONEVO Backend + WMS Backend
+                                      ↕ bridge contracts
+  ONEVO Backend                    WMS Backend
+  HR, Workforce, Auth,             Projects, Tasks,
+  Payroll, Notifications,          Sprints, Chat,
+  File Storage                     OKR, Analytics
+```
+
+**Key rule:** Entity ownership is exclusive. Every entity lives in exactly one backend. See [[backend/bridge-api-contracts|Bridge API Contracts]] for the full entity ownership map and conflict resolutions.
+
+## Product Configuration Matrix
+
+| Tier | Core | HR Pillar | Workforce Intel | WMS | Bridges |
+|------|:----:|:---------:|:---------------:|:---:|:-------:|
+| HR Management | ✓ | ✓ | ✗ | ✗ | — |
+| Work Management | ✓ | ✗ | ✗ | ✓ | People Sync only |
+| HR + Workforce Intel | ✓ | ✓ | ✓ | ✗ | — |
+| HR + Work Management | ✓ | ✓ | ✗ | ✓ | All 5 bridges |
+| Full Suite | ✓ | ✓ | ✓ | ✓ | All 5 bridges |
+
+**Core (always active):** Infrastructure + Auth + CoreHR identity shell + Notifications + SharedPlatform
+
+**Add-ons within HR Pillar:** Payroll, Performance, Advanced Skills, Documents
+
+**Add-ons within WMS:** Resource Management, OKR, Chat, Advanced Analytics
+
+> WMS-only tenants still get a minimal `employees` row per user — ONEVO `employee_id` is the universal person identifier used by WMS as a FK for task assignees, time logs, etc.
+
 ## Solution Structure
 
 ```
@@ -153,3 +189,17 @@ Cross-cutting: Notifications, Configuration, Calendar, Reporting Engine
 6. Document events in [[backend/messaging/event-catalog|Event Catalog]]
 7. Add ArchUnitNET tests
 8. Create sprint task in `current-focus/`
+
+## WMS — Consumed System (Not an ONEVO Module)
+
+WMS is built and owned by the WMS team. ONEVO consumes it via bridge contracts — it is **not** an ONEVO module and does **not** appear in the module registry above.
+
+| What ONEVO does | How |
+|-----------------|-----|
+| Read WMS data (projects, tasks) | WMS API called by ONEVO frontend |
+| Push employee data to WMS | People Sync bridge (Bridge 1) |
+| Receive time logs from WMS | Work Activity bridge (Bridge 3) |
+| Receive productivity scores | Productivity Metrics bridge (Bridge 4) |
+| Deliver WMS notifications | Notification push endpoint |
+
+Full bridge contracts: [[backend/bridge-api-contracts|Bridge API Contracts]]
