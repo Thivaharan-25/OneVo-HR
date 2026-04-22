@@ -7,7 +7,7 @@ Next.js App Router route groups organize the app into distinct layout contexts:
 | Group | Purpose | Layout | Auth Required |
 |:------|:--------|:-------|:--------------|
 | `(auth)` | Login, MFA, password reset | Centered card, no chrome | No |
-| `(dashboard)` | All authenticated views | Rail + Panel + Topbar + Breadcrumbs | Yes (permission-driven) |
+| `(dashboard)` | All authenticated views | Rail + Panel + Topbar + Breadcrumbs | Yes (permission + entity-context driven) |
 
 > **No separate `(employee)` route group.** Employee self-service uses the same `(dashboard)` pages with permission-driven views. For example, `/people/leave/` shows own leave with `leave:read-own` and team leave with `leave:read-team`. This avoids duplicate pages and keeps the routing simple.
 
@@ -36,12 +36,25 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
   response.headers.set('x-tenant-id', decoded.tenantId);
   response.headers.set('x-user-role', decoded.role);
+  // Entity context — drives data scope for WMS and HR data
+  response.headers.set('x-entity-id', decoded.activeEntityId ?? decoded.tenantId);
 
   // 4. Permission-based route gating (never check role names — check permission keys)
   // Sidebar and page content handle fine-grained permission checks via PermissionGate
 
   // 5. Feature-gated routes
   if (pathname.startsWith('/workforce') && !decoded.features?.includes('workforce')) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // WMS sub-routes require specific feature flags in addition to workforce access
+  if (pathname.startsWith('/workforce/projects') && !decoded.features?.includes('wms:projects')) {
+    return NextResponse.redirect(new URL('/workforce', request.url));
+  }
+  if (pathname.startsWith('/workforce/goals') && !decoded.features?.includes('wms:okr')) {
+    return NextResponse.redirect(new URL('/workforce', request.url));
+  }
+  if (pathname.startsWith('/chat') && !decoded.features?.includes('wms:chat')) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
@@ -138,6 +151,9 @@ const ROUTE_LABELS: Record<string, string> = {
   'workforce': 'Workforce',
   'live': 'Live Dashboard',
   'org': 'Organization',
+  'calendar': 'Calendar',
+  'shifts': 'Shifts',
+  'schedules': 'Schedules',
   'inbox': 'Inbox',
   'admin': 'Admin',
   'settings': 'Settings',
@@ -147,8 +163,10 @@ const ROUTE_LABELS: Record<string, string> = {
 // Dynamic segments resolved via API:
 // /people/employees/[id] → "People > Employees > John Doe"
 // /people/leave/calendar → "People > Leave > Calendar"
-// /workforce/live       → "Workforce > Live Dashboard"
-// /settings/alert-rules → "Settings > Alert Rules"
+// /workforce/live        → "Workforce > Live Dashboard"
+// /calendar/shifts       → "Calendar > Shifts"
+// /calendar/schedules    → "Calendar > Schedules"
+// /settings/alert-rules  → "Settings > Alert Rules"
 ```
 
 ## Navigation State
