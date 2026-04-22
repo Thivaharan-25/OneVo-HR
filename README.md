@@ -87,12 +87,12 @@ onevo-hr-brain/
 
 ## Delivery Timeline
 
-| Week | Focus | Key Modules |
-|:-----|:------|:-----------|
-| Week 1 (Apr 7-11) | Foundation | Infrastructure, Auth, Org Structure, Shared Platform, Agent Gateway |
-| Week 2 (Apr 14-18) | Core HR + Workforce Presence | Employee lifecycle, shifts, biometric, presence tracking |
-| Week 3 (Apr 21-25) | Leave + Monitoring | Leave policies, activity monitoring, identity verification, exception engine |
-| Week 4 (Apr 28-May 2) | Supporting + Analytics + Payroll | Exception engine, productivity analytics, payroll, documents, bridges |
+| Week                  | Focus                            | Key Modules                                                                  |
+| :-------------------- | :------------------------------- | :--------------------------------------------------------------------------- |
+| Week 1 (Apr 7-11)     | Foundation                       | Infrastructure, Auth, Org Structure, Shared Platform, Agent Gateway          |
+| Week 2 (Apr 14-18)    | Core HR + Workforce Presence     | Employee lifecycle, shifts, biometric, presence tracking                     |
+| Week 3 (Apr 21-25)    | Leave + Monitoring               | Leave policies, activity monitoring, identity verification, exception engine |
+| Week 4 (Apr 28-May 2) | Supporting + Analytics + Payroll | Exception engine, productivity analytics, payroll, documents, bridges        |
 
 ## Key Principles
 

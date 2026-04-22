@@ -7,7 +7,7 @@ Next.js App Router route groups organize the app into distinct layout contexts:
 | Group | Purpose | Layout | Auth Required |
 |:------|:--------|:-------|:--------------|
 | `(auth)` | Login, MFA, password reset | Centered card, no chrome | No |
-| `(dashboard)` | All authenticated views | Rail + Panel + Topbar + Breadcrumbs | Yes (permission-driven) |
+| `(dashboard)` | All authenticated views | Rail + Panel + Topbar + Breadcrumbs | Yes (permission + entity-context driven) |
 
 > **No separate `(employee)` route group.** Employee self-service uses the same `(dashboard)` pages with permission-driven views. For example, `/people/leave/` shows own leave with `leave:read-own` and team leave with `leave:read-team`. This avoids duplicate pages and keeps the routing simple.
 
@@ -74,6 +74,10 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
   response.headers.set('x-tenant-id', decoded.tenantId);
   response.headers.set('x-user-role', decoded.role);
+  // Entity context — drives data scope for WMS and HR data.
+  // activeEntityId is set when a user switches entities via the topbar switcher;
+  // falls back to tenantId (the user's home entity) if no switch has occurred.
+  response.headers.set('x-entity-id', decoded.activeEntityId ?? decoded.tenantId);
 
   // 4. Permission-based route gating (never check role names — check permission keys)
   // Sidebar and page content handle fine-grained permission checks via PermissionGate
@@ -83,9 +87,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // WMS sub-section requires wms_access claim in JWT
-  if (pathname.startsWith('/workforce/wms') && !decoded.wms_access) {
+  // WMS sub-routes require specific feature flags in addition to workforce access.
+  // These guards only run if the user already passed the workforce guard above.
+  if (pathname.startsWith('/workforce/projects') && !decoded.features?.includes('wms:projects')) {
     return NextResponse.redirect(new URL('/workforce', request.url));
+  }
+  if (pathname.startsWith('/workforce/goals') && !decoded.features?.includes('wms:okr')) {
+    return NextResponse.redirect(new URL('/workforce', request.url));
+  }
+  if (pathname.startsWith('/chat') && !decoded.features?.includes('wms:chat')) {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return response;
@@ -179,8 +190,10 @@ const ROUTE_LABELS: Record<string, string> = {
   'employees': 'Employees',
   'leave': 'Leave',
   'workforce': 'Workforce',
-  'live': 'Live Dashboard',
   'org': 'Organization',
+  'calendar': 'Calendar',
+  'shifts': 'Shifts',
+  'schedules': 'Schedules',
   'inbox': 'Inbox',
   'admin': 'Admin',
   'settings': 'Settings',
@@ -190,8 +203,9 @@ const ROUTE_LABELS: Record<string, string> = {
 // Dynamic segments resolved via API:
 // /people/employees/[id] → "People > Employees > John Doe"
 // /people/leave/calendar → "People > Leave > Calendar"
-// /workforce/live       → "Workforce > Live Dashboard"
-// /settings/alert-rules → "Settings > Alert Rules"
+// /calendar/shifts       → "Calendar > Shifts"
+// /calendar/schedules    → "Calendar > Schedules"
+// /settings/alert-rules  → "Settings > Alert Rules"
 ```
 
 ## Navigation State
@@ -200,11 +214,7 @@ const ROUTE_LABELS: Record<string, string> = {
 // Sidebar active state derived from pathname
 const pathname = usePathname();
 const activePillar = pathname.split('/')[1]; // 'people' | 'workforce' | 'org' | 'calendar' | 'inbox' | 'admin' | 'settings'
-const activeSection = pathname.split('/')[2]; // 'presence' | 'monitoring' | 'wms' | 'employees' | 'leave' | etc.
-const activeItem = pathname.split('/')[3];    // 'projects' | 'tasks' | 'sprints' | 'live' | etc.
-
-// WMS sub-section active when inside /workforce/wms/*
-const isWmsSection = activePillar === 'workforce' && activeSection === 'wms';
+const activeItem = pathname.split('/')[2];   // 'employees' | 'leave' | 'projects' | etc.
 ```
 
 ## Error Routes
