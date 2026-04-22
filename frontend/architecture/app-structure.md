@@ -2,7 +2,7 @@
 
 ## Route Tree
 
-All 22 backend modules mapped to ~41 frontend pages. Single route tree with permission-driven views (no separate employee self-service group).
+All 22 backend modules + 9 WMS modules mapped to ~63 frontend pages. Single route tree with permission-driven views (no separate employee self-service group).
 
 ### Authorization Model
 
@@ -186,11 +186,11 @@ app/
 
 | # | Backend Module | Route(s) | Notes |
 |---|---|---|-------|
-| 1 | activity-monitoring | `/workforce` (card productivity data), `/workforce/[id]` (activity detail) | Replaces Activity tab |
+| 1 | activity-monitoring | `/workforce` (card productivity data), `/workforce/[employeeId]` (activity detail) | Replaces Activity tab |
 | 2 | agent-gateway | `/admin/agents/` | Fleet overview, agent detail |
 | 3 | auth | `(auth)/`, `/admin/users/`, `/admin/roles/` | Login/MFA + user/role management |
 | 4 | calendar | `/calendar` | Unified (leave, holidays, reviews) |
-| 5 | configuration | `/settings/general`, `/settings/system` | Tenant config + system health/feature controls |
+| 5 | configuration | `/settings/general`, `/settings/monitoring` | Tenant config + overrides |
 | 6 | core-hr | `/people/employees/` | Profile + lifecycle |
 | 7 | documents | Employee detail `#documents` section | Permission-gated section in employee profile |
 | 8 | exception-engine | `/settings/alert-rules`, escalated cards on `/workforce` | Rule config in settings; alerts surface as card escalation |
@@ -210,7 +210,7 @@ app/
 | 22 | workforce-presence | `/workforce` (presence cards) | Replaces Online Status tab |
 | WMS | project | `/workforce/projects/` | Project management |
 | WMS | task | `/workforce/projects/[id]/board`, `/workforce/my-work` | Task management |
-| WMS | planning | `/workforce/planner`, `/workforce/projects/[id]/sprints` | Sprints, boards, roadmap |
+| WMS | planning | `/workforce/planner`, `/workforce/projects/[id]/sprints`, `/workforce/projects/[id]/roadmap` | Sprints, boards, roadmap |
 | WMS | okr | `/workforce/goals/` | Goals and OKRs |
 | WMS | collab (docs/wiki) | `/workforce/docs/` | Documents and Wiki |
 | WMS | collab (comments) | Embedded within tasks, projects, docs | Contextual, not a nav item |
@@ -222,7 +222,7 @@ app/
 
 ### Dashboard Layout (`(dashboard)/layout.tsx`)
 - **Icon Rail:** 56px sidebar with 9 pillar icons, permission-gated via `hasPermission()`. Starts below the topbar (`top-12`).
-- **Topbar:** Full-width (`left-0 right-0`), 48px height. Shows legal entity switcher (left), command palette search (center), notification bell + theme toggle + avatar (right). See `topbar.md`.
+- **Topbar:** Full-width (`left-0 right-0`), 48px height. Shows legal entity switcher (left), command palette search (center), notification bell + theme toggle + avatar (right). See [[frontend/architecture/topbar|Topbar Architecture]].
 - **Expansion Panel:** 220px glass panel, slides out on pillar hover/click
 - **Pillar visibility:** Permission-gated via `hasPermission()` — never hardcode role names
 
