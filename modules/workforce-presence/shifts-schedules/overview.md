@@ -9,6 +9,8 @@
 
 Shift definitions, weekly schedule patterns, templates, and employee-specific assignments/overrides.
 
+> **UI entry point:** Shifts & Schedules surfaces in the **Calendar sidebar**, not under the Workforce section. The backend module and all API routes remain under Workforce Presence. See [[modules/calendar/overview|Calendar Module]].
+
 ## Database Tables
 
 ### `shifts`
