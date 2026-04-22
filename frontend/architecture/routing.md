@@ -36,7 +36,9 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
   response.headers.set('x-tenant-id', decoded.tenantId);
   response.headers.set('x-user-role', decoded.role);
-  // Entity context — drives data scope for WMS and HR data
+  // Entity context — drives data scope for WMS and HR data.
+  // activeEntityId is set when a user switches entities via the topbar switcher;
+  // falls back to tenantId (the user's home entity) if no switch has occurred.
   response.headers.set('x-entity-id', decoded.activeEntityId ?? decoded.tenantId);
 
   // 4. Permission-based route gating (never check role names — check permission keys)
@@ -47,7 +49,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // WMS sub-routes require specific feature flags in addition to workforce access
+  // WMS sub-routes require specific feature flags in addition to workforce access.
+  // These guards only run if the user already passed the workforce guard above.
   if (pathname.startsWith('/workforce/projects') && !decoded.features?.includes('wms:projects')) {
     return NextResponse.redirect(new URL('/workforce', request.url));
   }
@@ -149,7 +152,6 @@ const ROUTE_LABELS: Record<string, string> = {
   'employees': 'Employees',
   'leave': 'Leave',
   'workforce': 'Workforce',
-  'live': 'Live Dashboard',
   'org': 'Organization',
   'calendar': 'Calendar',
   'shifts': 'Shifts',
@@ -163,7 +165,6 @@ const ROUTE_LABELS: Record<string, string> = {
 // Dynamic segments resolved via API:
 // /people/employees/[id] → "People > Employees > John Doe"
 // /people/leave/calendar → "People > Leave > Calendar"
-// /workforce/live        → "Workforce > Live Dashboard"
 // /calendar/shifts       → "Calendar > Shifts"
 // /calendar/schedules    → "Calendar > Schedules"
 // /settings/alert-rules  → "Settings > Alert Rules"
@@ -175,7 +176,7 @@ const ROUTE_LABELS: Record<string, string> = {
 // Sidebar active state derived from pathname
 const pathname = usePathname();
 const activePillar = pathname.split('/')[1]; // 'people' | 'workforce' | 'org' | 'calendar' | 'inbox' | 'admin' | 'settings'
-const activeItem = pathname.split('/')[2];   // 'employees' | 'leave' | 'live' | etc.
+const activeItem = pathname.split('/')[2];   // 'employees' | 'leave' | 'projects' | etc.
 ```
 
 ## Error Routes
