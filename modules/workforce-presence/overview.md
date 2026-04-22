@@ -154,6 +154,24 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 
 ---
 
+## Frontend — Presence Card View
+
+The workforce-presence module surfaces on the Workforce pillar default screen (`/workforce`) as a live card grid.
+
+**Card per employee shows:**
+- Online status dot — sourced from this module (clocked-in, break, offline)
+- Productivity score — sourced from productivity-analytics module
+- Current task — sourced from WMS task module
+- Agent alert banner — sourced from exception-engine (when flagged)
+
+**Replaced:** The previous 3-tab design (Activity tab, Work Insights tab, Online Status tab) is replaced by this single card grid. Online status is embedded in each card. Productivity is embedded in each card. Activity is the drill-down at `/workforce/[employeeId]`.
+
+**Agent escalation:** When the exception-engine or agent-gateway detects an issue (missed punch, biometric anomaly, late clock-in), the employee's card receives a red alert banner and is sorted to the top of the grid.
+
+See [[Userflow/Workforce-Presence/presence-overview|Presence Overview]] for the full flow.
+
+---
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |

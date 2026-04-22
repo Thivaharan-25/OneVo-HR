@@ -26,7 +26,22 @@
       "Bash(ls current-focus/*.md)",
       "Bash(xargs tail:*)",
       "Bash(find . -name \"*.md\" -type f -exec grep -l \"\\\\[\\\\[\" {} \\\\;)",
-      "mcp__plugin_context-mode_context-mode__ctx_stats"
+      "mcp__plugin_context-mode_context-mode__ctx_stats",
+      "Bash(git worktree *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(/c/Users/User/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh *)",
+      "Bash(SCREEN_DIR=\"/c/Users/User/OneDrive/Documents/light/onevo-hr-brain/.superpowers/brainstorm/5084-1776607940/content\" STATE_DIR=\"/c/Users/User/OneDrive/Documents/light/onevo-hr-brain/.superpowers/brainstorm/5084-1776607940/state\" node *)",
+      "Bash(git -C \"C:/Users/User/OneDrive/Documents/light/onevo-hr-brain\" add demo/src/modules/workforce/tabs/OverviewTab.tsx)",
+      "Bash(git -C C:/Users/User/OneDrive/Documents/light/onevo-hr-brain commit -m ' *)",
+      "Bash(git -C \"C:/Users/User/OneDrive/Documents/light/onevo-hr-brain/demo\" add src/modules/workforce/tabs/OverviewTab.tsx)",
+      "Bash(git -C C:/Users/User/OneDrive/Documents/light/onevo-hr-brain/demo commit -m ' *)",
+      "Bash(git -C \"C:/Users/User/OneDrive/Documents/light/onevo-hr-brain\" add demo)",
+      "Bash(npx tsc *)",
+      "Bash(git -C /c/Users/User/OneDrive/Documents/light/onevo-hr-brain/.worktrees/bypass-grant-person-picker submodule status)",
+      "Bash(git *)",
+      "Bash(python3 *)"
     ]
   }
 }

@@ -5,94 +5,74 @@
 All colors defined as CSS custom properties for light/dark mode support.
 
 ```css
-/* globals.css */
-:root {
-  /* Brand — Violet Electric */
-  --primary: 263 70% 50.4%;           /* #7c3aed */
-  --primary-hover: 263 78% 50.2%;     /* #6d28d9 */
-  --primary-light: 258 90% 66.3%;     /* #8b5cf6 */
-  --primary-muted: 258 90% 76.1%;     /* #a78bfa */
-  --primary-foreground: 0 0% 98%;
-  --primary-subtle: 258 90% 66.3% / 0.04;
-  --primary-glow: 258 90% 66.3% / 0.25;
+/* CSS custom properties — applied via data-theme attribute on <html> */
 
-  /* Backgrounds */
-  --background: 240 10% 3.9%;          /* #09090b */
-  --foreground: 0 0% 98%;              /* #fafafa */
-  --card: 240 5.9% 10%;                /* #18181b */
-  --card-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;             /* #27272a */
-  --muted-foreground: 240 5% 64.9%;    /* #a1a1aa */
-
-  /* Borders */
-  --border: 0 0% 100% / 0.06;
-  --border-hover: 0 0% 100% / 0.1;
-  --ring: 263 70% 50.4%;
-
-  /* Status (fixed, not theme-dependent) */
-  --status-active: 142 71% 45.3%;      /* #22c55e */
-  --status-warning: 38 92% 50.2%;      /* #f59e0b */
-  --status-critical: 0 84.2% 60.2%;    /* #ef4444 */
-  --status-info: 189 94% 42.7%;        /* #06b6d4 */
-  --status-partial: 24.6 95% 53.1%;    /* #f97316 */
-
-  /* Severity */
-  --severity-info: 189 94% 42.7%;
-  --severity-warning: 38 92% 50.2%;
-  --severity-critical: 0 84.2% 60.2%;
-
-  /* Sidebar */
-  --sidebar-background: 240 10% 3.9% / 0.85;
-  --sidebar-foreground: 0 0% 98%;
-
-  /* Glass surfaces */
-  --glass-bg: 240 33% 5% / 0.85;
-  --glass-border: 0 0% 100% / 0.06;
-  --glass-glow: 263 70% 50.4% / 0.15;
+[data-theme="dark"] {
+  --bg-base:       #0a0a0a;
+  --bg-surface:    #111111;
+  --bg-elevated:   #1a1a1a;
+  --bg-overlay:    #222222;
+  --bg-hover:      #2a2a2a;
+  --border:        #2a2a2a;
+  --border-soft:   #1f1f1f;
+  --fg-1:          #f5f5f5;   /* primary text */
+  --fg-2:          #a3a3a3;   /* secondary text */
+  --fg-3:          #666666;   /* muted text */
+  --fg-4:          #3d3d3d;   /* disabled / separator */
+  --accent-subtle: #1e1e1e;   /* active item background */
+  --accent-border: #333333;   /* active item border */
+  --success:       #22c55e;
+  --warning:       #f59e0b;
+  --danger:        #ef4444;
+  --info:          #3b82f6;
 }
 
-.light {
-  --background: 0 0% 98%;              /* #fafafa */
-  --foreground: 240 10% 3.9%;          /* #09090b */
-  --card: 0 0% 100%;                   /* #ffffff */
-  --card-foreground: 240 10% 3.9%;
-  --muted: 240 4.8% 95.9%;             /* #f4f4f5 */
-  --muted-foreground: 240 3.8% 46.1%;  /* #71717a */
-  --border: 240 5.9% 90%;              /* #e4e4e7 */
-  --border-hover: 240 5.9% 85%;
-  --sidebar-background: 0 0% 100% / 0.7;
-  --glass-bg: 0 0% 100% / 0.7;
-  --glass-border: 0 0% 0% / 0.06;
+[data-theme="light"] {
+  --bg-base:       #f5f5f5;
+  --bg-surface:    #ffffff;
+  --bg-elevated:   #fafafa;
+  --bg-overlay:    #f0f0f0;
+  --bg-hover:      #ebebeb;
+  --border:        #e5e5e5;
+  --border-soft:   #efefef;
+  --fg-1:          #0a0a0a;
+  --fg-2:          #525252;
+  --fg-3:          #a3a3a3;
+  --fg-4:          #d4d4d4;
+  --accent-subtle: #f0f0f0;
+  --accent-border: #d4d4d4;
+  --success:       #16a34a;
+  --warning:       #d97706;
+  --danger:        #dc2626;
+  --info:          #2563eb;
 }
 ```
 
 ## Semantic Color Usage
 
-| Purpose | Token | CSS Variable |
-|:--------|:------|:-------------|
-| Primary actions | `text-primary`, `bg-primary` | `--primary` |
-| Primary hover | `hover:bg-primary-hover` | `--primary-hover` |
-| Active/selected accent | `text-primary-light` | `--primary-light` |
-| Muted accent text | `text-primary-muted` | `--primary-muted` |
-| Subtle hover tint | `bg-primary-subtle` | `--primary-subtle` |
-| Glow effects | `shadow-primary-glow` | `--primary-glow` |
-| Page background | `bg-background` | `--background` |
-| Card surface | `bg-card` | `--card` |
-| Subtle background | `bg-muted` | `--muted` |
-| Secondary text | `text-muted-foreground` | `--muted-foreground` |
-| Borders | `border` | `--border` |
-| Glass surface | `bg-glass` | `--glass-bg` |
-| Glass border | `border-glass` | `--glass-border` |
-| Active/online | `text-status-active` | `--status-active` |
-| Warning | `text-status-warning` | `--status-warning` |
-| Critical/error | `text-status-critical` | `--status-critical` |
-| Info/on leave | `text-status-info` | `--status-info` |
+| Purpose | Token |
+|:--------|:------|
+| Page background | `bg-[var(--bg-base)]` |
+| Card / panel surface | `bg-[var(--bg-surface)]` |
+| Elevated surface | `bg-[var(--bg-elevated)]` |
+| Hover state | `bg-[var(--bg-hover)]` |
+| Primary text | `text-[var(--fg-1)]` |
+| Secondary text | `text-[var(--fg-2)]` |
+| Muted / label text | `text-[var(--fg-3)]` |
+| Separator / disabled | `text-[var(--fg-4)]` |
+| Border | `border-[var(--border)]` |
+| Soft border | `border-[var(--border-soft)]` |
+| Active item bg | `bg-[var(--accent-subtle)]` |
+| Active item border | `border-[var(--accent-border)]` |
+| Online / success | `text-[var(--success)]` |
+| Warning | `text-[var(--warning)]` |
+| Error / critical | `text-[var(--danger)]` |
+| Info | `text-[var(--info)]` |
 
 ## Gradients
 
 | Name | Value | Usage |
 |:-----|:------|:------|
-| Primary gradient | `linear-gradient(135deg, #7c3aed, #8b5cf6)` | Primary action buttons |
 | Chart fill | `linear-gradient(180deg, #7c3aed20, transparent)` | Area chart fills |
 
 ## Related

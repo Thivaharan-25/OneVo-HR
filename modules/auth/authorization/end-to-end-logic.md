@@ -54,10 +54,13 @@ User logs in or refreshes token
 
 ```
 Any endpoint returning employee-related data
-  -> Controller calls service with IHierarchyScope
-    -> HierarchyScopeService.GetSubordinateIdsAsync(currentUserId, ct)
-      -> 1. If current user is Super Admin -> return ALL employee IDs (no scoping)
-      -> 2. Query employees table with recursive CTE:
+  -> Controller calls service with IHierarchyScope and optional featureContext
+    -> HierarchyScopeService.GetSubordinateIdsAsync(currentUserId, featureContext?, ct)
+      -> Returns HierarchyScopeResult { subordinateIds: Set<Guid>, bypassIds: Set<Guid> }
+
+      SUBORDINATE RESOLUTION (unchanged):
+      -> 1. If current user is Super Admin -> subordinateIds = ALL employee IDs
+      -> 2. Otherwise: recursive CTE on reports_to_id
            WITH RECURSIVE subordinates AS (
              SELECT id FROM employees WHERE reports_to_id = @currentEmployeeId
              UNION ALL
@@ -65,9 +68,63 @@ Any endpoint returning employee-related data
              INNER JOIN subordinates s ON e.reports_to_id = s.id
            )
            SELECT id FROM subordinates
-      -> 3. Cache result in Redis (key: `hierarchy:{tenantId}:{userId}`, TTL: 5 min)
-      -> 4. Return Set<Guid> of subordinate employee IDs
-    -> Service applies WHERE employee_id IN (@subordinateIds) to all queries
+      -> 3. Cache in Redis (key: `hierarchy:{tenantId}:{userId}`, TTL: 5 min)
+
+      BYPASS RESOLUTION (new):
+      -> 4. If featureContext IS PROVIDED:
+           SELECT * FROM hierarchy_scope_exceptions
+           WHERE tenant_id = @tenantId
+             AND granted_to_employee_id = @currentUserId
+             AND (applies_to IS NULL OR applies_to = @featureContext)
+             AND (expires_at IS NULL OR expires_at > NOW())
+         If featureContext IS NULL:
+           SELECT * FROM hierarchy_scope_exceptions
+           WHERE tenant_id = @tenantId
+             AND granted_to_employee_id = @currentUserId
+             AND applies_to IS NULL
+             AND (expires_at IS NULL OR expires_at > NOW())
+         NOTE: applies_to = NULL comparison is always false in SQL —
+               the two branches MUST remain separate.
+      -> 5. For each exception record, expand scope_id into employee IDs:
+           - scope_type = 'department': SELECT id FROM employees WHERE department_id = scope_id
+           - scope_type = 'people':     { scope_id }
+           - scope_type = 'role':       SELECT employee_id FROM user_roles WHERE role_id = scope_id
+
+      CALLER CONTRACT:
+      -> Services apply WHERE employee_id IN (@subordinateIds) to base queries
+      -> bypassIds are ALWAYS appended after any additional filters
+         (e.g. team creation dept filter applies to subordinateIds only, not bypassIds)
+      -> Flows NOT passing featureContext only receive applies_to IS NULL bypasses (safe default)
+```
+
+## Bypass Grant Management
+
+### Create Bypass Grant
+
+```
+POST /api/v1/employees/{employeeId}/bypass-grants
+  -> Requires roles:manage
+  -> BypassGrantService.CreateAsync(grantorId, targetEmployeeId, dto)
+    -> 1. Resolve granter's accessible scope via IHierarchyScope
+    -> 2. Verify dto.scopeId is within granter's accessible scope (ceiling rule)
+    -> 3. If granter has permission_delegation_scopes record:
+           - Verify dto.appliesTo is within module_scope
+           - Block dto.appliesTo = null (All Features) for delegated granters
+    -> 4. Insert hierarchy_scope_exceptions record
+    -> 5. Invalidate bypass cache for targetEmployeeId
+    -> 6. Audit log entry
+```
+
+### Permission Delegation Scope
+
+```
+Created atomically when roles:manage is granted (Path A or Path B in permission assignment)
+  -> PermissionDelegationService.CreateAsync(grantorId, recipientId, moduleScope[])
+    -> 1. Resolve granter's own module_scope (from permission_delegation_scopes)
+           If no record: granter is root admin, any modules allowed
+    -> 2. Verify moduleScope is strict subset of granter's own module_scope
+    -> 3. Insert permission_delegation_scopes record
+    -> 4. Audit log entry
 ```
 
 ## Grant Feature Access to Role or Employee

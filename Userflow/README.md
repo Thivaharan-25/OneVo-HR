@@ -123,7 +123,9 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
-| [[Userflow/Workforce-Presence/shift-schedule-setup\|Shift Schedule Setup]] | Define shifts, assign schedules | Documented | MUST |
+| [[Userflow/Workforce-Presence/shift-schedule-setup\|Shift Schedule Setup]] | Define shifts, assign schedules — UI entry via Calendar sidebar, backend in Workforce Presence | Documented | MUST |
+| [[Userflow/Workforce-Presence/presence-overview\|Presence Overview]] | Live card grid, agent escalation sort, card anatomy | Documented | MUST |
+| [[Userflow/Workforce-Presence/employee-activity-detail\|Employee Activity Detail]] | Activity timeline, filters (date/task/project), productivity breakdown | Documented | MUST |
 | [[Userflow/Workforce-Presence/presence-session-view\|Presence Session View]] | View clock-in/out, active sessions | Documented | MUST |
 | [[Userflow/Workforce-Presence/attendance-correction\|Attendance Correction]] | Submit/approve attendance corrections | Documented | SHOULD |
 | [[Userflow/Workforce-Presence/overtime-management\|Overtime Management]] | Overtime requests and approval | Documented | SHOULD |
@@ -258,6 +260,24 @@ These flows track chain reactions across multiple modules — when one action tr
 | [[Userflow/Configuration/monitoring-toggles\|Monitoring Toggles]] | Per-feature monitoring on/off | Documented | SHOULD |
 | [[Userflow/Configuration/employee-override\|Employee Override]] | Override settings for specific employee | Documented | SHOULD |
 | [[Userflow/Configuration/retention-policy-setup\|Retention Policy Setup]] | Data retention configuration | Documented | SHOULD |
+
+### Work Management — `workforce:read` + feature-specific permissions
+
+| Flow | Description | Status | Priority |
+|:-----|:------------|:-------|:---------|
+| [[Userflow/Work-Management/wm-overview\|WMS Overview]] | Module map, ownership, HR integration points | Documented | MUST |
+| [[Userflow/Work-Management/project-flow\|Project Management]] | Project CRUD, membership, milestones, change control | Documented | MUST |
+| [[Userflow/Work-Management/task-flow\|Task Management]] | Task lifecycle, bugs, submission, approval | Documented | MUST |
+| [[Userflow/Work-Management/planning-flow\|Planning — Sprints and Boards]] | Sprints, boards, roadmap, releases | Documented | MUST |
+| [[Userflow/Work-Management/goals-okr-flow\|Goals and OKRs]] | Objectives, key results, check-ins, alignment | Documented | MUST |
+| [[Userflow/Work-Management/time-tracking-flow\|Time Tracking]] | Time logs, timesheets, overtime and attendance connections | Documented | MUST |
+| [[Userflow/Work-Management/resource-flow\|Resource Management]] | Capacity, skills, allocation planning | Documented | MUST |
+
+### Chat — `chat:read`
+
+| Flow | Description | Status | Priority |
+|:-----|:------------|:-------|:---------|
+| [[Userflow/Chat/chat-overview\|Chat Overview]] | Channels, DMs, messages, reactions, file attachments | Documented | MUST |
 
 ---
 

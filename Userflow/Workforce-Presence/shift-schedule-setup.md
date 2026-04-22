@@ -15,12 +15,12 @@
 ## Flow Steps
 
 ### Step 1: Create Shift Definition
-- **UI:** Sidebar → Workforce → Shifts → "Create Shift" → enter: name (e.g., "Morning"), start time (09:00), end time (18:00), break duration (60 min), grace period for late (15 min)
+- **UI:** Calendar sidebar → Shifts → "Create Shift" → enter: name (e.g., "Morning"), start time (09:00), end time (18:00), break duration (60 min), grace period for late (15 min)
 - **API:** `POST /api/v1/workforce/shifts`
 - **DB:** `shifts` — record created
 
 ### Step 2: Create Schedule Template
-- **UI:** Workforce → Schedules → "Create Template" → name template → assign shifts per day of week (Mon-Fri: Morning, Sat-Sun: Off) → supports rotating schedules
+- **UI:** Calendar sidebar → Schedules → "Create Template" → name template → assign shifts per day of week (Mon-Fri: Morning, Sat-Sun: Off) → supports rotating schedules
 - **API:** `POST /api/v1/workforce/schedule-templates`
 - **DB:** `schedule_templates`
 
@@ -63,3 +63,13 @@
 
 - [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]]
 - [[modules/workforce-presence/overview|Workforce Presence]]
+
+## Connection to Work Management
+
+Shift schedule data from this flow feeds directly into WMS Resource Management:
+
+- **Capacity baseline:** Each employee's scheduled hours per day/week (from their shift pattern) become the capacity baseline in WMS Resource Planning (`CAPACITY_SNAPSHOT`).
+- **Overtime threshold:** When an employee's WMS time logs exceed their scheduled shift hours, the excess is flagged as potential overtime. The overtime entry (`OVERTIME_ENTRY`) is created automatically when the timesheet is approved.
+- **Availability for sprint planning:** Resource management uses scheduled hours to determine how many hours an employee can realistically be allocated to a project sprint.
+
+See [[Userflow/Work-Management/time-tracking-flow|Time Tracking Flow]] and [[Userflow/Work-Management/resource-flow|Resource Management Flow]].

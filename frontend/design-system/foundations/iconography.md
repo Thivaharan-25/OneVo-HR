@@ -14,7 +14,7 @@ import { Users, Calendar, BarChart3, AlertTriangle } from 'lucide-react';
 |:-----|:------|:-------|:------|
 | `xs` | `h-3 w-3` | 12px | Inline with caption text, badge icons |
 | `sm` | `h-4 w-4` | 16px | Default — buttons, menu items, table actions, form labels |
-| `md` | `h-5 w-5` | 20px | Sidebar nav items, stat card icons |
+| `md` | `h-5 w-5` | 20px | Stat card icons, page feature icons |
 | `lg` | `h-6 w-6` | 24px | Page header icons, empty state illustrations |
 | `xl` | `h-8 w-8` | 32px | Feature cards, onboarding steps |
 | `2xl` | `h-12 w-12` | 48px | Empty state hero, error page |
@@ -87,15 +87,15 @@ import { Users, Calendar, BarChart3, AlertTriangle } from 'lucide-react';
 
 ### Sidebar Nav Item
 ```tsx
-<IconRailItem icon={Users} pillar="people" active={isActive} />
-
-// Renders (icon rail — glass styling, violet glow on active):
+// Icon rail — neutral active state, 16px icon
 <button className={cn(
-  "flex items-center justify-center w-10 h-10 rounded-xl transition-all",
-  "glass-surface",                          // backdrop-blur + semi-transparent bg
-  isActive && "ring-1 ring-violet-500/50 shadow-[0_0_12px_rgba(139,92,246,0.35)]"
+  'flex flex-col items-center justify-center py-3 rounded-lg transition-colors duration-150',
+  isActive
+    ? 'text-[var(--fg-1)]'
+    : 'text-[var(--fg-3)] hover:text-[var(--fg-2)] hover:bg-[var(--bg-hover)]'
 )}>
-  <Users className="h-5 w-5" />
+  <Users size={16} strokeWidth={isActive ? 2 : 1.75} />
+  {isActive && <span className="mt-1.5 w-1 h-1 rounded-full bg-[var(--fg-1)]" />}
 </button>
 ```
 

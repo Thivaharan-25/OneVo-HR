@@ -13,6 +13,8 @@
 
 Company-wide and team calendar events. Aggregates leave, holidays, review cycles, and custom events into a unified calendar view.
 
+The Calendar's sidebar also surfaces three workforce management features: **Shifts & Schedules** (shift creation, schedule templates, employee assignments), **Attendance Correction** (manager corrections to presence data), and **Overtime** (overtime request and approval). The backend logic for all three lives in [[modules/workforce-presence/overview|Workforce Presence]]; the UI entry points are the Calendar sidebar panel.
+
 ---
 
 ## Dependencies
@@ -56,9 +58,13 @@ public interface ICalendarConflictService
 | `description` | `text` | |
 | `start_date` | `timestamptz` | |
 | `end_date` | `timestamptz` | |
-| `event_type` | `varchar(30)` | `company`, `team`, `personal`, `leave`, `holiday`, `review` |
-| `source_type` | `varchar(30)` | `manual`, `leave_request`, `holiday`, `review_cycle` |
+| `event_type` | `varchar(30)` | `meeting`, `company`, `team`, `personal`, `leave`, `holiday`, `training`, `out_of_office`, `review` |
+| `source_type` | `varchar(30)` | `manual`, `leave_request`, `holiday`, `review_cycle`, `external_sync` |
 | `source_id` | `uuid` | Polymorphic reference |
+| `audience_type` | `varchar(20)` | `tenant`, `department`, `team`, `individual` |
+| `audience_id` | `uuid` | FK → departments/teams/employees; null for tenant-wide |
+| `color` | `varchar(7)` | Hex color; nullable |
+| `recurrence` | `varchar(20)` | `none`, `daily`, `weekly`, `monthly` |
 | `visibility` | `varchar(20)` | `public`, `team`, `private` |
 | `created_by_id` | `uuid` | FK → users |
 | `created_at` | `timestamptz` | |
@@ -68,7 +74,9 @@ public interface ICalendarConflictService
 ## Key Business Rules
 
 1. **Unified calendar** — aggregates leave, holidays, review cycles, and custom events into one view via `source_type` + `source_id` polymorphic references.
-2. **Conflict detection** — `ICalendarConflictService` queries overlapping events for a given employee + date range. Excludes `leave` and `holiday` event types (holidays are already factored into leave day count). Severity: `review` and `company` events are **high**, `team` and `personal` are **medium**. See [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]].
+2. **Conflict detection** — `ICalendarConflictService` queries overlapping events for a given employee + date range. Excludes `leave` and `holiday` event types. Severity: `review` and `company` events are **high**, `team` and `personal` are **medium**. See [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]].
+3. **Hierarchy-scoped audience** — `audience_type` determines who receives the event. Available options are filtered by `IHierarchyScope`: a user can only target entities in their reporting chain. Super Admin bypasses scoping. For `department`/`team` audiences, participants are resolved server-side before conflict checks run.
+4. **External sync** — events with `source_type = external_sync` are read-only; they cannot be edited, deleted, or dragged.
 
 ---
 
@@ -78,13 +86,13 @@ public interface ICalendarConflictService
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/calendar` | Authenticated | Calendar events for date range |
 | GET | `/api/v1/calendar/conflicts` | `leave:create` or `leave:approve` | Get conflicts for employee + date range |
-| POST | `/api/v1/calendar` | Authenticated | Create event |
-| PUT | `/api/v1/calendar/{id}` | Authenticated | Update event |
-| DELETE | `/api/v1/calendar/{id}` | Authenticated | Delete event |
+| POST | `/api/v1/calendar` | `calendar:write` | Create event |
+| PUT | `/api/v1/calendar/{id}` | `calendar:write` | Update event (reschedule via drag-and-drop uses this) |
+| DELETE | `/api/v1/calendar/{id}` | `calendar:write` | Delete event |
 
 ## Features
 
-- [[modules/calendar/calendar-events/overview|Calendar Events]] — Company, team, personal, leave, holiday, and review events
+- [[modules/calendar/calendar-events/overview|Calendar Events]] — Company, team, personal, leave, holiday, training, out-of-office, and review events
 - [[Userflow/Calendar/conflict-detection|Conflict Detection]] — `ICalendarConflictService` for leave request conflict warnings
 
 ---
@@ -96,3 +104,24 @@ public interface ICalendarConflictService
 - [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/leave/overview|Leave]], [[modules/workforce-presence/overview|Workforce Presence]], [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]]
+
+## Calendar Panel Navigation Items
+
+The Calendar pillar expansion panel contains four items:
+
+| Label | Route | Purpose |
+|---|---|---|
+| Calendar | `/calendar` | Unified view — leave dates, public holidays, review cycles, and shift schedule overlays |
+| Schedules | `/calendar/schedule` | Shift schedule management — view and edit employee shift patterns |
+| Attendance | `/calendar/attendance` | Attendance correction requests — adjust clock-in/out records |
+| Overtime | `/calendar/overtime` | Overtime request submission and approval |
+
+**Why scheduling lives in Calendar (not Workforce):**
+Schedules, Attendance, and Overtime are time-visual concepts — they are understood in the context of a calendar timeline. The Workforce pillar is for doing work (projects, tasks). The Calendar pillar is for scheduling when work happens.
+
+**Connection to WMS:**
+- Shift schedule hours from this module feed into WMS Resource Management as the available capacity baseline for each employee.
+- Approved timesheets from WMS Time Tracking create Attendance correction records here when discrepancies exist.
+- Excess hours from approved timesheets create Overtime entries here for manager approval.
+
+See [[Userflow/Work-Management/time-tracking-flow|Time Tracking Flow]] for the full overtime and attendance connection.

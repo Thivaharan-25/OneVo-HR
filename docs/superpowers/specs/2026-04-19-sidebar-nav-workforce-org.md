@@ -14,7 +14,7 @@ Remove the internal top tab bars from both pages and drive navigation entirely t
 
 Add `'workforce'` to `PANEL_PILLARS` in `navStore.ts` so the ExpansionPanel opens when Workforce is active.
 
-Add `workforce` to `subNavConfig` in `ExpansionPanel.tsx` with all 7 items:
+Add `workforce` to `subNavConfig` in `ExpansionPanel.tsx` with all 5 items:
 
 | Label | Path |
 |---|---|
@@ -23,8 +23,6 @@ Add `workforce` to `subNavConfig` in `ExpansionPanel.tsx` with all 7 items:
 | Work Insights | `/workforce?tab=work-insights` |
 | Online Status | `/workforce?tab=online-status` |
 | Identity Verification | `/workforce?tab=identity-verification` |
-| Attendance Correction | `/workforce?tab=attendance` |
-| Overtime | `/workforce?tab=overtime` |
 
 `WorkforcePage.tsx` switches from `useState('overview')` to reading `useSearchParams()` — matching the pattern already used in `OrgPage.tsx`. The `flex gap-1 flex-wrap` tab bar row is removed.
 
@@ -60,8 +58,6 @@ Use icons already available from `lucide-react`. Suggested mapping (implementer 
 | Work Insights | `TrendingUp` |
 | Online Status | `Wifi` |
 | Identity Verification | `Fingerprint` |
-| Attendance Correction | `CalendarCheck` |
-| Overtime | `Timer` |
 
 ## Out of Scope
 

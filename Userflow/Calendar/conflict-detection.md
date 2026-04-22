@@ -17,6 +17,7 @@
 ### Step 1: Automatic Conflict Check
 - **Trigger:** When creating a calendar event → [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]] or submitting leave request → [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
 - **Backend:** ConflictDetectionService.CheckAsync() → [[Userflow/Calendar/conflict-detection|Conflict Detection]]
+- When audience is `department`, `team`, or `tenant`, the system first resolves all individual participants before running conflict checks
 
 ### Step 2: View Conflicts
 - **UI:** Warning panel showing:
@@ -33,6 +34,14 @@
 
 ### Re-check at approval time
 - Leave approval re-checks conflicts with current calendar (conflicts may have changed since request was submitted)
+
+### Audience expansion for conflict check
+- When `audience_type = department` or `team`: server resolves all employees in that entity then runs per-employee conflict check
+- When `audience_type = tenant`: conflict check is skipped (tenant-wide events, e.g. holidays, are non-conflicting by definition)
+- Conflict warnings are grouped by employee in the warning panel
+
+### Re-check on drag-and-drop reschedule
+- When user drags an event to a new time slot, conflict check re-runs automatically against the new date/time range
 
 ## Error Scenarios
 
