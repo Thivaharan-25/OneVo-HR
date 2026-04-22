@@ -68,4 +68,4 @@ Shows: quick nav to any page, recent pages, global people search, global actions
 ## Related
 
 - [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] — full pillar and permission reference
-- [[Userflow/Org/legal-entities|Legal Entity Management]] — where entities are created
+- Org → Legal Entities (`/org/legal-entities`) — where entities are created and managed
