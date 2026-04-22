@@ -20,7 +20,7 @@ Left: Legal entity name + hierarchy switcher dropdown
 Center: Search — command palette (⌘K / Ctrl+K)  
 Right: Notification bell · Theme toggle · User avatar menu
 
-See `topbar.md` for full legal entity switcher design.
+See [[frontend/architecture/topbar|Topbar Architecture]] for full legal entity switcher design.
 
 ## Icon Rail — 9 Pillars
 
