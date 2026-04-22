@@ -92,10 +92,7 @@ All colors use CSS custom properties that switch between light and dark:
 Status colors (active/green, idle/yellow, offline/red) do NOT change between modes — they reduce saturation slightly for eye comfort:
 
 ```css
-:root {
-  --status-active: 142 76% 36%;
-}
-.dark {
+[data-theme="dark"] {
   --status-active: 142 60% 45%;     /* Slightly brighter, less saturated */
 }
 ```
@@ -117,13 +114,12 @@ Glass surfaces use different opacity values in light mode:
 - Dark: `rgba(10, 10, 15, 0.85)` — frosted dark glass
 - Light: `rgba(255, 255, 255, 0.7)` — frosted white glass
 - `backdrop-filter: blur(16px)` remains the same
-- Violet glow effects use lower opacity in light mode (`0.1` vs `0.25`)
 
 ### Shadows in Dark Mode
 Shadows are invisible on dark backgrounds. Compensate with brighter borders:
 
 ```css
-.dark {
+[data-theme="dark"] {
   /* Floating elements get visible borders instead of relying on shadow */
   --popover-border: hsl(217 33% 20%);
 }
@@ -131,7 +127,7 @@ Shadows are invisible on dark backgrounds. Compensate with brighter borders:
 
 ## Testing Dark Mode
 
-- Toggle in Storybook via `next-themes` decorator
+- Toggle in Storybook via the custom `ThemeProvider` component (no `next-themes` dependency)
 - Playwright: set `colorScheme: 'dark'` in config for dark mode E2E screenshots
 - Visual regression: capture both modes
 
