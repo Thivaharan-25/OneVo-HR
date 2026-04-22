@@ -1,4 +1,4 @@
-# Frontend App Structure
+﻿# Frontend App Structure
 
 ## Route Tree
 
@@ -75,16 +75,47 @@ app/
 │   │       │   └── LeavePolicyEditor.tsx     # Policy CRUD form
 │   │       └── _types.ts                     # Local TypeScript definitions
 │   │
-│   │── ─── PILLAR 2: WORKFORCE ────
+│   │── ─── PILLAR 2: WORKFORCE + WMS ────
 │   │
 │   ├── workforce/
 │   │   │
-│   │   └── live/page.tsx                     # Real-time workforce overview (tabs: Activity, Work Insights, Online Status)
+│   │   ├── page.tsx                              # Presence — live employee card grid (replaces 3-tab live view)
+│   │   ├── [employeeId]/
+│   │   │   └── page.tsx                          # Employee activity detail (filterable by date, task, project)
+│   │   ├── projects/
+│   │   │   ├── page.tsx                          # All projects in entity scope
+│   │   │   ├── new/page.tsx                      # Create project
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx                      # Project overview (epics, milestones, members)
+│   │   │       ├── board/page.tsx                # Kanban / list view of tasks
+│   │   │       ├── sprints/page.tsx              # Sprint management
+│   │   │       └── roadmap/page.tsx              # Timeline view of epics and milestones
+│   │   ├── my-work/
+│   │   │   └── page.tsx                          # My assigned tasks across all projects
+│   │   ├── planner/
+│   │   │   └── page.tsx                          # Sprints, boards, roadmap (workspace-level view)
+│   │   ├── goals/
+│   │   │   ├── page.tsx                          # OKR overview — objectives and key results
+│   │   │   └── [id]/page.tsx                     # Objective detail + key results + check-ins
+│   │   ├── docs/
+│   │   │   ├── page.tsx                          # Documents + Wiki list
+│   │   │   └── [id]/page.tsx                     # Document or Wiki page
+│   │   ├── time/
+│   │   │   ├── page.tsx                          # My timesheet
+│   │   │   └── reports/page.tsx                  # Time reports (personal and team)
+│   │   └── analytics/
+│   │       └── page.tsx                          # Productivity scores + capacity analytics
 │   │
 │   │── ─── CROSS-CUTTING ────
 │   │
-│   ├── inbox/page.tsx                        # Unified approvals, tasks, mentions
-│   ├── calendar/page.tsx                     # Unified calendar
+│   ├── inbox/page.tsx                        # Unified approvals, tasks, mentions, exception alerts
+│   ├── chat/
+│   │   └── page.tsx                          # Channels, DMs, message threads (WMS chat module)
+│   ├── calendar/
+│   │   ├── page.tsx                          # Unified calendar (leave, holidays, review cycles)
+│   │   ├── schedule/page.tsx                 # Shift schedules
+│   │   ├── attendance/page.tsx               # Attendance corrections
+│   │   └── overtime/page.tsx                 # Overtime requests and approvals
 │   │
 │   ├── notifications/                        # [Notifications]
 │   │   ├── page.tsx                          # Notification inbox
@@ -96,10 +127,18 @@ app/
 │   │   ├── page.tsx                          # Org chart
 │   │   ├── departments/page.tsx              # Department management
 │   │   ├── teams/page.tsx                    # Team management
+│   │   ├── job-families/                     # [OrgStructure - Job Taxonomy]
+│   │   │   ├── page.tsx                      # Job family list
+│   │   │   └── [id]/page.tsx                 # Job family detail + associated roles
+│   │   ├── legal-entities/                   # [OrgStructure - Entity Hierarchy]
+│   │   │   ├── page.tsx                      # Legal entity list + hierarchy view
+│   │   │   └── [id]/page.tsx                 # Entity detail + settings
 │   │   ├── components/                       # Colocated feature components
 │   │   │   ├── DepartmentTree.tsx             # Interactive department hierarchy
 │   │   │   ├── TeamMemberList.tsx             # Team member add/remove
-│   │   │   └── OrgChart.tsx                   # Visual org chart component
+│   │   │   ├── OrgChart.tsx                   # Visual org chart component
+│   │   │   ├── JobFamilyEditor.tsx            # Job family CRUD form
+│   │   │   └── LegalEntityTree.tsx            # Entity hierarchy visualisation
 │   │   └── _types.ts                         # Local TypeScript definitions
 │   │
 │   │── ─── PILLAR 4: ADMIN ────
@@ -146,36 +185,45 @@ app/
 ## Module → Route Mapping
 
 | # | Backend Module | Route(s) | Notes |
-|---|---------------|----------|-------|
-| 1 | activity-monitoring | `/workforce/live` | Activity tab within live dashboard |
+|---|---|---|-------|
+| 1 | activity-monitoring | `/workforce` (card productivity data), `/workforce/[id]` (activity detail) | Replaces Activity tab |
 | 2 | agent-gateway | `/admin/agents/` | Fleet overview, agent detail |
 | 3 | auth | `(auth)/`, `/admin/users/`, `/admin/roles/` | Login/MFA + user/role management |
 | 4 | calendar | `/calendar` | Unified (leave, holidays, reviews) |
-| 5 | configuration | `/settings/general`, `/settings/monitoring` | Tenant config + overrides |
-| 6 | core-hr | `/people/employees/` | Profile + lifecycle (onboarding/offboarding within employee creation flow) |
+| 5 | configuration | `/settings/general`, `/settings/system` | Tenant config + system health/feature controls |
+| 6 | core-hr | `/people/employees/` | Profile + lifecycle |
 | 7 | documents | Employee detail `#documents` section | Permission-gated section in employee profile |
-| 8 | exception-engine | `/settings/alert-rules`, alerts surfaced in Inbox | Rule config in settings; alerts in `/inbox` |
-| 9 | expense | Employee detail section | Within employee profile (Phase 2) |
-| 10 | grievance | Employee detail section | Within employee profile (Phase 2) |
-| 11 | identity-verification | `/workforce/live` | Online Status tab within live dashboard |
+| 8 | exception-engine | `/settings/alert-rules`, escalated cards on `/workforce` | Rule config in settings; alerts surface as card escalation |
+| 9 | expense | Employee detail section | Phase 2 |
+| 10 | grievance | Employee detail section | Phase 2 |
+| 11 | identity-verification | `/workforce` (online status dot on cards) | Replaces Online Status tab |
 | 12 | infrastructure | No pages | Backend-only |
 | 13 | leave | `/people/leave/` | Requests, calendar, balances, policies |
 | 14 | notifications | `/notifications/`, `/settings/notifications` | Inbox + preferences + org config |
-| 15 | org-structure | `/org/` | Departments, teams, org chart |
-| 16 | payroll | Employee detail `#pay-benefits` section | Permission-gated (Phase 2) |
-| 17 | performance | Employee detail section | Within employee profile (Phase 2) |
-| 18 | productivity-analytics | `/workforce/live` | Work Insights tab within live dashboard |
+| 15 | org-structure | `/org/` | Departments, teams, org chart, job families, legal entities |
+| 16 | payroll | Employee detail `#pay-benefits` section | Phase 2 |
+| 17 | performance | Employee detail section | Phase 2 |
+| 18 | productivity-analytics | `/workforce` (card score), `/workforce/analytics` | Card score + dedicated analytics page |
 | 19 | reporting-engine | Accessible via Quick Search (⌘K) | No dedicated route |
 | 20 | shared-platform | `/admin/`, `/settings/` | Spread across admin + settings |
-| 21 | skills | Employee detail section | Within employee profile (Phase 2) |
-| 22 | workforce-presence | `/workforce/live` | Online Status tab within live dashboard |
+| 21 | skills | `/org/job-families/`, Employee detail section | Job family taxonomy + employee skill records |
+| 22 | workforce-presence | `/workforce` (presence cards) | Replaces Online Status tab |
+| WMS | project | `/workforce/projects/` | Project management |
+| WMS | task | `/workforce/projects/[id]/board`, `/workforce/my-work` | Task management |
+| WMS | planning | `/workforce/planner`, `/workforce/projects/[id]/sprints` | Sprints, boards, roadmap |
+| WMS | okr | `/workforce/goals/` | Goals and OKRs |
+| WMS | collab (docs/wiki) | `/workforce/docs/` | Documents and Wiki |
+| WMS | collab (comments) | Embedded within tasks, projects, docs | Contextual, not a nav item |
+| WMS | time | `/workforce/time/` | Timesheets and time logs |
+| WMS | resource | `/workforce/analytics` (capacity section) | Capacity and allocation |
+| WMS | chat | `/chat` | Channels, DMs, messages |
 
 ## Layout System
 
 ### Dashboard Layout (`(dashboard)/layout.tsx`)
-- **Icon Rail:** 64px glass sidebar with 8 pillar icons, permission-gated via `hasPermission()`
+- **Icon Rail:** 56px sidebar with 9 pillar icons, permission-gated via `hasPermission()`. Starts below the topbar (`top-12`).
+- **Topbar:** Full-width (`left-0 right-0`), 48px height. Shows legal entity switcher (left), command palette search (center), notification bell + theme toggle + avatar (right). See `topbar.md`.
 - **Expansion Panel:** 220px glass panel, slides out on pillar hover/click
-- **Topbar:** Glass surface, Quick Search (⌘K), notification bell (FYI only — no action badge), user menu
 - **Pillar visibility:** Permission-gated via `hasPermission()` — never hardcode role names
 
 ### Auth Layout (`(auth)/layout.tsx`)
@@ -217,13 +265,15 @@ Feature-specific components live inside each route's `components/` folder. Only 
 |---------|-------|
 | Auth | 4 |
 | People (Employees + Leave) | ~12 |
-| Workforce Live | ~4 |
-| Org | 4 |
-| Calendar | 2 |
+| Workforce Presence | ~2 |
+| Workforce WMS (Projects, My Work, Planner, Goals, Docs, Time, Analytics) | ~18 |
+| Org (Chart, Departments, Teams, Job Families, Legal Entities) | ~8 |
+| Calendar (Calendar, Schedules, Attendance, Overtime) | ~4 |
+| Chat | ~1 |
 | Inbox | 1 |
 | Admin | ~6 |
-| Settings | 8 |
-| **Total** | **~41** |
+| Settings | ~7 |
+| **Total** | **~63** |
 
 ## Related
 
