@@ -105,14 +105,27 @@ Any endpoint returning employee-related data
 POST /api/v1/employees/{employeeId}/bypass-grants
   -> Requires roles:manage
   -> BypassGrantService.CreateAsync(grantorId, targetEmployeeId, dto)
-    -> 1. Resolve granter's accessible scope via IHierarchyScope
-    -> 2. Verify dto.scopeId is within granter's accessible scope (ceiling rule)
-    -> 3. If granter has permission_delegation_scopes record:
+    -> 1. Validate dto.scopeId is not null/empty — return 422 if missing
+    -> 2. Validate dto.scopeId references an existing entity matching dto.scopeType:
+           - scope_type = 'department': SELECT 1 FROM departments WHERE id = dto.scopeId
+           - scope_type = 'people':     SELECT 1 FROM employees WHERE id = dto.scopeId
+           - scope_type = 'role':       SELECT 1 FROM roles WHERE id = dto.scopeId
+           Return 422 if entity not found
+    -> 3. Resolve granter's accessible scope via IHierarchyScope (featureContext = null)
+           For 'people' scope: verify dto.scopeId is within subordinateIds OR broadBypassIds
+           For 'department' scope: verify granter can access that dept (tier check)
+           For 'role' scope: verify granter is root admin or has that role in accessible scope
+           Return 403 if outside accessible scope (ceiling rule)
+    -> 4. If granter has permission_delegation_scopes record:
            - Verify dto.appliesTo is within module_scope
            - Block dto.appliesTo = null (All Features) for delegated granters
-    -> 4. Insert hierarchy_scope_exceptions record
-    -> 5. Invalidate bypass cache for targetEmployeeId
-    -> 6. Audit log entry
+    -> 5. Insert hierarchy_scope_exceptions record
+    -> 6. Invalidate bypass cache for targetEmployeeId
+    -> 7. Audit log entry
+
+NOTE: For 'people' scope, the accessible pool uses featureContext = null (broad bypasses only).
+A granter who has calendar-scoped access to an employee cannot re-delegate that access
+as a bypass grant — they can only grant from their own null-context or subordinate scope.
 ```
 
 ### Permission Delegation Scope
