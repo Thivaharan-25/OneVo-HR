@@ -11,25 +11,31 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 
 ## System Overview
 
-**ONEVO** is a multi-tenant SaaS platform with two product pillars:
+**ONEVO** is a **multi-tenant white-label SaaS** platform with two product pillars and an optional third-party WMS integration:
 
 - **Pillar 1: HR Management** — Employee lifecycle, leave, performance, payroll, skills
 - **Pillar 2: Workforce Intelligence** — Activity monitoring, presence tracking, identity verification, exception detection, productivity analytics
+- **WMS Integration** — Projects, tasks, sprints, OKR, chat (built by WMS team, consumed via bridge contracts)
 - **170 database tables** across **23 modules**
 - **.NET 9** backend (Modular Monolith)
 - **.NET MAUI + Windows Service** desktop agent
-- **Next.js 14** frontend (React)
+- **Next.js 14** frontend (React) — single frontend consuming both ONEVO and WMS backends
 - **PostgreSQL 16** with Row-Level Security
 - **4-week delivery plan** with 4 developers
 
+**Platform shape:** ONEVO frontend → ONEVO backend + WMS backend (via 5 bridge contracts). Full architecture: [[docs/superpowers/plans/2026-04-21-unified-platform-architecture|Unified Platform Architecture]].
+
 ## Product Configurations
 
-| Configuration | Modules Included |
-|:-------------|:----------------|
-| **HR Management** (standalone) | Pillar 1 + Shared Foundation |
-| **HR + Workforce Intelligence** | Pillar 1 + Pillar 2 + Desktop Agent |
-| **HR + Work Management** | Pillar 1 + WorkManage Pro bridges |
-| **Full Suite** | All pillars + Desktop Agent + WorkManage Pro |
+| Tier | Core | HR Pillar | Workforce Intel | WMS | Bridges |
+|:-----|:----:|:---------:|:---------------:|:---:|:-------:|
+| HR Management | ✓ | ✓ | ✗ | ✗ | — |
+| Work Management | ✓ | ✗ | ✗ | ✓ | People Sync only |
+| HR + Workforce Intel | ✓ | ✓ | ✓ | ✗ | — |
+| HR + Work Management | ✓ | ✓ | ✗ | ✓ | All 5 bridges |
+| Full Suite | ✓ | ✓ | ✓ | ✓ | All 5 bridges |
+
+**Core (always active):** Infrastructure + Auth + CoreHR identity + Notifications + SharedPlatform
 
 ## Repository Structure
 
@@ -81,12 +87,12 @@ onevo-hr-brain/
 
 ## Delivery Timeline
 
-| Week | Focus | Key Modules |
-|:-----|:------|:-----------|
-| Week 1 (Apr 7-11) | Foundation | Infrastructure, Auth, Org Structure, Shared Platform, Agent Gateway |
-| Week 2 (Apr 14-18) | Core HR + Workforce Presence | Employee lifecycle, shifts, biometric, presence tracking |
-| Week 3 (Apr 21-25) | Leave + Monitoring | Leave policies, activity monitoring, identity verification, exception engine |
-| Week 4 (Apr 28-May 2) | Supporting + Analytics + Payroll | Exception engine, productivity analytics, payroll, documents, bridges |
+| Week                  | Focus                            | Key Modules                                                                  |
+| :-------------------- | :------------------------------- | :--------------------------------------------------------------------------- |
+| Week 1 (Apr 7-11)     | Foundation                       | Infrastructure, Auth, Org Structure, Shared Platform, Agent Gateway          |
+| Week 2 (Apr 14-18)    | Core HR + Workforce Presence     | Employee lifecycle, shifts, biometric, presence tracking                     |
+| Week 3 (Apr 21-25)    | Leave + Monitoring               | Leave policies, activity monitoring, identity verification, exception engine |
+| Week 4 (Apr 28-May 2) | Supporting + Analytics + Payroll | Exception engine, productivity analytics, payroll, documents, bridges        |
 
 ## Key Principles
 

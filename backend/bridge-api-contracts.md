@@ -1,6 +1,73 @@
 # Bridge API Contracts — WorkManage Pro ↔ ONEVO
 
-**Purpose:** Canonical request/response schemas for all 5 WorkManage Pro bridge endpoints. This is the contract the WMS team builds against.
+**Purpose:** Canonical request/response schemas for all bridge endpoints between WorkManage Pro (WMS backend) and ONEVO. This is the design-freeze contract — no Phase 1 code starts until both teams sign off.
+
+---
+
+## Entity Ownership Map
+
+Every entity lives in exactly one backend. WMS reads ONEVO-owned entities via bridge. ONEVO reads WMS-owned entities via WMS API.
+
+### ONEVO Owns (Canonical — WMS reads these via bridge)
+
+| Entity | ONEVO Table | Notes |
+|--------|-------------|-------|
+| Organization/Company | `tenants` | WMS uses `onevo_tenant_id` as workspace reference. No WMS workspace table. |
+| User Identity | `users` | One login for all products. WMS validates ONEVO JWTs. Zero WMS auth tables. |
+| HR Record | `employees` | Always created even for WMS-only users (identity anchor). HR fields null/hidden for WMS-only tier. |
+| Departments | `departments` | Hierarchical (unlimited nesting). WMS reads via People Sync bridge. No WMS department table. |
+| Org Teams | `teams` | ONEVO org teams (dept sub-groups). WMS reads via People Sync. ≠ WMS project teams. |
+| Roles | `roles` | One role system. `wms_role_mappings` translates ONEVO roles → WMS permissions. |
+| Permissions | `role_permissions`, `employee_permission_grants` | ONEVO permission model. |
+| Skills Catalog | `skills`, `skill_categories` | ONEVO is canonical. WMS reads via Skills bridge (Bridge 5a). |
+| Employee Skills | `employee_skills` | WMS reads validated skills for resource matching. |
+| Leave Records | `leave_requests`, `leave_balances` | WMS reads blocked days via Availability bridge. |
+| Shifts & Schedules | `shift_templates`, `employee_schedules` | WMS reads for capacity planning via Availability bridge. |
+| Public Holidays | `calendar_events` (type=public_holiday) | WMS reads for sprint date adjustment via Availability bridge. |
+| Overtime Entries | `overtime_entries` | ONEVO calculates from WMS time logs + presence. WMS never stores overtime. |
+| Payroll | All payroll tables | WMS has zero payroll tables. Payroll is purely ONEVO. |
+| Notifications | `notifications`, `notification_deliveries` | Unified inbox. WMS pushes via Notification Push endpoint below. |
+| File Storage Metadata | `file_assets`, `file_versions` | Shared blob bucket. ONEVO holds metadata. WMS stores file URLs + `file_asset_id`. |
+| Tenant Config / Branding | `tenant_configurations` | Industry profile, branding, feature flags. |
+| Performance Reviews | All performance tables (Phase 2) | WMS provides productivity input scores; ONEVO runs the review. |
+
+### WMS Owns (WMS Backend — ONEVO reads these via WMS API)
+
+| Entity | WMS Table | Notes |
+|--------|-----------|-------|
+| Projects | `projects` | ONEVO frontend reads to display in Workforce sidebar. |
+| Project Members | `project_members` | References ONEVO `employee_id` as FK. |
+| Tasks / Issues | `tasks` | Core WMS entity. Assignees reference ONEVO `employee_id`. |
+| Sprints | `sprints` | WMS manages. Reads Availability bridge for capacity. |
+| Time Logs | `time_logs` | WMS stores. Posts to Work Activity bridge (Bridge 3) at EOD. |
+| Timesheets | `timesheets`, `timesheet_entries` | WMS manages. Not ONEVO payroll concern. |
+| WMS Project Teams | `wms_project_teams` | Ad-hoc project teams ≠ ONEVO org teams. WMS owns. |
+| OKR / Goals | `objectives`, `key_results` | Business OKRs. Phase 2: link to ONEVO Performance goals. |
+| Chat / Messages | `channels`, `messages`, `dm_channels` | WMS stores. Reminders delivered via ONEVO notification push. |
+| WMS Documents | `wms_documents`, `document_versions` | Project wikis/specs. ≠ ONEVO HR documents. |
+| Productivity Scores | Computed by WMS | Pushed to ONEVO via Productivity Metrics bridge (Bridge 4). |
+
+### Conflict Resolutions
+
+Hard decisions made during design freeze. Do not relitigate without updating this document.
+
+| Conflict | Decision | Reason |
+|----------|----------|--------|
+| WMS WORKSPACE | → ONEVO `tenants` | Same concept. WMS stores `onevo_tenant_id` as workspace reference. |
+| WMS AUTH | → ONEVO `users` | One login. WMS validates ONEVO JWTs. Zero WMS auth tables. |
+| WMS ROLE | → ONEVO `roles` | One role system. `wms_role_mappings` translates ONEVO → WMS permissions. |
+| WMS DEPARTMENT | → ONEVO `departments` | ONEVO is richer (hierarchical). WMS reads via People Sync. |
+| WMS TEAM (project) | **WMS OWNS** as `wms_project_teams` | Ad-hoc project teams ≠ ONEVO org hierarchy. Different concept. |
+| WMS SKILL + USER_SKILL | → ONEVO `skills` + `employee_skills` | ONEVO is canonical. No WMS skill tables. |
+| WMS NOTIFICATION | → ONEVO Notifications | ONEVO is canonical. WMS calls notification push endpoint. |
+| WMS FILE_ASSET | → ONEVO `file_assets` | Same blob storage. ONEVO holds metadata. WMS stores file URLs only. |
+| WMS AUDIT_LOG (auth) | → ONEVO `audit_logs` | Auth/security events in ONEVO only. WMS project activity → `wms_activity_logs`. |
+| WMS OVERTIME_ENTRY | **Does not exist in WMS** | ONEVO calculates from WMS time logs + presence data. |
+| WMS OBJECTIVE / KEY_RESULT | **WMS OWNS** | Business OKRs. ONEVO Performance = HR development goals. Different purpose. |
+| WMS DOCUMENT (project) | **WMS OWNS** as `wms_documents` | ONEVO `documents` = HR docs. WMS docs = project wikis/specs. |
+| WMS TIMESHEET | **WMS OWNS** | Project timesheets ≠ payroll hours. ONEVO payroll uses presence hours. |
+
+---
 
 ## Authentication
 
@@ -229,6 +296,59 @@ Both fields are sourced from ONEVO's Workforce Presence module (`presence_sessio
 |:-------|:-----|:-----|
 | `404` | `EMPLOYEE_NOT_FOUND` | ID not found in this tenant |
 | `404` | `NO_SHIFT_CONFIGURED` | Employee has no shift schedule assigned |
+
+---
+
+## Bridge 2b — Leave Impact (HR → WMS)
+
+**Direction:** WMS polls ONEVO
+**Endpoint:** `GET /api/v1/bridges/leave-impact/{employeeId}`
+**Phase:** 1
+
+Will this employee be available for a task or sprint date range?
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|:----------|:-----|:---------|:------------|
+| `start_date` | `date (YYYY-MM-DD)` | Yes | Start of date range to check |
+| `end_date` | `date (YYYY-MM-DD)` | Yes | End of date range to check |
+
+### Response `200 OK`
+
+```json
+{
+  "employee_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "start_date": "2026-05-01",
+  "end_date": "2026-05-14",
+  "will_be_absent": true,
+  "absent_days": ["2026-05-10", "2026-05-11", "2026-05-12"],
+  "expected_available_hours": 49,
+  "leave_type": "Annual Leave",
+  "leave_status": "approved"
+}
+```
+
+### Response fields
+
+| Field | Notes |
+|:------|:------|
+| `will_be_absent` | `true` if any approved leave or public holiday falls within the range |
+| `absent_days` | ISO 8601 date strings for each absent day in the range |
+| `expected_available_hours` | Working hours available after subtracting absent days (based on shift schedule) |
+| `leave_type` | Type of approved leave covering the absence. `null` if absence is public holiday only. |
+| `leave_status` | Always `"approved"` — pending requests are not included |
+
+### When to call
+
+Call before assigning a task or finalising a sprint. Display a warning if `will_be_absent: true` and highlight `absent_days` on the sprint calendar.
+
+### Error responses
+
+| Status | Code | When |
+|:-------|:-----|:-----|
+| `404` | `EMPLOYEE_NOT_FOUND` | ID not found in this tenant |
+| `400` | `INVALID_DATE_RANGE` | `end_date` before `start_date`, or range exceeds 365 days |
 
 ---
 
@@ -518,6 +638,89 @@ A manager may see different numbers between the two (e.g., ONEVO shows 7hrs acti
 
 ---
 
+## Shared Infrastructure Endpoints
+
+These are not bridges — they are ONEVO platform services that WMS consumes directly.
+
+### Notification Push
+
+**Direction:** WMS → ONEVO
+**Endpoint:** `POST /api/v1/notifications/external`
+**Auth:** `Authorization: Bearer {bridge_jwt}`
+
+WMS calls this to deliver notifications through ONEVO's unified inbox (in-app, email, push). The user sees one notification inbox — ONEVO handles all deliveries.
+
+```json
+{
+  "tenant_id": "uuid",
+  "recipient_employee_id": "uuid",
+  "event_type": "task_assigned",
+  "title": "You've been assigned Task #123",
+  "body": "Project Alpha — Fix login bug",
+  "action_url": "/workforce/wms/tasks/task-uuid",
+  "priority": "normal",
+  "metadata": {
+    "task_id": "wms-task-uuid",
+    "project_id": "wms-project-uuid"
+  }
+}
+```
+
+| Field | Values / Notes |
+|:------|:---------------|
+| `event_type` | `task_assigned`, `task_due_soon`, `sprint_starting`, `mention`, `comment_added`, `pr_review_requested` |
+| `priority` | `normal`, `high` |
+| `action_url` | Deep link into ONEVO frontend (Workforce sidebar WMS section) |
+
+**Response `202 Accepted`:**
+```json
+{ "notification_id": "uuid", "queued_at": "2026-04-21T10:00:00Z" }
+```
+
+---
+
+### File Storage — Pre-signed Upload URL
+
+**Direction:** WMS → ONEVO (request) → WMS (upload directly to blob)
+**Endpoint:** `POST /api/v1/files/upload-url`
+**Auth:** `Authorization: Bearer {bridge_jwt}`
+
+Both backends upload to the same blob storage bucket, scoped by tenant prefix. WMS must request a pre-signed URL from ONEVO before uploading.
+
+**Request:**
+```json
+{
+  "scope": "wms",
+  "file_name": "design-mockup.fig",
+  "mime_type": "application/octet-stream",
+  "context": {
+    "task_id": "wms-task-uuid",
+    "project_id": "wms-project-uuid"
+  }
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "upload_url": "https://storage.example.com/presigned/...",
+  "file_asset_id": "uuid",
+  "expires_in": 300
+}
+```
+
+WMS uploads directly to `upload_url`, then stores `file_asset_id` as the file reference in its own tables. ONEVO holds the metadata record.
+
+**Bucket structure:**
+```
+{tenant_id}/
+  hr/      ← ONEVO HR documents, avatars
+  wms/     ← WMS task attachments, project files
+  agent/   ← WorkPulse Agent screenshots
+```
+
+---
+
 ## Rate Limits
 
 All bridge endpoints share the following limits per tenant per bridge key:
@@ -557,6 +760,21 @@ All errors follow Problem Details:
 ## Versioning
 
 All bridge endpoints are versioned under `/api/v1/`. Breaking changes will be released under `/api/v2/` with at least 90 days overlap. ONEVO will notify the WMS team via email when a deprecation is scheduled.
+
+---
+
+## Phase 0 — Sign-Off Record
+
+All 6 decisions confirmed 2026-04-21. **Design Freeze: SIGNED. Phase 1 backend code may now begin.**
+
+| # | Decision | Status | Detail |
+|---|----------|--------|--------|
+| 1 | **Bridge key scope: per-tenant** | ✅ Confirmed | Each customer org gets its own bridge key. |
+| 2 | **WMS webhook auth: HMAC-SHA256 shared secret** | ✅ Confirmed | WMS generates secret, gives to ONEVO once. ONEVO signs every outbound webhook request body with HMAC-SHA256. WMS verifies. Prevents replay attacks and payload tampering. |
+| 3 | **Retry policy: exponential backoff, max 3 retries, 24h TTL** | ✅ Confirmed | WMS retries failed posts with exponential backoff. Entries expire after 24h. |
+| 4 | **WMS FK = ONEVO `employee_id` (UUID)** | ✅ Confirmed | Every user gets an `employees` row (even WMS-only users get a minimal identity shell). `employee_id` is the universal person identifier. WMS uses this UUID — not `user_id`, not email — as FK in tasks, time logs, project members, etc. |
+| 5 | **Tenant linkage: `onevo_tenant_id` in WMS workspace table only** | ✅ Confirmed | ONEVO creates tenant first → `tenant_id` → WMS stores as `onevo_tenant_id` in their root workspace table only. All other WMS tables chain through workspace membership. `tenant_id` also present in every JWT. |
+| 6 | **People Sync polling: max 1 poll/hour** | ✅ Confirmed | ONEVO pushes webhooks (EmployeeCreated, EmployeeTerminated) for real-time changes. Polling is a safety-net fallback only. |
 
 ---
 

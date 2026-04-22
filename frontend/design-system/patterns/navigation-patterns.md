@@ -39,23 +39,26 @@ The sidebar is split into two surfaces:
 | Property | Value |
 |:---------|:------|
 | Width | 64px |
-| Surface | Glass (`backdrop-blur`, `bg-white/5`) |
-| Top slot | ONEVO logo mark |
-| Active indicator | Violet glow pip (left edge, `bg-violet-500`, `shadow-violet-500/50`) |
-| Bottom slots | User avatar + theme toggle |
-| Icon size | 20px (`h-5 w-5`) |
-| Font | — (icon-only) |
+| Surface | `bg-[var(--bg-surface)]` |
+| Border | `border-r border-[var(--border)]` |
+| Position | Flush left edge (`left-0`) |
+| Active indicator | 4px neutral dot (`bg-[var(--fg-1)]`) below icon — visible only when active |
+| Icon size | 16px (`size={16}`) |
+| Active icon color | `text-[var(--fg-1)]` |
+| Inactive icon color | `text-[var(--fg-3)]` |
+| Hover | `text-[var(--fg-2)] bg-[var(--bg-hover)]` |
 
 ### Expansion Panel
 
 | Property | Value |
 |:---------|:------|
 | Width | 220px |
-| Surface | Glass lighter (`bg-white/8 backdrop-blur`) |
-| Pillar header | Outfit 600, 11px, uppercase, zinc-400 |
-| Sub-item font | Geist 13px, zinc-300 |
-| Active item | Violet left border (`border-l-2 border-violet-500`), `bg-violet-500/10` |
-| Animation | `translateX` 200ms ease-out (slides in from left) |
+| Surface | `bg-[var(--bg-surface)]` |
+| Border | `border-r border-[var(--border)]` |
+| Pillar header | Outfit 11px uppercase, `text-[var(--fg-3)]` |
+| Sub-item font | Outfit 13px, `text-[var(--fg-3)]` |
+| Active item | `bg-[var(--accent-subtle)] border border-[var(--accent-border)] text-[var(--fg-1)]` |
+| Animation | `translateX` 200ms ease (unchanged) |
 | Pinnable | Yes, on ≥1280px (Zustand + localStorage) |
 | Collapse trigger | Pin toggle button at panel top-right |
 
@@ -316,13 +319,14 @@ function RailItem({ pillar, isActive, onClick }: RailItemProps) {
 
 ## Topbar
 
-Height: **56px**, glass surface (`bg-white/5 backdrop-blur border-b border-white/10`).
+Height: **48px**, glass surface (`bg-white/5 backdrop-blur border-b border-white/10`).
 
 | Element | Position | Behavior |
 |:--------|:---------|:---------|
 | Hamburger | Left (mobile ≤768px only) | Opens sidebar overlay |
 | Breadcrumbs | Left (after hamburger) | Outfit 400, 13px, zinc-500 — auto-generated from route |
 | Quick Search pill | Center | Opens Quick Search modal (`⌘K` / `Ctrl+K`) |
+| Theme Toggle | Right (before divider) | Sun/Moon/Monitor — cycles system→light→dark, persists to localStorage |
 | Notification Bell | Right | FYI only — informational alerts, no actions required |
 | User Avatar | Right | Profile, preferences, logout |
 
