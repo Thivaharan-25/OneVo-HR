@@ -61,7 +61,7 @@ If any step fails, return `401 Unauthorized`. No partial sessions.
   "platform_role": "admin",
   "impersonation": false,
   "iat": 1714000000,
-  "exp": 1714028800
+  "exp": 1714001800
 }
 ```
 
@@ -72,7 +72,7 @@ If any step fails, return `401 Unauthorized`. No partial sessions.
 | Issuer (`iss`) | `onevo-platform-admin` |
 | Audience (`aud`) | `onevo-admin-api` |
 | Subject (`sub`) | `dev_platform_account_id` (UUID, from `dev_platform_accounts` table) |
-| TTL | 8 hours |
+| TTL | 30 minutes |
 | Signing key | Separate secret from tenant JWT signing key |
 | Storage | httpOnly cookie (server-side session via NextAuth) |
 | Renewal | Standard re-issue on login; no refresh tokens |

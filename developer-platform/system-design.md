@@ -90,7 +90,7 @@ Two completely independent JWT issuers exist in the backend:
 | `iss` claim | `onevo-tenant` | `onevo-platform-admin` |
 | Signing key | Tenant JWT signing key | Platform admin signing key (separate secret) |
 | Accepted at | `/api/v1/*` endpoints only | `/admin/v1/*` endpoints only |
-| Token TTL | Configurable per tenant | 8 hours (admin), 15 min (impersonation) |
+| Token TTL | Configurable per tenant | 30 minutes (admin), 15 min (impersonation) |
 | Subject | `tenant_user_id` | `dev_platform_account_id` |
 
 **Cross-use is rejected at the policy level.** The `PlatformAdmin` policy explicitly checks `iss == "onevo-platform-admin"` and rejects any token that does not match — including a valid tenant JWT. The inverse applies at tenant endpoints.
