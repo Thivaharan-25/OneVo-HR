@@ -306,7 +306,37 @@ docs/
 
 ---
 
-### 13. `ade/` — Agent Development Environment
+### 13. `developer-platform/` — Internal Developer Console
+
+**What it holds:** Architecture, modules, API contracts, and userflows for the internal developer console (console.onevo.io) — **not customer-facing**.
+
+**Structure:**
+```
+developer-platform/
+├── modules/         ← Developer console backend modules (api-key-manager, etc.)
+├── frontend/        ← Developer console UI architecture and components
+├── backend/         ← Developer console API conventions and messaging
+├── database/        ← Developer console database schemas and migrations
+└── userflow/        ← Developer workflows for managing API keys, integrations
+```
+
+**Subdirectories:**
+- `modules/` — Internal developer console backend specs (api-key-manager is Phase 2)
+- `frontend/` — Console UI architecture, layouts, and component patterns
+- `backend/` — API layer and module communication rules for console
+- `database/` — Database schemas specific to console functionality
+- `userflow/` — Step-by-step workflows for console administrators
+
+**Note:** Phase 2 content (e.g., api-key-manager module) is marked separately in planning docs.
+
+**Connects to:**
+- `docs/superpowers/plans/` — Developer platform implementation plans
+- `modules/` — May reference core platform modules for integration
+- `backend/` — Uses same messaging and API patterns as main platform
+
+---
+
+### 14. `ade/` — Agent Development Environment
 
 **What it holds:** Setup instructions for AI agents working on this codebase.
 
@@ -314,13 +344,13 @@ docs/
 
 ---
 
-### 14. `meetings/` — Meeting Notes
+### 15. `meetings/` — Meeting Notes
 
 **What it holds:** Notes from team meetings and decisions made.
 
 ---
 
-### 15. `scripts/` — Utility Scripts
+### 16. `scripts/` — Utility Scripts
 
 **What it holds:** Helper scripts for common tasks (scaffolding, validation, etc.).
 
