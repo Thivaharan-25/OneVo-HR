@@ -9,11 +9,11 @@ Central index of all database tables across ONEVO modules. This is the **single 
 ## Summary
 
 - **Total Tables:** 175 (Phase 1)
-- **Modules:** 22 + Developer Platform
+- **Modules:** 23 + Developer Platform
 - **Phase 1 Tables:** 133
 - **Phase 2 Tables:** 42
 
-> **Note:** Activity Monitoring (11 tables), Productivity Analytics (5), Shared Platform (33) include new WMS integration tables added in Phase 1. Skills Phase 2 count corrected to 10 (2 duplicate rows removed). See [[docs/wms-integration-analysis|WMS Integration Analysis]] for change history. Developer Platform adds 5 Phase 1 tables + 1 Phase 2 table (see section below). `tenants.status` enum updated to include `'provisioning'`.
+> **Note:** Activity Monitoring (9 tables) + Discrepancy Engine (2 tables) were previously one 11-table group; split into separate modules when Discrepancy Engine was extracted. Productivity Analytics (5), Shared Platform (33) include WMS integration tables added in Phase 1. Skills Phase 2 count corrected to 10 (2 duplicate rows removed). Notifications lists 0 own tables — `notification_templates` and `notification_channels` are physically housed in Shared Platform and counted there. See [[docs/wms-integration-analysis|WMS Integration Analysis]] for change history. Developer Platform adds 5 Phase 1 tables + 1 Phase 2 table (see section below). `tenants.status` enum updated to include `'provisioning'`.
 
 ## Hub Tables
 
