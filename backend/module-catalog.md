@@ -190,6 +190,20 @@ Cross-cutting: Notifications, Configuration, Calendar, Reporting Engine
 7. Add ArchUnitNET tests
 8. Create sprint task in `current-focus/`
 
+## Developer Platform — Admin API Layer
+
+`ONEVO.Admin.Api/` is a **separate ASP.NET Core host** (not a module inside `ONEVO.sln`) that serves as the admin API layer for the developer console at `console.onevo.io`. It uses its own JWT issuer (`onevo-platform-admin`) — tokens issued here are never valid against the main ONEVO API.
+
+| Aspect | Detail |
+|:-------|:-------|
+| Namespace | `ONEVO.Admin.Api` |
+| JWT Issuer | `onevo-platform-admin` |
+| Detailed Doc | `developer-platform/backend/admin-api-layer.md` |
+| Controllers | Map to developer platform modules (tenant management, agent deployment rings, platform accounts) |
+| Auth | Separate JWT issuer; platform accounts only — never customer accounts |
+
+---
+
 ## WMS — Consumed System (Not an ONEVO Module)
 
 WMS is built and owned by the WMS team. ONEVO consumes it via bridge contracts — it is **not** an ONEVO module and does **not** appear in the module registry above.

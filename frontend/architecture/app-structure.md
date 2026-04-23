@@ -1,5 +1,7 @@
 ﻿# Frontend App Structure
 
+> **Note:** A second frontend app (`dev-console`) exists for platform administration — see `developer-platform/frontend/app-structure.md` for details. This document covers the primary ONEVO tenant-facing app only.
+
 ## Route Tree
 
 All 22 backend modules + 9 WMS modules mapped to ~63 frontend pages. Single route tree with permission-driven views (no separate employee self-service group).

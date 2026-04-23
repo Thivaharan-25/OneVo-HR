@@ -8,12 +8,12 @@ Central index of all database tables across ONEVO modules. This is the **single 
 
 ## Summary
 
-- **Total Tables:** 170
-- **Modules:** 22
-- **Phase 1 Tables:** 128
+- **Total Tables:** 175 (Phase 1)
+- **Modules:** 22 + Developer Platform
+- **Phase 1 Tables:** 133
 - **Phase 2 Tables:** 42
 
-> **Note:** Activity Monitoring (11 tables), Productivity Analytics (5), Shared Platform (33) include new WMS integration tables added in Phase 1. Skills Phase 2 count corrected to 10 (2 duplicate rows removed). See [[docs/wms-integration-analysis|WMS Integration Analysis]] for change history.
+> **Note:** Activity Monitoring (11 tables), Productivity Analytics (5), Shared Platform (33) include new WMS integration tables added in Phase 1. Skills Phase 2 count corrected to 10 (2 duplicate rows removed). See [[docs/wms-integration-analysis|WMS Integration Analysis]] for change history. Developer Platform adds 5 Phase 1 tables + 1 Phase 2 table (see section below). `tenants.status` enum updated to include `'provisioning'`.
 
 ## Hub Tables
 
@@ -339,6 +339,28 @@ These tables are referenced by many others — design changes here have wide imp
 | `report_definitions` | 11 | — |
 | `report_executions` | 9 | file_record_id→file_records |
 | `report_templates` | 7 | — |
+
+---
+
+## Developer Platform
+
+> Tables for the internal developer console (`console.onevo.io`). These live in their own schema scope and are not tenant-scoped. See `developer-platform/backend/admin-api-layer.md` for context.
+
+### Phase 1 (5 tables)
+
+| Table | Description |
+|:------|:-----------|
+| `dev_platform_accounts` | Developer platform user accounts |
+| `dev_platform_sessions` | Platform session tokens |
+| `agent_version_releases` | Desktop agent version catalog |
+| `agent_deployment_rings` | Deployment ring definitions (0=Internal, 1=Beta, 2=GA) |
+| `agent_deployment_ring_assignments` | Tenant ring assignments |
+
+### Phase 2 (1 table)
+
+| Table | Description |
+|:------|:-----------|
+| `platform_api_keys` | Platform API keys *(Phase 2)* |
 
 ---
 
