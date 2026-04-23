@@ -1,4 +1,4 @@
-﻿# Frontend App Structure
+# Frontend App Structure
 
 > **Note:** A second frontend app (`dev-console`) exists for platform administration — see `developer-platform/frontend/app-structure.md` for details. This document covers the primary ONEVO tenant-facing app only.
 

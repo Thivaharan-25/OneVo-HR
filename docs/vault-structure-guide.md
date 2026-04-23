@@ -142,7 +142,7 @@ database/
 │   ├── activity-monitoring.md     ← activity_snapshots, app_usage
 │   ├── ... (one per module)
 │   └── infrastructure.md          ← tenants, files, reference_data
-├── schema-catalog.md              ← Quick index of all 163 tables
+├── schema-catalog.md              ← Quick index of all 170 tables
 ├── cross-module-relationships.md  ← How tables reference each other
 ├── migration-patterns.md          ← How to write EF Core migrations
 └── performance.md                 ← Indexing strategies, query patterns
