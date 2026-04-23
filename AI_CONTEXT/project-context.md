@@ -9,6 +9,12 @@
 - **Key Stakeholders:** Product Owner, 4-member development team, enterprise clients
 - **Current Status:** Active development — Phase 1 (backend first, then frontend)
 
+## 1a. Developer Platform (Internal)
+
+A second standalone frontend app (`dev-console` at `console.onevo.io`) exists for internal platform administration. It is **not** a customer-facing product — only ONEVO team accounts can access it. It is backed by a separate API host (`ONEVO.Admin.Api`) with its own JWT issuer (`onevo-platform-admin`). See `developer-platform/overview.md` for the full specification.
+
+---
+
 ## 2. Product Strategy
 
 ONEVO is designed around **two core pillars** sold in multiple configurations:
