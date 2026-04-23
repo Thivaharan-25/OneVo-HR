@@ -696,16 +696,18 @@ Tenants can change their industry profile from settings. When changed: ONEVO rec
 
 ## 10. Platform Admin (Same App — Special Role)
 
-Lives inside the ONEVO frontend at `/platform-admin`, guarded by `platform:admin` permission (only ONEVO team accounts get this, never customers).
+> **Update:** The `/platform-admin` concept has been promoted to a separate standalone app — see `developer-platform/overview.md` for the full specification.
 
-**Phase 1 scope (minimal, ship early):**
-- Tenant list: name, plan, status, employee count, created date
-- Per-tenant: feature flags override, subscription status, last login
-- Billing sync: Stripe plan → tenant tier (auto-synced via Stripe webhooks)
-- Impersonate tenant: "View as this tenant's super admin" (for support)
-- Suspend / unsuspend tenant
+~~Lives inside the ONEVO frontend at `/platform-admin`, guarded by `platform:admin` permission (only ONEVO team accounts get this, never customers).~~
 
-**Not in Phase 1:** System health dashboard (use Grafana which is already in tech stack), log viewer, infrastructure metrics. These come in Phase 2 as operational needs become clear.
+~~**Phase 1 scope (minimal, ship early):**~~
+~~- Tenant list: name, plan, status, employee count, created date~~
+~~- Per-tenant: feature flags override, subscription status, last login~~
+~~- Billing sync: Stripe plan → tenant tier (auto-synced via Stripe webhooks)~~
+~~- Impersonate tenant: "View as this tenant's super admin" (for support)~~
+~~- Suspend / unsuspend tenant~~
+
+~~**Not in Phase 1:** System health dashboard (use Grafana which is already in tech stack), log viewer, infrastructure metrics. These come in Phase 2 as operational needs become clear.~~
 
 ---
 

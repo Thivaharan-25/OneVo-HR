@@ -24,6 +24,7 @@ onevo-hr-brain/
 ├── meetings/            ← Meeting notes
 ├── ade/                 ← Agent Development Environment setup
 ├── scripts/             ← Utility scripts
+├── developer-platform/  ← Internal developer console — architecture, modules, API contracts, userflows
 └── docs/                ← Plans, specs, and reference docs
 ```
 
