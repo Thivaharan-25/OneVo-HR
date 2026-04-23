@@ -152,6 +152,9 @@ Returns: Impersonation JWT (separate, short-lived)
 | Who can issue | `super_admin` only — checked before issuance |
 | Scope | Grants read access to that tenant's data through the admin API; does NOT grant a full tenant session |
 
+**Scope Enforcement:**
+The `impersonation: true` claim is checked by the `[Authorize(Policy = "PlatformAdmin")]` middleware. A separate `ImpersonationOnly` policy is applied to the impersonated session endpoints — any endpoint not tagged with this policy will reject tokens carrying `impersonation: true`. This prevents an impersonation token from being used to call non-impersonation admin endpoints (e.g., feature flag mutations). The policy ensures both that the issuer matches and that the endpoint scope matches the token's intended use.
+
 ### What Impersonation Is Not
 
 Impersonation in the dev console is **not** a tenant login. It does not produce a tenant JWT. It does not allow the admin to act as the tenant user in the main product (`app.onevo.io`). It provides a privileged read-only view of that tenant user's data through the admin API, with every access recorded.

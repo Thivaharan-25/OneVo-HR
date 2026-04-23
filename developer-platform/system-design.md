@@ -8,9 +8,10 @@ The dev console does **not** get its own microservice. It talks to the existing 
 
 **Consequences:**
 - No new database schemas for core platform data
-- No duplicate business logic
+- No duplicate business logic — no parallel data structures or shadow copies
 - Feature flags, tenant settings, agent version data, and audit logs all remain in their canonical tables
 - The admin layer calls module interfaces via dependency injection — it does not reach into module internals
+- All data reads and writes go through existing module interfaces (no direct table access)
 
 ---
 
@@ -31,12 +32,6 @@ The existing `users` table is scoped to tenants (it has a `tenant_id` column). D
 | `is_active` | bool | Soft disable without deleting |
 
 There is no `tenant_id` column. These accounts are platform-level.
-
----
-
-### Decision 3: No Parallel Data Structures
-
-The dev console reads and writes **existing tables** through the admin API. It does not maintain shadow copies of feature flags, tenant configs, or agent version data.
 
 ---
 
