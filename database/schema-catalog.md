@@ -9,11 +9,11 @@ Central index of all database tables across ONEVO modules. This is the **single 
 ## Summary
 
 - **Total Tables:** 170
-- **Modules:** 22
+- **Modules:** 23
 - **Phase 1 Tables:** 128
 - **Phase 2 Tables:** 42
 
-> **Note:** Activity Monitoring (11 tables), Productivity Analytics (5), Shared Platform (33) include new WMS integration tables added in Phase 1. Skills Phase 2 count corrected to 10 (2 duplicate rows removed). See [[docs/wms-integration-analysis|WMS Integration Analysis]] for change history.
+> **Note:** Activity Monitoring (9 tables) + Discrepancy Engine (2 tables) were previously one 11-table group; split into separate modules when Discrepancy Engine was extracted. Productivity Analytics (5), Shared Platform (33) include WMS integration tables added in Phase 1. Skills Phase 2 count corrected to 10 (2 duplicate rows removed). Notifications lists 0 own tables — `notification_templates` and `notification_channels` are physically housed in Shared Platform and counted there. See [[docs/wms-integration-analysis|WMS Integration Analysis]] for change history.
 
 ## Hub Tables
 
@@ -146,7 +146,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `agent_policies` | 7 | tenant_id→tenants |
 | `registered_agents` | 12 | tenant_id→tenants, employee_id→employees |
 
-### [[database/schemas/activity-monitoring|Activity Monitoring]] (11 tables)
+### [[database/schemas/activity-monitoring|Activity Monitoring]] (9 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -157,9 +157,16 @@ These tables are referenced by many others — design changes here have wide imp
 | `application_usage` | 12 | tenant_id→tenants, employee_id→employees |
 | `browser_activity` | 9 | tenant_id→tenants, employee_id→employees |
 | `device_tracking` | 8 | tenant_id→tenants, employee_id→employees |
-| `discrepancy_events` | 13 | tenant_id→tenants, employee_id→employees |
 | `meeting_sessions` | 9 | tenant_id→tenants, employee_id→employees |
 | `screenshots` | 7 | tenant_id→tenants, employee_id→employees, file_record_id→file_records |
+
+### [[database/schemas/discrepancy-engine|Discrepancy Engine]] (2 tables)
+
+> Extracted from Activity Monitoring when Discrepancy Engine was split into its own module (`ONEVO.Modules.DiscrepancyEngine`). These tables were previously listed under Activity Monitoring.
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `discrepancy_events` | 13 | tenant_id→tenants, employee_id→employees |
 | `wms_daily_time_logs` | 8 | tenant_id→tenants, employee_id→employees |
 
 ### [[database/schemas/workforce-presence|Workforce Presence]] (12 tables)
@@ -248,14 +255,9 @@ These tables are referenced by many others — design changes here have wide imp
 | `wms_role_mappings` | 7 | tenant_id→tenants, onevo_role_id→roles |
 | `wms_tenant_links` | 12 | tenant_id→tenants, bridge_api_key_id→bridge_api_keys |
 
-### [[database/schemas/notifications|Notifications]] (2 tables)
+### [[database/schemas/notifications|Notifications]] (0 own tables)
 
-> `notification_templates` and `notification_channels` are physically housed in the shared `AppDbContext` and counted under Shared Platform above. They are listed here for module-level reference.
-
-| Table | Columns | Key FKs |
-|:------|:--------|:--------|
-| `notification_templates` | 7 | tenant_id→tenants |
-| `notification_channels` | 6 | tenant_id→tenants |
+> `notification_templates` and `notification_channels` are physically housed in the Shared Platform `AppDbContext` and **counted under Shared Platform** above. They are not counted again here. The Notifications module owns no tables of its own.
 
 ## Phase 2 Modules
 

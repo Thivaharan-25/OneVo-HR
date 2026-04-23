@@ -1,4 +1,4 @@
-﻿# Frontend App Structure
+# Frontend App Structure
 
 ## Route Tree
 

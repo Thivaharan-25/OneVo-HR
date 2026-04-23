@@ -4,7 +4,7 @@
 
 - **RDBMS:** PostgreSQL 16
 - **ORM:** Entity Framework Core 9
-- **Total Tables:** 170 across 22 modules — 128 Phase 1, 42 Phase 2 (see [[database/schema-catalog|Schema Catalog]])
+- **Total Tables:** 170 across 23 modules — 128 Phase 1, 42 Phase 2 (see [[database/schema-catalog|Schema Catalog]])
 - **Multi-tenancy:** `tenant_id` on all tenant-scoped tables + PostgreSQL RLS
 - **Connection Pooling:** PgBouncer
 - **Partitioning:** `pg_partman` for time-series tables

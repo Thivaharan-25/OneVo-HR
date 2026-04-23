@@ -1,6 +1,6 @@
 # Backend Architecture
 
-**.NET 9 Modular Monolith** — 22 modules, 163 tables, strict namespace boundaries.
+**.NET 9 Modular Monolith** — 23 modules, 170 tables, strict namespace boundaries.
 
 ## Quick Links
 
