@@ -59,5 +59,4 @@ The wizard is **draft-safe**: partially completed tenants remain in `provisionin
 
 ## Notes
 
-- All destructive actions (suspend, impersonate, subscription override) are written to `audit_logs` automatically.
 - Subscription overrides must not be used as a routine billing management tool — direct tenants to Stripe for normal plan changes.

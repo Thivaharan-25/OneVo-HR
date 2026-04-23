@@ -14,7 +14,7 @@ The Platform API Key Manager issues and manages platform-level API keys for exte
 |---|---|
 | `platform_api_keys` | Read + write — new table introduced in Phase 2 |
 
-## Capabilities (Phase 2)
+## Capabilities
 
 ### Key Issuance
 - Create a new platform API key with:

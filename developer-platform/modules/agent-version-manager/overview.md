@@ -59,5 +59,5 @@ Rings control which tenants receive a version first. The three fixed rings are:
 ## Notes
 
 - Force-update and rollback commands are dispatched through AgentGateway and are audit-logged.
-- Ring 2 promotion should only be done after Ring 0 and Ring 1 validation is complete.
+- Ring promotion to Ring 2 follows a validation gate: Ring 0 must run the version for at least 24 hours with no crash reports or forced rollbacks, and Ring 1 must confirm agent compatibility across at least 10 tenants. The operator confirms the gate manually before promoting to Ring 2 (GA).
 - Recalled versions trigger automatic escalation — consider pushing a force-update to Ring 2 immediately.

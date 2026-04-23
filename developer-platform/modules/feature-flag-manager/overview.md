@@ -44,4 +44,3 @@ All of these tables live in the **SharedPlatform** layer and affect all OneVo te
 
 - Flag changes take effect without a tenant restart.
 - Module disabling via this tool is additive to the provisioning wizard's module selection — modules can be toggled post-provisioning without going through the wizard again.
-- All changes are audit-logged automatically.
