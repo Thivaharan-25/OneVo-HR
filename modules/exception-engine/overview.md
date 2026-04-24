@@ -4,7 +4,7 @@
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 2 (Week 4)
-**Tables:** 5
+**Tables:** 6
 **Task File:** [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]
 
 ---
@@ -244,6 +244,7 @@ EscalationJob (Hangfire, every 5 min)
 
 | Job | Schedule | Queue | Purpose |
 |:----|:---------|:------|:--------|
+| `ComputeActivityBaselinesJob` | Daily 9:45 PM | Default | Compute rolling 30-day avg+stddev per employee per metric |
 | `ExceptionEngineEvaluationJob` | Every 5 min | High | Evaluate all active rules against latest data |
 | `EscalationJob` | Every 5 min | High | Escalate unacknowledged alerts |
 
@@ -334,6 +335,7 @@ Manager views alert detail → clicks "Request Screenshot" or "Request Photo"
 - [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]] — Hangfire-driven rule evaluation against activity and presence data
 - [[modules/exception-engine/alert-generation/overview|Alert Generation]] — Alert creation, deduplication, evidence snapshots — frontend: [[modules/exception-engine/alert-generation/frontend|Frontend]]
 - [[modules/exception-engine/escalation-chains/overview|Escalation Chains]] — Time-based escalation routing by severity
+- [[modules/exception-engine/activity-baselines/overview|Activity Baselines]] — Per-employee rolling baseline computation enabling sigma-relative rule thresholds
 - Remote Capture Actions — Manager-triggered screenshot/photo capture from alert detail view
 - Biometric Cross Validation — Presence-without-activity detection (biometric ↔ agent data)
 - App Violation Rules — Non-allowed app usage detection (integrated with [[modules/configuration/app-allowlist/overview|App Allowlist]])
@@ -358,7 +360,7 @@ See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitori
 > The following features are deferred to Phase 2. Do not implement them. Specs are preserved here for future reference.
 
 ### AI-Powered Anomaly Detection
-Phase 1 uses configurable threshold-based rules (e.g., "idle > 30 min = alert"). Phase 2 will add ML-based anomaly detection that learns per-employee baselines and flags statistical outliers. For example: "Employee X is typically 85% active but today is 40%" would trigger even if the absolute threshold isn't breached. Requires training data collection during Phase 1 operation.
+Statistical baselines (rolling avg + stddev per employee per metric) are now shipped in Phase 1 via `ComputeActivityBaselinesJob` and `baseline_relative` rule conditions. See [[modules/exception-engine/activity-baselines/overview|Activity Baselines]]. Phase 2 may add ML-based anomaly detection that goes beyond fixed sigma multipliers to learn non-linear patterns.
 
 ### Predictive Alerts
 Phase 2 may add predictive alerting: detecting downward trends before thresholds are breached (e.g., "Employee Y's activity has been declining 5% each day for the past week"). This requires time-series analysis on `activity_daily_summary` data.
