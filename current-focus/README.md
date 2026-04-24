@@ -24,8 +24,11 @@ The dev builds backend first, then frontend for the same module. Each task file 
 | 2 | Employee Profile | CoreHR | Critical | [[current-focus/DEV1-core-hr-profile\|DEV1 Core Hr Profile]] |
 | 3 | Leave | Leave | High | [[current-focus/DEV1-leave\|DEV1 Leave]] |
 | 4 | Productivity Analytics | ProductivityAnalytics | High | [[current-focus/DEV1-productivity-analytics\|DEV1 Productivity Analytics]] |
+| 5 | HR Import Onboarding | DataImport | High | [[current-focus/DEV1-hr-import-onboarding\|DEV1 HR Import Onboarding]] |
 
-**Dev 1 Frontend Pages:** Dashboard layout, Employee list/detail/create, Leave management, Productivity reports
+> Task 5 depends on Task 2 (Employee Profile) for the `employees` table target, DEV2 Auth for `employees:write` permission, and DEV3 Org Structure for department/job-family resolution in the ETL pipeline. Task 12 (Integrations Screen under Settings) is co-owned with Dev 4 — coordinate placement in `/settings/integrations`.
+
+**Dev 1 Frontend Pages:** Dashboard layout, Employee list/detail/create, Leave management, Productivity reports, HR Import wizard (`/hr/import`)
 
 ---
 
@@ -94,6 +97,9 @@ DEV3 Workforce Presence Setup (task 4) ──> unblocks DEV4 Biometric (task 4)
 DEV3 Activity Monitoring (task 5) ──> unblocks DEV1 Productivity Analytics (task 4)
 DEV4 Shared Platform (task 1) ──> unblocks DEV2 Notifications (task 4)
 DEV1 Core HR Profile (task 2) ──> needed by DEV3 Skills Core (employees table for employee_skills)
+DEV1 Core HR Profile (task 2) ──> unblocks DEV1 HR Import Onboarding (task 5) [employees table target for bulk writes]
+DEV3 Org Structure (task 1) ──> unblocks DEV1 HR Import Onboarding (task 5) [departments + job families for ETL resolution]
+DEV2 Auth & Security (task 1) ──> unblocks DEV1 HR Import Onboarding (task 5) [employees:write permission required]
 ```
 
 ---
