@@ -55,7 +55,9 @@ Two cards presented:
 ### Step 2a — Upload File (CSV path)
 - Drag & drop or browse
 - Accepts `.csv`, `.xlsx`, `.xls`
-- System parses the file, reads column headers, loads Row 1 as the sample employee
+- File is uploaded via a **signed Cloudflare R2 URL** (pre-signed, single-use, expires in 1 hour) — the browser uploads directly to R2, never through the ONEVO API server
+- **Email transfer is explicitly not supported** — no file attachment accepted via email at any point
+- System parses the file from R2, reads column headers, loads Row 1 as the sample employee
 - Proceeds to Step 3
 
 ### Step 2b — Connect PeopleHR (API path)
@@ -151,7 +153,7 @@ Shows everything the import will create automatically, grouped by type:
 
 Summary screen showing totals: employees to import, entities to create, rows to skip.
 
-"Start Import" button triggers async background job. Progress bar shown. Admin can navigate away — import continues and they are notified on completion.
+"Start Import" button enqueues the import job via **BullMQ**. A live progress percentage is shown throughout (e.g. "Importing... 142 / 247 employees"). Admin can navigate away — import continues in background and they are notified on completion via the platform notification system.
 
 ---
 
@@ -163,7 +165,45 @@ Returns to Employee list, now populated. Link to import report for skipped rows.
 
 ---
 
-## 5. Skill Import Behaviour (Phase 1)
+## 5. ETL Pipeline (Transform Phase)
+
+Before the validation screen is shown (Step 5), the system runs a transformation pipeline on all rows:
+
+| Transform | Rule |
+|---|---|
+| Date fields | Normalised to ISO 8601 (`YYYY-MM-DD`) — accepts DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD |
+| Phone numbers | Validated and normalised to E.164 format (e.g. `+44XXXXXXXXXX`, `+94XXXXXXXXXX`) — invalid formats flagged, not blocked |
+| Salary fields | Validated as numeric — non-numeric values flagged |
+| Duplicate employee ID | Detected within the file — duplicate rows flagged in validation |
+| Duplicate email | Checked against existing ONEVO records — blocked if already exists |
+| Null required fields | Flagged — employees can still be imported with "Needs Completion" status |
+
+Transformation runs as a **BullMQ background job** to prevent timeout failures on large datasets. The admin sees a "Processing your file..." state before the validation screen appears.
+
+---
+
+## 6. Bulk Import Endpoint
+
+Records are written via `POST /api/migration/bulk-import` in **batches of 500–1,000 records per call**.
+
+**Idempotency:** The endpoint uses `INSERT … ON CONFLICT DO UPDATE` logic keyed on employee ID and email. Running the same import twice will not create duplicate records — it will update existing ones. This makes re-runs safe after partial failures.
+
+---
+
+## 7. Post-Import Validation (Reconciliation Phase)
+
+After the import job completes, an automated reconciliation check runs:
+
+1. **Record count check** — source row count must match destination employee count exactly
+2. **Checksum validation** — total salary sum and department employee counts compared between source and destination
+3. **Reconciliation report** — generated as a downloadable PDF showing: total migrated records, errors, warnings, skipped entries
+4. **Spot-check checklist** — provided to the HR admin to manually verify 10–15 randomly sampled employee records against their source system
+
+The reconciliation report and spot-check checklist are accessible from the Done screen and from Settings → Integrations → Import History.
+
+---
+
+## 8. Skill Import Behaviour (Phase 1)
 
 Employee skills in the source data (e.g. "React (Advanced), Python (Intermediate)") are handled as follows:
 
@@ -176,7 +216,7 @@ Skills field in CSV expected format: comma-separated, optionally with proficienc
 
 ---
 
-## 6. Settings → Integrations Alignment
+## 9. Settings → Integrations Alignment
 
 The Integrations screen (Platform-Setup area) shows a card per connected HR system:
 
@@ -192,7 +232,7 @@ Future connectors (BambooHR, Workday, ADP) follow the same card pattern. Each co
 
 ---
 
-## 7. Import Transaction Order
+## 10. Import Transaction Order
 
 To resolve the chicken-and-egg dependency problem, the backend creates entities in this order within a single transaction:
 
@@ -211,7 +251,7 @@ If any step fails, the entire import rolls back. Admin sees a clear error report
 
 ---
 
-## 8. Post-Import Admin Checklist (shown on Done screen)
+## 11. Post-Import Admin Checklist (shown on Done screen)
 
 - [ ] Assign department heads in Organisation → Departments
 - [ ] Configure roles per job level in Organisation → Job Families
@@ -221,7 +261,16 @@ If any step fails, the entire import rolls back. Admin sees a clear error report
 
 ---
 
-## 9. Permissions Required
+## 12. Migration Audit & Security
+
+- A `migration_runs` table records every migration event: who initiated it (`initiated_by_user_id`), when it ran (`started_at`, `completed_at`), how many records were processed, and final status (success / partial / failed)
+- All migration activity is included in the platform-wide audit log (`audit_logs` table)
+- Customer data files uploaded to Cloudflare R2 are **automatically deleted within 48 hours** of successful import — a scheduled cleanup job handles this
+- If import fails, files are retained for 7 days to allow retry, then deleted
+
+---
+
+## 13. Permissions Required
 
 | Action | Permission |
 |---|---|
@@ -233,7 +282,7 @@ If any step fails, the entire import rolls back. Admin sees a clear error report
 
 ---
 
-## 10. Error Handling
+## 14. Error Handling
 
 | Scenario | Behaviour |
 |---|---|
