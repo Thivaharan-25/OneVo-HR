@@ -169,13 +169,30 @@ Inbound productivity data from WorkManage Pro (Phase 2 bridge). One row per empl
 
 ---
 
-## Domain Events
+## Domain Events (intra-module — MediatR)
 
-| Event | Published When | Consumers |
-|:------|:---------------|:----------|
-| `DailyReportReady` | Daily report aggregation complete | [[modules/notifications/overview\|Notifications]] (send summary to managers) |
-| `WeeklyReportReady` | Weekly report aggregation complete | [[modules/notifications/overview\|Notifications]] (send weekly digest) |
-| `MonthlyReportReady` | Monthly report aggregation complete | [[modules/notifications/overview\|Notifications]] |
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `DailyReportReady` | `analytics.daily` | Daily report aggregation complete | [[modules/notifications/overview\|Notifications]] (send summary to managers) |
+| `WeeklyReportReady` | `analytics.weekly` | Weekly report aggregation complete | [[modules/notifications/overview\|Notifications]] (send weekly digest) |
+| `MonthlyReportReady` | `analytics.monthly` | Monthly report aggregation complete | [[modules/notifications/overview\|Notifications]] |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `ActivitySnapshotReceived` | `activity.snapshot` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Update real-time workforce status feed |
+| `ExceptionAlertCreated` | `exception.alert` | [[modules/exception-engine/overview\|Exception Engine]] | Increment daily exception count in workforce snapshot |
 
 ---
 

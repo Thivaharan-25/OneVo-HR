@@ -247,6 +247,33 @@ UNIQUE: `(tenant_id, name)` — one client per integration per tenant.
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `UserLoggedIn` | `auth.login` | User successfully authenticates | [[modules/shared-platform/overview\|Shared Platform]] (session tracking) |
+| `UserLoggedOut` | `auth.logout` | User logs out or session expires | [[modules/shared-platform/overview\|Shared Platform]] |
+| `RoleAssigned` | `auth.role` | Role assigned to a user | Downstream permission consumers |
+| `PermissionChanged` | `auth.permission` | Individual permission override set or removed | Downstream permission consumers |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `UserStatusChanged` | `infrastructure.user.status` | [[modules/infrastructure/overview\|Infrastructure]] | Activate or deactivate user login access |
+
+---
+
 ## Key Business Rules
 
 1. **JWT RS256** — access tokens (15 min), refresh tokens (7 days) with rotation.

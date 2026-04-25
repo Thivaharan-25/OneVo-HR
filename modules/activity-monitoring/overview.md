@@ -198,14 +198,30 @@ Device interaction tracking per day.
 
 ---
 
-## Domain Events
+## Domain Events (intra-module — MediatR)
 
-| Event | Published When | Consumers |
-|:------|:---------------|:----------|
-| `ActivitySnapshotReceived` | Raw data processed into snapshot | [[modules/exception-engine/overview\|Exception Engine]] (evaluate rules) |
-| `DailySummaryAggregated` | Daily summary job completes | [[modules/productivity-analytics/overview\|Productivity Analytics]] (build reports) |
-| `ScreenshotCaptured` | Screenshot stored | Audit trail |
-| `AppAllowlistViolationDetected` | Employee used non-allowed app exceeding threshold | [[modules/exception-engine/overview\|Exception Engine]] (fire `non_allowed_app` rule) |
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `ExceptionDetected` | `activity.exception` | Activity snapshot triggers an exception condition | [[modules/exception-engine/overview\|Exception Engine]] |
+| `DiscrepancyDetected` | `activity.discrepancy` | Discrepancy detected during processing | [[modules/discrepancy-engine/overview\|Discrepancy Engine]] |
+| `ActivitySnapshotReceived` | `activity.snapshot` | Raw data processed into snapshot | [[modules/exception-engine/overview\|Exception Engine]], [[modules/identity-verification/overview\|Identity Verification]] |
+| `DailySummaryAggregated` | `activity.summary` | Daily summary job completes | [[modules/productivity-analytics/overview\|Productivity Analytics]], [[modules/discrepancy-engine/overview\|Discrepancy Engine]] |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `PresenceSessionStarted` | `workforce.presence.started` | [[modules/workforce-presence/overview\|Workforce Presence]] | Begin accepting snapshots for the employee's active session |
 
 ---
 

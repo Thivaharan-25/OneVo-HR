@@ -74,6 +74,30 @@ Scheduled and on-demand report generation serving **both pillars** — HR report
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| _(none)_ | — | — | — |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| _(none — reads directly via query service interfaces)_ | — | — | — |
+
+---
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |

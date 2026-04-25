@@ -242,16 +242,32 @@ Audit trail for promotions, transfers, salary changes, etc.
 
 ---
 
-## Domain Events
+## Domain Events (intra-module — MediatR)
 
-| Event | Published When | Consumers |
-|:------|:---------------|:----------|
-| `EmployeeCreated` | New employee added | [[modules/notifications/overview\|Notifications]], [[modules/leave/overview\|Leave]] (calculate entitlements), **WMS People Sync** (auto-provision WMS account) |
-| `EmployeePromoted` | Promotion event | [[modules/notifications/overview\|Notifications]], [[modules/payroll/overview\|Payroll]], **WMS People Sync** (permission level auto-upgrade via `wms_role_mappings`) |
-| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview\|Notifications]], **WMS People Sync** (task scope re-mapped to new team) |
-| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview\|Leave]] (forfeit unused), [[modules/payroll/overview\|Payroll]] (final settlement), [[modules/agent-gateway/overview\|Agent Gateway]] (revoke agent), **WMS People Sync** (deactivate access + reassignment alert to Team Lead) |
-| `EmployeeOnboardingStarted` | Onboarding initiated | [[modules/notifications/overview\|Notifications]] |
-| `EmployeeOffboardingStarted` | Offboarding initiated | [[modules/notifications/overview\|Notifications]], [[modules/documents/overview\|Documents]] |
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `EmployeeHired` | `core-hr.employee.hired` | New employee added | [[modules/leave/overview\|Leave]] (calculate initial entitlements), [[modules/workforce-presence/overview\|Workforce Presence]], [[modules/calendar/overview\|Calendar]], [[modules/performance/overview\|Performance]], [[modules/skills/overview\|Skills]], [[modules/documents/overview\|Documents]], [[modules/notifications/overview\|Notifications]] |
+| `EmployeePromoted` | `core-hr.employee.promoted` | Promotion event | [[modules/notifications/overview\|Notifications]] |
+| `EmployeeTransferred` | `core-hr.employee.transferred` | Department/team change | [[modules/notifications/overview\|Notifications]] |
+| `SalaryChanged` | `core-hr.employee.salary_changed` | Salary change recorded | [[modules/payroll/overview\|Payroll]] |
+| `EmployeeOffboarded` | `core-hr.employee.offboarded` | Termination/resignation completed | [[modules/agent-gateway/overview\|Agent Gateway]] (revoke agent), [[modules/documents/overview\|Documents]], [[modules/notifications/overview\|Notifications]] |
+| `OnboardingStepCompleted` | `core-hr.employee.onboarding` | Individual onboarding task completed | [[modules/notifications/overview\|Notifications]] |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| _(none)_ | — | — | — |
 
 ---
 

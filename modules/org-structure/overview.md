@@ -175,6 +175,30 @@ Records the module whitelist for employees who were granted `roles:manage` via d
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `DepartmentChanged` | `org.department.changed` | Department created, updated, or restructured | Downstream modules that index department context |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `TenantCreated` | `infrastructure.tenant.created` | [[modules/infrastructure/overview\|Infrastructure]] | Seed default department structure for new tenant |
+
+---
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |

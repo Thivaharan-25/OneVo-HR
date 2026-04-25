@@ -154,14 +154,29 @@ Tamper detection and device health.
 
 ---
 
-## Domain Events
+## Domain Events (intra-module — MediatR)
 
-| Event | Published When | Consumers |
-|:------|:---------------|:----------|
-| `VerificationFailed` | Photo/fingerprint match below threshold | [[modules/exception-engine/overview\|Exception Engine]], [[modules/notifications/overview\|Notifications]] (alert manager) |
-| `VerificationCompleted` | Successful verification | [[modules/workforce-presence/overview\|Workforce Presence]] (confirm identity) |
-| `BiometricDeviceOffline` | No heartbeat for 5+ minutes | [[modules/notifications/overview\|Notifications]] (alert admin) |
-| `OnDemandCaptureReceived` | Manager-requested screenshot/photo arrived from agent | [[modules/notifications/overview\|Notifications]] (notify requesting manager), [[modules/exception-engine/overview\|Exception Engine]] (attach to alert) |
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `VerificationCompleted` | `identity.verified` | Successful photo/fingerprint match | [[modules/workforce-presence/overview\|Workforce Presence]] (confirm identity for presence record) |
+| `VerificationFailed` | `identity.failed` | Photo/fingerprint match below threshold | [[modules/exception-engine/overview\|Exception Engine]], [[modules/notifications/overview\|Notifications]] (alert manager) |
+| `BiometricDeviceOffline` | `identity.device_offline` | No heartbeat from biometric terminal for 5+ minutes | [[modules/notifications/overview\|Notifications]] (alert admin) |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `ActivitySnapshotReceived` | `activity.snapshot` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Trigger periodic identity verification if interval policy requires it |
 
 ---
 
