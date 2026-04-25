@@ -4,6 +4,8 @@ All events published and consumed across modules. Phase 1 uses **RabbitMQ via Ma
 
 ## Event Types
 
+> **Routing keys** follow patterns defined in [[backend/messaging/exchange-topology|Exchange Topology]]. Keys vary by module context (e.g. `core-hr.employee.*` for HR entity events, `auth.*` for session events). The canonical source of truth for all routing key patterns is `exchange-topology.md`.
+
 ### Domain Event (intra-module — MediatR only)
 
 Published and handled within the same module. Never crosses a module boundary.
@@ -26,6 +28,7 @@ public abstract record IntegrationEvent
 {
     public Guid EventId { get; init; } = Guid.NewGuid();
     public DateTimeOffset OccurredAt { get; init; } = DateTimeOffset.UtcNow;
+    // abstract — every concrete event must declare its own TenantId source (no default)
     public abstract Guid TenantId { get; init; }
     public string EventType => GetType().Name;
 }
