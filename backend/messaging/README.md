@@ -2,38 +2,58 @@
 
 ## Overview
 
-ONEVO uses a two-phase messaging strategy:
+ONEVO uses two event buses with different scopes:
 
-- **Phase 1 (current):** In-process domain events via MediatR `INotification`
-- **Phase 2 (future):** RabbitMQ for cross-module events requiring reliability at scale
+- **Cross-module events (integration events):** RabbitMQ via MassTransit — transactional outbox pattern, reliable delivery, idempotent consumers. Phase 1.
+- **Intra-module events (domain events):** MediatR `INotification` — in-process, synchronous, within the same module only. No Phase label.
 
 ## Key Documents
 
 | Document | Purpose |
 |:---------|:--------|
 | [[backend/messaging/event-catalog\|Event Catalog]] | Every domain event, publishers, consumers, and payloads |
-| [[backend/messaging/exchange-topology\|Exchange Topology]] | How events flow between modules (MediatR now, RabbitMQ later) |
+| [[backend/messaging/exchange-topology\|Exchange Topology]] | RabbitMQ topic exchange, queue bindings, routing key patterns, outbox + idempotency pattern |
+| [[backend/messaging/module-event-matrix\|Module Event Matrix]] | Per-module publish/consume overview — 23 modules |
 | [[backend/messaging/error-handling\|Error Handling]] | Retry policies, dead-letter handling, idempotency patterns |
 
 ## Quick Reference
 
-### Publishing an Event
+### Publishing a Cross-Module Integration Event
 
 ```csharp
-// In your service/handler:
-entity.AddDomainEvent(new EmployeeHiredEvent(employee.Id, employee.TenantId, employee.DepartmentId));
+// In your command handler — use IEventBus for events that cross module boundaries
+public class ApproveLeaveRequestHandler : IRequestHandler<ApproveLeaveRequestCommand, Result<Unit>>
+{
+    private readonly IEventBus _eventBus;
+
+    public async Task<Result<Unit>> Handle(ApproveLeaveRequestCommand cmd, CancellationToken ct)
+    {
+        // ... business logic
+        await _eventBus.PublishAsync(new LeaveApproved(request.Id, request.EmployeeId, ...), ct);
+        // Written to leave_outbox_events in the same transaction; forwarded to RabbitMQ by OutboxProcessor
+        return Result<Unit>.Success(Unit.Value);
+    }
+}
+```
+
+### Publishing an Intra-Module Domain Event
+
+```csharp
+// In your service — use MediatR IPublisher for events that stay within this module
+entity.AddDomainEvent(new EmployeeValidatedEvent(employee.Id));
 await _unitOfWork.SaveChangesAsync(ct); // DomainEventDispatcher publishes after save
 ```
 
-### Consuming an Event
+### Consuming a Cross-Module Integration Event
 
 ```csharp
-// In your module's EventHandlers/ folder:
-public class HandleEmployeeHired : INotificationHandler<EmployeeHiredEvent>
+// In your module's EventHandlers/ folder — use IConsumer<T> for cross-module events
+public class UpdatePresenceOnLeaveApprovedConsumer : IConsumer<LeaveApproved>
 {
-    public async Task Handle(EmployeeHiredEvent notification, CancellationToken ct)
+    public async Task Consume(ConsumeContext<LeaveApproved> context)
     {
-        // React to the event (must be idempotent)
+        // Idempotency guaranteed by MassTransit inbox-state (processed_integration_events table)
+        // React to the event...
     }
 }
 ```
@@ -42,7 +62,7 @@ public class HandleEmployeeHired : INotificationHandler<EmployeeHiredEvent>
 
 1. All handlers must be **idempotent** (see [[backend/messaging/error-handling|Error Handling]])
 2. Handlers must not throw exceptions that crash the publisher
-3. Critical events use the **[[backend/messaging/exchange-topology|outbox pattern]]** for guaranteed delivery
+3. All cross-module integration events use the **[[backend/messaging/exchange-topology|transactional outbox pattern]]** for guaranteed delivery
 4. Check [[backend/messaging/event-catalog|Event Catalog]] before publishing or consuming events
 5. Always include `TenantId` in event payloads
 

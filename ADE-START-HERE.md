@@ -229,7 +229,7 @@ Each developer has task files in `current-focus/` with self-contained instructio
 
 1. **Do not build Phase 2 modules** — check `**Phase:**` marker in each module overview
 2. **Do not build Phase 2 features** — check `## Phase 2 Features (Do NOT Build)` sections
-3. **Do not use RabbitMQ** — in-process MediatR domain events for Phase 1
+3. **Do not use MediatR for cross-module events** — use `IEventBus.PublishAsync()` (RabbitMQ via MassTransit) for integration events; MediatR `INotification` is for intra-module domain events only
 4. **Do not use Meilisearch** — PostgreSQL FTS is sufficient
 5. **Do not import one module's internals into another** — use public interfaces and domain events only
 6. **Do not capture agent data outside monitoring lifecycle** — no data before clock-in, during breaks, or after clock-out
