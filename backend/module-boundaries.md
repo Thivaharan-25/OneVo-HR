@@ -54,7 +54,8 @@ If Module A needs data from Module B, it calls Module B's public interface or li
 | Pattern               | Use When                                                  | Mechanism                             |
 | :-------------------- | :-------------------------------------------------------- | :------------------------------------ |
 | Sync (interface call) | Module A needs data from Module B to continue processing  | Call Module B's public service via DI |
-| Async (domain event)  | Module A did something that other modules should react to | Publish `INotification` via MediatR   |
+| Async — integration event (cross-module) | Module A did something that OTHER modules should react to | Publish via `IEventBus.PublishAsync()` → RabbitMQ via MassTransit |
+| Async — domain event (intra-module)      | Module A did something that THIS module should react to internally | Publish `INotification` via MediatR |
 
 ```csharp
 // SYNC: Leave module needs employee data to validate a leave request
@@ -70,25 +71,27 @@ public class CreateLeaveRequestHandler : IRequestHandler<CreateLeaveRequestComma
     }
 }
 
-// ASYNC: Leave module publishes event when leave is approved
+// ASYNC (cross-module integration event): Leave module publishes via IEventBus → RabbitMQ
 public class ApproveLeaveRequestHandler : IRequestHandler<ApproveLeaveRequestCommand, Result<Unit>>
 {
-    private readonly IPublisher _publisher; // MediatR IPublisher
-    
+    private readonly IEventBus _eventBus; // Wraps MassTransit outbox publish
+
     public async Task<Result<Unit>> Handle(ApproveLeaveRequestCommand cmd, CancellationToken ct)
     {
         // ... approve the leave request
-        await _publisher.Publish(new LeaveApprovedEvent(leaveRequest.Id, leaveRequest.EmployeeId), ct);
+        await _eventBus.PublishAsync(new LeaveApproved(leaveRequest.Id, leaveRequest.EmployeeId), ct);
+        // Written to leave_outbox_events; forwarded to RabbitMQ by OutboxProcessor
         return Result<Unit>.Success(Unit.Value);
     }
 }
 
-// Attendance module reacts to LeaveApproved event
-public class MarkLeaveInAttendanceHandler : INotificationHandler<LeaveApprovedEvent>
+// WorkforcePresence module consumes via MassTransit IConsumer<T>
+public class MarkLeaveInPresenceConsumer : IConsumer<LeaveApproved>
 {
-    public async Task Handle(LeaveApprovedEvent notification, CancellationToken ct)
+    public async Task Consume(ConsumeContext<LeaveApproved> context)
     {
-        // Mark leave days in attendance records
+        // Mark leave days in workforce presence records
+        // Idempotency guaranteed by MassTransit inbox-state (processed_integration_events)
     }
 }
 ```
@@ -196,17 +199,21 @@ Missing any: Leave still processes correctly, that integration just skips
 A handler is registered **only if** both modules are enabled for the tenant:
 
 ```csharp
-// In Leave module registration
+// In Leave module registration — MassTransit consumers registered conditionally
 if (moduleRegistry.IsEnabled(tenantId, ModuleNames.Payroll))
 {
-    services.AddScoped<INotificationHandler<LeaveApprovedEvent>, 
-                       PayrollAdjustmentOnLeaveApprovedHandler>();
+    cfg.ReceiveEndpoint("payroll-leave-events", e =>
+    {
+        e.Consumer<PayrollAdjustmentOnLeaveApprovedConsumer>(context);
+    });
 }
 
 if (moduleRegistry.IsEnabled(tenantId, ModuleNames.WorkforcePresence))
 {
-    services.AddScoped<INotificationHandler<LeaveApprovedEvent>,
-                       MarkShiftAbsentOnLeaveApprovedHandler>();
+    cfg.ReceiveEndpoint("workforce-presence-leave-events", e =>
+    {
+        e.Consumer<MarkShiftAbsentOnLeaveApprovedConsumer>(context);
+    });
 }
 ```
 
