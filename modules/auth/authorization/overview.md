@@ -169,7 +169,7 @@ See [[backend/shared-kernel|Shared Kernel]] for `HierarchyFilter` definition and
 - [[modules/auth/overview|Auth Module]]
 - [[frontend/cross-cutting/authentication|Authentication]]
 - [[modules/auth/session-management/overview|Session Management]]
-- [[mfa]]
+- [[modules/auth/mfa/overview|MFA]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
 - [[security/auth-architecture|Auth Architecture]]

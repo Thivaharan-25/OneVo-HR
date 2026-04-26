@@ -31,14 +31,46 @@
 | `tenant_id` | `uuid` | FK → tenants |
 | `scope_type` | `varchar(20)` | `tenant`, `role`, `employee` |
 | `scope_id` | `uuid` | Null for tenant, role_id for role, employee_id for employee |
-| `application_name` | `varchar(100)` | e.g., "Microsoft Teams", "Visual Studio Code" |
-| `category` | `varchar(50)` | `communication`, `development`, `browser`, `design`, `productivity`, `other` |
+| `application_name` | `varchar(200)` | e.g., "Microsoft Teams", "Visual Studio Code" |
+| `process_name` | `varchar(100)` | e.g., "ms-teams.exe" — authoritative matching key. Nullable (backward-compatible) |
+| `category` | `varchar(50)` | `browser`, `communication`, `development`, `office`, `design`, `productivity`, `other` |
 | `is_allowed` | `boolean` | True = allowed during work, False = not allowed |
+| `source` | `varchar(20)` | `global_catalog`, `tenant_observed`, `manual` |
+| `global_catalog_id` | `uuid` | Nullable FK → global_app_catalog (if sourced from catalog) |
 | `set_by_id` | `uuid` | FK → users (who configured this) |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `set_by_id` → [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `set_by_id` → [[database/schemas/infrastructure#`users`|users]], `global_catalog_id` → [[database/schemas/shared-platform#`global_app_catalog`|global_app_catalog]]
+
+**Unique constraint:** `(tenant_id, scope_type, COALESCE(scope_id, uuid_nil), process_name)` — same app cannot appear twice for the same scope.
+
+**Matching priority (ingest processor):** match by `process_name` first (case-insensitive), fallback to `application_name` exact. No match → `is_allowed = null` (pending — never triggers alerts). See [[docs/superpowers/plans/2026-04-26-app-catalog-observed-applications|App Catalog Plan]] for full resolution logic.
+
+---
+
+## `observed_applications`
+
+Auto-populated by the ingest processor whenever an app is seen on an employee device. HR admins never write to this table directly — it feeds the "Discovered in Your Org" allowlist UI tab.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `application_name` | `varchar(200)` | Display name reported by agent (e.g., "Google Chrome") |
+| `process_name` | `varchar(100)` | Windows exe name (e.g., "chrome.exe") — deduplication key |
+| `global_catalog_id` | `uuid` | Auto-linked FK → global_app_catalog when process_name matches (nullable) |
+| `first_seen_at` | `timestamptz` | When this app was first detected for this tenant |
+| `last_seen_at` | `timestamptz` | Updated on every ingest that contains this app |
+| `employee_count` | `int` | Unique employees who ran this app |
+| `total_seconds_observed` | `bigint` | Cumulative usage time across all employees |
+| `status` | `varchar(20)` | `pending` \| `added_to_allowlist` \| `dismissed` |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `global_catalog_id` → [[database/schemas/shared-platform#`global_app_catalog`|global_app_catalog]]
+
+**Unique constraint:** `(tenant_id, process_name)` — one row per app per tenant. Ingest uses INSERT ... ON CONFLICT DO UPDATE.
+
+**Index:** `(tenant_id, status, employee_count DESC)` — for the HR admin discovered apps list query.
 
 ---
 

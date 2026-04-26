@@ -40,6 +40,7 @@ ExceptionEngineEvaluationJob (every 5 min during work hours)
 1. Engine only runs during configured work hours.
 2. Off-hours activity does NOT trigger alerts.
 3. Always check monitoring toggles before evaluating.
+4. **`is_allowed = null` is never a violation.** When evaluating the `non_allowed_app` rule, only `application_usage` rows where `is_allowed = false` are considered. Rows where `is_allowed = null` (app not yet reviewed in allowlist) are skipped — they are pending, not violations. This prevents false alerts during the allowlist discovery period.
 
 ## API Endpoints
 

@@ -22,11 +22,20 @@
 - **UI:** Master grid showing each monitoring feature:
   | Feature | Tenant Default | Override Count |
   | Activity Tracking | ON | 3 employees opted out |
+  | Application Tracking | ON | 0 |
   | Screenshot Capture | OFF | 0 |
   | Meeting Detection | ON | 0 |
   | Idle Detection | ON | 5 custom thresholds |
   | Identity Verification | OFF | 0 |
 - Toggle each ON/OFF at tenant level
+
+### Step 2b: Configure App Allowlist Mode
+- **UI:** Below feature toggles → App Allowlist section:
+  - **Mode:** `Off` (no enforcement) / `Blocklist` (only listed-as-blocked apps flagged) / `Allowlist` (only approved apps allowed)
+  - **Recommended during initial setup:** set to `Blocklist` while the allowlist is being built — prevents false alerts during the discovery period
+  - **Switch to `Allowlist`** only after reviewing Discovered Apps and configuring the allowlist → [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]]
+- **API:** `PUT /api/v1/configuration/monitoring-toggles` (includes `allowlist_mode` field)
+- **DB:** `monitoring_feature_toggles`
 
 ### Step 3: Department Overrides
 - **UI:** Click feature → see department-level overrides → enable/disable per department
@@ -51,6 +60,7 @@
 
 - [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
 - [[Userflow/Configuration/employee-override|Employee Override]]
+- [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] — configure which apps are allowed/blocked
 - [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
 
 ## Module References

@@ -316,7 +316,7 @@ UNIQUE: `(tenant_id, name)` — one client per integration per tenant.
 - [[frontend/cross-cutting/authentication|Authentication]] — JWT RS256 login, token issuance, refresh token rotation
 - [[frontend/cross-cutting/authorization|Authorization]] — Hybrid permission control: roles + per-employee overrides + feature grants + hierarchy scoping
 - [[modules/auth/session-management/overview|Session Management]] — Session tracking, revocation, expiry
-- [[mfa]] — Multi-factor authentication (TOTP)
+- [[modules/auth/mfa/overview|MFA]] — Multi-factor authentication (TOTP)
 - [[modules/auth/audit-logging/overview|Audit Logging]] — Append-only audit trail, partitioned by month
 - [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] — Consent tracking for data processing and monitoring
 

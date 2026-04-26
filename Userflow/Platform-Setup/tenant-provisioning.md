@@ -77,6 +77,21 @@
 - If `billing:manage` permission is also held, admin can pre-select which modules to enable via [[Userflow/Platform-Setup/feature-flag-management|Feature Flags]]
 - Only selected modules' seed data is provisioned
 
+### When Workforce Intelligence (monitoring) is enabled
+Recommended setup sequence after provisioning completes:
+
+```
+1. Monitoring Toggles → enable application_tracking, set allowlist_mode = blocklist
+2. Deploy agent to pilot group (20–30% of employees) → agent-deployment flow
+3. Wait 5–7 days for observed_applications to populate
+4. App Allowlist Setup → review Discovered Apps + Browse Catalog → approve/block apps
+5. Monitoring Toggles → switch allowlist_mode = allowlist
+6. Exception Rule Setup → create non_allowed_app rule with violation_threshold_minutes
+7. Full agent rollout to remaining employees
+```
+
+See [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] for the full allowlist configuration flow.
+
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
@@ -100,6 +115,8 @@
 - [[Userflow/Platform-Setup/feature-flag-management|Feature Flag Management]] — enable/disable modules
 - [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — customize look and feel
 - [[Userflow/Auth-Access/user-invitation|User Invitation]] — invite additional users
+- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]] — configure monitoring + allowlist mode after provisioning
+- [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] — build app allowlist before enabling enforcement
 
 ## Module References
 

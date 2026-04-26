@@ -24,17 +24,22 @@ See [[frontend/architecture/topbar|Topbar Architecture]] for full legal entity s
 
 ## Icon Rail — 9 Pillars
 
-| Position | Pillar | Has Panel | Default Route | Visible When |
-|---|---|---|---|---|
-| 1 | Home | No | `/` | Any authenticated user |
-| 2 | People | Yes | `/people/employees` | `employees:read` OR `leave:read` |
-| 3 | Workforce | Yes | `/workforce` | `workforce:read` |
-| 4 | Org | Yes | `/org` | `org:read` |
-| 5 | Calendar | Yes | `/calendar` | `calendar:read` |
-| 6 | Chat | No | `/chat` | `chat:read` |
-| 7 | Inbox | No | `/inbox` | Any authenticated user |
-| 8 | Admin | Yes | `/admin/users` | `admin:read` |
-| 9 | Settings | Yes | `/settings/general` | `settings:read` |
+Display order (top to bottom). A separator line appears between Chat (7) and Admin (8).
+
+| Position | Pillar | Lucide Icon | Has Panel | Default Route | Visible When |
+|---|---|---|---|---|---|
+| 1 | Home | `House` | No | `/` | Any authenticated user |
+| 2 | Inbox | `Inbox` | No | `/inbox` | Any authenticated user |
+| 3 | People | `Users` | Yes | `/people/employees` | `employees:read` OR `leave:read` |
+| 4 | Workforce | `LayoutDashboard` | Yes | `/workforce` | `workforce:read` |
+| 5 | Org | `Network` | Yes | `/org` | `org:read` |
+| 6 | Calendar | `Calendar` | Yes | `/calendar` | `calendar:read` |
+| 7 | Chat | `MessageCircle` | No | `/chat` | `chat:read` |
+| — | *separator* | — | — | — | — |
+| 8 | Admin | `Shield` | Yes | `/admin/users` | `admin:read` |
+| 9 | Settings | `Settings` | Yes | `/settings/general` | `settings:read` |
+
+See [[frontend/design-system/components/nav-rail|Nav Rail]] for exact dimensions, colors, and Tailwind implementation.
 
 ## Expansion Panel Items
 

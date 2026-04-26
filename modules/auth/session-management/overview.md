@@ -43,7 +43,7 @@ See [[security/auth-architecture|Auth Architecture — Permission Revocation]] f
 - [[modules/auth/overview|Auth Module]]
 - [[frontend/cross-cutting/authentication|Authentication]]
 - [[frontend/cross-cutting/authorization|Authorization]]
-- [[mfa]]
+- [[modules/auth/mfa/overview|MFA]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
 - [[security/auth-architecture|Auth Architecture]]

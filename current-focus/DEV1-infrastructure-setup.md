@@ -70,7 +70,7 @@ app/
 ### What to Build
 
 - [ ] Root layout with provider stack: QueryClientProvider, AuthProvider, PermissionProvider, SignalRProvider, ThemeProvider, ToastProvider
-- [ ] Dashboard layout shell: collapsible sidebar, topbar with CommandPalette (Cmd+K) + notification bell + user menu
+- [ ] Dashboard layout shell: **icon rail** (52px dark floating card) + **expansion panel** (210px animated) + **topbar** (40px) — floating-cards layout, NOT a traditional sidebar. See [[frontend/design-system/components/shell-layout|Shell Layout]] for exact spec before writing a single line of code
 - [ ] Permission-gated sidebar navigation (sections visible based on permission keys, not role names)
 - [ ] Breadcrumb component (auto-generated from route hierarchy with label overrides)
 - [ ] Overview dashboard page with placeholder KPI cards
@@ -92,12 +92,23 @@ app/
 
 ### Frontend References
 
+**Shell layout — read these first before building the dashboard layout:**
+
+- [[frontend/design-system/components/shell-layout|Shell Layout]] — floating-cards structure, body padding/gap, full Next.js layout implementation
+- [[frontend/design-system/components/nav-rail|Nav Rail]] — icon rail exact spec (52px, `#17181F`, all 9 pillars, icon names, states, Tailwind code)
+- [[frontend/design-system/components/expansion-panel|Expansion Panel]] — panel exact spec (210px, animation, all items per pillar with icon names, routes, permissions)
+- [[frontend/architecture/topbar|Topbar]] — topbar exact spec (40px, all sub-components with pixel values)
+- [[Userflow/Dashboard/shell-navigation|Shell Navigation]] — how rail/panel/topbar interact (active states, panel open/close flow)
+
+**General:**
+
 - [[frontend/architecture/app-structure|Frontend Structure]] — app directory layout
 - [[frontend/design-system/README|Design System]] — design principles
 - [[frontend/design-system/components/component-catalog|Component Catalog]] — shadcn/ui components
-- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — brand + semantic colors
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — brand + shell color values
+- [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] — all pillar routes and permission keys
+- [[frontend/design-system/foundations/typography|Typography]] — font scale including shell navigation sizes
 - [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — sidebar, topbar, content areas
-- [[frontend/design-system/foundations/typography|Typography]] — font scale
 - [[frontend/data-layer/api-integration|API Integration]] — API client pattern
 - [[frontend/data-layer/state-management|State Management]] — TanStack Query + Zustand
 

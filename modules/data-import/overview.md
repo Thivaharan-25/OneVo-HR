@@ -19,12 +19,12 @@ A background Hangfire job handles the heavy lifting: it downloads the uploaded f
 
 ## Dependencies
 
-| Direction | Module | Interface | Purpose |
-|:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/core-hr/overview\|CoreHR]] | `employees` table | Bulk-writes imported employee records |
-| **Depends on** | [[modules/org-structure/overview\|OrgStructure]] | `IDepartmentResolver` | Resolves department and job-family names during ETL transform |
-| **Depends on** | [[modules/auth/overview\|Auth]] | `employees:write` permission | Permission gate on all import endpoints |
-| **Depends on** | [[infrastructure/file-storage\|Infrastructure / FileStorage]] | `IImportFileStorage` | Railway S3-compatible blob storage for uploaded files |
+| Direction      | Module                                                        | Interface                    | Purpose                                                       |
+| :------------- | :------------------------------------------------------------ | :--------------------------- | :------------------------------------------------------------ |
+| **Depends on** | [[modules/core-hr/overview\|CoreHR]]                          | `employees` table            | Bulk-writes imported employee records                         |
+| **Depends on** | [[modules/org-structure/overview\|OrgStructure]]              | `IDepartmentResolver`        | Resolves department and job-family names during ETL transform |
+| **Depends on** | [[modules/auth/overview\|Auth]]                               | `employees:write` permission | Permission gate on all import endpoints                       |
+| **Depends on** | [[infrastructure/file-storage\|Infrastructure / FileStorage]] | `IImportFileStorage`         | Railway S3-compatible blob storage for uploaded files         |
 
 ---
 

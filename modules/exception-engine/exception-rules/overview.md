@@ -7,7 +7,9 @@
 
 ## Purpose
 
-Configurable anomaly detection rules with JSON-based thresholds. Rule types: `low_activity`, `excess_idle`, `unusual_pattern`, `excess_meeting`, `no_presence`, `break_exceeded`, `verification_failed`.
+Configurable anomaly detection rules with JSON-based thresholds. Rule types: `low_activity`, `excess_idle`, `unusual_pattern`, `excess_meeting`, `no_presence`, `break_exceeded`, `verification_failed`, `non_allowed_app`, `presence_without_activity`, `heartbeat_gap`.
+
+> **`non_allowed_app`** — fires when an employee accumulates time in an app where `application_usage.is_allowed = false` beyond the `violation_threshold_minutes` in `threshold_json`. Apps with `is_allowed = null` (pending review) are never evaluated. See [[docs/superpowers/plans/2026-04-26-app-catalog-observed-applications|App Catalog Plan]] for the full allowlist resolution flow.
 
 ## Database Tables
 

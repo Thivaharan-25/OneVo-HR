@@ -24,7 +24,7 @@
 ### Step 2: Click Enable MFA
 - **UI:** In the MFA section, click "Enable Two-Factor Authentication" button. Information panel explains: "Two-factor authentication adds an extra layer of security. You'll need to enter a code from your authenticator app each time you sign in"
 - **API:** `POST /api/v1/auth/mfa/enable`
-- **Backend:** `MfaService.InitiateSetupAsync()` → [[mfa]]
+- **Backend:** `MfaService.InitiateSetupAsync()` → [[modules/auth/mfa/overview|MFA]]
   1. Generate a random TOTP secret (Base32 encoded, 160 bits)
   2. Store secret temporarily (not yet confirmed) with status `pending_verification`
   3. Generate QR code data URL from the OTP Auth URI: `otpauth://totp/ONEVO:{email}?secret={secret}&issuer=ONEVO&algorithm=SHA1&digits=6&period=30`
@@ -52,7 +52,7 @@
     "code": "123456"
   }
   ```
-- **Backend:** `MfaService.ConfirmSetupAsync()` → [[mfa]]
+- **Backend:** `MfaService.ConfirmSetupAsync()` → [[modules/auth/mfa/overview|MFA]]
   1. Retrieve pending MFA secret for the user
   2. Validate TOTP code against the secret (30-second window, 1 step drift allowed)
   3. If valid: update `user_mfa_settings` status to `active`
@@ -143,7 +143,7 @@
 
 ## Module References
 
-- [[mfa]] — TOTP implementation, backup codes
+- [[modules/auth/mfa/overview|MFA]] — TOTP implementation, backup codes
 - [[frontend/cross-cutting/authentication|Authentication]] — integration with login flow
 - [[modules/auth/session-management/overview|Session Management]] — session handling after MFA verification
 - [[modules/configuration/overview|Configuration]] — tenant-level MFA policy

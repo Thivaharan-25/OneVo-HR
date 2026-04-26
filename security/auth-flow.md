@@ -153,5 +153,5 @@ export default function MonitoringSettingsPage() {
 - [[frontend/cross-cutting/authentication|Authentication]]
 - [[security/auth-architecture|Auth Architecture]]
 - [[modules/auth/session-management/overview|Session Management]]
-- [[mfa]]
+- [[modules/auth/mfa/overview|MFA]]
 - [[frontend/data-layer/api-integration|API Integration]]

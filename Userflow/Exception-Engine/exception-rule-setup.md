@@ -12,6 +12,7 @@
 - Monitoring enabled → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
 - Data flowing from agents → [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+- **For `non_allowed_app` rules specifically:** App allowlist must be configured first → [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]]. Creating a `non_allowed_app` rule before the allowlist is built will produce no alerts (apps with `is_allowed = null` are never flagged).
 
 ## Flow Steps
 
@@ -23,6 +24,10 @@
 - **UI:** Build condition:
   - **Attendance:** "Late arrival > 15 min for 3+ days in a week" / "Absent without leave" / "Early departure"
   - **Productivity:** "Productive hours < 4h/day for 3+ days" / "Unproductive app > 2h/day" / "Idle time > 3h/day"
+  - **App Allowlist:** "Non-allowed app used for more than X minutes" (`non_allowed_app` rule type)
+    - Requires `allowlist_mode = allowlist` and allowlist configured → [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]]
+    - Set `violation_threshold_minutes` in `threshold_json` to avoid alerting on accidental brief opens
+    - Only fires on `is_allowed = false` — never on `is_allowed = null` (unreviewed apps)
   - **Verification:** "Identity verification failed" / "Agent offline > 2 hours during shift"
   - **Custom:** Combine multiple conditions with AND/OR
 - **Backend:** ExceptionRuleService.CreateAsync() → [[modules/exception-engine/exception-rules/overview|Exception Rules]]
@@ -56,6 +61,7 @@
 - [[Userflow/Exception-Engine/escalation-chain-setup|Escalation Chain Setup]]
 - [[Userflow/Exception-Engine/exception-dashboard|Alerts Overview]]
 - [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] — prerequisite for non_allowed_app rules
 
 ## Module References
 

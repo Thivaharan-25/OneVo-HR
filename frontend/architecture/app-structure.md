@@ -63,7 +63,7 @@ app/
 │   │   │   │   ├── EmployeeDetailSections.tsx # Scrollable section blocks (replaces tabs)
 │   │   │   │   ├── EmployeeWizardSteps.tsx   # Multi-step create form stepper
 │   │   │   │   └── AvatarUpload.tsx          # Profile photo upload
-│   │   │   └── _types.ts                     # Local TypeScript definitions
+│   │   │   └── _types.ts                     # Route-local: form schemas, column defs — NOT API shapes
 │   │   │
 │   │   └── leave/                            # [Leave]
 │   │       ├── page.tsx                      # Leave requests (own or team)
@@ -75,7 +75,7 @@ app/
 │   │       │   ├── LeaveCalendar.tsx         # Calendar with leave overlays
 │   │       │   ├── LeaveBalanceCard.tsx      # Balance summary cards
 │   │       │   └── LeavePolicyEditor.tsx     # Policy CRUD form
-│   │       └── _types.ts                     # Local TypeScript definitions
+│   │       └── _types.ts                     # Route-local: form schemas, column defs — NOT API shapes
 │   │
 │   │── ─── PILLAR 2: WORKFORCE + WMS ────
 │   │
@@ -141,7 +141,7 @@ app/
 │   │   │   ├── OrgChart.tsx                   # Visual org chart component
 │   │   │   ├── JobFamilyEditor.tsx            # Job family CRUD form
 │   │   │   └── LegalEntityTree.tsx            # Entity hierarchy visualisation
-│   │   └── _types.ts                         # Local TypeScript definitions
+│   │   └── _types.ts                         # Route-local: form schemas, column defs — NOT API shapes
 │   │
 │   │── ─── PILLAR 4: ADMIN ────
 │   │
@@ -163,7 +163,7 @@ app/
 │   │   │   ├── UserTable.tsx                  # User management DataTable
 │   │   │   ├── RolePermissionMatrix.tsx       # Permission grid editor
 │   │   │   └── AuditLogViewer.tsx             # Filterable audit log
-│   │   └── _types.ts                         # Local TypeScript definitions
+│   │   └── _types.ts                         # Route-local: form schemas, column defs — NOT API shapes
 │   │
 │   │── ─── PILLAR 5: SETTINGS ────
 │   │
@@ -223,9 +223,12 @@ app/
 ## Layout System
 
 ### Dashboard Layout (`(dashboard)/layout.tsx`)
-- **Icon Rail:** 56px sidebar with 9 pillar icons, permission-gated via `hasPermission()`. Starts below the topbar (`top-12`).
-- **Topbar:** Full-width (`left-0 right-0`), 48px height. Shows legal entity switcher (left), command palette search (center), notification bell + theme toggle + avatar (right). See [[frontend/architecture/topbar|Topbar Architecture]].
-- **Expansion Panel:** 220px glass panel, slides out on pillar hover/click
+
+The shell uses a **floating-cards** layout — every element is a separate rounded card with `8px` body padding and `6px` gaps between cards. See [[frontend/design-system/components/shell-layout|Shell Layout]] for the full implementation pattern.
+
+- **Icon Rail:** **52px** floating dark card (`#17181F`, radius 12px). Permission-gated, always visible. See [[frontend/design-system/components/nav-rail|Nav Rail]].
+- **Topbar:** **40px** height, floating white/dark card (radius 10px). See [[frontend/architecture/topbar|Topbar Architecture]] for pixel-precise spec.
+- **Expansion Panel:** **210px** floating card, width+opacity animation (220ms ease-out). See [[frontend/design-system/components/expansion-panel|Expansion Panel]].
 - **Pillar visibility:** Permission-gated via `hasPermission()` — never hardcode role names
 
 ### Auth Layout (`(auth)/layout.tsx`)
@@ -252,14 +255,39 @@ app/
 
 ## Colocated Component Pattern
 
-Feature-specific components live inside each route's `components/` folder. Only truly shared components (e.g., `PermissionGate`, `ManagerHierarchyTree`, generic `DataTable` wrapper) belong in a top-level `components/` or `lib/` directory outside `app/`.
+Feature components start colocated in the route's `components/` folder, then get promoted when reused.
 
-**Rules:**
-- If a component is used by **only one feature** → `app/(dashboard)/people/employees/components/`
-- If a component is used by **2+ features** → `components/` at project root or `lib/components/`
-- `_types.ts` holds local TypeScript types for the feature (form schemas, table column defs, API response shapes)
+**Three-tier hierarchy — one location at a time:**
+
+| Scope | Location |
+|---|---|
+| Used by only one route | `app/(dashboard)/.../components/` (colocated) |
+| Used by 2+ pages within the same module | `components/{module}/` — e.g. `components/hr/`, `components/org/` |
+| Used across different modules | `components/shared/` |
+
+**Promotion rule:** when a component moves to a higher tier, **delete the colocated copy**. Never keep both. Duplicating causes them to diverge silently.
+
+**`_types.ts` scope:**
+- ✅ Form schemas, column definitions, local UI state shapes
+- ❌ API response shapes — those belong in `types/{module}.ts`, not here
+
+**File placement:**
 - `loading.tsx` goes inside `[id]/` folders for detail page skeletons
 - `layout.tsx` goes inside `[id]/` when detail views share chrome (breadcrumbs, back nav)
+
+**Heavy components require `next/dynamic()`:**
+
+```tsx
+const OrgChart = dynamic(() => import('@/components/org/org-chart'), {
+  ssr: false,
+  loading: () => <ChartSkeleton height={600} />,
+});
+const KanbanBoard = dynamic(() => import('@/components/projects/kanban-board'), {
+  loading: () => <TableSkeleton rows={10} />,
+});
+```
+
+Apply to: org charts, kanban boards, roadmap timelines, activity heatmaps, rich text editors, drag-and-drop widgets.
 
 ## Page Count
 
@@ -280,7 +308,7 @@ Feature-specific components live inside each route's `components/` folder. Only 
 ## Related
 
 - [[frontend/architecture/routing|Routing]] — Route guards, middleware, breadcrumbs
-- [[backend/module-boundaries|Module Boundaries]] — Code splitting, import rules
+- [[frontend/architecture/module-boundaries|Module Boundaries]] — Code splitting, import rules, component promotion path
 - [[frontend/architecture/rendering-strategy|Rendering Strategy]] — SSR vs CSR per route
 - [[frontend/cross-cutting/authorization|Authorization]] — Permission system details
 - [[frontend/data-layer/state-management|State Management]] — TanStack Query + Zustand

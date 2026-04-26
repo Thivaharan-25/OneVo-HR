@@ -75,6 +75,63 @@ All colors defined as CSS custom properties for light/dark mode support.
 |:-----|:------|:------|
 | Chart fill | `linear-gradient(180deg, #7c3aed20, transparent)` | Area chart fills |
 
+## Brand & Shell Tokens
+
+These tokens are used directly in the shell navigation components (rail, panel, topbar). They are NOT part of the semantic `[data-theme]` system — they are hardcoded constants because the shell has a fixed visual identity that does not vary by theme.
+
+### Accent (OneVo Purple)
+
+| Token | Value | Usage |
+|:------|:------|:------|
+| `--accent-600` | `#5B4FE8` | Active panel item text, primary buttons, focus rings |
+| `--accent-400` | `#8C86F2` | Active panel item text in dark mode |
+| `--accent-100` | `#ECEAFD` | Active panel item background in light mode |
+| accent dark bg | `rgba(91,79,232,0.20)` | Active panel item background in dark mode |
+
+```css
+/* Tailwind usage */
+text-[#5B4FE8]           /* active panel item, light */
+text-[#8C86F2]           /* active panel item, dark */
+bg-[#ECEAFD]             /* active panel item bg, light */
+bg-[rgba(91,79,232,0.20)] /* active panel item bg, dark */
+```
+
+### Neutral Scale (Shell UI)
+
+| Token | Value | Usage |
+|:------|:------|:------|
+| `--neutral-800` | `#1E2140` | Panel title, topbar entity name (light) |
+| `--neutral-700` | `#353A5E` | — |
+| `--neutral-600` | `#4C5278` | Panel head button hover (light) |
+| `--neutral-500` | `#6B7194` | Panel item default text (light) |
+| `--neutral-400` | `#9499B0` | Panel head button default, topbar icons (light) |
+| `--neutral-300` | `#C8CADC` | Topbar breadcrumb separator, search kbd (light) |
+| `--neutral-200` | `#E2E3EA` | Topbar border, topbar divider (light) |
+| `--neutral-100` | `#EDEEF2` | Shell body background (light) |
+| `--neutral-50` | `#F4F5F8` | Topbar search background, hover backgrounds (light) |
+
+### Shell Component Surfaces
+
+| Name | Value | Usage |
+|:-----|:------|:------|
+| Rail background | `#17181F` | Icon rail — same in light AND dark mode |
+| Panel background (light) | `#FAF9F6` | Expansion panel in light mode — warm off-white |
+| Panel background (dark) | `#000000` | Expansion panel in dark mode — pure black |
+| Panel border (light) | `#E8E8EC` | Expansion panel border in light mode |
+| Panel head border (light) | `#EEEDE9` | Separator between panel head and body |
+| Panel hover (light) | `#EEECEA` | Panel item and head button hover background |
+| Topbar bg (light) | `#FFFFFF` | Topbar surface in light mode |
+| Topbar bg (dark) | `#17181F` | Topbar surface in dark mode (same as rail) |
+| Content bg (dark) | `#111118` | Main content area in dark mode |
+| Shell body (dark) | `#0A0A0D` | Page base background in dark mode |
+
+### Gradients
+
+| Name | Value | Usage |
+|:-----|:------|:------|
+| User avatar (rail) | `linear-gradient(135deg, #C9A96E, #E8C98A)` | Bottom avatar in the icon rail |
+| User avatar (topbar) | `linear-gradient(135deg, #5B4FE8, #8C86F2)` | Avatar chip in topbar right |
+
 ## Related
 
 - [[frontend/design-system/components/component-catalog|Component Catalog]] — component library

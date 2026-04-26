@@ -84,6 +84,32 @@
 
 ---
 
+## `global_app_catalog`
+
+Global catalog of known applications managed by the OneVo dev team via the developer platform. No `tenant_id` — shared across all tenants. HR admins browse this when configuring app allowlists.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `app_name` | `varchar(200)` | e.g., "Google Chrome" |
+| `process_name` | `varchar(100)` | e.g., "chrome.exe" — authoritative matching key used by ingest processor |
+| `category` | `varchar(50)` | `browser`, `communication`, `development`, `office`, `design`, `productivity`, `other` |
+| `publisher` | `varchar(200)` | e.g., "Google LLC" |
+| `icon_url` | `varchar(500)` | App icon for HR admin UI display |
+| `is_public` | `boolean` | True = visible to all HR admins in catalog browser |
+| `is_productive_default` | `boolean` | Default productivity classification applied when no tenant override exists |
+| `created_by_id` | `uuid` | FK → dev_platform_accounts |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Foreign Keys:** `created_by_id` → `dev_platform_accounts`
+
+**Index:** `process_name` UNIQUE — no duplicate process names in catalog.
+
+> Managed via `/admin/v1/app-catalog/*` endpoints in the developer platform. See [[docs/superpowers/plans/2026-04-26-app-catalog-observed-applications|App Catalog Plan]] and [[database/schemas/configuration#`observed_applications`|observed_applications]] for the per-tenant discovery table.
+
+---
+
 ## `feature_flags`
 
 | Column | Type | Notes |

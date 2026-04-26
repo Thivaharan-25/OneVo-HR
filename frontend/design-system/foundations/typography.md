@@ -67,6 +67,27 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mon
 - Captions: `leading-none` (1)
 - Metrics: `leading-none` (1)
 
+## Shell Navigation Type Sizes
+
+The shell navigation (rail, panel, topbar) uses sizes outside the standard scale. These are fixed values — use Tailwind arbitrary values (`text-[Npx]`).
+
+| Location | Size | Weight | Font | Tailwind |
+|:---------|:-----|:-------|:-----|:---------|
+| Rail item label | **9px** | 500 | body (Geist) | `text-[9px] font-medium` |
+| Panel title (head) | **12.5px** | 600 | body | `text-[12.5px] font-semibold` |
+| Panel item | **12.5px** | 400 / 500 active | body | `text-[12.5px]` |
+| Panel dropdown item | **12.5px** | 400 | body | `text-[12.5px]` |
+| Topbar entity name | **12px** | 600 | body | `text-xs font-semibold` |
+| Topbar breadcrumb | **12px** | 500 / 600 current | body | `text-xs font-medium` |
+| Topbar search placeholder | **12px** | 400 | body | `text-xs` |
+| Topbar search kbd | **10px** | 400 | mono | `text-[10px] font-mono` |
+| Topbar avatar | **9px** | 700 | body | `text-[9px] font-bold` |
+| Content page title | **18px** | 600 | display (Outfit) | `text-[18px] font-semibold tracking-[-0.02em]` |
+| Content subtitle | **12px** | 400 | body | `text-xs` |
+| Rail avatar initial | **10px** | 700 | body | `text-[10px] font-bold` |
+
+> The project fonts are **Outfit** (display) and **Geist** (body/UI). The HTML design reference used Inter — when implementing, map Inter → Geist for all shell UI text. Sizes and weights remain identical.
+
 ## Related
 
 - [[frontend/design-system/foundations/color-tokens|Color Tokens]] — color system

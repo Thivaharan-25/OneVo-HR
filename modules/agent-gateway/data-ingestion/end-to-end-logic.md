@@ -24,6 +24,11 @@ POST /api/v1/agent/ingest
          -> Store as-is in payload_json column
       -> 3. Route different types to different modules:
          -> "activity_snapshot" -> stays in raw buffer for ProcessRawBufferJob
+         -> "app_usage"        -> UPSERT observed_applications (tenant_id, process_name)
+                                  increment employee_count, update last_seen_at, total_seconds
+                                  auto-fill global_catalog_id if global_app_catalog has matching process_name
+                                  then resolve is_allowed via app_allowlists (process_name first, name fallback)
+                                  null match → is_allowed = null (pending, never triggers non_allowed_app rule)
          -> "device_session" -> workforce-presence raw processing
          -> "verification_photo" -> identity-verification pipeline
       -> 4. Rate limit check: 30 requests/min/device (Redis sliding window)

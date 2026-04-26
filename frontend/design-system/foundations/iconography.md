@@ -23,17 +23,27 @@ import { Users, Calendar, BarChart3, AlertTriangle } from 'lucide-react';
 
 ## Icon Map by Domain
 
-### Navigation
-| Icon | Component | Pillar |
-|:-----|:----------|:-------|
-| `LayoutDashboard` | Home | Dashboard |
-| `Users` | People | Employees, Leave |
-| `Activity` | Workforce | Live Dashboard |
-| `Network` | Organization | Org Chart, Depts, Teams |
-| `CalendarRange` | Calendar | Calendar |
-| `Inbox` | Inbox | Approvals, tasks, mentions |
-| `UserCog` | Admin | Users & Roles, Audit, Agents, Devices, Compliance |
-| `Settings` | Settings | General, Monitoring, Notifications, Integrations, Branding, Billing, Alert Rules |
+### Navigation — Rail Pillar Icons
+
+Exact Lucide icon names for the 9 rail pillars, in display order:
+
+| Pillar | Lucide Import | Has Panel |
+|:-------|:-------------|:----------|
+| Home | `House` | No |
+| Inbox | `Inbox` | No |
+| People | `Users` | Yes |
+| Workforce | `LayoutDashboard` | Yes |
+| Org | `Network` | Yes |
+| Calendar | `Calendar` | Yes |
+| Chat | `MessageCircle` | No |
+| Admin | `Shield` | Yes |
+| Settings | `Settings` | Yes |
+
+Rail icon size: **16×16px**, stroke-width: **1.6** (fixed — does not change on active state).
+
+### Navigation — Panel Sub-Item Icons
+
+See [[frontend/design-system/components/expansion-panel|Expansion Panel]] for the complete per-pillar icon map. Panel icons are **13×13px**, stroke-width **1.6**.
 
 ### Status
 | Icon | Name | Context |
@@ -85,17 +95,31 @@ import { Users, Calendar, BarChart3, AlertTriangle } from 'lucide-react';
 </Tooltip>
 ```
 
-### Sidebar Nav Item
+### Shell Navigation Icon Sizes by Zone
+
+| Zone | Icon size | Stroke-width | Notes |
+|:-----|:----------|:-------------|:------|
+| Rail pillar icon | **16×16px** | **1.6** | Never changes on active — no stroke-width toggle |
+| Rail item label | — | — | 9px text below icon, not an icon |
+| Expansion panel item | **13×13px** | **1.6** | Same in all states |
+| Panel head buttons (close/+) | 12px / 14px | 1.75 / 2 | Close is 12px, Plus is 14px |
+| Panel create dropdown items | **13×13px** | 1.75 | |
+| Topbar buttons (bell, help, theme) | **14×14px** | **1.75** | Right-side icon buttons |
+| Topbar entity chevron | 11×11px | 2 | |
+| Topbar search icon | 13×13px | 1.75 | |
+
+### Rail Item (Correct Implementation)
 ```tsx
-// Icon rail — neutral active state, 16px icon
+// Rail icon — strokeWidth is ALWAYS 1.6, does not change on active
 <button className={cn(
-  'flex flex-col items-center justify-center py-3 rounded-lg transition-colors duration-150',
+  'w-[42px] flex flex-col items-center justify-center gap-1 py-[7px] pb-[6px] rounded-[8px]',
+  'transition-[background,color] duration-[120ms]',
   isActive
-    ? 'text-[var(--fg-1)]'
-    : 'text-[var(--fg-3)] hover:text-[var(--fg-2)] hover:bg-[var(--bg-hover)]'
+    ? 'bg-white/10 text-white/95'
+    : 'text-white/[0.28] hover:bg-white/[0.07] hover:text-white/[0.72]'
 )}>
-  <Users size={16} strokeWidth={isActive ? 2 : 1.75} />
-  {isActive && <span className="mt-1.5 w-1 h-1 rounded-full bg-[var(--fg-1)]" />}
+  <Users size={16} strokeWidth={1.6} aria-hidden="true" />
+  <span className="text-[9px] font-medium leading-none">{label}</span>
 </button>
 ```
 

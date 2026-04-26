@@ -141,7 +141,18 @@ Each dev builds the frontend for their module **immediately after** completing t
 
 ### Key Frontend Resources
 
+**Shell layout (start here for the dashboard):**
+
+- [[frontend/design-system/components/shell-layout|Shell Layout]] — floating-cards layout, body padding, Next.js implementation
+- [[frontend/design-system/components/nav-rail|Nav Rail]] — icon rail (52px, dark, 9 pillars, exact icon names)
+- [[frontend/design-system/components/expansion-panel|Expansion Panel]] — slide-out panel (210px, all items per pillar, animation)
+- [[frontend/architecture/topbar|Topbar]] — topbar (40px, all sub-components)
+- [[Userflow/Dashboard/shell-navigation|Shell Navigation]] — rail/panel interaction flow
+
+**General:**
+
 - [[frontend/architecture/app-structure|Frontend Structure]] — Next.js app directory layout
+- [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] — all pillar routes and permission keys
 - [[frontend/design-system/README|Design System]] — shadcn/ui components, design tokens
 - [[frontend/design-system/components/component-catalog|Component Catalog]] — all UI components
 - [[frontend/data-layer/api-integration|API Integration]] — API client, error handling, pagination
@@ -151,7 +162,7 @@ Each dev builds the frontend for their module **immediately after** completing t
 ### Frontend Priority Order (if time is tight)
 
 1. **Auth flow** — login, MFA, token management (DEV2)
-2. **Dashboard layout** — sidebar, topbar, permission-based navigation (DEV1)
+2. **Dashboard layout** — icon rail + expansion panel + topbar, floating-cards shell, permission-based navigation (DEV1) — see [[frontend/design-system/components/shell-layout|Shell Layout]]
 3. **Workforce Intelligence pages** — live dashboard, activity detail, exceptions (DEV3 + DEV2)
 4. **HR pages** — employees, leave, calendar (DEV1 + DEV3)
 5. **Settings** — monitoring configuration, tenant settings (DEV4)

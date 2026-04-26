@@ -51,7 +51,7 @@ POST /api/v1/agent/ingest
 - [[frontend/cross-cutting/authorization|Authorization]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[modules/auth/session-management/overview|Session Management]]
-- [[mfa]]
+- [[modules/auth/mfa/overview|MFA]]
 - [[security/auth-architecture|Auth Architecture]]
 - [[security/compliance|Compliance]]
 - [[security/data-classification|Data Classification]]

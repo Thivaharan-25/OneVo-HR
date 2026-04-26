@@ -43,7 +43,7 @@ JWT RS256-based authentication with access tokens (15 min) and refresh tokens (7
 - [[modules/auth/overview|Auth Module]]
 - [[frontend/cross-cutting/authorization|Authorization]]
 - [[modules/auth/session-management/overview|Session Management]]
-- [[mfa]]
+- [[modules/auth/mfa/overview|MFA]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
 - [[security/auth-architecture|Auth Architecture]]
