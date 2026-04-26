@@ -94,6 +94,39 @@ Rolling per-employee statistical baseline for discrepancy severity calculation. 
 
 ---
 
+## Messaging Tables (MassTransit Outbox + Idempotency)
+
+> These tables are managed by MassTransit and must not be written to directly. They are part of each module's DbContext.
+
+### `discrepancy_engine_outbox_events`
+
+Transactional outbox — written in the same DB transaction as the business write. A background processor reads and forwards to RabbitMQ.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | |
+| `event_type` | `varchar(200)` | Fully-qualified event class name |
+| `payload` | `jsonb` | Serialized IntegrationEvent |
+| `created_at` | `timestamptz` | |
+| `processed_at` | `timestamptz` | NULL = not yet delivered to RabbitMQ |
+| `retry_count` | `integer` | Default 0; max 5 |
+| `last_error` | `text` | Last failure message if any |
+
+Index: `WHERE processed_at IS NULL` on `created_at` — the outbox processor queries this.
+
+### `processed_integration_events`
+
+Idempotency table — prevents double-processing if RabbitMQ redelivers a message.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `event_id` | `uuid` | PK — same as `IntegrationEvent.EventId` |
+| `event_type` | `varchar(200)` | |
+| `processed_at` | `timestamptz` | |
+
+---
+
 ## Related
 
 - [[modules/discrepancy-engine/overview|Discrepancy Engine Module]]
