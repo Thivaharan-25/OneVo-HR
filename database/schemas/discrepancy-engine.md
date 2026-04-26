@@ -2,7 +2,7 @@
 
 **Module:** [[modules/discrepancy-engine/overview|Discrepancy Engine]]
 **Phase:** Phase 1
-**Tables:** 2
+**Tables:** 3
 
 > These tables were previously grouped under the Activity Monitoring schema file. Split out because they are owned and written to by `ONEVO.Modules.DiscrepancyEngine`, not Activity Monitoring.
 
@@ -27,6 +27,10 @@ Daily discrepancy detection results — comparing HR active time (from agent) vs
 | `notified_manager` | `boolean` | Whether manager was alerted |
 | `notified_at` | `timestamptz` | Nullable |
 | `created_at` | `timestamptz` | |
+| `z_score` | `decimal(8,2)` | Nullable. How many stddevs above baseline. Set when baseline data is available. |
+| `baseline_avg_minutes` | `decimal(8,2)` | Nullable. Employee's 30-day avg at time of computation. |
+| `baseline_stddev_minutes` | `decimal(8,2)` | Nullable. Employee's 30-day stddev at time of computation. |
+| `severity_method` | `varchar(20)` | `absolute` (new employee, < 5 samples) or `baseline_relative` |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
 
@@ -62,6 +66,31 @@ WMS-submitted task time per employee per day. Populated by the Work Activity bri
 **Index:** `(tenant_id, employee_id, date)` UNIQUE
 
 **Note:** If no WMS integration exists, this table stays empty. Discrepancy Engine skips it gracefully (`wms_logged_minutes = 0`, only calendar cross-reference used).
+
+---
+
+## `employee_discrepancy_baselines`
+
+Rolling per-employee statistical baseline for discrepancy severity calculation. Computed daily by `ComputeDiscrepancyBaselinesJob`. Requires minimum 5 samples before being used — new employees fall back to absolute thresholds automatically.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `employee_id` | `uuid` | FK → employees |
+| `computed_at` | `date` | The date this baseline was computed for |
+| `window_days` | `int` | Rolling window (default 30) |
+| `avg_unaccounted_minutes` | `decimal(8,2)` | Rolling average of unaccounted gap |
+| `stddev_unaccounted_minutes` | `decimal(8,2)` | Rolling stddev of unaccounted gap |
+| `sample_count` | `int` | Days with data in the window (< 5 → not used) |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+
+**Index:** `(tenant_id, employee_id, computed_at)` UNIQUE
+
+**Retention:** 90 days (small table, pruned by `CleanupOldBaselinesJob`)
 
 ---
 

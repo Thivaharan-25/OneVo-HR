@@ -3,7 +3,7 @@
 **Namespace:** `ONEVO.Modules.DiscrepancyEngine`
 **Phase:** 1 — Build
 **Pillar:** Workforce Intelligence
-**Tables:** 2 (`discrepancy_events`, `wms_daily_time_logs`)
+**Tables:** 3 (`discrepancy_events`, `wms_daily_time_logs`, `employee_discrepancy_baselines`)
 **Task File:** [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]] (Discrepancy Engine section)
 
 ---
@@ -104,7 +104,20 @@ public class DiscrepancyEngineJob
 }
 ```
 
-### Severity Thresholds (Tenant-Configurable, these are defaults)
+### Severity Thresholds
+
+Severity is calculated by `DiscrepancySeverityCalculator.Calculate()`. When a pre-computed baseline exists (≥ 5 samples, stddev > 0), z-score-relative thresholds are used. New employees without enough history fall back to absolute thresholds.
+
+**Baseline-relative (z-score) — used when baseline is available:**
+
+| Severity | Z-Score | Description |
+|:---------|:--------|:------------|
+| `none` | z < 1.0 | Within normal range for this employee |
+| `low` | 1.0 ≤ z < 1.5 | Mildly above personal baseline — automated reminder |
+| `high` | 1.5 ≤ z < 2.5 | Significantly above baseline — manager notified privately |
+| `critical` | z ≥ 2.5 | Extreme anomaly — escalated to HR Admin |
+
+**Absolute fallback (new employees, < 5 baseline samples):**
 
 | Severity | Unaccounted Gap | Action |
 |:---------|:----------------|:-------|
@@ -112,6 +125,8 @@ public class DiscrepancyEngineJob
 | `low` | 30–60 min | Automated reminder to employee: "You have unlogged active time today" |
 | `high` | 60–180 min | Manager notified privately (employee NOT informed) |
 | `critical` | 180+ min | Escalated to HR Admin immediately |
+
+See [[modules/discrepancy-engine/statistical-baselines/overview|Statistical Baselines]] for full details on baseline computation.
 
 ### Notification Behaviour
 
@@ -181,7 +196,12 @@ private async Task NotifyIfRequiredAsync(Employee employee, DiscrepancySeverity 
 
 ## Database Table
 
-See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discrepancy_events` and `wms_daily_time_logs` tables.
+See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discrepancy_events`, `wms_daily_time_logs`, and `employee_discrepancy_baselines` tables.
+
+## Features
+
+- [[modules/discrepancy-engine/statistical-baselines/overview|Statistical Baselines]] — Per-employee rolling baseline computation and z-score severity classification
+- [[modules/discrepancy-engine/notification-enrichment/overview|Notification Enrichment]] — AI-generated narrative context on critical discrepancy alerts via Claude API
 
 ---
 
@@ -189,6 +209,7 @@ See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discr
 
 | Job | Schedule | Queue | Purpose |
 |:----|:---------|:------|:--------|
+| `ComputeDiscrepancyBaselinesJob` | Daily 10:00 PM | Default | Compute rolling 30-day avg+stddev per employee |
 | `DiscrepancyEngineJob` | Daily 10:30 PM (per tenant timezone) | Default | Process all active employees for the day |
 
 ---
@@ -197,7 +218,7 @@ See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discr
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `DiscrepancyCriticalDetected` | Severity = `critical` | [[modules/notifications/overview\|Notifications]] (escalate to HR Admin) |
+| `DiscrepancyCriticalDetected` | Severity = `critical` | [[modules/notifications/overview\|Notifications]] (escalate to HR Admin), `DiscrepancyEnrichmentHandler` (AI narrative enrichment) |
 | `DiscrepancyHighDetected` | Severity = `high` | [[modules/notifications/overview\|Notifications]] (notify manager) |
 
 ---
