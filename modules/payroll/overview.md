@@ -191,6 +191,35 @@ External payroll system connections.
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `PayrollRunStarted` | `payroll.run.started` | Payroll batch execution begins | Audit trail |
+| `PayrollRunCompleted` | `payroll.run.completed` | Payroll batch successfully completed | [[modules/notifications/overview\|Notifications]] (notify employees payslips ready) |
+| `PayrollRunFailed` | `payroll.run.failed` | Payroll batch failed | [[modules/notifications/overview\|Notifications]] (alert payroll admin) |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `LeaveApproved` | `leave.request.approved` | [[modules/leave/overview\|Leave]] | Record leave days to deduct in next payroll run |
+| `SalaryChanged` | `core-hr.employee.salary_changed` | [[modules/core-hr/overview\|Core HR]] | Update base salary used in payroll calculation |
+| `OvertimeApproved` | `workforce.presence.overtime_approved` | [[modules/workforce-presence/overview\|Workforce Presence]] | Include approved overtime hours in payroll |
+| `ExpenseClaimApproved` | `expense.approved` | [[modules/expense/overview\|Expense]] | Include approved expense reimbursement in payroll run |
+
+---
+
 ## Key Business Rules
 
 1. **Payroll reads actual hours from `IWorkforcePresenceService`** — not just clock-in/out times.

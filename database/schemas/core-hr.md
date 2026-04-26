@@ -241,6 +241,29 @@
 
 ---
 
+## Messaging Tables (MassTransit Outbox)
+
+> These tables are managed by MassTransit and must not be written to directly. They are part of each module's DbContext.
+
+### `core_hr_outbox_events`
+
+Transactional outbox — written in the same DB transaction as the business write. A background processor reads and forwards to RabbitMQ.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | |
+| `event_type` | `varchar(200)` | Fully-qualified event class name |
+| `payload` | `jsonb` | Serialized IntegrationEvent |
+| `created_at` | `timestamptz` | |
+| `processed_at` | `timestamptz` | NULL = not yet delivered to RabbitMQ |
+| `retry_count` | `integer` | Default 0; max 5 |
+| `last_error` | `text` | Last failure message if any |
+
+Index: `WHERE processed_at IS NULL` on `created_at` — the outbox processor queries this.
+
+---
+
 ## Related
 
 - [[modules/core-hr/overview|Core HR Module]]

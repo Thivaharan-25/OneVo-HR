@@ -128,17 +128,33 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 
 ---
 
-## Domain Events
+## Domain Events (intra-module — MediatR)
 
-| Event | Published When | Consumers |
-|:------|:---------------|:----------|
-| `PresenceSessionStarted` | Employee clocks in (biometric/manual/agent auto-detect) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StartMonitoring` to agent), [[modules/notifications/overview\|Notifications]] (team online status) |
-| `PresenceSessionEnded` | Employee clocks out (biometric/manual/auto-close) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StopMonitoring` to agent), [[modules/activity-monitoring/overview\|Activity Monitoring]] (close day tracking) |
-| `BreakStarted` | Employee starts break (manual or auto-detected from idle threshold) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `PauseMonitoring` — agent stops ALL data collection) |
-| `BreakEnded` | Employee ends break (manual or activity resumes after auto-detected break) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `ResumeMonitoring` — agent resumes data collection) |
-| `BreakExceeded` | Break exceeds allowed duration | [[modules/exception-engine/overview\|Exception Engine]] (flag long break) |
-| `OvertimeRequested` | Employee requests overtime | [[modules/notifications/overview\|Notifications]] (approval workflow) |
-| `AttendanceCorrected` | Manager corrects attendance | Audit trail |
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `PresenceSessionStarted` | `workforce.presence.started` | Employee clocks in (biometric/manual/agent auto-detect) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StartMonitoring` to agent), [[modules/activity-monitoring/overview\|Activity Monitoring]] |
+| `PresenceSessionEnded` | `workforce.presence.ended` | Employee clocks out (biometric/manual/auto-close) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StopMonitoring` to agent) |
+| `BreakExceeded` | `workforce.presence.break` | Break exceeds allowed duration | [[modules/exception-engine/overview\|Exception Engine]] (flag long break) |
+| `OvertimeRequested` | `workforce.presence.overtime_req` | Employee requests overtime | [[modules/notifications/overview\|Notifications]] (approval workflow) |
+| `OvertimeApproved` | `workforce.presence.overtime_approved` | Manager approves overtime request | [[modules/payroll/overview\|Payroll]] (include in payroll run) |
+| `AttendanceCorrected` | `workforce.presence.corrected` | Manager corrects attendance data | Audit trail |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Create initial presence record and assign default shift for new employee |
+| `LeaveApproved` | `leave.request.approved` | [[modules/leave/overview\|Leave]] | Mark presence status as `on_leave` for the approved date range |
 
 **Monitoring lifecycle:** The `PresenceSessionStarted`/`Ended` and `BreakStarted`/`Ended` events are the **control signals** that govern when the desktop agent collects data. No data is captured before clock-in, during breaks, or after clock-out. See [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] for the full flow.
 

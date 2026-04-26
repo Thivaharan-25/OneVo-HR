@@ -175,17 +175,29 @@ Pending and completed commands sent from server to agent.
 
 ---
 
-## Domain Events
+## Domain Events (intra-module — MediatR)
 
-| Event | Published When | Consumers |
-|:------|:---------------|:----------|
-| `AgentRegistered` | New device registered | [[modules/configuration/overview\|Configuration]] (push initial policy) |
-| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview\|Exception Engine]] (flag offline agent) |
-| `AgentRevoked` | Admin revokes agent access | Agent receives 401 on next request |
-| `AgentCommandDispatched` | Command sent to agent via SignalR | Audit log |
-| `AgentCommandCompleted` | Agent reports command result | [[modules/identity-verification/overview\|Identity Verification]] (photo result), [[modules/exception-engine/overview\|Exception Engine]] (screenshot result) |
-| `MonitoringStarted` | Agent confirmed monitoring active | [[modules/activity-monitoring/overview\|Activity Monitoring]] (begin accepting snapshots) |
-| `MonitoringStopped` | Agent confirmed monitoring stopped | [[modules/activity-monitoring/overview\|Activity Monitoring]] (stop accepting snapshots) |
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `AgentRegistered` | `agent.gateway.registered` | New device registered | [[modules/configuration/overview\|Configuration]] (push initial policy) |
+| `AgentHeartbeatLost` | `agent.gateway.heartbeat_lost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview\|Exception Engine]] (flag offline agent) |
+| `AgentRevoked` | `agent.gateway.revoked` | Admin revokes agent access | Agent receives 401 on next request |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `EmployeeOffboarded` | `core-hr.employee.offboarded` | [[modules/core-hr/overview\|Core HR]] | Revoke agent registration for offboarded employee |
 
 ---
 

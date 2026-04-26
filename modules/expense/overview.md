@@ -70,6 +70,32 @@ Manages expense categories, claims, and individual line items. Uses the [[module
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `ExpenseClaimSubmitted` | `expense.submitted` | Employee submits expense claim for approval | [[modules/notifications/overview\|Notifications]] (notify approver) |
+| `ExpenseClaimApproved` | `expense.approved` | Expense claim approved | [[modules/payroll/overview\|Payroll]] (include in next payroll run) |
+| `ExpenseClaimPaid` | `expense.paid` | Expense reimbursement paid | [[modules/notifications/overview\|Notifications]] (notify employee) |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| _(none)_ | — | — | — |
+
+---
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |

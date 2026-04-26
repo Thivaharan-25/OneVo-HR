@@ -153,6 +153,33 @@ OKR-style goals with parent-child hierarchy.
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `ReviewCycleStarted` | `performance.review.started` | Review cycle activated | [[modules/calendar/overview\|Calendar]] (create review calendar events) |
+| `ReviewCompleted` | `performance.review.completed` | Review submitted and finalized | [[modules/notifications/overview\|Notifications]], [[modules/skills/overview\|Skills]] (update skill assessments from review) |
+| `GoalCreated` | `performance.goal.created` | New goal created for employee | Audit trail |
+| `RecognitionGiven` | `performance.recognition` | Peer recognition submitted | [[modules/notifications/overview\|Notifications]] (notify recipient) |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Enroll new employee in active review cycle if one exists |
+
+---
+
 ## Key Business Rules
 
 1. **Productivity score integration is optional** — controlled by `include_productivity_data` on review cycles. When enabled, `IProductivityAnalyticsService.GetProductivityScoreAsync()` is called during review creation. This score is a composite: agent-based activity data from `daily_employee_report` / `monthly_employee_report` + WMS task metrics from `wms_productivity_snapshots` (when the tenant has WMS integration). If no WMS data exists, the score uses agent data only — no config change needed.

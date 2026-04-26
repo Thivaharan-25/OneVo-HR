@@ -89,6 +89,36 @@ See [[backend/notification-system|Notification System]] for the full 6-step pipe
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| _(none)_ | — | — | — |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `LeaveRequested` | `leave.request.requested` | [[modules/leave/overview\|Leave]] | Notify manager of pending leave request |
+| `LeaveApproved` | `leave.request.approved` | [[modules/leave/overview\|Leave]] | Notify employee of approval |
+| `LeaveRejected` | `leave.request.rejected` | [[modules/leave/overview\|Leave]] | Notify employee of rejection |
+| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Send onboarding welcome notification |
+| `PayrollRunCompleted` | `payroll.run.completed` | [[modules/payroll/overview\|Payroll]] | Notify employees that payslips are ready |
+| `ReviewCompleted` | `performance.review.completed` | [[modules/performance/overview\|Performance]] | Notify employee of completed review |
+| `ExceptionAlertCreated` | `exception.alert` | [[modules/exception-engine/overview\|Exception Engine]] | Send alert notification via escalation chain |
+
+---
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |

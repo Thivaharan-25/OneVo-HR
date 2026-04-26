@@ -206,6 +206,30 @@ Tracks changes to app allowlists for compliance.
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| _(none)_ | — | — | — |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `TenantCreated` | `infrastructure.tenant.created` | [[modules/infrastructure/overview\|Infrastructure]] | Seed default monitoring toggles based on tenant's `industry_profile` |
+
+---
+
 ## Key Business Rules
 
 1. **Industry profile sets defaults at signup** — admin can change any toggle at any time.

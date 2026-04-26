@@ -543,6 +543,34 @@ Hangfire job metadata for visibility/management. Not in HTML ERD — to be added
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `WorkflowStepCompleted` | `platform.workflow.step` | Approver takes action on a workflow step | Source module (leave, expense, etc.) to advance state |
+| `WorkflowCompleted` | `platform.workflow.completed` | Workflow reaches final approved or rejected state | Source module to finalize resource status |
+| `SubscriptionChanged` | `platform.subscription` | Tenant upgrades, downgrades, or cancels subscription | Feature-gating consumers |
+| `FeatureFlagToggled` | `platform.flag` | Feature flag enabled or disabled for a tenant | Modules that gate functionality on the flag |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `UserLoggedIn` | `auth.login` | [[modules/auth/overview\|Auth]] | Update active session tracking |
+| `TenantActivated` | `infrastructure.tenant.activated` | [[modules/infrastructure/overview\|Infrastructure]] | Enable subscription billing and feature flags for tenant |
+
+---
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |

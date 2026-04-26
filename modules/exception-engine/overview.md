@@ -165,14 +165,31 @@ When the engine runs checks.
 
 ---
 
-## Domain Events
+## Domain Events (intra-module — MediatR)
 
-| Event | Published When | Consumers |
-|:------|:---------------|:----------|
-| `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview\|Notifications]] (send alert via escalation chain) |
-| `AlertEscalated` | Unacknowledged alert escalated to next level | [[modules/notifications/overview\|Notifications]] (notify next in chain) |
-| `AlertAcknowledged` | Manager acknowledges/dismisses alert | Audit trail |
-| `RemoteCaptureRequested` | Manager clicks "Request Screenshot/Photo" on alert | [[modules/agent-gateway/overview\|Agent Gateway]] (dispatches capture command to agent) |
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `ExceptionAlertCreated` | `exception.alert` | Rule threshold breached | [[modules/notifications/overview\|Notifications]] (send alert via escalation chain), [[modules/productivity-analytics/overview\|Productivity Analytics]] |
+| `AlertEscalated` | `exception.escalated` | Unacknowledged alert escalated to next level | [[modules/notifications/overview\|Notifications]] (notify next in chain) |
+| `AlertAcknowledged` | `exception.acknowledged` | Manager acknowledges/dismisses alert | Audit trail |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `ActivitySnapshotReceived` | `activity.snapshot` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Evaluate active exception rules against latest snapshot |
+| `BreakExceeded` | `workforce.presence.break` | [[modules/workforce-presence/overview\|Workforce Presence]] | Fire break-exceeded alert if over allowed duration |
+| `AgentHeartbeatLost` | `agent.gateway.heartbeat_lost` | [[modules/agent-gateway/overview\|Agent Gateway]] | Fire heartbeat-gap alert for the affected employee |
 
 ---
 

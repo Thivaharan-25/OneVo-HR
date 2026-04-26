@@ -112,6 +112,34 @@ Reference data — NOT tenant-scoped (global).
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `TenantCreated` | `infrastructure.tenant.created` | New tenant provisioned | [[modules/configuration/overview\|Configuration]] (seed monitoring defaults), [[modules/org-structure/overview\|Org Structure]] (seed default department) |
+| `TenantActivated` | `infrastructure.tenant.activated` | Tenant moves from trial to active | [[modules/shared-platform/overview\|Shared Platform]] |
+| `TenantDeactivated` | `infrastructure.tenant.deactivated` | Tenant suspended or cancelled | [[modules/shared-platform/overview\|Shared Platform]] |
+| `UserCreated` | `infrastructure.user.created` | New user record created | Downstream modules that need user context |
+| `UserStatusChanged` | `infrastructure.user.status` | User activated or deactivated | [[modules/auth/overview\|Auth]] (update login access) |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| _(none)_ | — | — | — |
+
+---
+
 ## Key Business Rules
 
 1. **Tenant provisioning flow:** Signup → seed default data (roles, permissions, monitoring toggles based on `industry_profile`) → activate.

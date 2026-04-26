@@ -21,6 +21,7 @@
 | Authentication | JWT (RS256) | - | Access tokens (15min) + Refresh tokens (7 days) |
 | Authorization | Custom RBAC | - | `RequirePermission` attribute, 90+ permissions |
 | Background Jobs | Hangfire | 1.8.x | 5-queue priority system (Critical/High/Default/Low/Batch) |
+| Message Broker | RabbitMQ + MassTransit | Latest | Phase 1 cross-module integration events; transactional outbox pattern |
 | Real-time | SignalR | 9.0 | WebSocket connections, presence tracking, live dashboards |
 | API Documentation | Swagger/OpenAPI | 3.0 | Auto-generated, Kiota SDK generation |
 | Validation | FluentValidation | 11.x | Request validation |
@@ -265,7 +266,6 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | ChromaDB | AI semantic cache deferred |
 | Groq | LLM routing deferred |
 | Flutter | Mobile app deferred |
-| RabbitMQ | Using in-process domain events initially; RabbitMQ for scale later |
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
 | Teams Graph API (deep) | Basic meeting detection via process name sufficient for Phase 1 |
 | macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` — a parallel implementation. Phase 2. |

@@ -1,98 +1,146 @@
 # Event Bus Topology: ONEVO
 
-## Phase 1: In-Process Domain Events (MediatR)
+## Intra-Module Events (MediatR)
 
-In Phase 1, all domain events are dispatched in-process via MediatR `INotification`:
+Domain events published and handled **within the same module only**. They never cross a module boundary.
 
 ```
-Publisher Module → MediatR.Publish(event) → All registered INotificationHandler<T>
+Publisher Handler → MediatR.Publish(DomainEvent) → INotificationHandler<T> (same module only)
 ```
 
-### Advantages
 - Zero infrastructure overhead (no message broker needed)
-- Synchronous execution within the same transaction (consistency)
+- Executes synchronously within the same transaction (strong consistency)
 - Simple debugging and tracing
 
-### Limitations
-- No retry/dead-letter handling (handled by try-catch + logging)
-- Events lost if process crashes mid-publish
-- All handlers run in the same thread/transaction
+---
 
-### Mitigation: Transactional Outbox (for critical events)
+## Phase 1: Cross-Module Events (RabbitMQ via MassTransit)
 
-For events that MUST be delivered (e.g., `PayrollRunCompleted`, `LeaveApproved`), use the outbox pattern:
+All integration events that cross module boundaries are delivered via **RabbitMQ** using **MassTransit** with the transactional outbox pattern.
+
+```
+Publisher Module
+  → IEventBus.PublishAsync(IntegrationEvent)
+  → Written to {module}_outbox_events in same DB transaction
+  → MassTransit OutboxProcessor polls & forwards to RabbitMQ
+  → onevo.events topic exchange
+  → Bound queues
+  → Consumer module IConsumer<T>
+  → Idempotency check (processed_integration_events)
+  → Handler logic
+```
+
+### Exchange Topology
+
+```
+onevo.events (topic exchange)
+├── infrastructure.*          → Queue: auth-infrastructure-events
+│                             → Queue: configuration-infrastructure-events
+│                             → Queue: org-structure-infrastructure-events
+├── auth.*                    → Queue: shared-platform-auth-events
+├── core-hr.employee.*        → Queue: workforce-presence-employee-events
+│                             → Queue: leave-employee-events
+│                             → Queue: skills-employee-events
+│                             → Queue: documents-employee-events
+│                             → Queue: performance-employee-events
+│                             → Queue: calendar-employee-events
+│                             → Queue: agent-gateway-employee-events
+├── workforce.presence.*      → Queue: activity-monitoring-presence-events
+│                             → Queue: exception-engine-presence-events
+│                             → Queue: payroll-presence-events
+│                             → Queue: workforce-presence-leave-events
+├── leave.request.*           → Queue: payroll-leave-events
+│                             → Queue: calendar-leave-events
+│                             → Queue: workforce-presence-leave-events
+│                             → Queue: notifications-leave-events
+├── activity.*                → Queue: exception-engine-activity-events
+│                             → Queue: identity-verification-activity-events
+│                             → Queue: productivity-analytics-activity-events
+│                             → Queue: discrepancy-engine-activity-events
+├── agent.gateway.*           → Queue: exception-engine-agent-events
+│                             → Queue: agent-gateway-employee-events
+├── exception.*               → Queue: notifications-exception-events
+│                             → Queue: productivity-analytics-exception-events
+├── payroll.run.*             → Queue: notifications-payroll-events
+├── performance.review.*      → Queue: skills-review-events
+│                             → Queue: calendar-review-events
+│                             → Queue: notifications-review-events
+├── analytics.*               → Queue: notifications-analytics-events
+├── skills.*                  → Queue: notifications-skills-events
+├── documents.*               → Queue: notifications-documents-events
+├── grievance.*               → Queue: notifications-grievance-events
+├── expense.*                 → Queue: payroll-expense-events
+│                             → Queue: notifications-expense-events
+├── platform.*                → Queue: notifications-platform-events
+├── identity.*                → Queue: notifications-identity-events
+├── org.department.*          → Queue: notifications-org-events
+└── discrepancy.*             → Queue: notifications-discrepancy-events
+```
+
+### Routing Key Patterns
+
+> Routing keys follow `<module>.<aggregate>.<verb_past>` where applicable. See [[backend/messaging/event-catalog|Event Catalog]] for per-event routing keys.
+
+| Module Group | Pattern | Example |
+|:------------|:--------|:--------|
+| Infrastructure | `infrastructure.<aggregate>.<verb>` | `infrastructure.tenant.created` |
+| Auth | `auth.<verb>` | `auth.login` |
+| Core HR | `core-hr.employee.<verb>` | `core-hr.employee.hired` |
+| Workforce Presence | `workforce.presence.<verb>` | `workforce.presence.started` |
+| Leave | `leave.request.<verb>` | `leave.request.approved` |
+| Activity Monitoring | `activity.<noun>` | `activity.snapshot` |
+| Exception Engine | `exception.<verb>` | `exception.alert` |
+| Payroll | `payroll.run.<verb>` | `payroll.run.completed` |
+| Performance | `performance.review.<verb>` | `performance.review.started` |
+| Skills | `skills.<verb>` | `skills.validated` |
+| Agent Gateway | `agent.gateway.<verb>` | `agent.gateway.registered` |
+| Productivity Analytics | `analytics.<cadence>` | `analytics.daily` |
+| Documents | `documents.<verb>` | `documents.published` |
+| Grievance | `grievance.<verb>` | `grievance.filed` |
+| Expense | `expense.<verb>` | `expense.submitted` |
+| Shared Platform | `platform.<aggregate>.<verb>` | `platform.workflow.step` |
+| Identity Verification | `identity.<verb>` | `identity.verified` |
+| Org Structure | `org.department.<verb>` | `org.department.changed` |
+| Discrepancy Engine | `discrepancy.<verb>` | `discrepancy.critical` |
+
+### Transactional Outbox Pattern
+
+Each publisher module has a `{module}_outbox_events` table. Integration events are written to this table in the same database transaction as the business write. MassTransit's OutboxProcessor polls the table and forwards messages to RabbitMQ.
 
 ```csharp
-// 1. Save entity + outbox event in same transaction
-await _context.SaveChangesAsync(ct); // Saves LeaveRequest + OutboxEvent atomically
-
-// 2. Background worker polls outbox and dispatches events
-public class OutboxProcessor : BackgroundService
+// Publisher: IEventBus wraps MassTransit outbox publish
+public class ApproveLeaveRequestHandler : IRequestHandler<ApproveLeaveRequestCommand, Result<Unit>>
 {
-    protected override async Task ExecuteAsync(CancellationToken ct)
+    private readonly IEventBus _eventBus;
+
+    public async Task<Result<Unit>> Handle(ApproveLeaveRequestCommand cmd, CancellationToken ct)
     {
-        while (!ct.IsCancellationRequested)
-        {
-            var events = await _outboxRepository.GetUnprocessedAsync(batchSize: 50, ct);
-            foreach (var evt in events)
-            {
-                await _publisher.Publish(evt.Deserialize(), ct);
-                evt.MarkProcessed();
-            }
-            await _unitOfWork.SaveChangesAsync(ct);
-            await Task.Delay(TimeSpan.FromSeconds(5), ct);
-        }
+        // ... approve the leave request
+        await _eventBus.PublishAsync(new LeaveApproved(leaveRequest.Id, leaveRequest.EmployeeId, ...), ct);
+        // LeaveApproved written to leave_outbox_events in same transaction as business write
+        return Result<Unit>.Success(Unit.Value);
+    }
+}
+
+// Consumer: MassTransit IConsumer<T> with idempotency guard
+public class UpdatePresenceOnLeaveApprovedConsumer : IConsumer<LeaveApproved>
+{
+    public async Task Consume(ConsumeContext<LeaveApproved> context)
+    {
+        // MassTransit inbox-state handles idempotency via processed_integration_events
+        // Mark leave days in workforce presence records
     }
 }
 ```
 
-### Outbox Table
+### Idempotency
 
-```sql
-CREATE TABLE outbox_events (
-    id uuid PRIMARY KEY,
-    tenant_id uuid NOT NULL,
-    event_type varchar(200) NOT NULL,
-    payload jsonb NOT NULL,
-    created_at timestamptz NOT NULL DEFAULT now(),
-    processed_at timestamptz,
-    retry_count integer DEFAULT 0,
-    last_error text
-);
+Each consumer module has a `processed_integration_events` table. MassTransit's inbox-state middleware checks this table before processing — if `event_id` is already present, the message is silently discarded. This prevents double-processing when RabbitMQ redelivers after a transient failure.
 
-CREATE INDEX idx_outbox_unprocessed ON outbox_events (created_at) WHERE processed_at IS NULL;
-```
-
-## Phase 2: RabbitMQ (Future)
-
-When scale requires it, migrate critical events to RabbitMQ:
-
-### Exchange Topology (Planned)
-
-```
-onevo.events (topic exchange)
-├── core-hr.employee.*     → Queue: attendance-employee-events
-│                          → Queue: leave-employee-events
-│                          → Queue: skills-employee-events
-├── leave.request.*        → Queue: payroll-leave-events
-│                          → Queue: calendar-leave-events
-│                          → Queue: attendance-leave-events
-├── attendance.record.*    → Queue: payroll-attendance-events
-├── payroll.run.*          → Queue: notifications-payroll-events
-├── performance.review.*   → Queue: skills-review-events
-│                          → Queue: notifications-review-events
-└── *.*.created|updated    → Queue: audit-all-events (fan-out for audit)
-```
-
-### Migration Strategy
-
-1. Keep MediatR for intra-module events (fast, transactional)
-2. Add RabbitMQ for cross-module events that need reliability
-3. Use the `IntegrationEvent` base class (already in SharedKernel) for RabbitMQ events
-4. Dual-publish during migration: MediatR + RabbitMQ
-5. Once stable, remove MediatR cross-module handlers
+---
 
 ## Related
 
-- [[backend/messaging/event-catalog|Event Catalog]]
-- [[backend/messaging/error-handling|Error Handling]]
+- [[backend/messaging/event-catalog|Event Catalog]] — full event list with routing keys
+- [[backend/messaging/error-handling|Error Handling]] — retry policies and dead-letter queues
+- [[backend/messaging/module-event-matrix|Module Event Matrix]] — per-module publish/consume overview

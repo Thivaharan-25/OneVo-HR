@@ -214,12 +214,27 @@ See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discr
 
 ---
 
-## Domain Events
+## Domain Events (intra-module — MediatR)
 
-| Event | Published When | Consumers |
-|:------|:---------------|:----------|
-| `DiscrepancyCriticalDetected` | Severity = `critical` | [[modules/notifications/overview\|Notifications]] (escalate to HR Admin), `DiscrepancyEnrichmentHandler` (AI narrative enrichment) |
-| `DiscrepancyHighDetected` | Severity = `high` | [[modules/notifications/overview\|Notifications]] (notify manager) |
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `DiscrepancyCriticalDetected` | `discrepancy.critical` | Severity = `critical` | [[modules/notifications/overview\|Notifications]] (escalate to HR Admin), `DiscrepancyEnrichmentHandler` (AI narrative enrichment) |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `DailySummaryAggregated` | `activity.summary` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Trigger daily discrepancy computation for all employees |
 
 ---
 

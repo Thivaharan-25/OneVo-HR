@@ -168,8 +168,9 @@ Tenant default → Role override → Employee override. Most specific wins. See 
 See [[modules/agent-gateway/remote-commands/overview|Remote Commands]].
 
 ### Cross-Module Communication
-Modules communicate in two ways:
-- **Domain events** (MediatR) for async side effects — Module A publishes `PresenceSessionStarted`, Module B handles it
+Modules communicate in three ways:
+- **Integration events** (`IEventBus` → RabbitMQ via MassTransit) for async cross-module side effects — Module A publishes `LeaveApproved`, Module B's `IConsumer<LeaveApproved>` handles it
+- **Domain events** (MediatR `INotification`) for async intra-module side effects — stays within the same module, never crosses boundaries
 - **Direct interface calls** for synchronous queries — Module A calls `ICalendarConflictService.CheckConflictsAsync()` directly via DI
 
 No module imports another module's internal classes — only public interfaces. See [[backend/messaging/event-catalog|Event Catalog]].
@@ -229,7 +230,7 @@ Each developer has task files in `current-focus/` with self-contained instructio
 
 1. **Do not build Phase 2 modules** — check `**Phase:**` marker in each module overview
 2. **Do not build Phase 2 features** — check `## Phase 2 Features (Do NOT Build)` sections
-3. **Do not use RabbitMQ** — in-process MediatR domain events for Phase 1
+3. **Do not use MediatR for cross-module events** — use `IEventBus.PublishAsync()` (RabbitMQ via MassTransit) for integration events; MediatR `INotification` is for intra-module domain events only
 4. **Do not use Meilisearch** — PostgreSQL FTS is sufficient
 5. **Do not import one module's internals into another** — use public interfaces and domain events only
 6. **Do not capture agent data outside monitoring lifecycle** — no data before clock-in, during breaks, or after clock-out
