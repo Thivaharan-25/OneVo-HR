@@ -267,7 +267,7 @@ Multiple methods per user via `user_mfa` table:
 
 - [[frontend/cross-cutting/authentication|Authentication]]
 - [[frontend/cross-cutting/authorization|Authorization]]
-- [[mfa]]
+- [[modules/auth/mfa/overview|MFA]]
 - [[modules/auth/session-management/overview|Session Management]]
 - [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]

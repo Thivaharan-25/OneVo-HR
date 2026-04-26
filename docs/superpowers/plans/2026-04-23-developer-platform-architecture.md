@@ -130,6 +130,18 @@ At any step the wizard can be saved as a draft (`tenants.status = 'provisioning'
 - Revoke keys immediately
 - View key usage logs
 
+### Module 7: App Catalog Manager
+**Controls:** `global_app_catalog` (SharedPlatform), `observed_applications` (Configuration — read-only aggregate view)
+
+- List all apps in the global catalog with search + filter by category / `is_public`
+- Add new app: name, `process_name` (Windows exe), category, publisher, icon URL, `is_productive_default`
+- Toggle `is_public` — immediately makes app visible (or hidden) in all tenants' allowlist catalog browser
+- Edit existing entries: update `process_name` when a Windows update changes an exe name
+- **Uncatalogued Apps view:** apps appearing in many tenants' `observed_applications` that are not yet in the catalog, sorted by tenant count DESC — bulk-approve into catalog with one click
+- Background job triggered on every new catalog entry: backfills `observed_applications.global_catalog_id` across all tenants for that `process_name`
+
+> See [[docs/superpowers/plans/2026-04-26-app-catalog-observed-applications|App Catalog Architecture Plan]] for full design.
+
 ---
 
 ## 4. New Database Tables
@@ -191,7 +203,7 @@ platform_api_keys
 └── created_at       timestamptz
 ```
 
-**Schema catalog impact:** +5 tables (Phase 1) / +6 tables (Phase 2). Schema catalog total moves from 170 → 175 (Phase 1) or 176 (Phase 2).
+**Schema catalog impact:** +5 tables (Phase 1) / +6 tables (Phase 2) from developer platform. Additionally, the App Catalog feature (Module 7) adds `global_app_catalog` (+1 to shared_platform) and `observed_applications` (+1 to configuration). Full total: 170 → 177 (Phase 1) or 178 (Phase 2).
 
 **Existing table change:** `tenants.status` enum must be updated to include `'provisioning'` alongside `'active'` and `'suspended'`. A tenant in `provisioning` status is excluded from all tenant-facing queries — only visible in the admin API.
 
@@ -231,6 +243,14 @@ GET    /admin/v1/config/defaults                   → Global tenant setting def
 PATCH  /admin/v1/config/defaults                   → Update defaults
 GET    /admin/v1/tenants/{id}/settings             → Per-tenant settings
 PATCH  /admin/v1/tenants/{id}/settings             → Override per-tenant settings
+
+-- App Catalog Manager (Module 7):
+GET    /admin/v1/app-catalog                       → List catalog apps (filter: is_public, category)
+POST   /admin/v1/app-catalog                       → Add new app
+PATCH  /admin/v1/app-catalog/{id}                  → Update (name, process_name, is_public, category)
+DELETE /admin/v1/app-catalog/{id}                  → Remove from catalog
+GET    /admin/v1/app-catalog/uncatalogued          → Apps in observed_applications not in catalog, sorted by tenant_count DESC
+POST   /admin/v1/app-catalog/bulk-approve          → Add multiple uncatalogued apps to catalog at once
 
 -- Phase 2:
 GET    /admin/v1/api-keys                          → Platform API key list
@@ -289,6 +309,15 @@ dev-console/                           ← Separate Next.js app (separate repo o
 │       │
 │       ├── config/
 │       │   └── page.tsx               # Global defaults editor
+│       │
+│       ├── app-catalog/               # Module 7
+│       │   ├── page.tsx               # All catalog apps: search, filter by category/is_public
+│       │   ├── new/
+│       │   │   └── page.tsx           # Add app form (name, process_name, category, publisher, icon)
+│       │   ├── uncatalogued/
+│       │   │   └── page.tsx           # Apps seen in many tenants, not in catalog — bulk approve
+│       │   └── [appId]/
+│       │       └── page.tsx           # Edit app, toggle is_public, update process_name
 │       │
 │       └── api-keys/                  # Phase 2
 │           └── page.tsx               # API key management

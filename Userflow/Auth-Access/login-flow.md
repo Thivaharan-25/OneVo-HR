@@ -58,7 +58,7 @@
     "code": "123456"
   }
   ```
-- **Backend:** `MfaService.VerifyAsync()` → [[mfa]]
+- **Backend:** `MfaService.VerifyAsync()` → [[modules/auth/mfa/overview|MFA]]
   1. Validate temporary MFA token (valid for 5 minutes)
   2. Verify TOTP code against user's MFA secret (using TOTP algorithm with 30-second window, allowing 1 step drift)
   3. If backup code used: mark code as consumed
@@ -172,7 +172,7 @@
 - [[frontend/cross-cutting/authentication|Authentication]] — login logic, JWT RS256 token issuance
 - [[frontend/cross-cutting/authorization|Authorization]] — effective permission computation for JWT claims
 - [[modules/auth/session-management/overview|Session Management]] — session creation and tracking
-- [[mfa]] — TOTP verification
+- [[modules/auth/mfa/overview|MFA]] — TOTP verification
 - [[security/auth-architecture|Auth Architecture]] — overall auth design
 - [[security/auth-flow|Auth Flow]] — authentication flow diagrams
 - [[modules/infrastructure/overview|Infrastructure]] — tenant resolution, multi-tenancy

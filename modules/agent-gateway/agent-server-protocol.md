@@ -140,6 +140,7 @@ Content-Type: application/json
       "type": "app_usage",
       "data": {
         "application_name": "Google Chrome",
+        "process_name": "chrome.exe",
         "window_title_hash": "a1b2c3...",
         "duration_seconds": 45
       }
@@ -170,6 +171,7 @@ The ingest endpoint validates every batch before queuing it. Violations return `
 | `active_seconds + idle_seconds` | ≤ `snapshot_interval_seconds` + 5 (5s tolerance) | Sum cannot exceed the snapshot interval |
 | `duration_seconds` (app_usage) | Integer, 0–`snapshot_interval_seconds` | Cannot exceed the collection window |
 | `application_name` | Max 200 characters, non-empty | Prevents oversized strings |
+| `process_name` | Max 100 characters, non-empty | e.g., "chrome.exe" — used as authoritative allowlist matching key |
 | `window_title_hash` | Exactly 64 hex characters (SHA-256) | Validates hash integrity |
 | `employee_id` | Must match active `agent_sessions` record for this `device_id` | See Employee-Device Binding in [[modules/agent-gateway/data-collection\|Data Collection]] |
 

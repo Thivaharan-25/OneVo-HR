@@ -24,11 +24,15 @@ src/
 ## File Organization Rules
 
 1. **Page files (`app/`)** should be thin — import components, pass data down
-2. **Feature components** (`components/hr/`, `components/workforce/`) contain the actual UI logic
+2. **Feature components** follow a three-tier promotion path:
+   - Route-exclusive → colocated in `app/(dashboard)/.../components/`
+   - Module-shared (2+ pages in same module) → promoted to `components/{module}/` (delete colocated copy)
+   - Cross-module → promoted to `components/shared/` (delete module copy)
 3. **One component per file** (except small private helpers used only in that file)
 4. **One hook per file** in `hooks/` — named `use-{resource}.ts`
 5. **One store per file** in `stores/` — named `use-{name}-store.ts`
 6. **Types** mirroring a backend DTO go in `types/{module}.ts`
+7. **Route-local types** (form schemas, column defs, local UI state) go in `_types.ts` colocated in the route folder — never API response shapes there
 
 ## Component Template
 
@@ -130,7 +134,7 @@ import type { Employee } from '@/types/core-hr';
 
 ## Performance
 
-- **Lazy load** heavy components (charts, data tables) with `React.lazy` + Suspense
+- **Lazy load** heavy components (charts, data tables) with `next/dynamic` (not `React.lazy` — App Router requires `next/dynamic` for proper SSR control)
 - **Paginate** all lists — never load unbounded data
 - **Debounce** search inputs (300ms)
 - **Prefetch** on hover for navigation links (Next.js handles this)

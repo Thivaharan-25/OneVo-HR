@@ -229,21 +229,43 @@ See the Sidebar Panel Expand/Collapse pattern below for the expansion panel appr
 }
 ```
 
-### Sidebar Panel Expand/Collapse
+### Expansion Panel Open/Close
+
+The panel animates **width + opacity simultaneously** — it does NOT use `transform: translateX`. Width animation causes the content area to expand into the freed space naturally.
 
 ```css
-.expansion-panel {
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+/* Panel shell wrapper — controls width and visibility */
+.panel-shell {
+  transition: width 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
 }
 
-.expansion-panel[data-state="closed"] {
-  transform: translateX(-100%);
+.panel-shell[data-state="closed"] {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
 }
 
-.expansion-panel[data-state="open"] {
-  transform: translateX(0);
+.panel-shell[data-state="open"] {
+  width: 210px;
+  opacity: 1;
 }
 ```
+
+In Tailwind (via cn utility):
+```tsx
+<div className={cn(
+  'transition-[width,opacity] duration-[220ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] shrink-0',
+  isOpen ? 'w-[210px] opacity-100' : 'w-0 opacity-0 overflow-hidden'
+)}>
+  <div className="w-[210px] h-full ..."> {/* inner panel keeps fixed width */}
+    ...
+  </div>
+</div>
+```
+
+> Duration is **220ms** (not 200ms). Easing is `ease-out` = `cubic-bezier(0.16, 1, 0.3, 1)`.
 
 ## Reduced Motion
 

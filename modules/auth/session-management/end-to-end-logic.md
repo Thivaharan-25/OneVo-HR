@@ -51,6 +51,6 @@ On every authenticated request:
 - [[modules/auth/session-management/overview|Overview]]
 - [[frontend/cross-cutting/authentication|Authentication]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]
-- [[mfa]]
+- [[modules/auth/mfa/overview|MFA]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
