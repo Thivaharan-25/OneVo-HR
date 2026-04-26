@@ -18,15 +18,17 @@ Single-glance reference showing which events each module publishes and consumes.
 | identity-verification | `VerificationCompleted`, `VerificationFailed`, `BiometricDeviceOffline` | `ActivitySnapshotReceived` |
 | infrastructure | `TenantCreated`, `TenantActivated`, `TenantDeactivated`, `UserCreated`, `UserStatusChanged` | _(none)_ |
 | leave | `LeaveRequested`, `LeaveApproved`, `LeaveRejected`, `LeaveCancelled`, `EntitlementAdjusted` | `EmployeeHired` |
-| notifications | _(none)_ | `LeaveRequested`, `LeaveApproved`, `EmployeeHired`, `PayrollRunCompleted`, `ReviewCompleted`, `ExceptionAlertCreated` _(+ others)_ |
+| notifications | _(none)_ | `LeaveRequested`, `LeaveApproved`, `LeaveRejected`, `EmployeeHired`, `PayrollRunCompleted`, `ReviewCompleted`, `ExceptionAlertCreated`, `DisciplinaryActionIssued`, `GrievanceFiled`, `RoleAssigned`, `AgentHeartbeatLost` |
 | org-structure | `DepartmentChanged` | `TenantCreated` |
 | payroll | `PayrollRunStarted`, `PayrollRunCompleted`, `PayrollRunFailed` | `LeaveApproved`, `SalaryChanged`, `OvertimeApproved`, `ExpenseClaimApproved` |
 | performance | `ReviewCycleStarted`, `ReviewCompleted`, `GoalCreated`, `RecognitionGiven` | `EmployeeHired` |
 | productivity-analytics | `DailyReportReady`, `WeeklyReportReady`, `MonthlyReportReady` | `ActivitySnapshotReceived`, `ExceptionAlertCreated` |
-| reporting-engine | _(none)_ | _(none — reads via query service interfaces)_ |
+| reporting-engine | _(none)_ | _(none)_ |
 | shared-platform | `WorkflowStepCompleted`, `WorkflowCompleted`, `SubscriptionChanged`, `FeatureFlagToggled` | `UserLoggedIn`, `TenantActivated` |
 | skills | `SkillValidated`, `CourseCompleted`, `CertificationEarned`, `CertificationExpiring` | `EmployeeHired`, `ReviewCompleted` |
 | workforce-presence | `PresenceSessionStarted`, `PresenceSessionEnded`, `BreakExceeded`, `OvertimeRequested`, `OvertimeApproved`, `AttendanceCorrected` | `EmployeeHired`, `LeaveApproved` |
+
+> **reporting-engine** reads module data directly via query service interfaces rather than consuming integration events.
 
 ## Related
 
