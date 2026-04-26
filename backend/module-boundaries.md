@@ -238,3 +238,27 @@ Auto-enabled integrations when both modules are active for a tenant. Each row is
 | Skills | WMS (resource) | ONEVO validated skills → WMS resource matching (Skills bridge) |
 
 > **WMS integrations** are implemented as bridge webhooks, not in-process MediatR handlers. When ONEVO fires a domain event (e.g. `LeaveApprovedEvent`) and WMS is enabled for the tenant, a bridge handler calls the WMS webhook endpoint with the relevant payload.
+
+## Per-Module Database Contexts
+
+Each module has its own `{Module}DbContext` — there is no shared `ApplicationDbContext` spanning multiple modules.
+
+```
+ONEVO.Modules.Leave/
+  Internal/Persistence/
+    LeaveDbContext.cs          ← Maps only leave_* tables
+    Migrations/                ← Leave-owned migrations
+
+ONEVO.Modules.CoreHR/
+  Internal/Persistence/
+    CoreHRDbContext.cs         ← Maps only employees, salary_history, etc.
+    Migrations/                ← CoreHR-owned migrations
+```
+
+All module DbContexts connect to the same PostgreSQL instance in the current monolith. When a module is extracted to its own microservice, its DbContext is pointed at a dedicated DB — no rewrite needed.
+
+Cross-module data access must go through **Public service interfaces** (sync) or **IEventBus** (async). Direct cross-module table queries are forbidden, even within the monolith.
+
+Cross-module async events use `IEventBus` (in `ONEVO.SharedKernel`), not MediatR directly — this is the swap point for RabbitMQ when microservice extraction happens.
+
+See [[docs/decisions/ADR-001-per-module-database-and-event-bus|ADR-001]] for the full rationale, IEventBus contract, and microservice extraction path.

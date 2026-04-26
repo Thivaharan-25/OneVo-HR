@@ -133,9 +133,77 @@ public class UpdatePresenceOnLeaveApprovedConsumer : IConsumer<LeaveApproved>
 }
 ```
 
+### Dead Letter Configuration
+
+```
+Each queue has a paired dead letter queue:
+  payroll-leave-events  →  (on failure × 3)  →  payroll-leave-events.dlq
+
+DLQ messages are held for manual inspection / replay.
+Retry policy: 3 attempts with exponential backoff (5s, 25s, 125s).
+```
+
 ### Idempotency
 
 Each consumer module has a `processed_integration_events` table. MassTransit's inbox-state middleware checks this table before processing — if `event_id` is already present, the message is silently discarded. This prevents double-processing when RabbitMQ redelivers after a transient failure.
+
+---
+
+## Docker Compose (Phase 1)
+
+All services run together in one compose file:
+
+```yaml
+services:
+  onevo-api:
+    build: ./backend
+    ports: ["5000:5000"]
+    depends_on: [postgres, rabbitmq, redis]
+    environment:
+      - ConnectionStrings__Postgres=Host=postgres;Database=onevo;...
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__Username=onevo
+      - RabbitMq__Password=${RABBITMQ_PASSWORD}
+
+  postgres:
+    image: postgres:16
+    volumes: [postgres-data:/var/lib/postgresql/data]
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Management UI (dev only)
+    volumes: [rabbitmq-data:/var/lib/rabbitmq]
+
+  redis:
+    image: redis:7
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
+```
+
+---
+
+## Microservice Extraction (Future — zero messaging rewrite)
+
+When a module is ready to be extracted:
+
+1. Create a new Docker service in compose pointing at its own Postgres instance
+2. The module's code is unchanged — it still uses `IEventBus` and its own `DbContext`
+3. Remove the module from the monolith's DI registration
+4. The module's consumer queue already exists in RabbitMQ — it just now runs in a separate process
+
+```
+Before extraction:
+  onevo-api (monolith) → publishes to RabbitMQ → onevo-api (monolith) consumes
+
+After extraction:
+  onevo-api (monolith) → publishes to RabbitMQ → payroll-service (separate container) consumes
+```
+
+No publisher changes. No consumer code changes. Just a process boundary.
 
 ---
 
@@ -144,3 +212,5 @@ Each consumer module has a `processed_integration_events` table. MassTransit's i
 - [[backend/messaging/event-catalog|Event Catalog]] — full event list with routing keys
 - [[backend/messaging/error-handling|Error Handling]] — retry policies and dead-letter queues
 - [[backend/messaging/module-event-matrix|Module Event Matrix]] — per-module publish/consume overview
+- [[backend/module-boundaries|Module Boundaries]] — per-module DbContext rule
+- [[docs/decisions/ADR-001-per-module-database-and-event-bus|ADR-001]] — full rationale
