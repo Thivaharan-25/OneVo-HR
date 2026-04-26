@@ -49,7 +49,7 @@ If two modules need bidirectional communication, use **domain events** for at le
 
 If Module A needs data from Module B, it calls Module B's public interface or listens for Module B's domain events. Modules never share database tables.
 
-### Rule 4: Sync for Queries, Domain Events for Side Effects
+### Rule 4: Sync for Queries, Events for Side Effects
 
 | Pattern               | Use When                                                  | Mechanism                             |
 | :-------------------- | :-------------------------------------------------------- | :------------------------------------ |

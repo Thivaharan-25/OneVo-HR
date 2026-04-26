@@ -93,6 +93,15 @@ onevo.events (topic exchange)
 | Payroll | `payroll.run.<verb>` | `payroll.run.completed` |
 | Performance | `performance.review.<verb>` | `performance.review.started` |
 | Skills | `skills.<verb>` | `skills.validated` |
+| Agent Gateway | `agent.gateway.<verb>` | `agent.gateway.registered` |
+| Productivity Analytics | `analytics.<cadence>` | `analytics.daily` |
+| Documents | `documents.<verb>` | `documents.published` |
+| Grievance | `grievance.<verb>` | `grievance.filed` |
+| Expense | `expense.<verb>` | `expense.submitted` |
+| Shared Platform | `platform.<aggregate>.<verb>` | `platform.workflow.step` |
+| Identity Verification | `identity.<verb>` | `identity.verified` |
+| Org Structure | `org.department.<verb>` | `org.department.changed` |
+| Discrepancy Engine | `discrepancy.<verb>` | `discrepancy.critical` |
 
 ### Transactional Outbox Pattern
 
