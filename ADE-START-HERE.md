@@ -168,8 +168,9 @@ Tenant default → Role override → Employee override. Most specific wins. See 
 See [[modules/agent-gateway/remote-commands/overview|Remote Commands]].
 
 ### Cross-Module Communication
-Modules communicate in two ways:
-- **Domain events** (MediatR) for async side effects — Module A publishes `PresenceSessionStarted`, Module B handles it
+Modules communicate in three ways:
+- **Integration events** (`IEventBus` → RabbitMQ via MassTransit) for async cross-module side effects — Module A publishes `LeaveApproved`, Module B's `IConsumer<LeaveApproved>` handles it
+- **Domain events** (MediatR `INotification`) for async intra-module side effects — stays within the same module, never crosses boundaries
 - **Direct interface calls** for synchronous queries — Module A calls `ICalendarConflictService.CheckConflictsAsync()` directly via DI
 
 No module imports another module's internal classes — only public interfaces. See [[backend/messaging/event-catalog|Event Catalog]].

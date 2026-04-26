@@ -59,8 +59,13 @@ IConsumer<T>.Consume() → processed_integration_events (idempotency check)
 
 ```csharp
 // MassTransit retry configuration (in module registration)
-cfg.UseMessageRetry(r => r.Exponential(5, TimeSpan.FromSeconds(5), TimeSpan.FromHours(1), TimeSpan.FromSeconds(5)));
-cfg.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromMinutes(10), TimeSpan.FromHours(1)));
+cfg.UseMessageRetry(r => r.Intervals(
+    TimeSpan.FromSeconds(5),
+    TimeSpan.FromSeconds(30),
+    TimeSpan.FromMinutes(2)));
+cfg.UseDelayedRedelivery(r => r.Intervals(
+    TimeSpan.FromMinutes(10),
+    TimeSpan.FromHours(1)));
 ```
 
 ### Dead Letter Exchange
