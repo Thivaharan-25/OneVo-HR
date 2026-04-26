@@ -1,178 +1,136 @@
 # Event Bus Topology: ONEVO
 
-## Two Levels of Events
+## Intra-Module Events (MediatR)
 
-ONEVO uses two distinct event mechanisms. Never mix them up:
+Domain events published and handled **within the same module only**. They never cross a module boundary.
 
-| Level | Type | Scope | Mechanism | Why |
-|:------|:-----|:------|:----------|:----|
-| 1 | **Domain Event** | Within one module | MediatR `INotification` | Fast, transactional, no broker overhead |
-| 2 | **Integration Event** | Cross-module | RabbitMQ via `IEventBus` | Reliable delivery, retry, decoupled, microservice-ready |
+```
+Publisher Handler → MediatR.Publish(DomainEvent) → INotificationHandler<T> (same module only)
+```
 
-**Rule:** Domain events never leave the module that published them. If another module needs to react, that is an integration event.
+- Zero infrastructure overhead (no message broker needed)
+- Executes synchronously within the same transaction (strong consistency)
+- Simple debugging and tracing
 
 ---
 
-## Level 1: Domain Events (MediatR — intra-module only)
+## Phase 1: Cross-Module Events (RabbitMQ via MassTransit)
 
-Used for side effects within the same module — e.g., a leave request approved triggers balance recalculation inside the Leave module.
-
-```
-Command Handler
-  → saves to LeaveDbContext
-  → MediatR.Publish(LeaveBalanceChangedEvent)  ← domain event, stays in Leave module
-  → UpdateLeaveBalanceHandler (same module)
-```
-
-MediatR is also the CQRS dispatcher for all commands and queries. It is **not** used for cross-module communication.
-
----
-
-## Level 2: Integration Events (RabbitMQ — cross-module)
-
-Used whenever Module A needs to inform Module B of something. Always goes through RabbitMQ, even in the monolith. This is what makes microservice extraction a process split instead of a rewrite.
-
-### Full Flow
+All integration events that cross module boundaries are delivered via **RabbitMQ** using **MassTransit** with the transactional outbox pattern.
 
 ```
-Module A (Leave)
-  ┌────────────────────────────────────────────────────┐
-  │  ApproveLeaveHandler                               │
-  │    1. leaveRequest.Approve()                       │
-  │    2. LeaveDbContext.SaveChanges()  ──────────────►│ leave_requests row updated
-  │       (same transaction writes to outbox)  ───────►│ leave_outbox_events row written
-  └────────────────────────────────────────────────────┘
-                        ↓  (5s poll)
-  ┌────────────────────────────────────────────────────┐
-  │  LeaveOutboxProcessor (BackgroundService)          │
-  │    reads leave_outbox_events WHERE processed IS NULL│
-  │    IEventBus.PublishAsync(LeaveApprovedEvent)      │
-  │    marks row processed                             │
-  └────────────────────────────────────────────────────┘
-                        ↓
-              RabbitMQ — onevo.events exchange
-              routing key: leave.request.approved
-                        ↓
-         ┌──────────────┴──────────────┐
-         ↓                             ↓
-  payroll-leave-events           calendar-leave-events
-         ↓                             ↓
-  Module B (Payroll)            Module C (Calendar)
-  ┌─────────────────────┐       ┌─────────────────────┐
-  │  1. check idempotency│       │  1. check idempotency│
-  │  2. process event    │       │  2. process event    │
-  │  3. PayrollDbContext │       │  3. CalendarDbContext│
-  │     .SaveChanges()   │       │     .SaveChanges()   │
-  │  4. ACK → RabbitMQ  │       │  4. ACK → RabbitMQ  │
-  └─────────────────────┘       └─────────────────────┘
+Publisher Module
+  → IEventBus.PublishAsync(IntegrationEvent)
+  → Written to {module}_outbox_events in same DB transaction
+  → MassTransit OutboxProcessor polls & forwards to RabbitMQ
+  → onevo.events topic exchange
+  → Bound queues
+  → Consumer module IConsumer<T>
+  → Idempotency check (processed_integration_events)
+  → Handler logic
 ```
 
----
+### Exchange Topology
 
-## Transactional Outbox (per-module)
-
-Every module that publishes integration events has its own outbox table inside its own `DbContext`. Writing the business data and the outbox entry happen in one transaction — guaranteed atomic.
-
-### Per-module outbox tables
-
-```sql
--- Each module owns its outbox. Never share across modules.
-CREATE TABLE leave_outbox_events (          -- lives in Leave module schema
-    id              uuid PRIMARY KEY,
-    tenant_id       uuid NOT NULL,
-    event_type      varchar(200) NOT NULL,
-    payload         jsonb NOT NULL,
-    created_at      timestamptz NOT NULL DEFAULT now(),
-    processed_at    timestamptz,
-    retry_count     integer DEFAULT 0,
-    last_error      text
-);
-CREATE INDEX idx_leave_outbox_unprocessed
-    ON leave_outbox_events (created_at) WHERE processed_at IS NULL;
-
--- Repeat pattern per module: core_hr_outbox_events, payroll_outbox_events, etc.
+```
+onevo.events (topic exchange)
+├── infrastructure.*          → Queue: auth-infrastructure-events
+│                             → Queue: configuration-infrastructure-events
+│                             → Queue: org-structure-infrastructure-events
+├── auth.*                    → Queue: shared-platform-auth-events
+├── core-hr.employee.*        → Queue: workforce-presence-employee-events
+│                             → Queue: leave-employee-events
+│                             → Queue: skills-employee-events
+│                             → Queue: documents-employee-events
+│                             → Queue: performance-employee-events
+│                             → Queue: calendar-employee-events
+│                             → Queue: agent-gateway-employee-events
+├── workforce.presence.*      → Queue: activity-monitoring-presence-events
+│                             → Queue: exception-engine-presence-events
+│                             → Queue: payroll-presence-events
+│                             → Queue: workforce-presence-leave-events
+├── leave.request.*           → Queue: payroll-leave-events
+│                             → Queue: calendar-leave-events
+│                             → Queue: workforce-presence-leave-events
+│                             → Queue: notifications-leave-events
+├── activity.*                → Queue: exception-engine-activity-events
+│                             → Queue: identity-verification-activity-events
+│                             → Queue: productivity-analytics-activity-events
+│                             → Queue: discrepancy-engine-activity-events
+├── agent.gateway.*           → Queue: exception-engine-agent-events
+│                             → Queue: agent-gateway-employee-events
+├── exception.*               → Queue: notifications-exception-events
+│                             → Queue: productivity-analytics-exception-events
+├── payroll.run.*             → Queue: notifications-payroll-events
+├── performance.review.*      → Queue: skills-review-events
+│                             → Queue: calendar-review-events
+│                             → Queue: notifications-review-events
+├── analytics.*               → Queue: notifications-analytics-events
+├── skills.*                  → Queue: notifications-skills-events
+├── documents.*               → Queue: notifications-documents-events
+├── grievance.*               → Queue: notifications-grievance-events
+├── expense.*                 → Queue: payroll-expense-events
+│                             → Queue: notifications-expense-events
+├── platform.*                → Queue: notifications-platform-events
+├── identity.*                → Queue: notifications-identity-events
+├── org.department.*          → Queue: notifications-org-events
+└── discrepancy.*             → Queue: notifications-discrepancy-events
 ```
 
-### OutboxProcessor (one per module)
+### Routing Key Patterns
+
+> Routing keys follow `<module>.<aggregate>.<verb_past>` where applicable. See [[backend/messaging/event-catalog|Event Catalog]] for per-event routing keys.
+
+| Module Group | Pattern | Example |
+|:------------|:--------|:--------|
+| Infrastructure | `infrastructure.<aggregate>.<verb>` | `infrastructure.tenant.created` |
+| Auth | `auth.<verb>` | `auth.login` |
+| Core HR | `core-hr.employee.<verb>` | `core-hr.employee.hired` |
+| Workforce Presence | `workforce.presence.<verb>` | `workforce.presence.started` |
+| Leave | `leave.request.<verb>` | `leave.request.approved` |
+| Activity Monitoring | `activity.<noun>` | `activity.snapshot` |
+| Exception Engine | `exception.<verb>` | `exception.alert` |
+| Payroll | `payroll.run.<verb>` | `payroll.run.completed` |
+| Performance | `performance.review.<verb>` | `performance.review.started` |
+| Skills | `skills.<verb>` | `skills.validated` |
+| Agent Gateway | `agent.gateway.<verb>` | `agent.gateway.registered` |
+| Productivity Analytics | `analytics.<cadence>` | `analytics.daily` |
+| Documents | `documents.<verb>` | `documents.published` |
+| Grievance | `grievance.<verb>` | `grievance.filed` |
+| Expense | `expense.<verb>` | `expense.submitted` |
+| Shared Platform | `platform.<aggregate>.<verb>` | `platform.workflow.step` |
+| Identity Verification | `identity.<verb>` | `identity.verified` |
+| Org Structure | `org.department.<verb>` | `org.department.changed` |
+| Discrepancy Engine | `discrepancy.<verb>` | `discrepancy.critical` |
+
+### Transactional Outbox Pattern
+
+Each publisher module has a `{module}_outbox_events` table. Integration events are written to this table in the same database transaction as the business write. MassTransit's OutboxProcessor polls the table and forwards messages to RabbitMQ.
 
 ```csharp
-// ONEVO.Modules.Leave/Internal/Messaging/LeaveOutboxProcessor.cs
-public class LeaveOutboxProcessor : BackgroundService
+// Publisher: IEventBus wraps MassTransit outbox publish
+public class ApproveLeaveRequestHandler : IRequestHandler<ApproveLeaveRequestCommand, Result<Unit>>
 {
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IEventBus _eventBus;
 
-    protected override async Task ExecuteAsync(CancellationToken ct)
+    public async Task<Result<Unit>> Handle(ApproveLeaveRequestCommand cmd, CancellationToken ct)
     {
-        while (!ct.IsCancellationRequested)
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<LeaveDbContext>();
-
-            var pending = await db.OutboxEvents
-                .Where(e => e.ProcessedAt == null && e.RetryCount < 5)
-                .OrderBy(e => e.CreatedAt)
-                .Take(50)
-                .ToListAsync(ct);
-
-            foreach (var entry in pending)
-            {
-                try
-                {
-                    var @event = entry.Deserialize(); // IntegrationEvent
-                    await _eventBus.PublishAsync(@event, ct);
-                    entry.MarkProcessed();
-                }
-                catch (Exception ex)
-                {
-                    entry.RecordFailure(ex.Message);
-                }
-            }
-
-            await db.SaveChangesAsync(ct);
-            await Task.Delay(TimeSpan.FromSeconds(5), ct);
-        }
+        // ... approve the leave request
+        await _eventBus.PublishAsync(new LeaveApproved(leaveRequest.Id, leaveRequest.EmployeeId, ...), ct);
+        // LeaveApproved written to leave_outbox_events in same transaction as business write
+        return Result<Unit>.Success(Unit.Value);
     }
 }
-```
 
----
-
-## Exchange Topology
-
-```
-onevo.events  (topic exchange — durable)
-│
-├── routing key: core-hr.employee.*
-│     → Queue: leave-employee-events          (Leave module)
-│     → Queue: workforce-employee-events      (WorkforcePresence module)
-│     → Queue: skills-employee-events         (Skills module)
-│     → Queue: documents-employee-events      (Documents module)
-│     → Queue: calendar-employee-events       (Calendar module)
-│     → Queue: notifications-employee-events  (Notifications module)
-│
-├── routing key: leave.request.*
-│     → Queue: payroll-leave-events           (Payroll module)
-│     → Queue: calendar-leave-events          (Calendar module)
-│     → Queue: workforce-leave-events         (WorkforcePresence module)
-│     → Queue: notifications-leave-events     (Notifications module)
-│
-├── routing key: workforce.presence.*
-│     → Queue: monitoring-presence-events     (ActivityMonitoring module)
-│     → Queue: exception-presence-events      (ExceptionEngine module)
-│
-├── routing key: payroll.run.*
-│     → Queue: notifications-payroll-events   (Notifications module)
-│
-├── routing key: performance.review.*
-│     → Queue: skills-review-events           (Skills module)
-│     → Queue: notifications-review-events    (Notifications module)
-│
-├── routing key: agent.gateway.*
-│     → Queue: monitoring-agent-events        (ActivityMonitoring module)
-│
-└── routing key: #  (catch-all)
-      → Queue: audit-all-events               (Audit module — fan-out)
+// Consumer: MassTransit IConsumer<T> with idempotency guard
+public class UpdatePresenceOnLeaveApprovedConsumer : IConsumer<LeaveApproved>
+{
+    public async Task Consume(ConsumeContext<LeaveApproved> context)
+    {
+        // MassTransit inbox-state handles idempotency via processed_integration_events
+        // Mark leave days in workforce presence records
+    }
+}
 ```
 
 ### Dead Letter Configuration
@@ -185,43 +143,9 @@ DLQ messages are held for manual inspection / replay.
 Retry policy: 3 attempts with exponential backoff (5s, 25s, 125s).
 ```
 
----
+### Idempotency
 
-## Consumer Idempotency
-
-RabbitMQ delivers at-least-once. Consumers must deduplicate.
-
-Each module that consumes integration events has a `processed_integration_events` table:
-
-```sql
-CREATE TABLE processed_integration_events (   -- per module DbContext
-    event_id     uuid PRIMARY KEY,
-    event_type   varchar(200) NOT NULL,
-    processed_at timestamptz NOT NULL DEFAULT now()
-);
-```
-
-Consumer pattern:
-
-```csharp
-public class PayrollAdjustmentOnLeaveApprovedHandler
-    : IIntegrationEventHandler<LeaveApprovedIntegrationEvent>
-{
-    public async Task HandleAsync(LeaveApprovedIntegrationEvent evt, CancellationToken ct)
-    {
-        // Idempotency check — skip if already processed
-        if (await _db.ProcessedEvents.AnyAsync(e => e.EventId == evt.EventId, ct))
-            return;
-
-        // Business logic
-        await _payrollService.ApplyLeaveDeduction(evt.EmployeeId, evt.Days, ct);
-
-        // Mark processed — in same transaction as business write
-        _db.ProcessedEvents.Add(new ProcessedIntegrationEvent(evt.EventId, evt.EventType));
-        await _db.SaveChangesAsync(ct);
-    }
-}
-```
+Each consumer module has a `processed_integration_events` table. MassTransit's inbox-state middleware checks this table before processing — if `event_id` is already present, the message is silently discarded. This prevents double-processing when RabbitMQ redelivers after a transient failure.
 
 ---
 
@@ -285,7 +209,8 @@ No publisher changes. No consumer code changes. Just a process boundary.
 
 ## Related
 
-- [[backend/messaging/event-catalog|Event Catalog]] — all 40+ integration events
-- [[backend/messaging/error-handling|Error Handling]] — Result<T>, retry, DLQ policy
+- [[backend/messaging/event-catalog|Event Catalog]] — full event list with routing keys
+- [[backend/messaging/error-handling|Error Handling]] — retry policies and dead-letter queues
+- [[backend/messaging/module-event-matrix|Module Event Matrix]] — per-module publish/consume overview
 - [[backend/module-boundaries|Module Boundaries]] — per-module DbContext rule
 - [[docs/decisions/ADR-001-per-module-database-and-event-bus|ADR-001]] — full rationale

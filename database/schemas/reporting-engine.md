@@ -56,6 +56,10 @@
 
 ---
 
+## Messaging Note
+
+Reporting Engine does not publish integration events or consume them via the message bus. It reads data directly from other modules via query service interfaces (`ILeaveService`, `IPayrollService`, etc.). No outbox or idempotency tables are needed.
+
 ## Related
 
 - [[modules/reporting-engine/overview|Reporting Engine Module]]

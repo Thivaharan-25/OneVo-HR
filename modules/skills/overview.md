@@ -302,6 +302,34 @@ Employee certification records with expiry tracking.
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `SkillValidated` | `skills.validated` | Manager validates employee skill level | [[modules/notifications/overview\|Notifications]] (notify employee) |
+| `CourseCompleted` | `skills.course` | Employee completes a learning course | [[modules/notifications/overview\|Notifications]] (notify employee), skill gap recalculation |
+| `CertificationEarned` | `skills.cert.earned` | Employee earns a new certification | [[modules/notifications/overview\|Notifications]] (notify manager and employee) |
+| `CertificationExpiring` | `skills.cert.expiring` | Certification within 30 days of expiry | [[modules/notifications/overview\|Notifications]] (send renewal reminder) |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Seed initial skill gap analysis for new employee based on job family requirements |
+| `ReviewCompleted` | `performance.review.completed` | [[modules/performance/overview\|Performance]] | Update skill assessments that were part of the review cycle |
+
+---
+
 ## Key Business Rules
 
 1. **Skill proficiency levels:** 1 (Beginner) → 5 (Expert).

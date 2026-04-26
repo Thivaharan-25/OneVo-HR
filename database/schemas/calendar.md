@@ -29,6 +29,22 @@
 
 ---
 
+## Messaging Tables (MassTransit Idempotency)
+
+> These tables are managed by MassTransit and must not be written to directly. They are part of each module's DbContext.
+
+### `processed_integration_events`
+
+Idempotency table — prevents double-processing if RabbitMQ redelivers a message.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `event_id` | `uuid` | PK — same as `IntegrationEvent.EventId` |
+| `event_type` | `varchar(200)` | |
+| `processed_at` | `timestamptz` | |
+
+---
+
 ## Related
 
 - [[modules/calendar/overview|Calendar Module]]

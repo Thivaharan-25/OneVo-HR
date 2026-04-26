@@ -134,14 +134,31 @@ Audit trail for balance changes.
 
 ---
 
-## Domain Events
+## Domain Events (intra-module — MediatR)
 
-| Event | Published When | Consumers |
-|:------|:---------------|:----------|
-| `LeaveRequested` | Employee submits request | [[modules/notifications/overview\|Notifications]] (notify manager) |
-| `LeaveApproved` | Manager approves | [[modules/notifications/overview\|Notifications]], [[modules/workforce-presence/overview\|Workforce Presence]] (update status) |
-| `LeaveRejected` | Manager rejects | [[modules/notifications/overview\|Notifications]] |
-| `LeaveCancelled` | Employee/manager cancels | [[modules/notifications/overview\|Notifications]], entitlement adjustment |
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `LeaveRequested` | `leave.request.requested` | Employee submits request | [[modules/notifications/overview\|Notifications]] (notify manager) |
+| `LeaveApproved` | `leave.request.approved` | Manager approves | [[modules/notifications/overview\|Notifications]], [[modules/workforce-presence/overview\|Workforce Presence]] (mark presence as `on_leave`), [[modules/calendar/overview\|Calendar]], [[modules/payroll/overview\|Payroll]] |
+| `LeaveRejected` | `leave.request.rejected` | Manager rejects | [[modules/notifications/overview\|Notifications]] |
+| `LeaveCancelled` | `leave.request.cancelled` | Employee/manager cancels | [[modules/notifications/overview\|Notifications]] |
+| `EntitlementAdjusted` | `leave.entitlement.adjusted` | Leave entitlement recalculated or manually adjusted | Audit trail |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Calculate and seed initial leave entitlements for new employee |
 
 ---
 

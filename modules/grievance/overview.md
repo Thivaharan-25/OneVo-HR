@@ -63,6 +63,32 @@ Manages employee grievance cases and disciplinary actions. Supports anonymous re
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `GrievanceFiled` | `grievance.filed` | Employee files a grievance | [[modules/notifications/overview\|Notifications]] (notify HR Admin) |
+| `DisciplinaryActionIssued` | `grievance.disciplinary` | Disciplinary action issued against employee | [[modules/notifications/overview\|Notifications]] (notify employee and manager) |
+| `GrievanceResolved` | `grievance.resolved` | Grievance case resolved or closed | [[modules/notifications/overview\|Notifications]] (notify filer) |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| _(none)_ | — | — | — |
+
+---
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |

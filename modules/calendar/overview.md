@@ -80,6 +80,32 @@ public interface ICalendarConflictService
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| _(none)_ | — | — | — |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `LeaveApproved` | `leave.request.approved` | [[modules/leave/overview\|Leave]] | Create a `leave` calendar event for the approved leave period |
+| `ReviewCycleStarted` | `performance.review.started` | [[modules/performance/overview\|Performance]] | Create a `review` calendar event for the cycle dates |
+| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Seed onboarding events for new employee |
+
+---
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |

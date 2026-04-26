@@ -125,6 +125,32 @@ Reusable templates for generating documents (offer letters, contracts, etc.). No
 
 ---
 
+## Domain Events (intra-module — MediatR)
+
+> These events are published and consumed within this module only. They never leave the module.
+
+| Event | Published When | Handler |
+|:------|:---------------|:--------|
+| _(none)_ | — | — |
+
+## Integration Events (cross-module — RabbitMQ)
+
+### Publishes
+
+| Event | Routing Key | Published When | Consumers |
+|:------|:-----------|:---------------|:----------|
+| `DocumentPublished` | `documents.published` | Document published and made available | [[modules/notifications/overview\|Notifications]] (notify affected employees) |
+| `AcknowledgementReceived` | `documents.acknowledged` | Employee acknowledges a document | Audit trail |
+
+### Consumes
+
+| Event | Routing Key | Source Module | Action Taken |
+|:------|:-----------|:-------------|:-------------|
+| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Assign onboarding documents to new employee |
+| `EmployeeOffboarded` | `core-hr.employee.offboarded` | [[modules/core-hr/overview\|Core HR]] | Trigger offboarding document checklist |
+
+---
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |
