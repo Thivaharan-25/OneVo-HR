@@ -20,6 +20,10 @@
 - [[backend/messaging/exchange-topology|Exchange Topology]] — Transactional outbox pattern
 - [[backend/messaging/error-handling|Error Handling]] — Result<T>, exception handling
 
+## Architecture Decisions
+
+- [[docs/decisions/ADR-001-per-module-database-and-event-bus|ADR-001]] — Per-module DbContext + IEventBus abstraction (microservice-forward design, RabbitMQ swap path)
+
 ## Related
 
 - [[frontend/README|Frontend]] — Next.js 14

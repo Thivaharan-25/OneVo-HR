@@ -215,7 +215,8 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 | Backend Hosting | Railway | .NET 9 deployment |
 | Frontend Hosting | Vercel | Next.js 14 |
 | CDN/Edge | Cloudflare | WAF, DDoS, geo-routing, rate limiting |
-| Containerization | Docker | Development + deployment |
+| Containerization | Docker | Development + deployment — all services in docker-compose.yml |
+| Message Broker | RabbitMQ | Cross-module integration events (Phase 1) — see [[backend/messaging/exchange-topology\|Exchange Topology]] |
 | CI/CD | GitHub Actions | Build, test, deploy pipeline |
 | Observability | OpenTelemetry + Prometheus + Grafana | Distributed tracing, metrics, dashboards |
 | Status Page | BetterStack | Public status page |
@@ -246,7 +247,7 @@ See [[backend/external-integrations|External Integrations]] for full integration
 |:--------|:-----------|
 | CQRS | Write/read separation across modules |
 | Event Sourcing | Audit trails (`audit_logs` with JSON diffs) — see [[backend/messaging/event-catalog\|Event Catalog]] |
-| [[backend/messaging/exchange-topology\|Transactional Outbox]] | Reliable domain event delivery |
+| [[backend/messaging/exchange-topology\|Transactional Outbox]] | Per-module outbox → RabbitMQ publish (reliable cross-module delivery) |
 | Repository Pattern | Data access via `BaseRepository<T>` — see [[backend/shared-kernel\|Shared Kernel]] |
 | Unit of Work | EF Core `DbContext` per request |
 | Mediator (MediatR) | Command/Query handling within modules — see [[backend/module-boundaries\|Module Boundaries]] |
@@ -265,7 +266,7 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | ChromaDB | AI semantic cache deferred |
 | Groq | LLM routing deferred |
 | Flutter | Mobile app deferred |
-| RabbitMQ | Using in-process domain events initially; RabbitMQ for scale later |
+| RabbitMQ | Moved to Phase 1 — see Infrastructure & Deployment section |
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
 | Teams Graph API (deep) | Basic meeting detection via process name sufficient for Phase 1 |
 | macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` — a parallel implementation. Phase 2. |
