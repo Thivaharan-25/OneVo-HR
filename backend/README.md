@@ -16,9 +16,8 @@
 
 ## Messaging & Events
 
-- [[backend/messaging/event-catalog|Event Catalog]] — 40+ domain events
 - [[backend/domain-events|Domain Events]] — Event handling and domain event propagation
-- [[backend/messaging/error-handling|Error Handling]] — Result<T>, exception handling
+- [[backend/domain-events|Domain Events]] — Result<T>, exception handling
 
 ## Architecture Decisions
 

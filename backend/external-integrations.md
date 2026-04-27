@@ -129,5 +129,5 @@ Bridge endpoints are authenticated via API key + tenant context. See [[security/
 - [[backend/module-catalog|Module Catalog]] — which modules own each integration
 - [[backend/notification-system|Notification System]] — Resend email pipeline
 - [[AI_CONTEXT/tech-stack|Tech Stack]] — integration technology choices
-- [[backend/messaging/error-handling|Error Handling]] — retry and circuit breaker patterns for external calls
+- [[backend/domain-events|Domain Events]] — retry and circuit breaker patterns for external calls
 - [[AI_CONTEXT/known-issues|Known Issues]] — WorkManage Pro bridge gotchas
