@@ -66,7 +66,7 @@ ONEVO.sln
 │   ├── Commands/
 │   └── Validators/
 │
-└── ONEVO.Modules.*/                    ← all 23 existing modules (unchanged)
+└── Application/Features/*/              ← all 23 existing feature modules (unchanged)
 ```
 
 All controllers in `ONEVO.Admin.Api/` are decorated with:

@@ -32,7 +32,7 @@ Cross-module data access (e.g., reading `tenants`) goes through the existing mod
 | Phase 1 | +5 DevPlatform tables + `global_app_catalog` (SharedPlatform) + `observed_applications` (Configuration) + 3 columns on `app_allowlists` | 177 |
 | Phase 2 | +1 new table (`platform_api_keys`) | 178 |
 
-> **Note on ownership:** `global_app_catalog` is owned by `SharedPlatformDbContext` and `observed_applications` by `ConfigurationDbContext`. They are not in `DevPlatformDbContext`. The dev console manages them through `IGlobalAppCatalogService` and `IObservedApplicationReader` interfaces respectively.
+> **Note on ownership:** `global_app_catalog` is owned by `SharedPlatformDbContext` and `observed_applications` by `ConfigurationDbContext`. They are not in `ApplicationDbContext`. The dev console manages them through `IGlobalAppCatalogService` and `IObservedApplicationReader` interfaces respectively.
 
 ---
 
