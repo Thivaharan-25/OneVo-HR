@@ -1,3 +1,9 @@
+> **Status: SUPERSEDED**
+> Superseded by [ADR-002](ADR-002-clean-architecture-cqrs.md) and [ADR-003](ADR-003-single-applicationdbcontext.md) on 2026-04-27.
+> Reason: Clean Architecture adopted. Microservice extraction path dropped. RabbitMQ removed. Per-module DbContexts consolidated into single ApplicationDbContext.
+
+---
+
 # ADR-001: Per-Module Database Contexts + IEventBus Abstraction
 
 **Date:** 2026-04-25  
