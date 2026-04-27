@@ -1,0 +1,109 @@
+<h2>Import Employees — Wizard Flow</h2>
+<p class="subtitle">Both paths (CSV and PeopleHR) branch from Step 1 and converge at Validation</p>
+
+<div style="margin: 32px 0;">
+
+  <!-- Entry Point -->
+  <div style="text-align:center; margin-bottom: 8px;">
+    <div style="display:inline-block; background:#1e293b; color:#f8fafc; padding:10px 24px; border-radius:8px; font-weight:600; font-size:14px;">
+      Employee List Screen → "Import Employees" button
+    </div>
+  </div>
+  <div style="text-align:center; color:#64748b; font-size:20px; margin-bottom:8px;">↓</div>
+
+  <!-- Step 1 -->
+  <div style="border:2px solid #3b82f6; border-radius:12px; padding:16px 20px; margin-bottom:8px; background:#eff6ff;">
+    <div class="label" style="color:#3b82f6;">Step 1 — Full-screen wizard opens</div>
+    <h3 style="margin:4px 0 6px; color:#1e3a5f;">Choose Import Method</h3>
+    <p style="margin:0; color:#475569; font-size:14px;">Two cards: &nbsp;<strong>"Upload CSV / Excel file"</strong> &nbsp;|&nbsp; <strong>"Connect PeopleHR"</strong></p>
+  </div>
+
+  <!-- Branch Arrow -->
+  <div style="display:flex; gap:16px; margin-bottom:4px; text-align:center;">
+    <div style="flex:1; color:#10b981; font-size:18px;">↓ CSV path</div>
+    <div style="flex:1; color:#8b5cf6; font-size:18px;">↓ PeopleHR path</div>
+  </div>
+
+  <!-- Two branches -->
+  <div style="display:flex; gap:16px; margin-bottom:8px;">
+
+    <!-- CSV Branch -->
+    <div style="flex:1; border:1.5px solid #10b981; border-radius:12px; padding:14px 16px; background:#f0fdf4; display:flex; flex-direction:column; gap:8px;">
+      <div class="label" style="color:#10b981;">CSV / Excel Path</div>
+
+      <div style="background:#dcfce7; border-radius:8px; padding:10px 14px;">
+        <strong style="font-size:13px;">Step 2a — Upload File</strong>
+        <p style="margin:4px 0 0; font-size:13px; color:#166534;">Drag & drop or browse. System parses columns and picks Row 1 as the sample employee.</p>
+      </div>
+
+      <div style="background:#dcfce7; border-radius:8px; padding:10px 14px;">
+        <strong style="font-size:13px;">Step 3a — Map Fields</strong>
+        <p style="margin:4px 0 0; font-size:13px; color:#166534;">Left panel: real data from sample employee (e.g. "John", "Smith", "HR Dept"). Right panel: ONEVO fields. Admin connects them by clicking. No abstract schema — real values from their own data.</p>
+      </div>
+
+      <div style="background:#dcfce7; border-radius:8px; padding:10px 14px;">
+        <strong style="font-size:13px;">Step 4a — Confirm One Employee</strong>
+        <p style="margin:4px 0 0; font-size:13px; color:#166534;">"Based on your mapping, John Smith will be imported like this →" Admin confirms it looks right, then system applies same mapping to all rows.</p>
+      </div>
+    </div>
+
+    <!-- PeopleHR Branch -->
+    <div style="flex:1; border:1.5px solid #8b5cf6; border-radius:12px; padding:14px 16px; background:#f5f3ff; display:flex; flex-direction:column; gap:8px;">
+      <div class="label" style="color:#8b5cf6;">PeopleHR API Path</div>
+
+      <div style="background:#ede9fe; border-radius:8px; padding:10px 14px;">
+        <strong style="font-size:13px;">Step 2b — Enter API Key</strong>
+        <p style="margin:4px 0 0; font-size:13px; color:#4c1d95;">Paste API key (or select saved connection from Integrations). System fetches employee list from PeopleHR.</p>
+      </div>
+
+      <div style="background:#ede9fe; border-radius:8px; padding:10px 14px;">
+        <strong style="font-size:13px;">Step 3b — Auto-mapped Preview</strong>
+        <p style="margin:4px 0 0; font-size:13px; color:#4c1d95;">First employee shown with fields auto-mapped. "Does this look right?" Admin confirms or adjusts. No manual mapping needed.</p>
+      </div>
+
+      <div style="background:#ede9fe; border-radius:8px; padding:10px 14px;">
+        <strong style="font-size:13px;">Step 4b — Save Connection?</strong>
+        <p style="margin:4px 0 0; font-size:13px; color:#4c1d95;">"Save this PeopleHR connection to your Integrations screen?" — toggles. Saved connections appear in Settings → Integrations.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Converge -->
+  <div style="text-align:center; color:#64748b; font-size:18px; margin-bottom:8px;">↓ &nbsp; Both paths converge &nbsp; ↓</div>
+
+  <!-- Step 5 -->
+  <div style="border:2px solid #f59e0b; border-radius:12px; padding:16px 20px; margin-bottom:8px; background:#fffbeb;">
+    <div class="label" style="color:#b45309;">Step 5 — Validation</div>
+    <h3 style="margin:4px 0 6px; color:#78350f;">Apply Mapping to All Rows + Show Results</h3>
+    <p style="margin:0; color:#92400e; font-size:14px;">
+      "247 ready &nbsp;✓&nbsp; | &nbsp;3 have issues →" &nbsp; Admin can skip errors or fix them. Hierarchy also validated here — detects missing managers, circular reporting lines.
+    </p>
+  </div>
+
+  <!-- Step 6 -->
+  <div style="border:2px solid #ef4444; border-radius:12px; padding:16px 20px; margin-bottom:8px; background:#fef2f2;">
+    <div class="label" style="color:#dc2626;">Step 6 — Confirm & Import</div>
+    <h3 style="margin:4px 0 6px; color:#7f1d1d;">Summary + "Start Import" button</h3>
+    <p style="margin:0; color:#991b1b; font-size:14px;">
+      Shows totals: employees, departments detected, managers mapped, rows skipped. Progress bar runs async in background.
+    </p>
+  </div>
+
+  <!-- Step 7 -->
+  <div style="border:2px solid #64748b; border-radius:12px; padding:16px 20px; background:#f8fafc;">
+    <div class="label" style="color:#475569;">Step 7 — Done</div>
+    <h3 style="margin:4px 0 6px; color:#1e293b;">Import Complete</h3>
+    <p style="margin:0; color:#475569; font-size:14px;">
+      "244 employees imported. 3 skipped (view report)." → Returns to Employee list, now populated.
+    </p>
+  </div>
+
+</div>
+
+<!-- Integrations alignment note -->
+<div style="margin-top:24px; padding:14px 18px; background:#f1f5f9; border-radius:10px; border-left:4px solid #3b82f6;">
+  <strong style="font-size:13px; color:#1e293b;">Settings → Integrations Screen Alignment</strong>
+  <p style="margin:6px 0 0; font-size:13px; color:#475569;">
+    PeopleHR connections saved during import appear as a card in Integrations: status (Connected), API key (masked), last import date, import history log. Future connectors (BambooHR, Workday) follow the same card pattern — adding a connector = new adapter only, no new wizard needed.
+  </p>
+</div>
