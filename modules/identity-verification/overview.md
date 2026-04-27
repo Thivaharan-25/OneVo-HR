@@ -31,7 +31,7 @@ Verifies employee identity via photo capture and biometric fingerprint matching.
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.IdentityVerification/Public/IIdentityVerificationService.cs
+// ONEVO.Application.Features.IdentityVerification/Public/IIdentityVerificationService.cs
 public interface IIdentityVerificationService
 {
     Task<Result<VerificationRecordDto>> VerifyPhotoAsync(Guid employeeId, Guid photoFileId, Guid deviceId, CancellationToken ct);

@@ -39,7 +39,7 @@ Agent Gateway uses **device-level JWT authentication**, separate from user JWT. 
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.AgentGateway/Public/IAgentGatewayService.cs
+// ONEVO.Application.Features.AgentGateway/Public/IAgentGatewayService.cs
 public interface IAgentGatewayService
 {
     Task<Result<RegisteredAgentDto>> GetAgentByDeviceIdAsync(Guid deviceId, CancellationToken ct);
@@ -47,7 +47,7 @@ public interface IAgentGatewayService
     Task<Result<bool>> IsAgentOnlineAsync(Guid agentId, CancellationToken ct);
 }
 
-// ONEVO.Modules.AgentGateway/Public/IAgentCommandService.cs
+// ONEVO.Application.Features.AgentGateway/Public/IAgentCommandService.cs
 public interface IAgentCommandService
 {
     /// <summary>Send a command to a specific agent via SignalR. Returns false if agent is offline.</summary>

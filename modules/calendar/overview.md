@@ -31,7 +31,7 @@ The Calendar's sidebar also surfaces three workforce management features: **Shif
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.Calendar/Public/ICalendarConflictService.cs
+// ONEVO.Application.Features.Calendar/Public/ICalendarConflictService.cs
 public interface ICalendarConflictService
 {
     /// <summary>

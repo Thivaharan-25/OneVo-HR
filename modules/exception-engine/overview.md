@@ -32,7 +32,7 @@ Configurable anomaly detection engine that evaluates rules against activity and 
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.ExceptionEngine/Public/IExceptionEngineService.cs
+// ONEVO.Application.Features.ExceptionEngine/Public/IExceptionEngineService.cs
 public interface IExceptionEngineService
 {
     Task<Result<List<ExceptionAlertDto>>> GetActiveAlertsAsync(CancellationToken ct);

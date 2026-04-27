@@ -34,7 +34,7 @@ Receives, stores, and aggregates employee activity data from the desktop agent. 
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.ActivityMonitoring/Public/IActivityMonitoringService.cs
+// ONEVO.Application.Features.ActivityMonitoring/Public/IActivityMonitoringService.cs
 public interface IActivityMonitoringService
 {
     Task<Result<ActivityDailySummaryDto>> GetDailySummaryAsync(Guid employeeId, DateOnly date, CancellationToken ct);

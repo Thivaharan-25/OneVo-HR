@@ -39,7 +39,7 @@ Produces `presence_sessions` — one unified row per employee per day — consum
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.WorkforcePresence/Public/IWorkforcePresenceService.cs
+// ONEVO.Application.Features.WorkforcePresence/Public/IWorkforcePresenceService.cs
 public interface IWorkforcePresenceService
 {
     Task<Result<PresenceSessionDto>> GetPresenceForDateAsync(Guid employeeId, DateOnly date, CancellationToken ct);

@@ -37,7 +37,7 @@ Aggregates data from [[modules/activity-monitoring/overview|Activity Monitoring]
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.ProductivityAnalytics/Public/IProductivityAnalyticsService.cs
+// ONEVO.Application.Features.ProductivityAnalytics/Public/IProductivityAnalyticsService.cs
 public interface IProductivityAnalyticsService
 {
     Task<Result<DailyEmployeeReportDto>> GetDailyReportAsync(Guid employeeId, DateOnly date, CancellationToken ct);

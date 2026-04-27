@@ -35,7 +35,7 @@ The Discrepancy Engine is a daily end-of-day job that cross-references three dat
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.DiscrepancyEngine/Public/IDiscrepancyEngineService.cs
+// ONEVO.Application.Features.DiscrepancyEngine/Public/IDiscrepancyEngineService.cs
 public interface IDiscrepancyEngineService
 {
     Task<Result<DiscrepancyEventDto?>> GetDiscrepancyForDateAsync(
@@ -58,7 +58,7 @@ public interface IDiscrepancyEngineService
 Runs **daily at 10:30 PM** (after work hours, before `GenerateDailyReportsJob` at 11:30 PM).
 
 ```csharp
-// ONEVO.Modules.DiscrepancyEngine/Jobs/DiscrepancyEngineJob.cs
+// ONEVO.Application.Features.DiscrepancyEngine/Jobs/DiscrepancyEngineJob.cs
 public class DiscrepancyEngineJob
 {
     public async Task RunAsync(Guid tenantId, DateOnly date, CancellationToken ct)
