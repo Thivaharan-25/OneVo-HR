@@ -47,6 +47,28 @@ public interface IActivityMonitoringService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/ActivityMonitoring/Entities/
+  ONEVO.Domain/Features/ActivityMonitoring/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/ActivityMonitoring/Commands/
+  ONEVO.Application/Features/ActivityMonitoring/Queries/
+  ONEVO.Application/Features/ActivityMonitoring/DTOs/Requests/
+  ONEVO.Application/Features/ActivityMonitoring/DTOs/Responses/
+  ONEVO.Application/Features/ActivityMonitoring/Validators/
+  ONEVO.Application/Features/ActivityMonitoring/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/ActivityMonitoring/
+
+API endpoints:
+  ONEVO.Api/Controllers/ActivityMonitoring/ActivityMonitoringController.cs
+
+---
+
 ## Database Tables (8)
 
 ### `activity_raw_buffer`

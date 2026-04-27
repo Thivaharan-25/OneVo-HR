@@ -41,6 +41,28 @@ public interface IPayrollService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Payroll/Entities/
+  ONEVO.Domain/Features/Payroll/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Payroll/Commands/
+  ONEVO.Application/Features/Payroll/Queries/
+  ONEVO.Application/Features/Payroll/DTOs/Requests/
+  ONEVO.Application/Features/Payroll/DTOs/Responses/
+  ONEVO.Application/Features/Payroll/Validators/
+  ONEVO.Application/Features/Payroll/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Payroll/
+
+API endpoints:
+  ONEVO.Api/Controllers/Payroll/PayrollController.cs
+
+---
+
 ## Database Tables (11)
 
 ### `payroll_providers`

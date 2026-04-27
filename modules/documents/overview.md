@@ -26,6 +26,28 @@ Document management with versioning, categorization (hierarchical), access contr
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Documents/Entities/
+  ONEVO.Domain/Features/Documents/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Documents/Commands/
+  ONEVO.Application/Features/Documents/Queries/
+  ONEVO.Application/Features/Documents/DTOs/Requests/
+  ONEVO.Application/Features/Documents/DTOs/Responses/
+  ONEVO.Application/Features/Documents/Validators/
+  ONEVO.Application/Features/Documents/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Documents/
+
+API endpoints:
+  ONEVO.Api/Controllers/Documents/DocumentsController.cs
+
+---
+
 ## Database Tables (6)
 
 ### `document_categories`

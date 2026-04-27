@@ -112,6 +112,28 @@ Reference data — NOT tenant-scoped (global).
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/InfrastructureModule/Entities/
+  ONEVO.Domain/Features/InfrastructureModule/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/InfrastructureModule/Commands/
+  ONEVO.Application/Features/InfrastructureModule/Queries/
+  ONEVO.Application/Features/InfrastructureModule/DTOs/Requests/
+  ONEVO.Application/Features/InfrastructureModule/DTOs/Responses/
+  ONEVO.Application/Features/InfrastructureModule/Validators/
+  ONEVO.Application/Features/InfrastructureModule/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/InfrastructureModule/
+
+API endpoints:
+  ONEVO.Api/Controllers/InfrastructureModule/InfrastructureModuleController.cs
+
+---
+
 ## Domain Events (intra-module — MediatR)
 
 > These events are published and consumed within this module only. They never leave the module.

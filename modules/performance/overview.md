@@ -42,6 +42,28 @@ public interface IPerformanceService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Performance/Entities/
+  ONEVO.Domain/Features/Performance/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Performance/Commands/
+  ONEVO.Application/Features/Performance/Queries/
+  ONEVO.Application/Features/Performance/DTOs/Requests/
+  ONEVO.Application/Features/Performance/DTOs/Responses/
+  ONEVO.Application/Features/Performance/Validators/
+  ONEVO.Application/Features/Performance/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Performance/
+
+API endpoints:
+  ONEVO.Api/Controllers/Performance/PerformanceController.cs
+
+---
+
 ## Database Tables (7)
 
 ### `review_cycles`

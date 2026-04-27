@@ -42,6 +42,28 @@ public interface ISkillsService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Skills/Entities/
+  ONEVO.Domain/Features/Skills/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Skills/Commands/
+  ONEVO.Application/Features/Skills/Queries/
+  ONEVO.Application/Features/Skills/DTOs/Requests/
+  ONEVO.Application/Features/Skills/DTOs/Responses/
+  ONEVO.Application/Features/Skills/Validators/
+  ONEVO.Application/Features/Skills/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Skills/
+
+API endpoints:
+  ONEVO.Api/Controllers/Skills/SkillsController.cs
+
+---
+
 ## Database Tables (15)
 
 ### Phase 1 Tables — Build Now

@@ -46,6 +46,28 @@ public interface IIdentityVerificationService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/IdentityVerification/Entities/
+  ONEVO.Domain/Features/IdentityVerification/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/IdentityVerification/Commands/
+  ONEVO.Application/Features/IdentityVerification/Queries/
+  ONEVO.Application/Features/IdentityVerification/DTOs/Requests/
+  ONEVO.Application/Features/IdentityVerification/DTOs/Responses/
+  ONEVO.Application/Features/IdentityVerification/Validators/
+  ONEVO.Application/Features/IdentityVerification/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/IdentityVerification/
+
+API endpoints:
+  ONEVO.Api/Controllers/IdentityVerification/IdentityVerificationController.cs
+
+---
+
 ## Database Tables (6)
 
 ### `verification_policies`

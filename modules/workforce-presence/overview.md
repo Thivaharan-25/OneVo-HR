@@ -52,6 +52,28 @@ public interface IWorkforcePresenceService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/WorkforcePresence/Entities/
+  ONEVO.Domain/Features/WorkforcePresence/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/WorkforcePresence/Commands/
+  ONEVO.Application/Features/WorkforcePresence/Queries/
+  ONEVO.Application/Features/WorkforcePresence/DTOs/Requests/
+  ONEVO.Application/Features/WorkforcePresence/DTOs/Responses/
+  ONEVO.Application/Features/WorkforcePresence/Validators/
+  ONEVO.Application/Features/WorkforcePresence/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/WorkforcePresence/
+
+API endpoints:
+  ONEVO.Api/Controllers/WorkforcePresence/WorkforcePresenceController.cs
+
+---
+
 ## Database Tables (12)
 
 ### Kept from Old Attendance (9 tables)

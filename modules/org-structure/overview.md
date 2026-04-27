@@ -42,6 +42,28 @@ public interface IOrgStructureService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/OrgStructure/Entities/
+  ONEVO.Domain/Features/OrgStructure/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/OrgStructure/Commands/
+  ONEVO.Application/Features/OrgStructure/Queries/
+  ONEVO.Application/Features/OrgStructure/DTOs/Requests/
+  ONEVO.Application/Features/OrgStructure/DTOs/Responses/
+  ONEVO.Application/Features/OrgStructure/Validators/
+  ONEVO.Application/Features/OrgStructure/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/OrgStructure/
+
+API endpoints:
+  ONEVO.Api/Controllers/OrgStructure/OrgStructureController.cs
+
+---
+
 ## Database Tables (10)
 
 ### `legal_entities`
