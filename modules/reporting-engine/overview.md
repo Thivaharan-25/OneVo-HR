@@ -28,6 +28,28 @@ Scheduled and on-demand report generation serving **both pillars** — HR report
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/ReportingEngine/Entities/
+  ONEVO.Domain/Features/ReportingEngine/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/ReportingEngine/Commands/
+  ONEVO.Application/Features/ReportingEngine/Queries/
+  ONEVO.Application/Features/ReportingEngine/DTOs/Requests/
+  ONEVO.Application/Features/ReportingEngine/DTOs/Responses/
+  ONEVO.Application/Features/ReportingEngine/Validators/
+  ONEVO.Application/Features/ReportingEngine/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/ReportingEngine/
+
+API endpoints:
+  ONEVO.Api/Controllers/ReportingEngine/ReportingEngineController.cs
+
+---
+
 ## Database Tables (3)
 
 ### `report_definitions`

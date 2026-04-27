@@ -27,6 +27,28 @@ Manages expense categories, claims, and individual line items. Uses the [[module
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Expense/Entities/
+  ONEVO.Domain/Features/Expense/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Expense/Commands/
+  ONEVO.Application/Features/Expense/Queries/
+  ONEVO.Application/Features/Expense/DTOs/Requests/
+  ONEVO.Application/Features/Expense/DTOs/Responses/
+  ONEVO.Application/Features/Expense/Validators/
+  ONEVO.Application/Features/Expense/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Expense/
+
+API endpoints:
+  ONEVO.Api/Controllers/Expense/ExpenseController.cs
+
+---
+
 ## Database Tables (3)
 
 ### `expense_categories`

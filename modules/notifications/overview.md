@@ -36,6 +36,28 @@ public interface INotificationService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Notifications/Entities/
+  ONEVO.Domain/Features/Notifications/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Notifications/Commands/
+  ONEVO.Application/Features/Notifications/Queries/
+  ONEVO.Application/Features/Notifications/DTOs/Requests/
+  ONEVO.Application/Features/Notifications/DTOs/Responses/
+  ONEVO.Application/Features/Notifications/Validators/
+  ONEVO.Application/Features/Notifications/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Notifications/
+
+API endpoints:
+  ONEVO.Api/Controllers/Notifications/NotificationsController.cs
+
+---
+
 ## Database Tables (2)
 
 ### `notification_templates`

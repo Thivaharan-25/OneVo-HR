@@ -59,6 +59,28 @@ public interface IAgentCommandService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/AgentGateway/Entities/
+  ONEVO.Domain/Features/AgentGateway/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/AgentGateway/Commands/
+  ONEVO.Application/Features/AgentGateway/Queries/
+  ONEVO.Application/Features/AgentGateway/DTOs/Requests/
+  ONEVO.Application/Features/AgentGateway/DTOs/Responses/
+  ONEVO.Application/Features/AgentGateway/Validators/
+  ONEVO.Application/Features/AgentGateway/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/AgentGateway/
+
+API endpoints:
+  ONEVO.Api/Controllers/AgentGateway/AgentGatewayController.cs
+
+---
+
 ## Database Tables (4)
 
 ### `registered_agents`

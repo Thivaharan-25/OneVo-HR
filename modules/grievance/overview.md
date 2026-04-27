@@ -26,6 +26,28 @@ Manages employee grievance cases and disciplinary actions. Supports anonymous re
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Grievance/Entities/
+  ONEVO.Domain/Features/Grievance/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Grievance/Commands/
+  ONEVO.Application/Features/Grievance/Queries/
+  ONEVO.Application/Features/Grievance/DTOs/Requests/
+  ONEVO.Application/Features/Grievance/DTOs/Responses/
+  ONEVO.Application/Features/Grievance/Validators/
+  ONEVO.Application/Features/Grievance/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Grievance/
+
+API endpoints:
+  ONEVO.Api/Controllers/Grievance/GrievanceController.cs
+
+---
+
 ## Database Tables (2)
 
 ### `grievance_cases`

@@ -49,6 +49,28 @@ public interface IConfigurationService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Configuration/Entities/
+  ONEVO.Domain/Features/Configuration/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Configuration/Commands/
+  ONEVO.Application/Features/Configuration/Queries/
+  ONEVO.Application/Features/Configuration/DTOs/Requests/
+  ONEVO.Application/Features/Configuration/DTOs/Responses/
+  ONEVO.Application/Features/Configuration/Validators/
+  ONEVO.Application/Features/Configuration/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Configuration/
+
+API endpoints:
+  ONEVO.Api/Controllers/Configuration/ConfigurationController.cs
+
+---
+
 ## Database Tables (7)
 
 ### `tenant_settings`

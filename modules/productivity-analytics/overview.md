@@ -50,6 +50,28 @@ public interface IProductivityAnalyticsService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/ProductivityAnalytics/Entities/
+  ONEVO.Domain/Features/ProductivityAnalytics/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/ProductivityAnalytics/Commands/
+  ONEVO.Application/Features/ProductivityAnalytics/Queries/
+  ONEVO.Application/Features/ProductivityAnalytics/DTOs/Requests/
+  ONEVO.Application/Features/ProductivityAnalytics/DTOs/Responses/
+  ONEVO.Application/Features/ProductivityAnalytics/Validators/
+  ONEVO.Application/Features/ProductivityAnalytics/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/ProductivityAnalytics/
+
+API endpoints:
+  ONEVO.Api/Controllers/ProductivityAnalytics/ProductivityAnalyticsController.cs
+
+---
+
 ## Database Tables (5)
 
 ### `daily_employee_report`

@@ -46,6 +46,28 @@ public interface ICalendarConflictService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Calendar/Entities/
+  ONEVO.Domain/Features/Calendar/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Calendar/Commands/
+  ONEVO.Application/Features/Calendar/Queries/
+  ONEVO.Application/Features/Calendar/DTOs/Requests/
+  ONEVO.Application/Features/Calendar/DTOs/Responses/
+  ONEVO.Application/Features/Calendar/Validators/
+  ONEVO.Application/Features/Calendar/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Calendar/
+
+API endpoints:
+  ONEVO.Api/Controllers/Calendar/CalendarController.cs
+
+---
+
 ## Database Tables (1)
 
 ### `calendar_events`

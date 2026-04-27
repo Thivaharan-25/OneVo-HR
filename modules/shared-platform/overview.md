@@ -24,6 +24,28 @@ Cross-cutting platform services: SSO provider management, subscription/billing (
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/SharedPlatform/Entities/
+  ONEVO.Domain/Features/SharedPlatform/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/SharedPlatform/Commands/
+  ONEVO.Application/Features/SharedPlatform/Queries/
+  ONEVO.Application/Features/SharedPlatform/DTOs/Requests/
+  ONEVO.Application/Features/SharedPlatform/DTOs/Responses/
+  ONEVO.Application/Features/SharedPlatform/Validators/
+  ONEVO.Application/Features/SharedPlatform/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/SharedPlatform/
+
+API endpoints:
+  ONEVO.Api/Controllers/SharedPlatform/SharedPlatformController.cs
+
+---
+
 ## Database Tables (30)
 
 ### Sub-System 1: SSO & Authentication

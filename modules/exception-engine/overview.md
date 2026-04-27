@@ -44,6 +44,28 @@ public interface IExceptionEngineService
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/ExceptionEngine/Entities/
+  ONEVO.Domain/Features/ExceptionEngine/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/ExceptionEngine/Commands/
+  ONEVO.Application/Features/ExceptionEngine/Queries/
+  ONEVO.Application/Features/ExceptionEngine/DTOs/Requests/
+  ONEVO.Application/Features/ExceptionEngine/DTOs/Responses/
+  ONEVO.Application/Features/ExceptionEngine/Validators/
+  ONEVO.Application/Features/ExceptionEngine/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/ExceptionEngine/
+
+API endpoints:
+  ONEVO.Api/Controllers/ExceptionEngine/ExceptionEngineController.cs
+
+---
+
 ## Database Tables (5)
 
 ### `exception_rules`

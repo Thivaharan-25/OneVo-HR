@@ -194,6 +194,28 @@ private async Task NotifyIfRequiredAsync(Employee employee, DiscrepancySeverity 
 
 ---
 
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/DiscrepancyEngine/Entities/
+  ONEVO.Domain/Features/DiscrepancyEngine/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/DiscrepancyEngine/Commands/
+  ONEVO.Application/Features/DiscrepancyEngine/Queries/
+  ONEVO.Application/Features/DiscrepancyEngine/DTOs/Requests/
+  ONEVO.Application/Features/DiscrepancyEngine/DTOs/Responses/
+  ONEVO.Application/Features/DiscrepancyEngine/Validators/
+  ONEVO.Application/Features/DiscrepancyEngine/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/DiscrepancyEngine/
+
+API endpoints:
+  ONEVO.Api/Controllers/DiscrepancyEngine/DiscrepancyEngineController.cs
+
+---
+
 ## Database Table
 
 See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discrepancy_events`, `wms_daily_time_logs`, and `employee_discrepancy_baselines` tables.
