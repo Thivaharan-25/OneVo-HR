@@ -22,7 +22,7 @@ Manager UI → API → AgentCommandService → SignalR Hub → Desktop Agent
 ## SignalR Hub
 
 ```csharp
-// ONEVO.Modules.AgentGateway/Hubs/AgentCommandHub.cs
+// ONEVO.Api/Hubs/AgentCommandHub.cs
 [Authorize(AuthenticationSchemes = "DeviceJwt")]
 public class AgentCommandHub : Hub
 {
