@@ -1,264 +1,206 @@
-# Module Boundary Rules: ONEVO
+# Layer Boundary Rules: ONEVO
 
-These rules keep the ONEVO monolith maintainable. **Non-negotiable** — violating them turns the modular monolith into a big ball of mud.
+**Last Updated:** 2026-04-27
 
-AI agents: **these rules override convenience**. Never generate code that violates these boundaries, even if it would be simpler.
+These rules keep the ONEVO Clean Architecture maintainable. **Non-negotiable.**
 
-## Core Rules
+AI agents: these rules override convenience. Never generate code that violates layer dependencies.
 
-### Rule 1: Modules Only Access Each Other Through Public Interfaces
+---
+
+## The Dependency Rule
+
+Dependencies point inward only. Outer layers know about inner layers — never the reverse.
+
+```
+ONEVO.Api / ONEVO.Admin.Api  (outermost)
+        ↓
+ONEVO.Application  ←  ONEVO.Infrastructure
+        ↓
+ONEVO.Domain  (innermost — zero external dependencies)
+```
+
+### What each layer may reference
+
+| Layer | May reference |
+|-------|--------------|
+| `ONEVO.Domain` | Nothing |
+| `ONEVO.Application` | `ONEVO.Domain` only |
+| `ONEVO.Infrastructure` | `ONEVO.Application` + `ONEVO.Domain` |
+| `ONEVO.Api` / `ONEVO.Admin.Api` | `ONEVO.Application` + `ONEVO.Infrastructure` (DI wiring only) |
+
+---
+
+## Rule 1: Application defines interfaces — Infrastructure implements them
 
 ```csharp
-// ALLOWED:
-// From ONEVO.Modules.Leave:
-using ONEVO.Modules.CoreHR.Public; // public interface
-var employee = await _employeeService.GetByIdAsync(employeeId, ct);
-
-// FORBIDDEN:
-// From ONEVO.Modules.Leave:
-using ONEVO.Modules.CoreHR.Internal.Repositories; // internal!
-var employee = await _employeeRepository.GetByIdAsync(employeeId, ct);
-```
-
-Every module exposes a `Public/` folder containing interfaces and DTOs. Everything else is internal to the module.
-
-### Rule 2: No Circular Dependencies
-
-```
-ALLOWED:
-  Leave --> CoreHR     (Leave depends on CoreHR for employee data)
-  Payroll --> Leave    (Payroll depends on Leave for leave adjustments)
-
-FORBIDDEN:
-  CoreHR --> Leave --> CoreHR  (circular!)
-```
-
-If two modules need bidirectional communication, use **domain events** for at least one direction.
-
-### Rule 3: Each Module Owns Its Data
-
-```csharp
-// ALLOWED:
-// Leave module reads/writes to leave_types, leave_requests, etc.
-// CoreHR module reads/writes to employees, salary_history, etc.
-
-// FORBIDDEN:
-// Leave module directly queries the employees table
-// CoreHR module directly queries the leave_requests table
-```
-
-If Module A needs data from Module B, it calls Module B's public interface or listens for Module B's domain events. Modules never share database tables.
-
-### Rule 4: Sync for Queries, Events for Side Effects
-
-| Pattern               | Use When                                                  | Mechanism                             |
-| :-------------------- | :-------------------------------------------------------- | :------------------------------------ |
-| Sync (interface call) | Module A needs data from Module B to continue processing  | Call Module B's public service via DI |
-| Async — integration event (cross-module) | Module A did something that OTHER modules should react to | Publish via `IEventBus.PublishAsync()` → RabbitMQ via MassTransit |
-| Async — domain event (intra-module)      | Module A did something that THIS module should react to internally | Publish `INotification` via MediatR |
-
-```csharp
-// SYNC: Leave module needs employee data to validate a leave request
-public class CreateLeaveRequestHandler : IRequestHandler<CreateLeaveRequestCommand, Result<LeaveRequestDto>>
+// CORRECT: interface in Application
+// ONEVO.Application/Common/Interfaces/IEmailService.cs
+public interface IEmailService
 {
-    private readonly IEmployeeService _employeeService; // From CoreHR.Public
-    
+    Task SendAsync(string to, string subject, string body, CancellationToken ct);
+}
+
+// CORRECT: implementation in Infrastructure
+// ONEVO.Infrastructure/Email/SmtpEmailService.cs
+public class SmtpEmailService : IEmailService { ... }
+
+// FORBIDDEN: implementation reference in Application handler
+using ONEVO.Infrastructure.Email; // ← never
+```
+
+---
+
+## Rule 2: Domain has zero framework dependencies
+
+Domain entities have no EF Core attributes. No `[Key]`, no `[Column]`, no `[Required]`.
+All mapping is done via `IEntityTypeConfiguration<T>` in Infrastructure.
+
+```csharp
+// CORRECT
+public class LeaveRequest : BaseEntity
+{
+    public Guid EmployeeId { get; private set; }
+    public DateTime StartDate { get; private set; }
+    // ...
+    public void Approve()
+    {
+        Status = ApprovalStatus.Approved;
+        AddDomainEvent(new LeaveApprovedEvent(Id, EmployeeId));
+    }
+}
+
+// FORBIDDEN
+[Table("leave_requests")]      // ← EF attribute in Domain
+public class LeaveRequest { }
+```
+
+---
+
+## Rule 3: Handlers return Result<T> — never throw for business failures
+
+```csharp
+// CORRECT
+public async Task<Result<LeaveRequestDto>> Handle(CreateLeaveRequestCommand cmd, CancellationToken ct)
+{
+    if (employee is null)
+        return Result<LeaveRequestDto>.Failure("Employee not found");
+    // ...
+    return Result<LeaveRequestDto>.Success(dto);
+}
+
+// FORBIDDEN
+if (employee is null)
+    throw new Exception("Employee not found"); // ← only for infrastructure failures
+```
+
+---
+
+## Rule 4: Cross-feature reads go through IApplicationDbContext
+
+Features do not have isolated DbContexts. A handler may query any DbSet it needs.
+
+```csharp
+// CORRECT: Leave handler reading employee data
+public class CreateLeaveRequestHandler : IRequestHandler<...>
+{
+    private readonly IApplicationDbContext _db;
+
     public async Task<Result<LeaveRequestDto>> Handle(CreateLeaveRequestCommand cmd, CancellationToken ct)
     {
-        var employee = await _employeeService.GetByIdAsync(cmd.EmployeeId, ct);
-        if (employee is null) return Result<LeaveRequestDto>.Failure("Employee not found");
-        // ... validate and create leave request
+        var employee = await _db.Employees
+            .FirstOrDefaultAsync(e => e.Id == cmd.EmployeeId, ct);
+        // ...
     }
 }
 
-// ASYNC (cross-module integration event): Leave module publishes via IEventBus → RabbitMQ
-public class ApproveLeaveRequestHandler : IRequestHandler<ApproveLeaveRequestCommand, Result<Unit>>
+// FORBIDDEN: direct DbContext in handler
+private readonly ApplicationDbContext _db; // ← concrete, not interface
+```
+
+---
+
+## Rule 5: Cross-feature side effects use domain events
+
+When feature A does something that feature B should react to, feature A raises a domain event. Feature B handles it with `INotificationHandler<T>`.
+
+```csharp
+// Feature A (Leave) — entity raises event
+public void Approve()
 {
-    private readonly IEventBus _eventBus; // Wraps MassTransit outbox publish
-
-    public async Task<Result<Unit>> Handle(ApproveLeaveRequestCommand cmd, CancellationToken ct)
-    {
-        // ... approve the leave request
-        await _eventBus.PublishAsync(new LeaveApproved(leaveRequest.Id, leaveRequest.EmployeeId), ct);
-        // Written to leave_outbox_events; forwarded to RabbitMQ by OutboxProcessor
-        return Result<Unit>.Success(Unit.Value);
-    }
+    Status = ApprovalStatus.Approved;
+    AddDomainEvent(new LeaveApprovedEvent(Id, EmployeeId)); // ← raises event
 }
 
-// WorkforcePresence module consumes via MassTransit IConsumer<T>
-public class MarkLeaveInPresenceConsumer : IConsumer<LeaveApproved>
+// Feature B (WorkforcePresence) — reacts in EventHandlers/
+public class MarkShiftAbsentOnLeaveApprovedHandler
+    : INotificationHandler<LeaveApprovedEvent>
 {
-    public async Task Consume(ConsumeContext<LeaveApproved> context)
+    public async Task Handle(LeaveApprovedEvent notification, CancellationToken ct)
     {
-        // Mark leave days in workforce presence records
-        // Idempotency guaranteed by MassTransit inbox-state (processed_integration_events)
+        // mark shift absent
     }
 }
 ```
 
-### Rule 5: Shared Kernel is Minimal
+Events are dispatched **after** `SaveChangesAsync` succeeds via `DomainEventDispatchInterceptor`. If the DB write fails, no events fire.
 
-`ONEVO.SharedKernel` contains ONLY (see [[backend/shared-kernel|Shared Kernel]] for full details):
+**What is gone:** `IEventBus`, `IntegrationEvent`, MassTransit, RabbitMQ, Outbox tables.
 
-- `BaseEntity` (Id, TenantId, CreatedAt, UpdatedAt, CreatedById)
-- `BaseRepository<T>` (tenant-filtered CRUD)
-- `ITenantContext` (current tenant from JWT)
-- `Result<T>` (success/failure pattern)
-- `IEncryptionService` (AES-256 for PII — see [[security/data-classification|Data Classification]])
-- Common enums (`EmploymentType`, `EmploymentStatus`, etc.)
-- Common utilities (`DateTimeProvider`, `IdGenerator`)
-- Domain event base class (`DomainEvent`) — see [[backend/messaging/event-catalog|Event Catalog]]
-- Pagination types (`PagedRequest`, `PagedResult<T>`)
+---
 
-It does **NOT** contain business logic. If something is specific to 1-2 modules, it belongs in those modules.
+## Rule 6: CancellationToken everywhere
 
-## Directory Structure Per Module
+Every handler, repository call, and external HTTP call receives `CancellationToken ct`.
 
-```
-ONEVO.Modules.{Name}/
-├── Public/                           # PUBLIC — other modules import from here
-│   ├── I{Name}Service.cs            # Public service interface
-│   ├── Dtos/                         # Public DTOs for cross-module communication
-│   └── Events/                       # Domain events this module publishes
-├── Internal/                         # PRIVATE — only this module
-│   ├── Entities/                     # EF Core entities
-│   ├── Repositories/                 # Data access
-│   ├── Services/                     # Business logic (implements public interfaces)
-│   ├── Commands/                     # MediatR commands + handlers
-│   ├── Queries/                      # MediatR queries + handlers
-│   ├── Validators/                   # FluentValidation validators
-│   ├── EventHandlers/                # Handlers for events from OTHER modules
-│   ├── Mappings/                     # Entity ↔ DTO mappings
-│   └── Configuration/                # EF Core entity configurations
-├── Endpoints/                        # API endpoints (Minimal APIs or Controllers)
-└── {Name}Module.cs                   # Module registration (IServiceCollection extension)
+```csharp
+// CORRECT
+public async Task<Result<T>> Handle(TCommand cmd, CancellationToken ct)
+{
+    var entity = await _db.Set<T>().FirstOrDefaultAsync(x => x.Id == cmd.Id, ct);
+    await _uow.SaveChangesAsync(ct);
+}
+
+// FORBIDDEN
+await _db.Set<T>().FirstOrDefaultAsync(x => x.Id == cmd.Id); // ← no ct
 ```
 
-## Enforcement
+---
 
-### ArchUnitNET Tests
+## Rule 7: DevPlatform entities have no TenantId
+
+`ApplicationDbContext` applies global tenant filters to all `BaseEntity` instances. `DevPlatformAccount`, `DevPlatformSession`, `AgentVersionRelease`, `AgentDeploymentRing`, `AgentDeploymentRingAssignment` are platform-level entities with no `TenantId` — they use a separate base class and are excluded from tenant filters.
+
+---
+
+## ArchUnitNET Enforcement
 
 ```csharp
 [Fact]
-public void Modules_Should_Not_Access_Other_Modules_Internals()
+public void Domain_Should_Not_Reference_Any_Other_Layer()
 {
-    var rule = Types()
-        .That().ResideInNamespace("ONEVO.Modules.*.Internal", true)
-        .Should().NotBeAccessibleFromOutsideOfTheirModule();
-    
-    rule.Check(Architecture);
-}
-
-[Fact]
-public void No_Module_Should_Have_Circular_Dependencies()
-{
-    Slices()
-        .Matching("ONEVO.Modules.(*)")
-        .Should().BeFreeOfCycles()
+    Types().That().ResideInNamespace("ONEVO.Domain")
+        .Should().NotDependOnAnyTypesThat()
+        .ResideInNamespace("ONEVO.Application")
+        .OrResideInNamespace("ONEVO.Infrastructure")
         .Check(Architecture);
 }
 
 [Fact]
-public void All_Repositories_Should_Extend_BaseRepository()
+public void Application_Should_Not_Reference_Infrastructure()
 {
-    var rule = Classes()
-        .That().HaveNameEndingWith("Repository")
-        .Should().BeAssignableTo(typeof(BaseRepository<>));
-    
-    rule.Check(Architecture);
-}
-```
-
-### In Code Reviews
-
-- Reject any PR that uses `using ONEVO.Modules.{Other}.Internal`
-- Reject any PR that adds a direct `DbContext.Set<T>()` call for another module's entity
-- Reject any PR that introduces a circular dependency
-- Reject any PR that adds business logic to SharedKernel
-
-## Module Independence Framework
-
-Every optional module follows this three-level contract:
-
-1. **STANDALONE** — Works with only Mandatory Core (Infrastructure + Auth + CoreHR identity). No optional module should hard-depend on another optional module.
-2. **INTEGRATION** — Registers event handlers for other modules' events when both are active for the tenant.
-3. **GRACEFUL DEGRADATION** — If a paired module is disabled, this module still works. The integration handler simply doesn't register.
-
-**Example — Leave module:**
-
-```
-Standalone:  Leave requests work without Payroll, without WMS, without WorkforcePresence
-+ Payroll:   LeaveApproved → PayrollAdjustment handler activates
-+ WMS:       LeaveApproved → WMS capacity warning handler activates
-+ WorkforcePresence: LeaveApproved → shift marked absent
-Missing any: Leave still processes correctly, that integration just skips
-```
-
-### Integration Activation Rule
-
-A handler is registered **only if** both modules are enabled for the tenant:
-
-```csharp
-// In Leave module registration — MassTransit consumers registered conditionally
-if (moduleRegistry.IsEnabled(tenantId, ModuleNames.Payroll))
-{
-    cfg.ReceiveEndpoint("payroll-leave-events", e =>
-    {
-        e.Consumer<PayrollAdjustmentOnLeaveApprovedConsumer>(context);
-    });
+    Types().That().ResideInNamespace("ONEVO.Application")
+        .Should().NotDependOnAnyTypesThat()
+        .ResideInNamespace("ONEVO.Infrastructure")
+        .Check(Architecture);
 }
 
-if (moduleRegistry.IsEnabled(tenantId, ModuleNames.WorkforcePresence))
+[Fact]
+public void Handlers_Should_Not_Use_Concrete_DbContext()
 {
-    cfg.ReceiveEndpoint("workforce-presence-leave-events", e =>
-    {
-        e.Consumer<MarkShiftAbsentOnLeaveApprovedConsumer>(context);
-    });
+    Types().That().HaveNameEndingWith("Handler")
+        .Should().NotDependOnAnyTypesThat()
+        .HaveExactlyName("ApplicationDbContext")
+        .Check(Architecture);
 }
 ```
-
-`ModuleRegistry.IsEnabled(tenantId, module)` is checked at startup per tenant and cached in Redis. Changing a tenant's module configuration clears the cache and re-evaluates on next request.
-
-## Integration Registry
-
-Auto-enabled integrations when both modules are active for a tenant. Each row is: Module A publishes domain event → Integration handler in Module B reacts → Module B updates state.
-
-| Module A | + Module B | Auto-enabled integration |
-|----------|------------|--------------------------|
-| Leave | WorkforcePresence | Approved leave marks shift as absent |
-| Leave | WMS (via bridge) | Leave approved → WMS capacity warning webhook |
-| Leave | Payroll | Approved unpaid leave → payroll deduction entry |
-| WorkforcePresence | ActivityMonitoring | Presence session correlates agent snapshots |
-| WorkforcePresence | WMS (time logs) | Overtime engine: presence + WMS task logs → `overtime_entry` |
-| ActivityMonitoring | ExceptionEngine | Agent snapshots → anomaly rule evaluation |
-| WMS (time logs) | Payroll | Overtime entries from WMS data → payroll line item |
-| WMS (productivity) | Performance | Monthly WMS scores → appraisal composite input |
-| WMS (productivity) | Payroll | Approved `bonus_grant` → payroll bonus line item |
-| CoreHR | WMS (via bridge) | EmployeeCreated/Terminated → WMS access provision/revoke webhook |
-| Skills | WMS (resource) | ONEVO validated skills → WMS resource matching (Skills bridge) |
-
-> **WMS integrations** are implemented as bridge webhooks, not in-process MediatR handlers. When ONEVO fires a domain event (e.g. `LeaveApprovedEvent`) and WMS is enabled for the tenant, a bridge handler calls the WMS webhook endpoint with the relevant payload.
-
-## Per-Module Database Contexts
-
-Each module has its own `{Module}DbContext` — there is no shared `ApplicationDbContext` spanning multiple modules.
-
-```
-ONEVO.Modules.Leave/
-  Internal/Persistence/
-    LeaveDbContext.cs          ← Maps only leave_* tables
-    Migrations/                ← Leave-owned migrations
-
-ONEVO.Modules.CoreHR/
-  Internal/Persistence/
-    CoreHRDbContext.cs         ← Maps only employees, salary_history, etc.
-    Migrations/                ← CoreHR-owned migrations
-```
-
-All module DbContexts connect to the same PostgreSQL instance in the current monolith. When a module is extracted to its own microservice, its DbContext is pointed at a dedicated DB — no rewrite needed.
-
-Cross-module data access must go through **Public service interfaces** (sync) or **IEventBus** (async). Direct cross-module table queries are forbidden, even within the monolith.
-
-Cross-module async events use `IEventBus` (in `ONEVO.SharedKernel`), not MediatR directly — this is the swap point for RabbitMQ when microservice extraction happens.
-
-See [[docs/decisions/ADR-001-per-module-database-and-event-bus|ADR-001]] for the full rationale, IEventBus contract, and microservice extraction path.
