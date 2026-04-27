@@ -1,6 +1,6 @@
 # Module: Configuration
 
-**Namespace:** `ONEVO.Modules.Configuration`
+**Feature Folder:** `Application/Features/Configuration`
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4

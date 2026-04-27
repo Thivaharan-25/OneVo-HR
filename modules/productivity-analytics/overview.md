@@ -1,6 +1,6 @@
 # Module: Productivity Analytics
 
-**Namespace:** `ONEVO.Modules.ProductivityAnalytics`
+**Feature Folder:** `Application/Features/ProductivityAnalytics`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 1 (Week 4)

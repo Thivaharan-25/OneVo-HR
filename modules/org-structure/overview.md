@@ -1,6 +1,6 @@
 # Module: Org Structure
 
-**Namespace:** `ONEVO.Modules.OrgStructure`
+**Feature Folder:** `Application/Features/OrgStructure`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 3 (Week 1)

@@ -1,6 +1,6 @@
 # Module: Identity Verification
 
-**Namespace:** `ONEVO.Modules.IdentityVerification`
+**Feature Folder:** `Application/Features/IdentityVerification`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 4 (Week 3)

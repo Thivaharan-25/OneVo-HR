@@ -1,6 +1,6 @@
 # Module: Auth & Security
 
-**Namespace:** `ONEVO.Modules.Auth`
+**Feature Folder:** `Application/Features/Auth`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 2 (Week 1)

@@ -1,6 +1,6 @@
 # Module: Discrepancy Engine
 
-**Namespace:** `ONEVO.Modules.DiscrepancyEngine`
+**Feature Folder:** `Application/Features/DiscrepancyEngine`
 **Phase:** 1 — Build
 **Pillar:** Workforce Intelligence
 **Tables:** 3 (`discrepancy_events`, `wms_daily_time_logs`, `employee_discrepancy_baselines`)

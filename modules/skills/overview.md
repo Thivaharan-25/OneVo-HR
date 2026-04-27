@@ -1,6 +1,6 @@
 # Module: Skills & Learning
 
-**Namespace:** `ONEVO.Modules.Skills`
+**Feature Folder:** `Application/Features/Skills`
 **Phase:** Mixed — 5 tables Phase 1, 10 tables Phase 2
 **Pillar:** 1 — HR Management
 **Owner:** Dev 3 + Dev 4

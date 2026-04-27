@@ -1,6 +1,6 @@
 # Module: Payroll
 
-**Namespace:** `ONEVO.Modules.Payroll`
+**Feature Folder:** `Application/Features/Payroll`
 **Phase:** 2 — Deferred
 **Pillar:** 1 — HR Management
 **Owner:** Dev 3

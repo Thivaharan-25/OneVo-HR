@@ -1,6 +1,6 @@
  # Module: Workforce Presence
 
-**Namespace:** `ONEVO.Modules.WorkforcePresence`
+**Feature Folder:** `Application/Features/WorkforcePresence`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 3 + Dev 4 (Week 2)

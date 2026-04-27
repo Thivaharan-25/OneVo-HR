@@ -1,6 +1,6 @@
 # Module: Documents
 
-**Namespace:** `ONEVO.Modules.Documents`
+**Feature Folder:** `Application/Features/Documents`
 **Phase:** 2 — Deferred
 **Pillar:** 1 — HR Management
 **Owner:** Dev 4 (Week 4)

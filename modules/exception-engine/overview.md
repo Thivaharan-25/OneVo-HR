@@ -1,6 +1,6 @@
 # Module: Exception Engine
 
-**Namespace:** `ONEVO.Modules.ExceptionEngine`
+**Feature Folder:** `Application/Features/ExceptionEngine`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 2 (Week 4)

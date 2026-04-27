@@ -1,6 +1,6 @@
 # Module: Leave
 
-**Namespace:** `ONEVO.Modules.Leave`
+**Feature Folder:** `Application/Features/Leave`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 1 (Week 3)

@@ -1,6 +1,6 @@
 # Module: Grievance
 
-**Namespace:** `ONEVO.Modules.Grievance`
+**Feature Folder:** `Application/Features/Grievance`
 **Phase:** 2 — Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 2 (Week 4)

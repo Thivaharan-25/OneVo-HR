@@ -1,6 +1,6 @@
 # Module: Calendar
 
-**Namespace:** `ONEVO.Modules.Calendar`
+**Feature Folder:** `Application/Features/Calendar`
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 3

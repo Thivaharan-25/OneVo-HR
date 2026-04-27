@@ -1,6 +1,6 @@
 # Module: Performance
 
-**Namespace:** `ONEVO.Modules.Performance`
+**Feature Folder:** `Application/Features/Performance`
 **Phase:** 2 — Deferred
 **Pillar:** 1 — HR Management
 **Owner:** Dev 2 (Week 3)

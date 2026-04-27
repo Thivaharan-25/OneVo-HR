@@ -1,6 +1,6 @@
 # Module: Activity Monitoring
 
-**Namespace:** `ONEVO.Modules.ActivityMonitoring`
+**Feature Folder:** `Application/Features/ActivityMonitoring`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 3 (Week 3)

@@ -1,6 +1,6 @@
 # Module: Shared Platform
 
-**Namespace:** `ONEVO.Modules.SharedPlatform`
+**Feature Folder:** `Application/Features/SharedPlatform`
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4 (Week 1 + Week 4)

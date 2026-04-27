@@ -1,6 +1,6 @@
 # Module: Infrastructure
 
-**Namespace:** `ONEVO.Modules.Infrastructure`
+**Feature Folder:** `Application/Features/InfrastructureModule`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 1 (Week 1)

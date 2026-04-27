@@ -1,6 +1,6 @@
 # Module: Agent Gateway
 
-**Namespace:** `ONEVO.Modules.AgentGateway`
+**Feature Folder:** `Application/Features/AgentGateway`
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4 (Week 1)

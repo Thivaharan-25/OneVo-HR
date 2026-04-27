@@ -1,6 +1,6 @@
 # Module: Notifications
 
-**Namespace:** `ONEVO.Modules.Notifications`
+**Feature Folder:** `Application/Features/Notifications`
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 2

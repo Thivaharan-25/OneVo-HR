@@ -1,6 +1,6 @@
 # Module: Reporting Engine
 
-**Namespace:** `ONEVO.Modules.ReportingEngine`
+**Feature Folder:** `Application/Features/ReportingEngine`
 **Phase:** 2 — Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 1 (Week 4)

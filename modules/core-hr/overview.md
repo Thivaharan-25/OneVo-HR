@@ -1,6 +1,6 @@
 # Module: Core HR
 
-**Namespace:** `ONEVO.Modules.CoreHR`
+**Feature Folder:** `Application/Features/CoreHR`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 1 + Dev 2 (Week 2)

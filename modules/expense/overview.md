@@ -1,6 +1,6 @@
 # Module: Expense
 
-**Namespace:** `ONEVO.Modules.Expense`
+**Feature Folder:** `Application/Features/Expense`
 **Phase:** 2 — Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 2 (Week 4)
