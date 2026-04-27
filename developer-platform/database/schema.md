@@ -10,7 +10,17 @@ The OneVo Developer Platform introduces a dedicated database schema to manage pl
 - **Session security**: OAuth-based authentication with token management and IP tracking
 - **API access control**: Platform API key provisioning with scope-based permissions and expiration
 
-**Phase 1** adds 5 core tables for accounts, sessions, releases, and ring management. **Phase 2** adds the platform_api_keys table for programmatic access.
+**Phase 1** adds 5 core tables for accounts, sessions, releases, and ring management, plus the `global_app_catalog` table in the SharedPlatform schema managed by the App Catalog Manager module. **Phase 2** adds the platform_api_keys table for programmatic access.
+
+---
+
+## DbContext Ownership (ADR-001)
+
+> **DbContext:** `ApplicationDbContext` in `ONEVO.Infrastructure/Persistence/`. DevPlatform entities (`DevPlatformAccount`, `DevPlatformSession`, `AgentVersionRelease`, `AgentDeploymentRing`, `AgentDeploymentRingAssignment`) are configured in `ONEVO.Infrastructure/Persistence/Configurations/DevPlatform/`. These entities have **no TenantId** and are excluded from the global tenant query filter.
+
+Per [ADR-001](../../decisions/ADR-001-per-module-database-and-event-bus.md), all developer platform tables are mapped by the unified `ApplicationDbContext`. EF migrations live in `ONEVO.Infrastructure/Persistence/Migrations/` and are run as part of the standard application startup.
+
+Cross-module data access (e.g., reading `tenants`) goes through the existing module's public service interface via DI — never by querying the DbContext directly across module boundaries.
 
 ---
 
@@ -19,8 +29,10 @@ The OneVo Developer Platform introduces a dedicated database schema to manage pl
 | Phase | Change | Table Count |
 |-------|--------|------------|
 | Current | Baseline | 170 |
-| Phase 1 | +5 new tables | 175 |
-| Phase 2 | +1 new table | 176 |
+| Phase 1 | +5 DevPlatform tables + `global_app_catalog` (SharedPlatform) + `observed_applications` (Configuration) + 3 columns on `app_allowlists` | 177 |
+| Phase 2 | +1 new table (`platform_api_keys`) | 178 |
+
+> **Note on ownership:** `global_app_catalog` is owned by `SharedPlatformDbContext` and `observed_applications` by `ConfigurationDbContext`. They are not in `DevPlatformDbContext`. The dev console manages them through `IGlobalAppCatalogService` and `IObservedApplicationReader` interfaces respectively.
 
 ---
 
