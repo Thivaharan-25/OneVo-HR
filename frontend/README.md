@@ -1,6 +1,6 @@
 # Frontend Architecture
 
-**Next.js 14 App Router** | React 18 | TypeScript | TanStack Query | Zustand | shadcn/ui | Tailwind CSS | SignalR | Outfit + Geist | Violet Electric
+**Vite + React 19 + React Router v7** | TypeScript | TanStack Query | Zustand | shadcn/ui | Tailwind CSS v4 | SignalR | Outfit + Geist | Violet Electric
 
 ---
 
@@ -10,9 +10,9 @@ Core architectural decisions and system design:
 
 - [[frontend/architecture/overview|Overview]] — tech stack, principles, data flow, deployment
 - [[frontend/architecture/app-structure|App Structure]] — route tree, layout system, provider stack
-- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — SSR vs CSR decision matrix per route, streaming, hybrid pattern
+- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — CSR throughout, Suspense boundaries, React.lazy for heavy routes/components
 - [[backend/module-boundaries|Module Boundaries]] — code splitting, import rules, feature-gated modules, bundle targets
-- [[frontend/architecture/routing|Routing]] — route guards (middleware → layout → component), parallel routes, breadcrumbs
+- [[frontend/architecture/routing|Routing]] — React Router v7 route config, ProtectedRoute guard, edit panels via state, breadcrumbs
 - [[backend/messaging/error-handling|Error Handling]] — error boundary hierarchy, error types, network resilience, chunk recovery
 
 ## Design System
@@ -43,7 +43,7 @@ Visual language, components, and interaction patterns:
 
 How the frontend fetches, caches, and syncs data:
 
-- [[frontend/data-layer/state-management|State Management]] — TanStack Query (server) + Zustand (client) + nuqs (URL)
+- [[frontend/data-layer/state-management|State Management]] — TanStack Query (server) + Zustand (client) + React Router useSearchParams (URL)
 - [[frontend/data-layer/api-integration|API Integration]] — ApiClient, endpoint organization, error handling, pagination
 - [[backend/real-time|Real-Time (SignalR)]] — connection lifecycle, hub channels, event handlers, reconnection
 - [[frontend/data-layer/caching-strategy|Caching]] — stale times, query keys, optimistic updates, prefetching, tenant scoping
@@ -55,7 +55,7 @@ Enterprise-grade concerns that touch every page:
 
 - [[frontend/cross-cutting/authentication|Authentication]] — login flow, token management (in-memory), silent refresh, multi-tab sync
 - [[frontend/cross-cutting/authorization|Authorization (RBAC)]] — 5 levels of gating (route → sidebar → page → action → field)
-- [[frontend/cross-cutting/i18n|Internationalization]] — next-intl, ICU MessageFormat, locale resolution
+- [[frontend/cross-cutting/i18n|Internationalization]] — i18next, ICU MessageFormat, locale resolution
 - [[frontend/cross-cutting/security|Security]] — CSP, XSS prevention, CSRF, sensitive data handling, open redirect
 - [[frontend/cross-cutting/analytics|Product Analytics]] — event taxonomy, funnel tracking, privacy-first
 - [[frontend/cross-cutting/error-monitoring|Error Monitoring]] — Sentry integration, PII scrubbing, alert rules

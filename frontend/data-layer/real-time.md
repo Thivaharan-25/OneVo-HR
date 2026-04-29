@@ -46,7 +46,7 @@ export function SignalRProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     const connection = new HubConnectionBuilder()
-      .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/hubs/main`, {
+      .withUrl(`${import.meta.env.VITE_API_URL}/hubs/main`, {
         accessTokenFactory: () => getAccessToken(),
       })
       .withAutomaticReconnect({

@@ -6,7 +6,7 @@
 |:---------|:--------|:----------------|
 | C# | 13 (.NET 9) | Backend API, business logic, background jobs, desktop agent service + tray app |
 | SQL | PostgreSQL 16 | Database queries, RLS policies, migrations |
-| TypeScript | ES2024 / 5.x | Frontend (Next.js 14) |
+| TypeScript | ES2024 / 5.x | Frontend (Vite + React 19) |
 | XAML | .NET MAUI | Desktop agent tray app UI |
 
 ---
@@ -15,13 +15,13 @@
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
-| Runtime | .NET | 9.0 | LTS, single deployable monolith |
+| Runtime | .NET | 9.0 | LTS, Clean Architecture + CQRS backend |
 | Web Framework | ASP.NET Core | 9.0 | Minimal APIs + Controllers |
 | ORM | Entity Framework Core | 9.0 | Code-first migrations, `xmin` optimistic concurrency |
 | Authentication | JWT (RS256) | - | Access tokens (15min) + Refresh tokens (7 days) |
 | Authorization | Custom RBAC | - | `RequirePermission` attribute, 90+ permissions |
 | Background Jobs | Hangfire | 1.8.x | 5-queue priority system (Critical/High/Default/Low/Batch) |
-| Message Broker | RabbitMQ + MassTransit | Latest | Phase 1 cross-module integration events; transactional outbox pattern |
+| CQRS / Mediator | MediatR | Latest | In-process command/query dispatch and domain events |
 | Real-time | SignalR | 9.0 | WebSocket connections, presence tracking, live dashboards |
 | API Documentation | Swagger/OpenAPI | 3.0 | Auto-generated, Kiota SDK generation |
 | Validation | FluentValidation | 11.x | Request validation |
@@ -38,10 +38,10 @@
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
-| Framework | Next.js | 14+ | App Router, Server Components, Vercel deployment |
+| Framework | Vite + React | Vite 8.x / React 19 | CSR SPA with React Router |
 | Language | TypeScript | 5.x | Strict mode enabled |
 | Runtime | Node.js | 20 LTS | |
-| Package Manager | pnpm | 8.x | Workspace support |
+| Package Manager | npm | Latest | Current `OneVo/` app scripts use npm-compatible Vite commands |
 | CSS Framework | Tailwind CSS | 3.x | Utility-first, CSS custom property tokens |
 | Component Library | shadcn/ui | Latest | Copy-paste Radix primitives, enterprise-grade |
 | Icons | Lucide React | Latest | Consistent icon set |
@@ -51,13 +51,13 @@
 | Theming | CSS Custom Properties | - | Light/dark mode, tenant branding |
 | Server State | TanStack Query | v5 | API data fetching, caching, mutations, optimistic updates |
 | Client State | Zustand | 4.x | Sidebar, filters, UI preferences, monitoring config cache |
-| URL State | nuqs | Latest | Filters, pagination, search params in URL |
+| URL State | React Router `useSearchParams` | v7 | Filters, pagination, search params in URL |
 | Forms | React Hook Form + Zod | Latest | Form state + validation (mirrors backend FluentValidation) |
 | Real-time | @microsoft/signalr | Latest | WebSocket connection to ONEVO backend |
 | SignalR channels | `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status` | - | Auto-reconnect with exponential backoff |
 | Testing | Vitest + RTL + Playwright + MSW | Latest | Unit, component, E2E, API mocking |
 | Linting | ESLint + Prettier | - | |
-| Bundle Analysis | @next/bundle-analyzer | - | |
+| Bundle Analysis | rollup-plugin-visualizer / Vite analyzer | - | |
 
 ### Key Frontend Dependencies
 
@@ -67,7 +67,6 @@
   "@tanstack/react-query": "^5",
   "@radix-ui/react-*": "latest",
   "zustand": "^4",
-  "nuqs": "latest",
   "react-hook-form": "latest",
   "zod": "latest",
   "recharts": "latest",
@@ -214,10 +213,10 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 | Category | Technology | Notes |
 |:---------|:-----------|:------|
 | Backend Hosting | Railway | .NET 9 deployment |
-| Frontend Hosting | Vercel | Next.js 14 |
+| Frontend Hosting | Static hosting / CDN | Vite build output |
 | CDN/Edge | Cloudflare | WAF, DDoS, geo-routing, rate limiting |
 | Containerization | Docker | Development + deployment — all services in docker-compose.yml |
-| Message Broker | RabbitMQ | Cross-module integration events (Phase 1) — see [[backend/messaging/exchange-topology\|Exchange Topology]] |
+| Message Broker | None in Phase 1 | In-process MediatR domain events replace RabbitMQ/MassTransit |
 | CI/CD | GitHub Actions | Build, test, deploy pipeline |
 | Observability | OpenTelemetry + Prometheus + Grafana | Distributed tracing, metrics, dashboards |
 | Status Page | BetterStack | Public status page |
@@ -246,12 +245,12 @@ See [[backend/external-integrations|External Integrations]] for full integration
 
 | Pattern | Where Used |
 |:--------|:-----------|
-| CQRS | Write/read separation across modules |
+| CQRS | Write/read separation through MediatR commands and queries |
 | Event Sourcing | Audit trails (`audit_logs` with JSON diffs) — see [[backend/messaging/event-catalog\|Event Catalog]] |
-| [[backend/messaging/exchange-topology\|Transactional Outbox]] | Per-module outbox → RabbitMQ publish (reliable cross-module delivery) |
+| Domain Events | In-process MediatR notifications for side effects |
 | Repository Pattern | Data access via `BaseRepository<T>` — see [[backend/shared-kernel\|Shared Kernel]] |
 | Unit of Work | EF Core `DbContext` per request |
-| Mediator (MediatR) | Command/Query handling within modules — see [[backend/module-boundaries\|Module Boundaries]] |
+| Mediator (MediatR) | Command/query handling and domain events in the Application layer |
 | Specification Pattern | Complex query composition |
 | Result Pattern | `Result<T, Error>` for explicit error handling — see [[backend/shared-kernel\|Shared Kernel]] |
 | Time-Series Buffer | Raw activity data → buffer table (partitioned, purged 48h) → aggregated summaries |

@@ -2,16 +2,22 @@
 
 ## Dashboard Layout
 
+Shell background (light): `#EDEEF2` | (dark): `#0A0A0D`
+Shell padding: `8px` all sides. Gap between topbar and bottom row: `6px`. Gap inside bottom row: `6px`.
+
 ```
-┌──────────────────────────────────────────────────────────┐
-│ Topbar (glass) — breadcrumbs, search, bell, avatar       │
-├──────┬──────────┬────────────────────────────────────────┤
-│      │          │                                        │
-│ Rail │  Panel   │  Page Content                          │
-│ 64px │  220px   │                                        │
-│glass │  glass   │  (scrollable)                          │
-│      │ (slides) │                                        │
-└──────┴──────────┴────────────────────────────────────────┘
+ ┌─────────────────────────────────────────────────────────┐  ← outer shell (#EDEEF2 / #0A0A0D), padding 8px
+ │ ┌─────────────────────────────────────────────────────┐ │
+ │ │ Topbar (solid) — entity, breadcrumb, search, actions│ │  ← #FFFFFF / #17181F, rounded-[10px], h-10 (40px)
+ │ └─────────────────────────────────────────────────────┘ │
+ │ ┌──────┐ ┌────────┐ ┌───────────────────────────────┐  │
+ │ │      │ │        │ │                               │  │
+ │ │ Rail │ │ Panel  │ │  Content area                 │  │
+ │ │ 52px │ │ 210px  │ │  (white, rounded-[10px],      │  │
+ │ │ dark │ │ #FAF9F6│ │   padding 24px, scrollable)   │  │
+ │ │r-[12]│ │ r-[12] │ │                               │  │
+ │ └──────┘ └────────┘ └───────────────────────────────┘  │
+ └─────────────────────────────────────────────────────────┘
 ```
 
 ## Sidebar Navigation
@@ -78,11 +84,27 @@ Charts & Graphs (attendance trend, dept headcount) — glass containers
 
 | Token | Value | Tailwind class |
 |:------|:------|:---------------|
-| Sidebar rail width | 64px | w-16 |
-| Sidebar panel width | 220px | w-[220px] |
-| Topbar height | 56px | h-14 |
-| Page horizontal padding | 32px | px-8 |
+| Shell outer padding | 8px | p-2 |
+| Shell gap (topbar ↔ bottom row, inner rail/panel/content) | 6px | gap-[6px] |
+| Topbar height | 40px | h-10 |
+| Topbar border-radius | 10px | rounded-[10px] |
+| Sidebar rail width | 52px | w-[52px] |
+| Sidebar rail border-radius | 12px | rounded-[12px] |
+| Sidebar panel width | 210px | w-[210px] |
+| Sidebar panel border-radius | 12px | rounded-[12px] |
+| Content area border-radius | 10px | rounded-[10px] |
+| Content area padding | 24px | p-6 |
 | Card gap | 16px | gap-4 |
+
+## Shell Surface Colors
+
+| Surface | Light | Dark |
+|:--------|:------|:-----|
+| Outer shell (body bg) | `#EDEEF2` | `#0A0A0D` |
+| Topbar | `#FFFFFF` | `#17181F` |
+| Rail | `#17181F` (always dark) | `#17181F` |
+| Panel | `#FAF9F6` | `#000000` |
+| Content area | `#FFFFFF` | `#111118` |
 
 ## Related
 

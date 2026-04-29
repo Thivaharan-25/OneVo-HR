@@ -2,6 +2,8 @@
 
 > **Note:** A second frontend app (`dev-console`) exists for platform administration — see `developer-platform/frontend/app-structure.md` for details. This document covers the primary ONEVO tenant-facing app only.
 
+> **Stack:** This app runs on **Vite + React 19 + React Router v7** — not Next.js. There is no file-based routing, no `app/` directory, no `page.tsx`/`layout.tsx` conventions, no parallel routes (`@panel`, `@modal`), and no intercepting routes (`(.)edit`). All routes are defined in `src/router.tsx`. Page components live in `src/pages/`. Loading states use React Suspense. Edit panels and create modals use React Router nested routes with `<Outlet />` or controlled modal state.
+
 ## Route Tree
 
 All 22 backend modules + 9 WMS modules mapped to ~63 frontend pages. Single route tree with permission-driven views (no separate employee self-service group).
@@ -26,162 +28,187 @@ const canManagePolicies = hasPermission('leave:manage');
 ---
 
 ```
-app/
-├── layout.tsx                        # Root: providers, fonts, ThemeProvider, AuthProvider
-├── not-found.tsx                     # Global 404
-├── error.tsx                         # Global error boundary
+src/
+├── main.tsx                           # Entry: React 19, StrictMode, mount <App />
+├── App.tsx                            # Provider stack + <RouterProvider router={router} />
+├── router.tsx                         # ALL routes defined here using createBrowserRouter()
 │
-├── (auth)/                           # Public — no sidebar/topbar
-│   ├── layout.tsx                    # Centered card layout
-│   ├── login/page.tsx                # Email + password
-│   ├── forgot-password/page.tsx      # Password reset request
-│   ├── reset-password/page.tsx       # Token-based reset
-│   └── mfa/page.tsx                  # TOTP/SMS verification
+│── ─── AUTH PAGES (public, no nav) ────
 │
-├── (dashboard)/                      # Authenticated — sidebar + topbar
-│   ├── layout.tsx                    # DashboardLayout: Rail, Panel, Topbar, CommandPalette
-│   ├── page.tsx                      # Permission-aware landing dashboard
+├── pages/auth/
+│   ├── AuthLayout.tsx                 # Centered card, brand logo — wraps auth pages via <Outlet />
+│   ├── LoginPage.tsx                  # Email + password
+│   ├── ForgotPasswordPage.tsx         # Password reset request
+│   ├── ResetPasswordPage.tsx          # Token-based reset
+│   └── MfaPage.tsx                    # TOTP/SMS verification
+│
+│── ─── DASHBOARD PAGES (authenticated, sidebar + topbar) ────
+│
+├── pages/dashboard/
+│   ├── DashboardLayout.tsx            # NavRail + ExpansionPanel + Topbar + <Outlet />
+│   ├── HomePage.tsx                   # Permission-aware landing dashboard
+│   ├── InboxPage.tsx                  # Unified approvals, tasks, mentions, exception alerts
 │   │
 │   │── ─── PILLAR 1: PEOPLE ────
 │   │
-│   ├── people/
-│   │   │
-│   │   ├── employees/                        # [CoreHR - Profile]
-│   │   │   ├── page.tsx                      # Employee directory (list + grid)
-│   │   │   ├── new/page.tsx                  # Create employee (multi-step wizard)
-│   │   │   ├── @modal/                       # Parallel route: intercepted create
-│   │   │   │   └── (.)new/page.tsx           # Create modal over list
-│   │   │   ├── [id]/
-│   │   │   │   ├── layout.tsx                # Shared layout for detail views
-│   │   │   │   ├── loading.tsx               # Skeleton while loading
-│   │   │   │   ├── not-found.tsx             # Employee not found
-│   │   │   │   ├── page.tsx                  # Employee detail (scrollable sections: identity, quick facts, alerts, employment, pay & benefits, documents, timeline)
-│   │   │   │   └── @panel/                   # Parallel route: intercepted edit
-│   │   │   │       └── (.)edit/page.tsx      # Edit panel over detail
-│   │   │   ├── components/                   # Colocated feature components
-│   │   │   │   ├── EmployeeDataTable.tsx     # Sortable columns, search, filters
-│   │   │   │   ├── EmployeeDetailSections.tsx # Scrollable section blocks (replaces tabs)
-│   │   │   │   ├── EmployeeWizardSteps.tsx   # Multi-step create form stepper
-│   │   │   │   └── AvatarUpload.tsx          # Profile photo upload
-│   │   │   └── _types.ts                     # Route-local: form schemas, column defs — NOT API shapes
-│   │   │
-│   │   └── leave/                            # [Leave]
-│   │       ├── page.tsx                      # Leave requests (own or team)
-│   │       ├── calendar/page.tsx             # Leave calendar view
-│   │       ├── balances/page.tsx             # Leave balances
-│   │       ├── policies/page.tsx             # Leave policy config
-│   │       ├── components/                   # Colocated feature components
-│   │       │   ├── LeaveRequestForm.tsx      # Apply / edit leave request
-│   │       │   ├── LeaveCalendar.tsx         # Calendar with leave overlays
-│   │       │   ├── LeaveBalanceCard.tsx      # Balance summary cards
-│   │       │   └── LeavePolicyEditor.tsx     # Policy CRUD form
-│   │       └── _types.ts                     # Route-local: form schemas, column defs — NOT API shapes
+│   ├── people/employees/
+│   │   ├── EmployeesPage.tsx          # Employee directory (DataTable + search + filters)
+│   │   ├── EmployeeNewPage.tsx        # Create employee — multi-step wizard
+│   │   └── EmployeeDetailPage.tsx     # Employee detail — scrollable sections + slide-over edit panel
+│   │                                  # (edit panel = <EditEmployeeModal /> opened via state, not route)
+│   │
+│   ├── people/leave/
+│   │   ├── LeavePage.tsx              # Leave requests (own or team view)
+│   │   ├── LeaveCalendarPage.tsx      # Team leave calendar
+│   │   ├── LeaveBalancesPage.tsx      # Per-type balance cards
+│   │   └── LeavePoliciesPage.tsx      # Policy CRUD
 │   │
 │   │── ─── PILLAR 2: WORKFORCE + WMS ────
 │   │
 │   ├── workforce/
+│   │   ├── WorkforcePage.tsx          # Presence — live employee card grid
+│   │   ├── WorkforceEmployeePage.tsx  # /workforce/:employeeId — activity detail
+│   │   ├── WorkforceAnalyticsPage.tsx # Productivity scores + capacity analytics
 │   │   │
-│   │   ├── page.tsx                              # Presence — live employee card grid (replaces 3-tab live view)
-│   │   ├── [employeeId]/
-│   │   │   └── page.tsx                          # Employee activity detail (filterable by date, task, project)
 │   │   ├── projects/
-│   │   │   ├── page.tsx                          # All projects in entity scope
-│   │   │   ├── new/page.tsx                      # Create project
-│   │   │   └── [id]/
-│   │   │       ├── page.tsx                      # Project overview (epics, milestones, members)
-│   │   │       ├── board/page.tsx                # Kanban / list view of tasks
-│   │   │       ├── sprints/page.tsx              # Sprint management
-│   │   │       └── roadmap/page.tsx              # Timeline view of epics and milestones
-│   │   ├── my-work/
-│   │   │   └── page.tsx                          # My assigned tasks across all projects
-│   │   ├── planner/
-│   │   │   └── page.tsx                          # Sprints, boards, roadmap (workspace-level view)
+│   │   │   ├── ProjectsPage.tsx       # All projects in entity scope
+│   │   │   ├── ProjectNewPage.tsx     # Create project
+│   │   │   ├── ProjectDetailPage.tsx  # /workforce/projects/:id — overview (epics, milestones, members)
+│   │   │   ├── ProjectBoardPage.tsx   # Kanban / list view of tasks
+│   │   │   ├── ProjectSprintsPage.tsx # Sprint management
+│   │   │   └── ProjectRoadmapPage.tsx # Timeline view of epics and milestones
+│   │   │
+│   │   ├── MyWorkPage.tsx             # My assigned tasks across all projects
+│   │   ├── PlannerPage.tsx            # Workspace-level sprints, boards, roadmap
+│   │   │
 │   │   ├── goals/
-│   │   │   ├── page.tsx                          # OKR overview — objectives and key results
-│   │   │   └── [id]/page.tsx                     # Objective detail + key results + check-ins
+│   │   │   ├── GoalsPage.tsx          # OKR overview — objectives and key results
+│   │   │   └── GoalDetailPage.tsx     # /workforce/goals/:id — key results + check-ins
+│   │   │
 │   │   ├── docs/
-│   │   │   ├── page.tsx                          # Documents + Wiki list
-│   │   │   └── [id]/page.tsx                     # Document or Wiki page
+│   │   │   ├── DocsPage.tsx           # Documents + Wiki list
+│   │   │   └── DocDetailPage.tsx      # /workforce/docs/:id — document/wiki page (sanitized HTML)
+│   │   │
 │   │   ├── time/
-│   │   │   ├── page.tsx                          # My timesheet
-│   │   │   └── reports/page.tsx                  # Time reports (personal and team)
-│   │   └── analytics/
-│   │       └── page.tsx                          # Productivity scores + capacity analytics
+│   │   │   ├── TimePage.tsx           # My timesheet
+│   │   │   └── TimeReportsPage.tsx    # Time reports (personal and team)
+│   │   │
+│   │   └── ChatPage.tsx               # Channels, DMs, message threads (real-time SignalR)
 │   │
 │   │── ─── CROSS-CUTTING ────
 │   │
-│   ├── inbox/page.tsx                        # Unified approvals, tasks, mentions, exception alerts
-│   ├── chat/
-│   │   └── page.tsx                          # Channels, DMs, message threads (WMS chat module)
 │   ├── calendar/
-│   │   ├── page.tsx                          # Unified calendar (leave, holidays, review cycles)
-│   │   ├── schedule/page.tsx                 # Shift schedules
-│   │   ├── attendance/page.tsx               # Attendance corrections
-│   │   └── overtime/page.tsx                 # Overtime requests and approvals
+│   │   ├── CalendarPage.tsx           # Unified calendar (leave, holidays, review cycles)
+│   │   ├── SchedulePage.tsx           # Shift schedules
+│   │   ├── AttendancePage.tsx         # Attendance corrections
+│   │   └── OvertimePage.tsx           # Overtime requests and approvals
 │   │
-│   ├── notifications/                        # [Notifications]
-│   │   ├── page.tsx                          # Notification inbox
-│   │   └── preferences/page.tsx              # Channel preferences
+│   ├── notifications/
+│   │   ├── NotificationsPage.tsx      # Notification inbox
+│   │   └── NotificationPreferencesPage.tsx # Channel preferences
 │   │
 │   │── ─── PILLAR 3: ORGANIZATION ────
 │   │
-│   ├── org/                                  # [OrgStructure]
-│   │   ├── page.tsx                          # Org chart
-│   │   ├── departments/page.tsx              # Department management
-│   │   ├── teams/page.tsx                    # Team management
-│   │   ├── job-families/                     # [OrgStructure - Job Taxonomy]
-│   │   │   ├── page.tsx                      # Job family list
-│   │   │   └── [id]/page.tsx                 # Job family detail + associated roles
-│   │   ├── legal-entities/                   # [OrgStructure - Entity Hierarchy]
-│   │   │   ├── page.tsx                      # Legal entity list + hierarchy view
-│   │   │   └── [id]/page.tsx                 # Entity detail + settings
-│   │   ├── components/                       # Colocated feature components
-│   │   │   ├── DepartmentTree.tsx             # Interactive department hierarchy
-│   │   │   ├── TeamMemberList.tsx             # Team member add/remove
-│   │   │   ├── OrgChart.tsx                   # Visual org chart component
-│   │   │   ├── JobFamilyEditor.tsx            # Job family CRUD form
-│   │   │   └── LegalEntityTree.tsx            # Entity hierarchy visualisation
-│   │   └── _types.ts                         # Route-local: form schemas, column defs — NOT API shapes
+│   ├── org/
+│   │   ├── OrgPage.tsx                # Org chart
+│   │   ├── DepartmentsPage.tsx        # Department management
+│   │   ├── TeamsPage.tsx              # Team management
+│   │   ├── job-families/
+│   │   │   ├── JobFamiliesPage.tsx    # Job family list
+│   │   │   └── JobFamilyDetailPage.tsx # /org/job-families/:id + associated roles
+│   │   └── legal-entities/
+│   │       ├── LegalEntitiesPage.tsx  # Legal entity list + hierarchy view
+│   │       └── LegalEntityDetailPage.tsx # /org/legal-entities/:id + settings
 │   │
 │   │── ─── PILLAR 4: ADMIN ────
 │   │
-│   ├── admin/                                # Requires admin permissions
-│   │   ├── users/page.tsx                    # User management + role assignment
-│   │   ├── roles/page.tsx                    # Role & permission management
-│   │   ├── audit/page.tsx                    # Audit log viewer
-│   │   ├── agents/                           # [AgentGateway]
-│   │   │   ├── page.tsx                      # Desktop agent fleet
-│   │   │   ├── [id]/
-│   │   │   │   ├── loading.tsx               # Skeleton while loading
-│   │   │   │   └── page.tsx                  # Agent detail
-│   │   │   └── components/                   # Colocated feature components
-│   │   │       ├── AgentStatusCard.tsx        # Agent health + status
-│   │   │       └── AgentCommandPanel.tsx      # Remote commands
-│   │   ├── devices/page.tsx                  # Hardware terminals
-│   │   ├── compliance/page.tsx               # GDPR, data governance
-│   │   ├── components/                       # Colocated admin components
-│   │   │   ├── UserTable.tsx                  # User management DataTable
-│   │   │   ├── RolePermissionMatrix.tsx       # Permission grid editor
-│   │   │   └── AuditLogViewer.tsx             # Filterable audit log
-│   │   └── _types.ts                         # Route-local: form schemas, column defs — NOT API shapes
+│   ├── admin/
+│   │   ├── UsersPage.tsx              # People Access — user management + role assignment
+│   │   ├── RolesPage.tsx              # Permissions — role and permission management
+│   │   ├── AuditPage.tsx              # Activity Trail — audit log viewer
+│   │   ├── agents/
+│   │   │   ├── AgentsPage.tsx         # Desktop agent fleet
+│   │   │   └── AgentDetailPage.tsx    # /admin/agents/:id — agent detail + commands
+│   │   ├── DevicesPage.tsx            # Hardware terminals
+│   │   └── CompliancePage.tsx         # Data & Privacy — GDPR, data governance
 │   │
 │   │── ─── PILLAR 5: SETTINGS ────
 │   │
-│   └── settings/                             # [Configuration + SharedPlatform]
-│       ├── general/page.tsx                  # Tenant settings
-│       ├── monitoring/page.tsx               # Feature toggles + overrides
-│       ├── notifications/page.tsx            # Channel config (org-level)
-│       ├── integrations/page.tsx             # SSO, LMS, payroll providers
-│       ├── branding/page.tsx                 # Logo, colors, domain
-│       ├── billing/page.tsx                  # Subscription & plan
-│       ├── alert-rules/page.tsx              # Alert rule configuration
-│       ├── feature-flags/page.tsx            # Feature flag management
-│       └── components/                       # Colocated settings components
-│           ├── SettingsForm.tsx               # Reusable settings form layout
-│           └── IntegrationCard.tsx            # Integration status card
+│   └── settings/
+│       ├── GeneralPage.tsx            # Tenant settings
+│       ├── SystemPage.tsx             # Monitoring feature toggles + feature flags (merged)
+│       ├── NotificationsSettingsPage.tsx # Channel config (org-level)
+│       ├── IntegrationsPage.tsx       # SSO, LMS, payroll providers
+│       ├── BrandingPage.tsx           # Logo, colors, domain
+│       ├── BillingPage.tsx            # Subscription & plan
+│       └── AlertsPage.tsx             # Alert rule configuration
 │
-└── api/                                      # Next.js API routes (BFF)
-    └── health/route.ts
+└── pages/errors/
+    ├── NotFoundPage.tsx               # 404
+    ├── ForbiddenPage.tsx              # 403
+    └── ErrorPage.tsx                  # Global error boundary fallback
+```
+
+**Route config pattern in `router.tsx`:**
+
+```tsx
+// src/router.tsx
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '@/lib/security/permission-guard';
+
+export const router = createBrowserRouter([
+  // Auth routes (public)
+  {
+    element: <AuthLayout />,
+    children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/forgot-password', element: <ForgotPasswordPage /> },
+      { path: '/reset-password', element: <ResetPasswordPage /> },
+      { path: '/mfa', element: <MfaPage /> },
+    ],
+  },
+  // Dashboard routes (authenticated)
+  {
+    element: <ProtectedRoute><DashboardLayout /></ProtectedRoute>,
+    children: [
+      { path: '/', element: <HomePage /> },
+      { path: '/inbox', element: <InboxPage /> },
+      // People
+      { path: '/people/employees', element: <ProtectedRoute permission="employees:read"><EmployeesPage /></ProtectedRoute> },
+      { path: '/people/employees/new', element: <ProtectedRoute permission="employees:write"><EmployeeNewPage /></ProtectedRoute> },
+      { path: '/people/employees/:id', element: <ProtectedRoute permission="employees:read"><EmployeeDetailPage /></ProtectedRoute> },
+      // ... all other routes
+    ],
+  },
+  { path: '/403', element: <ForbiddenPage /> },
+  { path: '*', element: <NotFoundPage /> },
+]);
+```
+
+**Edit panels / modals (replacing Next.js parallel routes):**
+In Vite + React Router, edit panels are opened via local state or a URL query param — not intercepting routes.
+
+```tsx
+// EmployeeDetailPage.tsx
+const [editSection, setEditSection] = useState<string | null>(null);
+
+return (
+  <>
+    <EmployeeDetailSections onEdit={setEditSection} />
+    {editSection && (
+      <EditEmployeePanel section={editSection} onClose={() => setEditSection(null)} />
+    )}
+  </>
+);
+```
+
+**Loading states (replacing Next.js `loading.tsx`):**
+Use React Suspense boundaries around async data components.
+
+```tsx
+<Suspense fallback={<TableSkeleton rows={10} />}>
+  <EmployeeDetailSections employeeId={id} />
+</Suspense>
 ```
 
 ## Module → Route Mapping
@@ -222,7 +249,7 @@ app/
 
 ## Layout System
 
-### Dashboard Layout (`(dashboard)/layout.tsx`)
+### Dashboard Layout (`src/pages/dashboard/DashboardLayout.tsx`)
 
 The shell uses a **floating-cards** layout — every element is a separate rounded card with `8px` body padding and `6px` gaps between cards. See [[frontend/design-system/components/shell-layout|Shell Layout]] for the full implementation pattern.
 
@@ -230,27 +257,35 @@ The shell uses a **floating-cards** layout — every element is a separate round
 - **Topbar:** **40px** height, floating white/dark card (radius 10px). See [[frontend/architecture/topbar|Topbar Architecture]] for pixel-precise spec.
 - **Expansion Panel:** **210px** floating card, width+opacity animation (220ms ease-out). See [[frontend/design-system/components/expansion-panel|Expansion Panel]].
 - **Pillar visibility:** Permission-gated via `hasPermission()` — never hardcode role names
+- Renders `<Outlet />` from React Router for all child pages
 
-### Auth Layout (`(auth)/layout.tsx`)
-- Centered card, brand logo, no navigation
+### Auth Layout (`src/pages/auth/AuthLayout.tsx`)
+- Centered card, brand logo, no navigation, renders `<Outlet />`
 
-## Provider Stack (Root Layout)
+## Provider Stack (App.tsx)
 
 ```tsx
-// app/layout.tsx
-<QueryClientProvider>
-  <AuthProvider>
-    <PermissionProvider>     {/* Loads role + employee-level permissions */}
-      <SignalRProvider>
-        <ThemeProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </ThemeProvider>
-      </SignalRProvider>
-    </PermissionProvider>
-  </AuthProvider>
-</QueryClientProvider>
+// src/App.tsx
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router';
+
+export function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <PermissionProvider>     {/* Loads role + employee-level permissions */}
+          <SignalRProvider>
+            <ThemeProvider>
+              <ToastProvider>
+                <RouterProvider router={router} />
+              </ToastProvider>
+            </ThemeProvider>
+          </SignalRProvider>
+        </PermissionProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
 ```
 
 ## Colocated Component Pattern
@@ -262,8 +297,10 @@ Feature components start colocated in the route's `components/` folder, then get
 | Scope | Location |
 |---|---|
 | Used by only one route | `app/(dashboard)/.../components/` (colocated) |
-| Used by 2+ pages within the same module | `components/{module}/` — e.g. `components/hr/`, `components/org/` |
+| Used by 2+ pages within the same module | `components/{module}/` — e.g. `components/hr/`, `components/org/`, `components/wms/` |
 | Used across different modules | `components/shared/` |
+
+> **WMS boundary:** Components for WMS routes (`/workforce/projects`, `/workforce/goals`, `/workforce/docs`, etc.) go in `components/wms/`, not `components/workforce/`. Workforce Intelligence (presence cards, activity monitoring, identity verification) lives in `components/workforce/`. The two share the `/workforce/` URL prefix but are distinct product domains — never mix their component directories.
 
 **Promotion rule:** when a component moves to a higher tier, **delete the colocated copy**. Never keep both. Duplicating causes them to diverge silently.
 
@@ -271,23 +308,21 @@ Feature components start colocated in the route's `components/` folder, then get
 - ✅ Form schemas, column definitions, local UI state shapes
 - ❌ API response shapes — those belong in `types/{module}.ts`, not here
 
-**File placement:**
-- `loading.tsx` goes inside `[id]/` folders for detail page skeletons
-- `layout.tsx` goes inside `[id]/` when detail views share chrome (breadcrumbs, back nav)
-
-**Heavy components require `next/dynamic()`:**
+**Heavy components use `React.lazy()` + `<Suspense>`:**
 
 ```tsx
-const OrgChart = dynamic(() => import('@/components/org/org-chart'), {
-  ssr: false,
-  loading: () => <ChartSkeleton height={600} />,
-});
-const KanbanBoard = dynamic(() => import('@/components/projects/kanban-board'), {
-  loading: () => <TableSkeleton rows={10} />,
-});
+import { lazy, Suspense } from 'react';
+
+const OrgChart    = lazy(() => import('@/components/org/org-chart'));
+const KanbanBoard = lazy(() => import('@/components/wms/kanban-board'));
+
+// Usage:
+<Suspense fallback={<ChartSkeleton height={600} />}>
+  <OrgChart data={orgData} />
+</Suspense>
 ```
 
-Apply to: org charts, kanban boards, roadmap timelines, activity heatmaps, rich text editors, drag-and-drop widgets.
+Apply to: org charts, kanban boards, roadmap timelines, activity heatmaps, rich text editors, drag-and-drop widgets. Never use `next/dynamic()` — that is a Next.js API.
 
 ## Page Count
 

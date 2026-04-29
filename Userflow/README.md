@@ -288,7 +288,7 @@ These flows track chain reactions across multiple modules — when one action tr
 | **What users do** | `Userflow/` (this folder) | End-to-end flows by permission |
 | **What to build** | [[backend/module-catalog\|Module Catalog]] | Feature specs, DB schema, APIs |
 | **How to build (backend)** | [[backend/README\|Backend]] | .NET architecture, patterns |
-| **How to build (frontend)** | [[frontend/README\|Frontend]] | Next.js structure, components |
+| **How to build (frontend)** | [[frontend/README\|Frontend]] | Vite + React structure, components |
 | **Data layer** | [[database/README\|Database]] | Migrations, performance |
 | **Code rules** | [[code-standards/README\|Code Standards]] | Naming, git, logging |
 | **Security** | [[security/README\|Security]] | Auth, RBAC, compliance |

@@ -18,7 +18,7 @@ ONEVO is a **multi-tenant employee monitoring SaaS** product. It tracks workforc
 |:------|:-----------|
 | **Backend** | .NET 9, C# 13, Minimal APIs |
 | **Database** | PostgreSQL 16 + EF Core 9 |
-| **Frontend** | Next.js 14, TypeScript, shadcn/ui, TanStack Query |
+| **Frontend** | Vite + React 19, TypeScript, shadcn/ui, TanStack Query |
 | **Real-time** | SignalR (bidirectional: server↔agent, server→browser) |
 | **Background Jobs** | Hangfire |
 | **Messaging** | MediatR (in-process domain events) |
@@ -28,7 +28,7 @@ ONEVO is a **multi-tenant employee monitoring SaaS** product. It tracks workforc
 | **Auth** | JWT + refresh tokens, MFA (TOTP) |
 | **Search** | PostgreSQL FTS (Phase 1) |
 
-**Architecture:** Monolithic + service-oriented. All modules in one .NET solution with strict namespace boundaries (`ONEVO.Modules.{ModuleName}`). Cross-module communication: **direct interface calls** for synchronous queries (e.g., `ICalendarConflictService`), **domain events** for async side effects. Never import another module's internal classes.
+**Architecture:** Clean Architecture + CQRS. The backend uses Domain, Application, Infrastructure, and API host projects. Features live inside layer folders, and cross-feature side effects use in-process MediatR domain events.
 
 ---
 
@@ -128,7 +128,7 @@ Week 2 (Core):
 
 Week 3 (Intelligence):
   DEV1: Leave
-  DEV2: Exception Engine ←(not Performance — that's Phase 2)
+  DEV2: Exception Engine â†(not Performance — that's Phase 2)
   DEV3: Activity Monitoring
   DEV4: Identity Verification
 
@@ -167,13 +167,13 @@ Tenant default → Role override → Employee override. Most specific wins. See 
 
 See [[modules/agent-gateway/remote-commands/overview|Remote Commands]].
 
-### Cross-Module Communication
-Modules communicate in three ways:
-- **Integration events** (`IEventBus` → RabbitMQ via MassTransit) for async cross-module side effects — Module A publishes `LeaveApproved`, Module B's `IConsumer<LeaveApproved>` handles it
-- **Domain events** (MediatR `INotification`) for async intra-module side effects — stays within the same module, never crosses boundaries
-- **Direct interface calls** for synchronous queries — Module A calls `ICalendarConflictService.CheckConflictsAsync()` directly via DI
+### Cross-Feature Communication
+Features communicate through the Application layer:
+- **Commands and queries** use MediatR request/response handlers.
+- **Domain events** use MediatR `INotification` for in-process side effects across features.
+- **Direct interface calls** are allowed for synchronous queries through Application interfaces, not Infrastructure internals.
 
-No module imports another module's internal classes — only public interfaces. See [[backend/messaging/event-catalog|Event Catalog]].
+Do not introduce RabbitMQ, MassTransit, `IEventBus`, or separate module projects for Phase 1. See [[backend/cqrs-patterns|CQRS Patterns]].
 
 ---
 
@@ -230,7 +230,7 @@ Each developer has task files in `current-focus/` with self-contained instructio
 
 1. **Do not build Phase 2 modules** — check `**Phase:**` marker in each module overview
 2. **Do not build Phase 2 features** — check `## Phase 2 Features (Do NOT Build)` sections
-3. **Do not use MediatR for cross-module events** — use `IEventBus.PublishAsync()` (RabbitMQ via MassTransit) for integration events; MediatR `INotification` is for intra-module domain events only
+3. **Do not introduce RabbitMQ/MassTransit/IEventBus** - Phase 1 uses in-process MediatR commands, queries, and domain events.
 4. **Do not use Meilisearch** — PostgreSQL FTS is sufficient
 5. **Do not import one module's internals into another** — use public interfaces and domain events only
 6. **Do not capture agent data outside monitoring lifecycle** — no data before clock-in, during breaks, or after clock-out

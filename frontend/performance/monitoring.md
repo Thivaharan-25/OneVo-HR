@@ -4,18 +4,19 @@
 
 ### Web Vitals Collection
 
-```tsx
-// app/layout.tsx
-import { useReportWebVitals } from 'next/web-vitals';
+Uses the `web-vitals` npm package directly — **not** `next/web-vitals` (that is Next.js-only).
 
-export function WebVitalsReporter() {
-  useReportWebVitals((metric) => {
+```tsx
+// lib/web-vitals.ts
+import { onCLS, onINP, onLCP, onFCP, onTTFB } from 'web-vitals';
+
+export function initWebVitals() {
+  const report = (metric: { name: string; value: number; rating: string; navigationType?: string }) => {
     // Send to analytics
     analytics.track('web_vital', {
-      name: metric.name,     // CLS, FID, FCP, LCP, TTFB, INP
+      name: metric.name,     // CLS, INP, FCP, LCP, TTFB
       value: metric.value,
-      rating: metric.rating, // 'good', 'needs-improvement', 'poor'
-      navigationType: metric.navigationType,
+      rating: metric.rating, // 'good' | 'needs-improvement' | 'poor'
       page: window.location.pathname,
     });
 
@@ -27,10 +28,17 @@ export function WebVitalsReporter() {
         extra: { value: metric.value, page: window.location.pathname },
       });
     }
-  });
+  };
 
-  return null;
+  onCLS(report);
+  onINP(report);
+  onLCP(report);
+  onFCP(report);
+  onTTFB(report);
 }
+
+// src/main.tsx — call after mount
+initWebVitals();
 ```
 
 ### API Latency Tracking
@@ -128,16 +136,32 @@ assertions:
 - Find slow component trees
 - Measure render duration per commit
 
-### Next.js Built-in
-- `next build --profile` for production profiling
-- `NEXT_PUBLIC_DEBUG=true` for verbose hydration logging
+### Vite Bundle Analysis
 
-### Bundle Analysis
 ```bash
-# Generate bundle visualization
-ANALYZE=true next build
-# Opens interactive treemap showing chunk composition
+# Install visualizer plugin (dev dependency)
+npm install -D rollup-plugin-visualizer
+
+# vite.config.ts
+import { visualizer } from 'rollup-plugin-visualizer';
+
+export default defineConfig({
+  plugins: [
+    react(),
+    visualizer({ open: true, gzipSize: true, brotliSize: true }),
+  ],
+});
+
+# Run build — opens interactive treemap showing chunk composition
+npm run build
 ```
+
+### React DevTools Profiler
+- Identify unnecessary re-renders
+- Find slow component trees
+- Measure render duration per commit
+
+> **No hydration debugging** — this is a CSR-only SPA. There is no SSR hydration step. If you see `NEXT_PUBLIC_DEBUG` or `next build --profile` referenced anywhere, those are Next.js concepts that do not apply here.
 
 ## Related
 

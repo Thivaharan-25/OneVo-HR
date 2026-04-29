@@ -12,12 +12,12 @@
 
 ```tsx
 // lib/sentry.ts
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/react';
 
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment: process.env.NEXT_PUBLIC_ENV, // 'development' | 'staging' | 'production'
-  release: process.env.NEXT_PUBLIC_APP_VERSION,
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.VITE_ENV, // 'development' | 'staging' | 'production'
+  release: import.meta.env.VITE_APP_VERSION,
 
   tracesSampleRate: 0.1,       // 10% of transactions
   replaysSessionSampleRate: 0, // No session replays by default
@@ -72,20 +72,39 @@ Sentry.setTag('plan', user.tenantPlan);
 
 ### Error Boundary Integration
 
+React error boundaries catch render errors. Wrap sections with a Sentry-aware boundary:
+
 ```tsx
-// app/(dashboard)/hr/error.tsx
-'use client';
-import * as Sentry from '@sentry/nextjs';
+// components/shared/section-error-boundary.tsx
+import * as Sentry from '@sentry/react';
+import { Component, type ReactNode } from 'react';
 
-export default function HRError({ error, reset }: { error: Error; reset: () => void }) {
-  useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { section: 'hr' },
-    });
-  }, [error]);
+interface Props { section: string; children: ReactNode; }
+interface State { hasError: boolean; error?: Error; }
 
-  return <PageError error={error} reset={reset} />;
+export class SectionErrorBoundary extends Component<Props, State> {
+  state: State = { hasError: false };
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error) {
+    Sentry.captureException(error, { tags: { section: this.props.section } });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <PageError error={this.state.error} reset={() => this.setState({ hasError: false })} />;
+    }
+    return this.props.children;
+  }
 }
+
+// Usage in pages:
+// <SectionErrorBoundary section="hr">
+//   <EmployeeList />
+// </SectionErrorBoundary>
 ```
 
 ### API Error Capture
@@ -125,8 +144,8 @@ function captureApiError(error: ApiError, context?: Record<string, any>) {
 - Allows Sentry to show original TypeScript source in error reports
 
 ```bash
-# In CI pipeline
-npx @sentry/cli sourcemaps upload --release=$APP_VERSION ./next/static
+# In CI pipeline — upload Vite build output
+npx @sentry/cli sourcemaps upload --release=$APP_VERSION ./dist/assets
 ```
 
 ## Related

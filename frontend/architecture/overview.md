@@ -4,23 +4,24 @@
 
 | Layer | Technology | Version | Rationale |
 |:------|:-----------|:--------|:----------|
-| Framework | Next.js (App Router) | 14.x | SSR/SSG flexibility, file-based routing, RSC support |
-| UI Library | React | 18.x | Component model, ecosystem, RSC compatibility |
+| Build Tool | Vite | 8.x | Fast HMR, ESM-native, no SSR complexity |
+| UI Library | React | 19.x | Component model, Suspense, concurrent features |
+| Routing | React Router | v7 | SPA routing, nested layouts, `<Outlet />` |
 | Language | TypeScript | 5.x | Type safety across API boundary, refactoring confidence |
-| Styling | Tailwind CSS | 3.x | Utility-first, design token mapping, tree-shaking |
+| Styling | Tailwind CSS | 4.x | Utility-first, design token mapping, tree-shaking |
 | Components | shadcn/ui + Radix | Latest | Accessible primitives, full customization, no lock-in |
 | Server State | TanStack Query | v5 | Cache management, background sync, optimistic updates |
 | Client State | Zustand | 4.x | Lightweight, no boilerplate, middleware for persistence |
-| URL State | nuqs | Latest | Type-safe URL params, shareable filter states |
+| URL State | React Router `useSearchParams` | v7 | Built-in, no extra dependency, shareable filter states |
 | Real-time | SignalR (@microsoft/signalr) | Latest | .NET ecosystem alignment, auto-reconnect, hub protocol |
-| Charts | Recharts + Tremor | Latest | Composable charts + dashboard-ready KPI blocks |
+| Charts | Recharts | Latest | Composable charts, works in CSR |
 | Forms | React Hook Form + Zod | Latest | Performance (uncontrolled), schema-first validation |
 | Testing | Vitest + RTL + Playwright + MSW | Latest | Fast unit tests, behavior-driven component tests, real E2E |
 
 ## Architecture Principles
 
-### 1. Server-First, Client When Needed
-Default to React Server Components for data fetching and static content. Use `'use client'` only when interactivity requires it (forms, real-time, client state). This minimizes JS shipped to the browser.
+### 1. Client-Side Rendering (CSR) Throughout
+This is a Vite SPA — there are no Server Components, no SSR, no `'use client'` directives. All rendering happens in the browser. Data fetching is handled by TanStack Query. Loading states use React Suspense boundaries. This is intentional — the app is behind authentication and SEO is not a concern.
 
 ### 2. Module Isolation
 Each product domain (Core HR, Workforce Intelligence, Payroll, etc.) owns its own:
@@ -34,7 +35,7 @@ Cross-module imports go through `components/shared/` or `hooks/shared/` — neve
 ### 3. Data Ownership Is Clear
 - **Server state** (TanStack Query): anything that came from the API
 - **Client state** (Zustand): ephemeral UI state (sidebar, modals, preferences)
-- **URL state** (nuqs): anything the user should be able to bookmark or share
+- **URL state** (React Router `useSearchParams`): anything the user should be able to bookmark or share
 - **Never duplicate** server state into client state
 
 ### 4. Permission-Driven Rendering
@@ -87,12 +88,13 @@ SignalR pushes are **cache invalidation signals**, not primary data sources. Whe
 
 | Concern | Strategy |
 |:--------|:---------|
-| Hosting | Vercel (Next.js native) or Azure Static Web Apps + Azure Functions |
-| CDN | Vercel Edge / Azure CDN for static assets |
-| Environment Config | `NEXT_PUBLIC_*` env vars per environment (dev/staging/prod) |
-| Preview Deployments | Per-PR preview URLs via Vercel or Azure |
+| Hosting | Azure Static Web Apps or any static host (Vite outputs `dist/`) |
+| CDN | Azure CDN for static assets |
+| Environment Config | `VITE_*` env vars per environment — accessed via `import.meta.env.VITE_*` |
+| Preview Deployments | Per-PR preview URLs via Azure Static Web Apps staging slots |
 | Static Assets | Immutable hashing, `Cache-Control: max-age=31536000, immutable` |
-| API Proxy | Next.js rewrites to avoid CORS (`/api/v1/** → backend`) |
+| API Proxy | Configure nginx or Azure CDN to proxy `/api/v1/**` to backend (avoids CORS) |
+| Security Headers | Set via nginx or CDN rules in production — see `frontend/cross-cutting/security.md` |
 
 ## Related
 

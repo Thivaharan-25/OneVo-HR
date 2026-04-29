@@ -40,15 +40,34 @@
 | `ActivityHeatmap` | `components/workforce/activity-heatmap.tsx` | Hourly intensity heatmap | 1 |
 | `AppUsageChart` | `components/workforce/app-usage-chart.tsx` | Application time breakdown | 1 |
 
-### Glass Components
+### Shell / Nav Components
 
 | Component | Props | Usage |
 |:----------|:------|:------|
-| `GlassCard` | `glow?: boolean` | Glass surface card. `glow` adds violet border glow for actionable items |
-| `GlassSurface` | `variant?: 'default' \| 'light'` | Base glass surface wrapper |
-| `IconRail` | `pillars: Pillar[]` | Left nav rail with pillar icons |
-| `ExpansionPanel` | `pillar: Pillar, isPinned: boolean` | Slide-out sub-navigation panel |
+| `IconRail` | `pillars: Pillar[]` | Left nav rail (52px wide, always dark `#17181F`, `border-radius: 12px`) |
+| `ExpansionPanel` | `pillar: Pillar, isPinned: boolean` | Sub-nav panel (210px wide, light `#FAF9F6` / dark `#000000`, `border-radius: 12px`) |
 | `InboxBadge` | — | Inbox count badge with violet glow pulse |
+| `GlassCard` | `glow?: boolean` | Surface card. `glow` adds violet border glow for actionable items |
+| `GlassSurface` | `variant?: 'default' \| 'light'` | Base glass surface wrapper |
+
+### Avatar Types
+
+Two distinct avatars exist in the shell — they are **not** interchangeable:
+
+| Avatar | Location | Size | Background | Text color |
+|:-------|:---------|:-----|:-----------|:-----------|
+| `TopbarAvatar` | Topbar right | 24×24px, `border-radius: 50%` | `linear-gradient(135deg, #5B4FE8, #8C86F2)` (violet) | `#FFFFFF`, 9px, 700 |
+| `RailAvatar` | Rail bottom | 26×26px, `border-radius: 50%` | `linear-gradient(135deg, #C9A96E, #E8C98A)` (gold) | `#1a1208`, 10px, 700 |
+
+### Active Nav State (Panel Items)
+
+Active panel item uses violet accent — this is distinct from GlassCard glow:
+
+| State | Light | Dark |
+|:------|:------|:-----|
+| Active background | `#ECEAFD` | `rgba(91,79,232,0.20)` |
+| Active text color | `#5B4FE8` | `#8C86F2` |
+| Active font-weight | 500 | 500 |
 
 ## Status Colors
 

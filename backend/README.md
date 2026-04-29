@@ -1,6 +1,6 @@
 # Backend Architecture
 
-**.NET 9 Clean Architecture + CQRS** — 23 modules, 170 tables, strict namespace boundaries.
+**.NET 9 Clean Architecture + CQRS** — feature folders, single ApplicationDbContext, strict layer boundaries.
 
 ## Quick Links
 
@@ -21,11 +21,11 @@
 
 ## Architecture Decisions
 
-- [[docs/decisions/ADR-001-per-module-database-and-event-bus|ADR-001]] — Per-module DbContext + IDomainEvent abstraction (microservice-forward design)
+- [[docs/decisions/ADR-002-clean-architecture-cqrs|ADR-002]] - Clean Architecture + CQRS
 
 ## Related
 
-- [[frontend/README|Frontend]] — Next.js 14
+- [[frontend/README|Frontend]] - Vite + React 19
 - [[database/README|Database]] — PostgreSQL 16
 - [[code-standards/backend-standards|Backend Standards]] — .NET naming + patterns
 - [[Userflow/README|User Flows]] — End-to-end feature flows

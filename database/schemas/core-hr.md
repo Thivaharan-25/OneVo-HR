@@ -201,13 +201,33 @@
 | `last_working_date` | `date` |  |
 | `knowledge_risk_level` | `varchar(10)` | `low`, `medium`, `high`, `critical` |
 | `exit_interview_notes` | `text` |  |
-| `penalties_json` | `jsonb` | Outstanding loans, notice period, etc. |
+| `penalties_json` | `jsonb` | Outstanding loans, notice period, asset recovery, knowledge-transfer bypass penalties, etc. |
 | `status` | `varchar(20)` | `initiated`, `in_progress`, `completed` |
 | `created_at` | `timestamptz` |  |
 
 **Foreign Keys:** `employee_id` → [[#`employees`|employees]]
 
 ---
+
+`penalties_json` recommended shape:
+
+```json
+{
+  "items": [
+    {
+      "type": "knowledge_transfer_bypass",
+      "amount": 0,
+      "currency": "USD",
+      "reason": "Critical handover skipped with HR approval",
+      "approved_by_id": "uuid",
+      "approved_at": "2026-04-29T00:00:00Z",
+      "source": "offboarding_workflow"
+    }
+  ],
+  "total_amount": 0,
+  "currency": "USD"
+}
+```
 
 ## `onboarding_tasks`
 

@@ -10,22 +10,22 @@ This Obsidian vault is the **"secondary brain"** for the ONEVO HR platform. It h
 
 ```
 onevo-hr-brain/
-├── AI_CONTEXT/          ← "Read me first" for AI agents
-├── Userflow/            ← How users interact with the product (screen-by-screen)
-├── modules/             ← Backend module specs (the engine blueprints)
-├── database/            ← All table schemas + relationships
-├── frontend/            ← Frontend architecture, design system, patterns
-├── backend/             ← Backend architecture, conventions, messaging
-├── current-focus/       ← Dev assignments & sprint tasks
-├── code-standards/      ← Coding rules for the whole team
-├── infrastructure/      ← Hosting, deployment, multi-tenancy
-├── security/            ← Security policies & threat models
-├── decisions/           ← Architecture Decision Records (ADRs)
-├── meetings/            ← Meeting notes
-├── ade/                 ← Agent Development Environment setup
-├── scripts/             ← Utility scripts
-├── developer-platform/  ← Internal developer console — architecture, modules, API contracts, userflows
-└── docs/                ← Plans, specs, and reference docs
+├── AI_CONTEXT/          â† "Read me first" for AI agents
+├── Userflow/            â† How users interact with the product (screen-by-screen)
+├── modules/             â† Backend module specs (the engine blueprints)
+├── database/            â† All table schemas + relationships
+├── frontend/            â† Frontend architecture, design system, patterns
+├── backend/             â† Backend architecture, conventions, messaging
+├── current-focus/       â† Dev assignments & sprint tasks
+├── code-standards/      â† Coding rules for the whole team
+├── infrastructure/      â† Hosting, deployment, multi-tenancy
+├── security/            â† Security policies & threat models
+├── decisions/           â† Architecture Decision Records (ADRs)
+├── meetings/            â† Meeting notes
+├── ade/                 â† Agent Development Environment setup
+├── scripts/             â† Utility scripts
+├── developer-platform/  â† Internal developer console — architecture, modules, API contracts, userflows
+└── docs/                â† Plans, specs, and reference docs
 ```
 
 ---
@@ -38,7 +38,7 @@ onevo-hr-brain/
 
 **Key files:**
 - `project-context.md` — Full platform overview (two-pillar model, architecture, business rules)
-- `tech-stack.md` — Every technology choice with versions (.NET 9, Next.js 14, PostgreSQL 16, etc.)
+- `tech-stack.md` — Every technology choice with versions (.NET 9, Vite + React 19, PostgreSQL 16, etc.)
 - `rules.md` — AI coding standards (naming, patterns, what to avoid)
 - `known-issues.md` — Gotchas and deprecated patterns
 - `changelog/` — History of major changes to the brain itself
@@ -54,28 +54,28 @@ onevo-hr-brain/
 **Structure:**
 ```
 modules/
-├── auth/                    ← Login, MFA, permissions, sessions
-├── core-hr/                 ← Employee profiles, lifecycle, onboarding/offboarding
-├── org-structure/           ← Departments, teams, job titles, hierarchy
-├── leave/                   ← Leave types, policies, requests, approvals
-├── payroll/                 ← Salary, tax, allowances, payslips
-├── performance/             ← Reviews, goals, feedback (Phase 2)
-├── skills/                  ← Skill tracking, certifications (Phase 2)
-├── documents/               ← File management, templates (Phase 2)
-├── grievance/               ← Case tracking, disciplinary (Phase 2)
-├── expense/                 ← Claims, approvals (Phase 2)
-├── calendar/                ← Company events (Phase 1)
-├── notifications/           ← In-app, email, real-time push
-├── configuration/           ← Monitoring toggles, app allowlist, retention
-├── agent-gateway/           ← Desktop agent communication (SignalR)
-├── workforce-presence/      ← Clock in/out, biometric, breaks, shifts
-├── activity-monitoring/     ← App tracking, screenshots, daily summaries
-├── identity-verification/   ← Photo/fingerprint verification
-├── exception-engine/        ← Anomaly detection, alerts, escalation
-├── productivity-analytics/  ← Daily/weekly/monthly reports, dashboards
-├── reporting-engine/        ← Report builder (Phase 2)
-├── shared-platform/         ← SSO, workflows, feature flags, billing
-└── infrastructure/          ← Multi-tenancy, file storage, reference data
+├── auth/                    â† Login, MFA, permissions, sessions
+├── core-hr/                 â† Employee profiles, lifecycle, onboarding/offboarding
+├── org-structure/           â† Departments, teams, job titles, hierarchy
+├── leave/                   â† Leave types, policies, requests, approvals
+├── payroll/                 â† Salary, tax, allowances, payslips
+├── performance/             â† Reviews, goals, feedback (Phase 2)
+├── skills/                  â† Skill tracking, certifications (Phase 2)
+├── documents/               â† File management, templates (Phase 2)
+├── grievance/               â† Case tracking, disciplinary (Phase 2)
+├── expense/                 â† Claims, approvals (Phase 2)
+├── calendar/                â† Company events (Phase 1)
+├── notifications/           â† In-app, email, real-time push
+├── configuration/           â† Monitoring toggles, app allowlist, retention
+├── agent-gateway/           â† Desktop agent communication (SignalR)
+├── workforce-presence/      â† Clock in/out, biometric, breaks, shifts
+├── activity-monitoring/     â† App tracking, screenshots, daily summaries
+├── identity-verification/   â† Photo/fingerprint verification
+├── exception-engine/        â† Anomaly detection, alerts, escalation
+├── productivity-analytics/  â† Daily/weekly/monthly reports, dashboards
+├── reporting-engine/        â† Report builder (Phase 2)
+├── shared-platform/         â† SSO, workflows, feature flags, billing
+└── infrastructure/          â† Multi-tenancy, file storage, reference data
 ```
 
 Each module folder contains sub-folders for its features (e.g., `auth/authentication/`, `auth/mfa/`, `auth/authorization/`). Every module has an `overview.md` with: purpose, dependencies, database tables, API endpoints, domain events, and business rules.
@@ -95,26 +95,26 @@ Each module folder contains sub-folders for its features (e.g., `auth/authentica
 **Structure:**
 ```
 Userflow/
-├── Auth-Access/             ← Login, MFA, password reset, roles, permissions
-├── Employee-Management/     ← Onboarding, offboarding, promotions, transfers
-├── Org-Structure/           ← Department/team setup, hierarchy management
-├── Leave/                   ← Leave requests, approvals, balance checks
-├── Workforce-Presence/      ← Clock in/out, shift management, attendance
-├── Analytics-Reporting/     ← Dashboards, reports, data export
-├── Configuration/           ← Tenant settings, monitoring toggles
-├── Documents/               ← Upload, access, versioning, templates
-├── Calendar/                ← Event creation, conflict detection
-├── Exception-Engine/        ← Alert review, escalation setup, rule config
-├── Expense/                 ← Claim submission, approval, categories
-├── Grievance/               ← Filing, disciplinary actions
-├── Notifications/           ← Notification preferences, inbox
-├── Payroll/                 ← Payroll runs, payslips, adjustments
-├── Performance/             ← Reviews, goals, feedback
-├── Skills-Learning/         ← Skill assessment, courses, certifications
-├── Platform-Setup/          ← Initial tenant setup, onboarding wizard
-├── Workforce-Intelligence/  ← Activity monitoring, productivity views
-├── Cross-Module/            ← Flows that span multiple modules
-└── README.md                ← Navigation index
+├── Auth-Access/             â† Login, MFA, password reset, roles, permissions
+├── Employee-Management/     â† Onboarding, offboarding, promotions, transfers
+├── Org-Structure/           â† Department/team setup, hierarchy management
+├── Leave/                   â† Leave requests, approvals, balance checks
+├── Workforce-Presence/      â† Clock in/out, shift management, attendance
+├── Analytics-Reporting/     â† Dashboards, reports, data export
+├── Configuration/           â† Tenant settings, monitoring toggles
+├── Documents/               â† Upload, access, versioning, templates
+├── Calendar/                â† Event creation, conflict detection
+├── Exception-Engine/        â† Alert review, escalation setup, rule config
+├── Expense/                 â† Claim submission, approval, categories
+├── Grievance/               â† Filing, disciplinary actions
+├── Notifications/           â† Notification preferences, inbox
+├── Payroll/                 â† Payroll runs, payslips, adjustments
+├── Performance/             â† Reviews, goals, feedback
+├── Skills-Learning/         â† Skill assessment, courses, certifications
+├── Platform-Setup/          â† Initial tenant setup, onboarding wizard
+├── Workforce-Intelligence/  â† Activity monitoring, productivity views
+├── Cross-Module/            â† Flows that span multiple modules
+└── README.md                â† Navigation index
 ```
 
 Each file describes: **who** does the action, **what screens** they see, **what happens** step by step, and **what the system does** behind the scenes.
@@ -134,18 +134,18 @@ Each file describes: **who** does the action, **what screens** they see, **what 
 ```
 database/
 ├── schemas/
-│   ├── auth.md                    ← users, roles, permissions, sessions
-│   ├── core-hr.md                 ← employees, lifecycle_events, dependents
-│   ├── org-structure.md           ← departments, teams, job_titles
-│   ├── leave.md                   ← leave_types, policies, requests
-│   ├── workforce-presence.md      ← presence_sessions, shifts, breaks
-│   ├── activity-monitoring.md     ← activity_snapshots, app_usage
+│   ├── auth.md                    â† users, roles, permissions, sessions
+│   ├── core-hr.md                 â† employees, lifecycle_events, dependents
+│   ├── org-structure.md           â† departments, teams, job_titles
+│   ├── leave.md                   â† leave_types, policies, requests
+│   ├── workforce-presence.md      â† presence_sessions, shifts, breaks
+│   ├── activity-monitoring.md     â† activity_snapshots, app_usage
 │   ├── ... (one per module)
-│   └── infrastructure.md          ← tenants, files, reference_data
-├── schema-catalog.md              ← Quick index of all 170 tables
-├── cross-module-relationships.md  ← How tables reference each other
-├── migration-patterns.md          ← How to write EF Core migrations
-└── performance.md                 ← Indexing strategies, query patterns
+│   └── infrastructure.md          â† tenants, files, reference_data
+├── schema-catalog.md              â† Quick index of all 170 tables
+├── cross-module-relationships.md  â† How tables reference each other
+├── migration-patterns.md          â† How to write EF Core migrations
+└── performance.md                 â† Indexing strategies, query patterns
 ```
 
 **Connects to:**
@@ -163,30 +163,30 @@ database/
 ```
 frontend/
 ├── architecture/
-│   ├── overview.md            ← Next.js 14 App Router structure
-│   ├── app-structure.md       ← Folder layout and routing
-│   ├── module-boundaries.md   ← Frontend module isolation
-│   ├── routing.md             ← Route groups and navigation
-│   ├── rendering-strategy.md  ← SSR vs CSR decisions
-│   └── error-handling.md      ← Error boundaries, toast patterns
+│   ├── overview.md            â† Vite + React Router structure
+│   ├── app-structure.md       â† Folder layout and routing
+│   ├── module-boundaries.md   â† Frontend module isolation
+│   ├── routing.md             â† Route groups and navigation
+│   ├── rendering-strategy.md  â† SSR vs CSR decisions
+│   └── error-handling.md      â† Error boundaries, toast patterns
 ├── design-system/
-│   ├── foundations/           ← Colors, typography, spacing, icons
-│   ├── components/            ← Button, Modal, Table, Form specs
-│   ├── patterns/              ← Layout patterns, dashboard patterns
-│   └── theming/               ← Dark mode, tenant branding
+│   ├── foundations/           â† Colors, typography, spacing, icons
+│   ├── components/            â† Button, Modal, Table, Form specs
+│   ├── patterns/              â† Layout patterns, dashboard patterns
+│   └── theming/               â† Dark mode, tenant branding
 ├── cross-cutting/
-│   ├── authentication.md      ← JWT handling in the browser
-│   ├── authorization.md       ← Permission-based rendering
-│   ├── i18n.md                ← Internationalization setup
-│   ├── feature-flags.md       ← Feature toggle integration
-│   └── security.md            ← XSS, CSRF, CSP headers
+│   ├── authentication.md      â† JWT handling in the browser
+│   ├── authorization.md       â† Permission-based rendering
+│   ├── i18n.md                â† Internationalization setup
+│   ├── feature-flags.md       â† Feature toggle integration
+│   └── security.md            â† XSS, CSRF, CSP headers
 ├── data-layer/
-│   ├── api-integration.md     ← TanStack Query + API client
-│   ├── caching-strategy.md    ← What to cache and for how long
-│   ├── real-time.md           ← SignalR integration
-│   └── file-handling.md       ← Upload/download patterns
-├── performance/               ← Bundle size, lazy loading, images
-└── testing/                   ← Unit, integration, E2E strategy
+│   ├── api-integration.md     â† TanStack Query + API client
+│   ├── caching-strategy.md    â† What to cache and for how long
+│   ├── real-time.md           â† SignalR integration
+│   └── file-handling.md       â† Upload/download patterns
+├── performance/               â† Bundle size, lazy loading, images
+└── testing/                   â† Unit, integration, E2E strategy
 ```
 
 **Connects to:**
@@ -204,20 +204,20 @@ frontend/
 **Key files:**
 ```
 backend/
-├── README.md                  ← Backend overview
-├── api-conventions.md         ← REST patterns, pagination, errors
-├── module-boundaries.md       ← Rules for module isolation
-├── module-catalog.md          ← Quick index of all modules
-├── monitoring-data-flow.md    ← How monitoring data moves through the system
-├── notification-system.md     ← How notifications work end-to-end
-├── real-time.md               ← SignalR hub architecture
-├── search-architecture.md     ← PostgreSQL FTS setup
-├── external-integrations.md   ← WorkManage Pro bridges
+├── README.md                  â† Backend overview
+├── api-conventions.md         â† REST patterns, pagination, errors
+├── module-boundaries.md       â† Rules for module isolation
+├── module-catalog.md          â† Quick index of all modules
+├── monitoring-data-flow.md    â† How monitoring data moves through the system
+├── notification-system.md     â† How notifications work end-to-end
+├── real-time.md               â† SignalR hub architecture
+├── search-architecture.md     â† PostgreSQL FTS setup
+├── external-integrations.md   â† WorkManage Pro bridges
 └── messaging/
-    ├── README.md              ← MediatR domain event patterns
-    ├── event-catalog.md       ← All domain events + publishers + consumers
-    ├── exchange-topology.md   ← Event routing patterns
-    └── error-handling.md      ← Failed event handling
+    ├── README.md              â† MediatR domain event patterns
+    ├── event-catalog.md       â† All domain events + publishers + consumers
+    ├── exchange-topology.md   â† Event routing patterns
+    └── error-handling.md      â† Failed event handling
 ```
 
 **Connects to:**
@@ -296,10 +296,10 @@ backend/
 **Structure:**
 ```
 docs/
-├── HR-Scope-Document-Phase1-Phase2.md  ← Original product requirements
+├── HR-Scope-Document-Phase1-Phase2.md  â† Original product requirements
 └── superpowers/
-    ├── plans/    ← Implementation plans (restructures, redesigns)
-    └── specs/    ← Design specs for major changes
+    ├── plans/    â† Implementation plans (restructures, redesigns)
+    └── specs/    â† Design specs for major changes
 ```
 
 **Connects to:** Everything — these are the "why" behind major changes.
@@ -313,11 +313,11 @@ docs/
 **Structure:**
 ```
 developer-platform/
-├── modules/         ← Developer console backend modules (api-key-manager, etc.)
-├── frontend/        ← Developer console UI architecture and components
-├── backend/         ← Developer console API conventions and messaging
-├── database/        ← Developer console database schemas and migrations
-└── userflow/        ← Developer workflows for managing API keys, integrations
+├── modules/         â† Developer console backend modules (api-key-manager, etc.)
+├── frontend/        â† Developer console UI architecture and components
+├── backend/         â† Developer console API conventions and messaging
+├── database/        â† Developer console database schemas and migrations
+└── userflow/        â† Developer workflows for managing API keys, integrations
 ```
 
 **Subdirectories:**

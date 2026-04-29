@@ -15,7 +15,7 @@
 
 | Chunk | Budget (gzipped) | Alert At | Action |
 |:------|:-----------------|:---------|:-------|
-| Framework (React + Next.js) | ≤90KB | >95KB | Audit imports, check for duplicates |
+| Framework (React + Vite runtime) | ≤90KB | >95KB | Audit imports, check for duplicates |
 | Shared UI (shadcn + shared components) | ≤40KB | >45KB | Review composed components |
 | Per-route chunk (largest) | ≤60KB | >70KB | Split heavy components, lazy load |
 | Charts (Recharts + Tremor) | ≤80KB | >90KB | Ensure charts are lazy loaded |
@@ -27,10 +27,10 @@
 
 | Page | Target Load Time | Max JS | Notes |
 |:-----|:----------------|:-------|:------|
-| Login | ≤1.0s | ≤80KB | Minimal JS, SSR form |
-| Dashboard Overview | ≤1.5s | ≤180KB | SSR shell + streaming cards |
-| Employee List | ≤1.2s | ≤150KB | SSR shell + client table |
-| Employee Detail | ≤1.5s | ≤160KB | SSR header + client tabs |
+| Login | ≤1.0s | ≤80KB | Minimal JS and fast client render |
+| Dashboard Overview | ≤1.5s | ≤180KB | App shell + lazy dashboard cards |
+| Employee List | ≤1.2s | ≤150KB | App shell + client table |
+| Employee Detail | ≤1.5s | ≤160KB | Client header + tabs |
 | Workforce Live | ≤2.0s | ≤250KB | Charts + SignalR (heavier) |
 | Leave Calendar | ≤1.5s | ≤170KB | Calendar component |
 | Settings | ≤1.0s | ≤100KB | Mostly static |
@@ -43,8 +43,8 @@
 # In CI pipeline
 - name: Bundle size check
   run: |
-    npx next build
-    npx @next/bundle-analyzer
+    npm run build
+    npx vite-bundle-visualizer
     # Fail if any chunk exceeds budget
     node scripts/check-bundle-budget.js
 ```
@@ -83,12 +83,12 @@ Use `eslint-plugin-import` to flag heavy imports:
 ## Optimization Techniques
 
 ### Image Optimization
-- All images through `next/image` (automatic WebP, lazy loading, responsive srcsets)
+- Use native responsive images or an app-level image component; do not use `next/image`
 - Avatar images: 64x64 and 128x128 variants generated server-side
 - Max upload size for profile photos: 5MB (resized server-side)
 
 ### Font Optimization
-- Outfit, Geist, and JetBrains Mono loaded via `next/font/google` (automatic subsetting, no FOUT)
+- Outfit, Geist, and JetBrains Mono loaded via CSS/font assets with preconnect/preload as needed
 - `font-display: swap` for fastest text render
 
 ### CSS Optimization
@@ -96,7 +96,7 @@ Use `eslint-plugin-import` to flag heavy imports:
 - No CSS-in-JS runtime (Tailwind is build-time only)
 
 ### Prefetch Strategy
-- Next.js Link prefetch: enabled for visible viewport links
+- React Router/TanStack Query prefetch: on hover or viewport intent for high-value links
 - TanStack Query prefetch: on hover for table rows → detail pages
 - Next page prefetch: prefetch page N+1 when viewing page N
 
@@ -104,5 +104,5 @@ Use `eslint-plugin-import` to flag heavy imports:
 
 - Code Splitting — dynamic imports and lazy loading
 - [[frontend/performance/monitoring|Monitoring]] — runtime performance monitoring
-- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — SSR for fast first paint
+- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — CSR, Suspense, and route-level lazy loading
 - [[backend/module-boundaries|Module Boundaries]] — bundle composition

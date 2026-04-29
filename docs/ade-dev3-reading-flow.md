@@ -6,7 +6,7 @@ given the command: "You are Dev 3. Build all your tasks."
 This covers the full journey — orchestrator startup, base context loading, each of Dev 3's
 **5 tasks** (more than the other devs), and the known issues flagged below.
 
-> **⚠️ ADE IMPLEMENTATION NOTE — Dev 3 has 5 tasks, not 4.**
+> **âš ï¸ ADE IMPLEMENTATION NOTE — Dev 3 has 5 tasks, not 4.**
 > The orchestrator must handle a variable task count. Dev 3's task list:
 > 1→2→3→4→5 (Org Structure → Skills Core → Calendar → Workforce Presence → Activity Monitoring).
 > The orchestrator sequential loop must not assume a fixed count of 4 tasks.
@@ -18,8 +18,8 @@ This covers the full journey — orchestrator startup, base context loading, eac
 The orchestrator runs first and determines what to do. It reads:
 
 ```
-1. ade/README.md                        ← How the orchestrator works, what repos to use
-2. current-focus/README.md             ← Task assignment table: Dev 3 has 5 tasks
+1. ade/README.md                        â† How the orchestrator works, what repos to use
+2. current-focus/README.md             â† Task assignment table: Dev 3 has 5 tasks
 ```
 
 From `current-focus/README.md`, the orchestrator extracts:
@@ -53,7 +53,7 @@ AI_CONTEXT/known-issues.md
 
 ### `AI_CONTEXT/rules.md`
 The agent's operating constitution. Key rules absorbed:
-- Monolithic architecture, strict namespace boundaries (`ONEVO.Modules.{Name}`)
+- Clean Architecture + CQRS with strict layer boundaries
 - Domain events for side effects, direct calls for sync queries
 - `ITenantContext` injection in every repository — never skip
 - `Result<T>` pattern instead of exceptions
@@ -113,39 +113,39 @@ ADE-START-HERE.md
 
 ### Dependency check
 ```
-DEV1 Infrastructure Setup  ← checks: Does ONEVO.SharedKernel exist in backend repo?
+DEV1 Infrastructure Setup  â† checks: Does ONEVO.SharedKernel exist in backend repo?
 ```
 No other cross-dev dependencies. If Infrastructure is done, agent proceeds immediately.
 
 ### Files read for Task 1
 
 ```
-current-focus/DEV3-org-structure.md            ← Task spec: acceptance criteria, pages to build
+current-focus/DEV3-org-structure.md            â† Task spec: acceptance criteria, pages to build
 ```
 
 Task-specific context injected by orchestrator:
 
 ```
-modules/org-structure/overview.md              ← OrgStructure module spec: tables, events
-backend/shared-kernel.md                       ← BaseEntity, BaseRepository, ITenantContext
-infrastructure/multi-tenancy.md               ← Tenant-scoped hierarchy queries
-backend/module-catalog.md                     ← Module ownership + namespace boundaries
-code-standards/backend-standards.md           ← Naming conventions
+modules/org-structure/overview.md              â† OrgStructure module spec: tables, events
+backend/shared-kernel.md                       â† BaseEntity, BaseRepository, ITenantContext
+infrastructure/multi-tenancy.md               â† Tenant-scoped hierarchy queries
+backend/module-catalog.md                     â† Module ownership + namespace boundaries
+code-standards/backend-standards.md           â† Naming conventions
 ```
 
 Userflows:
 ```
-Userflow/Org-Structure/department-hierarchy.md ← Create and manage department tree
-Userflow/Org-Structure/team-creation.md        ← Create teams and manage members
-Userflow/Org-Structure/job-family-setup.md     ← Configure job families, levels, titles
-Userflow/Org-Structure/legal-entity-setup.md   ← Manage legal entities
-Userflow/Org-Structure/cost-center-setup.md    ← Cost center configuration
+Userflow/Org-Structure/department-hierarchy.md â† Create and manage department tree
+Userflow/Org-Structure/team-creation.md        â† Create teams and manage members
+Userflow/Org-Structure/job-family-setup.md     â† Configure job families, levels, titles
+Userflow/Org-Structure/legal-entity-setup.md   â† Manage legal entities
+Userflow/Org-Structure/cost-center-setup.md    â† Cost center configuration
 ```
 
 Frontend references:
 ```
-frontend/design-system/components/component-catalog.md   ← DataTable, Dialog, DropdownMenu
-frontend/design-system/patterns/layout-patterns.md       ← Tree view layout
+frontend/design-system/components/component-catalog.md   â† DataTable, Dialog, DropdownMenu
+frontend/design-system/patterns/layout-patterns.md       â† Tree view layout
 frontend/data-layer/api-integration.md
 ```
 
@@ -183,10 +183,10 @@ frontend/data-layer/api-integration.md
 
 ### Dependency check
 ```
-DEV1 Infrastructure Setup  ← checks: Does ONEVO.SharedKernel exist?
-DEV2 Auth & Security       ← checks: Do skills:* permissions exist in the permissions table?
-DEV1 Core HR Profile       ← checks: Does employees table exist?
-DEV3 Org Structure         ← checks: Do job_families table exist? (just completed in Task 1)
+DEV1 Infrastructure Setup  â† checks: Does ONEVO.SharedKernel exist?
+DEV2 Auth & Security       â† checks: Do skills:* permissions exist in the permissions table?
+DEV1 Core HR Profile       â† checks: Does employees table exist?
+DEV3 Org Structure         â† checks: Do job_families table exist? (just completed in Task 1)
 ```
 Since Task 1 just completed, DEV3 Org Structure is met. The other dependencies should be
 met (DEV1 + DEV2 are Week 1 foundations). If permissions are missing → skip, report blocked.
@@ -194,27 +194,27 @@ met (DEV1 + DEV2 are Week 1 foundations). If permissions are missing → skip, r
 ### Files read for Task 2
 
 ```
-current-focus/DEV3-skills-core.md              ← Task spec
+current-focus/DEV3-skills-core.md              â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/skills/overview.md                     ← Skills module: Phase 1 scope, public API
-modules/skills/employee-skills/overview.md     ← Write path: self-declare, manager-add, validate
-modules/skills/skill-taxonomy/overview.md      ← Taxonomy data model
-database/schemas/skills.md                     ← Full table schemas for the 5 Phase 1 tables
+modules/skills/overview.md                     â† Skills module: Phase 1 scope, public API
+modules/skills/employee-skills/overview.md     â† Write path: self-declare, manager-add, validate
+modules/skills/skill-taxonomy/overview.md      â† Taxonomy data model
+database/schemas/skills.md                     â† Full table schemas for the 5 Phase 1 tables
 infrastructure/multi-tenancy.md
 ```
 
 Userflows:
 ```
-Userflow/Skills-Learning/skill-taxonomy-setup.md       ← Admin configures categories + skills
-Userflow/Skills-Learning/employee-skill-declaration.md ← Self-declare + manager direct-add variation
-Userflow/Skills-Learning/skill-assessment.md           ← Manager validates pending declarations
+Userflow/Skills-Learning/skill-taxonomy-setup.md       â† Admin configures categories + skills
+Userflow/Skills-Learning/employee-skill-declaration.md â† Self-declare + manager direct-add variation
+Userflow/Skills-Learning/skill-assessment.md           â† Manager validates pending declarations
 ```
 
-> **⚠️ SCOPE GUARD:** Task 2 builds ONLY 5 tables: `skill_categories`, `skills`,
+> **âš ï¸ SCOPE GUARD:** Task 2 builds ONLY 5 tables: `skill_categories`, `skills`,
 > `employee_skills`, `job_skill_requirements`, `skill_validation_requests`.
 > Do NOT build courses, LMS, assessments, certifications, development plans — those are Phase 2.
 
@@ -261,7 +261,7 @@ Now activates the Job Skill Requirements endpoint stubbed in Task 1 (calls `ISki
    - `SkillCard.tsx`: own skill card with status badge
 4. Also activates the "Required Skills" tab on the Job Families page (built in Task 1, now unlocked)
 
-> **⚠️ PHANTOM ASSIGNMENT NOTE:** `DEV3-skills-core.md` lists "Assignee: Dev 3 (+ Dev 4 for
+> **âš ï¸ PHANTOM ASSIGNMENT NOTE:** `DEV3-skills-core.md` lists "Assignee: Dev 3 (+ Dev 4 for
 > employee skills frontend)". However, there is NO `DEV4-skills-core.md` task file. Dev 4's
 > ADE session will not automatically build any Skills Core frontend. Dev 3 must build
 > all Skills Core frontend pages. See flagged issues at end of this document.
@@ -274,29 +274,29 @@ Now activates the Job Skill Requirements endpoint stubbed in Task 1 (calls `ISki
 
 ### Dependency check
 ```
-DEV1 Infrastructure Setup  ← checks: Does ONEVO.SharedKernel exist?
+DEV1 Infrastructure Setup  â† checks: Does ONEVO.SharedKernel exist?
 ```
 Only Infrastructure required. No other cross-dev dependencies. Agent proceeds.
 
 ### Files read for Task 3
 
 ```
-current-focus/DEV3-calendar.md                 ← Task spec
+current-focus/DEV3-calendar.md                 â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/calendar/overview.md                   ← Calendar module spec: public interface
-modules/calendar/calendar-events/overview.md   ← Table schema, API endpoints
-modules/calendar/conflict-detection/overview.md ← ICalendarConflictService, conflict rules
-infrastructure/multi-tenancy.md               ← Tenant-scoped events
+modules/calendar/overview.md                   â† Calendar module spec: public interface
+modules/calendar/calendar-events/overview.md   â† Table schema, API endpoints
+modules/calendar/conflict-detection/overview.md â† ICalendarConflictService, conflict rules
+infrastructure/multi-tenancy.md               â† Tenant-scoped events
 ```
 
 Userflows:
 ```
-Userflow/Calendar/calendar-event-creation.md   ← Create calendar events
-Userflow/Calendar/conflict-detection.md        ← Detect scheduling conflicts
+Userflow/Calendar/calendar-event-creation.md   â† Create calendar events
+Userflow/Calendar/conflict-detection.md        â† Detect scheduling conflicts
 ```
 
 ### What the agent builds
@@ -335,8 +335,8 @@ This task **unblocks DEV1 Leave (Task 3)**: `ICalendarConflictService` is now av
 
 ### Dependency check
 ```
-DEV1 Infrastructure Setup  ← checks: Does ONEVO.SharedKernel exist?
-DEV4 Shared Platform       ← checks: Do workflow_definitions + workflow_instances exist?
+DEV1 Infrastructure Setup  â† checks: Does ONEVO.SharedKernel exist?
+DEV4 Shared Platform       â† checks: Do workflow_definitions + workflow_instances exist?
 ```
 If DEV4 Shared Platform is missing → orchestrator skips Task 4 and reports:
 "Workforce Presence Setup blocked — workflow engine missing. Re-run after DEV4 delivers Shared Platform."
@@ -346,23 +346,23 @@ If dependencies are met, agent proceeds.
 ### Files read for Task 4
 
 ```
-current-focus/DEV3-workforce-presence-setup.md ← Task spec
+current-focus/DEV3-workforce-presence-setup.md â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/workforce-presence/overview.md         ← WorkforcePresence module spec
-modules/configuration/monitoring-toggles/overview.md ← Toggles gate monitoring features
-infrastructure/multi-tenancy.md               ← Tenant-scoped presence data
+modules/workforce-presence/overview.md         â† WorkforcePresence module spec
+modules/configuration/monitoring-toggles/overview.md â† Toggles gate monitoring features
+infrastructure/multi-tenancy.md               â† Tenant-scoped presence data
 ```
 
 Userflows:
 ```
-Userflow/Workforce-Intelligence/live-dashboard.md       ← Real-time workforce status monitoring
-Userflow/Workforce-Presence/shift-schedule-setup.md     ← Configure shifts and schedules
-Userflow/Workforce-Presence/presence-session-view.md    ← View employee presence detail
-Userflow/Workforce-Presence/break-tracking.md           ← View and manage break records
+Userflow/Workforce-Intelligence/live-dashboard.md       â† Real-time workforce status monitoring
+Userflow/Workforce-Presence/shift-schedule-setup.md     â† Configure shifts and schedules
+Userflow/Workforce-Presence/presence-session-view.md    â† View employee presence detail
+Userflow/Workforce-Presence/break-tracking.md           â† View and manage break records
 ```
 
 ### What the agent builds
@@ -411,7 +411,7 @@ This task **unblocks DEV4 Biometric (Task 4)**: presence session schema is now d
 
 ### Dependency check
 ```
-DEV4 Shared Platform + Agent Gateway  ← checks: Does POST /api/v1/agent/ingest endpoint exist?
+DEV4 Shared Platform + Agent Gateway  â† checks: Does POST /api/v1/agent/ingest endpoint exist?
                                         (also checks: does registered_agents table exist?)
 ```
 If Agent Gateway ingest is missing → orchestrator skips Task 5 and reports:
@@ -422,31 +422,31 @@ If dependency is met, agent proceeds.
 ### Files read for Task 5
 
 ```
-current-focus/DEV3-activity-monitoring.md      ← Task spec
+current-focus/DEV3-activity-monitoring.md      â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/activity-monitoring/overview.md        ← ActivityMonitoring module spec: data pipeline
-modules/agent-gateway/overview.md              ← Agent ingest data format, batch types
-modules/configuration/monitoring-toggles/overview.md ← Feature toggles gate processing
-security/data-classification.md               ← Screenshots are RESTRICTED data
-infrastructure/multi-tenancy.md               ← Tenant-configurable app categories
-database/schemas/activity-monitoring.md       ← Full table schemas with partitioning notes
+modules/activity-monitoring/overview.md        â† ActivityMonitoring module spec: data pipeline
+modules/agent-gateway/overview.md              â† Agent ingest data format, batch types
+modules/configuration/monitoring-toggles/overview.md â† Feature toggles gate processing
+security/data-classification.md               â† Screenshots are RESTRICTED data
+infrastructure/multi-tenancy.md               â† Tenant-configurable app categories
+database/schemas/activity-monitoring.md       â† Full table schemas with partitioning notes
 ```
 
 Userflows:
 ```
-Userflow/Workforce-Intelligence/activity-snapshot-view.md  ← View activity data + screenshots
-Userflow/Workforce-Intelligence/monitoring-configuration.md ← Configure monitoring categories
+Userflow/Workforce-Intelligence/activity-snapshot-view.md  â† View activity data + screenshots
+Userflow/Workforce-Intelligence/monitoring-configuration.md â† Configure monitoring categories
 ```
 
 Frontend references:
 ```
-frontend/design-system/components/component-catalog.md   ← TimelineBar, ActivityHeatmap
-frontend/design-system/patterns/data-visualization.md   ← Heatmaps, charts
-frontend/design-system/foundations/color-tokens.md      ← Productive/unproductive colors
+frontend/design-system/components/component-catalog.md   â† TimelineBar, ActivityHeatmap
+frontend/design-system/patterns/data-visualization.md   â† Heatmaps, charts
+frontend/design-system/foundations/color-tokens.md      â† Productive/unproductive colors
 ```
 
 ### What the agent builds
@@ -588,14 +588,14 @@ Userflow/Workforce-Intelligence/live-dashboard.md
 Userflow/Workforce-Presence/shift-schedule-setup.md
 Userflow/Workforce-Presence/presence-session-view.md
 Userflow/Workforce-Presence/break-tracking.md
-frontend/design-system/foundations/color-tokens.md   ← status colors
-frontend/design-system/patterns/data-visualization.md ← timeline visualization
+frontend/design-system/foundations/color-tokens.md   â† status colors
+frontend/design-system/patterns/data-visualization.md â† timeline visualization
 
 ## TASK 5 — Activity Monitoring
 current-focus/DEV3-activity-monitoring.md
 modules/activity-monitoring/overview.md
-modules/agent-gateway/overview.md                   ← data source
-security/data-classification.md                     ← screenshots are RESTRICTED
+modules/agent-gateway/overview.md                   â† data source
+security/data-classification.md                     â† screenshots are RESTRICTED
 database/schemas/activity-monitoring.md
 Userflow/Workforce-Intelligence/activity-snapshot-view.md
 Userflow/Workforce-Intelligence/monitoring-configuration.md

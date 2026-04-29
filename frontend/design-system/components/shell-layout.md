@@ -8,7 +8,7 @@ The OneVo shell uses a **floating-cards** layout. Every chrome element — topba
 ┌─ body: bg #EDEEF2 / #0A0A0D dark ── padding: 8px ── gap: 6px ─────────────────────┐
 │                                                                                     │
 │  ┌─────────────────────────────────────────── topbar (40px h, radius 10px) ──────┐ │
-│  │  [Acme Malaysia ▾]  /  Workforce  /  Presence     [Search ⌘K]   🔔  ☀  [A]  │ │
+│  │  [Acme Malaysia â–¾]  /  Workforce  /  Presence     [Search ⌘K]   🔔  ☀  [A]  │ │
 │  └─────────────────────────────────────────────────────────────────────────────── ┘ │
 │                                                                                     │
 │  ┌─ rail ─┐  ┌─── panel ────────┐  ┌─── content ──────────────────────────────┐   │
@@ -18,7 +18,7 @@ The OneVo shell uses a **floating-cards** layout. Every chrome element — topba
 │  │ always │  │ #000000 (dark)   │  │                                          │   │
 │  │  dark  │  │ slides in/out    │  │ padding: 24px                            │   │
 │  └────────┘  └──────────────────┘  └──────────────────────────────────────────┘   │
-│              ← gap: 6px between every card                                          │
+│              â† gap: 6px between every card                                          │
 └─────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -96,22 +96,21 @@ Tailwind: `flex-1 min-w-0 bg-white dark:bg-[#111118] rounded-[10px] p-6 overflow
 <p className="text-[12px] text-[#9499B0]">Subtitle text</p>
 ```
 
-## Next.js Implementation
+## Vite + React Implementation
 
 ```
 src/app/
-├── layout.tsx                   # Root: <html data-theme> + font vars + providers
-└── (dashboard)/
-    └── layout.tsx               # Shell: topbar → bottom-row → rail + panel + main
+├── app.tsx                      # Root providers + router outlet
+└── shell-layout.tsx             # Shell: topbar -> bottom-row -> rail + panel + main
 ```
 
 ```tsx
-// src/app/(dashboard)/layout.tsx
+// src/app/shell-layout.tsx
 import { NavRail } from '@/components/layout/rail';
 import { ExpansionPanel } from '@/components/layout/panel';
 import { Topbar } from '@/components/layout/topbar';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export function ShellLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col h-screen p-2 gap-1.5 overflow-hidden bg-[#EDEEF2] dark:bg-[#0A0A0D]">
       <Topbar />

@@ -6,7 +6,7 @@ given the command: "You are Dev 4. Build all your tasks."
 This covers the full journey — orchestrator startup, base context loading, each of Dev 4's
 4 tasks, and the WMS Tenant Provisioning bridge Dev 4 owns.
 
-> **⚠️ CRITICAL ADE ORDERING PROBLEM — Read before running Dev 4's session.**
+> **âš ï¸ CRITICAL ADE ORDERING PROBLEM — Read before running Dev 4's session.**
 > Task 3 (Identity Verification) depends on the `biometric_devices` table, which is built in
 > Task 4 (Workforce Presence Biometric). Since tasks run sequentially 1→2→3→4, Task 3 will
 > always be SKIPPED on the first ADE run. Task 4 will run, then on a second ADE run Task 3
@@ -19,8 +19,8 @@ This covers the full journey — orchestrator startup, base context loading, eac
 The orchestrator runs first and determines what to do. It reads:
 
 ```
-1. ade/README.md                        ← How the orchestrator works, what repos to use
-2. current-focus/README.md             ← Task assignment table: Dev 4 has 4 tasks
+1. ade/README.md                        â† How the orchestrator works, what repos to use
+2. current-focus/README.md             â† Task assignment table: Dev 4 has 4 tasks
 ```
 
 From `current-focus/README.md`, the orchestrator extracts:
@@ -53,7 +53,7 @@ AI_CONTEXT/known-issues.md
 
 ### `AI_CONTEXT/rules.md`
 The agent's operating constitution. Key rules absorbed:
-- Monolithic architecture, strict namespace boundaries (`ONEVO.Modules.{Name}`)
+- Clean Architecture + CQRS with strict layer boundaries
 - Domain events for side effects, direct calls for sync queries
 - `ITenantContext` injection in every repository — never skip
 - `Result<T>` pattern instead of exceptions
@@ -118,8 +118,8 @@ ADE-START-HERE.md
 
 ### Dependency check
 ```
-DEV1 Infrastructure Setup  ← checks: Does ONEVO.SharedKernel exist in backend repo?
-DEV2 Auth & Security       ← checks: Does Device JWT validation exist (type: "agent" claim)?
+DEV1 Infrastructure Setup  â† checks: Does ONEVO.SharedKernel exist in backend repo?
+DEV2 Auth & Security       â† checks: Does Device JWT validation exist (type: "agent" claim)?
 ```
 If Auth is not done → orchestrator skips Task 1 and reports:
 "Shared Platform blocked — Device JWT validation missing. Re-run after DEV2 delivers Auth."
@@ -129,34 +129,34 @@ If both dependencies are met, agent proceeds.
 ### Files read for Task 1
 
 ```
-current-focus/DEV4-shared-platform-agent-gateway.md    ← Task spec: acceptance criteria, pages to build
+current-focus/DEV4-shared-platform-agent-gateway.md    â† Task spec: acceptance criteria, pages to build
 ```
 
 Task-specific context injected by orchestrator:
 
 ```
-modules/agent-gateway/overview.md                      ← AgentGateway module: ingest, policy, registration
-modules/configuration/monitoring-toggles/overview.md   ← Policy merge: toggles + employee overrides
-backend/external-integrations.md                       ← Stripe integration pattern
-backend/notification-system.md                         ← Notification pipeline scaffold
-backend/messaging/event-catalog.md                     ← Workflow events, agent events
-infrastructure/multi-tenancy.md                        ← Tenant context for all platform services
+modules/agent-gateway/overview.md                      â† AgentGateway module: ingest, policy, registration
+modules/configuration/monitoring-toggles/overview.md   â† Policy merge: toggles + employee overrides
+backend/external-integrations.md                       â† Stripe integration pattern
+backend/notification-system.md                         â† Notification pipeline scaffold
+backend/messaging/event-catalog.md                     â† Workflow events, agent events
+infrastructure/multi-tenancy.md                        â† Tenant context for all platform services
 ```
 
 Userflows:
 ```
-Userflow/Platform-Setup/sso-configuration.md          ← SSO provider setup
-Userflow/Platform-Setup/billing-subscription.md       ← Manage subscription and billing
-Userflow/Platform-Setup/feature-flag-management.md    ← Manage feature flags
-Userflow/Platform-Setup/tenant-branding.md            ← Customize tenant branding
-Userflow/Workforce-Intelligence/agent-deployment.md   ← Deploy and manage desktop agents
-Userflow/Notifications/notification-preference-setup.md ← Configure notification channels
+Userflow/Platform-Setup/sso-configuration.md          â† SSO provider setup
+Userflow/Platform-Setup/billing-subscription.md       â† Manage subscription and billing
+Userflow/Platform-Setup/feature-flag-management.md    â† Manage feature flags
+Userflow/Platform-Setup/tenant-branding.md            â† Customize tenant branding
+Userflow/Workforce-Intelligence/agent-deployment.md   â† Deploy and manage desktop agents
+Userflow/Notifications/notification-preference-setup.md â† Configure notification channels
 ```
 
 Frontend references:
 ```
-frontend/design-system/components/component-catalog.md   ← DataTable, StatusBadge, Switch, Card
-frontend/design-system/foundations/color-tokens.md       ← Status + brand colors
+frontend/design-system/components/component-catalog.md   â† DataTable, StatusBadge, Switch, Card
+frontend/design-system/foundations/color-tokens.md       â† Status + brand colors
 frontend/data-layer/api-integration.md
 ```
 
@@ -223,34 +223,34 @@ WorkPulse Agent (Windows .NET MAUI):
 
 ### Dependency check
 ```
-DEV1 Infrastructure Setup  ← checks: Does ONEVO.SharedKernel exist? Does industry_profile seeding exist?
-DEV4 Shared Platform       ← checks: Do workflow_definitions table + tenant context exist? (just completed in Task 1)
+DEV1 Infrastructure Setup  â† checks: Does ONEVO.SharedKernel exist? Does industry_profile seeding exist?
+DEV4 Shared Platform       â† checks: Do workflow_definitions table + tenant context exist? (just completed in Task 1)
 ```
 Task 1 just completed, so DEV4 Shared Platform is met. DEV1 Infrastructure should be done. Agent proceeds.
 
 ### Files read for Task 2
 
 ```
-current-focus/DEV4-configuration.md                    ← Task spec
+current-focus/DEV4-configuration.md                    â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/configuration/overview.md                      ← Configuration module spec + IConfigurationService
-modules/configuration/monitoring-toggles/overview.md   ← Toggle schema, industry defaults
-modules/configuration/employee-overrides/overview.md   ← Override merge logic (employee wins)
-modules/configuration/tenant-settings/overview.md      ← Settings schema
-modules/configuration/retention-policies/overview.md   ← Per-type retention periods
+modules/configuration/overview.md                      â† Configuration module spec + IConfigurationService
+modules/configuration/monitoring-toggles/overview.md   â† Toggle schema, industry defaults
+modules/configuration/employee-overrides/overview.md   â† Override merge logic (employee wins)
+modules/configuration/tenant-settings/overview.md      â† Settings schema
+modules/configuration/retention-policies/overview.md   â† Per-type retention periods
 infrastructure/multi-tenancy.md
 ```
 
 Userflows:
 ```
-Userflow/Configuration/monitoring-toggles.md           ← Toggle monitoring features
-Userflow/Configuration/employee-override.md            ← Override monitoring per employee
-Userflow/Configuration/retention-policy-setup.md       ← Configure data retention
-Userflow/Configuration/tenant-settings.md              ← Manage tenant settings
+Userflow/Configuration/monitoring-toggles.md           â† Toggle monitoring features
+Userflow/Configuration/employee-override.md            â† Override monitoring per employee
+Userflow/Configuration/retention-policy-setup.md       â† Configure data retention
+Userflow/Configuration/tenant-settings.md              â† Manage tenant settings
 ```
 
 ### What the agent builds
@@ -286,11 +286,11 @@ Userflow/Configuration/tenant-settings.md              ← Manage tenant setting
 
 ### Dependency check
 ```
-DEV4 Shared Platform + Agent Gateway  ← checks: Does POST /api/v1/agent/ingest exist? (done in Task 1)
-DEV4 Workforce Presence Biometric     ← checks: Does biometric_devices table exist in backend repo?
+DEV4 Shared Platform + Agent Gateway  â† checks: Does POST /api/v1/agent/ingest exist? (done in Task 1)
+DEV4 Workforce Presence Biometric     â† checks: Does biometric_devices table exist in backend repo?
 ```
 
-> **⚠️ CRITICAL ORDERING PROBLEM:**
+> **âš ï¸ CRITICAL ORDERING PROBLEM:**
 > `biometric_devices` is built in Task 4 (Workforce Presence Biometric), which has NOT run yet.
 > This means **Task 3 will always be SKIPPED on the first ADE run for Dev 4.**
 >
@@ -308,23 +308,23 @@ If (on second run) both dependencies are met, agent proceeds.
 ### Files read for Task 3
 
 ```
-current-focus/DEV4-identity-verification.md            ← Task spec
+current-focus/DEV4-identity-verification.md            â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/identity-verification/overview.md              ← IdentityVerification module spec
-modules/configuration/monitoring-toggles/overview.md   ← Monitoring overrides gate verification
-modules/workforce-presence/overview.md                 ← VerificationCompleted confirms presence
-security/data-classification.md                       ← Verification photos are RESTRICTED
-infrastructure/multi-tenancy.md                       ← Per-tenant verification policies
+modules/identity-verification/overview.md              â† IdentityVerification module spec
+modules/configuration/monitoring-toggles/overview.md   â† Monitoring overrides gate verification
+modules/workforce-presence/overview.md                 â† VerificationCompleted confirms presence
+security/data-classification.md                       â† Verification photos are RESTRICTED
+infrastructure/multi-tenancy.md                       â† Per-tenant verification policies
 ```
 
 Userflows:
 ```
-Userflow/Workforce-Intelligence/identity-verification-setup.md   ← Configure policies
-Userflow/Workforce-Intelligence/identity-verification-review.md  ← Review records + failures
+Userflow/Workforce-Intelligence/identity-verification-setup.md   â† Configure policies
+Userflow/Workforce-Intelligence/identity-verification-review.md  â† Review records + failures
 ```
 
 ### What the agent builds
@@ -369,9 +369,9 @@ Userflow/Workforce-Intelligence/identity-verification-review.md  ← Review reco
 
 ### Dependency check
 ```
-DEV4 Shared Platform + Agent Gateway  ← checks: Does workflow engine exist? (Task 1, done)
-DEV2 Auth & Security                  ← checks: Does HMAC webhook secret management exist?
-DEV3 Workforce Presence Setup         ← checks: Do presence_sessions + device_sessions tables exist?
+DEV4 Shared Platform + Agent Gateway  â† checks: Does workflow engine exist? (Task 1, done)
+DEV2 Auth & Security                  â† checks: Does HMAC webhook secret management exist?
+DEV3 Workforce Presence Setup         â† checks: Do presence_sessions + device_sessions tables exist?
 ```
 If DEV3 Workforce Presence Setup is missing → orchestrator skips Task 4 and reports:
 "Biometric blocked — presence_sessions table missing from DEV3 Workforce Presence Setup."
@@ -381,25 +381,25 @@ If dependencies are met, agent proceeds.
 ### Files read for Task 4
 
 ```
-current-focus/DEV4-workforce-presence-biometric.md     ← Task spec
+current-focus/DEV4-workforce-presence-biometric.md     â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/workforce-presence/overview.md                 ← WorkforcePresence module: biometric integration
-modules/identity-verification/overview.md              ← biometric_devices table is shared here
-modules/agent-gateway/overview.md                      ← Agent data integration
-backend/notification-system.md                         ← Presence event notifications
-infrastructure/multi-tenancy.md                        ← Tenant-scoped biometric data
+modules/workforce-presence/overview.md                 â† WorkforcePresence module: biometric integration
+modules/identity-verification/overview.md              â† biometric_devices table is shared here
+modules/agent-gateway/overview.md                      â† Agent data integration
+backend/notification-system.md                         â† Presence event notifications
+infrastructure/multi-tenancy.md                        â† Tenant-scoped biometric data
 ```
 
 Userflows:
 ```
-Userflow/Workforce-Presence/biometric-device-setup.md  ← Register and manage biometric devices
-Userflow/Workforce-Presence/attendance-correction.md   ← Correct attendance records
-Userflow/Workforce-Presence/overtime-management.md     ← Request and approve overtime
-Userflow/Workforce-Presence/break-tracking.md          ← Break records from biometric + agent
+Userflow/Workforce-Presence/biometric-device-setup.md  â† Register and manage biometric devices
+Userflow/Workforce-Presence/attendance-correction.md   â† Correct attendance records
+Userflow/Workforce-Presence/overtime-management.md     â† Request and approve overtime
+Userflow/Workforce-Presence/break-tracking.md          â† Break records from biometric + agent
 ```
 
 ### What the agent builds
@@ -464,10 +464,10 @@ After all 4 tasks complete, Dev 4 also owns this Phase 1 bridge:
 ### Bridge 4: Tenant Provisioning (after Task 1 — Shared Platform is done)
 
 ```
-current-focus/WMS-bridge-integration.md       ← Bridge spec + all bridge schemas
-docs/wms-integration-analysis.md              ← Context for why bridges exist
-backend/bridge-api-contracts.md               ← Request/response schemas
-backend/external-integrations.md              ← Bridge endpoint registry
+current-focus/WMS-bridge-integration.md       â† Bridge spec + all bridge schemas
+docs/wms-integration-analysis.md              â† Context for why bridges exist
+backend/bridge-api-contracts.md               â† Request/response schemas
+backend/external-integrations.md              â† Bridge endpoint registry
 ```
 
 Builds:
@@ -538,7 +538,7 @@ frontend/data-layer/api-integration.md
 ## TASK 2 — Configuration
 current-focus/DEV4-configuration.md
 modules/configuration/overview.md
-modules/configuration/monitoring-toggles/overview.md  ← already loaded, re-reads for full spec
+modules/configuration/monitoring-toggles/overview.md  â† already loaded, re-reads for full spec
 modules/configuration/employee-overrides/overview.md
 modules/configuration/tenant-settings/overview.md
 modules/configuration/retention-policies/overview.md
@@ -550,23 +550,23 @@ Userflow/Configuration/tenant-settings.md
 ## TASK 3 — Identity Verification (SKIPPED on first run; runs on second run)
 current-focus/DEV4-identity-verification.md
 modules/identity-verification/overview.md
-modules/workforce-presence/overview.md              ← for VerificationCompleted side effect
-security/data-classification.md                     ← verification photos are RESTRICTED
+modules/workforce-presence/overview.md              â† for VerificationCompleted side effect
+security/data-classification.md                     â† verification photos are RESTRICTED
 Userflow/Workforce-Intelligence/identity-verification-setup.md
 Userflow/Workforce-Intelligence/identity-verification-review.md
-frontend/design-system/patterns/data-visualization.md ← trend chart
+frontend/design-system/patterns/data-visualization.md â† trend chart
 
 ## TASK 4 — Workforce Presence Biometric
 current-focus/DEV4-workforce-presence-biometric.md
-modules/workforce-presence/overview.md              ← already loaded, re-reads for biometric section
-modules/identity-verification/overview.md           ← biometric_devices shared table
-modules/agent-gateway/overview.md                   ← agent data integration
+modules/workforce-presence/overview.md              â† already loaded, re-reads for biometric section
+modules/identity-verification/overview.md           â† biometric_devices shared table
+modules/agent-gateway/overview.md                   â† agent data integration
 backend/notification-system.md
 Userflow/Workforce-Presence/biometric-device-setup.md
 Userflow/Workforce-Presence/attendance-correction.md
 Userflow/Workforce-Presence/overtime-management.md
 Userflow/Workforce-Presence/break-tracking.md
-frontend/design-system/foundations/color-tokens.md  ← device status colors
+frontend/design-system/foundations/color-tokens.md  â† device status colors
 
 ## WMS BRIDGES (Dev 4)
 current-focus/WMS-bridge-integration.md

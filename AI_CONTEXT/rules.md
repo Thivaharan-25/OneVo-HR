@@ -5,7 +5,7 @@
 - **Source of Truth:** Always prioritize information found within this repository. If there's a conflict, the most recently updated file in `AI_CONTEXT/` takes precedence.
 - **Contextual Awareness:** Before performing any task, read these files in order:
     1. [[AI_CONTEXT/project-context|Project Context]] — What ONEVO is
-    2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 9, PostgreSQL, Redis, Next.js, etc.
+    2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 9, PostgreSQL, Redis, Vite + React, etc.
     3. [[current-focus/README|Current Focus]] — Current sprint/week priorities
     4. [[AI_CONTEXT/known-issues|Known Issues]] — Gotchas and deprecated patterns
     5. The specific module doc in `modules/` for the module you're working on
@@ -19,18 +19,18 @@
 
 ### Architecture
 
-- **Monolithic + Service-Oriented:** All modules live in one .NET solution but maintain strict namespace boundaries
-- **Module structure:** `ONEVO.Modules.{ModuleName}` — each module has its own namespace
-- **[[backend/shared-kernel|Shared kernel]]:** `ONEVO.SharedKernel` — only cross-cutting concerns used by 3+ modules
-- **Never** reference one module's internal classes from another module (see [[backend/module-boundaries|Module Boundaries]])
-- **Use MediatR** for command/query dispatch within modules (see [[backend/messaging/event-catalog|Event Catalog]])
-- **Use domain events** for cross-module side effects (not direct service calls)
+- **Clean Architecture + CQRS:** The backend is organized into Domain, Application, Infrastructure, and API host projects.
+- **Feature structure:** Features live under layer folders such as `ONEVO.Application/Features/{FeatureName}` and `ONEVO.Domain/Features/{FeatureName}`.
+- **Shared contracts:** Keep cross-cutting primitives in the appropriate layer; do not create separate module projects.
+- **Respect layer dependencies:** Domain has no external dependencies; Application depends on Domain; Infrastructure implements Application interfaces; API calls Application via MediatR.
+- **Use MediatR** for command/query dispatch and in-process domain events.
+- **Use domain events** for cross-feature side effects.
 
 ### Naming Conventions
 
 | Element | Convention | Example |
 |:--------|:-----------|:--------|
-| Namespaces | `PascalCase` | `ONEVO.Modules.CoreHR`, `ONEVO.Modules.ActivityMonitoring` |
+| Namespaces | `PascalCase` | `ONEVO.Application.Features.CoreHR`, `ONEVO.Domain.Features.ActivityMonitoring` |
 | Classes | `PascalCase` | `EmployeeService`, `ActivitySnapshotHandler` |
 | Interfaces | `IPascalCase` | `IEmployeeRepository`, `IActivityMonitoringService` |
 | Methods | `PascalCase` | `GetEmployeeByIdAsync()`, `IngestSnapshotAsync()` |
@@ -81,8 +81,8 @@ var employee = _repository.GetById(id); // BAD
 // NEVER: Throw exceptions for business logic
 if (employee == null) throw new NotFoundException("Employee not found"); // BAD
 
-// NEVER: Access another module's internals
-using ONEVO.Modules.ActivityMonitoring.Internal.Repositories; // BAD
+// NEVER: Reference Infrastructure from Domain/Application
+using ONEVO.Infrastructure.Persistence.Repositories; // BAD inside Domain/Application
 
 // NEVER: Skip tenant_id filtering
 var employees = _dbContext.Employees.ToListAsync(); // BAD
@@ -262,7 +262,7 @@ The following modules are **Phase 2 deferred**. Workers MUST NOT build routes, p
 
 ---
 
-## 10. Frontend / React / Next.js Rules
+## 10. Frontend / Vite + React Rules
 
 ### File & Component Conventions
 
@@ -283,32 +283,32 @@ The following modules are **Phase 2 deferred**. Workers MUST NOT build routes, p
 
 ```
 src/
-├── app/                    # Next.js App Router pages
-│   ├── (auth)/             # Auth layout group
-│   ├── (dashboard)/        # Dashboard layout group
-│   └── layout.tsx          # Root layout
+├── main.tsx                # Entry point; mounts App into #root
+├── App.tsx                 # Provider stack + RouterProvider
+├── router.tsx              # React Router v7 route config
+├── pages/                  # Route page components
 ├── components/
-│   ├── ui/                 # shadcn/ui primitives (Button, Dialog, etc.)
-│   ├── shared/             # Shared composed components (DataTable, PageHeader)
+│   ├── ui/                 # shadcn/ui primitives
+│   ├── shared/             # Shared composed components
 │   ├── hr/                 # Pillar 1 components
 │   ├── workforce/          # Pillar 2 components
-│   └── layout/             # Sidebar, Topbar, Breadcrumbs
+│   └── layout/             # NavRail, Topbar, Breadcrumbs
 ├── hooks/                  # Custom React hooks
 ├── lib/                    # Utilities, API client, constants
 │   ├── api/                # API client + endpoint definitions
 │   ├── signalr/            # SignalR connection manager
 │   └── utils/              # Formatting, validation helpers
 ├── stores/                 # Zustand stores
-├── types/                  # TypeScript types (mirroring backend DTOs)
+├── types/                  # TypeScript types mirroring backend DTOs
 └── styles/                 # Global CSS, Tailwind config
 ```
 
 ### Component Patterns
 
-**Server vs Client Components:**
-- **Default to Client Components** — most dashboard pages need interactivity
-- **Use Server Components for:** Static pages, initial data fetch, layout wrappers
-- **"use client" directive** at the top of interactive components
+**SPA Components:**
+- **Default to interactive React components** - the app is CSR-only.
+- **Use React.lazy + Suspense** for heavy routes and widgets.
+- **Do not use Next.js-only APIs** such as `next/dynamic`, `next/image`, middleware, or `app/` file routing.
 
 **Permission Gating:**
 
@@ -376,7 +376,7 @@ export function CreateEmployeeForm() {
 - **All API calls go through the typed API client** — never raw `fetch()`
 - **Use TanStack Query for ALL data fetching** — no `useEffect` + `useState` for API calls
 - **Handle loading, error, empty states** for every data-fetching component
-- **Pagination via nuqs** — page/cursor in URL params
+- **Pagination via React Router `useSearchParams`** — page/cursor in URL params
 - **Error display:** RFC 7807 Problem Details → user-friendly error toast
 
 ### Frontend Real-time Rules
@@ -408,7 +408,7 @@ export function CreateEmployeeForm() {
 - **Sanitize all user-generated content** before rendering (XSS prevention)
 - **RBAC check on every route** — redirect to 403 if unauthorized
 - **No sensitive data in URL params** — employee IDs are OK, PII is not
-- **CSP headers** configured in Next.js middleware
+- **CSP headers** configured at the hosting/API edge; there is no Next.js middleware in this app.
 
 ---
 

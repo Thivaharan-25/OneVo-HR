@@ -13,8 +13,8 @@ This covers the full journey — orchestrator startup, base context loading, eac
 The orchestrator runs first and determines what to do. It reads:
 
 ```
-1. ade/README.md                        ← How the orchestrator works, what repos to use
-2. current-focus/README.md             ← Task assignment table: Dev 2 has 4 tasks
+1. ade/README.md                        â† How the orchestrator works, what repos to use
+2. current-focus/README.md             â† Task assignment table: Dev 2 has 4 tasks
 ```
 
 From `current-focus/README.md`, the orchestrator extracts:
@@ -47,7 +47,7 @@ AI_CONTEXT/known-issues.md
 
 ### `AI_CONTEXT/rules.md`
 The agent's operating constitution. Key rules absorbed:
-- Monolithic architecture, strict namespace boundaries (`ONEVO.Modules.{Name}`)
+- Clean Architecture + CQRS with strict layer boundaries
 - Domain events for side effects, direct calls for sync queries
 - `ITenantContext` injection in every repository — never skip
 - `Result<T>` pattern instead of exceptions
@@ -62,7 +62,7 @@ The agent's operating constitution. Key rules absorbed:
 System architecture map. Key concepts absorbed:
 - Two-pillar model: HR Management (Pillar 1) + Workforce Intelligence (Pillar 2)
 - Hybrid Permission Model: NOT simple RBAC — roles are templates, Super Admin grants any feature
-- Modular monolith: one .NET solution, 23 modules, strict boundaries
+- Clean Architecture + CQRS: Domain, Application, Infrastructure, and API host projects with feature folders
 - Multi-tenant: every entity has `tenant_id`
 - JWT RS256, access token in-memory, refresh in HttpOnly Secure cookie
 
@@ -74,7 +74,7 @@ Technology choices. Key items absorbed:
 - Hangfire for background jobs
 - MediatR for command/query/event dispatch
 - SignalR for real-time
-- Next.js 14, TypeScript, shadcn/ui, TanStack Query
+- Vite + React 19, TypeScript, shadcn/ui, TanStack Query
 - JWT (RS256), Argon2id passwords
 - Resend for email, Azure Blob Storage
 
@@ -110,7 +110,7 @@ ADE-START-HERE.md
 
 ### Dependency check
 ```
-DEV1 Infrastructure Setup  ← checks: Does ONEVO.SharedKernel exist in backend repo?
+DEV1 Infrastructure Setup  â† checks: Does ONEVO.SharedKernel exist in backend repo?
 ```
 If DEV1 Infrastructure is not done, the orchestrator skips Task 1 (and all tasks) and reports blocked.
 Assuming Infrastructure is done, agent proceeds.
@@ -118,41 +118,41 @@ Assuming Infrastructure is done, agent proceeds.
 ### Files read for Task 1
 
 ```
-current-focus/DEV2-auth-security.md    ← Task spec: acceptance criteria, pages to build
+current-focus/DEV2-auth-security.md    â† Task spec: acceptance criteria, pages to build
 ```
 
 Task-specific context injected by orchestrator:
 
 ```
-modules/auth/authentication/overview.md        ← Login, JWT token issuance, device JWT
-modules/auth/authorization/overview.md         ← RBAC, 90+ permissions, hybrid model
-modules/auth/session-management/overview.md    ← Session tracking, device fingerprinting
-modules/auth/mfa/overview.md                   ← TOTP setup, Email OTP, backup codes
-modules/auth/audit-logging/overview.md         ← JSON diff interceptor, audit trail
-modules/auth/gdpr-consent/overview.md          ← Consent records, monitoring consent type
-security/data-classification.md               ← PII fields, data sensitivity levels
-infrastructure/multi-tenancy.md               ← JWT tenant isolation, per-tenant branding
-backend/shared-kernel.md                      ← RequirePermissionAttribute, ICurrentUser
+modules/auth/authentication/overview.md        â† Login, JWT token issuance, device JWT
+modules/auth/authorization/overview.md         â† RBAC, 90+ permissions, hybrid model
+modules/auth/session-management/overview.md    â† Session tracking, device fingerprinting
+modules/auth/mfa/overview.md                   â† TOTP setup, Email OTP, backup codes
+modules/auth/audit-logging/overview.md         â† JSON diff interceptor, audit trail
+modules/auth/gdpr-consent/overview.md          â† Consent records, monitoring consent type
+security/data-classification.md               â† PII fields, data sensitivity levels
+infrastructure/multi-tenancy.md               â† JWT tenant isolation, per-tenant branding
+backend/shared-kernel.md                      â† RequirePermissionAttribute, ICurrentUser
 ```
 
 Userflows:
 ```
-Userflow/Auth-Access/login-flow.md             ← Login with MFA + SSO variations
-Userflow/Auth-Access/password-reset.md         ← Forgot password + reset flow
-Userflow/Auth-Access/mfa-setup.md              ← Enable/disable MFA
-Userflow/Auth-Access/gdpr-consent.md           ← Consent collection after login
-Userflow/Auth-Access/role-creation.md          ← Create and configure roles
-Userflow/Auth-Access/permission-assignment.md  ← Assign permissions to roles
-Userflow/Auth-Access/user-invitation.md        ← Invite new users
+Userflow/Auth-Access/login-flow.md             â† Login with MFA + SSO variations
+Userflow/Auth-Access/password-reset.md         â† Forgot password + reset flow
+Userflow/Auth-Access/mfa-setup.md              â† Enable/disable MFA
+Userflow/Auth-Access/gdpr-consent.md           â† Consent collection after login
+Userflow/Auth-Access/role-creation.md          â† Create and configure roles
+Userflow/Auth-Access/permission-assignment.md  â† Assign permissions to roles
+Userflow/Auth-Access/user-invitation.md        â† Invite new users
 ```
 
 Frontend references:
 ```
 frontend/architecture/app-structure.md
-frontend/design-system/components/component-catalog.md   ← Input, Button, Dialog, Switch
-frontend/design-system/foundations/color-tokens.md       ← Tenant branding colors
-frontend/data-layer/api-integration.md                   ← Auth token management
-frontend/data-layer/state-management.md                  ← Auth state in Zustand
+frontend/design-system/components/component-catalog.md   â† Input, Button, Dialog, Switch
+frontend/design-system/foundations/color-tokens.md       â† Tenant branding colors
+frontend/data-layer/api-integration.md                   â† Auth token management
+frontend/data-layer/state-management.md                  â† Auth state in Zustand
 ```
 
 ### What the agent builds
@@ -197,8 +197,8 @@ frontend/data-layer/state-management.md                  ← Auth state in Zusta
 
 ### Dependency check
 ```
-DEV1 Core HR Profile   ← checks: Does employees table exist in backend repo?
-DEV4 Shared Platform   ← checks: Do workflow_definitions + workflow_instances tables exist?
+DEV1 Core HR Profile   â† checks: Does employees table exist in backend repo?
+DEV4 Shared Platform   â† checks: Do workflow_definitions + workflow_instances tables exist?
 ```
 If DEV4 Shared Platform workflow engine is missing → orchestrator skips Task 2 and reports:
 "Lifecycle blocked — workflow engine missing. Re-run after DEV4 delivers Shared Platform."
@@ -208,25 +208,25 @@ If both dependencies are met, agent proceeds.
 ### Files read for Task 2
 
 ```
-current-focus/DEV2-core-hr-lifecycle.md        ← Task spec
+current-focus/DEV2-core-hr-lifecycle.md        â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/core-hr/overview.md                    ← CoreHR module spec: lifecycle events, domain events
-backend/notification-system.md                 ← Lifecycle notifications wiring
-backend/messaging/event-catalog.md             ← Domain event definitions + consumers
-modules/agent-gateway/overview.md              ← Agent revocation on EmployeeTerminated
-infrastructure/multi-tenancy.md               ← Tenant-scoped lifecycle data
+modules/core-hr/overview.md                    â† CoreHR module spec: lifecycle events, domain events
+backend/notification-system.md                 â† Lifecycle notifications wiring
+backend/messaging/event-catalog.md             â† Domain event definitions + consumers
+modules/agent-gateway/overview.md              â† Agent revocation on EmployeeTerminated
+infrastructure/multi-tenancy.md               â† Tenant-scoped lifecycle data
 ```
 
 Userflows:
 ```
-Userflow/Employee-Management/employee-onboarding.md   ← Full onboarding: hire → tasks → completion
-Userflow/Employee-Management/employee-offboarding.md  ← Termination/resignation + knowledge risk
-Userflow/Employee-Management/employee-promotion.md    ← Promotion with salary update
-Userflow/Employee-Management/employee-transfer.md     ← Department/team transfer workflow
+Userflow/Employee-Management/employee-onboarding.md   â† Full onboarding: hire → tasks → completion
+Userflow/Employee-Management/employee-offboarding.md  â† Termination/resignation + knowledge risk
+Userflow/Employee-Management/employee-promotion.md    â† Promotion with salary update
+Userflow/Employee-Management/employee-transfer.md     â† Department/team transfer workflow
 ```
 
 ### What the agent builds
@@ -267,8 +267,8 @@ Userflow/Employee-Management/employee-transfer.md     ← Department/team transf
 
 ### Dependency check
 ```
-DEV3 Activity Monitoring    ← checks: Does IActivityMonitoringService exist in backend repo?
-DEV3 Workforce Presence     ← checks: Does IWorkforcePresenceService exist in backend repo?
+DEV3 Activity Monitoring    â† checks: Does IActivityMonitoringService exist in backend repo?
+DEV3 Workforce Presence     â† checks: Does IWorkforcePresenceService exist in backend repo?
 ```
 Both DEV3 tasks are Week 3 work. On a first ADE run for Dev 2, both are likely missing.
 
@@ -281,25 +281,25 @@ If both dependencies are met, agent proceeds.
 ### Files read for Task 3
 
 ```
-current-focus/DEV2-exception-engine.md         ← Task spec
+current-focus/DEV2-exception-engine.md         â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/exception-engine/overview.md           ← ExceptionEngine module spec: evaluation flow
-modules/activity-monitoring/overview.md        ← IActivityMonitoringService interface
-modules/workforce-presence/overview.md         ← IWorkforcePresenceService interface
-modules/configuration/monitoring-toggles/overview.md ← Toggles gate evaluation
-infrastructure/multi-tenancy.md               ← Tenant-configurable rules and escalation chains
+modules/exception-engine/overview.md           â† ExceptionEngine module spec: evaluation flow
+modules/activity-monitoring/overview.md        â† IActivityMonitoringService interface
+modules/workforce-presence/overview.md         â† IWorkforcePresenceService interface
+modules/configuration/monitoring-toggles/overview.md â† Toggles gate evaluation
+infrastructure/multi-tenancy.md               â† Tenant-configurable rules and escalation chains
 ```
 
 Userflows:
 ```
-Userflow/Exception-Engine/exception-rule-setup.md     ← Configure detection rules
-Userflow/Exception-Engine/exception-dashboard.md      ← View and manage active exceptions
-Userflow/Exception-Engine/alert-review.md             ← Review, acknowledge, dismiss alerts
-Userflow/Exception-Engine/escalation-chain-setup.md   ← Configure escalation chains
+Userflow/Exception-Engine/exception-rule-setup.md     â† Configure detection rules
+Userflow/Exception-Engine/exception-dashboard.md      â† View and manage active exceptions
+Userflow/Exception-Engine/alert-review.md             â† Review, acknowledge, dismiss alerts
+Userflow/Exception-Engine/escalation-chain-setup.md   â† Configure escalation chains
 ```
 
 ### What the agent builds
@@ -362,8 +362,8 @@ Evaluation Engine:
 
 ### Dependency check
 ```
-DEV4 Shared Platform      ← checks: Do notification_templates table + /hubs/notifications hub exist?
-DEV2 Exception Engine     ← checks: Does IExceptionEngineService exist? (already done in Task 3)
+DEV4 Shared Platform      â† checks: Do notification_templates table + /hubs/notifications hub exist?
+DEV2 Exception Engine     â† checks: Does IExceptionEngineService exist? (already done in Task 3)
 ```
 If DEV4 Shared Platform scaffold is missing → orchestrator skips Task 4 and reports:
 "Notifications blocked — notification channel scaffold from Shared Platform missing."
@@ -373,23 +373,23 @@ If dependencies are met, agent proceeds.
 ### Files read for Task 4
 
 ```
-current-focus/DEV2-notifications.md            ← Task spec
+current-focus/DEV2-notifications.md            â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/notifications/overview.md                       ← Notifications module: pipeline, channels
-modules/notifications/notification-templates/overview.md ← Template schema, rendering engine
-modules/notifications/notification-channels/overview.md  ← Channel providers (Resend, in-app, SignalR)
-modules/notifications/signalr-real-time/overview.md      ← Real-time push channel specs
-backend/notification-system.md                          ← System-wide notification architecture
+modules/notifications/overview.md                       â† Notifications module: pipeline, channels
+modules/notifications/notification-templates/overview.md â† Template schema, rendering engine
+modules/notifications/notification-channels/overview.md  â† Channel providers (Resend, in-app, SignalR)
+modules/notifications/signalr-real-time/overview.md      â† Real-time push channel specs
+backend/notification-system.md                          â† System-wide notification architecture
 ```
 
 Userflows:
 ```
-Userflow/Notifications/notification-preference-setup.md  ← Configure per-event preferences
-Userflow/Notifications/notification-view.md              ← View notification inbox
+Userflow/Notifications/notification-preference-setup.md  â† Configure per-event preferences
+Userflow/Notifications/notification-view.md              â† View notification inbox
 ```
 
 ### What the agent builds
@@ -428,10 +428,10 @@ After all 4 tasks complete, Dev 2 also owns this Phase 1 bridge:
 ### Bridge 1: People Sync (after Task 2 — Employee Lifecycle is done)
 
 ```
-current-focus/WMS-bridge-integration.md       ← Bridge spec + all bridge schemas
-docs/wms-integration-analysis.md              ← Context for why bridges exist
-backend/bridge-api-contracts.md               ← Request/response schemas
-backend/external-integrations.md              ← Bridge endpoint registry
+current-focus/WMS-bridge-integration.md       â† Bridge spec + all bridge schemas
+docs/wms-integration-analysis.md              â† Context for why bridges exist
+backend/bridge-api-contracts.md               â† Request/response schemas
+backend/external-integrations.md              â† Bridge endpoint registry
 ```
 
 Builds:
@@ -505,7 +505,7 @@ current-focus/DEV2-core-hr-lifecycle.md
 modules/core-hr/overview.md
 backend/notification-system.md
 backend/messaging/event-catalog.md
-modules/agent-gateway/overview.md        ← for agent revocation on EmployeeTerminated
+modules/agent-gateway/overview.md        â† for agent revocation on EmployeeTerminated
 Userflow/Employee-Management/employee-onboarding.md
 Userflow/Employee-Management/employee-offboarding.md
 Userflow/Employee-Management/employee-promotion.md
@@ -514,14 +514,14 @@ Userflow/Employee-Management/employee-transfer.md
 ## TASK 3 — Exception Engine
 current-focus/DEV2-exception-engine.md
 modules/exception-engine/overview.md
-modules/activity-monitoring/overview.md  ← for IActivityMonitoringService interface
-modules/workforce-presence/overview.md   ← for IWorkforcePresenceService interface
+modules/activity-monitoring/overview.md  â† for IActivityMonitoringService interface
+modules/workforce-presence/overview.md   â† for IWorkforcePresenceService interface
 modules/configuration/monitoring-toggles/overview.md
 Userflow/Exception-Engine/exception-rule-setup.md
 Userflow/Exception-Engine/exception-dashboard.md
 Userflow/Exception-Engine/alert-review.md
 Userflow/Exception-Engine/escalation-chain-setup.md
-frontend/design-system/foundations/color-tokens.md  ← severity colors
+frontend/design-system/foundations/color-tokens.md  â† severity colors
 frontend/design-system/patterns/data-visualization.md
 
 ## TASK 4 — Notifications

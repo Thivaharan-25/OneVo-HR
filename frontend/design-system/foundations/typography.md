@@ -9,13 +9,26 @@
 ### Font Loading
 
 ```tsx
-// app/layout.tsx
-import { Outfit, JetBrains_Mono } from 'next/font/google';
-import localFont from 'next/font/local';
+/* src/styles/fonts.css */
+@font-face {
+  font-family: 'Outfit';
+  src: url('/fonts/Outfit-Variable.woff2') format('woff2');
+  font-weight: 400 800;
+  font-display: swap;
+}
 
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-display' });
-const geist = localFont({ src: './fonts/Geist-Variable.woff2', variable: '--font-body' });
-const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/Geist-Variable.woff2') format('woff2');
+  font-weight: 400 500;
+  font-display: swap;
+}
+
+:root {
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Geist', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
 ```
 
 ## Scale
