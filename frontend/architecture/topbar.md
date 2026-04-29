@@ -7,7 +7,7 @@
 Left (fixed width ~200px)        Center (flex-grow)       Right (fixed width)
 ```
 
-Height: 48px (`h-12`). Spans full width above both the icon rail and expansion panel.
+Height: 40px (`h-10`). Spans full width above both the icon rail and expansion panel.
 
 ## Left — Legal Entity Switcher
 

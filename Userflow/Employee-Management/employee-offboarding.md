@@ -37,6 +37,36 @@
   - Manager: Knowledge transfer, reassign tasks
   - Admin: Return badge/keys, update org chart
 
+### Step 4A: Knowledge Transfer and Handover
+- **UI:** Offboarding detail -> Knowledge Transfer section
+- **Assignee:** Manager by default; HR/Admin can review
+- **Required when:** `knowledge_risk_level = high` or `critical`
+- **Manager actions:**
+  - Record handover notes
+  - Confirm business-critical responsibilities transferred
+  - Reassign tasks/projects
+  - Attach or reference handover documents where available
+  - Mark knowledge transfer complete
+- **API:** `PUT /api/v1/offboarding/{id}/knowledge-transfer`
+- **Backend:** OffboardingService.UpdateKnowledgeTransferAsync()
+- **Validation:** High/critical risk offboarding cannot complete until knowledge transfer is completed or bypassed with approval
+
+### Step 4B: Bypass Knowledge Transfer
+- **UI:** Knowledge Transfer section -> "Bypass" action
+- **Allowed for:** HR/Admin or configured workflow approver
+- **Required fields:**
+  - Bypass reason
+  - Penalty amount (optional)
+  - Currency (required when amount > 0)
+- **API:** `POST /api/v1/offboarding/{id}/knowledge-transfer/bypass`
+- **Backend:** OffboardingService.BypassKnowledgeTransferAsync()
+- **DB:** Append penalty/audit item into `offboarding_records.penalties_json`
+- **Penalty behaviour:**
+  - If tenant policy has a default knowledge-transfer bypass penalty, use it when no manual amount is entered
+  - If manual amount is entered, store the manual amount
+  - If no penalty applies, store `amount = 0` as audit-only bypass
+- **Result:** Knowledge transfer checklist item is marked `bypassed`; final offboarding can continue
+
 ### Step 5: Process Each Checklist Item
 - **UI:** Assigned persons complete their items → tick off → progress tracked
 - **API:** `PUT /api/v1/workflows/{id}/steps/{stepId}/complete`
@@ -50,6 +80,12 @@
   - Profile read-only (data retained per policy) → [[Userflow/Configuration/retention-policy-setup|Retention Policy Setup]]
   - Leave balance snapshot taken for records
   - Final payroll adjustment created → [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]]
+
+### Step 6A: Final Settlement Penalty Review
+- **Backend:** Before final settlement review, read `offboarding_records.penalties_json`
+- **Includes:** outstanding loans, notice-period violations, asset recovery, and knowledge-transfer bypass penalties
+- **Phase 1 behavior:** Record and expose the settlement input for review
+- **Phase 2 behavior:** Payroll can consume the finalized penalty items during payroll adjustment/final pay
 
 ## Variations
 
@@ -67,6 +103,14 @@
 |:---------|:-------------|:----------|
 | Already offboarding | Blocked | "Offboarding already in progress" |
 | Active payroll run | Warning | "Employee included in current payroll run — process separately" |
+
+Additional error scenarios for knowledge transfer:
+
+| Scenario | What happens | User sees |
+|:---------|:-------------|:----------|
+| High/critical knowledge transfer incomplete | Blocked | "Knowledge transfer must be completed or bypassed with approval" |
+| Bypass requested without reason | Blocked | "Bypass reason is required" |
+| Penalty amount entered without currency | Blocked | "Currency is required for penalty amount" |
 
 ## Events Triggered
 

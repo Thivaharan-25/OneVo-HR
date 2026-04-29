@@ -7,7 +7,7 @@
 | Form state | React Hook Form | Uncontrolled inputs, minimal re-renders |
 | Validation | Zod | Schema-first, shared with API DTOs |
 | UI | shadcn/ui Form components | Label, Input, Select, Error display |
-| URL state | nuqs | Filter forms that sync to URL |
+| URL state | React Router `useSearchParams` | Filter forms that sync to URL |
 
 ## Form Architecture
 
@@ -192,19 +192,32 @@ function InlineEditField({ label, value, fieldName, onSave }) {
 Filters that sync to URL for bookmarkable/shareable state:
 
 ```tsx
+import { useSearchParams } from 'react-router-dom';
+
 function EmployeeFilters() {
-  const [search, setSearch] = useQueryState('q', parseAsString);
-  const [department, setDepartment] = useQueryState('dept', parseAsString);
-  const [status, setStatus] = useQueryState('status', parseAsString);
-  const [dateFrom, setDateFrom] = useQueryState('from', parseAsIsoDateTime);
-  const [dateTo, setDateTo] = useQueryState('to', parseAsIsoDateTime);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const search = searchParams.get('q') ?? '';
+  const department = searchParams.get('dept') ?? '';
+  const status = searchParams.get('status') ?? '';
+  const dateFrom = searchParams.get('from') ?? '';
+  const dateTo = searchParams.get('to') ?? '';
+
+  const set = (key: string, value: string) =>
+    setSearchParams(prev => { value ? prev.set(key, value) : prev.delete(key); prev.delete('page'); return prev; });
+
+  const clearAll = () => setSearchParams({});
+  const hasActiveFilters = search || department || status || dateFrom;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <SearchInput value={search} onChange={setSearch} placeholder="Search employees..." />
-      <DepartmentSelect value={department} onChange={setDepartment} />
-      <StatusFilter value={status} onChange={setStatus} options={employeeStatuses} />
-      <DateRangePicker from={dateFrom} to={dateTo} onChange={(f, t) => { setDateFrom(f); setDateTo(t); }} />
+      <SearchInput value={search} onChange={v => set('q', v)} placeholder="Search employees..." />
+      <DepartmentSelect value={department} onChange={v => set('dept', v)} />
+      <StatusFilter value={status} onChange={v => set('status', v)} options={employeeStatuses} />
+      <DateRangePicker
+        from={dateFrom} to={dateTo}
+        onChange={(f, t) => { set('from', f); set('to', t); }}
+      />
       {hasActiveFilters && (
         <Button variant="ghost" size="sm" onClick={clearAll}>
           <X className="h-3.5 w-3.5 mr-1" /> Clear

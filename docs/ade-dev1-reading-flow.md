@@ -13,8 +13,8 @@ This covers the full journey — orchestrator startup, base context loading, eac
 The orchestrator runs first and determines what to do. It reads:
 
 ```
-1. ade/README.md                        ← How the orchestrator works, what repos to use
-2. current-focus/README.md             ← Task assignment table: Dev 1 has 4 tasks
+1. ade/README.md                        â† How the orchestrator works, what repos to use
+2. current-focus/README.md             â† Task assignment table: Dev 1 has 4 tasks
 ```
 
 From `current-focus/README.md`, the orchestrator extracts:
@@ -47,7 +47,7 @@ AI_CONTEXT/known-issues.md
 
 ### `AI_CONTEXT/rules.md`
 The agent's operating constitution. Key rules absorbed:
-- Monolithic architecture, strict namespace boundaries (`ONEVO.Modules.{Name}`)
+- Clean Architecture + CQRS with strict layer boundaries
 - Domain events for side effects, direct calls for sync queries
 - `ITenantContext` injection in every repository — never skip
 - `Result<T>` pattern instead of exceptions
@@ -61,7 +61,7 @@ The agent's operating constitution. Key rules absorbed:
 System architecture map. Key concepts absorbed:
 - Two-pillar model: HR Management (Pillar 1) + Workforce Intelligence (Pillar 2)
 - Employee is the central hub entity — almost all modules link through it
-- Modular monolith: one .NET solution, 23 modules, strict boundaries
+- Clean Architecture + CQRS: Domain, Application, Infrastructure, and API host projects with feature folders
 - Multi-tenant: every entity has `tenant_id`
 - Activity data: buffer → aggregate pattern (raw buffer 48h, summaries 2 years)
 
@@ -73,7 +73,7 @@ Technology choices. Key items absorbed:
 - Hangfire for background jobs
 - MediatR for command/query/event dispatch
 - SignalR for real-time
-- Next.js 14, TypeScript, shadcn/ui, TanStack Query
+- Vite + React 19, TypeScript, shadcn/ui, TanStack Query
 - JWT (RS256), Argon2id passwords
 - Azure Blob Storage, Resend email
 
@@ -121,32 +121,32 @@ No dependencies (first task). Agent proceeds immediately.
 ### Files read for Task 1
 
 ```
-current-focus/DEV1-infrastructure-setup.md    ← Task spec: acceptance criteria, pages to build
+current-focus/DEV1-infrastructure-setup.md    â† Task spec: acceptance criteria, pages to build
 ```
 
 Task-specific context injected by orchestrator:
 
 ```
-modules/infrastructure/overview.md            ← Infrastructure module: tenants, users, files, countries
-backend/shared-kernel.md                      ← BaseEntity, BaseRepository, ITenantContext, Result<T>
-infrastructure/multi-tenancy.md               ← Tenant isolation: RLS, ITenantContext, BaseRepository
-database/migration-patterns.md                ← EF Core migrations, never raw DDL
-infrastructure/environment-parity.md          ← Docker Compose, local dev setup
-code-standards/backend-standards.md           ← Naming conventions, patterns
-backend/module-catalog.md                     ← 23-module solution structure (namespace map)
-Userflow/Platform-Setup/tenant-provisioning.md ← Tenant signup + industry profile userflow
+modules/infrastructure/overview.md            â† Infrastructure module: tenants, users, files, countries
+backend/shared-kernel.md                      â† BaseEntity, BaseRepository, ITenantContext, Result<T>
+infrastructure/multi-tenancy.md               â† Tenant isolation: RLS, ITenantContext, BaseRepository
+database/migration-patterns.md                â† EF Core migrations, never raw DDL
+infrastructure/environment-parity.md          â† Docker Compose, local dev setup
+code-standards/backend-standards.md           â† Naming conventions, patterns
+backend/module-catalog.md                     â† 23-module solution structure (namespace map)
+Userflow/Platform-Setup/tenant-provisioning.md â† Tenant signup + industry profile userflow
 ```
 
 Also reads any frontend references needed for Step 2:
 ```
-frontend/architecture/app-structure.md         ← Next.js directory layout
-frontend/design-system/README.md               ← Design system overview
-frontend/design-system/components/component-catalog.md ← shadcn/ui components
-frontend/design-system/foundations/color-tokens.md     ← Brand + semantic colors
-frontend/design-system/patterns/layout-patterns.md     ← Sidebar, topbar, content areas
-frontend/design-system/foundations/typography.md       ← Font scale
-frontend/data-layer/api-integration.md                 ← API client pattern
-frontend/data-layer/state-management.md                ← TanStack Query + Zustand
+frontend/architecture/app-structure.md         â† Vite + React Router directory layout
+frontend/design-system/README.md               â† Design system overview
+frontend/design-system/components/component-catalog.md â† shadcn/ui components
+frontend/design-system/foundations/color-tokens.md     â† Brand + semantic colors
+frontend/design-system/patterns/layout-patterns.md     â† Sidebar, topbar, content areas
+frontend/design-system/foundations/typography.md       â† Font scale
+frontend/data-layer/api-integration.md                 â† API client pattern
+frontend/data-layer/state-management.md                â† TanStack Query + Zustand
 ```
 
 ### What the agent builds
@@ -183,8 +183,8 @@ frontend/data-layer/state-management.md                ← TanStack Query + Zust
 
 ### Dependency check
 ```
-DEV1 Infrastructure Setup  ← checks: Does ONEVO.SharedKernel exist in backend repo?
-DEV3 Org Structure         ← checks: Do departments/job_titles tables exist in backend repo?
+DEV1 Infrastructure Setup  â† checks: Does ONEVO.SharedKernel exist in backend repo?
+DEV3 Org Structure         â† checks: Do departments/job_titles tables exist in backend repo?
 ```
 If DEV3 Org Structure is not done, the orchestrator skips Task 2 and reports it as blocked.
 Assuming both dependencies are met, agent proceeds.
@@ -192,16 +192,16 @@ Assuming both dependencies are met, agent proceeds.
 ### Files read for Task 2
 
 ```
-current-focus/DEV1-core-hr-profile.md         ← Task spec
+current-focus/DEV1-core-hr-profile.md         â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/core-hr/overview.md                    ← CoreHR module spec: tables, events, endpoints
-backend/shared-kernel.md                       ← Already in base, but re-reads for IEncryptionService
-security/data-classification.md               ← PII fields, encryption requirements, RESTRICTED data
-infrastructure/multi-tenancy.md                ← Tenant-scoped employee queries
+modules/core-hr/overview.md                    â† CoreHR module spec: tables, events, endpoints
+backend/shared-kernel.md                       â† Already in base, but re-reads for IEncryptionService
+security/data-classification.md               â† PII fields, encryption requirements, RESTRICTED data
+infrastructure/multi-tenancy.md                â† Tenant-scoped employee queries
 ```
 
 Userflows:
@@ -215,7 +215,7 @@ Userflow/Employee-Management/compensation-setup.md
 Frontend references:
 ```
 frontend/architecture/app-structure.md
-frontend/design-system/components/component-catalog.md   ← DataTable, PageHeader, Avatar
+frontend/design-system/components/component-catalog.md   â† DataTable, PageHeader, Avatar
 frontend/design-system/patterns/layout-patterns.md
 frontend/data-layer/api-integration.md
 frontend/coding-standards.md
@@ -260,10 +260,10 @@ frontend/coding-standards.md
 
 ### Dependency check
 ```
-DEV1 Infrastructure Setup    ← SharedKernel required
-DEV1 Core HR Profile         ← employees table required (leave references employee)
-DEV4 Shared Platform         ← workflow engine required for approval routing
-DEV3 Calendar                ← ICalendarConflictService required
+DEV1 Infrastructure Setup    â† SharedKernel required
+DEV1 Core HR Profile         â† employees table required (leave references employee)
+DEV4 Shared Platform         â† workflow engine required for approval routing
+DEV3 Calendar                â† ICalendarConflictService required
 ```
 Key check: Does `ICalendarConflictService` exist in the backend repo?
 If not → orchestrator skips Leave, reports: "Leave blocked — ICalendarConflictService missing. Re-run after DEV3 delivers Calendar."
@@ -273,17 +273,17 @@ If all dependencies met, agent proceeds.
 ### Files read for Task 3
 
 ```
-current-focus/DEV1-leave.md                   ← Task spec
+current-focus/DEV1-leave.md                   â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/leave/overview.md                     ← Leave module spec: tables, policies, events
-modules/core-hr/overview.md                   ← Employee country + job level for policy matching
-modules/workforce-presence/overview.md        ← Presence sessions updated on LeaveApproved
-modules/calendar/overview.md                  ← ICalendarConflictService interface
-infrastructure/multi-tenancy.md               ← Tenant-scoped leave types and policies
+modules/leave/overview.md                     â† Leave module spec: tables, policies, events
+modules/core-hr/overview.md                   â† Employee country + job level for policy matching
+modules/workforce-presence/overview.md        â† Presence sessions updated on LeaveApproved
+modules/calendar/overview.md                  â† ICalendarConflictService interface
+infrastructure/multi-tenancy.md               â† Tenant-scoped leave types and policies
 ```
 
 Userflows:
@@ -299,8 +299,8 @@ Userflow/Leave/leave-entitlement-assignment.md
 
 Frontend references:
 ```
-frontend/design-system/components/component-catalog.md  ← DataTable, Calendar, Badge, StatCard
-frontend/design-system/foundations/color-tokens.md      ← Status colors for leave types
+frontend/design-system/components/component-catalog.md  â† DataTable, Calendar, Badge, StatCard
+frontend/design-system/foundations/color-tokens.md      â† Status colors for leave types
 frontend/data-layer/api-integration.md
 ```
 
@@ -342,25 +342,25 @@ frontend/data-layer/api-integration.md
 
 ### Dependency check
 ```
-DEV3 Activity Monitoring     ← IActivityMonitoringService + activity_daily_summary required
-DEV3 Workforce Presence      ← presence_sessions required
+DEV3 Activity Monitoring     â† IActivityMonitoringService + activity_daily_summary required
+DEV3 Workforce Presence      â† presence_sessions required
 ```
 If either dependency is missing → orchestrator skips, reports blocked tasks.
 
 ### Files read for Task 4
 
 ```
-current-focus/DEV1-productivity-analytics.md  ← Task spec
+current-focus/DEV1-productivity-analytics.md  â† Task spec
 ```
 
 Task-specific context:
 
 ```
-modules/productivity-analytics/overview.md    ← ProductivityAnalytics module spec
-modules/reporting-engine/overview.md          ← Reporting Engine tables (report_definitions etc.)
-modules/activity-monitoring/overview.md       ← activity_daily_summary is primary data source
-modules/workforce-presence/overview.md        ← presence_sessions is primary data source
-infrastructure/multi-tenancy.md               ← Tenant-scoped reports
+modules/productivity-analytics/overview.md    â† ProductivityAnalytics module spec
+modules/reporting-engine/overview.md          â† Reporting Engine tables (report_definitions etc.)
+modules/activity-monitoring/overview.md       â† activity_daily_summary is primary data source
+modules/workforce-presence/overview.md        â† presence_sessions is primary data source
+infrastructure/multi-tenancy.md               â† Tenant-scoped reports
 ```
 
 Userflows:
@@ -374,8 +374,8 @@ Userflow/Analytics-Reporting/workforce-snapshot.md
 
 Frontend references:
 ```
-frontend/design-system/components/component-catalog.md   ← DataTable, StatCard, DateRangePicker
-frontend/design-system/patterns/data-visualization.md   ← Charts, sparklines, heatmaps
+frontend/design-system/components/component-catalog.md   â† DataTable, StatCard, DateRangePicker
+frontend/design-system/patterns/data-visualization.md   â† Charts, sparklines, heatmaps
 frontend/data-layer/api-integration.md
 ```
 
@@ -429,10 +429,10 @@ After all 4 tasks are complete, Dev 1 also owns these Phase 1 bridges:
 ### Bridge 2: Availability (after Task 3 — Leave is done)
 
 ```
-current-focus/WMS-bridge-integration.md       ← Bridge spec
-docs/wms-integration-analysis.md              ← Context for why bridges exist
-backend/bridge-api-contracts.md               ← Request/response schemas
-backend/external-integrations.md              ← Bridge endpoint registry
+current-focus/WMS-bridge-integration.md       â† Bridge spec
+docs/wms-integration-analysis.md              â† Context for why bridges exist
+backend/bridge-api-contracts.md               â† Request/response schemas
+backend/external-integrations.md              â† Bridge endpoint registry
 ```
 
 Builds: `GET /api/v1/bridges/availability/{employeeId}` — leave periods + today's presence status + shift info
@@ -508,8 +508,8 @@ frontend/coding-standards.md
 ## TASK 3 — Leave
 current-focus/DEV1-leave.md
 modules/leave/overview.md
-modules/calendar/overview.md               ← for ICalendarConflictService interface
-modules/workforce-presence/overview.md     ← for presence_sessions side effect
+modules/calendar/overview.md               â† for ICalendarConflictService interface
+modules/workforce-presence/overview.md     â† for presence_sessions side effect
 Userflow/Leave/leave-request-submission.md
 Userflow/Leave/leave-approval.md
 Userflow/Leave/leave-cancellation.md
@@ -522,7 +522,7 @@ Userflow/Leave/leave-entitlement-assignment.md
 current-focus/DEV1-productivity-analytics.md
 modules/productivity-analytics/overview.md
 modules/reporting-engine/overview.md
-modules/activity-monitoring/overview.md    ← for IActivityMonitoringService interface
+modules/activity-monitoring/overview.md    â† for IActivityMonitoringService interface
 Userflow/Analytics-Reporting/productivity-dashboard.md
 Userflow/Analytics-Reporting/report-creation.md
 Userflow/Analytics-Reporting/scheduled-report-setup.md

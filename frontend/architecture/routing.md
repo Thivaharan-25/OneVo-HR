@@ -1,143 +1,166 @@
 # Routing Architecture
 
+> This app uses **React Router v7 in library mode** — routes are defined in `src/router.tsx` using `createBrowserRouter()`. There is no file-based routing, no middleware.ts, no Next.js `@modal`/`@panel` parallel routes, and no intercepting routes. All route guards are React components.
+
 ## Route Groups
 
-Next.js App Router route groups organize the app into distinct layout contexts:
+| Group | Layout Component | Auth Required |
+|:------|:----------------|:--------------|
+| Auth | `AuthLayout` — centered card, no nav | No |
+| Dashboard | `DashboardLayout` — NavRail + ExpansionPanel + Topbar + `<Outlet />` | Yes |
 
-| Group | Purpose | Layout | Auth Required |
-|:------|:--------|:-------|:--------------|
-| `(auth)` | Login, MFA, password reset | Centered card, no chrome | No |
-| `(dashboard)` | All authenticated views | Rail + Panel + Topbar + Breadcrumbs | Yes (permission + entity-context driven) |
+> **No separate employee self-service group.** Employee self-service uses the same dashboard pages with permission-driven views. `/people/leave/` shows own leave with `leave:read-own` and team leave with `leave:read-team`.
 
-> **No separate `(employee)` route group.** Employee self-service uses the same `(dashboard)` pages with permission-driven views. For example, `/people/leave/` shows own leave with `leave:read-own` and team leave with `leave:read-team`. This avoids duplicate pages and keeps the routing simple.
+## Route Config Pattern
 
-## Two-Sidebar Architecture
+All routes defined in a single file:
 
-The ONEVO frontend has two distinct sidebar pillars, each backed by a different API source:
+```tsx
+// src/router.tsx
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { ProtectedRoute } from '@/lib/security/permission-guard';
 
-| Sidebar | Route Prefix | API Source | Feature Gate |
-|:--------|:------------|:-----------|:-------------|
-| **HR Sidebar** | `/people`, `/org`, `/calendar` | ONEVO Backend | Always active |
-| **Workforce Sidebar** | `/workforce` | ONEVO Backend (presence, monitoring) + WMS API (projects, tasks) | `workforce` and/or `wms_access` |
+export const router = createBrowserRouter([
+  // Auth — public
+  {
+    element: <AuthLayout />,
+    children: [
+      { path: '/login',            element: <LoginPage /> },
+      { path: '/forgot-password',  element: <ForgotPasswordPage /> },
+      { path: '/reset-password',   element: <ResetPasswordPage /> },
+      { path: '/mfa',              element: <MfaPage /> },
+    ],
+  },
 
-The Workforce sidebar has two sub-sections:
+  // Dashboard — authenticated
+  {
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: '/inbox', element: <InboxPage /> },
 
+      // People
+      { path: '/people/employees',     element: <ProtectedRoute permission="employees:read"><EmployeesPage /></ProtectedRoute> },
+      { path: '/people/employees/new', element: <ProtectedRoute permission="employees:write"><EmployeeNewPage /></ProtectedRoute> },
+      { path: '/people/employees/:id', element: <ProtectedRoute permission="employees:read"><EmployeeDetailPage /></ProtectedRoute> },
+      { path: '/people/leave',         element: <ProtectedRoute permission="leave:read"><LeavePage /></ProtectedRoute> },
+      { path: '/people/leave/calendar',element: <ProtectedRoute permission="leave:read"><LeaveCalendarPage /></ProtectedRoute> },
+      { path: '/people/leave/balances',element: <ProtectedRoute permission="leave:read"><LeaveBalancesPage /></ProtectedRoute> },
+      { path: '/people/leave/policies',element: <ProtectedRoute permission="leave:manage"><LeavePoliciesPage /></ProtectedRoute> },
+
+      // Workforce
+      { path: '/workforce',              element: <ProtectedRoute permission="workforce:read"><WorkforcePage /></ProtectedRoute> },
+      { path: '/workforce/:employeeId',  element: <ProtectedRoute permission="workforce:read"><WorkforceEmployeePage /></ProtectedRoute> },
+      { path: '/workforce/analytics',    element: <ProtectedRoute permission="analytics:read"><WorkforceAnalyticsPage /></ProtectedRoute> },
+      { path: '/workforce/projects',     element: <ProtectedRoute permission="projects:read"><ProjectsPage /></ProtectedRoute> },
+      { path: '/workforce/projects/new', element: <ProtectedRoute permission="projects:write"><ProjectNewPage /></ProtectedRoute> },
+      { path: '/workforce/projects/:id',         element: <ProtectedRoute permission="projects:read"><ProjectDetailPage /></ProtectedRoute> },
+      { path: '/workforce/projects/:id/board',   element: <ProtectedRoute permission="tasks:read"><ProjectBoardPage /></ProtectedRoute> },
+      { path: '/workforce/projects/:id/sprints', element: <ProtectedRoute permission="planning:read"><ProjectSprintsPage /></ProtectedRoute> },
+      { path: '/workforce/projects/:id/roadmap', element: <ProtectedRoute permission="planning:read"><ProjectRoadmapPage /></ProtectedRoute> },
+      { path: '/workforce/my-work',  element: <ProtectedRoute permission="tasks:read"><MyWorkPage /></ProtectedRoute> },
+      { path: '/workforce/planner',  element: <ProtectedRoute permission="planning:read"><PlannerPage /></ProtectedRoute> },
+      { path: '/workforce/goals',    element: <ProtectedRoute permission="goals:read"><GoalsPage /></ProtectedRoute> },
+      { path: '/workforce/goals/:id',element: <ProtectedRoute permission="goals:read"><GoalDetailPage /></ProtectedRoute> },
+      { path: '/workforce/docs',     element: <ProtectedRoute permission="docs:read"><DocsPage /></ProtectedRoute> },
+      { path: '/workforce/docs/:id', element: <ProtectedRoute permission="docs:read"><DocDetailPage /></ProtectedRoute> },
+      { path: '/workforce/time',         element: <ProtectedRoute permission="time:read"><TimePage /></ProtectedRoute> },
+      { path: '/workforce/time/reports', element: <ProtectedRoute permission="time:read"><TimeReportsPage /></ProtectedRoute> },
+      { path: '/chat', element: <ProtectedRoute permission="chat:read"><ChatPage /></ProtectedRoute> },
+
+      // Org
+      { path: '/org',                       element: <ProtectedRoute permission="org:read"><OrgPage /></ProtectedRoute> },
+      { path: '/org/departments',           element: <ProtectedRoute permission="org:read"><DepartmentsPage /></ProtectedRoute> },
+      { path: '/org/teams',                 element: <ProtectedRoute permission="org:read"><TeamsPage /></ProtectedRoute> },
+      { path: '/org/job-families',          element: <ProtectedRoute permission="org:manage"><JobFamiliesPage /></ProtectedRoute> },
+      { path: '/org/job-families/:id',      element: <ProtectedRoute permission="org:manage"><JobFamilyDetailPage /></ProtectedRoute> },
+      { path: '/org/legal-entities',        element: <ProtectedRoute permission="org:manage"><LegalEntitiesPage /></ProtectedRoute> },
+      { path: '/org/legal-entities/:id',    element: <ProtectedRoute permission="org:manage"><LegalEntityDetailPage /></ProtectedRoute> },
+
+      // Calendar
+      { path: '/calendar',            element: <ProtectedRoute permission="calendar:read"><CalendarPage /></ProtectedRoute> },
+      { path: '/calendar/schedule',   element: <ProtectedRoute permission="schedule:read"><SchedulePage /></ProtectedRoute> },
+      { path: '/calendar/attendance', element: <ProtectedRoute permission="attendance:read"><AttendancePage /></ProtectedRoute> },
+      { path: '/calendar/overtime',   element: <ProtectedRoute permission="overtime:read"><OvertimePage /></ProtectedRoute> },
+
+      // Notifications
+      { path: '/notifications',             element: <NotificationsPage /> },
+      { path: '/notifications/preferences', element: <NotificationPreferencesPage /> },
+
+      // Admin
+      { path: '/admin/users',      element: <ProtectedRoute permission="admin:users"><UsersPage /></ProtectedRoute> },
+      { path: '/admin/roles',      element: <ProtectedRoute permission="admin:roles"><RolesPage /></ProtectedRoute> },
+      { path: '/admin/audit',      element: <ProtectedRoute permission="admin:audit"><AuditPage /></ProtectedRoute> },
+      { path: '/admin/agents',     element: <ProtectedRoute permission="admin:agents"><AgentsPage /></ProtectedRoute> },
+      { path: '/admin/agents/:id', element: <ProtectedRoute permission="admin:agents"><AgentDetailPage /></ProtectedRoute> },
+      { path: '/admin/devices',    element: <ProtectedRoute permission="admin:devices"><DevicesPage /></ProtectedRoute> },
+      { path: '/admin/compliance', element: <ProtectedRoute permission="admin:compliance"><CompliancePage /></ProtectedRoute> },
+
+      // Settings
+      { path: '/settings/general',       element: <ProtectedRoute permission="settings:read"><GeneralPage /></ProtectedRoute> },
+      { path: '/settings/system',        element: <ProtectedRoute permission="settings:system"><SystemPage /></ProtectedRoute> },
+      { path: '/settings/notifications', element: <ProtectedRoute permission="settings:notifications"><NotificationsSettingsPage /></ProtectedRoute> },
+      { path: '/settings/integrations',  element: <ProtectedRoute permission="settings:integrations"><IntegrationsPage /></ProtectedRoute> },
+      { path: '/settings/branding',      element: <ProtectedRoute permission="settings:branding"><BrandingPage /></ProtectedRoute> },
+      { path: '/settings/billing',       element: <ProtectedRoute permission="settings:billing"><BillingPage /></ProtectedRoute> },
+      { path: '/settings/alert-rules',   element: <ProtectedRoute permission="settings:alerts"><AlertsPage /></ProtectedRoute> },
+    ],
+  },
+
+  // Errors
+  { path: '/403', element: <ForbiddenPage /> },
+  { path: '*',    element: <NotFoundPage /> },
+]);
 ```
-/workforce/
-  presence/     ← ONEVO Backend (WorkforcePresence module)
-  monitoring/   ← ONEVO Backend (ActivityMonitoring module)
-  wms/          ← WMS Backend (Projects, Tasks, Sprints, Chat, OKR)
-    projects/
-    tasks/
-    sprints/
-    chat/
-    okr/
-```
-
-**`/workforce/wms/*` is only rendered when `wms_access: true` in the JWT.** If the tenant does not have WMS enabled, the WMS sub-section is hidden from the sidebar and route access redirects to the Workforce home.
-
-### Unified Calendar View
-
-The calendar page aggregates HR events and WMS project events — no shared DB, frontend merge only:
-
-```typescript
-// app/(dashboard)/calendar/page.tsx
-const [hrEvents] = useQuery('/api/v1/calendar/events')       // ONEVO API
-const [wmsEvents] = useQuery(`${WMS_API_URL}/calendar/events`) // WMS API — only if wms_access
-const unified = mergeAndSort([...hrEvents, ...(wmsEvents ?? [])])
-```
-
-WMS events only fetched when `wms_access: true`. If WMS is unavailable, HR events still render.
 
 ## Route Guard Architecture
 
-### Layer 1: Middleware (Edge Runtime)
+### Layer 1: ProtectedRoute Component
 
-Runs on every request at the edge. Handles authentication redirects and tenant resolution.
+Replaces Next.js middleware. Runs in the browser at render time.
 
 ```tsx
-// middleware.ts
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+// lib/security/permission-guard.tsx
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '@/stores/use-auth-store';
 
-  // 1. Public routes — no auth needed
-  if (isPublicRoute(pathname)) return NextResponse.next();
-
-  // 2. Check auth token
-  const token = request.cookies.get('access_token');
-  if (!token) {
-    return NextResponse.redirect(new URL(`/login?redirect=${pathname}`, request.url));
-  }
-
-  // 3. Decode tenant from token, set header for downstream
-  const decoded = decodeJwt(token.value);
-  const response = NextResponse.next();
-  response.headers.set('x-tenant-id', decoded.tenantId);
-  response.headers.set('x-user-role', decoded.role);
-  // Entity context — drives data scope for WMS and HR data.
-  // activeEntityId is set when a user switches entities via the topbar switcher;
-  // falls back to tenantId (the user's home entity) if no switch has occurred.
-  response.headers.set('x-entity-id', decoded.activeEntityId ?? decoded.tenantId);
-
-  // 4. Permission-based route gating (never check role names — check permission keys)
-  // Sidebar and page content handle fine-grained permission checks via PermissionGate
-
-  // 5. Feature-gated routes
-  if (pathname.startsWith('/workforce') && !decoded.features?.includes('workforce')) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // WMS sub-routes require specific feature flags in addition to workforce access.
-  // These guards only run if the user already passed the workforce guard above.
-  if (pathname.startsWith('/workforce/projects') && !decoded.features?.includes('wms:projects')) {
-    return NextResponse.redirect(new URL('/workforce', request.url));
-  }
-  if (pathname.startsWith('/workforce/goals') && !decoded.features?.includes('wms:okr')) {
-    return NextResponse.redirect(new URL('/workforce', request.url));
-  }
-  if (pathname.startsWith('/chat') && !decoded.features?.includes('wms:chat')) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  return response;
+interface Props {
+  permission?: string;
+  children: ReactNode;
 }
 
-export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
-};
-```
+export function ProtectedRoute({ permission, children }: Props) {
+  const { user, hasPermission } = useAuthStore();
+  const location = useLocation();
 
-### Layer 2: Layout Guards (Server Components)
+  if (!user) {
+    // Preserve intended destination for redirect after login
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+  }
 
-Each layout validates the user has access to the section:
+  if (permission && !hasPermission(permission)) {
+    return <Navigate to="/403" replace />;
+  }
 
-```tsx
-// app/(dashboard)/layout.tsx
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession();
-  if (!session) redirect('/login');
-
-  // No role-based redirect — all users share the dashboard.
-  // Sidebar pillars and page content are permission-gated, not role-gated.
-  return (
-    <DashboardShell user={session.user}>
-      {children}
-    </DashboardShell>
-  );
+  return <>{children}</>;
 }
 ```
 
-### Layer 3: Component Permission Gates (Client)
+### Layer 2: PermissionGate (Component-Level)
 
-Fine-grained permission checks within pages:
+Fine-grained UI hiding within pages — does NOT replace route guards:
 
 ```tsx
-// Only show "Approve" button if user has leave:approve permission
+// Only show "Approve" button if user has leave:approve
 <PermissionGate permission="leave:approve">
   <Button onClick={handleApprove}>Approve</Button>
 </PermissionGate>
 
-// Render different views based on permission
+// Render different content based on permission
 <PermissionGate
   permission="payroll:view-salary"
   fallback={<RestrictedField label="Salary" />}
@@ -146,94 +169,84 @@ Fine-grained permission checks within pages:
 </PermissionGate>
 ```
 
-## Parallel Routes
+### Layer 3: Feature Gates (Tenant Feature Flags)
 
-Used for modals and slide-over panels that preserve parent route context:
+WMS routes only render when the tenant has the feature enabled:
 
-```
-app/(dashboard)/people/employees/
-├── page.tsx                    # Employee list
-├── new/page.tsx                # Full-page create (direct nav fallback)
-├── @modal/
-│   └── (.)new/page.tsx         # Intercepted: create modal over list
-├── [id]/
-│   ├── layout.tsx              # Shared layout for detail views
-│   ├── loading.tsx             # Skeleton while loading
-│   ├── not-found.tsx           # Employee not found
-│   ├── page.tsx                # Employee detail (scrollable sections)
-│   └── @panel/
-│       └── (.)edit/page.tsx    # Intercepted: edit panel over detail
-├── components/                 # Colocated feature components
-│   ├── EmployeeDataTable.tsx
-│   ├── EmployeeDetailSections.tsx
-│   ├── EmployeeWizardSteps.tsx
-│   └── AvatarUpload.tsx
-└── _types.ts                   # Local TypeScript definitions
+```tsx
+// Sidebar hides WMS items when feature is off
+const { hasFeature } = useAuthStore();
+
+// WMS sub-routes redirect when feature is not enabled
+{ path: '/workforce/projects', element: (
+  <ProtectedRoute permission="projects:read">
+    {hasFeature('wms:projects') ? <ProjectsPage /> : <Navigate to="/workforce" replace />}
+  </ProtectedRoute>
+)}
 ```
 
-**Behavior:**
-- Clicking "Add Employee" from list → shows create form as modal (URL changes to `/people/employees/new`)
-- Direct navigation to `/people/employees/new` → shows full-page create form
-- Clicking "Edit" on detail page → shows edit panel sliding in from right
-- Browser back → dismisses modal/panel, restores list/detail
+## Edit Panels and Modals
 
-**Pattern applies to all modules with detail pages.** Each feature folder follows the same convention: `components/` for colocated components, `_types.ts` for local types, `loading.tsx` inside `[id]/` for detail skeletons.
+Replacing Next.js parallel routes (`@panel`, `@modal`). Use local state or a URL query param:
+
+```tsx
+// EmployeeDetailPage.tsx — edit panel via local state
+const [editSection, setEditSection] = useState<string | null>(null);
+
+return (
+  <>
+    <EmployeeDetailSections onEdit={setEditSection} />
+    {editSection && (
+      <SlideOverPanel open onClose={() => setEditSection(null)}>
+        <EditEmployeeSection section={editSection} />
+      </SlideOverPanel>
+    )}
+  </>
+);
+
+// EmployeesPage.tsx — create modal via URL param (preserves bookmarkability)
+const [searchParams, setSearchParams] = useSearchParams();
+const showCreate = searchParams.get('action') === 'new';
+```
 
 ## Breadcrumb Generation
 
-Breadcrumbs are auto-generated from the route hierarchy with display name overrides:
+Derived from `useLocation()` — no file-system magic needed:
 
 ```tsx
-// lib/breadcrumbs.ts
+// lib/utils/breadcrumbs.ts
+import { useLocation } from 'react-router-dom';
+
 const ROUTE_LABELS: Record<string, string> = {
-  'people': 'People',
-  'employees': 'Employees',
-  'leave': 'Leave',
-  'workforce': 'Workforce',
-  'org': 'Organization',
-  'calendar': 'Calendar',
-  'shifts': 'Shifts',
-  'schedules': 'Schedules',
-  'inbox': 'Inbox',
-  'admin': 'Admin',
-  'settings': 'Settings',
-  'alert-rules': 'Alert Rules',
+  people: 'People', employees: 'Employees', leave: 'Leave',
+  workforce: 'Workforce', org: 'Organization', calendar: 'Calendar',
+  admin: 'Admin', settings: 'Settings', 'alert-rules': 'Alert Rules',
 };
 
-// Dynamic segments resolved via API:
-// /people/employees/[id] → "People > Employees > John Doe"
-// /people/leave/calendar → "People > Leave > Calendar"
-// /calendar/shifts       → "Calendar > Shifts"
-// /calendar/schedules    → "Calendar > Schedules"
-// /settings/alert-rules  → "Settings > Alert Rules"
+export function useBreadcrumbs() {
+  const { pathname } = useLocation();
+  const segments = pathname.split('/').filter(Boolean);
+
+  return segments.map((segment, i) => ({
+    label: ROUTE_LABELS[segment] ?? segment,
+    href: '/' + segments.slice(0, i + 1).join('/'),
+    isCurrent: i === segments.length - 1,
+  }));
+}
 ```
 
 ## Navigation State
 
 ```tsx
-// Sidebar active state derived from pathname
-const pathname = usePathname();
-const activePillar = pathname.split('/')[1]; // 'people' | 'workforce' | 'org' | 'calendar' | 'inbox' | 'admin' | 'settings'
-const activeItem = pathname.split('/')[2];   // 'employees' | 'leave' | 'projects' | etc.
-```
+import { useLocation } from 'react-router-dom';
 
-## Error Routes
-
-```
-app/(dashboard)/
-├── error.tsx                       # Dashboard-level error boundary
-├── not-found.tsx                   # 404 within dashboard
-├── people/
-│   ├── error.tsx                   # People section error boundary
-│   └── employees/
-│       ├── error.tsx               # Employee-specific error boundary
-│       └── [id]/
-│           └── not-found.tsx       # Employee not found (404)
+const { pathname } = useLocation();
+const activePillar = pathname.split('/')[1]; // 'people' | 'workforce' | 'org' | etc.
+const activeItem  = pathname.split('/')[2];  // 'employees' | 'leave' | 'projects' | etc.
 ```
 
 ## Related
 
-- [[frontend/architecture/app-structure|App Structure]] — full route tree
-- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — SSR/CSR per route
+- [[frontend/architecture/app-structure|App Structure]] — full page file tree
 - [[frontend/cross-cutting/authorization|Authorization]] — permission system details
-- [[backend/messaging/error-handling|Error Handling]] — error boundary strategy
+- [[frontend/lib/security/permission-guard|Permission Guard]] — route guard implementation

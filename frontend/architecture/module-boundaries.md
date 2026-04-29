@@ -4,21 +4,37 @@
 
 Each product domain is a **frontend module** — an isolated vertical slice with its own routes, components, hooks, and types.
 
-| Module | Route Prefix | Component Dir | Lazy Loaded |
-|:-------|:-------------|:--------------|:------------|
-| Core HR | `/people/employees`, `/people/documents`, `/people/skills` | `components/hr/` | No (core) |
+### HR & Platform Modules
+
+| Module | Route(s) | Component Dir | Lazy Loaded |
+|:-------|:---------|:--------------|:------------|
+| Core HR | `/people/employees` | `components/hr/` | No (core) |
 | Leave | `/people/leave` | `components/leave/` | Yes |
-| Performance | `/people/performance` | `components/performance/` | Yes |
-| Payroll | `/people/payroll` | `components/payroll/` | Yes |
-| Grievance | `/people/grievance` | `components/grievance/` | Yes |
-| Expense | `/people/expense` | `components/expense/` | Yes |
-| Workforce Live | `/workforce/live` | `components/workforce/` | Yes |
-| Activity Monitoring | `/workforce/activity` | `components/workforce/` | Yes (heavy charts) |
-| Exception Engine | `/workforce/exceptions` | `components/exceptions/` | Yes |
-| Identity Verification | `/workforce/verification` | `components/verification/` | Yes |
+| Performance | Employee detail `#performance` section | `components/performance/` | Yes (Phase 2) |
+| Payroll | Employee detail `#pay-benefits` section | `components/payroll/` | Yes (Phase 2) |
+| Grievance | Employee detail `#grievance` section | `components/grievance/` | Yes (Phase 2) |
+| Expense | Employee detail `#expense` section | `components/expense/` | Yes (Phase 2) |
+| Workforce Presence | `/workforce` (presence cards) | `components/workforce/` | Yes |
+| Activity Monitoring | `/workforce/[employeeId]` | `components/workforce/` | Yes (heavy charts) |
+| Identity Verification | `/workforce` (online status dot on cards) | `components/workforce/` | Yes |
+| Exception Engine | `/settings/alert-rules`, escalated cards on `/workforce` | `components/exceptions/` | Yes |
 | Org Structure | `/org/*` | `components/org/` | Yes |
 | Settings | `/settings/*` | `components/settings/` | Yes |
-| Employee Self-Service | `/my-*` | `components/self-service/` | No (separate entry) |
+
+### WMS Modules
+
+> WMS is a **distinct product domain** from Workforce Intelligence. Components live in `components/wms/` — never in `components/workforce/`. Routes share the `/workforce/` prefix for now but will split if WMS gets its own nav pillar.
+
+| Module | Route(s) | Component Dir | Lazy Loaded |
+|:-------|:---------|:--------------|:------------|
+| Projects | `/workforce/projects` | `components/wms/` | Yes |
+| Tasks | `/workforce/projects/[id]/board`, `/workforce/my-work` | `components/wms/` | Yes |
+| Planning | `/workforce/planner`, `/workforce/projects/[id]/sprints`, `/workforce/projects/[id]/roadmap` | `components/wms/` | Yes |
+| OKR | `/workforce/goals` | `components/wms/` | Yes |
+| Docs / Wiki | `/workforce/docs` | `components/wms/` | Yes |
+| Time | `/workforce/time` | `components/wms/` | Yes |
+| Resource / Capacity | `/workforce/analytics` (capacity section) | `components/wms/` | Yes |
+| Chat | `/chat` | `components/wms/` | Yes |
 
 ## Import Rules
 
@@ -33,6 +49,8 @@ Each product domain is a **frontend module** — an isolated vertical slice with
   components/hr/employee-list → components/workforce/live-dashboard  (module → module)
   components/payroll/run-detail → hooks/hr/use-employees             (module → other module's hooks)
   components/ui/button → components/shared/stat-card                 (primitive → composed)
+  components/wms/kanban-board → components/workforce/presence-card   (wms → workforce-intelligence)
+  components/workforce/presence-card → components/wms/task-card      (workforce-intelligence → wms)
 ```
 
 **If two modules need the same logic**, extract it to `shared/` or `hooks/shared/`.
@@ -40,62 +58,69 @@ Each product domain is a **frontend module** — an isolated vertical slice with
 ## Dependency Graph
 
 ```
-┌──────────────────────────────────────────────────────┐
-│                    app/ (routes)                      │
-│  Imports feature components per route                 │
-└────────────────────────┬─────────────────────────────┘
-                         │
-         ┌───────────────┼───────────────────┐
-         ▼               ▼                   ▼
-┌──────────────┐ ┌──────────────┐ ┌──────────────────┐
-│ components/  │ │ components/  │ │ components/      │
-│ hr/          │ │ workforce/   │ │ payroll/         │
-│ (Core HR)    │ │ (Workforce)  │ │ (Payroll)        │
-└──────┬───────┘ └──────┬───────┘ └──────┬───────────┘
-       │                │                │
-       └────────────────┼────────────────┘
-                        ▼
-              ┌──────────────────┐
-              │ components/      │
-              │ shared/          │
-              │ (DataTable, etc) │
-              └────────┬─────────┘
-                       ▼
-              ┌──────────────────┐
-              │ components/ui/   │
-              │ (shadcn/ui)      │
-              └──────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         app/ (routes)                                │
+│  Imports feature components per route                                │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 │
+      ┌──────────┬───────────────┼───────────────┬──────────┐
+      ▼          ▼               ▼               ▼          ▼
+┌──────────┐ ┌──────────┐ ┌──────────────┐ ┌─────────┐ ┌──────────┐
+│components│ │components│ │ components/  │ │compnts/ │ │components│
+│  /hr/    │ │/workforce│ │    /wms/     │ │  /org/  │ │  /leave/ │
+│ (Core HR)│ │ (WI)     │ │   (WMS)     │ │  etc.   │ │  etc.    │
+└────┬─────┘ └────┬─────┘ └──────┬───────┘ └────┬────┘ └────┬─────┘
+     │             │              │               │            │
+     └─────────────┴──────────────┴───────────────┴────────────┘
+                                  │
+                        ┌─────────▼──────────┐
+                        │  components/shared/ │
+                        │  (DataTable, etc.)  │
+                        └─────────┬───────────┘
+                                  ▼
+                        ┌──────────────────────┐
+                        │   components/ui/      │
+                        │   (shadcn/ui)         │
+                        └──────────────────────┘
 ```
+
+No horizontal arrows exist between module boxes — that is the rule the linter enforces.
 
 ## Code Splitting Strategy
 
-### Route-Level Splitting (Automatic)
-Next.js App Router automatically code-splits per route segment. Each `page.tsx` and `layout.tsx` is a separate chunk.
+### Route-Level Splitting (Manual with React.lazy)
+Vite does not auto-split per route. Heavy pages must be explicitly lazy-loaded in `router.tsx`:
 
-### Component-Level Splitting (Manual)
+```tsx
+// src/router.tsx
+import { lazy, Suspense } from 'react';
+
+const ProjectBoardPage    = lazy(() => import('@/pages/dashboard/workforce/projects/ProjectBoardPage'));
+const OrgPage             = lazy(() => import('@/pages/dashboard/org/OrgPage'));
+const WorkforceAnalyticsPage = lazy(() => import('@/pages/dashboard/workforce/WorkforceAnalyticsPage'));
+
+// Wrap in Suspense in the route definition:
+{ path: '/workforce/projects/:id/board', element: (
+  <Suspense fallback={<PageSkeleton />}><ProjectBoardPage /></Suspense>
+)}
+```
+
+> **Do NOT use `next/dynamic()`** — that is a Next.js API. Always use `React.lazy()` + `<Suspense>`.
+
+### Component-Level Splitting (Manual with React.lazy)
 Heavy components that aren't needed on first render:
 
 ```tsx
-// Lazy load chart-heavy components
-const ActivityHeatmap = dynamic(
-  () => import('@/components/workforce/activity-heatmap'),
-  { loading: () => <ChartSkeleton height={400} />, ssr: false }
-);
+import { lazy, Suspense } from 'react';
 
-const OrgChart = dynamic(
-  () => import('@/components/org/org-chart'),
-  { loading: () => <ChartSkeleton height={600} />, ssr: false }
-);
+const ActivityHeatmap = lazy(() => import('@/components/workforce/activity-heatmap'));
+const OrgChart        = lazy(() => import('@/components/org/org-chart'));
+const KanbanBoard     = lazy(() => import('@/components/wms/kanban-board'));
 
-const PayrollCalculator = dynamic(
-  () => import('@/components/payroll/payroll-calculator'),
-  { loading: () => <TableSkeleton rows={20} /> }
-);
-
-// Lazy load dialog content (not needed until user clicks)
-const EmployeeCreateDialog = dynamic(
-  () => import('@/components/hr/employee-create-dialog')
-);
+// Usage:
+<Suspense fallback={<ChartSkeleton height={400} />}>
+  <ActivityHeatmap data={activityData} />
+</Suspense>
 ```
 
 ### Library-Level Splitting
@@ -112,29 +137,26 @@ Heavy libraries should only load with the components that need them:
 
 | Chunk | Max Size (gzipped) | Contents |
 |:------|:-------------------|:---------|
-| Framework | ≤90KB | React, Next.js runtime |
+| Framework | ≤80KB | React, React Router runtime |
 | Shared UI | ≤40KB | shadcn/ui primitives, shared components |
 | Per-route | ≤60KB | Route-specific components + hooks |
-| Charts | ≤80KB | Recharts + Tremor (loaded on demand) |
+| Charts | ≤80KB | Recharts (loaded on demand) |
 | Real-time | ≤20KB | SignalR client (loaded on demand) |
 
 ## Feature-Gated Modules
 
-Some modules are gated by tenant subscription:
+Some modules are gated by tenant subscription. Gating happens in the route config via `useAuthStore`:
 
 ```tsx
-// middleware.ts — redirect if module not enabled
-export function middleware(request: NextRequest) {
-  const tenant = getTenantFromRequest(request);
-
-  if (request.nextUrl.pathname.startsWith('/workforce') && !tenant.features.workforceIntelligence) {
-    return NextResponse.redirect(new URL('/people/employees', request.url));
-  }
-
-  if (request.nextUrl.pathname.startsWith('/people/payroll') && !tenant.features.payroll) {
-    return NextResponse.redirect(new URL('/people/employees', request.url));
-  }
-}
+// src/router.tsx — feature-gated route
+{ path: '/workforce/projects', element: (
+  <ProtectedRoute permission="projects:read">
+    {useAuthStore.getState().hasFeature('wms:projects')
+      ? <ProjectsPage />
+      : <Navigate to="/workforce" replace />
+    }
+  </ProtectedRoute>
+)}
 ```
 
 Components also check at render time:
@@ -143,6 +165,52 @@ Components also check at render time:
   <LiveDashboard />
 </FeatureGate>
 ```
+
+## Boundary Enforcement
+
+Use `eslint-plugin-boundaries` to enforce the import rules above in CI. This is the only way to catch violations of the three-tier promotion rule automatically — "never keep both copies" cannot be reviewed manually at scale.
+
+```bash
+npm install -D eslint-plugin-boundaries
+```
+
+```json
+// .eslintrc
+{
+  "plugins": ["boundaries"],
+  "settings": {
+    "boundaries/elements": [
+      { "type": "ui",          "pattern": "components/ui/*" },
+      { "type": "shared",      "pattern": "components/shared/*" },
+      { "type": "hr",          "pattern": "components/hr/*" },
+      { "type": "workforce",   "pattern": "components/workforce/*" },
+      { "type": "wms",         "pattern": "components/wms/*" },
+      { "type": "org",         "pattern": "components/org/*" },
+      { "type": "leave",       "pattern": "components/leave/*" },
+      { "type": "exceptions",  "pattern": "components/exceptions/*" },
+      { "type": "settings",    "pattern": "components/settings/*" }
+    ]
+  },
+  "rules": {
+    "boundaries/element-types": ["error", {
+      "default": "disallow",
+      "rules": [
+        { "from": "*",          "allow": ["ui", "shared"] },
+        { "from": "shared",     "allow": ["ui"] },
+        { "from": "hr",         "allow": ["hr", "shared", "ui"] },
+        { "from": "workforce",  "allow": ["workforce", "shared", "ui"] },
+        { "from": "wms",        "allow": ["wms", "shared", "ui"] },
+        { "from": "org",        "allow": ["org", "shared", "ui"] },
+        { "from": "leave",      "allow": ["leave", "shared", "ui"] },
+        { "from": "exceptions", "allow": ["exceptions", "shared", "ui"] },
+        { "from": "settings",   "allow": ["settings", "shared", "ui"] }
+      ]
+    }]
+  }
+}
+```
+
+When a component needs to cross boundaries, that is the signal to promote it to `components/shared/` — not to relax the rule.
 
 ## Related
 

@@ -6,7 +6,11 @@
 |:-----|:-----------|:--------|
 | Server State | TanStack Query v5 | Employees, leave requests, activity data |
 | Client State | Zustand | Sidebar open/closed, filter preferences, theme |
-| URL State | nuqs | Page number, search query, date range, filters |
+| URL State | React Router `useSearchParams` | Page number, search query, date range, filters |
+
+> **Note:** `nuqs` is a Next.js-only library and must NOT be used here. This project runs on Vite + React Router v7. All URL state uses React Router's built-in `useSearchParams`.
+
+---
 
 ## TanStack Query Patterns
 
@@ -14,10 +18,10 @@
 
 ```typescript
 // [resource, ...params]
-['employees']                          // all employees
-['employees', { page: 1, dept: 'eng' }]  // filtered list
-['employee', employeeId]              // single employee
-['activity-summary', employeeId, date] // activity data
+['employees']                            // all employees
+['employees', { page: 1, dept: 'eng' }] // filtered list
+['employee', employeeId]                 // single employee
+['activity-summary', employeeId, date]  // activity data
 ['exception-alerts', { status: 'new' }] // filtered alerts
 ```
 
@@ -35,34 +39,51 @@
 ### Standard Hook Pattern
 
 ```typescript
-// hooks/use-employees.ts
+// hooks/hr/use-employees.ts
 export function useEmployees(filters: EmployeeFilters) {
   return useQuery({
     queryKey: ['employees', filters],
     queryFn: () => api.employees.list(filters),
     staleTime: 30_000,
-    placeholderData: keepPreviousData, // Smooth pagination
+    placeholderData: keepPreviousData, // smooth pagination
   });
 }
 ```
 
+---
+
 ## Zustand Stores
+
+### Auth Store
+
+```typescript
+// stores/use-auth-store.ts
+interface AuthStore {
+  user: User | null;
+  activeEntityId: string | null;
+  permissions: string[];
+  hasPermission: (permission: string) => boolean;
+  setUser: (user: User, entityId: string, permissions: string[]) => void;
+  clear: () => void;
+}
+```
 
 ### Sidebar Store
 
 ```typescript
+// stores/use-sidebar-store.ts
 interface SidebarStore {
-  isOpen: boolean;
+  isExpanded: boolean;
+  activePillar: string | null;
   toggle: () => void;
-  activeSection: string | null;
-  setActiveSection: (section: string) => void;
+  setActivePillar: (pillar: string | null) => void;
 }
 ```
 
 ### Filter Store
 
 ```typescript
-// Persisted to localStorage
+// stores/use-filter-store.ts — persisted to localStorage
 interface FilterStore {
   workforce: {
     department: string | null;
@@ -74,30 +95,58 @@ interface FilterStore {
 }
 ```
 
-### Auth Store
+### Theme Store
 
 ```typescript
-interface AuthStore {
-  user: User | null;
-  permissions: string[];
-  hasPermission: (permission: string) => boolean;
-  setUser: (user: User, permissions: string[]) => void;
-  clear: () => void;
+// stores/use-theme-store.ts — persisted to localStorage
+interface ThemeStore {
+  theme: 'light' | 'dark' | 'system';
+  setTheme: (theme: 'light' | 'dark' | 'system') => void;
 }
 ```
 
-## URL State (nuqs)
+---
+
+## URL State (React Router useSearchParams)
+
+Use for any state that should be bookmarkable or shareable: pagination, search, filters, date ranges.
 
 ```typescript
-// Used for: pagination, search, filters that should be shareable/bookmarkable
-const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
-const [search, setSearch] = useQueryState('q', parseAsString);
-const [dateFrom, setDateFrom] = useQueryState('from', parseAsIsoDateTime);
+import { useSearchParams } from 'react-router-dom';
+
+function EmployeesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Read
+  const page   = Number(searchParams.get('page') ?? '1');
+  const search = searchParams.get('q') ?? '';
+  const dept   = searchParams.get('dept') ?? '';
+
+  // Write — always spread prev to preserve other params
+  const setPage = (p: number) =>
+    setSearchParams(prev => { prev.set('page', String(p)); return prev; });
+
+  const setSearch = (q: string) =>
+    setSearchParams(prev => { prev.set('q', q); prev.delete('page'); return prev; });
+
+  const setDept = (d: string) =>
+    setSearchParams(prev => { prev.set('dept', d); prev.delete('page'); return prev; });
+}
 ```
+
+**When to use URL state vs Zustand:**
+
+| Scenario | Use |
+|---|---|
+| Filter that should survive page refresh or be shareable | `useSearchParams` |
+| UI-only state (sidebar open, modal open) | Zustand |
+| User preference persisted across sessions | Zustand (with `persist` middleware) |
+
+---
 
 ## Related
 
 - [[frontend/architecture/app-structure|App Structure]] — frontend architecture
 - [[frontend/data-layer/api-integration|API Integration]] — API integration patterns
-- [[backend/real-time|Real-Time Architecture]] — real-time data via SignalR
+- [[frontend/data-layer/real-time|Real-Time Architecture]] — real-time data via SignalR
 - [[frontend/coding-standards|Frontend Coding Standards]] — coding conventions

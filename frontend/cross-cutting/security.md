@@ -14,34 +14,38 @@
 
 ## Content Security Policy (CSP)
 
-```tsx
-// next.config.js
-const ContentSecurityPolicy = `
-  default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline';
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' blob: data: https://*.blob.core.windows.net;
-  font-src 'self';
-  connect-src 'self' ${process.env.NEXT_PUBLIC_API_URL} wss://*.signalr.net;
-  frame-ancestors 'none';
-  base-uri 'self';
-  form-action 'self';
-`;
+Security headers are set in two places: `vite.config.ts` for local dev, and the web server / CDN config (nginx/Azure CDN) for production.
 
-// Applied via headers in next.config.js
-headers: [
-  {
-    source: '/:path*',
-    headers: [
-      { key: 'Content-Security-Policy', value: ContentSecurityPolicy.replace(/\n/g, '') },
-      { key: 'X-Frame-Options', value: 'DENY' },
-      { key: 'X-Content-Type-Options', value: 'nosniff' },
-      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-    ],
+```typescript
+// vite.config.ts — dev server headers
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    headers: {
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+      'Content-Security-Policy': [
+        "default-src 'self'",
+        "script-src 'self'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' blob: data: https://*.blob.core.windows.net",
+        "font-src 'self'",
+        `connect-src 'self' ${process.env.VITE_API_URL} wss://*.signalr.net`,
+        "frame-ancestors 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ].join('; '),
+    },
   },
-],
+});
 ```
+
+> **Production:** Set the same headers in your nginx config or Azure CDN rules. The CSP `connect-src` value must reference your production API domain.
 
 ## XSS Prevention
 

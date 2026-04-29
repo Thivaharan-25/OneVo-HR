@@ -41,7 +41,14 @@
       "Bash(npx tsc *)",
       "Bash(git -C /c/Users/User/OneDrive/Documents/light/onevo-hr-brain/.worktrees/bypass-grant-person-picker submodule status)",
       "Bash(git *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(npm install *)",
+      "Bash(npm view *)",
+      "Bash(node_modules/.bin/tsc -b)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(echo \"TSC_EXIT:$?\")",
+      "Bash(npx shadcn@latest add button input label select dialog dropdown-menu tooltip badge card separator avatar skeleton progress --yes)",
+      "Bash(node_modules/.bin/vitest run *)"
     ]
   }
 }

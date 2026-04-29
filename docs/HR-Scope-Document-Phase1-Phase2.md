@@ -165,8 +165,8 @@ The following items are explicitly excluded from Phase 1 and Phase 2:
 
 | Area | Approach |
 |:---|:---|
-| **Architecture** | Modular monolith (.NET 9) -- clean module boundaries, single deployment |
-| **Frontend** | Next.js 14 -- responsive, desktop-first web application |
+| **Architecture** | Clean Architecture + CQRS (.NET 9) -- strict layer boundaries, single deployment |
+| **Frontend** | Vite + React 19 -- responsive, desktop-first web application |
 | **Database** | PostgreSQL 16 with row-level security for tenant isolation |
 | **Real-time** | SignalR for live dashboards and alerts |
 | **Security** | Multi-tenant isolation at every layer, encrypted data at rest and in transit, GDPR-compliant data handling |

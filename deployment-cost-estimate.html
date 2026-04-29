@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OneVo Platform — Deployment Cost Estimate</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f4f6f9;
+      color: #1e293b;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      color: #fff;
+      padding: 48px 56px 40px;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .brand { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    .brand span { color: #38bdf8; }
+    .doc-meta { text-align: right; font-size: 12px; opacity: 0.7; line-height: 1.8; }
+    .header h1 { margin-top: 28px; font-size: 22px; font-weight: 600; opacity: 0.9; }
+    .header p { margin-top: 6px; font-size: 13px; opacity: 0.65; }
+
+    /* ── BODY ── */
+    .body { padding: 48px 56px; }
+
+    /* ── SECTION TITLES ── */
+    .section { margin-bottom: 44px; }
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #0f172a;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+
+    /* ── CALLOUT BOXES ── */
+    .callout {
+      background: #f0f9ff;
+      border-left: 4px solid #38bdf8;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      font-size: 13px;
+      margin-bottom: 24px;
+      color: #0c4a6e;
+    }
+    .callout strong { display: block; margin-bottom: 4px; font-size: 14px; }
+
+    .callout-warn {
+      background: #fffbeb;
+      border-left-color: #f59e0b;
+      color: #78350f;
+    }
+
+    /* ── TIER SUMMARY CARDS ── */
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .tier-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .tier-card-header {
+      padding: 14px 18px;
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .tier-starter .tier-card-header { background: #0284c7; }
+    .tier-growth  .tier-card-header { background: #0f766e; }
+    .tier-enterprise .tier-card-header { background: #6d28d9; }
+
+    .tier-card-body { padding: 16px 18px; }
+    .tier-card-body .capacity {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+    .tier-price {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1;
+    }
+    .tier-price sup { font-size: 14px; font-weight: 500; vertical-align: super; }
+    .tier-price .period { font-size: 12px; font-weight: 500; color: #64748b; }
+    .tier-annual {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 6px;
+    }
+    .tier-annual strong { color: #0f172a; }
+
+    /* ── TABLES ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 28px;
+    }
+    thead tr { background: #f8fafc; }
+    thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      color: #475569;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1.5px solid #e2e8f0;
+    }
+    thead th:last-child { text-align: right; }
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+    }
+    tbody td:last-child { text-align: right; font-weight: 600; color: #0f172a; white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+
+    .subtotal td { font-weight: 700; background: #f8fafc; }
+    .subtotal td:first-child { color: #0f172a; }
+    .total-row td {
+      font-weight: 800;
+      font-size: 14px;
+      background: #0f172a;
+      color: #fff;
+      border-bottom: none;
+    }
+    .total-row td:last-child { color: #38bdf8; font-size: 15px; }
+
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    .tag-starter    { background: #e0f2fe; color: #0369a1; }
+    .tag-growth     { background: #ccfbf1; color: #0f766e; }
+    .tag-enterprise { background: #ede9fe; color: #6d28d9; }
+    .tag-included   { background: #dcfce7; color: #166534; }
+
+    td .note { font-size: 11px; color: #94a3b8; font-weight: 400; display: block; }
+
+    /* ── ANNUAL PROJECTION ── */
+    .projection-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .proj-card {
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+    .proj-starter    { background: #f0f9ff; border: 1px solid #bae6fd; }
+    .proj-growth     { background: #f0fdfa; border: 1px solid #99f6e4; }
+    .proj-enterprise { background: #f5f3ff; border: 1px solid #ddd6fe; }
+
+    .proj-card .label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; color: #64748b; }
+    .proj-card .value { font-size: 26px; font-weight: 800; color: #0f172a; }
+    .proj-card .sub   { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+    /* ── ASSUMPTIONS ── */
+    .assumption-list { list-style: none; padding: 0; }
+    .assumption-list li {
+      padding: 6px 0 6px 20px;
+      position: relative;
+      font-size: 13px;
+      color: #374151;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .assumption-list li:last-child { border-bottom: none; }
+    .assumption-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: #94a3b8;
+      font-size: 11px;
+      top: 8px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      padding: 24px 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer p { font-size: 11px; color: #94a3b8; }
+    .footer .confidential {
+      font-size: 11px;
+      font-weight: 700;
+      color: #ef4444;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── PRICE HIGHLIGHT ── */
+    .price-highlight {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .price-main {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      padding: 32px 36px;
+      color: #fff;
+    }
+    .price-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; opacity: 0.6; margin-bottom: 12px; }
+    .price-value { font-size: 56px; font-weight: 900; line-height: 1; color: #fff; }
+    .price-value sup { font-size: 22px; font-weight: 600; vertical-align: super; }
+    .price-period { font-size: 16px; font-weight: 500; color: #94a3b8; }
+    .price-annual { font-size: 12px; color: #64748b; margin-top: 12px; line-height: 1.8; }
+    .price-annual strong { color: #93c5fd; }
+    .price-breakdown { background: #f8fafc; padding: 24px 28px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+    .breakdown-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+    .breakdown-item:last-child { border-bottom: none; font-weight: 700; font-size: 14px; padding-top: 10px; margin-top: 4px; border-top: 2px solid #e2e8f0; }
+    .breakdown-item span { color: #64748b; }
+    .breakdown-item strong { color: #0f172a; }
+
+    /* ── CF BADGE ── */
+    .cf-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      background: #fff7ed;
+      color: #c2410c;
+      border: 1px solid #fed7aa;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .az-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      body { background: #fff; }
+      .page { box-shadow: none; margin: 0; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="brand">One<span>Vo</span></div>
+      <div class="doc-meta">
+        Prepared: April 2026<br>
+        Document: DCE-2026-001<br>
+        Version: 1.0
+      </div>
+    </div>
+    <h1>Cloud Deployment Cost Estimate</h1>
+    <p>Infrastructure sizing and monthly operating cost for the OneVo Platform — Clean Architecture edition (Phase 1 · Single Region · Azure + Cloudflare)</p>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- EXECUTIVE SUMMARY -->
+    <div class="section">
+      <div class="section-title">Executive Summary</div>
+      <div class="callout">
+        <strong>What this document covers</strong>
+        This estimate covers the recurring cloud infrastructure cost to deploy and operate the OneVo Platform (HR Management + Workforce Intelligence). The stack combines Microsoft Azure for compute, database, and caching with Cloudflare for global delivery, WAF security, and zero-egress object storage — delivering a production-grade SaaS setup at minimal cost. All prices are in USD based on Southeast Asia (Singapore) region pricing as of Q1 2026.
+      </div>
+
+      <div class="price-highlight">
+        <div class="price-main">
+          <div class="price-label">Estimated Monthly Infrastructure Cost</div>
+          <div class="price-value"><sup>$</sup>311<span class="price-period"> / mo</span></div>
+          <div class="price-annual">
+            <strong>~$3,732</strong> / year (infrastructure only)<br>
+            Phase 1 · Single Region · Single Instance
+          </div>
+        </div>
+        <div class="price-breakdown">
+          <div class="breakdown-item"><span>Azure App Service (Backend API)</span><strong>$173</strong></div>
+          <div class="breakdown-item"><span>Static Web Apps × 2 (Portal + Client)</span><strong>$18</strong></div>
+          <div class="breakdown-item"><span>Azure PostgreSQL (Reserved)</span><strong>$65</strong></div>
+          <div class="breakdown-item"><span>Azure Redis Cache</span><strong>$16</strong></div>
+          <div class="breakdown-item"><span>Cloudflare R2 + CDN/WAF</span><strong>$5</strong></div>
+          <div class="breakdown-item"><span>Azure Key Vault + Monitor</span><strong>$25</strong></div>
+          <div class="breakdown-item"><span>Outbound Bandwidth (est.)</span><strong>$9</strong></div>
+          <div class="breakdown-item"><span>Total Monthly</span><strong>$311</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARCHITECTURE BASIS -->
+    <div class="section">
+      <div class="section-title">Architecture Basis</div>
+      <div class="callout callout-warn">
+        <strong>Deployment Model</strong>
+        Single deployable unit (Modular Monolith). All 23 backend modules ship as one ASP.NET Core host. Inter-module communication uses in-process MediatR events — no external message broker required. This reduces infrastructure complexity and lowers baseline cost significantly.
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Technology</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Backend API</td>
+            <td>.NET 9 · ASP.NET Core</td>
+            <td class="note">23 modules, 170+ tables, multi-tenant JWT</td>
+          </tr>
+          <tr>
+            <td>Frontend</td>
+            <td>Next.js 14 (React)</td>
+            <td class="note">HR + Workforce dashboards, permission-based rendering</td>
+          </tr>
+          <tr>
+            <td>Admin Console</td>
+            <td>Next.js 14 (separate app)</td>
+            <td class="note">console.onevo.io — internal developer platform</td>
+          </tr>
+          <tr>
+            <td>Real-time</td>
+            <td>SignalR (ASP.NET Core)</td>
+            <td class="note">Live workforce dashboard, exception alerts</td>
+          </tr>
+          <tr>
+            <td>Database</td>
+            <td>PostgreSQL (per-module schemas)</td>
+            <td class="note">Each module owns its DbContext; single Postgres instance</td>
+          </tr>
+          <tr>
+            <td>Cache</td>
+            <td>Redis</td>
+            <td class="note">Session tokens, SignalR backplane, hot-path queries</td>
+          </tr>
+          <tr>
+            <td>File Storage</td>
+            <td>Cloudflare R2</td>
+            <td class="note">Employee documents, payslips, identity photos — zero egress fees</td>
+          </tr>
+          <tr>
+            <td>CDN / WAF / DNS</td>
+            <td>Cloudflare</td>
+            <td class="note">Global delivery, DDoS protection, WAF, custom domains per tenant</td>
+          </tr>
+          <tr>
+            <td>Desktop Agent</td>
+            <td>WPF · MSIX (Windows Phase 1)</td>
+            <td class="note">Distributed via Microsoft Partner Center — no server cost</td>
+          </tr>
+          <tr>
+            <td>Message Bus</td>
+            <td>MediatR (in-process)</td>
+            <td class="note">No RabbitMQ · no MassTransit · no broker infrastructure</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- DETAILED BREAKDOWN -->
+    <div class="section">
+      <div class="section-title">Monthly Infrastructure Breakdown</div>
+      <div class="callout callout-warn">
+        <strong>Single-Instance Deployment</strong>
+        All 23 backend modules run as one ASP.NET Core host on a single P1v3 instance. SignalR real-time connections are handled in-process at no extra cost — Azure SignalR Service is only required when scaling horizontally beyond one instance.
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Specification</th>
+            <th style="text-align:right">Monthly (USD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              Azure App Service — Backend API
+              <span class="az-badge">Azure</span>
+            </td>
+            <td>P1v3 · 2 vCores · 8 GB RAM · 1-Year Reserved · Handles all API logic for all tenants
+              <span class="note">Single instance — SignalR works in-process, no broker needed</span>
+            </td>
+            <td>$173</td>
+          </tr>
+          <tr>
+            <td>
+              SaaS Portal — Super Admin
+              <span class="az-badge">Azure</span>
+            </td>
+            <td>Static Web App (Standard) · Isolated React/Next.js UI for platform administrators
+              <span class="note">console.onevo.io · supports custom domain + managed SSL</span>
+            </td>
+            <td>$9</td>
+          </tr>
+          <tr>
+            <td>
+              Client Frontend — White-Label
+              <span class="az-badge">Azure</span>
+            </td>
+            <td>Static Web App (Standard) · Tenant-facing HR + Workforce dashboard
+              <span class="note">Supports custom domains &amp; SSL per tenant</span>
+            </td>
+            <td>$9</td>
+          </tr>
+          <tr>
+            <td>
+              Azure Database for PostgreSQL
+              <span class="az-badge">Azure</span>
+            </td>
+            <td>Flexible Server · Burstable B2ms · 2 vCores · 8 GB · 128 GB storage · Reserved pricing
+              <span class="note">Per-module DbContext pattern · 170+ tables · multi-tenant row isolation</span>
+            </td>
+            <td>$65</td>
+          </tr>
+          <tr>
+            <td>
+              Cloudflare R2 Object Storage
+              <span class="cf-badge">Cloudflare</span>
+            </td>
+            <td>S3-compatible · Zero egress fees · Employee documents, payslips, identity photos
+              <span class="note">10 GB free · $0.015/GB after · no bandwidth charges on reads</span>
+            </td>
+            <td>$5</td>
+          </tr>
+          <tr>
+            <td>
+              Azure Cache for Redis
+              <span class="az-badge">Azure</span>
+            </td>
+            <td>Basic C0 · 250 MB · Multi-tenant session tokens &amp; config caching
+              <span class="note">Sufficient for single-instance deployment; upgrade to Standard C1 when scaling out</span>
+            </td>
+            <td>$16</td>
+          </tr>
+          <tr>
+            <td>
+              Cloudflare DNS / WAF / CDN
+              <span class="cf-badge">Cloudflare</span>
+            </td>
+            <td>Free/Pro Tier · Global CDN, DDoS protection, WAF rules, subdomain routing per tenant
+              <span class="note">Replaces Azure Front Door — saves ~$35/month with equivalent or better coverage</span>
+            </td>
+            <td>$0</td>
+          </tr>
+          <tr>
+            <td>
+              Azure Key Vault
+              <span class="az-badge">Azure</span>
+            </td>
+            <td>Standard tier · Secure storage for connection strings, JWT signing keys, tenant secrets</td>
+            <td>$5</td>
+          </tr>
+          <tr>
+            <td>
+              Azure Monitor + App Insights
+              <span class="az-badge">Azure</span>
+            </td>
+            <td>Log retention 30 days · API performance tracing · Tenant activity audit logs</td>
+            <td>$20</td>
+          </tr>
+          <tr>
+            <td>Outbound Bandwidth</td>
+            <td>Estimated ~60 GB/month Azure egress · Cloudflare R2 reads are free
+              <span class="note">Cloudflare proxying significantly reduces origin bandwidth</span>
+            </td>
+            <td>$9</td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="2">Total Monthly</td>
+            <td>$311</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ONE-TIME SETUP -->
+    <div class="section">
+      <div class="section-title">One-Time Setup &amp; Configuration Costs</div>
+      <div class="callout">
+        <strong>Incurred once at deployment</strong>
+        These costs cover the initial provisioning, security configuration, and go-live readiness work. They are not recurring.
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Description</th>
+            <th style="text-align:right">Cost (USD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Infrastructure-as-Code (Bicep)</td>
+            <td>Reproducible Azure resource templates for all tiers</td>
+            <td>$1,800</td>
+          </tr>
+          <tr>
+            <td>CI/CD Pipeline Setup</td>
+            <td>GitHub Actions workflows — build, test, deploy to staging &amp; prod</td>
+            <td>$1,200</td>
+          </tr>
+          <tr>
+            <td>Security Hardening</td>
+            <td>TLS/HTTPS, private endpoints, RBAC, secrets rotation policy</td>
+            <td>$800</td>
+          </tr>
+          <tr>
+            <td>Database Migration &amp; Seeding</td>
+            <td>Initial schema deployment (170+ tables), seed data, migration validation</td>
+            <td>$600</td>
+          </tr>
+          <tr>
+            <td>Domain &amp; DNS Configuration</td>
+            <td>Custom domains (app.onevo.io, console.onevo.io), SSL certificates</td>
+            <td>$300</td>
+          </tr>
+          <tr>
+            <td>Load Testing &amp; Performance Baseline</td>
+            <td>Simulate concurrent SignalR connections, API throughput benchmarking</td>
+            <td>$1,200</td>
+          </tr>
+          <tr>
+            <td>Monitoring &amp; Alerting Setup</td>
+            <td>Azure Monitor dashboards, alert rules, on-call runbooks</td>
+            <td>$800</td>
+          </tr>
+          <tr>
+            <td>Disaster Recovery Planning</td>
+            <td>RTO/RPO documentation, backup restore tests, failover runbook</td>
+            <td>$1,000</td>
+          </tr>
+          <tr>
+            <td>WorkPulse Agent Distribution</td>
+            <td>Microsoft Partner Center registration + EV code-signing certificate (annual)</td>
+            <td>$600</td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="2">Total One-Time Setup</td>
+            <td>$8,300</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ANNUAL PROJECTION -->
+    <div class="section">
+      <div class="section-title">3-Year Cost Projection</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Period</th>
+            <th>Infrastructure</th>
+            <th>One-Time Setup</th>
+            <th style="text-align:right">Total (USD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Year 1</td>
+            <td>$3,732 <span class="note">$311 × 12 months</span></td>
+            <td>$8,300 <span class="note">Incurred once at go-live</span></td>
+            <td style="text-align:right; font-weight:600">$12,032</td>
+          </tr>
+          <tr>
+            <td>Year 2</td>
+            <td>$3,732</td>
+            <td>— </td>
+            <td style="text-align:right; font-weight:600">$3,732</td>
+          </tr>
+          <tr>
+            <td>Year 3</td>
+            <td>$3,732</td>
+            <td>—</td>
+            <td style="text-align:right; font-weight:600">$3,732</td>
+          </tr>
+          <tr class="total-row">
+            <td>3-Year Total</td>
+            <td>$11,196</td>
+            <td>$8,300</td>
+            <td>$19,496</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="projection-grid">
+        <div class="proj-card proj-starter">
+          <div class="label">Monthly Cost</div>
+          <div class="value">$311</div>
+          <div class="sub">~$3,732 / year infrastructure</div>
+        </div>
+        <div class="proj-card proj-growth">
+          <div class="label">Year 1 Total</div>
+          <div class="value">$12,032</div>
+          <div class="sub">incl. one-time setup $8,300</div>
+        </div>
+        <div class="proj-card proj-enterprise">
+          <div class="label">3-Year Total</div>
+          <div class="value">$19,496</div>
+          <div class="sub">~$6,499 / year average</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT'S NOT INCLUDED -->
+    <div class="section">
+      <div class="section-title">Not Included in This Estimate</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Software licensing (OS, runtime)</td>
+            <td>.NET 9 and Linux App Service are open-source / included in Azure compute cost</td>
+          </tr>
+          <tr>
+            <td>Multi-region deployment</td>
+            <td>Deferred to Phase 2 per architecture decision</td>
+          </tr>
+          <tr>
+            <td>Third-party integrations (BioTime, biometric devices)</td>
+            <td>Device hardware and vendor licensing are client-side costs</td>
+          </tr>
+          <tr>
+            <td>Ongoing software development / maintenance</td>
+            <td>Engineer time is billed separately</td>
+          </tr>
+          <tr>
+            <td>Email delivery (SMTP / SendGrid)</td>
+            <td>~$15–$50/month depending on notification volume — billed on consumption</td>
+          </tr>
+          <tr>
+            <td>WorkManage Pro (WMS backend)</td>
+            <td>Separate product, separate deployment — not in scope</td>
+          </tr>
+          <tr>
+            <td>Cloudflare Pro upgrade</td>
+            <td>+$20/month when custom WAF rules are needed — currently on Free tier</td>
+          </tr>
+          <tr>
+            <td>Azure SignalR Service</td>
+            <td>+$49/month only when scaling to 2+ App Service instances (not needed at Phase 1)</td>
+          </tr>
+          <tr>
+            <td>Azure subscription commitment discounts</td>
+            <td>Enterprise Agreement pricing can reduce Azure costs a further 20–30%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ASSUMPTIONS -->
+    <div class="section">
+      <div class="section-title">Assumptions &amp; Notes</div>
+      <ul class="assumption-list">
+        <li>Azure prices are based on <strong>Southeast Asia (Singapore) region · 1-Year Reserved</strong> pricing as of Q1 2026. Cloudflare prices are global and region-independent.</li>
+        <li>The platform runs as a <strong>single-region, single-instance</strong> deployment in Phase 1. No horizontal scaling is assumed at this cost level.</li>
+        <li><strong>SignalR</strong> is handled in-process within the single App Service instance at no extra cost. Azure SignalR Service (~$49/month) is only required when scaling to 2+ instances.</li>
+        <li><strong>Cloudflare R2</strong> replaces Azure Blob Storage, eliminating egress fees on document and payslip downloads. Storage cost grows at $0.015/GB beyond the 10 GB free tier.</li>
+        <li><strong>Cloudflare DNS/WAF/CDN</strong> replaces Azure Front Door, saving approximately $35/month. Upgrade to Cloudflare Pro ($20/month) when custom WAF rules are required.</li>
+        <li>The <strong>WorkPulse Agent</strong> (Windows desktop) processes activity data client-side. Only lightweight JSON payloads are sent to the API — no additional server compute cost.</li>
+        <li>Database backup costs are included within the PostgreSQL Reserved pricing tier (7-day automated backup included by default).</li>
+        <li>Outbound bandwidth estimate assumes Cloudflare proxying reduces origin requests by ~70%; actual cost depends on screenshot capture frequency.</li>
+        <li>Costs do not include Azure Support Plan. Recommended: Developer tier at $29/month for a production workload.</li>
+      </ul>
+    </div>
+
+  </div><!-- /body -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>OneVo Platform · Deployment Cost Estimate · DCE-2026-001 · v1.1 · April 2026</p>
+    <div class="confidential">Confidential</div>
+  </div>
+
+</div>
+</body>
+</html>

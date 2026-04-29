@@ -142,7 +142,7 @@ function EmployeeRow({ employee }: { employee: Employee }) {
 
 ### Route Prefetch
 
-Next.js automatically prefetches `<Link>` targets. For programmatic prefetch:
+React Router does not automatically prefetch route data. Use TanStack Query for programmatic prefetch:
 
 ```tsx
 // Prefetch next page of results
@@ -165,7 +165,7 @@ Only non-sensitive, UI-preference data persists to localStorage:
 | Data | Persisted | Storage |
 |:-----|:----------|:--------|
 | Sidebar state | Yes | Zustand + localStorage |
-| Theme preference | Yes | next-themes + localStorage |
+| Theme preference | Yes | Zustand/theme store + localStorage |
 | Table column preferences | Yes | Zustand + localStorage |
 | Filter preferences | Yes | Zustand + localStorage |
 | TanStack Query cache | No | Memory only (security) |

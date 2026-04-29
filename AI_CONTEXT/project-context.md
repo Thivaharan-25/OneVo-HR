@@ -275,21 +275,18 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 
 ## 10. Frontend
 
-The ONEVO Frontend is a React/Next.js application serving as the web interface for the full platform (both pillars).
+The ONEVO Frontend is a Vite + React 19 SPA serving as the web interface for the full platform (both pillars).
 
 ### Architecture Overview
 
 ```
-Next.js 14 App Router
-├── (auth)/          — Public pages (login, forgot password, MFA)
-├── (dashboard)/     — Authenticated pages (sidebar + topbar layout)
-│   ├── overview/    — Landing dashboard
-│   ├── hr/          — Pillar 1: HR Management
-│   ├── workforce/   — Pillar 2: Workforce Intelligence
-│   ├── org/         — Org Structure
-│   └── settings/    — Tenant Configuration
-├── (employee)/      — Employee self-service (limited nav)
-└── api/             — API route handlers (BFF pattern for sensitive ops)
+Vite + React 19 + React Router v7
+├── src/router.tsx   - Route definitions and route guards
+├── src/pages/       - Route page components
+├── src/components/  - Shared and feature components
+├── src/lib/api/     - Typed API client
+├── src/stores/      - Zustand stores
+└── src/styles/      - Global CSS and Tailwind tokens
 ```
 
 ### Key Design Principles
@@ -328,7 +325,7 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 ## 11. AI Agent Instructions
 
 - **Prioritization:** Always read this file and [[AI_CONTEXT/rules|Rules]] before generating any code
-- **Tech Stack:** See [[AI_CONTEXT/tech-stack|Tech Stack]] for full details (.NET 9, Next.js 14, WPF/MAUI agent)
+- **Tech Stack:** See [[AI_CONTEXT/tech-stack|Tech Stack]] for full details (.NET 9, Vite + React 19, WPF/MAUI agent)
 - **Module Boundaries:** Never violate module boundaries. See [[backend/module-boundaries|Module Boundaries]]
 - **Multi-Tenancy:** Every query must be tenant-scoped. See [[infrastructure/multi-tenancy|Multi Tenancy]]
 - **Module Details:** Each module has its own doc in `modules/`. Read the specific module doc before working on it.

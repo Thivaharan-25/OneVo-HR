@@ -17,9 +17,9 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 - **Pillar 2: Workforce Intelligence** — Activity monitoring, presence tracking, identity verification, exception detection, productivity analytics
 - **WMS Integration** — Projects, tasks, sprints, OKR, chat (built by WMS team, consumed via bridge contracts)
 - **170 database tables** across **23 modules**
-- **.NET 9** backend (Modular Monolith)
+- **.NET 9** backend (Clean Architecture + CQRS)
 - **.NET MAUI + Windows Service** desktop agent
-- **Next.js 14** frontend (React) — single frontend consuming both ONEVO and WMS backends
+- **Vite + React 19** frontend — single frontend consuming both ONEVO and WMS backends
 - **PostgreSQL 16** with Row-Level Security
 - **4-week delivery plan** with 4 developers
 
@@ -43,7 +43,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 onevo-hr-brain/
 ├── AI_CONTEXT/                  # AI context — read FIRST
 │   ├── [[AI_CONTEXT/project-context|Project Context]]       # Two-pillar architecture, business logic
-│   ├── [[AI_CONTEXT/tech-stack|Tech Stack]]            # .NET 9, PostgreSQL, MAUI, Next.js
+│   ├── [[AI_CONTEXT/tech-stack|Tech Stack]]            # .NET 9, PostgreSQL, MAUI, Vite + React
 │   ├── [[AI_CONTEXT/rules|Rules]]                 # AI agent rules (backend + frontend + agent)
 │   ├── [[AI_CONTEXT/known-issues|Known Issues]]          # Gotchas, monitoring data, agent auth
 │   └── changelog/               # Knowledge base update log (one file per change)
@@ -56,8 +56,8 @@ onevo-hr-brain/
 │   ├── [[backend/module-boundaries|Module Boundaries]]     # Boundary rules and enforcement
 │   ├── [[backend/shared-kernel|Shared Kernel]]         # Cross-cutting code (Result<T>, ITenantContext)
 │   └── messaging/               # Event catalog, exchange topology
-├── frontend/                    # Next.js 14 frontend architecture
-│   ├── [[frontend/architecture/app-structure|App Structure]]             # App Router layout
+├── frontend/                    # Vite + React frontend architecture
+│   ├── [[frontend/architecture/app-structure|App Structure]]             # React Router layout
 │   ├── [[frontend/data-layer/state-management|State Management]]      # TanStack Query + Zustand
 │   └── design-system/           # UI tokens, components, typography
 ├── database/                    # PostgreSQL 16 — migrations, performance
@@ -79,7 +79,7 @@ onevo-hr-brain/
 | **What users do** | [[Userflow/README\|Userflow/]] | End-to-end flows by permission |
 | **What to build** | `modules/` | Feature specs, DB schema, APIs |
 | **How to build (backend)** | [[backend/README\|backend/]] | .NET architecture, patterns |
-| **How to build (frontend)** | [[frontend/README\|frontend/]] | Next.js structure, components |
+| **How to build (frontend)** | [[frontend/README\|frontend/]] | Vite + React structure, components |
 | **Data layer** | `database/` | Migrations, performance |
 | **Code rules** | [[code-standards/README\|code-standards/]] | Naming, git, logging |
 | **Security** | `security/` | Auth, RBAC, compliance |
