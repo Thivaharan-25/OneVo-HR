@@ -1,6 +1,6 @@
 # Module: Reporting Engine
 
-**Namespace:** `ONEVO.Modules.ReportingEngine`
+**Feature Folder:** `Application/Features/ReportingEngine`
 **Phase:** 2 — Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 1 (Week 4)
@@ -25,6 +25,28 @@ Scheduled and on-demand report generation serving **both pillars** — HR report
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | HR reports |
 | **Depends on** | [[modules/leave/overview\|Leave]] | `ILeaveService` | Leave utilization reports |
 | **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Attendance reports |
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/ReportingEngine/Entities/
+  ONEVO.Domain/Features/ReportingEngine/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/ReportingEngine/Commands/
+  ONEVO.Application/Features/ReportingEngine/Queries/
+  ONEVO.Application/Features/ReportingEngine/DTOs/Requests/
+  ONEVO.Application/Features/ReportingEngine/DTOs/Responses/
+  ONEVO.Application/Features/ReportingEngine/Validators/
+  ONEVO.Application/Features/ReportingEngine/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/ReportingEngine/
+
+API endpoints:
+  ONEVO.Api/Controllers/ReportingEngine/ReportingEngineController.cs
 
 ---
 

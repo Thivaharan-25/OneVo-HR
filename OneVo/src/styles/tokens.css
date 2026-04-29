@@ -1,0 +1,40 @@
+:root {
+  /* Brand */
+  --color-brand-primary: #5B4FE8;
+  --color-brand-primary-hover: #4A3FD4;
+  --color-brand-secondary: #8C86F2;
+
+  /* Shell — Light */
+  --color-shell-bg: #F0F1F7;
+  --color-shell-rail: #17181F;
+  --color-shell-surface: #FFFFFF;
+  --color-shell-border: #E2E3EA;
+
+  /* Text — Light */
+  --color-text-primary: #1E2140;
+  --color-text-secondary: #6B7194;
+  --color-text-muted: #9499B0;
+  --color-text-placeholder: #C8CADC;
+
+  /* Semantic */
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+}
+
+[data-theme="dark"] {
+  --color-shell-bg: #0F1117;
+  --color-shell-surface: #17181F;
+  --color-shell-border: rgba(255, 255, 255, 0.06);
+  --color-text-primary: rgba(255, 255, 255, 0.92);
+  --color-text-secondary: rgba(255, 255, 255, 0.55);
+  --color-text-muted: rgba(255, 255, 255, 0.35);
+  --color-text-placeholder: rgba(255, 255, 255, 0.15);
+}

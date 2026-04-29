@@ -1,6 +1,6 @@
 # Module: Auth & Security
 
-**Namespace:** `ONEVO.Modules.Auth`
+**Feature Folder:** `Application/Features/Auth`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 2 (Week 1)
@@ -91,6 +91,28 @@ public interface IBridgeAuthService
     Task<Result<BridgeTokenDto>> IssueTokenAsync(BridgeTokenRequest request, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Auth/Entities/
+  ONEVO.Domain/Features/Auth/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Auth/Commands/
+  ONEVO.Application/Features/Auth/Queries/
+  ONEVO.Application/Features/Auth/DTOs/Requests/
+  ONEVO.Application/Features/Auth/DTOs/Responses/
+  ONEVO.Application/Features/Auth/Validators/
+  ONEVO.Application/Features/Auth/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Auth/
+
+API endpoints:
+  ONEVO.Api/Controllers/Auth/AuthController.cs
 
 ---
 

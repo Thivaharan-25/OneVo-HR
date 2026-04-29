@@ -85,7 +85,7 @@ Checked by a Hangfire recurring job (every hour).
 ## Related
 
 - [[backend/module-catalog|Module Catalog]] — Notifications module and SharedPlatform module details
-- [[backend/messaging/event-catalog|Event Catalog]] — all domain events that trigger notifications
+- [[backend/domain-events|Domain Events]] — all domain events that trigger notifications
 - [[backend/external-integrations|External Integrations]] — Resend (email) and Slack integration details
 - [[code-standards/logging-standards|Logging Standards]] — notification event logging patterns
 - [[infrastructure/observability|Observability]] — monitoring notification delivery

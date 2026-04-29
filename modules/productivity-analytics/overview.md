@@ -1,6 +1,6 @@
 # Module: Productivity Analytics
 
-**Namespace:** `ONEVO.Modules.ProductivityAnalytics`
+**Feature Folder:** `Application/Features/ProductivityAnalytics`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 1 (Week 4)
@@ -37,7 +37,7 @@ Aggregates data from [[modules/activity-monitoring/overview|Activity Monitoring]
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.ProductivityAnalytics/Public/IProductivityAnalyticsService.cs
+// ONEVO.Application.Features.ProductivityAnalytics/Public/IProductivityAnalyticsService.cs
 public interface IProductivityAnalyticsService
 {
     Task<Result<DailyEmployeeReportDto>> GetDailyReportAsync(Guid employeeId, DateOnly date, CancellationToken ct);
@@ -47,6 +47,28 @@ public interface IProductivityAnalyticsService
     Task<Result<decimal>> GetProductivityScoreAsync(Guid employeeId, DateOnly from, DateOnly to, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/ProductivityAnalytics/Entities/
+  ONEVO.Domain/Features/ProductivityAnalytics/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/ProductivityAnalytics/Commands/
+  ONEVO.Application/Features/ProductivityAnalytics/Queries/
+  ONEVO.Application/Features/ProductivityAnalytics/DTOs/Requests/
+  ONEVO.Application/Features/ProductivityAnalytics/DTOs/Responses/
+  ONEVO.Application/Features/ProductivityAnalytics/Validators/
+  ONEVO.Application/Features/ProductivityAnalytics/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/ProductivityAnalytics/
+
+API endpoints:
+  ONEVO.Api/Controllers/ProductivityAnalytics/ProductivityAnalyticsController.cs
 
 ---
 

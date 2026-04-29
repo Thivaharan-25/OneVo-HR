@@ -1,6 +1,6 @@
 # Module: Activity Monitoring
 
-**Namespace:** `ONEVO.Modules.ActivityMonitoring`
+**Feature Folder:** `Application/Features/ActivityMonitoring`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 3 (Week 3)
@@ -34,7 +34,7 @@ Receives, stores, and aggregates employee activity data from the desktop agent. 
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.ActivityMonitoring/Public/IActivityMonitoringService.cs
+// ONEVO.Application.Features.ActivityMonitoring/Public/IActivityMonitoringService.cs
 public interface IActivityMonitoringService
 {
     Task<Result<ActivityDailySummaryDto>> GetDailySummaryAsync(Guid employeeId, DateOnly date, CancellationToken ct);
@@ -44,6 +44,28 @@ public interface IActivityMonitoringService
     Task<Result<decimal>> GetAverageIntensityAsync(Guid employeeId, DateOnly from, DateOnly to, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/ActivityMonitoring/Entities/
+  ONEVO.Domain/Features/ActivityMonitoring/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/ActivityMonitoring/Commands/
+  ONEVO.Application/Features/ActivityMonitoring/Queries/
+  ONEVO.Application/Features/ActivityMonitoring/DTOs/Requests/
+  ONEVO.Application/Features/ActivityMonitoring/DTOs/Responses/
+  ONEVO.Application/Features/ActivityMonitoring/Validators/
+  ONEVO.Application/Features/ActivityMonitoring/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/ActivityMonitoring/
+
+API endpoints:
+  ONEVO.Api/Controllers/ActivityMonitoring/ActivityMonitoringController.cs
 
 ---
 

@@ -1,35 +1,30 @@
-# Module Catalog: ONEVO
+# Feature Catalog: ONEVO
 
-**Last Updated:** 2026-04-05
+**Last Updated:** 2026-04-27
 
 ## Architecture Overview
 
-ONEVO follows a **Monolithic + Service-Oriented Architecture** (.NET 9) organized into **two product pillars** and a **shared foundation**. All modules live in a single deployable unit under `ONEVO.sln` but maintain strict namespace boundaries.
+ONEVO follows **Clean Architecture + CQRS** (.NET 9). The 24 features that were previously separate module projects are now **feature folders** within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`.
 
-Inter-module communication:
-- **Sync (direct):** Module A calls Module B's public interface (via DI)
-- **Async (domain events):** Module A publishes, Module B handles via MediatR
-- **Future:** RabbitMQ for scale when in-process events are insufficient
+There are **no separate module `.csproj` files**. All 176 tables live in a single `ApplicationDbContext`.
 
-See [[backend/module-boundaries|Module Boundaries]] for boundary rules. Each module has its own detailed doc at `modules/{module-name}/overview.md`.
+See [[backend/folder-structure|Folder Structure]] for the full solution layout.
+
+---
 
 ## Unified Platform Model
-
-ONEVO and WMS coexist as **one platform** with two backends. The ONEVO frontend (Next.js) renders both an HR sidebar and a Workforce/WMS sidebar, consuming both backends.
 
 ```
 ONEVO PLATFORM
   ONEVO Frontend (Next.js)
-    ├── HR Sidebar          → ONEVO Backend (.NET 9)
-    └── Workforce Sidebar   → ONEVO Backend + WMS Backend
-                                      ↕ bridge contracts
-  ONEVO Backend                    WMS Backend
-  HR, Workforce, Auth,             Projects, Tasks,
-  Payroll, Notifications,          Sprints, Chat,
-  File Storage                     OKR, Analytics
+    ├── HR Sidebar        → ONEVO.Api (.NET 9)
+    └── Workforce Sidebar → ONEVO.Api + WMS Backend
+                                    ↕ bridge contracts
+  ONEVO.Api                      WMS Backend
+  All features in one host       Projects, Tasks, Sprints…
 ```
 
-**Key rule:** Entity ownership is exclusive. Every entity lives in exactly one backend. See [[backend/bridge-api-contracts|Bridge API Contracts]] for the full entity ownership map and conflict resolutions.
+---
 
 ## Product Configuration Matrix
 
@@ -41,179 +36,111 @@ ONEVO PLATFORM
 | HR + Work Management | ✓ | ✓ | ✗ | ✓ | All 5 bridges |
 | Full Suite | ✓ | ✓ | ✓ | ✓ | All 5 bridges |
 
-**Core (always active):** Infrastructure + Auth + CoreHR identity shell + Notifications + SharedPlatform
+---
 
-**Add-ons within HR Pillar:** Payroll, Performance, Advanced Skills, Documents
-
-**Add-ons within WMS:** Resource Management, OKR, Chat, Advanced Analytics
-
-> WMS-only tenants still get a minimal `employees` row per user — ONEVO `employee_id` is the universal person identifier used by WMS as a FK for task assignees, time logs, etc.
-
-## Solution Structure
-
-```
-ONEVO.sln
-├── src/
-│   ├── ONEVO.Api/                              # ASP.NET Core host, startup, middleware
-│   ├── ONEVO.SharedKernel/                     # Base classes, utilities, common types
-│   │
-│   │  ── PILLAR 1: HR MANAGEMENT ──
-│   ├── ONEVO.Modules.Infrastructure/           # Tenants, Users, Files, Countries
-│   ├── ONEVO.Modules.Auth/                     # RBAC, Sessions, MFA, Audit
-│   ├── ONEVO.Modules.OrgStructure/             # Legal Entities, Departments, Job Families, Teams
-│   ├── ONEVO.Modules.CoreHR/                   # Employees, Lifecycle, Onboarding, Offboarding
-│   ├── ONEVO.Modules.Leave/                    # Leave Types, Policies, Entitlements, Requests
-│   ├── ONEVO.Modules.Payroll/                  # Providers, Tax, Allowances, Pension, Runs
-│   ├── ONEVO.Modules.Performance/              # Reviews, Goals, Feedback, Succession
-│   ├── ONEVO.Modules.Skills/                   # Skills, Assessments, Courses, Dev Plans
-│   ├── ONEVO.Modules.Documents/                # Document Management, Versioning
-│   │
-│   │  ── PILLAR 2: WORKFORCE INTELLIGENCE ──
-│   ├── ONEVO.Modules.WorkforcePresence/        # Shifts, Schedules, Presence, Biometric → replaces Attendance
-│   ├── ONEVO.Modules.ActivityMonitoring/       # Snapshots, App Usage, Meetings, Screenshots
-│   ├── ONEVO.Modules.IdentityVerification/     # Photo Verification, Biometric Matching
-│   ├── ONEVO.Modules.ExceptionEngine/          # Anomaly Rules, Alerts, Escalation
-│   ├── ONEVO.Modules.ProductivityAnalytics/    # Reports, Trends, Workforce Snapshots
-│   │
-│   │  ── SHARED FOUNDATION ──
-│   ├── ONEVO.Modules.Grievance/                # Grievance Cases, Disciplinary Actions
-│   ├── ONEVO.Modules.Expense/                  # Expense Categories, Claims, Items
-│   ├── ONEVO.Modules.Notifications/            # Notifications, Preferences
-│   ├── ONEVO.Modules.Configuration/            # Tenant Settings, Integrations, Monitoring Toggles
-│   ├── ONEVO.Modules.Calendar/                 # Calendar Events
-│   ├── ONEVO.Modules.ReportingEngine/          # Scheduled Reports, Executions
-│   ├── ONEVO.Modules.SharedPlatform/           # SSO, Subscriptions, Feature Flags, Workflows
-│   └── ONEVO.Modules.AgentGateway/             # Agent Registration, Policy, Ingestion
-├── tests/
-│   ├── ONEVO.Tests.Unit/
-│   ├── ONEVO.Tests.Integration/
-│   └── ONEVO.Tests.Architecture/
-└── tools/
-    └── ONEVO.DbMigrator/
-```
-
-## Module Registry
+## Feature Registry
 
 ### Pillar 1: HR Management
 
-| #   | Module            | Detailed Doc       | Tables | Phase   | Owner   | Build Week |
-| :-- | :---------------- | :----------------- | :----- | :------ | :------ | :--------- |
-| 1   | Infrastructure    | [[modules/infrastructure/overview\|Infrastructure]] | 4      | Phase 1 | Dev 1   | Week 1     |
-| 2   | Auth & Security   | [[modules/auth/overview\|Auth]]           | 9      | Phase 1 | Dev 2   | Week 1     |
-| 3   | Org Structure     | [[modules/org-structure/overview\|Org Structure]]  | 9      | Phase 1 | Dev 3   | Week 1     |
-| 4   | Core HR           | [[modules/core-hr/overview\|Core Hr]]        | 13     | Phase 1 | Dev 1+2 | Week 2     |
-| 5   | Leave             | [[modules/leave/overview\|Leave]]          | 5      | Phase 1 | Dev 1   | Week 3     |
-| 6   | Payroll           | [[modules/payroll/overview\|Payroll]]        | 11     | Phase 2 | Dev 3   | —          |
-| 7   | Performance       | [[modules/performance/overview\|Performance]]    | 7      | Phase 2 | Dev 2   | —          |
-| 8   | Skills & Learning | [[modules/skills/overview\|Skills]]         | 15 (5 Phase 1, 10 Phase 2) | Mixed | Dev 3+4 | P1: Week 2 |
-| 9   | Documents         | [[modules/documents/overview\|Documents]]      | 6      | Phase 2 | Dev 4   | —          |
+| # | Feature | Feature Folder | Tables | Phase |
+|:--|:--------|:---------------|:-------|:------|
+| 1 | Infrastructure | `Features/InfrastructureModule` | 4 | Phase 1 |
+| 2 | Auth & Security | `Features/Auth` | 9 | Phase 1 |
+| 3 | Org Structure | `Features/OrgStructure` | 9 | Phase 1 |
+| 4 | Core HR | `Features/CoreHR` | 13 | Phase 1 |
+| 5 | Leave | `Features/Leave` | 5 | Phase 1 |
+| 6 | Payroll | `Features/Payroll` | 11 | Phase 2 |
+| 7 | Performance | `Features/Performance` | 7 | Phase 2 |
+| 8 | Skills & Learning | `Features/Skills` | 15 (5 P1 + 10 P2) | Mixed |
+| 9 | Documents | `Features/Documents` | 6 | Phase 2 |
 
 ### Pillar 2: Workforce Intelligence
 
-| # | Module | Detailed Doc | Tables | Phase | Owner | Build Week |
-|:--|:-------|:-------------|:-------|:------|:------|:-----------|
-| 10 | Workforce Presence | [[modules/workforce-presence/overview\|Workforce Presence]] | 12 | Phase 1 | Dev 3+4 | Week 2 |
-| 11 | Activity Monitoring | [[modules/activity-monitoring/overview\|Activity Monitoring]] | 9 | Phase 1 | Dev 3 | Week 3 |
-| 11a | Discrepancy Engine | [[modules/discrepancy-engine/overview\|Discrepancy Engine]] | 2 | Phase 1 | Dev 3 | Week 3 |
-| 12 | Identity Verification | [[modules/identity-verification/overview\|Identity Verification]] | 6 | Phase 1 | Dev 4 | Week 3 |
-| 13 | Exception Engine | [[modules/exception-engine/overview\|Exception Engine]] | 5 | Phase 1 | Dev 2 | Week 4 |
-| 14 | Productivity Analytics | [[modules/productivity-analytics/overview\|Productivity Analytics]] | 5 | Phase 1 | Dev 1 | Week 4 |
+| # | Feature | Feature Folder | Tables | Phase |
+|:--|:--------|:---------------|:-------|:------|
+| 10 | Workforce Presence | `Features/WorkforcePresence` | 12 | Phase 1 |
+| 11 | Activity Monitoring | `Features/ActivityMonitoring` | 9 | Phase 1 |
+| 11a | Discrepancy Engine | `Features/DiscrepancyEngine` | 2 | Phase 1 |
+| 12 | Identity Verification | `Features/IdentityVerification` | 6 | Phase 1 |
+| 13 | Exception Engine | `Features/ExceptionEngine` | 5 | Phase 1 |
+| 14 | Productivity Analytics | `Features/ProductivityAnalytics` | 5 | Phase 1 |
 
 ### Shared Foundation
 
-| # | Module | Detailed Doc | Tables | Phase | Owner | Build Week |
-|:--|:-------|:-------------|:-------|:------|:------|:-----------|
-| 15 | Shared Platform | [[modules/shared-platform/overview\|Shared Platform]] | 33 | Phase 1 | Dev 4 | Week 1+4 |
-| 16 | Notifications | [[modules/notifications/overview\|Notifications]] | — | Phase 1 | Dev 4 | Week 4 |
-| 17 | Configuration | [[modules/configuration/overview\|Configuration]] | 6 | Phase 1 | Dev 1 | Week 4 |
-| 18 | Calendar | [[modules/calendar/overview\|Calendar]] | 1 | Phase 1 | Dev 1 | Week 4 |
-| 19 | Reporting Engine | [[modules/reporting-engine/overview\|Reporting Engine]] | 3 | Phase 2 | Dev 1 | — |
-| 20 | Grievance | [[modules/grievance/overview\|Grievance]] | 2 | Phase 2 | Dev 2 | — |
-| 21 | Expense | [[modules/expense/overview\|Expense]] | 3 | Phase 2 | Dev 2 | — |
-| 22 | Agent Gateway | [[modules/agent-gateway/overview\|Agent Gateway]] | 4 | Phase 1 | Dev 4 | Week 1 |
+| # | Feature | Feature Folder | Tables | Phase |
+|:--|:--------|:---------------|:-------|:------|
+| 15 | Shared Platform | `Features/SharedPlatform` | 33 | Phase 1 |
+| 16 | Notifications | `Features/Notifications` | 2 | Phase 1 |
+| 17 | Configuration | `Features/Configuration` | 6 | Phase 1 |
+| 18 | Calendar | `Features/Calendar` | 1 | Phase 1 |
+| 19 | Reporting Engine | `Features/ReportingEngine` | 3 | Phase 2 |
+| 20 | Grievance | `Features/Grievance` | 2 | Phase 2 |
+| 21 | Expense | `Features/Expense` | 3 | Phase 2 |
+| 22 | Agent Gateway | `Features/AgentGateway` | 4 | Phase 1 |
+| 23 | Dev Platform | `Features/DevPlatform` | 5 (P1) + 1 (P2) | Mixed |
 
-> Notifications tables (`notification_templates`, `notification_channels`) are physically housed in Shared Platform's `AppDbContext` and counted in row 15. No additional tables.
-> ² Skills & Learning: 5 of its 15 tables (`skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, `skill_validation_requests`) are built in Phase 1. The remaining 10 (courses, LMS, assessments, development plans) are Phase 2.
-
-**Total: 23 modules, 170 tables (128 Phase 1 · 42 Phase 2)**
-
-> Discrepancy Engine is its own module (`ONEVO.Modules.DiscrepancyEngine`, 2 tables: `discrepancy_events` + `wms_daily_time_logs`). Both tables were previously grouped under Activity Monitoring schema — split into `database/schemas/discrepancy-engine.md`. Activity Monitoring is now 9 tables. Skills Phase 2 had 2 duplicate entries removed. 5 new WMS integration tables added to Phase 1. Schema catalog is the canonical source of truth.
-
-## Module Dependency Map
-
-```
-                        ┌──────────────────┐
-                        │  SharedKernel     │
-                        └────────┬─────────┘
-              ┌──────────────────┼──────────────────────┐
-              │                  │                      │
-        ┌─────▼─────┐    ┌──────▼──────┐    ┌─────────▼──────────┐
-        │ Infra.     │    │   Auth      │    │  SharedPlatform    │
-        └─────┬──────┘    └──────┬──────┘    └─────────┬──────────┘
-              │                  │                      │
-        ┌─────▼──────────────────▼──┐                   │
-        │      OrgStructure         │◄──────────────────┘
-        └──────────┬────────────────┘
-                   │
-        ┌──────────▼────────────────┐
-        │        CoreHR             │ ◄── Central hub
-        └──┬──┬──┬──┬──┬──┬──┬─────┘
-           │  │  │  │  │  │  │
-  ┌────────┘  │  │  │  │  │  └──────────────┐
-  │    ┌──────┘  │  │  │  └──────┐          │
-  ▼    ▼         ▼  ▼  ▼         ▼          ▼
-Leave Perf.   Skills Docs Griev. Expense  Workforce
-                                          Presence
-                                            │
-  Payroll ◄── Leave + WP                    │
-                              ┌─────────────┼─────────────┐
-                              ▼             ▼             ▼
-                        Activity      Identity       Agent
-                        Monitoring    Verification   Gateway
-                              │
-                    ┌─────────┼──────────────────┐
-                    ▼         ▼                   ▼
-              Exception  Discrepancy        Productivity
-              Engine     Engine             Analytics
-
-Cross-cutting: Notifications, Configuration, Calendar, Reporting Engine
-```
-
-## Adding a New Module
-
-1. Create the project: `ONEVO.Modules.{Name}` under `src/`
-2. Create the module doc: `modules/{name}/overview.md`
-3. Define the public API in `Public/` folder
-4. Register services: `Add{Name}Module()`
-5. Update this catalog
-6. Document events in [[backend/messaging/event-catalog|Event Catalog]]
-7. Add ArchUnitNET tests
-8. Create sprint task in `current-focus/`
-
-## Developer Platform — Admin API Layer
-
-`ONEVO.Admin.Api/` is a **separate ASP.NET Core host** (not a module inside `ONEVO.sln`) that serves as the admin API layer for the developer console at `console.onevo.io`. It uses its own JWT issuer (`onevo-platform-admin`) — tokens issued here are never valid against the main ONEVO API.
-
-| Aspect | Detail |
-|:-------|:-------|
-| Namespace | `ONEVO.Admin.Api` |
-| JWT Issuer | `onevo-platform-admin` |
-| Detailed Doc | `developer-platform/backend/admin-api-layer.md` |
-| Controllers | Map to developer platform modules (tenant management, agent deployment rings, platform accounts) |
-| Auth | Separate JWT issuer; platform accounts only — never customer accounts |
+**Total: 24 features, 176 tables (133 Phase 1 · 43 Phase 2)**
 
 ---
 
-## WMS — Consumed System (Not an ONEVO Module)
+## Feature Folder Structure
 
-WMS is built and owned by the WMS team. ONEVO consumes it via bridge contracts — it is **not** an ONEVO module and does **not** appear in the module registry above.
+Every feature follows this exact layout within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`:
 
-| What ONEVO does | How |
-|-----------------|-----|
-| Read WMS data (projects, tasks) | WMS API called by ONEVO frontend |
-| Push employee data to WMS | People Sync bridge (Bridge 1) |
-| Receive time logs from WMS | Work Activity bridge (Bridge 3) |
-| Receive productivity scores | Productivity Metrics bridge (Bridge 4) |
-| Deliver WMS notifications | Notification push endpoint |
+```
+# Domain layer
+ONEVO.Domain/Features/{Feature}/
+├── Entities/       EF Core entities (no attributes — configured via Fluent API)
+└── Events/         IDomainEvent implementations
 
-Full bridge contracts: [[backend/bridge-api-contracts|Bridge API Contracts]]
+# Application layer
+ONEVO.Application/Features/{Feature}/
+├── Commands/{UseCase}/
+│   ├── {UseCase}Command.cs      record : IRequest<Result<ResponseDto>>
+│   └── {UseCase}Handler.cs      IRequestHandler<Command, Result<ResponseDto>>
+├── Queries/{UseCase}/
+│   ├── {UseCase}Query.cs
+│   └── {UseCase}Handler.cs
+├── DTOs/
+│   ├── Requests/                HTTP request body models
+│   └── Responses/               handler return types
+├── Validators/                  AbstractValidator<{UseCase}Command>
+└── EventHandlers/               INotificationHandler<IDomainEvent>
+
+# Infrastructure layer
+ONEVO.Infrastructure/Persistence/Configurations/{Feature}/
+└── {Entity}Configuration.cs    IEntityTypeConfiguration<T>
+```
+
+---
+
+## Cross-Feature Communication
+
+| Need | Mechanism |
+|------|-----------|
+| Read data from another feature | Inject `IApplicationDbContext` or `IRepository<T>` — query directly |
+| Trigger side effect in another feature | Entity raises `IDomainEvent`; `DomainEventDispatchInterceptor` dispatches after save |
+| React to another feature's event | `INotificationHandler<TEvent>` in `EventHandlers/` |
+| Background processing | `IBackgroundJobService` (Hangfire) injected in handler |
+
+No RabbitMQ. No IEventBus. No MassTransit. All communication is in-process.
+
+---
+
+## Developer Platform — Admin API
+
+`ONEVO.Admin.Api` is a separate host inside `ONEVO.sln`. It is not a feature — it has no DbContext. All data access goes through `IApplicationDbContext` via the Application layer exactly like `ONEVO.Api`.
+
+| Aspect | Detail |
+|:-------|:-------|
+| Host project | `ONEVO.Admin.Api` — separate `Program.cs` |
+| JWT Issuer | `onevo-platform-admin` — never valid at `/api/v1/*` |
+| Feature data | `Features/DevPlatform` — no TenantId on these entities |
+
+---
+
+## WMS — Consumed System
+
+WMS is external. ONEVO communicates via HTTP bridge contracts only.
+
+Full detail: [[backend/bridge-api-contracts|Bridge API Contracts]]

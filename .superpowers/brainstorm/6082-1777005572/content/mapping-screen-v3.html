@@ -1,0 +1,172 @@
+<h2>Step 3 — Review Column Mapping</h2>
+<p class="subtitle">We've matched your columns automatically. Every row is editable — change anything that doesn't look right.</p>
+
+<div style="margin-top:24px; background:white; border:1.5px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+
+  <!-- Table header -->
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; background:#f1f5f9; padding:10px 16px; gap:12px; border-bottom:1px solid #e2e8f0;">
+    <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px;">Your Column</div>
+    <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px;">Mapped To</div>
+    <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px;">Sample Value (Row 1)</div>
+    <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px;">Status</div>
+  </div>
+
+  <!-- Matched + editable rows -->
+
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+    <div style="font-size:13px; color:#475569; font-family:monospace;">first_name</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #10b981; border-radius:6px; padding:5px 8px; color:#166534; background:#f0fdf4; width:100%;">
+        <option selected>First Name *</option>
+        <option>Last Name</option><option>Email</option><option>Phone</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#64748b;">John</div>
+    <div style="color:#10b981; font-size:12px; font-weight:600;">✓ Matched</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+    <div style="font-size:13px; color:#475569; font-family:monospace;">last_name</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #10b981; border-radius:6px; padding:5px 8px; color:#166534; background:#f0fdf4; width:100%;">
+        <option selected>Last Name *</option>
+        <option>First Name</option><option>Email</option><option>Phone</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#64748b;">Smith</div>
+    <div style="color:#10b981; font-size:12px; font-weight:600;">✓ Matched</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+    <div style="font-size:13px; color:#475569; font-family:monospace;">email</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #10b981; border-radius:6px; padding:5px 8px; color:#166534; background:#f0fdf4; width:100%;">
+        <option selected>Email *</option>
+        <option>First Name</option><option>Phone</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#64748b;">john.smith@acme.com</div>
+    <div style="color:#10b981; font-size:12px; font-weight:600;">✓ Matched</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+    <div style="font-size:13px; color:#475569; font-family:monospace;">department</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #10b981; border-radius:6px; padding:5px 8px; color:#166534; background:#f0fdf4; width:100%;">
+        <option selected>Department *</option>
+        <option>Job Title</option><option>Team</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#64748b;">Engineering</div>
+    <div style="color:#10b981; font-size:12px; font-weight:600;">✓ Matched</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+    <div style="font-size:13px; color:#475569; font-family:monospace;">job_title</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #f59e0b; border-radius:6px; padding:5px 8px; color:#92400e; background:#fffbeb; width:100%;">
+        <option selected>Job Title *</option>
+        <option>Department</option><option>Job Family</option><option>Job Level</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#64748b;">Senior Software Engineer</div>
+    <div style="color:#f59e0b; font-size:12px; font-weight:600;">✓ + next step</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+    <div style="font-size:13px; color:#475569; font-family:monospace;">employment_type</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #10b981; border-radius:6px; padding:5px 8px; color:#166534; background:#f0fdf4; width:100%;">
+        <option selected>Employment Type *</option>
+        <option>Start Date</option><option>Department</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#64748b;">Full Time</div>
+    <div style="color:#10b981; font-size:12px; font-weight:600;">✓ Matched</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+    <div style="font-size:13px; color:#475569; font-family:monospace;">start_date</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #10b981; border-radius:6px; padding:5px 8px; color:#166534; background:#f0fdf4; width:100%;">
+        <option selected>Start Date *</option>
+        <option>Date of Birth</option><option>Employment Type</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#64748b;">01/03/2024</div>
+    <div style="color:#10b981; font-size:12px; font-weight:600;">✓ Matched</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+    <div style="font-size:13px; color:#475569; font-family:monospace;">manager</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #10b981; border-radius:6px; padding:5px 8px; color:#166534; background:#f0fdf4; width:100%;">
+        <option selected>Reporting Manager *</option>
+        <option>First Name</option><option>Last Name</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#64748b;">Sarah Johnson</div>
+    <div style="color:#10b981; font-size:12px; font-weight:600;">✓ Matched</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+    <div style="font-size:13px; color:#475569; font-family:monospace;">skills</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #10b981; border-radius:6px; padding:5px 8px; color:#166534; background:#f0fdf4; width:100%;">
+        <option selected>Skills</option>
+        <option>Phone</option><option>Address</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#64748b;">React (Advanced), Python (Int)</div>
+    <div style="color:#10b981; font-size:12px; font-weight:600;">✓ Matched</div>
+  </div>
+
+  <!-- Needs review -->
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; background:#fffbeb; border-bottom:1px solid #fde68a; align-items:center;">
+    <div style="font-size:13px; color:#92400e; font-family:monospace;">internal_id</div>
+    <div>
+      <select style="font-size:12px; border:1.5px solid #f59e0b; border-radius:6px; padding:5px 8px; color:#92400e; background:#fffbeb; width:100%;">
+        <option selected>— Select or skip —</option>
+        <option>Phone</option><option>Date of Birth</option><option>Nationality</option><option>Address</option><option>— Skip —</option>
+      </select>
+    </div>
+    <div style="font-size:13px; color:#92400e;">EMP-0042</div>
+    <div style="color:#f59e0b; font-size:12px; font-weight:600;">⚠ Review</div>
+  </div>
+
+  <!-- Missing required -->
+  <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr 90px; padding:11px 16px; gap:12px; background:#fef2f2; align-items:center;">
+    <div style="font-size:12px; color:#dc2626; font-style:italic;">not in your file</div>
+    <div style="font-size:13px; font-weight:600; color:#991b1b;">Date of Birth <span style="font-size:11px; color:#ef4444;">*</span></div>
+    <div style="font-size:12px; color:#dc2626;">Employees will be flagged "Needs Completion"</div>
+    <div style="color:#ef4444; font-size:12px; font-weight:600;">✗ Missing</div>
+  </div>
+
+</div>
+
+<!-- Job title notice -->
+<div style="margin-top:14px; background:#fffbeb; border:1.5px solid #f59e0b; border-radius:10px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+  <div>
+    <div style="font-size:13px; font-weight:700; color:#78350f;">No separate Job Family or Job Level column found</div>
+    <div style="font-size:12px; color:#92400e; margin-top:3px;">Next step: group your 6 unique job titles into families and levels. Takes about 2 minutes.</div>
+  </div>
+  <div style="font-size:20px; color:#f59e0b;">→</div>
+</div>
+
+<!-- Preview + CTA -->
+<div style="margin-top:14px; background:#eff6ff; border:1.5px solid #3b82f6; border-radius:12px; padding:16px 18px;">
+  <div style="font-weight:700; color:#1e3a5f; margin-bottom:10px;">Preview — John Smith will be imported as:</div>
+  <div style="display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px;">
+    <span style="background:#dbeafe; border-radius:6px; padding:4px 10px; font-size:12px; color:#1e40af;"><strong>John Smith</strong></span>
+    <span style="background:#dbeafe; border-radius:6px; padding:4px 10px; font-size:12px; color:#1e40af;">john.smith@acme.com</span>
+    <span style="background:#dbeafe; border-radius:6px; padding:4px 10px; font-size:12px; color:#1e40af;">Engineering</span>
+    <span style="background:#dbeafe; border-radius:6px; padding:4px 10px; font-size:12px; color:#1e40af;">Senior Software Engineer</span>
+    <span style="background:#dbeafe; border-radius:6px; padding:4px 10px; font-size:12px; color:#1e40af;">Full Time · 01 Mar 2024</span>
+    <span style="background:#dbeafe; border-radius:6px; padding:4px 10px; font-size:12px; color:#1e40af;">Manager: Sarah Johnson</span>
+    <span style="background:#dbeafe; border-radius:6px; padding:4px 10px; font-size:12px; color:#1e40af;">React (Adv), Python (Int)</span>
+    <span style="background:#fef3c7; border-radius:6px; padding:4px 10px; font-size:12px; color:#92400e;">⚠ Date of Birth missing</span>
+  </div>
+  <div style="display:flex; justify-content:flex-end;">
+    <button style="background:#1e293b; color:white; border:none; padding:10px 26px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">Looks right → Apply to all 247 employees</button>
+  </div>
+</div>

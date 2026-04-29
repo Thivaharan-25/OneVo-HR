@@ -37,29 +37,36 @@ There is no `tenant_id` column. These accounts are platform-level.
 
 ## Backend Namespace: `ONEVO.Admin.Api/`
 
-All admin controller code lives in a dedicated namespace within the existing backend project.
+`ONEVO.Admin.Api` is a **separate host project** inside `ONEVO.sln` — it is a composition root, not a module. It owns no DbContext and contains no business logic. All data access goes through module interfaces injected via DI.
 
 ```
-ONEVO.Backend/
-├── ONEVO.Api/                  ← existing customer-facing controllers
-│   └── Controllers/
-├── ONEVO.Admin.Api/            ← new namespace (this work)
+ONEVO.sln
+├── ONEVO.Api/                          ← customer-facing host (/api/v1/*)
+├── ONEVO.Admin.Api/                    ← developer console host (/admin/v1/*)
 │   ├── Controllers/
-│   │   ├── TenantsController.cs
-│   │   ├── FeatureFlagsController.cs
-│   │   ├── AgentVersionsController.cs
-│   │   ├── AuditController.cs
-│   │   └── SystemConfigController.cs
+│   │   ├── TenantsController.cs        ← calls ITenantManagementService (SharedPlatform)
+│   │   ├── FeatureFlagsController.cs   ← calls IFeatureFlagService (Configuration)
+│   │   ├── AgentVersionsController.cs  ← calls IAgentVersionService (DevPlatform)
+│   │   ├── AuditController.cs          ← calls IAuditLogReader (Auth)
+│   │   ├── SystemConfigController.cs   ← calls IGlobalConfigService (Configuration)
+│   │   ├── AppCatalogController.cs     ← calls IGlobalAppCatalogService (SharedPlatform)
+│   │   └── ApiKeysController.cs        ← Phase 2
 │   ├── Middleware/
 │   │   └── PlatformAdminAuthMiddleware.cs
-│   └── Policies/
-│       └── PlatformAdminPolicy.cs
-├── ONEVO.Modules/              ← existing modules (unchanged)
-│   ├── SharedPlatform/
-│   ├── Configuration/
-│   ├── Auth/
-│   ├── AgentGateway/
-│   └── ...23 modules
+│   ├── Policies/
+│   │   ├── PlatformAdminPolicy.cs
+│   │   └── ImpersonationOnlyPolicy.cs
+│   └── Program.cs                      ← composition root: registers DevPlatform + shared modules
+│
+├── Application/Features/DevPlatform/    ← NEW feature — owns all dev_platform_* + agent_* tables
+│   ├── Dto/
+│   ├── Handlers/
+│   ├── Services/
+│   ├── Queries/
+│   ├── Commands/
+│   └── Validators/
+│
+└── Application/Features/*/              ← all 23 existing feature modules (unchanged)
 ```
 
 All controllers in `ONEVO.Admin.Api/` are decorated with:
@@ -113,6 +120,10 @@ AuditController
 
 SystemConfigController
     └── IGlobalConfigService           (Configuration module)
+
+AppCatalogController
+    └── IGlobalAppCatalogService       (SharedPlatform module)
+    └── IObservedApplicationReader     (Configuration module — read-only, aggregate only)
 ```
 
 No module gains a direct dependency on `ONEVO.Admin.Api/`. The dependency flows inward only (admin layer → modules, never modules → admin layer).

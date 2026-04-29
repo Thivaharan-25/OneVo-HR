@@ -1,6 +1,6 @@
 # Module: Configuration
 
-**Namespace:** `ONEVO.Modules.Configuration`
+**Feature Folder:** `Application/Features/Configuration`
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4
@@ -46,6 +46,28 @@ public interface IConfigurationService
     Task<Result> RemoveAppAllowlistEntryAsync(Guid entryId, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Configuration/Entities/
+  ONEVO.Domain/Features/Configuration/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Configuration/Commands/
+  ONEVO.Application/Features/Configuration/Queries/
+  ONEVO.Application/Features/Configuration/DTOs/Requests/
+  ONEVO.Application/Features/Configuration/DTOs/Responses/
+  ONEVO.Application/Features/Configuration/Validators/
+  ONEVO.Application/Features/Configuration/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Configuration/
+
+API endpoints:
+  ONEVO.Api/Controllers/Configuration/ConfigurationController.cs
 
 ---
 

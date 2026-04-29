@@ -1,6 +1,6 @@
 # Module: Infrastructure
 
-**Namespace:** `ONEVO.Modules.Infrastructure`
+**Feature Folder:** `Application/Features/InfrastructureModule`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 1 (Week 1)
@@ -109,6 +109,28 @@ Reference data — NOT tenant-scoped (global).
 | `code` | `varchar(3)` | ISO 3166-1 alpha-3 |
 | `phone_code` | `varchar(10)` | |
 | `currency_code` | `varchar(3)` | |
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/InfrastructureModule/Entities/
+  ONEVO.Domain/Features/InfrastructureModule/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/InfrastructureModule/Commands/
+  ONEVO.Application/Features/InfrastructureModule/Queries/
+  ONEVO.Application/Features/InfrastructureModule/DTOs/Requests/
+  ONEVO.Application/Features/InfrastructureModule/DTOs/Responses/
+  ONEVO.Application/Features/InfrastructureModule/Validators/
+  ONEVO.Application/Features/InfrastructureModule/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/InfrastructureModule/
+
+API endpoints:
+  ONEVO.Api/Controllers/InfrastructureModule/InfrastructureModuleController.cs
 
 ---
 

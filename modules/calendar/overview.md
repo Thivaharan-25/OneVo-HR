@@ -1,6 +1,6 @@
 # Module: Calendar
 
-**Namespace:** `ONEVO.Modules.Calendar`
+**Feature Folder:** `Application/Features/Calendar`
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 3
@@ -31,7 +31,7 @@ The Calendar's sidebar also surfaces three workforce management features: **Shif
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.Calendar/Public/ICalendarConflictService.cs
+// ONEVO.Application.Features.Calendar/Public/ICalendarConflictService.cs
 public interface ICalendarConflictService
 {
     /// <summary>
@@ -43,6 +43,28 @@ public interface ICalendarConflictService
         Guid employeeId, DateOnly startDate, DateOnly endDate, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Calendar/Entities/
+  ONEVO.Domain/Features/Calendar/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Calendar/Commands/
+  ONEVO.Application/Features/Calendar/Queries/
+  ONEVO.Application/Features/Calendar/DTOs/Requests/
+  ONEVO.Application/Features/Calendar/DTOs/Responses/
+  ONEVO.Application/Features/Calendar/Validators/
+  ONEVO.Application/Features/Calendar/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Calendar/
+
+API endpoints:
+  ONEVO.Api/Controllers/Calendar/CalendarController.cs
 
 ---
 

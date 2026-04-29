@@ -1,6 +1,6 @@
  # Module: Workforce Presence
 
-**Namespace:** `ONEVO.Modules.WorkforcePresence`
+**Feature Folder:** `Application/Features/WorkforcePresence`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 3 + Dev 4 (Week 2)
@@ -39,7 +39,7 @@ Produces `presence_sessions` — one unified row per employee per day — consum
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.WorkforcePresence/Public/IWorkforcePresenceService.cs
+// ONEVO.Application.Features.WorkforcePresence/Public/IWorkforcePresenceService.cs
 public interface IWorkforcePresenceService
 {
     Task<Result<PresenceSessionDto>> GetPresenceForDateAsync(Guid employeeId, DateOnly date, CancellationToken ct);
@@ -49,6 +49,28 @@ public interface IWorkforcePresenceService
     Task<Result<WorkforceStatusDto>> GetLiveWorkforceStatusAsync(CancellationToken ct); // tenant-wide
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/WorkforcePresence/Entities/
+  ONEVO.Domain/Features/WorkforcePresence/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/WorkforcePresence/Commands/
+  ONEVO.Application/Features/WorkforcePresence/Queries/
+  ONEVO.Application/Features/WorkforcePresence/DTOs/Requests/
+  ONEVO.Application/Features/WorkforcePresence/DTOs/Responses/
+  ONEVO.Application/Features/WorkforcePresence/Validators/
+  ONEVO.Application/Features/WorkforcePresence/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/WorkforcePresence/
+
+API endpoints:
+  ONEVO.Api/Controllers/WorkforcePresence/WorkforcePresenceController.cs
 
 ---
 

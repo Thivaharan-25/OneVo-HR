@@ -1,6 +1,6 @@
 # Module: Skills & Learning
 
-**Namespace:** `ONEVO.Modules.Skills`
+**Feature Folder:** `Application/Features/Skills`
 **Phase:** Mixed — 5 tables Phase 1, 10 tables Phase 2
 **Pillar:** 1 — HR Management
 **Owner:** Dev 3 + Dev 4
@@ -39,6 +39,28 @@ public interface ISkillsService
     Task<Result<List<SkillGapDto>>> GetSkillGapAnalysisAsync(Guid employeeId, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Skills/Entities/
+  ONEVO.Domain/Features/Skills/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Skills/Commands/
+  ONEVO.Application/Features/Skills/Queries/
+  ONEVO.Application/Features/Skills/DTOs/Requests/
+  ONEVO.Application/Features/Skills/DTOs/Responses/
+  ONEVO.Application/Features/Skills/Validators/
+  ONEVO.Application/Features/Skills/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Skills/
+
+API endpoints:
+  ONEVO.Api/Controllers/Skills/SkillsController.cs
 
 ---
 

@@ -1,6 +1,6 @@
 # Module: Expense
 
-**Namespace:** `ONEVO.Modules.Expense`
+**Feature Folder:** `Application/Features/Expense`
 **Phase:** 2 — Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 2 (Week 4)
@@ -24,6 +24,28 @@ Manages expense categories, claims, and individual line items. Uses the [[module
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `IFileService` | Receipt uploads |
 | **Depends on** | [[modules/shared-platform/overview\|Shared Platform]] | Workflow engine | Approval routing |
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Expense/Entities/
+  ONEVO.Domain/Features/Expense/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Expense/Commands/
+  ONEVO.Application/Features/Expense/Queries/
+  ONEVO.Application/Features/Expense/DTOs/Requests/
+  ONEVO.Application/Features/Expense/DTOs/Responses/
+  ONEVO.Application/Features/Expense/Validators/
+  ONEVO.Application/Features/Expense/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Expense/
+
+API endpoints:
+  ONEVO.Api/Controllers/Expense/ExpenseController.cs
 
 ---
 

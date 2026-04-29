@@ -1,6 +1,6 @@
 # Module: Performance
 
-**Namespace:** `ONEVO.Modules.Performance`
+**Feature Folder:** `Application/Features/Performance`
 **Phase:** 2 — Deferred
 **Pillar:** 1 — HR Management
 **Owner:** Dev 2 (Week 3)
@@ -39,6 +39,28 @@ public interface IPerformanceService
     Task<Result<GoalDto>> CreateGoalAsync(CreateGoalCommand command, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Performance/Entities/
+  ONEVO.Domain/Features/Performance/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Performance/Commands/
+  ONEVO.Application/Features/Performance/Queries/
+  ONEVO.Application/Features/Performance/DTOs/Requests/
+  ONEVO.Application/Features/Performance/DTOs/Responses/
+  ONEVO.Application/Features/Performance/Validators/
+  ONEVO.Application/Features/Performance/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Performance/
+
+API endpoints:
+  ONEVO.Api/Controllers/Performance/PerformanceController.cs
 
 ---
 

@@ -1,6 +1,6 @@
 # Module: Exception Engine
 
-**Namespace:** `ONEVO.Modules.ExceptionEngine`
+**Feature Folder:** `Application/Features/ExceptionEngine`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 2 (Week 4)
@@ -32,7 +32,7 @@ Configurable anomaly detection engine that evaluates rules against activity and 
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.ExceptionEngine/Public/IExceptionEngineService.cs
+// ONEVO.Application.Features.ExceptionEngine/Public/IExceptionEngineService.cs
 public interface IExceptionEngineService
 {
     Task<Result<List<ExceptionAlertDto>>> GetActiveAlertsAsync(CancellationToken ct);
@@ -41,6 +41,28 @@ public interface IExceptionEngineService
     Task AcknowledgeAlertAsync(Guid alertId, Guid acknowledgedById, string comment, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/ExceptionEngine/Entities/
+  ONEVO.Domain/Features/ExceptionEngine/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/ExceptionEngine/Commands/
+  ONEVO.Application/Features/ExceptionEngine/Queries/
+  ONEVO.Application/Features/ExceptionEngine/DTOs/Requests/
+  ONEVO.Application/Features/ExceptionEngine/DTOs/Responses/
+  ONEVO.Application/Features/ExceptionEngine/Validators/
+  ONEVO.Application/Features/ExceptionEngine/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/ExceptionEngine/
+
+API endpoints:
+  ONEVO.Api/Controllers/ExceptionEngine/ExceptionEngineController.cs
 
 ---
 

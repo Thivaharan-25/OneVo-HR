@@ -1,6 +1,6 @@
 # Module: Grievance
 
-**Namespace:** `ONEVO.Modules.Grievance`
+**Feature Folder:** `Application/Features/Grievance`
 **Phase:** 2 — Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 2 (Week 4)
@@ -23,6 +23,28 @@ Manages employee grievance cases and disciplinary actions. Supports anonymous re
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
 | **Depends on** | [[modules/shared-platform/overview\|Shared Platform]] | Workflow engine | Resolution approval |
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Grievance/Entities/
+  ONEVO.Domain/Features/Grievance/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Grievance/Commands/
+  ONEVO.Application/Features/Grievance/Queries/
+  ONEVO.Application/Features/Grievance/DTOs/Requests/
+  ONEVO.Application/Features/Grievance/DTOs/Responses/
+  ONEVO.Application/Features/Grievance/Validators/
+  ONEVO.Application/Features/Grievance/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Grievance/
+
+API endpoints:
+  ONEVO.Api/Controllers/Grievance/GrievanceController.cs
 
 ---
 

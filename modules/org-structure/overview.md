@@ -1,6 +1,6 @@
 # Module: Org Structure
 
-**Namespace:** `ONEVO.Modules.OrgStructure`
+**Feature Folder:** `Application/Features/OrgStructure`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 3 (Week 1)
@@ -39,6 +39,28 @@ public interface IOrgStructureService
     Task<Result<List<TeamDto>>> GetTeamsByDepartmentAsync(Guid departmentId, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/OrgStructure/Entities/
+  ONEVO.Domain/Features/OrgStructure/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/OrgStructure/Commands/
+  ONEVO.Application/Features/OrgStructure/Queries/
+  ONEVO.Application/Features/OrgStructure/DTOs/Requests/
+  ONEVO.Application/Features/OrgStructure/DTOs/Responses/
+  ONEVO.Application/Features/OrgStructure/Validators/
+  ONEVO.Application/Features/OrgStructure/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/OrgStructure/
+
+API endpoints:
+  ONEVO.Api/Controllers/OrgStructure/OrgStructureController.cs
 
 ---
 

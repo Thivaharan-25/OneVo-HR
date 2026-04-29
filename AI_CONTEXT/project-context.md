@@ -73,20 +73,31 @@ ONEVO is designed around **two core pillars** sold in multiple configurations:
 
 ### Architecture Style
 
-- **Monolithic with Service-Oriented internal structure** (Modular Monolith)
-- Single deployable .NET 9 application
-- Strict module boundaries enforced via namespaces and dependency rules
-- Inter-module communication: sync (direct service calls) for queries, domain events for side effects
-- See [[backend/module-catalog|Module Catalog]] for full module registry
+- **Clean Architecture + CQRS** — single deployable .NET 9 application with 4-layer structure
+- Strict layer and feature separation enforced via namespaces and dependency rules
+- Inter-module communication: sync (direct service calls) for queries, in-process MediatR domain events for side effects
+- See [[backend/folder-structure|Folder Structure]] for complete solution tree
+
+## Solution Structure
+
+ONEVO follows **Clean Architecture + CQRS** (.NET 9). See [[backend/folder-structure|Folder Structure]] for the complete solution tree.
+
+**Layers:**
+- `ONEVO.Domain` — entities, domain events, value objects (zero external dependencies)
+- `ONEVO.Application` — CQRS handlers (MediatR), interfaces, DTOs, validators
+- `ONEVO.Infrastructure` — EF Core (single ApplicationDbContext, 176 tables), JWT, BCrypt, Redis, Hangfire, SignalR
+- `ONEVO.Api` — customer-facing ASP.NET Core host (/api/v1/*)
+- `ONEVO.Admin.Api` — developer console host (/admin/v1/*)
 
 ## 4. Key Stats
 
-- **170 database tables** across 23 modules (128 Phase 1, 42 Phase 2)
+- **176 database tables** in single ApplicationDbContext (128 Phase 1, 48 Phase 2)
+- **24 features** organized as folders within ONEVO.Application/Features/
 - **90+ permissions** in RBAC system
 - **40+ notification events** across 3 channels
 - **18 subscribable webhook events**
 - **5 connectivity bridges** to WorkManage Pro
-- **22 modules** across two pillars + shared foundation
+- **4-layer Clean Architecture** (Domain, Application, Infrastructure, API)
 
 ## 5. Core Business Logic & Domain Concepts
 

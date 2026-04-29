@@ -1,6 +1,6 @@
 # Backend Architecture
 
-**.NET 9 Modular Monolith** — 23 modules, 170 tables, strict namespace boundaries.
+**.NET 9 Clean Architecture + CQRS** — 23 modules, 170 tables, strict namespace boundaries.
 
 ## Quick Links
 
@@ -16,13 +16,12 @@
 
 ## Messaging & Events
 
-- [[backend/messaging/event-catalog|Event Catalog]] — 40+ domain events
-- [[backend/messaging/exchange-topology|Exchange Topology]] — Transactional outbox pattern
-- [[backend/messaging/error-handling|Error Handling]] — Result<T>, exception handling
+- [[backend/domain-events|Domain Events]] — Event handling and domain event propagation
+- [[backend/domain-events|Domain Events]] — Result<T>, exception handling
 
 ## Architecture Decisions
 
-- [[docs/decisions/ADR-001-per-module-database-and-event-bus|ADR-001]] — Per-module DbContext + IEventBus abstraction (microservice-forward design, RabbitMQ swap path)
+- [[docs/decisions/ADR-001-per-module-database-and-event-bus|ADR-001]] — Per-module DbContext + IDomainEvent abstraction (microservice-forward design)
 
 ## Related
 

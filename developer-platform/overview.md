@@ -58,6 +58,7 @@ The dev console talks to the **same OneVo backend** via a dedicated `/admin/v1/*
 | Desktop Agent Version Manager | Version catalog, deployment rings, force-update |
 | Audit Console | Cross-tenant read-only audit log viewer |
 | System Config | Global defaults editor, per-tenant settings override |
+| App Catalog Manager | Global app catalog, `is_public` toggles, uncatalogued app bulk-approval |
 | Platform API Keys | *(Phase 2)* Platform-level API key management |
 
 ---

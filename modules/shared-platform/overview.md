@@ -1,6 +1,6 @@
 # Module: Shared Platform
 
-**Namespace:** `ONEVO.Modules.SharedPlatform`
+**Feature Folder:** `Application/Features/SharedPlatform`
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4 (Week 1 + Week 4)
@@ -21,6 +21,28 @@ Cross-cutting platform services: SSO provider management, subscription/billing (
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
 | **Consumed by** | [[modules/leave/overview\|Leave]], [[modules/core-hr/overview\|Core Hr]], [[modules/expense/overview\|Expense]] | Workflow engine | Approval routing |
 | **Consumed by** | All modules | Feature flags | Feature toggle checks |
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/SharedPlatform/Entities/
+  ONEVO.Domain/Features/SharedPlatform/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/SharedPlatform/Commands/
+  ONEVO.Application/Features/SharedPlatform/Queries/
+  ONEVO.Application/Features/SharedPlatform/DTOs/Requests/
+  ONEVO.Application/Features/SharedPlatform/DTOs/Responses/
+  ONEVO.Application/Features/SharedPlatform/Validators/
+  ONEVO.Application/Features/SharedPlatform/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/SharedPlatform/
+
+API endpoints:
+  ONEVO.Api/Controllers/SharedPlatform/SharedPlatformController.cs
 
 ---
 

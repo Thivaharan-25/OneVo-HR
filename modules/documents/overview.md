@@ -1,6 +1,6 @@
 # Module: Documents
 
-**Namespace:** `ONEVO.Modules.Documents`
+**Feature Folder:** `Application/Features/Documents`
 **Phase:** 2 — Deferred
 **Pillar:** 1 — HR Management
 **Owner:** Dev 4 (Week 4)
@@ -23,6 +23,28 @@ Document management with versioning, categorization (hierarchical), access contr
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `IFileService` | File storage |
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Document ownership |
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Documents/Entities/
+  ONEVO.Domain/Features/Documents/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Documents/Commands/
+  ONEVO.Application/Features/Documents/Queries/
+  ONEVO.Application/Features/Documents/DTOs/Requests/
+  ONEVO.Application/Features/Documents/DTOs/Responses/
+  ONEVO.Application/Features/Documents/Validators/
+  ONEVO.Application/Features/Documents/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Documents/
+
+API endpoints:
+  ONEVO.Api/Controllers/Documents/DocumentsController.cs
 
 ---
 

@@ -1,0 +1,105 @@
+<h2>Step 4 — Organise Job Titles</h2>
+<p class="subtitle">We found 6 unique job titles in your data. Group them into Job Families and assign a level to each. This takes about 2 minutes.</p>
+
+<div style="margin-top:24px; display:flex; flex-direction:column; gap:12px;">
+
+  <!-- Family 1 -->
+  <div style="border:1.5px solid #3b82f6; border-radius:12px; overflow:hidden;">
+    <div style="background:#eff6ff; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="font-weight:700; color:#1e3a5f; font-size:14px;">Job Family:</div>
+        <input type="text" value="Engineering" style="font-size:14px; font-weight:600; color:#1e293b; border:1.5px solid #93c5fd; border-radius:6px; padding:4px 10px; background:white; width:160px;">
+      </div>
+      <div style="font-size:12px; color:#3b82f6;">3 titles · 142 employees</div>
+    </div>
+    <div style="background:white;">
+
+      <div style="display:grid; grid-template-columns:1.5fr 1fr 80px; padding:10px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+        <div style="font-size:13px; font-weight:600; color:#1e293b;">Junior Software Engineer</div>
+        <select style="font-size:12px; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px; color:#374151; background:white;">
+          <option>Junior</option><option>Senior</option><option>Lead</option><option>Director</option>
+        </select>
+        <div style="font-size:12px; color:#94a3b8;">38 people</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1.5fr 1fr 80px; padding:10px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+        <div style="font-size:13px; font-weight:600; color:#1e293b;">Senior Software Engineer</div>
+        <select style="font-size:12px; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px; color:#374151; background:white;">
+          <option>Junior</option><option selected>Senior</option><option>Lead</option><option>Director</option>
+        </select>
+        <div style="font-size:12px; color:#94a3b8;">89 people</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1.5fr 1fr 80px; padding:10px 16px; gap:12px; align-items:center;">
+        <div style="font-size:13px; font-weight:600; color:#1e293b;">Engineering Lead</div>
+        <select style="font-size:12px; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px; color:#374151; background:white;">
+          <option>Junior</option><option>Senior</option><option selected>Lead</option><option>Director</option>
+        </select>
+        <div style="font-size:12px; color:#94a3b8;">15 people</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Family 2 -->
+  <div style="border:1.5px solid #3b82f6; border-radius:12px; overflow:hidden;">
+    <div style="background:#eff6ff; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="font-weight:700; color:#1e3a5f; font-size:14px;">Job Family:</div>
+        <input type="text" value="Human Resources" style="font-size:14px; font-weight:600; color:#1e293b; border:1.5px solid #93c5fd; border-radius:6px; padding:4px 10px; background:white; width:180px;">
+      </div>
+      <div style="font-size:12px; color:#3b82f6;">2 titles · 28 employees</div>
+    </div>
+    <div style="background:white;">
+
+      <div style="display:grid; grid-template-columns:1.5fr 1fr 80px; padding:10px 16px; gap:12px; border-bottom:1px solid #f1f5f9; align-items:center;">
+        <div style="font-size:13px; font-weight:600; color:#1e293b;">HR Specialist</div>
+        <select style="font-size:12px; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px; color:#374151; background:white;">
+          <option selected>Junior</option><option>Senior</option><option>Lead</option>
+        </select>
+        <div style="font-size:12px; color:#94a3b8;">21 people</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1.5fr 1fr 80px; padding:10px 16px; gap:12px; align-items:center;">
+        <div style="font-size:13px; font-weight:600; color:#1e293b;">HR Manager</div>
+        <select style="font-size:12px; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px; color:#374151; background:white;">
+          <option>Junior</option><option selected>Senior</option><option>Lead</option>
+        </select>
+        <div style="font-size:12px; color:#94a3b8;">7 people</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Ungrouped -->
+  <div style="border:1.5px dashed #e2e8f0; border-radius:12px; padding:14px 16px; background:#f8fafc;">
+    <div style="font-size:12px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;">Ungrouped title — assign to a family</div>
+    <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 80px; gap:12px; align-items:center;">
+      <div style="font-size:13px; font-weight:600; color:#1e293b;">Product Designer</div>
+      <select style="font-size:12px; border:1.5px solid #f59e0b; border-radius:6px; padding:5px 8px; color:#92400e; background:#fffbeb;">
+        <option selected>— Assign to family —</option>
+        <option>Engineering</option>
+        <option>Human Resources</option>
+        <option>+ Create new family</option>
+      </select>
+      <select style="font-size:12px; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px; color:#94a3b8; background:white;">
+        <option>— Select level —</option>
+        <option>Junior</option><option>Senior</option><option>Lead</option>
+      </select>
+      <div style="font-size:12px; color:#94a3b8;">5 people</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Note about role -->
+<div style="margin-top:16px; background:#f1f5f9; border-radius:10px; padding:12px 16px; font-size:12px; color:#475569; display:flex; gap:10px; align-items:flex-start;">
+  <span style="font-size:16px;">ℹ️</span>
+  <div>All imported employees will be assigned the default <strong>Employee</strong> role. You can configure specific roles per job family level in <strong>Organisation → Job Families</strong> after the import is complete.</div>
+</div>
+
+<!-- CTA -->
+<div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+  <button style="font-size:13px; padding:9px 18px; border-radius:8px; border:1px solid #e2e8f0; background:white; color:#64748b; cursor:pointer;">← Back</button>
+  <button style="background:#1e293b; color:white; border:none; padding:10px 26px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">Confirm → Run Validation</button>
+</div>

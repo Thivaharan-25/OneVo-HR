@@ -1,6 +1,6 @@
 # Module: Core HR
 
-**Namespace:** `ONEVO.Modules.CoreHR`
+**Feature Folder:** `Application/Features/CoreHR`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 1 + Dev 2 (Week 2)
@@ -46,6 +46,28 @@ public interface IEmployeeService
     Task<Result<List<EmployeeDto>>> GetByDepartmentAsync(Guid departmentId, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/CoreHR/Entities/
+  ONEVO.Domain/Features/CoreHR/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/CoreHR/Commands/
+  ONEVO.Application/Features/CoreHR/Queries/
+  ONEVO.Application/Features/CoreHR/DTOs/Requests/
+  ONEVO.Application/Features/CoreHR/DTOs/Responses/
+  ONEVO.Application/Features/CoreHR/Validators/
+  ONEVO.Application/Features/CoreHR/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/CoreHR/
+
+API endpoints:
+  ONEVO.Api/Controllers/CoreHR/CoreHRController.cs
 
 ---
 

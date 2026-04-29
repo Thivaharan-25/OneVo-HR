@@ -1,6 +1,6 @@
 # Module: Leave
 
-**Namespace:** `ONEVO.Modules.Leave`
+**Feature Folder:** `Application/Features/Leave`
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 1 (Week 3)
@@ -40,6 +40,28 @@ public interface ILeaveService
     Task<Result<decimal>> GetUsedDaysAsync(Guid employeeId, Guid leaveTypeId, int year, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/Leave/Entities/
+  ONEVO.Domain/Features/Leave/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/Leave/Commands/
+  ONEVO.Application/Features/Leave/Queries/
+  ONEVO.Application/Features/Leave/DTOs/Requests/
+  ONEVO.Application/Features/Leave/DTOs/Responses/
+  ONEVO.Application/Features/Leave/Validators/
+  ONEVO.Application/Features/Leave/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/Leave/
+
+API endpoints:
+  ONEVO.Api/Controllers/Leave/LeaveController.cs
 
 ---
 

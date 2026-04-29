@@ -1,6 +1,6 @@
 # Module: Agent Gateway
 
-**Namespace:** `ONEVO.Modules.AgentGateway`
+**Feature Folder:** `Application/Features/AgentGateway`
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4 (Week 1)
@@ -39,7 +39,7 @@ Agent Gateway uses **device-level JWT authentication**, separate from user JWT. 
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.AgentGateway/Public/IAgentGatewayService.cs
+// ONEVO.Application.Features.AgentGateway/Public/IAgentGatewayService.cs
 public interface IAgentGatewayService
 {
     Task<Result<RegisteredAgentDto>> GetAgentByDeviceIdAsync(Guid deviceId, CancellationToken ct);
@@ -47,7 +47,7 @@ public interface IAgentGatewayService
     Task<Result<bool>> IsAgentOnlineAsync(Guid agentId, CancellationToken ct);
 }
 
-// ONEVO.Modules.AgentGateway/Public/IAgentCommandService.cs
+// ONEVO.Application.Features.AgentGateway/Public/IAgentCommandService.cs
 public interface IAgentCommandService
 {
     /// <summary>Send a command to a specific agent via SignalR. Returns false if agent is offline.</summary>
@@ -56,6 +56,28 @@ public interface IAgentCommandService
     Task<Result<IReadOnlyList<AgentCommandDto>>> GetPendingCommandsAsync(Guid agentId, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/AgentGateway/Entities/
+  ONEVO.Domain/Features/AgentGateway/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/AgentGateway/Commands/
+  ONEVO.Application/Features/AgentGateway/Queries/
+  ONEVO.Application/Features/AgentGateway/DTOs/Requests/
+  ONEVO.Application/Features/AgentGateway/DTOs/Responses/
+  ONEVO.Application/Features/AgentGateway/Validators/
+  ONEVO.Application/Features/AgentGateway/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/AgentGateway/
+
+API endpoints:
+  ONEVO.Api/Controllers/AgentGateway/AgentGatewayController.cs
 
 ---
 

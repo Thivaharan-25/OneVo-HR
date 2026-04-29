@@ -1,6 +1,6 @@
 # Module: Discrepancy Engine
 
-**Namespace:** `ONEVO.Modules.DiscrepancyEngine`
+**Feature Folder:** `Application/Features/DiscrepancyEngine`
 **Phase:** 1 — Build
 **Pillar:** Workforce Intelligence
 **Tables:** 3 (`discrepancy_events`, `wms_daily_time_logs`, `employee_discrepancy_baselines`)
@@ -35,7 +35,7 @@ The Discrepancy Engine is a daily end-of-day job that cross-references three dat
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.DiscrepancyEngine/Public/IDiscrepancyEngineService.cs
+// ONEVO.Application.Features.DiscrepancyEngine/Public/IDiscrepancyEngineService.cs
 public interface IDiscrepancyEngineService
 {
     Task<Result<DiscrepancyEventDto?>> GetDiscrepancyForDateAsync(
@@ -58,7 +58,7 @@ public interface IDiscrepancyEngineService
 Runs **daily at 10:30 PM** (after work hours, before `GenerateDailyReportsJob` at 11:30 PM).
 
 ```csharp
-// ONEVO.Modules.DiscrepancyEngine/Jobs/DiscrepancyEngineJob.cs
+// ONEVO.Application.Features.DiscrepancyEngine/Jobs/DiscrepancyEngineJob.cs
 public class DiscrepancyEngineJob
 {
     public async Task RunAsync(Guid tenantId, DateOnly date, CancellationToken ct)
@@ -191,6 +191,28 @@ private async Task NotifyIfRequiredAsync(Employee employee, DiscrepancySeverity 
 | Under-reporter (forgot to log) | 7h active | 3h logged | 1h meetings | `low` — reminder sent to log time |
 | Meeting-heavy day | 2h active | 2h logged | 5h meetings | `none` — calendar resolves the gap |
 | Deep research day | 4h active | 3h logged | 2h meetings | `none` — 60 min gap within threshold |
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/DiscrepancyEngine/Entities/
+  ONEVO.Domain/Features/DiscrepancyEngine/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/DiscrepancyEngine/Commands/
+  ONEVO.Application/Features/DiscrepancyEngine/Queries/
+  ONEVO.Application/Features/DiscrepancyEngine/DTOs/Requests/
+  ONEVO.Application/Features/DiscrepancyEngine/DTOs/Responses/
+  ONEVO.Application/Features/DiscrepancyEngine/Validators/
+  ONEVO.Application/Features/DiscrepancyEngine/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/DiscrepancyEngine/
+
+API endpoints:
+  ONEVO.Api/Controllers/DiscrepancyEngine/DiscrepancyEngineController.cs
 
 ---
 

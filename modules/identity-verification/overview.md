@@ -1,6 +1,6 @@
 # Module: Identity Verification
 
-**Namespace:** `ONEVO.Modules.IdentityVerification`
+**Feature Folder:** `Application/Features/IdentityVerification`
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 4 (Week 3)
@@ -31,7 +31,7 @@ Verifies employee identity via photo capture and biometric fingerprint matching.
 ## Public Interface
 
 ```csharp
-// ONEVO.Modules.IdentityVerification/Public/IIdentityVerificationService.cs
+// ONEVO.Application.Features.IdentityVerification/Public/IIdentityVerificationService.cs
 public interface IIdentityVerificationService
 {
     Task<Result<VerificationRecordDto>> VerifyPhotoAsync(Guid employeeId, Guid photoFileId, Guid deviceId, CancellationToken ct);
@@ -43,6 +43,28 @@ public interface IIdentityVerificationService
     Task<Result<VerificationRecordDto>> ProcessOnDemandCaptureAsync(Guid employeeId, Guid fileId, string captureType, Guid requestedById, Guid alertId, CancellationToken ct);
 }
 ```
+
+---
+
+## Code Location (Clean Architecture)
+
+Domain entities:
+  ONEVO.Domain/Features/IdentityVerification/Entities/
+  ONEVO.Domain/Features/IdentityVerification/Events/
+
+Application (CQRS):
+  ONEVO.Application/Features/IdentityVerification/Commands/
+  ONEVO.Application/Features/IdentityVerification/Queries/
+  ONEVO.Application/Features/IdentityVerification/DTOs/Requests/
+  ONEVO.Application/Features/IdentityVerification/DTOs/Responses/
+  ONEVO.Application/Features/IdentityVerification/Validators/
+  ONEVO.Application/Features/IdentityVerification/EventHandlers/
+
+Infrastructure:
+  ONEVO.Infrastructure/Persistence/Configurations/IdentityVerification/
+
+API endpoints:
+  ONEVO.Api/Controllers/IdentityVerification/IdentityVerificationController.cs
 
 ---
 
