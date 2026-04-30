@@ -70,5 +70,25 @@ Chat is real-time team communication within ONEVO. It is a first-class pillar â€
 
 ## Related Flows
 
+## Microsoft Teams Sync
+
+When Microsoft Teams sync is enabled and a channel is linked, messages can flow both ways between ONEVO Chat and Microsoft Teams. This requires tenant Graph consent, user Teams account linking, and an active channel Teams link.
+
+Additional entities:
+
+| Entity | Role |
+|---|---|
+| `CHANNEL_TEAMS_LINK` | Maps a ONEVO channel to a Teams channel or chat |
+| `TEAMS_MESSAGE_SYNC_STATE` | Tracks Teams message IDs, idempotency, and retry state |
+
+Flow:
+1. Workspace admin links a channel to a Teams channel/chat
+2. ONEVO starts Graph webhook/delta tracking
+3. Teams messages sent in the linked conversation appear in ONEVO
+4. ONEVO messages sent in the linked channel appear in Teams
+5. Sync failures show a retry state and do not duplicate messages
+
+- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]]
+
 - [[Userflow/Work-Management/wm-overview|WMS Overview]]
 - [[Userflow/Work-Management/task-flow|Task Management]]

@@ -1,0 +1,79 @@
+<h2>HR Automation Tags — Inside Chat</h2>
+<p class="subtitle">How should HR action tags appear and behave in the WorkSync Chat panel?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:monospace;font-size:11px;background:#1a1a2e;border-radius:6px;padding:10px;">
+        <div style="color:#585b70;font-size:10px;margin-bottom:8px;border-bottom:1px solid #313244;padding-bottom:6px;">💬 #general</div>
+        <!-- Pinned HR tag strip at top of chat -->
+        <div style="background:#181825;border:1px solid #313244;border-radius:5px;padding:6px 8px;margin-bottom:8px;">
+          <div style="color:#585b70;font-size:9px;margin-bottom:4px;">⚡ YOUR HR ACTIONS</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <span style="background:#1e3a2f;border:1px solid #a6e3a1;color:#a6e3a1;border-radius:12px;padding:3px 10px;font-size:10px;cursor:pointer;">#clockin</span>
+            <span style="background:#3a2f1e;border:1px solid #fab387;color:#fab387;border-radius:12px;padding:3px 10px;font-size:10px;cursor:pointer;">#break</span>
+            <span style="background:#3a1e1e;border:1px solid #f38ba8;color:#f38ba8;border-radius:12px;padding:3px 10px;font-size:10px;cursor:pointer;">#clockout</span>
+            <span style="background:#1e2a3a;border:1px solid #89b4fa;color:#89b4fa;border-radius:12px;padding:3px 10px;font-size:10px;cursor:pointer;">#leave</span>
+          </div>
+        </div>
+        <div style="color:#cdd6f4;font-size:11px;margin-bottom:4px;">Good morning team! 👋</div>
+        <div style="color:#585b70;font-size:10px;">Arun: On it!</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Pinned tag strip at top of chat</h3>
+      <p>HR action tags always pinned above messages. One click fires the action — shows a confirmation card in chat. Tags update based on current state (clocked in → shows Break/Clock Out only).</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:monospace;font-size:11px;background:#1a1a2e;border-radius:6px;padding:10px;">
+        <div style="color:#585b70;font-size:10px;margin-bottom:8px;border-bottom:1px solid #313244;padding-bottom:6px;">💬 #general</div>
+        <div style="color:#cdd6f4;font-size:11px;margin-bottom:6px;">Good morning team! 👋</div>
+        <!-- Message input area with tag chips -->
+        <div style="background:#313244;border-radius:5px;padding:6px 8px;margin-top:8px;">
+          <div style="color:#585b70;font-size:10px;margin-bottom:5px;">Type a message or use a tag...</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <span style="background:#1e3a2f;border:1px solid #a6e3a1;color:#a6e3a1;border-radius:12px;padding:2px 8px;font-size:10px;cursor:pointer;">#clockin</span>
+            <span style="background:#3a2f1e;border:1px solid #fab387;color:#fab387;border-radius:12px;padding:2px 8px;font-size:10px;cursor:pointer;">#break</span>
+            <span style="background:#3a1e1e;border:1px solid #f38ba8;color:#f38ba8;border-radius:12px;padding:2px 8px;font-size:10px;cursor:pointer;">#clockout</span>
+            <span style="background:#1e2a3a;border:1px solid #89b4fa;color:#89b4fa;border-radius:12px;padding:2px 8px;font-size:10px;cursor:pointer;">#leave</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Tag chips in the message composer</h3>
+      <p>HR tags live below the message input, like shortcuts. Developer types or clicks a tag chip → it inserts into the message → sends → backend executes. Works exactly like typing <code>@leave:request</code> manually.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:monospace;font-size:11px;background:#1a1a2e;border-radius:6px;padding:10px;">
+        <div style="color:#585b70;font-size:10px;margin-bottom:8px;border-bottom:1px solid #313244;padding-bottom:6px;">💬 #general</div>
+        <div style="color:#cdd6f4;margin-bottom:4px;">Good morning! 👋</div>
+        <!-- Arun types #clockin in chat -->
+        <div style="background:#313244;border-radius:4px;padding:5px 8px;margin-bottom:6px;color:#cdd6f4;font-size:11px;">
+          <span style="color:#585b70;">Arun:</span> <span style="background:#1e3a2f;color:#a6e3a1;border-radius:3px;padding:1px 5px;">#clockin</span>
+        </div>
+        <!-- Bot confirmation card -->
+        <div style="background:#1e1e2e;border-left:3px solid #a6e3a1;border-radius:4px;padding:6px 8px;font-size:10px;">
+          <div style="color:#a6e3a1;font-weight:bold;margin-bottom:3px;">🤖 OneVo — Clock In</div>
+          <div style="color:#cdd6f4;margin-bottom:4px;">09:02 AM · Shift started</div>
+          <div style="display:flex;gap:4px;">
+            <span style="background:#a6e3a1;color:#1e1e2e;border-radius:3px;padding:2px 7px;cursor:pointer;">✅ Confirm</span>
+            <span style="background:#585b70;color:#cdd6f4;border-radius:3px;padding:2px 7px;cursor:pointer;">✕ Cancel</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Type tag in chat → bot confirms</h3>
+      <p>Developer types <code>#clockin</code> or <code>#leave</code> in chat → a bot confirmation card appears inline. They confirm → action executes. Same flow as existing <code>#task</code> AI cards. Fully chat-native.</p>
+    </div>
+  </div>
+
+</div>

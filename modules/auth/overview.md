@@ -44,8 +44,6 @@ public interface ITokenService
     Task<string> GenerateAccessTokenAsync(Guid userId, Guid tenantId, List<string> permissions, CancellationToken ct);
     Task<string> GenerateDeviceTokenAsync(Guid deviceId, Guid tenantId, CancellationToken ct); // For agent gateway
     Task<string> GenerateRefreshTokenAsync(Guid userId, CancellationToken ct);
-    /// Bridge JWT: aud="onevo-bridge", type="bridge", bridges=[...], expires 1 hour
-    Task<string> GenerateBridgeTokenAsync(Guid clientId, Guid tenantId, string[] allowedBridges, CancellationToken ct);
 }
 
 public interface IRoleService
@@ -84,12 +82,6 @@ public interface IPermissionOverrideService
     Task<Result> SetAsync(Guid userId, SetPermissionOverrideCommand command, CancellationToken ct);
 }
 
-public interface IBridgeAuthService
-{
-    /// Validates client_id + client_secret, issues a bridge JWT scoped to allowed bridges.
-    /// Used by WorkManage Pro for service-to-service authentication.
-    Task<Result<BridgeTokenDto>> IssueTokenAsync(BridgeTokenRequest request, CancellationToken ct);
-}
 ```
 
 ---
@@ -249,26 +241,6 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 | `consented_at` | `timestamptz` | |
 | `ip_address` | `varchar(45)` | |
 
-### `bridge_clients`
-
-Service-to-service OAuth clients for bridge API access (WorkManage Pro and future integrations).
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK — this is the `client_id` |
-| `tenant_id` | `uuid` | FK → tenants |
-| `name` | `varchar(100)` | Human-readable name (e.g., "WorkManage Pro") |
-| `client_secret_hash` | `varchar(255)` | Argon2id hash — secret shown once at registration |
-| `allowed_bridges` | `text[]` | Bridge names this client may call (e.g., `["people-sync", "availability"]`) |
-| `is_active` | `boolean` | Admin can revoke access by setting false |
-| `created_by` | `uuid` | FK → users (Super Admin who registered this client) |
-| `created_at` | `timestamptz` | |
-| `last_used_at` | `timestamptz` | Updated on each successful token issuance |
-
-UNIQUE: `(tenant_id, name)` — one client per integration per tenant.
-
----
-
 ## Domain Events (intra-module — MediatR)
 
 > These events are published and consumed within this module only. They never leave the module.
@@ -306,7 +278,6 @@ UNIQUE: `(tenant_id, name)` — one client per integration per tenant.
 6. **Refresh token rotation** — each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, revoke the entire chain (token theft detection).
 7. **GDPR consent for monitoring** — `consent_type: "monitoring"` must be recorded before monitoring features activate for an employee.
 8. **Audit logs are append-only** — partitioned by month, never deleted (compliance requirement).
-9. **Bridge JWT is separate from user JWT** — `aud: "onevo-bridge"`, `type: "bridge"`. Bridge middleware rejects user JWTs on `/api/v1/bridges/*` and user endpoints reject bridge JWTs. A single client secret grants access only to the bridges listed in `bridge_clients.allowed_bridges`.
 
 ---
 
@@ -317,7 +288,6 @@ UNIQUE: `(tenant_id, name)` — one client per integration per tenant.
 | POST | `/api/v1/auth/login` | Public | Login |
 | POST | `/api/v1/auth/refresh` | Public | Refresh access token |
 | POST | `/api/v1/auth/logout` | Authenticated | Logout |
-| POST | `/api/v1/auth/bridge/token` | Public | Issue bridge JWT (OAuth client credentials) |
 | POST | `/api/v1/auth/mfa/enable` | Authenticated | Enable MFA |
 | POST | `/api/v1/auth/mfa/verify` | Authenticated | Verify MFA code |
 | GET | `/api/v1/roles` | `roles:read` | List roles |

@@ -4,7 +4,7 @@
 
 - **RDBMS:** PostgreSQL 16
 - **ORM:** Entity Framework Core 9
-- **Total Tables:** 170 across 23 modules — 128 Phase 1, 42 Phase 2 (see [[database/schema-catalog|Schema Catalog]])
+- **Total Tables:** 240 unique schema tables — see [[database/schema-catalog|Schema Catalog]]
 - **Multi-tenancy:** `tenant_id` on all tenant-scoped tables + PostgreSQL RLS
 - **Connection Pooling:** PgBouncer
 - **Partitioning:** `pg_partman` for time-series tables
@@ -89,7 +89,7 @@ All encrypted via `IEncryptionService` (AES-256) in [[backend/shared-kernel|Shar
 
 | Document | Purpose |
 |:---------|:--------|
-| [[database/schema-catalog\|Schema Catalog]] | Master index of all 170 tables (128 Phase 1, 42 Phase 2), grouped by module with phase tags |
+| [[database/schema-catalog\|Schema Catalog]] | Master index of unified HR + WorkSync tables, grouped by module with phase tags |
 | [[database/cross-module-relationships\|Cross-Module Relationships]] | FK dependencies across module boundaries + migration order |
 | [[database/migration-patterns\|Migration Patterns]] | EF Core migrations, zero-downtime strategies |
 | [[database/performance\|Performance]] | Indexing, query optimization, N+1 prevention |
@@ -100,23 +100,31 @@ All encrypted via `IEncryptionService` (AES-256) in [[backend/shared-kernel|Shar
 |:-------|:-------|:------|
 | [[database/schemas/infrastructure\|Infrastructure]] | 4 | 1 |
 | [[database/schemas/auth\|Auth & Security]] | 9 | 1 |
-| [[database/schemas/org-structure\|Org Structure]] | 8 | 1 |
+| [[database/schemas/org-structure\|Org Structure]] | 12 | 1 |
 | [[database/schemas/core-hr\|Core HR]] | 13 | 1 |
 | [[database/schemas/leave\|Leave]] | 5 | 1 |
 | [[database/schemas/calendar\|Calendar]] | 1 | 1 |
 | [[database/schemas/configuration\|Configuration]] | 6 | 1 |
-| [[database/schemas/agent-gateway\|Agent Gateway]] | 4 | 1 |
-| [[database/schemas/activity-monitoring\|Activity Monitoring]] | 8 | 1 |
+| [[database/schemas/agent-gateway\|Agent Gateway]] | 6 | 1 |
+| [[database/schemas/activity-monitoring\|Activity Monitoring]] | 9 | 1 |
 | [[database/schemas/workforce-presence\|Workforce Presence]] | 3 | 1 |
 | [[database/schemas/exception-engine\|Exception Engine]] | 5 | 1 |
 | [[database/schemas/identity-verification\|Identity Verification]] | 6 | 1 |
 | [[database/schemas/productivity-analytics\|Productivity Analytics]] | 4 | 1 |
-| [[database/schemas/shared-platform\|Shared Platform]] | 30 | 1 |
-| [[database/schemas/notifications\|Notifications]] | 2 | 1 |
+| [[database/schemas/shared-platform\|Shared Platform]] | 35 | 1/2 |
+| [[database/schemas/notifications\|Notifications]] | 0 own tables | 1 |
 | [[database/schemas/payroll\|Payroll]] | 11 | 2 |
 | [[database/schemas/performance\|Performance (module)]] | 7 | 2 |
 | [[database/schemas/skills\|Skills & Learning]] | 15 | 2 |
-| [[database/schemas/documents\|Documents]] | 6 | 2 |
+| [[database/schemas/documents\|Documents]] | Shared Phase 1 core + HR additions | 1/2 |
+| [[database/schemas/wms-project-management\|WMS Project Management]] | 12 | 1 |
+| [[database/schemas/wms-task-management\|WMS Task Management]] | 13 | 1 |
+| [[database/schemas/wms-planning\|WMS Planning]] | 10 | 1 |
+| [[database/schemas/wms-chat\|WMS Chat]] | 11 | 1/2 |
+| [[database/schemas/wms-collaboration\|WMS Collaboration]] | 9 | 1 |
+| [[database/schemas/wms-analytics\|WMS Analytics]] | 9 | 1 |
+| [[database/schemas/wms-integrations\|WMS Integrations]] | 10 | 1 |
+| [[database/schemas/ide-extension\|IDE Extension]] | 5 | 1 |
 | [[database/schemas/grievance\|Grievance]] | 2 | 2 |
 | [[database/schemas/expense\|Expense]] | 3 | 2 |
 | [[database/schemas/reporting-engine\|Reporting Engine]] | 3 | 2 |

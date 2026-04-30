@@ -1,0 +1,152 @@
+<h2>Section 2: Full @ Tag Picker — All WMS + HR</h2>
+<p class="subtitle">Permission-filtered. Tenant-module-checked. Searchable. NLP-aware.</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Tag Picker — Full View</div>
+    <div class="mockup-body" style="padding:0;background:#1e1e2e;font-family:'Segoe UI',monospace;font-size:11px;">
+
+      <!-- Search -->
+      <div style="padding:6px 10px;border-bottom:1px solid #313244;display:flex;align-items:center;gap:6px;">
+        <span style="color:#585b70;">🔍</span>
+        <input style="background:transparent;border:none;color:#cdd6f4;font-size:11px;width:100%;outline:none;" placeholder="Search actions or describe what you want..." />
+      </div>
+
+      <div style="max-height:320px;overflow-y:auto;">
+
+        <!-- HR — only if has_hr_module -->
+        <div style="padding:4px 0;border-bottom:1px solid #1e1e2e;">
+          <div style="padding:3px 10px;color:#f97316;font-size:9px;font-weight:bold;letter-spacing:1px;display:flex;align-items:center;gap:4px;">
+            <span>HR AUTOMATION</span>
+            <span style="background:#f9731620;color:#f97316;border-radius:8px;padding:0px 5px;font-size:8px;">tenant feature</span>
+          </div>
+          <div style="padding:4px 12px;color:#a6e3a1;cursor:pointer;display:flex;align-items:center;gap:8px;background:#a6e3a110;">
+            <span>🟢</span><span style="font-weight:600;">@clockin</span><span style="color:#585b70;font-size:10px;">Start shift — fires instantly</span>
+          </div>
+          <div style="padding:4px 12px;color:#fab387;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>☕</span><span style="font-weight:600;">@break</span><span style="color:#585b70;font-size:10px;">Take a break — fires instantly</span>
+          </div>
+          <div style="padding:4px 12px;color:#f38ba8;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>🔴</span><span style="font-weight:600;">@clockout</span><span style="color:#585b70;font-size:10px;">End shift — fires instantly</span>
+          </div>
+          <div style="padding:4px 12px;color:#89b4fa;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>📋</span><span style="font-weight:600;">@leave</span><span style="color:#585b70;font-size:10px;">Apply leave — opens form</span>
+          </div>
+        </div>
+
+        <!-- Tasks -->
+        <div style="padding:4px 0;border-bottom:1px solid #1e1e2e;">
+          <div style="padding:3px 10px;color:#cba6f7;font-size:9px;font-weight:bold;letter-spacing:1px;">TASKS</div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>✅</span><span style="font-weight:600;">@task:new</span><span style="color:#585b70;font-size:10px;">Create a task</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>🔄</span><span style="font-weight:600;">@task:status</span><span style="color:#585b70;font-size:10px;">Update task status</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>👤</span><span style="font-weight:600;">@task:assign</span><span style="color:#585b70;font-size:10px;">Assign task to someone</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>💬</span><span style="font-weight:600;">@task:comment</span><span style="color:#585b70;font-size:10px;">Add comment to task</span>
+          </div>
+        </div>
+
+        <!-- Sprint -->
+        <div style="padding:4px 0;border-bottom:1px solid #1e1e2e;">
+          <div style="padding:3px 10px;color:#a6e3a1;font-size:9px;font-weight:bold;letter-spacing:1px;">SPRINT</div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>➕</span><span style="font-weight:600;">@sprint:add</span><span style="color:#585b70;font-size:10px;">Add task to sprint</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>🚀</span><span style="font-weight:600;">@sprint:start</span><span style="color:#585b70;font-size:10px;">Start a sprint</span>
+          </div>
+        </div>
+
+        <!-- Time -->
+        <div style="padding:4px 0;border-bottom:1px solid #1e1e2e;">
+          <div style="padding:3px 10px;color:#f9e2af;font-size:9px;font-weight:bold;letter-spacing:1px;">TIME</div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>⏱</span><span style="font-weight:600;">@time:log</span><span style="color:#585b70;font-size:10px;">Log hours on a task</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>▶️</span><span style="font-weight:600;">@time:start</span><span style="color:#585b70;font-size:10px;">Start timer</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>⏹</span><span style="font-weight:600;">@time:stop</span><span style="color:#585b70;font-size:10px;">Stop timer + log</span>
+          </div>
+        </div>
+
+        <!-- Board / OKR / Doc / Review -->
+        <div style="padding:4px 0;">
+          <div style="padding:3px 10px;color:#89dceb;font-size:9px;font-weight:bold;letter-spacing:1px;">MORE</div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>📊</span><span style="font-weight:600;">@board:move</span><span style="color:#585b70;font-size:10px;">Move task to column</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>🎯</span><span style="font-weight:600;">@okr:checkin</span><span style="color:#585b70;font-size:10px;">OKR progress update</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>📄</span><span style="font-weight:600;">@doc:link</span><span style="color:#585b70;font-size:10px;">Link doc to task</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>👁</span><span style="font-weight:600;">@review:request</span><span style="color:#585b70;font-size:10px;">Request code review</span>
+          </div>
+          <div style="padding:4px 12px;color:#cdd6f4;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <span>🔔</span><span style="font-weight:600;">@notify:send</span><span style="color:#585b70;font-size:10px;">Send notification</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">NLP Mode — Type naturally, SK maps it</div>
+    <div class="mockup-body" style="padding:10px;background:#1e1e2e;font-family:'Segoe UI',monospace;font-size:11px;">
+
+      <div style="color:#585b70;font-size:10px;margin-bottom:8px;">User types in chat:</div>
+      <div style="background:#313244;border-radius:5px;padding:6px 10px;margin-bottom:12px;color:#cdd6f4;">"log 2 hours on the login bug"</div>
+
+      <div style="color:#585b70;font-size:10px;margin-bottom:6px;">↓ Semantic Kernel detects intent</div>
+
+      <!-- SK confirmation card -->
+      <div style="background:#181825;border:1px solid #f9e2af;border-radius:6px;overflow:hidden;margin-bottom:12px;">
+        <div style="background:#2a2510;padding:5px 10px;display:flex;align-items:center;gap:5px;">
+          <span style="color:#f9e2af;font-size:10px;font-weight:bold;">🧠 OneVo AI detected action</span>
+        </div>
+        <div style="padding:8px 10px;">
+          <div style="color:#cdd6f4;font-size:11px;margin-bottom:6px;"><span style="color:#f9e2af;">@time:log</span> 2h #task:TASK-123 "login bug"</div>
+          <div style="color:#585b70;font-size:10px;margin-bottom:8px;">Linked to: Fix login bug · Sprint 12</div>
+          <div style="display:flex;gap:6px;">
+            <span style="background:#a6e3a1;color:#1e1e2e;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:10px;">✅ Confirm</span>
+            <span style="background:#f38ba8;color:#1e1e2e;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:10px;">✏️ Edit</span>
+            <span style="background:#45475a;color:#cdd6f4;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:10px;">✕ Dismiss</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="color:#585b70;font-size:10px;margin-bottom:6px;">Another example:</div>
+      <div style="background:#313244;border-radius:5px;padding:6px 10px;margin-bottom:8px;color:#cdd6f4;">"I want to take leave next week"</div>
+      <div style="background:#181825;border:1px solid #89b4fa;border-radius:6px;overflow:hidden;">
+        <div style="background:#0d1a2a;padding:5px 10px;">
+          <span style="color:#89b4fa;font-size:10px;font-weight:bold;">🧠 OneVo AI detected action</span>
+        </div>
+        <div style="padding:8px 10px;">
+          <div style="color:#cdd6f4;font-size:11px;margin-bottom:4px;"><span style="color:#89b4fa;">@leave:request</span> — opens mini form</div>
+          <div style="color:#585b70;font-size:10px;">Pre-filled: May 5–9 (next week)</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:14px;background:#181825;border:1px solid #45475a;border-radius:6px;padding:10px;">
+  <div style="color:#cba6f7;font-size:11px;font-weight:bold;margin-bottom:4px;">Key rules</div>
+  <ul style="color:#bac2de;font-size:11px;margin:0;padding-left:16px;line-height:1.8;">
+    <li><strong>Permission-filtered</strong> — backend returns <code>permitted_tag_actions[]</code>, picker only shows what the user can do</li>
+    <li><strong>HR section gated</strong> — only shown if <code>has_hr_module: true</code> in entitlements</li>
+    <li><strong>NLP via Semantic Kernel</strong> — natural language → intent → tag action → confirmation card → execute</li>
+    <li><strong>All actions go through backend</strong> — 403 if permission changes between load and execute</li>
+  </ul>
+</div>

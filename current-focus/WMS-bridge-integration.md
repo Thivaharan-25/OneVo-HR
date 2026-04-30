@@ -1,13 +1,19 @@
-# Task: WMS Bridge Integration
+# ~~Task: WMS Bridge Integration~~ — DEPRECATED
 
-**Owner:** Cross-team (Dev 1 + Dev 2 + Dev 3 + Dev 4)
-**Pillar:** Connectivity Bridges
-**Priority:** High (Phase 1 bridges) / Medium (Phase 2 bridges)
-**Depends on:** Knowledge brain fixes completed first (see [[docs/wms-integration-analysis|WMS Integration Analysis]])
-**Status:** Phase 0 complete — knowledge brain fixes done. Ready for dev to start Phase 1 bridges.
+> [!DANGER]
+> **THIS TASK IS CANCELLED. DO NOT IMPLEMENT.**
+>
+> WorkSync is no longer an external system connected via bridge APIs. It is Pillar 3 of ONEVO — built internally in the same backend and database. There are no bridge endpoints to implement.
+>
+> **What to build instead:** See [[current-focus/DEV5-wms-foundation|DEV5 WMS Foundation]], [[current-focus/DEV6-tasks-boards-planning|DEV6 Tasks + Boards + Planning]], [[current-focus/DEV7-chat-ai-reminders|DEV7 Chat + AI + IDE Extension]], and [[current-focus/DEV8-documents-github-ide|DEV8 Documents + GitHub + IDE]] for the actual WorkSync implementation tasks.
+>
+> This file is preserved as historical context only.
 
-> [!IMPORTANT]
-> Development on these bridges does NOT start until the knowledge brain analysis doc questions are resolved and the fixes in Section D of [[docs/wms-integration-analysis|WMS Integration Analysis]] are applied.
+---
+
+~~**Owner:** Cross-team (Dev 1 + Dev 2 + Dev 3 + Dev 4)~~
+~~**Pillar:** Connectivity Bridges~~
+~~**Priority:** CANCELLED~~
 > The WMS team (other team) builds against ONEVO's bridge API contracts — they need the schemas defined first.
 
 ---

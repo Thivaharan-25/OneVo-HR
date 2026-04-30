@@ -10,7 +10,18 @@ The canonical reference for ONEVO backend organisation. All other docs defer to 
 
 ONEVO follows **Clean Architecture + CQRS** (.NET 9). The solution is divided into four layer projects and two host projects. Modules from the earlier design become **feature folders** within each layer — there are no separate module `.csproj` files.
 
-The desktop monitoring agent is a **separate solution** (`ONEVO.Agent.sln`) with its own release cycle.
+## Deployment Boundary (Definitive)
+
+| Unit | Solution | Deployment artifact |
+|:-----|:---------|:-------------------|
+| HR + WorkSync web backend | `ONEVO.sln` | Single ASP.NET Core host |
+| Developer admin console API | `ONEVO.sln` | Second host in same solution |
+| Desktop monitoring agent | `ONEVO.Agent.sln` | **Separate solution, separate MSIX release cycle** |
+| VS Code IDE extension | Published to VS Code Marketplace separately | TypeScript VSIX |
+
+`ONEVO.Agent.sln` is intentionally separate — it has its own release cadence (MSIX package signed and distributed via MDM/GPO), its own test suite, and does not share the web solution's CI pipeline. The agent communicates with `ONEVO.Api` at runtime via HTTP only.
+
+The developer console frontend (`console.onevo.io`) is a separate SPA backed by `ONEVO.Admin.Api`, which lives **inside** `ONEVO.sln`.
 
 ---
 
@@ -63,6 +74,22 @@ ONEVO.sln
 │   │       ├── Expense/Entities/ + Events/
 │   │       ├── AgentGateway/Entities/ + Events/
 │   │       └── DevPlatform/Entities/ + Events/
+│   │       │
+│   │       │  ── WORKSYNC (Pillar 3) feature folders ──
+│   │       ├── WorkSync/Foundation/Entities/ + Events/
+│   │       ├── WorkSync/ProjectManagement/Entities/ + Events/
+│   │       ├── WorkSync/TaskManagement/Entities/ + Events/
+│   │       ├── WorkSync/SprintPlanning/Entities/ + Events/
+│   │       ├── WorkSync/OKR/Entities/ + Events/
+│   │       ├── WorkSync/TimeManagement/Entities/ + Events/
+│   │       ├── WorkSync/ResourceManagement/Entities/ + Events/
+│   │       ├── WorkSync/Chat/Entities/ + Events/
+│   │       ├── WorkSync/ChatAI/Entities/ + Events/
+│   │       ├── WorkSync/Collaboration/Entities/ + Events/
+│   │       ├── WorkSync/Analytics/Entities/ + Events/
+│   │       ├── WorkSync/Integrations/Entities/ + Events/
+│   │       ├── Integrations/MicrosoftTeams/Entities/ + Events/
+│   │       └── IDEExtension/Entities/ + Events/
 │   │
 │   │  ── LAYER 2: APPLICATION ──
 │   ├── ONEVO.Application/
@@ -85,12 +112,13 @@ ONEVO.sln
 │   │   │   │   ├── IBackgroundJobService.cs
 │   │   │   │   ├── INotificationDispatcher.cs
 │   │   │   │   ├── ITokenService.cs
-│   │   │   │   └── IPasswordHasher.cs
+│   │   │   │   ├── IPasswordHasher.cs
+│   │   │   │   └── IIDEHubService.cs          # SignalR push to IDE: tag:executed, ai:action_pending, context:detected
 │   │   │   └── Models/
 │   │   │       ├── Result.cs
 │   │   │       ├── PagedRequest.cs
 │   │   │       └── PagedResult.cs
-│   │   ├── Features/                          # 24 feature folders
+│   │   ├── Features/                          # ~38 feature folders (HR + WFI + WorkSync + IDE)
 │   │   │   └── {Feature}/
 │   │   │       ├── Commands/{UseCase}/
 │   │   │       │   ├── {UseCase}Command.cs    # record : IRequest<Result<ResponseDto>>
@@ -108,7 +136,7 @@ ONEVO.sln
 │   │  ── LAYER 3: INFRASTRUCTURE ──
 │   ├── ONEVO.Infrastructure/
 │   │   ├── Persistence/
-│   │   │   ├── ApplicationDbContext.cs        # ALL 176 tables, global tenant + soft-delete filters
+│   │   │   ├── ApplicationDbContext.cs        # ALL ~300 tables (HR + WorkSync + IDE), global tenant + workspace + soft-delete filters
 │   │   │   ├── ApplicationDbContextFactory.cs
 │   │   │   ├── Migrations/                    # ONE migration set
 │   │   │   ├── Interceptors/
@@ -116,7 +144,7 @@ ONEVO.sln
 │   │   │   │   ├── SoftDeleteInterceptor.cs
 │   │   │   │   └── DomainEventDispatchInterceptor.cs
 │   │   │   ├── Configurations/                # IEntityTypeConfiguration<T> per entity
-│   │   │   │   └── {Feature}/                 # 24 feature folders
+│   │   │   │   └── {Feature}/                 # ~38 feature folders (mirrors Domain/Features/ layout)
 │   │   │   ├── Repositories/
 │   │   │   │   └── GenericRepository.cs
 │   │   │   └── UnitOfWork.cs
@@ -138,7 +166,10 @@ ONEVO.sln
 │   │   ├── Email/SmtpEmailService.cs
 │   │   ├── Storage/BlobStorageService.cs
 │   │   ├── Security/AesEncryptionService.cs
-│   │   ├── ExternalServices/WmsBridgeClient.cs
+│   │   ├── RealTime/
+│   │   │   ├── SignalRNotificationDispatcher.cs
+│   │   │   ├── IDEHubService.cs               # IIDEHubService impl — pushes to IDEHub
+│   │   │   └── HubRegistration.cs
 │   │   └── DependencyInjection.cs
 │   │
 │   │  ── LAYER 4: HOSTS ──

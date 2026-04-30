@@ -84,9 +84,28 @@ public bool VerifyWebhookSignature(string payload, string signature, string apiK
 | **Auth** | App integration (Bot token) |
 | **Purpose** | Real-time notifications for leave approvals, reviews, etc. |
 
+### 6. Microsoft Teams (WorkSync Chat + Workspace Sync)
+
+| Property | Value |
+|:---------|:------|
+| **Module** | Integrations + WorkSync Chat + WorkSync Foundation |
+| **Auth** | Microsoft OAuth 2.0 / Microsoft Graph delegated + tenant-admin approved scopes |
+| **Purpose** | Link ONEVO users to Teams accounts, fetch Teams contacts, create or link Teams groups for WorkSync workspaces, and two-way sync messages between ONEVO Chat and Teams |
+| **Tables** | `external_account_connections`, `microsoft_graph_tokens`, `teams_webhook_subscriptions`, `teams_delta_sync_state`, `workspace_teams_links`, `channel_teams_links`, `teams_message_sync_state` |
+
+**Key Flows:**
+- User links Microsoft Teams account to ONEVO account.
+- Workspace creation offers a checkbox to create a Microsoft Team/group.
+- Workspace admin can search and link an existing Team with matching members.
+- ONEVO sends linked-channel messages to Teams.
+- Teams webhooks/delta sync import Teams messages into ONEVO chat.
+- Sync failures are retained and retried without creating duplicate messages.
+
+See [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]].
+
 ## Phase 4 Integrations (with Payroll)
 
-### 6. ADP / Oracle (Payroll Sync)
+### 7. ADP / Oracle (Payroll Sync)
 
 | Property | Value |
 |:---------|:------|
@@ -95,7 +114,7 @@ public bool VerifyWebhookSignature(string payload, string signature, string apiK
 | **Purpose** | Sync payroll runs to external payroll providers |
 | **Tables** | `payroll_providers`, `payroll_connections` |
 
-### 7. LMS Providers (Learning Content)
+### 8. LMS Providers (Learning Content)
 
 | Property | Value |
 |:---------|:------|
@@ -103,26 +122,6 @@ public bool VerifyWebhookSignature(string payload, string signature, string apiK
 | **Auth** | SSO + API |
 | **Purpose** | Course catalog sync, completion tracking |
 | **Tables** | `lms_providers`, `courses` |
-
-## WorkManage Pro Bridge Interfaces
-
-These are NOT external integrations — they are internal API contracts for the other team:
-
-| Bridge | Direction | API Contract |
-|:-------|:----------|:-------------|
-| **People Sync** | HR → Work | `GET /api/v1/bridges/people-sync/employees` (paginated employee data) |
-| **Availability** | HR → Work | `GET /api/v1/bridges/availability/{employeeId}` (leave + presence data) |
-| **Productivity Metrics** | Work → HR | `POST /api/v1/bridges/productivity-metrics/snapshots` (task completion rates, on-time delivery, productivity score) |
-| **Skills** | Bidirectional | `GET/POST /api/v1/bridges/skills/{employeeId}` (skill data exchange) |
-| **Work Activity** (NEW) | Work → HR | `POST /api/v1/bridges/work-activity/time-logs` (time logged per task/project, active task context) |
-
-**What HR needs from Work Management:**
-1. Task time logs — hours per task, correlate with app usage
-2. Project assignments — current projects per employee
-3. Task completion metrics — velocity, completion rate for Performance reviews
-4. Active task identifier — which task is being worked on (real-time dashboard context)
-
-Bridge endpoints are authenticated via API key + tenant context. See [[security/auth-architecture|Auth Architecture]] for details.
 
 ## Related
 

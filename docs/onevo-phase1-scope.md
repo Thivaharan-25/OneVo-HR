@@ -651,8 +651,8 @@ Data retention policies, legal holds (freeze data from deletion during legal pro
 **Scheduled Tasks**
 Background job scheduling for recurring system tasks (report generation, entitlement renewal, snapshot refresh). Table: `scheduled_tasks`.
 
-**WMS Bridge**
-Configuration for the WMS integration: bridge API keys exchanged with the WMS backend, tenant linking, and role mapping (OneVo HR roles mapped to WMS roles for People Sync). Tables: `bridge_api_keys`, `wms_tenant_links`, `wms_role_mappings`.
+**WorkSync Internal Provisioning**
+WorkSync is provisioned through ONEVO tenants, workspaces, workspace members, workspace roles, and feature grants. No external WMS bridge provisioning tables are used.
 
 **Tenant Branding**
 Logo, primary colour, and custom domain config. Table: `tenant_branding`.

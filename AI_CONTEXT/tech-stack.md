@@ -234,6 +234,7 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 | Google Calendar | Leave event sync | OAuth 2.0 | Phase 2 |
 | Slack | Notifications | App integration | Phase 2 |
 | Microsoft Teams Graph API | Rich meeting analytics | OAuth 2.0 | Phase 2 |
+| Microsoft Teams Graph API | WorkSync workspace/group + two-way chat sync | OAuth 2.0 + Graph webhooks/delta | Phase 2 |
 | ADP / Oracle | Payroll sync | OAuth + REST | Phase 4 |
 | LMS Providers | Learning content | SSO + API | Phase 3 |
 
@@ -268,6 +269,7 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | Flutter | Mobile app deferred |
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
 | Teams Graph API (deep) | Basic meeting detection via process name sufficient for Phase 1 |
+| Teams chat/group sync | Requires tenant Graph consent, user account linking, webhook/delta sync, and communication-data compliance review. Phase 2. |
 | macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` — a parallel implementation. Phase 2. |
 | Browser Extension | Optional browser domain tracking via Chrome/Edge/Firefox extension. Phase 2. |
 

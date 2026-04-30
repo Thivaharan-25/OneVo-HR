@@ -8,12 +8,14 @@ Central index of all database tables across ONEVO modules. This is the **single 
 
 ## Summary
 
-- **Total Tables:** 175 (Phase 1)
-- **Modules:** 23 + Developer Platform
-- **Phase 1 Tables:** 133
-- **Phase 2 Tables:** 42
+- **Total Tables:** 240 unique schema tables after removing bridge-era entities and adding Microsoft Teams sync entities
+- **Pillars:** HR Management · Workforce Intelligence · WorkSync
+- **IDE Extension:** 5 tables (Phase 1)
+- **Entity-map sections:** 39 numbered sections; these are planning/domain sections, not necessarily one backend module each
 
-> **Note:** Activity Monitoring (9 tables) + Discrepancy Engine (2 tables) were previously one 11-table group; split into separate modules when Discrepancy Engine was extracted. Productivity Analytics (5), Shared Platform (33) include WMS integration tables added in Phase 1. Skills Phase 2 count corrected to 10 (2 duplicate rows removed). Notifications lists 0 own tables — `notification_templates` and `notification_channels` are physically housed in Shared Platform and counted there. See [[docs/wms-integration-analysis|WMS Integration Analysis]] for change history. Developer Platform adds 5 Phase 1 tables + 1 Phase 2 table (see section below). `tenants.status` enum updated to include `'provisioning'`.
+> **Note:** WorkSync is now Pillar 3 — internal to ONEVO, not external. Bridge-era WMS provisioning tables are removed from Shared Platform. `agent_install_entitlements` and `agent_install_jobs` added to Agent Gateway for IDE Extension entitlement gating. Org Structure gains 3 team permission tables (`team_roles`, `team_role_permissions`, `team_member_roles`). The `documents` table is shared between WorkSync.Collaboration (Phase 1, which defines it) and HR Documents (Phase 2, which adds HR-specific columns). WorkSync schemas (W5 OKR, W6 Time, W7 Resource) are pending detailed schema docs — table counts are estimates.
+
+---
 
 ## Hub Tables
 
@@ -21,27 +23,25 @@ These tables are referenced by many others — design changes here have wide imp
 
 | Table | Module | Referenced By |
 |:------|:-------|:-------------|
-| [[database/schemas/infrastructure#`tenants`\|tenants]] | Infrastructure | 102 tables |
-| [[database/schemas/core-hr#`employees`\|employees]] | Core HR | 71 tables |
-| [[database/schemas/infrastructure#`users`\|users]] | Infrastructure | 56 tables |
-| [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure | 10 tables |
-| [[database/schemas/agent-gateway#`registered_agents`\|registered_agents]] | Agent Gateway | 6 tables |
-| [[database/schemas/skills#`skills`\|skills]] | Skills & Learning | 6 tables |
-| [[database/schemas/org-structure#`departments`\|departments]] | Org Structure | 5 tables |
-| [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure | 5 tables |
-| [[database/schemas/auth#`roles`\|roles]] | Auth & Security | 5 tables |
-| [[database/schemas/skills#`courses`\|courses]] | Skills & Learning | 4 tables |
-| [[database/schemas/performance#`review_cycles`\|review_cycles]] | Performance | 4 tables |
-| [[database/schemas/infrastructure#`countries`\|countries]] | Infrastructure | 4 tables |
-| [[database/schemas/leave#`leave_types`\|leave_types]] | Leave | 4 tables |
-| [[database/schemas/identity-verification#`biometric_devices`\|biometric_devices]] | Identity Verification | 3 tables |
-| [[database/schemas/documents#`document_categories`\|document_categories]] | Documents | 3 tables |
-| [[database/schemas/payroll#`payroll_runs`\|payroll_runs]] | Payroll | 3 tables |
-| [[database/schemas/shared-platform#`subscription_plans`\|subscription_plans]] | Shared Platform | 3 tables |
+| `tenants` | Infrastructure | 120+ tables |
+| `employees` | Core HR | 71+ tables |
+| `users` | Infrastructure | 70+ tables |
+| `workspaces` | WorkSync.Foundation | 40+ tables |
+| `projects` | WorkSync.ProjectManagement | 20+ tables |
+| `tasks` | WorkSync.TaskManagement | 15+ tables |
+| `channels` | WorkSync.Chat | 10 tables |
+| `file_records` | Infrastructure | 10 tables |
+| `registered_agents` | Agent Gateway | 8 tables |
+| `skills` | Skills & Learning | 6 tables |
+| `departments` | Org Structure | 5 tables |
+| `legal_entities` | Org Structure | 5 tables |
+| `roles` | Auth & Security | 5 tables |
+| `leave_types` | Leave | 4 tables |
+| `subscription_plans` | Shared Platform | 3 tables |
 
 ---
 
-## Phase 1 Modules
+## Phase 1 — HR Management (Pillar 1)
 
 ### [[database/schemas/infrastructure|Infrastructure]] (4 tables)
 
@@ -50,7 +50,9 @@ These tables are referenced by many others — design changes here have wide imp
 | `countries` | 5 | — |
 | `file_records` | 8 | — |
 | `tenants` | 9 | subscription_plan_id→subscription_plans |
-| `users` | 9 | — |
+| `users` | 12 | — (includes must_change_password, password_set_by_admin, temporary_password_expires_at) |
+
+> `users` gains 3 temporary-password fields: `must_change_password boolean`, `password_set_by_admin boolean`, `temporary_password_expires_at timestamptz`. Backend returns `403 MUST_CHANGE_PASSWORD` on login when `must_change_password = true`.
 
 ### [[database/schemas/auth|Auth & Security]] (9 tables)
 
@@ -66,7 +68,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `user_permission_overrides` | 8 | tenant_id→tenants, user_id→users, granted_by→users |
 | `user_roles` | 4 | user_id→users, assigned_by→users |
 
-### [[database/schemas/org-structure|Org Structure]] (9 tables)
+### [[database/schemas/org-structure|Org Structure]] (12 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -78,6 +80,9 @@ These tables are referenced by many others — design changes here have wide imp
 | `legal_entities` | 8 | tenant_id→tenants, country_id→countries |
 | `office_locations` | 8 | tenant_id→tenants, legal_entity_id→legal_entities |
 | `team_members` | 3 | employee_id→employees |
+| `team_member_roles` | 4 | team_id→teams, employee_id→employees, team_role_id→team_roles |
+| `team_role_permissions` | 3 | team_role_id→team_roles, permission_id→permissions |
+| `team_roles` | 5 | team_id→teams |
 | `teams` | 7 | tenant_id→tenants, team_lead_id→employees |
 
 ### [[database/schemas/core-hr|Core HR]] (13 tables)
@@ -100,8 +105,6 @@ These tables are referenced by many others — design changes here have wide imp
 
 ### [[database/schemas/skills|Skills Core]] (5 tables — Phase 1 subset)
 
-> These 5 tables from the Skills & Learning module are built in Phase 1 to support skill taxonomy, job skill requirements, and employee skill profiles. The remaining 10 Skills tables (courses, LMS, assessments, development plans) are Phase 2.
-
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
 | `employee_skills` | 11 | tenant_id→tenants, employee_id→employees, validated_by_id→employees |
@@ -120,7 +123,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `leave_requests` | 14 | employee_id→employees, approved_by_id→users, document_file_id→file_records |
 | `leave_types` | 9 | tenant_id→tenants |
 
-### [[database/schemas/calendar|Calendar]] (1 tables)
+### [[database/schemas/calendar|Calendar]] (1 table)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -137,14 +140,9 @@ These tables are referenced by many others — design changes here have wide imp
 | `monitoring_feature_toggles` | 11 | tenant_id→tenants |
 | `tenant_settings` | 12 | tenant_id→tenants |
 
-### [[database/schemas/agent-gateway|Agent Gateway]] (4 tables)
+---
 
-| Table | Columns | Key FKs |
-|:------|:--------|:--------|
-| `agent_commands` | 12 | tenant_id→tenants, requested_by→users |
-| `agent_health_logs` | 8 | tenant_id→tenants |
-| `agent_policies` | 7 | tenant_id→tenants |
-| `registered_agents` | 12 | tenant_id→tenants, employee_id→employees |
+## Phase 1 — Workforce Intelligence (Pillar 2)
 
 ### [[database/schemas/activity-monitoring|Activity Monitoring]] (9 tables)
 
@@ -161,8 +159,6 @@ These tables are referenced by many others — design changes here have wide imp
 | `screenshots` | 7 | tenant_id→tenants, employee_id→employees, file_record_id→file_records |
 
 ### [[database/schemas/discrepancy-engine|Discrepancy Engine]] (2 tables)
-
-> Extracted from Activity Monitoring when Discrepancy Engine was split into its own module (`ONEVO.Modules.DiscrepancyEngine`). These tables were previously listed under Activity Monitoring.
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -217,7 +213,153 @@ These tables are referenced by many others — design changes here have wide imp
 | `wms_productivity_snapshots` | 14 | tenant_id→tenants, employee_id→employees |
 | `workforce_snapshot` | 11 | tenant_id→tenants |
 
-### [[database/schemas/shared-platform|Shared Platform]] (33 tables)
+---
+
+## Phase 1 — WorkSync (Pillar 3)
+
+### [[database/schemas/wms-project-management|WorkSync Foundation + Project Management]] (12 tables)
+
+Microsoft Teams workspace sync additions:
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `workspace_teams_links` | 14 | tenant_id->tenants, workspace_id->workspaces, created_by_id->users |
+| `teams_member_sync_status` | 10 | workspace_teams_link_id->workspace_teams_links, user_id->users |
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `workspaces` | 9 | tenant_id→tenants, created_by→users |
+| `workspace_roles` | 5 | workspace_id→workspaces |
+| `workspace_members` | 7 | workspace_id→workspaces, user_id→users, role_id→workspace_roles |
+| `projects` | 13 | workspace_id→workspaces, tenant_id→tenants, owner_id→users |
+| `project_members` | 6 | project_id→projects, user_id→users |
+| `epics` | 9 | project_id→projects, assigned_to→users |
+| `milestones` | 8 | project_id→projects |
+| `versions` | 8 | project_id→projects, released_by→users |
+| `release_calendar` | 7 | project_id→projects, version_id→versions |
+| `labels` | 6 | workspace_id→workspaces |
+
+### [[database/schemas/wms-task-management|Task Management]] (13 tables)
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `tasks` | 22 | project_id→projects, sprint_id→sprints, epic_id→epics, creator_id→users |
+| `task_assignments` | 5 | task_id→tasks, user_id→users, assigned_by→users |
+| `task_checklists` | 5 | task_id→tasks, created_by→users |
+| `task_checklist_items` | 7 | checklist_id→task_checklists, completed_by→users |
+| `task_tags` | 3 | task_id→tasks, label_id→labels |
+| `task_approvals` | 7 | task_id→tasks, requested_by→users, approver_id→users |
+| `task_watchers` | 4 | task_id→tasks, user_id→users |
+| `task_links` | 6 | source_task_id→tasks, target_task_id→tasks |
+| `custom_fields` | 8 | workspace_id→workspaces |
+| `custom_field_values` | 6 | field_id→custom_fields, task_id→tasks |
+| `boards` | 7 | project_id→projects, workspace_id→workspaces |
+| `board_columns` | 7 | board_id→boards (status_key maps to tasks.status, wip_limit enforced) |
+| `board_task_positions` | 5 | board_id→boards, column_id→board_columns, task_id→tasks |
+
+### [[database/schemas/wms-planning|Sprint Planning + Roadmaps]] (7 tables)
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `sprints` | 12 | project_id→projects, workspace_id→workspaces, created_by→users |
+| `sprint_backlog_items` | 7 | sprint_id→sprints, task_id→tasks, added_by→users |
+| `sprint_daily_snapshots` | 9 | sprint_id→sprints (total/completed/remaining/added/removed story_points for burndown) |
+| `sprint_reports` | 8 | sprint_id→sprints, generated_by→users |
+| `roadmaps` | 7 | project_id→projects, workspace_id→workspaces |
+| `roadmap_items` | 10 | roadmap_id→roadmaps, epic_id→epics, milestone_id→milestones |
+| `baselines` | 7 | roadmap_id→roadmaps, created_by→users |
+
+> Roadmaps are **Phase 1** (WorkSync Phase 4 user flow depends on them).
+
+### [[database/schemas/wms-chat|Chat + Chat AI]] (11 tables)
+
+Microsoft Teams chat sync additions:
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `channel_teams_links` | 14 | workspace_id->workspaces, channel_id->channels, workspace_teams_link_id->workspace_teams_links |
+| `teams_message_sync_state` | 14 | channel_id->channels, message_id->messages |
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `channels` | 9 | workspace_id→workspaces, tenant_id→tenants, created_by→users |
+| `channel_members` | 6 | channel_id→channels, user_id→users |
+| `messages` | 11 | channel_id→channels, user_id→users, parent_message_id→messages |
+| `message_reactions` | 4 | message_id→messages, user_id→users |
+| `message_attachments` | 3 | message_id→messages, file_asset_id→file_assets |
+| `message_pins` | 5 | channel_id→channels, message_id→messages, pinned_by→users |
+| `premium_ai_detections` | 10 | message_id→messages, channel_id→channels |
+| `ai_action_jobs` | 14 | detection_id→premium_ai_detections, tag_execution_id→ide_tag_executions, user_id→users |
+| `chat_reminder_items` | 8 | channel_id→channels, task_id→tasks, user_id→users |
+
+> `ai_action_jobs` is the universal undo state machine for both Chat AI (10s window) and IDE tag executions (30s window). Hangfire scans `status=pending AND undo_expires_at < now()` every 5 seconds to finalize.
+
+### [[database/schemas/wms-collaboration|Collaboration — Documents, Wiki]] (4 new tables + shared documents)
+
+| Table | Columns | Key FKs | Notes |
+|:------|:--------|:--------|:------|
+| `documents` | extended | workspace_id→workspaces, project_id→projects | Shared with HR Documents. WorkSync adds workspace_id, project_id, document_scope, locked_at, locked_by, approved_version_id. Status enum gains `approved`. |
+| `document_versions` | 7 | document_id→documents, created_by→users | Canonical version table — Phase 1 |
+| `document_approvals` | 8 | document_id→documents, requested_by→users, approver_id→users | On approve: sets documents.status=approved + lock fields |
+| `wiki_pages` | 11 | project_id→projects, parent_page_id→wiki_pages, author_id→users | Hierarchical wiki |
+| `task_documents` | 5 | task_id→tasks, document_id→documents, linked_by→users | Durable task↔document link |
+
+### [[database/schemas/wms-analytics|Analytics + Dashboards]] (7 tables)
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `dashboards` | 9 | workspace_id→workspaces, tenant_id→tenants, created_by→users |
+| `chart_widgets` | 9 | dashboard_id→dashboards |
+| `saved_views` | 9 | workspace_id→workspaces, created_by→users |
+| `report_snapshots` | 7 | workspace_id→workspaces |
+| `report_exports` | 10 | workspace_id→workspaces, requested_by→users, file_asset_id→file_assets |
+| `dashboard_shares` | 7 | dashboard_id→dashboards, shared_with_id→users/teams/workspaces |
+| `saved_view_shares` | 6 | saved_view_id→saved_views |
+
+### [[database/schemas/wms-integrations|Integrations — GitHub / GitLab / Bitbucket]] (7 tables)
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `repositories` | 10 | workspace_id→workspaces, tenant_id→tenants |
+| `task_repository_links` | 5 | task_id→tasks, repository_id→repositories |
+| `code_activity_events` | 10 | repository_id→repositories, task_id→tasks, user_id→users |
+| `commit_records` | 8 | repository_id→repositories, author_user_id→users (task_ids uuid[]) |
+| `pull_request_records` | 12 | repository_id→repositories, author_user_id→users (task_ids uuid[]) |
+| `ci_pipeline_runs` | 9 | repository_id→repositories (task_ids uuid[]) |
+| `task_automation_rules` | 10 | workspace_id→workspaces, created_by→users |
+
+---
+
+## Phase 1 — IDE Extension
+
+### [[database/schemas/ide-extension|IDE Extension]] (5 tables)
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `ide_extension_installs` | 11 | user_id→users, tenant_id→tenants, workspace_id→workspaces |
+| `ide_sessions` | 9 | install_id→ide_extension_installs, user_id→users, active_project_id→projects |
+| `ide_tag_executions` | 15 | user_id→users, session_id→ide_sessions (raw_tag_input, parsed_entity, parsed_action, undo_expires_at) |
+| `ide_context_links` | 11 | user_id→users, tenant_id→tenants (repository_url + branch_name → entity_id) |
+| `ide_chat_threads` | 7 | channel_id→channels, ide_session_id→ide_sessions, context_task_id→tasks |
+
+> `ide_tag_executions.id` is referenced by `ai_action_jobs.tag_execution_id` — IDE tag undo and Chat AI undo share the same state machine.
+
+---
+
+## Phase 1 — Shared Foundation
+
+### [[database/schemas/shared-platform|Shared Platform]] (35 tables)
+
+> Bridge-era WMS provisioning tables removed (WorkSync is now internal).
+
+Microsoft Teams integration additions:
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `external_account_connections` | 12 | tenant_id->tenants, user_id->users |
+| `microsoft_graph_tokens` | 11 | external_account_connection_id->external_account_connections |
+| `teams_webhook_subscriptions` | 12 | tenant_id->tenants |
+| `teams_delta_sync_state` | 10 | tenant_id->tenants |
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -225,6 +367,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `approval_actions` | 8 | actor_id→employees, delegated_to_id→employees |
 | `compliance_exports` | 10 | tenant_id→tenants, requested_by_id→users, target_user_id→users |
 | `escalation_rules` | 11 | tenant_id→tenants, escalate_to_role_id→roles, created_by_id→users |
+| `global_app_catalog` | 11 | created_by_id→dev_platform_accounts |
 | `feature_flags` | 8 | tenant_id→tenants, toggled_by_id→users |
 | `hardware_terminals` | 11 | tenant_id→tenants |
 | `legal_holds` | 9 | tenant_id→tenants, placed_by_id→users, released_by_id→users |
@@ -251,17 +394,27 @@ These tables are referenced by many others — design changes here have wide imp
 | `workflow_instances` | 10 | tenant_id→tenants, initiated_by_id→employees |
 | `workflow_step_instances` | 8 | assigned_to_id→employees |
 | `workflow_steps` | 9 | approver_role_id→roles |
-| `bridge_api_keys` | 11 | tenant_id→tenants, created_by_id→users |
-| `wms_role_mappings` | 7 | tenant_id→tenants, onevo_role_id→roles |
-| `wms_tenant_links` | 12 | tenant_id→tenants, bridge_api_key_id→bridge_api_keys |
+
+### [[database/schemas/agent-gateway|Agent Gateway]] (6 tables)
+
+| Table | Columns | Key FKs |
+|:------|:--------|:--------|
+| `agent_commands` | 12 | tenant_id→tenants, requested_by→users |
+| `agent_health_logs` | 8 | tenant_id→tenants |
+| `agent_install_entitlements` | 8 | tenant_id→tenants, granted_by→users — checked server-side on every IDE install request |
+| `agent_install_jobs` | 9 | tenant_id→tenants, user_id→users, install_id→ide_extension_installs — created when user approves monitoring agent install from IDE |
+| `agent_policies` | 7 | tenant_id→tenants |
+| `registered_agents` | 12 | tenant_id→tenants, employee_id→employees |
 
 ### [[database/schemas/notifications|Notifications]] (0 own tables)
 
-> `notification_templates` and `notification_channels` are physically housed in the Shared Platform `AppDbContext` and **counted under Shared Platform** above. They are not counted again here. The Notifications module owns no tables of its own.
+> `notification_templates` and `notification_channels` are physically housed in the Shared Platform and counted there.
+
+---
 
 ## Phase 2 Modules
 
-> These tables are designed but not built in Phase 1. Schema is defined here so Phase 1 tables can account for future FK dependencies.
+> Designed but not built in Phase 1. Schema defined here so Phase 1 tables can account for future FK dependencies.
 
 ### [[database/schemas/payroll|Payroll]] (11 tables)
 
@@ -293,7 +446,7 @@ These tables are referenced by many others — design changes here have wide imp
 
 ### [[database/schemas/skills|Skills & Learning]] (10 tables — Phase 2 remainder)
 
-> The 5 core skill tables (skill_categories, skills, job_skill_requirements, employee_skills, skill_validation_requests) are built in Phase 1 — see Skills Core section above.
+> The 5 core skill tables are built in Phase 1. These 10 are the LMS and assessment tables.
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -308,7 +461,9 @@ These tables are referenced by many others — design changes here have wide imp
 | `skill_question_options` | 6 | tenant_id→tenants |
 | `skill_questions` | 11 | tenant_id→tenants, created_by_id→users |
 
-### [[database/schemas/documents|Documents]] (6 tables)
+### [[database/schemas/documents|HR Documents]] (4 tables — Phase 2 additions)
+
+> `documents` and `document_versions` are created in Phase 1 by WorkSync.Collaboration. HR Documents (Phase 2) adds the HR-specific tables only.
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -316,8 +471,6 @@ These tables are referenced by many others — design changes here have wide imp
 | `document_acknowledgements` | 7 | employee_id→employees, acknowledged_by_id→users |
 | `document_categories` | 8 | tenant_id→tenants |
 | `document_templates` | 10 | tenant_id→tenants, created_by_id→users |
-| `document_versions` | 10 | uploaded_by_id→users |
-| `documents` | 11 | tenant_id→tenants, legal_entity_id→legal_entities, employee_id→employees |
 
 ### [[database/schemas/grievance|Grievance]] (2 tables)
 
@@ -346,7 +499,7 @@ These tables are referenced by many others — design changes here have wide imp
 
 ## Developer Platform
 
-> Tables for the internal developer console (`console.onevo.io`). These live in their own schema scope and are not tenant-scoped. See `developer-platform/backend/admin-api-layer.md` for context.
+> Tables for the internal developer console (`console.onevo.io`). Not tenant-scoped. See `developer-platform/backend/admin-api-layer.md`.
 
 ### Phase 1 (5 tables)
 
@@ -362,13 +515,17 @@ These tables are referenced by many others — design changes here have wide imp
 
 | Table | Description |
 |:------|:-----------|
-| `platform_api_keys` | Platform API keys *(Phase 2)* |
+| `platform_api_keys` | Platform API keys |
 
 ---
 
 ## Known Issues
 
-- **Escalation boundary:** Two escalation systems exist — `escalation_rules` (Shared Platform) handles workflow SLA timeouts (e.g., leave pending >48h → escalate to manager's manager); `escalation_chains` (Exception Engine) handles alert routing for system-detected anomalies (e.g., GPS mismatch → alert security team). These are distinct concerns and not interchangeable.
+- **Escalation boundary:** `escalation_rules` (Shared Platform) handles workflow SLA timeouts; `escalation_chains` (Exception Engine) handles alert routing for anomalies. These are distinct — do not merge.
+- **documents table shared ownership:** WorkSync.Collaboration owns the Phase 1 definition. HR Documents Phase 2 adds columns via migration. If `documents` columns conflict between HR and WMS concerns, HR Documents wins for `employee_id`/`legal_entity_id` scope; WorkSync wins for `workspace_id`/`project_id` scope.
+- **WorkSync schema coverage:** Core WorkSync schema files now exist for project management, task management, planning, chat, collaboration, analytics, integrations, and IDE extension. OKR, time management, and resource management are covered in the unified entity map and module docs; create dedicated schema files if the implementation team wants one file per WorkSync subdomain.
+
+---
 
 ## Related
 

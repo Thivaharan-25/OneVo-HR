@@ -2,9 +2,9 @@
 # ONEVO-HRMS + ONEVO-WorkSync — One PostgreSQL Schema
 
 **Architecture:** Single unified PostgreSQL database — no bridge API, no microservice split
-**Multi-tenant:** `tenants` → `workspaces` → `workspace_members`
-**RBAC:** Hybrid — HRMS granular permissions (tenant-level) + workspace roles (WMS-level)
-**Total Tables:** ~287 across 38 modules
+**Multi-tenant:** `tenants` → `legal_entities` / `workspaces` → `workspace_members`
+**RBAC:** Hybrid — HRMS granular permissions (tenant-level) + workspace roles (WMS-level), evaluated together for cross-module flows
+**Total Tables:** 280 unique tables across 39 entity-map sections
 **Last Updated:** 2026-04-29
 
 ---
@@ -14,9 +14,17 @@
 | Data Domain | Scope Key | Examples |
 |---|---|---|
 | HR data (employees, leave, payroll, attendance) | `tenant_id` | Core HR, Payroll, Leave |
-| WMS data (projects, tasks, chat) | `workspace_id` | Projects, Tasks, Chat |
+| HR legal-entity data | `tenant_id` + optional `legal_entity_id` | Employee docs, payroll, WMS topbar scope |
+| WMS data (projects, tasks, chat) | `workspace_id` + inherited `tenant_id` | Projects, Tasks, Chat |
 | User identity | `tenant_id` (belongs to tenant, member of many workspaces) | `users`, `workspace_members` |
-| Merged entities | both nullable | `audit_logs`, `calendar_events`, `overtime_records` |
+| Employee identity | `employee_id` remains canonical for HR flows | Teams, documents, payroll, attendance |
+| Merged entities | `tenant_id` required; `workspace_id` optional | `audit_logs`, `calendar_events`, `overtime_records` |
+
+**Compatibility rule:** WMS must not replace HR's employee/legal-entity model. A WMS `user_id` resolves to HR through `employees.user_id`; HR workflows continue to store `employee_id` where they do today.
+
+**Workspace/legal-entity rule:** A workspace belongs to one tenant and may optionally bind to a `legal_entity_id`. If a workspace is bound, WMS visibility must respect the selected legal entity in the HR topbar.
+
+**Hybrid RBAC rule:** HR actions require tenant-level `permissions` / `user_roles`. WMS actions require `workspace_members` plus `workspace_roles`. Cross-module actions (for example task overtime flowing into attendance/payroll) require both the WMS permission and the relevant HR permission/approval rule.
 
 ---
 
@@ -29,12 +37,12 @@
 | `audit_logs` | HRMS `audit_logs` + WMS `AUDIT_LOG` + `ACTIVITY_LOG` | `workspace_id` nullable |
 | `calendar_events` | HRMS `calendar_events` + WMS `CALENDAR_EVENT` | unified `event_type` enum |
 | `overtime_records` | HRMS `overtime_records` + WMS `OVERTIME_ENTRY` | `source` col + nullable `task_id` |
-| `file_assets` + `file_versions` | HRMS `file_records` (dropped) + WMS `FILE_ASSET`/`FILE_VERSION` | WMS versioned approach wins |
-| `teams` + `team_members` | HRMS `teams` (tenant) + WMS `TEAM` (workspace) | `workspace_id` nullable |
+| `file_records` + `file_assets` + `file_versions` | HRMS `file_records` + WMS `FILE_ASSET`/`FILE_VERSION` | keep HR-compatible `file_records`; add versioned assets |
+| `teams` + `team_members` | HRMS `teams` (tenant) + WMS `TEAM` (workspace) | preserve `employee_id`; add nullable `workspace_id`/`user_id` |
 | `notifications` (full stack) | HRMS templates/channels + WMS delivery stack | all kept, one module |
 | `skills` (full HRMS stack) | HRMS wins; WMS `SKILL`/`USER_SKILL` mapped to HRMS tables | `workspace_id` nullable on `skills` |
 
-**Removed (single-DB no longer needed):** `bridge_clients`, `wms_tenant_links`, `wms_role_mappings`, `bridge_api_keys`
+**Bridge-era WMS provisioning entities removed after single-DB cutover.** WorkSync uses direct foreign keys and internal module permissions in this schema.
 
 ---
 
@@ -42,7 +50,8 @@
 
 ```
 tenants
-  └── workspaces (many per tenant)
+  ├── legal_entities (HR/legal scope)
+  └── workspaces (many per tenant, optionally linked to legal_entities)
         └── workspace_members (users ↔ workspaces, many-to-many)
               └── workspace_roles (Admin / Member / Viewer per workspace)
 
@@ -52,7 +61,7 @@ users (tenant_id → tenants)
   ├── user_roles (HRMS tenant-level RBAC)
   └── sessions
 
-HRMS scope (tenant_id):        WMS scope (workspace_id):
+HRMS scope (tenant_id + employee/legal entity):        WMS scope (workspace_id + inherited tenant/legal entity):
   employees                      workspaces
   leave_requests                 projects → tasks
   payroll_runs                   sprints → boards
@@ -100,6 +109,9 @@ HRMS scope (tenant_id):        WMS scope (workspace_id):
 | `last_login_at` | timestamptz | |
 | `created_at` | timestamptz | |
 | `updated_at` | timestamptz | |
+| `must_change_password` | boolean | default false — set true on admin password reset |
+| `password_set_by_admin` | boolean | default false |
+| `temporary_password_expires_at` | timestamptz | nullable — backend returns 403 MUST_CHANGE_PASSWORD when now() > this |
 
 ---
 
@@ -109,6 +121,7 @@ HRMS scope (tenant_id):        WMS scope (workspace_id):
 |---|---|---|
 | `id` | uuid | PK |
 | `tenant_id` | uuid | FK → tenants |
+| `legal_entity_id` | uuid | FK → legal_entities, nullable (binds WMS visibility to HR topbar scope) |
 | `name` | varchar(200) | |
 | `slug` | varchar(100) | UNIQUE per tenant |
 | `description` | text | |
@@ -127,6 +140,7 @@ HRMS scope (tenant_id):        WMS scope (workspace_id):
 | `id` | uuid | PK |
 | `workspace_id` | uuid | FK → workspaces |
 | `user_id` | uuid | FK → users |
+| `employee_id` | uuid | FK → employees, nullable (required when member is an HR employee) |
 | `workspace_role_id` | uuid | FK → workspace_roles |
 | `joined_at` | timestamptz | |
 | `invited_by` | uuid | FK → users, nullable |
@@ -449,6 +463,8 @@ PK: `(workspace_group_id, user_id)`
 
 ### `teams` — Phase 1 — MERGED (HRMS org teams + WMS workspace teams)
 
+> HR org teams remain employee-based. Workspace teams may add `workspace_id`, but must not remove HR's `employee_id` relationships used by org charts, transfers, and reporting.
+
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
@@ -457,7 +473,8 @@ PK: `(workspace_group_id, user_id)`
 | `name` | varchar(100) | |
 | `description` | text | |
 | `department_id` | uuid | FK → departments, nullable |
-| `lead_user_id` | uuid | FK → users, nullable |
+| `team_lead_id` | uuid | FK → employees, nullable (HR-compatible lead) |
+| `lead_user_id` | uuid | FK → users, nullable (workspace display/action lead) |
 | `created_at` | timestamptz | |
 
 ---
@@ -468,11 +485,53 @@ PK: `(workspace_group_id, user_id)`
 |---|---|---|
 | `id` | uuid | PK |
 | `team_id` | uuid | FK → teams |
-| `user_id` | uuid | FK → users |
+| `employee_id` | uuid | FK → employees, nullable (required for HR org teams) |
+| `user_id` | uuid | FK → users, nullable (workspace membership convenience) |
 | `role` | varchar(30) | lead / member |
 | `joined_at` | timestamptz | |
 
-UNIQUE: `(team_id, user_id)`
+UNIQUE: `(team_id, employee_id)` where `employee_id IS NOT NULL`
+UNIQUE: `(team_id, user_id)` where `user_id IS NOT NULL`
+
+---
+
+### `team_roles` — Phase 1
+
+Stackable permission roles within a team. A member can hold multiple team roles simultaneously.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `team_id` | uuid | FK → teams |
+| `name` | varchar(100) | e.g. Lead / Reviewer / Observer |
+| `description` | text | nullable |
+| `created_at` | timestamptz | |
+
+---
+
+### `team_role_permissions` — Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `team_role_id` | uuid | FK → team_roles |
+| `permission_id` | uuid | FK → permissions |
+
+UNIQUE: `(team_role_id, permission_id)`
+
+---
+
+### `team_member_roles` — Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `team_id` | uuid | FK → teams |
+| `employee_id` | uuid | FK → employees |
+| `team_role_id` | uuid | FK → team_roles |
+| `assigned_at` | timestamptz | |
+
+UNIQUE: `(team_id, employee_id, team_role_id)`
 
 ---
 
@@ -887,6 +946,8 @@ UNIQUE: `(team_id, user_id)`
 
 ### `overtime_records` — Phase 1 — MERGED (HRMS + WMS OVERTIME_ENTRY)
 
+> HR payroll/attendance remains the source of approval truth. WMS can propose task-linked overtime, but approval must follow HR overtime rules before it affects attendance or payroll.
+
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
@@ -896,11 +957,14 @@ UNIQUE: `(team_id, user_id)`
 | `workspace_id` | uuid | FK → workspaces, nullable |
 | `work_date` | date | |
 | `minutes` | int | overtime minutes |
-| `source` | varchar(20) | hr_manual / task_logged |
-| `approved_by` | uuid | FK → users, nullable |
+| `source` | varchar(20) | hr_manual / task_logged / timesheet |
+| `approval_status` | varchar(20) | draft / submitted / approved / rejected |
+| `approved_by` | uuid | FK → employees, nullable (HR approver) |
 | `approved_at` | timestamptz | nullable |
 | `notes` | text | |
 | `created_at` | timestamptz | |
+
+Constraint: if `task_id IS NOT NULL`, then `workspace_id IS NOT NULL`.
 
 ---
 
@@ -1622,18 +1686,26 @@ PK: `(course_id, skill_id)`
 
 ### `documents` — Phase 1
 
-| Column | Type |
-|---|---|
-| `id` | uuid PK |
-| `tenant_id` | uuid FK → tenants |
-| `workspace_id` | uuid FK → workspaces nullable |
-| `project_id` | uuid FK → projects nullable |
-| `category_id` | uuid FK → document_categories nullable |
-| `title` | varchar(255) |
-| `status` | varchar(20) — draft/published/archived |
-| `owner_id` | uuid FK → users |
-| `created_at` | timestamptz |
-| `updated_at` | timestamptz |
+> HR documents keep `legal_entity_id` and `employee_id`. WMS documents add optional `workspace_id`/`project_id`.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `tenant_id` | uuid | FK → tenants |
+| `legal_entity_id` | uuid | FK → legal_entities, nullable |
+| `employee_id` | uuid | FK → employees, nullable (employee-specific HR documents) |
+| `workspace_id` | uuid | FK → workspaces, nullable |
+| `project_id` | uuid | FK → projects, nullable |
+| `category_id` | uuid | FK → document_categories, nullable |
+| `title` | varchar(255) | |
+| `document_scope` | varchar(30) | company / legal_entity / employee / workspace / project |
+| `status` | varchar(20) | draft / in_review / **approved** / published / archived — `approved` triggers lock |
+| `owner_id` | uuid | FK → users |
+| `locked_at` | timestamptz | nullable — set when document_approvals records approved decision |
+| `locked_by` | uuid | FK → users, nullable — approver who locked |
+| `approved_version_id` | uuid | FK → document_versions, nullable — the locked version |
+| `created_at` | timestamptz | |
+| `updated_at` | timestamptz | |
 
 ---
 
@@ -1657,6 +1729,7 @@ PK: `(course_id, skill_id)`
 |---|---|
 | `id` | uuid PK |
 | `document_id` | uuid FK → documents |
+| `employee_id` | uuid FK → employees |
 | `user_id` | uuid FK → users |
 | `acknowledged_at` | timestamptz |
 
@@ -1668,13 +1741,31 @@ PK: `(course_id, skill_id)`
 |---|---|
 | `id` | uuid PK |
 | `document_id` | uuid FK → documents |
+| `employee_id` | uuid FK → employees nullable |
 | `user_id` | uuid FK → users |
 | `action` | varchar(20) — view/download/edit |
 | `accessed_at` | timestamptz |
 
 ---
 
-## 13. FILE STORAGE (WMS wins — versioned)
+## 13. FILE STORAGE (HR compatible + WMS versioned)
+
+### `file_records` — Phase 1 — HR compatibility anchor
+
+> Existing HR modules reference `file_records`. Keep this table as the stable HR-facing file pointer. New WMS versioning can attach through `file_assets`.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `tenant_id` | uuid | FK → tenants |
+| `file_name` | varchar(255) | |
+| `content_type` | varchar(100) | MIME type |
+| `size_bytes` | bigint | |
+| `storage_path` | varchar(500) | |
+| `uploaded_by` | uuid | FK → users |
+| `created_at` | timestamptz | |
+
+---
 
 ### `file_assets` — Phase 1
 
@@ -1683,6 +1774,7 @@ PK: `(course_id, skill_id)`
 | `id` | uuid | PK |
 | `tenant_id` | uuid | FK → tenants |
 | `workspace_id` | uuid | FK → workspaces, nullable |
+| `file_record_id` | uuid | FK → file_records, nullable (HR compatibility pointer) |
 | `uploaded_by` | uuid | FK → users |
 | `file_name` | varchar(255) | |
 | `mime_type` | varchar(100) | |
@@ -2728,6 +2820,44 @@ PK: `(task_id, label_id)`
 
 ---
 
+### `sprint_backlog_items` — Phase 1
+
+Junction between a sprint and its tasks. Controls ordering and tracks when items were added/removed mid-sprint.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `sprint_id` | uuid | FK → sprints |
+| `task_id` | uuid | FK → tasks |
+| `added_by` | uuid | FK → users |
+| `added_at` | timestamptz | |
+| `removed_at` | timestamptz | nullable — set when item pulled out of sprint |
+| `position` | int | ordering within sprint backlog |
+
+UNIQUE: `(sprint_id, task_id)` where `removed_at IS NULL`
+
+---
+
+### `sprint_daily_snapshots` — Phase 1
+
+One row per sprint per day. Source data for the burndown chart. Written nightly by a Hangfire job.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `sprint_id` | uuid | FK → sprints |
+| `snapshot_date` | date | |
+| `total_points` | int | Total story points in sprint on this day |
+| `completed_points` | int | Points in done/closed status |
+| `remaining_points` | int | total_points − completed_points |
+| `added_points` | int | Points added to sprint on this day (scope creep) |
+| `removed_points` | int | Points removed from sprint on this day |
+| `created_at` | timestamptz | |
+
+UNIQUE: `(sprint_id, snapshot_date)`
+
+---
+
 ### `boards` — Phase 1
 
 | Column | Type |
@@ -2737,6 +2867,40 @@ PK: `(task_id, label_id)`
 | `name` | varchar(100) |
 | `type` | varchar(20) — kanban/scrum/list |
 | `is_default` | boolean |
+
+---
+
+### `board_columns` — Phase 1
+
+Each column on a project board. `status_key` maps to `tasks.status` — moving a card updates the task status.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `board_id` | uuid | FK → boards |
+| `name` | varchar(100) | Display name (e.g. "In Progress") |
+| `status_key` | varchar(50) | Maps to tasks.status value |
+| `position` | int | Column order left-to-right |
+| `wip_limit` | int | nullable — max cards; 0 = unlimited |
+| `color` | varchar(10) | nullable — hex color |
+
+UNIQUE: `(board_id, status_key)`
+
+---
+
+### `board_task_positions` — Phase 1
+
+Drag-order within a column. Updated on every card drag.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `board_id` | uuid | FK → boards |
+| `column_id` | uuid | FK → board_columns |
+| `task_id` | uuid | FK → tasks |
+| `position` | int | Sort order within the column |
+
+UNIQUE: `(board_id, task_id)`
 
 ---
 
@@ -2753,7 +2917,7 @@ PK: `(task_id, label_id)`
 
 ---
 
-### `roadmaps` — Phase 2
+### `roadmaps` — Phase 1
 
 | Column | Type |
 |---|---|
@@ -2766,7 +2930,7 @@ PK: `(task_id, label_id)`
 
 ---
 
-### `roadmap_items` — Phase 2
+### `roadmap_items` — Phase 1
 
 | Column | Type |
 |---|---|
@@ -2778,7 +2942,7 @@ PK: `(task_id, label_id)`
 
 ---
 
-### `baselines` — Phase 2
+### `baselines` — Phase 1
 
 | Column | Type |
 |---|---|
@@ -3327,6 +3491,31 @@ UNIQUE: `(message_id, user_id)`
 
 ---
 
+### `ai_action_jobs` — Phase 1
+
+Universal undo state machine for all AI-triggered and IDE-tag-triggered reversible creates. Hangfire scans `status = pending AND undo_expires_at < now()` every 5 seconds to finalize.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `detection_id` | uuid | FK → premium_ai_detections, nullable |
+| `tag_execution_id` | uuid | FK → ide_tag_executions, nullable |
+| `user_id` | uuid | FK → users |
+| `tenant_id` | uuid | FK → tenants |
+| `action_type` | varchar(50) | auto_create_task / auto_create_reminder / auto_update_status |
+| `action_params` | jsonb | Params used to create the entity |
+| `status` | varchar(20) | pending / finalized / undone / failed |
+| `created_entity_type` | varchar(50) | nullable |
+| `created_entity_id` | uuid | nullable |
+| `undo_expires_at` | timestamptz | nullable — 10s for Chat AI; 30s for IDE tags |
+| `undone_at` | timestamptz | nullable |
+| `finalized_at` | timestamptz | nullable |
+| `created_at` | timestamptz | |
+
+**Index:** `(user_id, status, undo_expires_at)` — Hangfire finalization scan
+
+---
+
 ## 35. WMS — COLLABORATION
 
 ### `comments` — Phase 1
@@ -3430,6 +3619,22 @@ UNIQUE: `(message_id, user_id)`
 | `author_id` | uuid FK → users |
 | `comment` | text |
 | `created_at` | timestamptz |
+
+---
+
+### `task_documents` — Phase 1
+
+Durable link between a task and an editable document. Separate from `attachments` (file attachments).
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `task_id` | uuid | FK → tasks |
+| `document_id` | uuid | FK → documents |
+| `linked_by` | uuid | FK → users |
+| `linked_at` | timestamptz | |
+
+UNIQUE: `(task_id, document_id)`
 
 ---
 
@@ -3597,6 +3802,39 @@ UNIQUE: `(message_id, user_id)`
 
 ---
 
+### `dashboard_shares` — Phase 1
+
+Granular sharing ACL for dashboards. Separate from `dashboards.is_shared` (workspace-wide toggle).
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `dashboard_id` | uuid | FK → dashboards |
+| `shared_with_type` | varchar(20) | user / team / workspace |
+| `shared_with_id` | uuid | FK → users.id / teams.id / workspaces.id depending on type |
+| `can_edit` | boolean | default false — view-only sharing |
+| `shared_by` | uuid | FK → users |
+| `shared_at` | timestamptz | |
+
+UNIQUE: `(dashboard_id, shared_with_type, shared_with_id)`
+
+---
+
+### `saved_view_shares` — Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `saved_view_id` | uuid | FK → saved_views |
+| `shared_with_type` | varchar(20) | user / team / workspace |
+| `shared_with_id` | uuid | |
+| `shared_by` | uuid | FK → users |
+| `shared_at` | timestamptz | |
+
+UNIQUE: `(saved_view_id, shared_with_type, shared_with_id)`
+
+---
+
 ## 38. WMS — INTEGRATION & API
 
 ### `integrations` — Phase 2
@@ -3616,32 +3854,39 @@ UNIQUE: `(message_id, user_id)`
 
 ### `api_keys` — Phase 1
 
-| Column | Type |
-|---|---|
-| `id` | uuid PK |
-| `workspace_id` | uuid FK → workspaces |
-| `user_id` | uuid FK → users |
-| `name` | varchar(100) |
-| `key_hash` | varchar(255) |
-| `scopes_json` | jsonb |
-| `expires_at` | date nullable |
-| `last_used_at` | timestamptz nullable |
-| `created_at` | timestamptz |
+> Tenant-level API keys remain valid for HR/platform integrations. Workspace keys are a narrower WMS scope.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `tenant_id` | uuid | FK → tenants |
+| `workspace_id` | uuid | FK → workspaces, nullable (null = tenant/platform key) |
+| `user_id` | uuid | FK → users |
+| `name` | varchar(100) | |
+| `key_hash` | varchar(255) | |
+| `key_prefix` | varchar(10) | first chars for identification |
+| `scopes_json` | jsonb | |
+| `expires_at` | date | nullable |
+| `last_used_at` | timestamptz | nullable |
+| `created_at` | timestamptz | |
 
 ---
 
 ### `webhooks` — Phase 1
 
-| Column | Type |
-|---|---|
-| `id` | uuid PK |
-| `workspace_id` | uuid FK → workspaces |
-| `url` | varchar(1000) |
-| `events_json` | jsonb |
-| `secret_hash` | varchar(255) |
-| `is_active` | boolean |
-| `created_by` | uuid FK → users |
-| `created_at` | timestamptz |
+> Replaces/extends tenant-level `webhook_endpoints`; `workspace_id` is nullable so HR/platform webhooks do not break.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `tenant_id` | uuid | FK → tenants |
+| `workspace_id` | uuid | FK → workspaces, nullable |
+| `url` | varchar(1000) | |
+| `events_json` | jsonb | |
+| `secret_hash` | varchar(255) | |
+| `is_active` | boolean | |
+| `created_by` | uuid | FK → users |
+| `created_at` | timestamptz | |
 
 ---
 
@@ -3674,13 +3919,243 @@ UNIQUE: `(message_id, user_id)`
 
 ---
 
+### `repositories` — Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `workspace_id` | uuid | FK → workspaces |
+| `tenant_id` | uuid | FK → tenants |
+| `provider` | varchar(20) | github / gitlab / bitbucket |
+| `full_name` | varchar(255) | e.g. `org/repo` |
+| `url` | varchar(500) | Clone URL |
+| `default_branch` | varchar(100) | default 'main' |
+| `webhook_secret` | varchar(255) | nullable — HMAC secret |
+| `is_active` | boolean | |
+| `created_at` | timestamptz | |
+
+---
+
+### `task_repository_links` — Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `task_id` | uuid | FK → tasks |
+| `repository_id` | uuid | FK → repositories |
+| `linked_by` | uuid | FK → users |
+| `linked_at` | timestamptz | |
+
+UNIQUE: `(task_id, repository_id)`
+
+---
+
+### `code_activity_events` — Phase 1
+
+Unified event stream from GitHub/GitLab webhooks and IDE extension.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `user_id` | uuid | FK → users, nullable — resolved from commit email |
+| `tenant_id` | uuid | FK → tenants |
+| `repository_id` | uuid | FK → repositories, nullable |
+| `event_type` | varchar(30) | commit / push / pr_opened / pr_merged / branch_created / ci_started / ci_completed |
+| `branch_name` | varchar(255) | nullable |
+| `task_id` | uuid | FK → tasks, nullable — auto-resolved from commit message |
+| `event_metadata` | jsonb | Raw event payload (sanitized) |
+| `occurred_at` | timestamptz | |
+| `source` | varchar(30) | ide_extension / github_webhook / gitlab_webhook |
+
+---
+
+### `commit_records` — Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `repository_id` | uuid | FK → repositories |
+| `sha` | varchar(40) | Git SHA |
+| `author_user_id` | uuid | FK → users, nullable |
+| `message` | text | |
+| `task_ids` | uuid[] | Extracted task references from message |
+| `committed_at` | timestamptz | |
+| `pushed_at` | timestamptz | nullable |
+
+UNIQUE: `(repository_id, sha)`
+
+---
+
+### `pull_request_records` — Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `repository_id` | uuid | FK → repositories |
+| `external_pr_id` | varchar(50) | Provider PR ID |
+| `title` | varchar(500) | |
+| `url` | varchar(500) | |
+| `status` | varchar(20) | open / merged / closed |
+| `author_user_id` | uuid | FK → users, nullable |
+| `task_ids` | uuid[] | Extracted task references from title/body |
+| `opened_at` | timestamptz | |
+| `merged_at` | timestamptz | nullable |
+| `closed_at` | timestamptz | nullable |
+
+UNIQUE: `(repository_id, external_pr_id)`
+
+---
+
+### `ci_pipeline_runs` — Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `repository_id` | uuid | FK → repositories |
+| `external_run_id` | varchar(100) | Provider pipeline run ID |
+| `branch_name` | varchar(255) | |
+| `status` | varchar(20) | pending / running / success / failed / cancelled |
+| `task_ids` | uuid[] | Tasks linked to this branch |
+| `started_at` | timestamptz | |
+| `finished_at` | timestamptz | nullable |
+
+---
+
+### `task_automation_rules` — Phase 1
+
+Workspace-level rules triggered by code events. Evaluated by Hangfire after each webhook event.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `workspace_id` | uuid | FK → workspaces |
+| `rule_name` | varchar(100) | |
+| `trigger_type` | varchar(50) | commit_pushed / pr_opened / pr_merged / branch_created / ci_success / ci_failed |
+| `condition_json` | jsonb | e.g. `{ "branch_pattern": "feat/*" }` |
+| `action_type` | varchar(50) | update_task_status / assign_task / add_label / log_time / post_chat_message |
+| `action_params` | jsonb | Parameters for the action |
+| `is_active` | boolean | |
+| `created_by` | uuid | FK → users |
+| `created_at` | timestamptz | |
+
+**Index:** `(workspace_id, is_active, trigger_type)` — automation rule engine query
+
+---
+
+## 39. IDE EXTENSION
+
+### `ide_extension_installs` — Phase 1
+
+One row per device-user-editor combination.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `user_id` | uuid | FK → users |
+| `tenant_id` | uuid | FK → tenants |
+| `workspace_id` | uuid | FK → workspaces, nullable |
+| `editor_type` | varchar(20) | vscode / jetbrains |
+| `editor_version` | varchar(50) | |
+| `extension_version` | varchar(20) | |
+| `device_fingerprint` | varchar(255) | OS + hardware hash — not PII, used for dedup |
+| `installed_at` | timestamptz | |
+| `last_active_at` | timestamptz | Updated on each session start |
+| `is_active` | boolean | Set to false on uninstall |
+
+**Index:** `(user_id, is_active)`, `(tenant_id)`
+
+---
+
+### `ide_sessions` — Phase 1
+
+One row per editor session (extension activated → deactivated). Used for tag execution audit and context tracking.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `install_id` | uuid | FK → ide_extension_installs |
+| `user_id` | uuid | FK → users |
+| `tenant_id` | uuid | FK → tenants |
+| `workspace_id` | uuid | FK → workspaces, nullable |
+| `active_project_id` | uuid | FK → projects, nullable — updated on branch switch |
+| `started_at` | timestamptz | |
+| `ended_at` | timestamptz | nullable — null means session still open |
+
+**Index:** `(user_id, started_at DESC)`, `(install_id)`
+
+---
+
+### `ide_tag_executions` — Phase 1
+
+Full audit trail of every `@entity:action` command typed in the IDE extension.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `user_id` | uuid | FK → users |
+| `tenant_id` | uuid | FK → tenants |
+| `session_id` | uuid | FK → ide_sessions, nullable |
+| `raw_tag_input` | text | The exact string the user typed |
+| `parsed_entity` | varchar(50) | task / sprint / time / chat / leave / doc / board / okr / review / notify |
+| `parsed_action` | varchar(50) | new / status / assign / log / send / request / view / move / link / approve |
+| `resolved_params` | jsonb | Parameters after autocomplete resolution |
+| `permission_check_result` | varchar(20) | allowed / denied |
+| `execution_status` | varchar(20) | pending / success / failed / undone |
+| `created_entity_type` | varchar(50) | nullable |
+| `created_entity_id` | uuid | nullable |
+| `undo_expires_at` | timestamptz | nullable — 30s undo window for reversible actions |
+| `undone_at` | timestamptz | nullable |
+| `executed_at` | timestamptz | |
+
+**Note:** `id` is referenced by `ai_action_jobs.tag_execution_id` — IDE tag undo and Chat AI undo share the same state machine.
+
+---
+
+### `ide_context_links` — Phase 1
+
+User-created or auto-detected links between code context (branch/file) and WorkSync entities.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `user_id` | uuid | FK → users |
+| `tenant_id` | uuid | FK → tenants |
+| `repository_url` | varchar(500) | Full clone URL |
+| `branch_name` | varchar(255) | Git branch name |
+| `file_path` | varchar(1000) | nullable — for file-level links |
+| `entity_type` | varchar(30) | task / project / sprint / document |
+| `entity_id` | uuid | ID of the linked entity |
+| `link_type` | varchar(30) | branch / commit / file / pr |
+| `created_at` | timestamptz | |
+| `created_by` | uuid | FK → users |
+
+**Index:** `(repository_url, branch_name)` — primary lookup for context detection
+
+---
+
+### `ide_chat_threads` — Phase 1
+
+Chat threads started with code context (e.g. task-linked chat opened from within the IDE).
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `channel_id` | uuid | FK → channels |
+| `user_id` | uuid | FK → users |
+| `ide_session_id` | uuid | FK → ide_sessions, nullable |
+| `context_task_id` | uuid | FK → tasks, nullable |
+| `context_file_path` | varchar(1000) | nullable |
+| `last_message_at` | timestamptz | |
+
+---
+
 ## Table Count Summary
 
 | Module | Tables | Phase |
 |---|---|---|
-| 1. Foundation | 9 | P1 |
+| 1. Foundation | 9 (users +3 pwd fields) | P1 |
 | 2. Auth & Security | 14 | P1/P2 |
-| 3. Org Structure | 11 | P1/P2 |
+| 3. Org Structure | 14 (+team_roles, team_role_permissions, team_member_roles) | P1/P2 |
 | 4. Core HR | 13 | P1 |
 | 5. Workforce Presence | 12 | P1 |
 | 6. Leave | 5 | P1 |
@@ -3689,10 +4164,10 @@ UNIQUE: `(message_id, user_id)`
 | 9. Skills & Learning | 18 | P1/P2 |
 | 10. Calendar | 2 | P1 |
 | 11. Notifications | 9 | P1/P2 |
-| 12. Documents | 6 | P1 |
-| 13. File Storage | 2 | P1 |
+| 12. Documents | 6 (documents +3 lock fields) | P1 |
+| 13. File Storage | 3 | P1 |
 | 14. Activity Monitoring | 9 | P1 |
-| 15. Agent Gateway | 5 | P1 |
+| 15. Agent Gateway | 7 (+agent_install_entitlements, agent_install_jobs) | P1 |
 | 16. Exception Engine | 5 | P1 |
 | 17. Discrepancy Engine | 3 | P1 |
 | 18. Reporting Engine | 3 | P1 |
@@ -3701,22 +4176,23 @@ UNIQUE: `(message_id, user_id)`
 | 21. Grievance | 2 | P1 |
 | 22. Expense | 3 | P1 |
 | 23. Productivity Analytics | 5 | P1/P2 |
-| 24. Shared Platform | 2 + outbox | P1 |
-| 25. WMS Projects | 7 | P1/P2 |
-| 26. WMS Tasks | 14 | P1 |
-| 27. WMS Planning | 9 | P1/P2 |
+| 24. Shared Platform | 30 (bridge tables removed) | P1 |
+| 25. WMS Projects | 10 | P1 |
+| 26. WMS Tasks | 13 | P1 |
+| 27. WMS Planning | 11 (+sprint_backlog_items, sprint_daily_snapshots, board_columns, board_task_positions; roadmaps→P1) | P1 |
 | 28. WMS OKR | 6 | P1/P2 |
 | 29. WMS My Space | 2 | P1 |
 | 30. WMS Todo | 3 | P1 |
 | 31. WMS Time | 6 | P1/P2 |
 | 32. WMS Resource | 3 | P1 |
 | 33. WMS Chat | 8 | P1 |
-| 34. WMS Chat AI | 7 | P1 |
-| 35. WMS Collaboration | 8 | P1 |
+| 34. WMS Chat AI | 8 (+ai_action_jobs) | P1 |
+| 35. WMS Collaboration | 9 (+task_documents) | P1 |
 | 36. WMS Reminders | 4 | P1/P2 |
-| 37. WMS Insight | 8 | P1/P2 |
-| 38. WMS Integration | 5 | P1/P2 |
-| **TOTAL** | **~287** | |
+| 37. WMS Insight | 10 (+dashboard_shares, saved_view_shares) | P1/P2 |
+| 38. WMS Integration | 12 (+repositories, task_repository_links, code_activity_events, commit_records, pull_request_records, ci_pipeline_runs, task_automation_rules) | P1/P2 |
+| 39. IDE Extension | 5 (ide_extension_installs, ide_sessions, ide_tag_executions, ide_context_links, ide_chat_threads) | P1 |
+| **TOTAL** | **~300** | |
 
 ---
 
@@ -3751,9 +4227,9 @@ tasks.id ←──────────────────── time_lo
                                 task_assignees.task_id
                                 checklist_items.task_id
 
-file_assets.id ←────────────── task_submission_files.file_asset_id
+file_records.id / file_assets.id ←──── task_submission_files.file_asset_id
                                 message_attachments.file_asset_id
-                                payslips.pdf_asset_id
-                                screenshots.file_asset_id
-                                employee_certifications.certificate_asset_id
+                                payslips.pdf_asset_id (or legacy file_record_id)
+                                screenshots.file_asset_id / file_record_id
+                                employee_certifications.certificate_asset_id / file_record_id
 ```

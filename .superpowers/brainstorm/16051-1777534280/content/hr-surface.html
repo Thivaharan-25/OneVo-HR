@@ -1,0 +1,77 @@
+<h2>Where should HR automation actions appear in VS Code?</h2>
+<p class="subtitle">When the tenant has HR enabled, the extension needs to surface Leave, Clock-In, Break, Clock-Out. Which approach fits best?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;gap:8px;font-family:monospace;font-size:12px;">
+        <div style="width:48px;background:#1e1e2e;display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:12px;border-radius:4px 0 0 4px;">
+          <div style="color:#7c6af7;font-size:18px;">💬</div>
+          <div style="color:#7c6af7;font-size:18px;">✅</div>
+          <div style="color:#f97316;font-size:18px;border-left:2px solid #f97316;padding-left:4px;">🏥</div>
+          <div style="color:#7c6af7;font-size:18px;">🔔</div>
+        </div>
+        <div style="flex:1;background:#1a1a2e;border-radius:0 4px 4px 0;padding:8px;">
+          <div style="color:#cdd6f4;font-size:11px;font-weight:bold;margin-bottom:6px;">HR ACTIONS</div>
+          <div style="background:#313244;border-radius:4px;padding:5px 8px;margin-bottom:4px;color:#a6e3a1;font-size:11px;">🟢 Clock In</div>
+          <div style="background:#313244;border-radius:4px;padding:5px 8px;margin-bottom:4px;color:#fab387;font-size:11px;">☕ Break</div>
+          <div style="background:#313244;border-radius:4px;padding:5px 8px;margin-bottom:4px;color:#f38ba8;font-size:11px;">🔴 Clock Out</div>
+          <div style="background:#313244;border-radius:4px;padding:5px 8px;color:#89b4fa;font-size:11px;">📋 Apply Leave</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Dedicated HR Panel</h3>
+      <p>A separate "HR Actions" section in the OneVo sidebar. Always visible when HR is enabled. Developer clicks directly — no tags needed.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:monospace;font-size:12px;background:#1a1a2e;border-radius:4px;padding:8px;">
+        <div style="color:#585b70;font-size:10px;margin-bottom:6px;">💬 #general</div>
+        <div style="color:#cdd6f4;font-size:11px;margin-bottom:8px;">Good morning team! 👋</div>
+        <div style="background:#1e1e2e;border:1px solid #f97316;border-radius:6px;padding:8px;margin-bottom:4px;">
+          <div style="color:#f97316;font-size:10px;font-weight:bold;margin-bottom:4px;">⚡ QUICK HR ACTIONS</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <span style="background:#a6e3a1;color:#1e1e2e;border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer;">🟢 Clock In</span>
+            <span style="background:#fab387;color:#1e1e2e;border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer;">☕ Break</span>
+            <span style="background:#f38ba8;color:#1e1e2e;border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer;">🔴 Clock Out</span>
+            <span style="background:#89b4fa;color:#1e1e2e;border-radius:3px;padding:2px 6px;font-size:10px;cursor:pointer;">📋 Leave</span>
+          </div>
+        </div>
+        <div style="color:#585b70;font-size:10px;">Arun: On it!</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Smart Buttons Inside Chat</h3>
+      <p>HR action buttons float inside the Chat panel. Context-aware — Clock In shows in morning, Break/Clock Out during shift. No separate panel needed.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:monospace;font-size:12px;background:#1a1a2e;border-radius:4px;padding:8px;">
+        <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;">
+          <div style="background:#313244;border-radius:3px;padding:3px 8px;color:#a6e3a1;font-size:10px;cursor:pointer;">🟢 Clock In</div>
+          <div style="background:#313244;border-radius:3px;padding:3px 8px;color:#fab387;font-size:10px;cursor:pointer;">☕ Break</div>
+          <div style="background:#313244;border-radius:3px;padding:3px 8px;color:#f38ba8;font-size:10px;cursor:pointer;">🔴 Out</div>
+          <div style="background:#313244;border-radius:3px;padding:3px 8px;color:#89b4fa;font-size:10px;cursor:pointer;">📋 Leave</div>
+        </div>
+        <div style="background:#1e1e2e;border-radius:4px;padding:8px;">
+          <div style="color:#cdd6f4;font-size:11px;margin-bottom:4px;">💬 #general</div>
+          <div style="color:#585b70;font-size:10px;">Good morning team! 👋</div>
+        </div>
+        <div style="margin-top:6px;background:#0d1117;border-radius:3px;padding:4px 8px;color:#89b4fa;font-size:10px;">
+          ⏱ 00:00 | main | OneVo ◉
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Both Panel + Status Bar</h3>
+      <p>Dedicated HR panel in sidebar AND quick-action buttons in the VS Code status bar at the bottom. Most visible — developer never misses clock-in/out.</p>
+    </div>
+  </div>
+
+</div>

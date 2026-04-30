@@ -6,7 +6,7 @@
 - **Short Description:** A production-grade, multi-tenant **white-label SaaS** platform combining HR Management, Workforce Intelligence, and optional Work/Task Management into a unified ecosystem. Customers deploy it under their own brand; the platform is cloud-hosted and multi-tenant.
 - **Vision:** Become the go-to integrated HR + Workforce Monitoring platform for SMBs and mid-market companies.
 - **Mission:** Provide accurate, automated, and unbiased visibility of employee work behaviour alongside seamless employee lifecycle management.
-- **Key Stakeholders:** Product Owner, 4-member development team, enterprise clients
+- **Key Stakeholders:** Product Owner, 8-member development team, enterprise clients
 - **Current Status:** Active development — Phase 1 (backend first, then frontend)
 
 ## 1a. Developer Platform (Internal)
@@ -17,58 +17,54 @@ A second standalone frontend app (`dev-console` at `console.onevo.io`) exists fo
 
 ## 2. Product Strategy
 
-ONEVO is designed around **two core pillars** sold in multiple configurations:
+ONEVO is designed around **three core pillars** sold in multiple configurations:
 
 | Configuration | Target Market | Modules Included |
 |:-------------|:-------------|:----------------|
 | **HR Management** | Companies needing core HR | Pillar 1 + Shared Foundation |
 | **HR + Workforce Intelligence** | Companies wanting employee monitoring | Pillar 1 + Pillar 2 + Desktop Agent |
-| **HR + Work Management** | Companies wanting HR + project/task management | Pillar 1 + WorkManage Pro via bridges |
-| **Full Suite** | Companies wanting everything | All pillars + Desktop Agent + WorkManage Pro |
+| **WorkSync Only** | Teams wanting project/task/chat management | Pillar 3 + IDE Extension |
+| **HR + WorkSync** | Companies wanting HR + project/task management | Pillar 1 + Pillar 3 + IDE Extension |
+| **Full Suite** | Companies wanting everything | All 3 pillars + Desktop Agent + IDE Extension |
 
-**WorkManage Pro** is a separate Jira-like project/task management product built by another team. Our platform exposes clean integration points via 5 connectivity bridges.
+**WorkSync (Pillar 3)** is a fully-integrated Jira/Slack-equivalent built directly inside ONEVO — same backend, same database, no external bridges.
 
 ## 3. System Architecture
 
-### Two-Pillar Model
+### Three-Pillar Unified Model
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        ONEVO PLATFORM                           │
-│                                                                 │
-│  ┌──────────────────────┐     ┌──────────────────────────────┐ │
-│  │   PILLAR 1: HR        │     │   PILLAR 2: WORKFORCE        │ │
-│  │   MANAGEMENT          │     │   INTELLIGENCE               │ │
-│  │                       │     │                              │ │
-│  │  Core HR              │     │  Activity Monitoring         │ │
-│  │  Org Structure        │     │  Workforce Presence          │ │
-│  │  Leave                │     │  Identity Verification       │ │
-│  │  Performance          │     │  Exception Engine            │ │
-│  │  Skills & Learning    │     │  Productivity Analytics      │ │
-│  │  Payroll              │     │                              │ │
-│  │  Documents            │     │                              │ │
-│  │  Grievance            │     │                              │ │
-│  │  Expense              │     │                              │ │
-│  └──────────┬───────────┘     └──────────────┬───────────────┘ │
-│             │                                │                  │
-│  ┌──────────▼────────────────────────────────▼───────────────┐ │
-│  │              SHARED FOUNDATION                             │ │
-│  │  Auth | Notifications | Workflows | Reporting Engine       │ │
-│  │  Configuration | Calendar | Compliance | Billing           │ │
-│  │  Agent Gateway                                             │ │
-│  └────────────────────────┬──────────────────────────────────┘ │
-│                           │                                     │
-│  ┌────────────────────────▼──────────────────────────────────┐ │
-│  │              CONNECTIVITY BRIDGES                          │ │
-│  │  People Sync | Availability | Performance | Skills         │ │
-│  │  Work Activity (task time correlation)                     │ │
-│  └────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-         ▲                                          ▲
-         │                                          │
-    WorkManage Pro                          WorkPulse Agent
-    (separate product)                     (MSIX package · Windows Phase 1
-                                            macOS Phase 2)
+┌──────────────────────────────────────────────────────────────────────┐
+│                          ONEVO PLATFORM                              │
+│                                                                      │
+│  ┌──────────────┐  ┌──────────────────┐  ┌─────────────────────┐   │
+│  │  PILLAR 1    │  │   PILLAR 2       │  │   PILLAR 3          │   │
+│  │  HR MGMT     │  │   WORKFORCE      │  │   WORKSYNC          │   │
+│  │              │  │   INTELLIGENCE   │  │                     │   │
+│  │  Core HR     │  │  Activity Mon.   │  │  Projects & Tasks   │   │
+│  │  Org Struct  │  │  WF Presence     │  │  Sprint Planning    │   │
+│  │  Leave       │  │  Identity Verif  │  │  OKR & Goals        │   │
+│  │  Performance │  │  Exception Eng   │  │  Chat & Chat AI     │   │
+│  │  Skills      │  │  Discrepancy Eng │  │  Documents & Wiki   │   │
+│  │  Payroll     │  │  Productivity    │  │  Analytics          │   │
+│  │              │  │  Analytics       │  │  GitHub Integration │   │
+│  │  Grievance   │  │                  │  │  IDE Extension      │   │
+│  │  Expense     │  │                  │  │  (tag engine +      │   │
+│  └──────┬───────┘  └────────┬─────────┘  │   chat sidebar)    │   │
+│         │                   │            └──────────┬──────────┘   │
+│  ┌──────▼───────────────────▼────────────────────── ▼───────────┐  │
+│  │                    SHARED FOUNDATION                          │  │
+│  │   Auth | Notifications | Workflows | Config | Calendar        │  │
+│  │   Agent Gateway | Compliance | Billing | Dev Platform         │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                           ↕ ApplicationDbContext                    │
+│                        PostgreSQL (single database, ~300 tables)    │
+└──────────────────────────────────────────────────────────────────────┘
+              ▲                                  ▲
+              │                                  │
+       WorkPulse Agent                    IDE Extension
+       (MSIX · Windows P1               (VS Code / JetBrains)
+        macOS Phase 2)                  Tag engine: @entity:action
 ```
 
 ### Architecture Style
@@ -85,18 +81,19 @@ ONEVO follows **Clean Architecture + CQRS** (.NET 9). See [[backend/folder-struc
 **Layers:**
 - `ONEVO.Domain` — entities, domain events, value objects (zero external dependencies)
 - `ONEVO.Application` — CQRS handlers (MediatR), interfaces, DTOs, validators
-- `ONEVO.Infrastructure` — EF Core (single ApplicationDbContext, 176 tables), JWT, BCrypt, Redis, Hangfire, SignalR
+- `ONEVO.Infrastructure` — EF Core (single ApplicationDbContext, ~300 tables), JWT, BCrypt, Redis, Hangfire, SignalR
 - `ONEVO.Api` — customer-facing ASP.NET Core host (/api/v1/*)
 - `ONEVO.Admin.Api` — developer console host (/admin/v1/*)
 
 ## 4. Key Stats
 
-- **176 database tables** in single ApplicationDbContext (128 Phase 1, 48 Phase 2)
-- **24 features** organized as folders within ONEVO.Application/Features/
-- **90+ permissions** in RBAC system
+- **~300 database tables** in single ApplicationDbContext (~200 Phase 1, ~40 Phase 2)
+- **~38 features** organized as folders within ONEVO.Application/Features/
+- **3 pillars:** HR Management · Workforce Intelligence · WorkSync
+- **90+ permissions** in RBAC system (HR tenant-level + workspace-level)
 - **40+ notification events** across 3 channels
 - **18 subscribable webhook events**
-- **5 connectivity bridges** to WorkManage Pro
+- **Tag engine:** `@entity:action params` syntax covers all 11 entity types × 10 action types
 - **4-layer Clean Architecture** (Domain, Application, Infrastructure, API)
 
 ## 5. Core Business Logic & Domain Concepts
@@ -156,25 +153,27 @@ Tenant Level (Company Settings)
     └── Override wins over global setting
 ```
 
-## 7. WorkManage Pro Bridges
+## 7. HR ↔ WorkSync Cross-Module Data Flows
 
-| Bridge | Direction | Purpose |
-|:-------|:----------|:--------|
-| **People Sync** | HR → Work | Employee profiles, roles, departments |
-| **Availability** | HR → Work | Leave status, shift schedules, presence |
-| **Performance** | Work → HR | Task completion rates, velocity, contributions |
-| **Skills** | Bidirectional | Skill profiles ↔ task skill requirements |
-| **Work Activity** | Work → HR | Time logged per task/project, active task context |
+WorkSync is Pillar 3 — there are no bridges. Cross-module flows use direct FK relationships and in-process domain events.
 
-See [[backend/external-integrations|External Integrations]] for API contracts.
+| Flow | Direction | Mechanism |
+|:-----|:----------|:----------|
+| **People Sync** | HR → WorkSync | `employees.user_id` links to `workspace_members.user_id` directly |
+| **Availability** | HR → WorkSync | `leave_requests` + `overtime_records` scoped via `task_id` nullable FK |
+| **Productivity** | WorkSync → HR | `wms_productivity_snapshots` + `wms_daily_time_logs` in Pillar 2 |
+| **Time Correlation** | WorkSync → HR | `time_logs.task_id` → `overtime_records.task_id` via domain event |
+| **Skills** | Bidirectional | `skills` table shared; `workspace_id` nullable on skills |
+
+No bridge API keys. No `wms_tenant_links`. No HTTP between pillars.
 
 ## 8. What We Are NOT Building in Phase 1
 
 - AI Chatbot (Nexis) — deferred to later phase
 - Mobile Application (Flutter) — deferred to later phase
-- WorkManage Pro features — separate team, we only build bridge interfaces
 - Multi-region deployment — single region for Phase 1
 - Teams Graph API deep integration — basic meeting detection via process name in Phase 1
+- JetBrains IDE Extension — VS Code only in Phase 1; JetBrains in Phase 2
 
 ---
 
@@ -330,7 +329,8 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 - **Multi-Tenancy:** Every query must be tenant-scoped. See [[infrastructure/multi-tenancy|Multi Tenancy]]
 - **Module Details:** Each module has its own doc in `modules/`. Read the specific module doc before working on it.
 - **Hallucination Prevention:** If information is not in these docs, state it's unknown — do not guess
-- **WorkManage Pro:** Do not build WorkManage Pro features. Only build bridge interfaces
+- **WorkSync is internal:** No bridge APIs. WorkSync features live in `Features/WorkSync/*` same as HR features
+- **IDE Extension tag security:** All `@entity:action` permission checks happen server-side. Never trust client-side validation
 - **Monitoring Privacy:** Always check monitoring configuration before processing activity data
 
 ## Related
