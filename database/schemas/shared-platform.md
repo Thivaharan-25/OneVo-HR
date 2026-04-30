@@ -1,8 +1,8 @@
 # Shared Platform — Schema
 
 **Module:** [[modules/shared-platform/overview|Shared Platform]]
-**Phase:** Phase 1
-**Tables:** 33
+**Phase:** Phase 1 + Phase 2 integration additions
+**Tables:** 35
 
 ---
 
@@ -346,6 +346,91 @@ Global catalog of known applications managed by the OneVo dev team via the devel
 
 ---
 
+## `external_account_connections`
+
+User-level links to external identity/product accounts such as Microsoft Teams. Used to verify whether a ONEVO user can send/sync Teams messages.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `user_id` | `uuid` | FK -> users |
+| `provider` | `varchar(30)` | `microsoft_teams`, future providers |
+| `external_user_id` | `varchar(255)` | Azure AD user id for Teams |
+| `external_email` | `varchar(255)` | Email/mail returned by Graph |
+| `display_name` | `varchar(200)` | External display name |
+| `status` | `varchar(20)` | `active`, `reauth_required`, `revoked`, `disabled` |
+| `linked_at` | `timestamptz` | |
+| `last_verified_at` | `timestamptz` | Nullable |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Unique:** `(tenant_id, provider, user_id)`, `(tenant_id, provider, external_user_id)`
+
+---
+
+## `microsoft_graph_tokens`
+
+Encrypted Microsoft Graph token material for Teams sync. Raw tokens are never logged or returned by API.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `external_account_connection_id` | `uuid` | FK -> external_account_connections |
+| `access_token_encrypted` | `bytea` | Nullable; short lived |
+| `refresh_token_encrypted` | `bytea` | Encrypted refresh token |
+| `scopes` | `jsonb` | Granted Graph scopes |
+| `expires_at` | `timestamptz` | Access token expiry |
+| `last_refresh_at` | `timestamptz` | Nullable |
+| `revoked_at` | `timestamptz` | Nullable |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+---
+
+## `teams_webhook_subscriptions`
+
+Microsoft Graph change notification subscriptions for linked Teams channels/chats.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `resource_type` | `varchar(30)` | `channel_messages`, `chat_messages` |
+| `resource_id` | `varchar(500)` | Graph resource path or Teams channel/chat id |
+| `subscription_id` | `varchar(255)` | Graph subscription id |
+| `client_state_hash` | `varchar(255)` | Hash of webhook client state |
+| `expires_at` | `timestamptz` | Graph subscription expiry |
+| `status` | `varchar(20)` | `active`, `renewal_due`, `expired`, `failed` |
+| `last_notification_at` | `timestamptz` | Nullable |
+| `last_error` | `text` | Nullable |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+---
+
+## `teams_delta_sync_state`
+
+Stores Microsoft Graph delta tokens and cursor state for reliable Teams message import.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `resource_type` | `varchar(30)` | `team_channel`, `chat` |
+| `resource_id` | `varchar(500)` | Teams channel/chat id |
+| `delta_token_encrypted` | `bytea` | Encrypted delta token |
+| `last_delta_at` | `timestamptz` | Nullable |
+| `status` | `varchar(20)` | `active`, `reset_required`, `failed` |
+| `last_error` | `text` | Nullable |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Unique:** `(tenant_id, resource_type, resource_id)`
+
+---
+
 ## `subscription_invoices`
 
 | Column | Type | Notes |
@@ -572,75 +657,6 @@ Global catalog of known applications managed by the OneVo dev team via the devel
 | `on_timeout_action` | `varchar(30)` | `escalate`, `auto_approve`, `auto_reject` |
 
 **Foreign Keys:** `workflow_definition_id` → [[#`workflow_definitions`|workflow_definitions]], `approver_role_id` → [[database/schemas/auth#`roles`|roles]]
-
----
-
-## `bridge_api_keys`
-
-API keys issued to external systems (WMS and other integrations) for bridge endpoint authentication. Stored hashed — the raw key is shown once at creation. Scoped to bridge permissions only, cannot access HR data.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `name` | `varchar(100)` | Human label, e.g. "WorkManage Pro" |
-| `key_hash` | `varchar(255)` | bcrypt hash of the key |
-| `key_prefix` | `varchar(8)` | First 8 chars for display (e.g., `onv_brdg`) |
-| `scopes` | `varchar[]` | e.g., `["bridges:read", "bridges:write"]` |
-| `last_used_at` | `timestamptz` | Nullable |
-| `expires_at` | `timestamptz` | Nullable — null = no expiry |
-| `created_by_id` | `uuid` | FK → users |
-| `created_at` | `timestamptz` | |
-| `revoked_at` | `timestamptz` | Nullable — soft revocation |
-
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `created_by_id` → [[database/schemas/infrastructure#`users`|users]]
-
-**Index:** `(tenant_id, key_prefix)`, `(key_hash)` UNIQUE (for lookup during auth)
-
----
-
-## `wms_role_mappings`
-
-Maps ONEVO roles to WMS permission sets. Used by the People Sync bridge to push the correct WMS permissions when an employee's role changes. Populated by the tenant admin in Settings → Integrations.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `onevo_role_id` | `uuid` | FK → roles |
-| `wms_role_identifier` | `varchar(100)` | The WMS-side role name/ID (defined by WMS team) |
-| `wms_permissions_json` | `jsonb` | Which WMS features are enabled for this ONEVO role |
-| `created_at` | `timestamptz` | |
-| `updated_at` | `timestamptz` | |
-
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `onevo_role_id` → [[database/schemas/auth#`roles`|roles]]
-
-**Index:** `(tenant_id, onevo_role_id)` UNIQUE
-
----
-
-## `wms_tenant_links`
-
-Links an ONEVO tenant to a WMS tenant. Created when a customer purchases both products (auto-provisioned) or manually links existing accounts via Settings → Integrations.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants (ONEVO side) |
-| `wms_tenant_id` | `varchar(255)` | WMS-assigned tenant identifier |
-| `wms_base_url` | `varchar(500)` | WMS API base URL for this tenant |
-| `bridge_api_key_id` | `uuid` | FK → bridge_api_keys (the key ONEVO uses to call WMS) |
-| `sync_enabled` | `boolean` | Master toggle for all bridge sync |
-| `people_sync_enabled` | `boolean` | |
-| `availability_sync_enabled` | `boolean` | |
-| `work_activity_sync_enabled` | `boolean` | |
-| `linked_at` | `timestamptz` | |
-| `linked_by_id` | `uuid` | FK → users |
-| `created_at` | `timestamptz` | |
-
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `bridge_api_key_id` → [[#`bridge_api_keys`|bridge_api_keys]], `linked_by_id` → [[database/schemas/infrastructure#`users`|users]]
-
-**Index:** `(tenant_id)` UNIQUE — one WMS link per ONEVO tenant
 
 ---
 

@@ -8,20 +8,20 @@
 
 ## `agent_commands`
 
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `agent_id` | `uuid` | FK → registered_agents |
-| `tenant_id` | `uuid` | FK → tenants |
+| Column         | Type          | Notes                                                                                                                                   |
+| :------------- | :------------ | :-------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`           | `uuid`        | PK                                                                                                                                      |
+| `agent_id`     | `uuid`        | FK → registered_agents                                                                                                                  |
+| `tenant_id`    | `uuid`        | FK → tenants                                                                                                                            |
 | `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
-| `requested_by` | `uuid` | FK → users (manager/CEO who initiated) |
-| `payload_json` | `jsonb` | Command-specific parameters |
-| `status` | `varchar(20)` | `pending`, `delivered`, `completed`, `failed`, `expired` |
-| `created_at` | `timestamptz` | When command was created |
-| `delivered_at` | `timestamptz` | When agent acknowledged receipt |
-| `completed_at` | `timestamptz` | When agent reported completion |
-| `result_json` | `jsonb` | Result data (e.g., screenshot URL, error message) |
-| `expires_at` | `timestamptz` | Auto-expire if not delivered (default: 5 min) |
+| `requested_by` | `uuid`        | FK → users (manager/CEO who initiated)                                                                                                  |
+| `payload_json` | `jsonb`       | Command-specific parameters                                                                                                             |
+| `status`       | `varchar(20)` | `pending`, `delivered`, `completed`, `failed`, `expired`                                                                                |
+| `created_at`   | `timestamptz` | When command was created                                                                                                                |
+| `delivered_at` | `timestamptz` | When agent acknowledged receipt                                                                                                         |
+| `completed_at` | `timestamptz` | When agent reported completion                                                                                                          |
+| `result_json`  | `jsonb`       | Result data (e.g., screenshot URL, error message)                                                                                       |
+| `expires_at`   | `timestamptz` | Auto-expire if not delivered (default: 5 min)                                                                                           |
 
 **Foreign Keys:** `agent_id` → [[#`registered_agents`|registered_agents]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `requested_by` → [[database/schemas/infrastructure#`users`|users]]
 

@@ -26,6 +26,10 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 |:------------|:-------|:-------------|:-------------|
 | `agent_commands` | `requested_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `registered_agents` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
+| `agent_install_entitlements` | `tenant_id` | [[database/schemas/infrastructure#`tenants`\|tenants]] | Infrastructure |
+| `agent_install_entitlements` | `granted_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `agent_install_jobs` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `agent_install_jobs` | `install_id` | [[database/schemas/ide-extension#`ide_extension_installs`\|ide_extension_installs]] | IDE Extension |
 
 ## Auth & Security
 
@@ -83,6 +87,10 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `documents` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure |
 | `documents` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `documents` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `documents` | `workspace_id` | [[database/schemas/wms-project-management#`workspaces`\|workspaces]] | WorkSync.Foundation |
+| `documents` | `project_id` | [[database/schemas/wms-project-management#`projects`\|projects]] | WorkSync.ProjectManagement |
+| `documents` | `locked_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `documents` | `approved_version_id` | [[database/schemas/wms-collaboration#`document_versions`\|document_versions]] | WorkSync.Collaboration |
 
 ## Exception Engine
 
@@ -213,6 +221,11 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `refresh_tokens` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `retention_policies` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `signalr_connections` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `external_account_connections` | `tenant_id` | [[database/schemas/infrastructure#`tenants`\|tenants]] | Infrastructure |
+| `external_account_connections` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `microsoft_graph_tokens` | `external_account_connection_id` | [[database/schemas/shared-platform#`external_account_connections`\|external_account_connections]] | Shared Platform |
+| `teams_webhook_subscriptions` | `tenant_id` | [[database/schemas/infrastructure#`tenants`\|tenants]] | Infrastructure |
+| `teams_delta_sync_state` | `tenant_id` | [[database/schemas/infrastructure#`tenants`\|tenants]] | Infrastructure |
 | `system_settings` | `updated_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `tenant_branding` | `logo_file_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
 | `tenant_branding` | `updated_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
@@ -260,6 +273,126 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `device_sessions` | `device_id` | [[database/schemas/agent-gateway#`registered_agents`\|registered_agents]] | Agent Gateway |
 | `presence_sessions` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 
+## WorkSync.Foundation
+
+| Source Table | Column | Target Table | Target Module |
+|:------------|:-------|:-------------|:-------------|
+| `workspaces` | `tenant_id` | `tenants` | Infrastructure |
+| `workspaces` | `owner_id` | `users` | Infrastructure |
+| `workspace_roles` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `workspace_members` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `workspace_members` | `user_id` | `users` | Infrastructure |
+| `workspace_members` | `employee_id` | `employees` | Core HR |
+| `workspace_teams_links` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `workspace_teams_links` | `created_by_id` | `users` | Infrastructure |
+| `teams_member_sync_status` | `workspace_teams_link_id` | `workspace_teams_links` | WorkSync.Foundation |
+| `teams_member_sync_status` | `user_id` | `users` | Infrastructure |
+
+## WorkSync.ProjectManagement
+
+| Source Table | Column | Target Table | Target Module |
+|:------------|:-------|:-------------|:-------------|
+| `projects` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `projects` | `tenant_id` | `tenants` | Infrastructure |
+| `projects` | `owner_id` | `users` | Infrastructure |
+| `project_members` | `project_id` | `projects` | WorkSync.ProjectManagement |
+| `project_members` | `user_id` | `users` | Infrastructure |
+| `epics` | `project_id` | `projects` | WorkSync.ProjectManagement |
+| `milestones` | `project_id` | `projects` | WorkSync.ProjectManagement |
+| `versions` | `project_id` | `projects` | WorkSync.ProjectManagement |
+
+## WorkSync.TaskManagement
+
+| Source Table | Column | Target Table | Target Module |
+|:------------|:-------|:-------------|:-------------|
+| `tasks` | `project_id` | `projects` | WorkSync.ProjectManagement |
+| `tasks` | `sprint_id` | `sprints` | WorkSync.SprintPlanning |
+| `tasks` | `epic_id` | `epics` | WorkSync.ProjectManagement |
+| `tasks` | `creator_id` | `users` | Infrastructure |
+| `task_assignments` | `user_id` | `users` | Infrastructure |
+| `task_approvals` | `approver_id` | `users` | Infrastructure |
+| `board_columns` | `board_id` | `boards` | WorkSync.TaskManagement |
+| `board_task_positions` | `task_id` | `tasks` | WorkSync.TaskManagement |
+
+## WorkSync.SprintPlanning
+
+| Source Table | Column | Target Table | Target Module |
+|:------------|:-------|:-------------|:-------------|
+| `sprints` | `project_id` | `projects` | WorkSync.ProjectManagement |
+| `sprints` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `sprint_backlog_items` | `sprint_id` | `sprints` | WorkSync.SprintPlanning |
+| `sprint_backlog_items` | `task_id` | `tasks` | WorkSync.TaskManagement |
+| `sprint_daily_snapshots` | `sprint_id` | `sprints` | WorkSync.SprintPlanning |
+| `roadmaps` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `roadmap_items` | `epic_id` | `epics` | WorkSync.ProjectManagement |
+| `roadmap_items` | `milestone_id` | `milestones` | WorkSync.ProjectManagement |
+
+## WorkSync.Chat
+
+| Source Table | Column | Target Table | Target Module |
+|:------------|:-------|:-------------|:-------------|
+| `channels` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `channels` | `tenant_id` | `tenants` | Infrastructure |
+| `messages` | `channel_id` | `channels` | WorkSync.Chat |
+| `messages` | `user_id` | `users` | Infrastructure |
+| `premium_ai_detections` | `message_id` | `messages` | WorkSync.Chat |
+| `ai_action_jobs` | `detection_id` | `premium_ai_detections` | WorkSync.ChatAI |
+| `ai_action_jobs` | `tag_execution_id` | `ide_tag_executions` | IDE Extension |
+| `ai_action_jobs` | `user_id` | `users` | Infrastructure |
+| `chat_reminder_items` | `task_id` | `tasks` | WorkSync.TaskManagement |
+| `channel_teams_links` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `channel_teams_links` | `channel_id` | `channels` | WorkSync.Chat |
+| `channel_teams_links` | `workspace_teams_link_id` | `workspace_teams_links` | WorkSync.Foundation |
+| `teams_message_sync_state` | `channel_id` | `channels` | WorkSync.Chat |
+| `teams_message_sync_state` | `message_id` | `messages` | WorkSync.Chat |
+
+## WorkSync.Collaboration
+
+| Source Table | Column | Target Table | Target Module |
+|:------------|:-------|:-------------|:-------------|
+| `document_versions` | `document_id` | `documents` | Documents |
+| `document_approvals` | `document_id` | `documents` | Documents |
+| `document_approvals` | `approver_id` | `users` | Infrastructure |
+| `wiki_pages` | `project_id` | `projects` | WorkSync.ProjectManagement |
+| `task_documents` | `task_id` | `tasks` | WorkSync.TaskManagement |
+| `task_documents` | `document_id` | `documents` | Documents |
+
+## WorkSync.Analytics
+
+| Source Table | Column | Target Table | Target Module |
+|:------------|:-------|:-------------|:-------------|
+| `dashboards` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `chart_widgets` | `dashboard_id` | `dashboards` | WorkSync.Analytics |
+| `dashboard_shares` | `dashboard_id` | `dashboards` | WorkSync.Analytics |
+| `saved_view_shares` | `saved_view_id` | `saved_views` | WorkSync.Analytics |
+
+## WorkSync.Integrations
+
+| Source Table | Column | Target Table | Target Module |
+|:------------|:-------|:-------------|:-------------|
+| `repositories` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `task_repository_links` | `task_id` | `tasks` | WorkSync.TaskManagement |
+| `code_activity_events` | `repository_id` | `repositories` | WorkSync.Integrations |
+| `code_activity_events` | `task_id` | `tasks` | WorkSync.TaskManagement |
+| `commit_records` | `repository_id` | `repositories` | WorkSync.Integrations |
+| `task_automation_rules` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+
+## IDE Extension
+
+| Source Table | Column | Target Table | Target Module |
+|:------------|:-------|:-------------|:-------------|
+| `ide_extension_installs` | `user_id` | `users` | Infrastructure |
+| `ide_extension_installs` | `tenant_id` | `tenants` | Infrastructure |
+| `ide_extension_installs` | `workspace_id` | `workspaces` | WorkSync.Foundation |
+| `ide_sessions` | `install_id` | `ide_extension_installs` | IDE Extension |
+| `ide_sessions` | `active_project_id` | `projects` | WorkSync.ProjectManagement |
+| `ide_tag_executions` | `session_id` | `ide_sessions` | IDE Extension |
+| `ide_context_links` | `entity_id` | tasks / projects / sprints / documents (polymorphic) | varies |
+| `ide_chat_threads` | `channel_id` | `channels` | WorkSync.Chat |
+| `ide_chat_threads` | `context_task_id` | `tasks` | WorkSync.TaskManagement |
+
+---
+
 ## Migration Order
 
 Based on FK dependencies, modules should be migrated in this order:
@@ -267,19 +400,32 @@ Based on FK dependencies, modules should be migrated in this order:
 ```
 1. infrastructure (tenants, users, countries, file_records)
 2. auth (roles, permissions, sessions)
-3. org-structure (departments, job_titles, legal_entities)
+3. org-structure (departments, job_titles, legal_entities, team_roles)
 4. core-hr (employees — the central hub)
 5. configuration (tenant_settings, monitoring_toggles)
 6. agent-gateway (registered_agents)
-7. All remaining modules (can be parallel):
+7. All HR/WFI Phase 1 modules (can be parallel):
    - leave, calendar, workforce-presence
-   - activity-monitoring, exception-engine
+   - activity-monitoring, discrepancy-engine, exception-engine
    - identity-verification, productivity-analytics
    - shared-platform, notifications
-8. Phase 2 modules (after Phase 1 is stable):
-   - payroll, performance, skills
-   - documents, grievance, expense
-   - reporting-engine
+8. WorkSync Phase 1 (ordered by FK dependency):
+   - wms-project-management (workspaces → projects → epics/milestones)
+   - wms-task-management (tasks → boards → board_columns)
+   - wms-planning (sprints → sprint_backlog_items → sprint_daily_snapshots → roadmaps)
+   - wms-chat (channels → messages → ai_action_jobs)
+   - wms-collaboration (document extensions → wiki_pages → task_documents)
+   - wms-analytics (dashboards → dashboard_shares)
+   - wms-integrations (repositories → code_activity_events → task_automation_rules)
+9. IDE Extension (depends on workspaces, projects, tasks, channels):
+   - ide_extension_installs → ide_sessions → ide_tag_executions
+   - ide_context_links, ide_chat_threads
+   - agent_install_entitlements, agent_install_jobs (Agent Gateway additions)
+10. Phase 2 modules (after Phase 1 is stable):
+   - Microsoft Teams sync additions (external_account_connections -> microsoft_graph_tokens -> workspace_teams_links -> channel_teams_links -> teams_message_sync_state)
+    - payroll, performance, skills
+    - hr-documents (Phase 2 additions), grievance, expense
+    - reporting-engine
 ```
 
 ## Related

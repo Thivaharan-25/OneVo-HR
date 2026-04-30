@@ -1,12 +1,12 @@
 # Feature Catalog: ONEVO
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-04-29
 
 ## Architecture Overview
 
-ONEVO follows **Clean Architecture + CQRS** (.NET 9). The 24 features that were previously separate module projects are now **feature folders** within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`.
+ONEVO follows **Clean Architecture + CQRS** (.NET 9). All features are **feature folders** within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`.
 
-There are **no separate module `.csproj` files**. All 176 tables live in a single `ApplicationDbContext`.
+There are **no separate module `.csproj` files**. All ~240 tables live in a single `ApplicationDbContext`.
 
 See [[backend/folder-structure|Folder Structure]] for the full solution layout.
 
@@ -16,25 +16,29 @@ See [[backend/folder-structure|Folder Structure]] for the full solution layout.
 
 ```
 ONEVO PLATFORM
-  ONEVO Frontend (Next.js)
-    ├── HR Sidebar        → ONEVO.Api (.NET 9)
-    └── Workforce Sidebar → ONEVO.Api + WMS Backend
-                                    ↕ bridge contracts
-  ONEVO.Api                      WMS Backend
-  All features in one host       Projects, Tasks, Sprints…
+  ┌─────────────────────────────────────────────────────┐
+  │  ONEVO Frontend (Next.js)                           │
+  │    HR Sidebar ──────┐                               │
+  │    WorkSync Sidebar─┼──→  ONEVO.Api (.NET 9)        │
+  │    IDE Extension ───┘      single host, all pillars  │
+  └─────────────────────────────────────────────────────┘
+                               ↕ ApplicationDbContext
+                            PostgreSQL (single database)
 ```
+
+WorkSync is **Pillar 3** — it is not external and does not use bridge contracts. All three pillars share the same database, the same ApplicationDbContext, and the same domain event bus.
 
 ---
 
 ## Product Configuration Matrix
 
-| Tier | Core | HR Pillar | Workforce Intel | WMS | Bridges |
-|------|:----:|:---------:|:---------------:|:---:|:-------:|
-| HR Management | ✓ | ✓ | ✗ | ✗ | — |
-| Work Management | ✓ | ✗ | ✗ | ✓ | People Sync only |
-| HR + Workforce Intel | ✓ | ✓ | ✓ | ✗ | — |
-| HR + Work Management | ✓ | ✓ | ✗ | ✓ | All 5 bridges |
-| Full Suite | ✓ | ✓ | ✓ | ✓ | All 5 bridges |
+| Tier | Core | HR Pillar | Workforce Intel | WorkSync | IDE Extension |
+|------|:----:|:---------:|:---------------:|:--------:|:-------------:|
+| HR Management | ✓ | ✓ | ✗ | ✗ | ✗ |
+| WorkSync Only | ✓ | ✗ | ✗ | ✓ | ✓ |
+| HR + Workforce Intel | ✓ | ✓ | ✓ | ✗ | ✗ |
+| HR + WorkSync | ✓ | ✓ | ✗ | ✓ | ✓ |
+| Full Suite | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ---
 
@@ -46,13 +50,17 @@ ONEVO PLATFORM
 |:--|:--------|:---------------|:-------|:------|
 | 1 | Infrastructure | `Features/InfrastructureModule` | 4 | Phase 1 |
 | 2 | Auth & Security | `Features/Auth` | 9 | Phase 1 |
-| 3 | Org Structure | `Features/OrgStructure` | 9 | Phase 1 |
+| 3 | Org Structure | `Features/OrgStructure` | 12 | Phase 1 |
 | 4 | Core HR | `Features/CoreHR` | 13 | Phase 1 |
 | 5 | Leave | `Features/Leave` | 5 | Phase 1 |
 | 6 | Payroll | `Features/Payroll` | 11 | Phase 2 |
 | 7 | Performance | `Features/Performance` | 7 | Phase 2 |
 | 8 | Skills & Learning | `Features/Skills` | 15 (5 P1 + 10 P2) | Mixed |
-| 9 | Documents | `Features/Documents` | 6 | Phase 2 |
+| 9 | HR Documents | `Features/Documents` | 4 P2 new (documents table shared with WorkSync.Collaboration) | Phase 2 |
+
+> **Org Structure note:** Includes `team_roles`, `team_role_permissions`, `team_member_roles` for stacking permissions across multiple team memberships (12 tables, up from 9).
+
+> **HR Documents note:** The `documents` and `document_versions` tables are created in Phase 1 by WorkSync.Collaboration. HR Documents (Phase 2) adds `document_categories`, `document_templates`, `document_access_logs`, `document_acknowledgements` only.
 
 ### Pillar 2: Workforce Intelligence
 
@@ -65,21 +73,54 @@ ONEVO PLATFORM
 | 13 | Exception Engine | `Features/ExceptionEngine` | 5 | Phase 1 |
 | 14 | Productivity Analytics | `Features/ProductivityAnalytics` | 5 | Phase 1 |
 
+### Pillar 3: WorkSync
+
+| # | Feature | Feature Folder | Tables | Phase |
+|:--|:--------|:---------------|:-------|:------|
+| W1 | WorkSync Foundation | `Features/WorkSync/Foundation` | 5 | Phase 1/2 |
+| W2 | Project Management | `Features/WorkSync/ProjectManagement` | 7 | Phase 1 |
+| W3 | Task Management | `Features/WorkSync/TaskManagement` | 13 | Phase 1 |
+| W4 | Sprint Planning | `Features/WorkSync/SprintPlanning` | 7 | Phase 1 |
+| W5 | OKR & Goals | `Features/WorkSync/OKR` | ~5 | Phase 1 |
+| W6 | Time Management | `Features/WorkSync/TimeManagement` | ~4 | Phase 1 |
+| W7 | Resource Management | `Features/WorkSync/ResourceManagement` | ~3 | Phase 1 |
+| W8 | Chat & Messaging | `Features/WorkSync/Chat` | 8 | Phase 1/2 |
+| W9 | Chat AI | `Features/WorkSync/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 |
+| W10 | Collaboration | `Features/WorkSync/Collaboration` | 4 new + extends documents | Phase 1 |
+| W11 | Analytics & Insights | `Features/WorkSync/Analytics` | 7 | Phase 1 |
+| W12 | Integrations | `Features/WorkSync/Integrations` | 7 | Phase 1 |
+
+Schema files: [[database/schemas/wms-project-management|Project Management]], [[database/schemas/wms-task-management|Task Management]], [[database/schemas/wms-planning|Sprint Planning]], [[database/schemas/wms-chat|Chat + Chat AI]], [[database/schemas/wms-collaboration|Collaboration]], [[database/schemas/wms-analytics|Analytics]], [[database/schemas/wms-integrations|Integrations]]
+
+### IDE Extension
+
+| # | Feature | Feature Folder | Tables | Phase |
+|:--|:--------|:---------------|:-------|:------|
+| IDE | IDE Extension | `Features/IDEExtension` | 5 | Phase 1 |
+
+Schema file: [[database/schemas/ide-extension|IDE Extension]]
+
+Tag engine, context engine, agent entitlement, and SignalR IDEHub spec: [[modules/ide-extension/overview|IDE Extension Overview]]
+
 ### Shared Foundation
 
 | # | Feature | Feature Folder | Tables | Phase |
 |:--|:--------|:---------------|:-------|:------|
-| 15 | Shared Platform | `Features/SharedPlatform` | 33 | Phase 1 |
-| 16 | Notifications | `Features/Notifications` | 2 | Phase 1 |
+| 15 | Shared Platform | `Features/SharedPlatform` | 35 | Phase 1/2 |
+| 16 | Notifications | `Features/Notifications` | 0 own tables | — |
 | 17 | Configuration | `Features/Configuration` | 6 | Phase 1 |
 | 18 | Calendar | `Features/Calendar` | 1 | Phase 1 |
 | 19 | Reporting Engine | `Features/ReportingEngine` | 3 | Phase 2 |
 | 20 | Grievance | `Features/Grievance` | 2 | Phase 2 |
 | 21 | Expense | `Features/Expense` | 3 | Phase 2 |
-| 22 | Agent Gateway | `Features/AgentGateway` | 4 | Phase 1 |
+| 22 | Agent Gateway | `Features/AgentGateway` | 6 | Phase 1 |
 | 23 | Dev Platform | `Features/DevPlatform` | 5 (P1) + 1 (P2) | Mixed |
+| 24 | Microsoft Teams Integration | `Features/Integrations/MicrosoftTeams` | Uses Shared Platform + WorkSync Teams tables | Phase 2 |
 
-**Total: 24 features, 176 tables (133 Phase 1 · 43 Phase 2)**
+> **Shared Platform note:** Bridge-era WMS provisioning tables removed (WorkSync is now internal). Count is 35 after Microsoft Teams account/token/webhook/delta tables.
+> **Agent Gateway note:** Added `agent_install_entitlements` and `agent_install_jobs` for IDE Extension entitlement gating. Count is 6 (was 4).
+
+**Total: ~38 features, 240 unique schema tables**
 
 ---
 
@@ -112,6 +153,8 @@ ONEVO.Infrastructure/Persistence/Configurations/{Feature}/
 └── {Entity}Configuration.cs    IEntityTypeConfiguration<T>
 ```
 
+WorkSync features live under `Features/WorkSync/{SubFeature}/` following the same layout.
+
 ---
 
 ## Cross-Feature Communication
@@ -122,8 +165,9 @@ ONEVO.Infrastructure/Persistence/Configurations/{Feature}/
 | Trigger side effect in another feature | Entity raises `IDomainEvent`; `DomainEventDispatchInterceptor` dispatches after save |
 | React to another feature's event | `INotificationHandler<TEvent>` in `EventHandlers/` |
 | Background processing | `IBackgroundJobService` (Hangfire) injected in handler |
+| Real-time push to IDE | `IIDEHubService` → SignalR IDEHub (task:updated, chat:message, tag:executed, ai:action_pending) |
 
-No RabbitMQ. No IEventBus. No MassTransit. All communication is in-process.
+No RabbitMQ. No IEventBus. No MassTransit. No bridge APIs. All communication is in-process.
 
 ---
 
@@ -136,11 +180,3 @@ No RabbitMQ. No IEventBus. No MassTransit. All communication is in-process.
 | Host project | `ONEVO.Admin.Api` — separate `Program.cs` |
 | JWT Issuer | `onevo-platform-admin` — never valid at `/api/v1/*` |
 | Feature data | `Features/DevPlatform` — no TenantId on these entities |
-
----
-
-## WMS — Consumed System
-
-WMS is external. ONEVO communicates via HTTP bridge contracts only.
-
-Full detail: [[backend/bridge-api-contracts|Bridge API Contracts]]

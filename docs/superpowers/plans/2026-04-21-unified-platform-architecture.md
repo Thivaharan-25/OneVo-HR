@@ -1,5 +1,11 @@
 # Unified Platform Architecture Plan
-**Status:** Design Freeze Candidate | **Date:** 2026-04-21 | **Author:** Architecture Session
+
+> [!DANGER]
+> **SUPERSEDED — 2026-04-27**
+> This document described WMS as a separate external system communicating via bridge contracts. That architecture was deprecated. WorkSync is now **Pillar 3** — internal to ONEVO, same backend, same database, no bridge APIs.
+> See `README.md`, `ADE-START-HERE.md`, and `backend/module-catalog.md` for the current architecture.
+
+**Status:** ~~Design Freeze Candidate~~ SUPERSEDED | **Date:** 2026-04-21 | **Author:** Architecture Session
 
 > **Purpose:** This document is the single source of truth for how ONEVO and WMS coexist as one platform. Both teams must agree on this before writing a single line of backend code. Disagreements here become 6-month refactors later.
 

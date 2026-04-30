@@ -1,6 +1,17 @@
-# Bridge API Contracts — WorkManage Pro ↔ ONEVO
+# ~~Bridge API Contracts~~ — DEPRECATED
 
-**Purpose:** Canonical request/response schemas for all bridge endpoints between WorkManage Pro (WMS backend) and ONEVO. This is the design-freeze contract — no Phase 1 code starts until both teams sign off.
+> [!DANGER]
+> **THIS DOCUMENT IS DEPRECATED. DO NOT IMPLEMENT.**
+>
+> WorkSync is no longer an external system. It is built internally as Pillar 3 of ONEVO — same backend, same `ApplicationDbContext`, same PostgreSQL database. There are no bridge APIs, no bridge endpoints, no bridge API keys, and no WMS tenant links.
+>
+> **Architecture decision:** ADR-002 + ADR-003 supersede the bridge architecture. See [[onevo-unified-entity-map|Entity Map]] for the canonical schema and [[backend/module-catalog|Module Catalog]] for the WorkSync module structure.
+>
+> This file is preserved as historical reference only. If you are reading this to implement something, stop — read [[ADE-START-HERE|ADE-START-HERE]] instead.
+
+---
+
+~~**Purpose:** Canonical request/response schemas for all bridge endpoints between WorkManage Pro (WMS backend) and ONEVO. This is the design-freeze contract — no Phase 1 code starts until both teams sign off.~~
 
 ---
 

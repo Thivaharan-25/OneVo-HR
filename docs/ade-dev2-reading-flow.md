@@ -434,13 +434,7 @@ backend/bridge-api-contracts.md               â† Request/response schemas
 backend/external-integrations.md              â† Bridge endpoint registry
 ```
 
-Builds:
-- `POST /api/v1/bridges/people/sync` — receives employee batch from WMS, upserts into `employees` table
-- `bridge_api_keys` table with HMAC-SHA256 key hashing (NOT bcrypt — see SEC-01 fix)
-- WMS webhook signature validation on every bridge request
-
----
-
+Status: deprecated. WorkSync is internal to ONEVO now, so bridge endpoints and bridge-key storage are not built.`r`n`r`n---`r`n
 ## Phase 8: Orchestrator Final Report
 
 After all tasks complete (or are blocked), the orchestrator outputs:

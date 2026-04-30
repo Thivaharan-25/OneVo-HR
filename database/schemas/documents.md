@@ -1,8 +1,10 @@
 # Documents — Schema
 
 **Module:** [[modules/documents/overview|Documents]]
-**Phase:** Phase 2
-**Tables:** 6
+**Phase:** Shared Phase 1 core, with HR-specific additions in Phase 2
+**Tables:** Shared document core + HR document governance tables
+
+> WorkSync.Collaboration owns the Phase 1 `documents` and `document_versions` core because WorkSync requires project/wiki/task document behaviour. HR Documents extends the same tables for employee/legal-entity scope, acknowledgements, templates, and access logs. Do not build a separate WorkSync document store.
 
 ---
 

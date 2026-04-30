@@ -48,7 +48,8 @@
       "Bash(echo \"EXIT:$?\")",
       "Bash(echo \"TSC_EXIT:$?\")",
       "Bash(npx shadcn@latest add button input label select dialog dropdown-menu tooltip badge card separator avatar skeleton progress --yes)",
-      "Bash(node_modules/.bin/vitest run *)"
+      "Bash(node_modules/.bin/vitest run *)",
+      "Bash(bash *)"
     ]
   }
 }

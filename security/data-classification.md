@@ -13,6 +13,7 @@
 | `integration_connections` | `credentials_encrypted` | bytea | Integration credentials |
 | `notification_channels` | `credentials_encrypted` | jsonb (encrypted) | Channel provider credentials |
 | `biometric_devices` | `api_key_encrypted` | bytea | Biometric terminal API keys |
+| `microsoft_graph_tokens` | `refresh_token_encrypted`, `access_token_encrypted` | bytea | Microsoft Graph tokens for Teams sync |
 
 ### Restricted Data (Workforce Intelligence)
 
@@ -34,6 +35,15 @@
 | `employee_addresses` | All address fields | Home addresses | Scrubbed in logs |
 | `employee_dependents` | `first_name`, `last_name`, `date_of_birth` | Family member info | Scrubbed in logs |
 | `sessions` | `ip_address` | User IP addresses | Scrubbed in logs |
+
+### Confidential Communication Data
+
+| Table | Column/Data | Classification | Retention | Notes |
+|:------|:------------|:---------------|:----------|:------|
+| `messages` | `content` from ONEVO or Microsoft Teams | **CONFIDENTIAL** | Chat retention policy + legal hold | Teams-synced messages are visible only through ONEVO workspace/channel permissions. |
+| `teams_message_sync_state` | External message IDs and sync errors | **CONFIDENTIAL** | Same as parent message metadata | Do not log message content or Graph tokens in sync errors. |
+| `external_account_connections` | Teams external user id/email | **SENSITIVE PII** | Until user disconnects or tenant retention deletes | Used for user matching and sync eligibility. |
+| `microsoft_graph_tokens` | Encrypted Graph refresh/access tokens | **CRITICAL SECRET** | Until disconnect/revocation | Always encrypted; never returned by API or logged. |
 
 ### Serilog PII Scrubbing
 
