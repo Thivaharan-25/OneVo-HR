@@ -220,11 +220,11 @@ Tamper detection and device health.
 | PUT | `/api/v1/verification/policy` | `verification:configure` | Update verification policy |
 | GET | `/api/v1/verification/records/{employeeId}` | `verification:view` | Verification history |
 | POST | `/api/v1/verification/verify` | Internal (agent) | Submit verification photo |
-| GET | `/api/v1/biometric/devices` | `verification:view` | List biometric devices |
-| POST | `/api/v1/biometric/devices` | `verification:configure` | Register device |
-| PUT | `/api/v1/biometric/devices/{id}` | `verification:configure` | Update device |
+| GET | `/api/v1/workforce/devices` | `verification:view` | List biometric devices |
+| POST | `/api/v1/workforce/devices` | `verification:configure` | Register device |
+| PUT | `/api/v1/workforce/devices/{id}` | `verification:configure` | Update device |
 | POST | `/api/v1/biometric/enroll` | `verification:configure` | Enroll employee fingerprint |
-| POST | `/api/v1/biometric/webhook` | HMAC-SHA256 | Receive biometric events from terminals |
+| POST | `/api/v1/workforce/biometric/webhook` | HMAC-SHA256 | Receive biometric events from terminals |
 
 ---
 
@@ -241,7 +241,7 @@ Tamper detection and device health.
 
 - **Biometric webhook authentication** uses HMAC-SHA256 signature verification, not JWT.
 - **Photo matching** in Phase 1 uses a simple comparison service. Phase 2 may add a dedicated ML matching service.
-- **This module owns biometric hardware** — [[modules/workforce-presence/overview|Workforce Presence]] only consumes the events generated here.
+- **Workforce Presence owns biometric terminal registration, enrollment, and clock-event ingestion because those routes create presence source data. Identity Verification owns verification policy, consent rules, photo/fingerprint review, and identity match outcomes.
 
 ## On-Demand Capture Flow
 

@@ -1,4 +1,12 @@
-# WMS Integration — Knowledge Brain Analysis
+# WMS Integration - Knowledge Brain Analysis
+
+> [!WARNING]
+> **THIS DOCUMENT IS ARCHIVED. DO NOT IMPLEMENT BRIDGE ENDPOINTS FROM THIS FILE.**
+>
+> WorkSync is now an internal ONEVO work-management pillar. HR Management and WorkSync are sold independently or as selected module packs through module entitlements. This file is preserved only as historical analysis of the old external-WMS bridge idea.
+
+---
+
 
 > **Status:** All open questions resolved. Phase 0 knowledge brain fixes complete.
 > **Purpose:** Audit of the knowledge brain against the WMS integration spec. Identifies what is wrong, what is missing, and what changes need to happen — in the right order.

@@ -35,6 +35,14 @@
 - Token is lost on page refresh → silent refresh via refresh token
 - No `window.accessToken` global — encapsulated in AuthStore
 
+### Token Storage (`src/lib/security/token-manager.ts`)
+
+Access tokens live **in memory only** — never in `localStorage` or `sessionStorage`. `token-manager.ts` exposes:
+- `setToken(token, expiresIn)` — stores token + calculates expiry timestamp
+- `getToken()` — returns current token string or null
+- `clearToken()` — wipes on logout or session expiry
+- `isExpiringSoon()` — returns true if token expires within 60 s (used by `auth.interceptor` to pre-emptively refresh)
+
 ### Silent Refresh
 
 On app load and when access token expires:
@@ -88,6 +96,10 @@ function scheduleRefresh(token: string) {
   }
 }
 ```
+
+### Idle Timeout (`src/lib/security/idle-timeout.ts`)
+
+Registers `mousemove` and `keydown` listeners. After the configured idle window (default: 30 min), calls `tokenManager.clearToken()` and redirects to `/login`. Activated inside `AuthProvider` on mount.
 
 ## Auth Provider
 

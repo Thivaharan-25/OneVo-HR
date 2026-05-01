@@ -470,7 +470,7 @@ Data Pipeline:
 Discrepancy Engine (within this task):
 13. `discrepancy_events` table — populated by `DiscrepancyEngineJob` (daily EOD)
 14. Manager-only visibility enforced at query level
-15. `wms_daily_time_logs` table — WMS Work Activity bridge writes here (Bridge 3 endpoint)
+15. `wms_daily_time_logs` table — internal WorkSync Work Activity projection writes here (no bridge endpoint)
 
 Screenshots:
 16. `screenshots` table — metadata only, files in blob storage via `IFileService`

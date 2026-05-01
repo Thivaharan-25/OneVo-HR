@@ -20,7 +20,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 - **~288 database tables** across **38 modules**
 - **.NET 9** backend (Clean Architecture + CQRS, single deployable monolith)
 - **.NET MAUI + Windows Service** desktop monitoring agent (separate solution `ONEVO.Agent.sln`, independent release cycle)
-- **Next.js 15** frontend — single frontend for all three pillars
+- **Vite + React 19** frontend - responsive SPA for all enabled pillars/modules
 - **PostgreSQL 16** — single unified database, no bridge APIs, no external WMS backend
 - **8-week delivery plan** with 8 developers
 
@@ -28,18 +28,22 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 
 > **Architecture decision (ADR-002 + ADR-003):** WorkSync is NOT an external system. All WorkSync tables live in the same `ApplicationDbContext` as HR and monitoring tables. `backend/bridge-api-contracts.md` is DEPRECATED — do not implement bridge contracts.
 
-## Product Configurations
+## Product Packaging
 
-| Tier | Core | HR Pillar | Workforce Intel | WorkSync | IDE Extension |
-|:-----|:----:|:---------:|:---------------:|:--------:|:-------------:|
-| HR Management | ✓ | ✓ | ✗ | ✗ | ✗ |
-| WorkSync Only | ✓ | ✗ | ✗ | ✓ | Optional add-on |
-| HR + Workforce Intel | ✓ | ✓ | ✓ | ✗ | ✗ |
-| HR + WorkSync | ✓ | ✓ | ✗ | ✓ | Optional add-on |
-| Full Suite | ✓ | ✓ | ✓ | ✓ | Optional add-on |
+ONEVO can be sold by pillar or by selected modules. HR Management and WorkSync can each be sold independently, and customers can later add Workforce Intelligence, IDE Extension, or individual module packs without creating a separate deployment.
+
+| Package | Core | HR Pillar | Workforce Intel | WorkSync | IDE Extension |
+|:--------|:----:|:---------:|:---------------:|:--------:|:-------------:|
+| HR Management | yes | Selected HR modules | Optional add-on | no | no |
+| WorkSync Only | yes | no | no | Selected WorkSync modules | Optional add-on |
+| Workforce Intelligence Only | yes | CoreHR identity only | Selected monitoring modules | no | no |
+| HR + Workforce Intel | yes | Selected HR modules | Selected monitoring modules | no | no |
+| HR + WorkSync | yes | Selected HR modules | Optional add-on | Selected WorkSync modules | Optional add-on |
+| Full Suite | yes | Selected HR modules | Selected monitoring modules | Selected WorkSync modules | Optional add-on |
 
 **Core (always active):** Infrastructure + Auth + CoreHR identity + Notifications + SharedPlatform
-**IDE Extension:** Per-user/per-tenant entitlement. Chat + tag engine always available when WorkSync is active. Desktop monitoring agent provisioning requires a separate monitoring entitlement checked server-side.
+**Module-level sales:** Each tenant has explicit module entitlements. A package can include only Leave + Core HR, only Projects + Tasks, only Chat, or any other approved module selection. The UI, API, and navigation must check these module entitlements before showing or serving features.
+**IDE Extension:** Per-user/per-tenant entitlement. Chat + tag engine is available when WorkSync is active. Desktop monitoring agent provisioning requires a separate monitoring entitlement checked server-side.
 
 ## Repository Structure
 
@@ -47,7 +51,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 onevo-hr-brain/
 ├── AI_CONTEXT/                  # AI context — read FIRST
 │   ├── project-context.md       # Three-pillar architecture, business logic
-│   ├── tech-stack.md            # .NET 9, PostgreSQL, Next.js 15
+│   ├── tech-stack.md            # .NET 9, PostgreSQL, Vite + React 19
 │   ├── rules.md                 # AI agent rules (backend + frontend + agent)
 │   ├── known-issues.md          # Gotchas, monitoring data, agent auth
 │   └── changelog/               # Knowledge base update log (one file per change)
@@ -62,8 +66,8 @@ onevo-hr-brain/
 │   ├── module-boundaries.md     # Boundary rules and enforcement
 │   ├── shared-kernel.md         # Cross-cutting code (Result<T>, ITenantContext)
 │   └── messaging/               # Event catalog, exchange topology
-├── frontend/                    # Next.js 15 frontend architecture
-│   ├── architecture/            # App router layout
+├── frontend/                    # Vite + React frontend architecture
+│   ├── architecture/            # React Router layout
 │   ├── data-layer/              # TanStack Query + Zustand
 │   └── design-system/           # UI tokens, components, typography
 ├── database/                    # PostgreSQL 16 — single unified schema
@@ -88,7 +92,7 @@ onevo-hr-brain/
 | **What users do** | `Userflow/` | End-to-end flows by permission |
 | **What to build** | `modules/` | Feature specs, DB schema, APIs |
 | **How to build (backend)** | `backend/` | .NET architecture, patterns |
-| **How to build (frontend)** | `frontend/` | Next.js 15 structure, components |
+| **How to build (frontend)** | `frontend/` | Vite + React structure, components |
 | **Data layer** | `database/` | Schema catalog, migrations, performance |
 | **Code rules** | `code-standards/` | Naming, git, logging |
 | **Security** | `security/` | Auth, RBAC, compliance |

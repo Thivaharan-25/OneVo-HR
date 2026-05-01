@@ -4,6 +4,12 @@
 
 ONEVO uses **SignalR** (WebSocket with fallbacks) for real-time push from the .NET backend. The frontend treats pushes as **cache invalidation signals** — when a push arrives, TanStack Query refetches the relevant data. The API remains the single source of truth.
 
+## SignalR Client (`src/lib/signalr/client.ts`)
+
+Package: `@microsoft/signalr`
+
+Builds and exports a shared `HubConnection` instance using `HubConnectionBuilder`. `SignalRProvider` (in `App.tsx`) manages connection lifecycle (start on auth, stop on logout).
+
 ## Connection Lifecycle
 
 ```

@@ -470,9 +470,8 @@ HIERARCHY VALIDATION:
 
 [Bridge Token (service-to-service)]
   POST /api/v1/auth/bridge/token
-  client_id + client_secret → BridgeJWT issued (aud: "onevo-bridge", 1 hour)
-  → Accepted ONLY on /api/v1/bridges/* endpoints
-  → User JWTs rejected on bridge endpoints; bridge JWTs rejected on user endpoints
+  Module entitlements + user JWT -> accepted on purchased HR/WorkSync module APIs
+  -> No /api/v1/bridges/* endpoints or BridgeJWT flow in the active architecture
 ```
 
 ---

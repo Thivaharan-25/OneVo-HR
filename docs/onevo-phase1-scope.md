@@ -51,8 +51,8 @@ Everything a company needs to manage the full employee lifecycle: hiring, onboar
 **Pillar 2 — Workforce Intelligence**
 Real-time visibility into how work is actually happening: desktop activity monitoring, workforce presence and attendance, identity verification, automated exception detection, and productivity analytics — all powered by a lightweight desktop agent installed on employee machines.
 
-**Optional Third Pillar — Work Management System (WMS) Integration**
-OneVo connects to an external Work Management System (projects, tasks, sprints, OKRs, chat) via 5 bridge contracts. This is consumed by the OneVo frontend — the WMS is built and maintained by a separate team.
+**Optional Third Pillar — WorkSync / Work Management**
+WorkSync is an internal ONEVO work management pillar (projects, tasks, sprints, OKRs, chat). HR Management and WorkSync can be sold together, individually, or as selected module packs through module entitlements.
 
 ### At a Glance
 
@@ -86,12 +86,12 @@ OneVo connects to an external Work Management System (projects, tasks, sprints, 
 │           Vite + React 19 (React Router v7)                 │
 │   Single app consuming OneVo backend + WMS backend       │
 └────────────────┬─────────────────────┬───────────────────┘
-                 │ Tenant JWT           │ Bridge API key
+                 │ Tenant JWT           │ Module entitlement
                  ▼                     ▼
 ┌──────────────────────┐   ┌──────────────────────────────┐
 │   OneVo Backend      │   │     WMS Backend              │
 │   .NET 9             │   │   (External team)            │
-│   /api/v1/*          │   │   5 bridge contracts         │
+│   /api/v1/*          │   │   WorkSync modules         │
 │   23+ modules        │   │   Projects · Tasks           │
 │   1 PostgreSQL DB    │   │   Sprints · OKRs · Chat      │
 └──────────┬───────────┘   └──────────────────────────────┘
@@ -154,10 +154,10 @@ OneVo is sold in configurable tiers. Each tenant gets exactly the modules they s
 | Tier | What's Included |
 |:-----|:---------------|
 | **HR Management** | Infrastructure + Auth + Org Structure + Core HR + Leave + Calendar + Skills (core) + Performance + Payroll + Documents + Notifications + Shared Platform |
-| **Work Management** | Infrastructure + Auth + WMS bridge (People Sync contract only) |
+| **Work Management** | Infrastructure + Auth + WorkSync people access through internal employee projection |
 | **HR + Workforce Intel** | Everything in HR Management + Activity Monitoring + Workforce Presence + Identity Verification + Exception Engine + Productivity Analytics + Agent Gateway |
-| **HR + Work Management** | Everything in HR Management + WMS full integration (all 5 bridge contracts) |
-| **Full Suite** | All modules + WMS + Workforce Intelligence |
+| **HR + Work Management** | Everything in HR Management + WMS full integration (all WorkSync modules) |
+| **Full Suite** | All selected HR, WorkSync, and Workforce Intelligence modules |
 
 **Core (always active in every tier):** Infrastructure, Auth, Notifications, Shared Platform
 
@@ -617,7 +617,7 @@ An org-level point-in-time view: how many employees are active right now, what's
 
 ### 4.16 Shared Platform
 
-**Purpose:** Cross-cutting infrastructure shared by all modules. This is the "plumbing" of the platform — workflows, subscriptions, webhooks, real-time connections, and WMS bridge configuration.
+**Purpose:** Cross-cutting infrastructure shared by all modules. This is the "plumbing" of the platform — workflows, subscriptions, webhooks, real-time connections, and WorkSync workspace provisioning and module entitlements.
 
 **What it contains (33 tables):**
 
@@ -1271,7 +1271,7 @@ The operator console (`console.onevo.io`) can be deployed, rolled back, or taken
 | Week 1 (Apr 7–11) | Foundation | Infrastructure, Auth, Org Structure, Shared Platform, Agent Gateway |
 | Week 2 (Apr 14–18) | Core HR + Presence | Core HR, Skills Core, Workforce Presence, Identity Verification |
 | Week 3 (Apr 21–25) | Intelligence + Leave | Leave, Activity Monitoring, Discrepancy Engine, Exception Engine, Calendar, Notifications |
-| Week 4 (Apr 28–May 2) | Analytics + Platform | Productivity Analytics, Configuration, Developer Platform, WMS bridges, Reporting Engine |
+| Week 4 (Apr 28–May 2) | Analytics + Platform | Productivity Analytics, Configuration, Developer Platform, WorkSync internal integration, Reporting Engine |
 
 ---
 

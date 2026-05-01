@@ -22,7 +22,7 @@
 
 ### Step 2: Configure Connection
 - **UI:** Enter device webhook URL or API endpoint → set authentication key → test connection → confirm bi-directional communication
-- **Backend:** DeviceService.RegisterAsync() → [[modules/workforce-presence/device-sessions/overview|Device Sessions]]
+- **Backend:** WorkforceDeviceService.RegisterAsync() -> [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
 
 ### Step 3: Enroll Employees
 - **UI:** Select device → "Enroll Employees" → employees physically scan fingerprint/face at device → enrollment data stored
@@ -32,6 +32,18 @@
 ### Step 4: Activate
 - **UI:** Toggle device to "Active" → device starts sending clock-in/out events → events create presence sessions automatically
 - **Backend:** Webhook receives events → PresenceService.ProcessClockEvent() → [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+
+## Biometric Outage Fallback
+
+If a registered biometric device or location has a verified outage, an admin can enable a time-limited fallback:
+
+- **API:** `POST /api/v1/workforce/biometric-outages`
+- **Scope:** legal entity, office location, or device
+- **Allowed fallback:** onsite employees may clock in/out through approved web or tray flow while the outage is active
+- **Audit:** every fallback clock event records source, outage id, employee, timestamp, reason, and reviewer status
+- **Restriction:** IDE extension and WorkSync time logging cannot use this fallback to create presence records
+
+When the outage is resolved, admins call `PUT /api/v1/workforce/biometric-outages/{id}/resolve`, and onsite employees return to biometric-only clock-in.
 
 ## Error Scenarios
 

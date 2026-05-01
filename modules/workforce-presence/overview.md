@@ -16,7 +16,8 @@
 Single source of truth for **"is this employee present and working?"** Unifies data from three sources:
 1. **Biometric terminals** — clock-in/out events from fingerprint devices
 2. **Desktop agent** — device sessions (active/idle cycles) via [[modules/agent-gateway/overview|Agent Gateway]]
-3. **Manual entries** — admin corrections and overrides
+3. **Policy-gated web/tray clock events** - allowed for remote/hybrid work and approved outage scenarios
+4. **Manual entries** - admin corrections and overrides
 
 Produces `presence_sessions` — one unified row per employee per day — consumed by [[modules/payroll/overview|Payroll]], [[modules/productivity-analytics/overview|Productivity Analytics]], and [[modules/exception-engine/overview|Exception Engine]].
 
@@ -86,7 +87,7 @@ API endpoints:
 | `holidays` | Company and country holidays |
 | `schedule_templates` | Reusable schedule templates |
 | `employee_work_schedules` | Employee-specific schedule overrides |
-| `attendance_records` | Legacy clock-in/out records (biometric source) |
+| `attendance_records` | Clock-in/out source records from biometric, web, tray, outage override, or manual correction |
 | `overtime_requests` | Overtime request + approval workflow |
 | `attendance_corrections` | Manager corrections to attendance data |
 
@@ -164,8 +165,8 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `PresenceSessionStarted` | Employee clocks in (biometric/manual/agent auto-detect) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StartMonitoring` to agent), [[modules/activity-monitoring/overview\|Activity Monitoring]] |
-| `PresenceSessionEnded` | Employee clocks out (biometric/manual/auto-close) | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StopMonitoring` to agent) |
+| `PresenceSessionStarted` | Employee clocks in through an allowed source | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StartMonitoring` to agent), [[modules/activity-monitoring/overview\|Activity Monitoring]] |
+| `PresenceSessionEnded` | Employee clocks out through an allowed source or auto-close | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StopMonitoring` to agent) |
 | `BreakExceeded` | Break exceeds allowed duration | [[modules/exception-engine/overview\|Exception Engine]] (flag long break) |
 | `OvertimeRequested` | Employee requests overtime | [[modules/notifications/overview\|Notifications]] (approval workflow) |
 | `OvertimeApproved` | Manager approves overtime request | [[modules/payroll/overview\|Payroll]] (include in payroll run) |
@@ -184,11 +185,13 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 
 ## Key Business Rules
 
-1. **Presence session is computed, not directly written.** It aggregates from `attendance_records` (biometric), `device_sessions` (agent), and manual corrections.
+1. **Presence session is computed, not directly written.** It aggregates from `attendance_records` (biometric/web/tray/outage/manual), `device_sessions` (agent), and corrections.
 2. **Device sessions can overlap with biometric clock-in.** The unified `presence_sessions` deduplicates — uses earliest first_seen and latest last_seen.
 3. **Break detection:** If agent reports idle > configurable threshold (default 15 min), auto-create a `break_record` with `auto_detected = true`.
 4. **Overtime:** Must be pre-approved via workflow or auto-flagged when `total_present_minutes > scheduled_minutes`.
-5. **Data flow:** Biometric events arrive via webhook → `attendance_records`. Agent data arrives via [[modules/agent-gateway/overview|Agent Gateway]] → `device_sessions`. A Hangfire job reconciles both into `presence_sessions` every 5 minutes during work hours.
+5. **Data flow:** Biometric and policy-gated clock events write to `attendance_records`. Agent data arrives via [[modules/agent-gateway/overview|Agent Gateway]] -> `device_sessions`. A Hangfire job reconciles both into `presence_sessions` every 5 minutes during work hours.
+6. **Clock-in source policy:** Office employees normally clock in through biometric terminals only. Remote employees may clock in through approved web/tray flows with identity and work-location evidence. Hybrid employees use biometric when onsite and web/tray when remote. Field employees follow tenant policy. Onsite web/tray clock-in requires an active biometric outage override scoped to the affected legal entity, location, or device.
+7. **IDE extension boundary:** WorkSync and IDE time logging can create `time_logs`, but they must never create Workforce Presence clock-in/out records.
 
 ---
 
@@ -217,8 +220,19 @@ See [[Userflow/Workforce-Presence/presence-overview|Presence Overview]] for the 
 | GET | `/api/v1/workforce/presence` | `attendance:read` | List presence sessions (paginated, filterable) |
 | GET | `/api/v1/workforce/presence/{employeeId}` | `attendance:read` | Employee presence for date range |
 | GET | `/api/v1/workforce/presence/live` | `workforce:view` | Real-time workforce status |
+| POST | `/api/v1/workforce/clock-in` | `attendance:write-own` | Clock in through an allowed source |
+| POST | `/api/v1/workforce/clock-out` | `attendance:write-own` | Clock out through an allowed source |
+| POST | `/api/v1/workforce/breaks/start` | `attendance:write-own` | Start break and pause monitoring |
+| POST | `/api/v1/workforce/breaks/end` | `attendance:write-own` | End break and resume monitoring |
 | GET | `/api/v1/workforce/device-sessions/{employeeId}` | `workforce:view` | Device session detail |
 | GET | `/api/v1/workforce/breaks/{employeeId}` | `attendance:read` | Break records |
+| GET | `/api/v1/workforce/devices` | `attendance:read` | List biometric/workforce devices |
+| POST | `/api/v1/workforce/devices` | `attendance:write` | Register biometric/workforce device |
+| PUT | `/api/v1/workforce/devices/{id}` | `attendance:write` | Update biometric/workforce device |
+| POST | `/api/v1/workforce/devices/{id}/enrollments` | `attendance:write` | Enroll employees on a biometric device |
+| POST | `/api/v1/workforce/biometric/webhook` | HMAC-SHA256 | Receive biometric clock events |
+| POST | `/api/v1/workforce/biometric-outages` | `attendance:manage` | Enable time-limited onsite web/tray clock-in fallback |
+| PUT | `/api/v1/workforce/biometric-outages/{id}/resolve` | `attendance:manage` | End outage fallback |
 | POST | `/api/v1/workforce/corrections` | `attendance:write` | Submit attendance correction |
 | POST | `/api/v1/workforce/overtime` | `attendance:write` | Submit overtime request |
 | PUT | `/api/v1/workforce/overtime/{id}/approve` | `attendance:approve` | Approve overtime |
@@ -243,7 +257,7 @@ See [[Userflow/Workforce-Presence/presence-overview|Presence Overview]] for the 
 
 - **Presence session vs device session:** `presence_sessions` is ONE row per employee per day (unified). `device_sessions` can have MULTIPLE rows per day (one per laptop active/idle cycle). Don't confuse them.
 - **This module does NOT handle screenshots or app tracking** — that's [[modules/activity-monitoring/overview|Activity Monitoring]].
-- **Biometric device management** is in [[modules/identity-verification/overview|Identity Verification]], not here. This module only consumes biometric events.
+- **Biometric device management** is exposed through Workforce Presence routes (`/api/v1/workforce/devices`) because clock-in/out is a workforce function. Identity Verification owns photo/fingerprint verification policy and review, but Workforce Presence owns terminal registration, enrollment, and clock event ingestion.
 - **Payroll reads from this module** via `IWorkforcePresenceService.GetTotalWorkedHoursAsync()`.
 
 ## Features

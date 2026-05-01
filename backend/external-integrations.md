@@ -129,4 +129,4 @@ See [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]
 - [[backend/notification-system|Notification System]] — Resend email pipeline
 - [[AI_CONTEXT/tech-stack|Tech Stack]] — integration technology choices
 - [[backend/domain-events|Domain Events]] — retry and circuit breaker patterns for external calls
-- [[AI_CONTEXT/known-issues|Known Issues]] — WorkManage Pro bridge gotchas
+- [[AI_CONTEXT/known-issues|Known Issues]] - integration gotchas; WorkSync is internal and does not use bridge APIs

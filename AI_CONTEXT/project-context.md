@@ -30,15 +30,16 @@ A second standalone frontend app (`dev-console` at `console.onevo.io`) exists fo
 
 ---
 
-ONEVO is designed around **three core pillars** sold in multiple configurations:
+ONEVO is designed around **three core pillars** sold independently, together, or as selected module packs:
 
 | Configuration | Target Market | Modules Included |
 |:-------------|:-------------|:----------------|
-| **HR Management** | Companies needing core HR | Pillar 1 + Shared Foundation |
-| **HR + Workforce Intelligence** | Companies wanting employee monitoring | Pillar 1 + Pillar 2 + Desktop Agent |
-| **WorkSync Only** | Teams wanting project/task/chat management | Pillar 3 + IDE Extension |
-| **HR + WorkSync** | Companies wanting HR + project/task management | Pillar 1 + Pillar 3 + IDE Extension |
-| **Full Suite** | Companies wanting everything | All 3 pillars + Desktop Agent + IDE Extension |
+| **HR Management** | Companies needing core HR | Shared Foundation + selected HR modules |
+| **WorkSync Only** | Teams wanting project/task/chat management | Shared Foundation + selected WorkSync modules |
+| **Workforce Intelligence Only** | Companies needing monitoring/presence without full HR | Shared Foundation + CoreHR identity anchor + selected Workforce modules + Desktop Agent |
+| **HR + Workforce Intelligence** | Companies wanting employee monitoring with HR | Selected HR modules + selected Workforce modules + Desktop Agent |
+| **HR + WorkSync** | Companies wanting HR + project/task management | Selected HR modules + selected WorkSync modules + optional IDE Extension |
+| **Full Suite** | Companies wanting everything | Selected modules across all 3 pillars + Desktop Agent + optional IDE Extension |
 
 **WorkSync (Pillar 3)** is a fully-integrated Jira/Slack-equivalent built directly inside ONEVO — same backend, same database, no external bridges.
 
@@ -310,14 +311,16 @@ Vite + React 19 + React Router v7
 5. **Tenant-scoped everything** — all API calls include tenant context from JWT
 6. **Feature flag aware** — UI adapts to what features the tenant has enabled
 
-### Product Configurations Affect UI
+### Product Packaging Affects UI
 
-| Config | What's Visible |
-|:-------|:---------------|
-| HR Only | `/hr/*`, `/org/*`, `/settings/*` (no `/workforce/*`) |
-| HR + Workforce Intelligence | Full UI including `/workforce/*` |
-| HR + Work Management | `/hr/*` + bridge data in dashboards |
-| Full Suite | Everything |
+| Package | What is visible |
+|:--------|:----------------|
+| HR-only module pack | Only entitled HR, org, calendar, notification, and settings routes |
+| WorkSync-only module pack | Only entitled WorkSync routes such as projects, tasks, chat, docs, time, and goals |
+| Workforce Intelligence pack | Workforce presence, monitoring, agent, exception, and productivity routes enabled by entitlement |
+| Combined package | Union of entitled HR, WorkSync, and Workforce Intelligence modules |
+
+Every route, sidebar item, command menu item, API endpoint, and mobile/tablet responsive layout must check tenant module entitlements. Disabled modules are hidden in the React UI and rejected server-side with `403`.
 
 ### Backend API Consumption
 

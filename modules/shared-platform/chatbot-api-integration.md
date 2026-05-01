@@ -169,5 +169,5 @@ Actions the chatbot can perform on behalf of a user (all subject to user's permi
 
 - [[modules/auth/overview|Auth Module]] — JWT infrastructure this builds on
 - [[modules/shared-platform/overview|Shared Platform]] — Where OAuth client registration lives
-- [[backend/external-integrations|External Integrations]] — Bridge endpoints (separate from chatbot API)
+- [[backend/external-integrations|External Integrations]] — External first-party integration conventions (separate from chatbot API)
 - [[AI_CONTEXT/rules|Rules]] — `[RequirePermission]` convention

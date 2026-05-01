@@ -14,7 +14,7 @@ The Discrepancy Engine is a daily end-of-day job that cross-references three dat
 
 **The three streams compared:**
 1. **HR Active Time** — ground truth from `activity_daily_summary.total_active_minutes`
-2. **WMS Reported Time** — task/work logs from the WorkManage Pro bridge (`work_activity` bridge)
+2. **WMS Reported Time** — task/work logs from internal WorkSync `time_logs` and `wms_daily_time_logs` projections
 3. **Calendar/Meeting Time** — scheduled events from `calendar_events` that explain legitimate gaps (meetings, OOO, training)
 
 ---
@@ -25,7 +25,7 @@ The Discrepancy Engine is a daily end-of-day job that cross-references three dat
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | `IActivityMonitoringService` | Source of HR active time |
 | **Depends on** | [[modules/calendar/overview\|Calendar]] | `ICalendarService` | Source of meeting/event time |
-| **Depends on** | Connectivity Bridges | `IWorkActivityBridge` | Source of WMS task logged time |
+| **Depends on** | [[modules/work-management/time/overview|WorkSync Time]] | `IWorkSyncTimeService` | Source of WorkSync task logged time |
 | **Depends on** | [[modules/configuration/monitoring-toggles/overview\|Configuration]] | `IConfigurationService` | Tenant-configured discrepancy thresholds |
 | **Consumed by** | [[modules/notifications/overview\|Notifications]] | — | Sends alerts to manager/HR Admin |
 | **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | — | Discrepancy rate as a signal |
@@ -74,7 +74,7 @@ public class DiscrepancyEngineJob
             var hrActiveMinutes = activitySummary.TotalActiveMinutes;
 
             // Stream 2: WMS task logged time (what they claimed)
-            var wmsMinutes = await _workActivityBridge.GetLoggedMinutesAsync(employee.Id, date, ct);
+            var wmsMinutes = await _workSyncTimeService.GetLoggedMinutesAsync(employee.Id, date, ct);
 
             // Stream 3: Calendar-explained time (legitimate gaps)
             var calendarMinutes = await _calendarService.GetTotalEventMinutesAsync(employee.Id, date, ct);
@@ -263,7 +263,7 @@ See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discr
 ## Key Business Rules
 
 1. **No agent data = no discrepancy.** If an employee has no activity data for the day (no agent installed, holiday, leave), the job skips them.
-2. **WMS bridge is optional.** If the tenant has no WMS integration, `wms_logged_minutes = 0` and only the calendar cross-reference is used.
+2. **WorkSync is optional.** If the tenant has no WorkSync Time module enabled, `wms_logged_minutes = 0` and only the calendar cross-reference is used.
 3. **Thresholds are tenant-configurable.** The default thresholds (30/60/180 min) can be adjusted per tenant via the Configuration module.
 4. **Employee privacy.** The `low` severity notification to the employee says "You have unlogged hours today" — it does NOT say "we detected you worked X hours and only logged Y." The discrepancy analysis is never surfaced to the employee.
 

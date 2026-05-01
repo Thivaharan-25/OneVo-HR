@@ -98,7 +98,7 @@ Index: `WHERE processed_at IS NULL` on `created_at` — the outbox processor que
 
 - [[modules/infrastructure/overview|Infrastructure Module]]
 - [[modules/auth/overview|Auth Module]] — `IBridgeAuthService` uses this table
-- [[backend/bridge-api-contracts|Bridge API Contracts]] — auth flow and endpoint contracts
+- [[backend/api-conventions|API Conventions]] - first-party API auth and endpoint conventions
 - [[database/schema-catalog|Schema Catalog]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[database/performance|Performance]]

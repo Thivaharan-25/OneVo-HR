@@ -122,4 +122,4 @@ A `scripts/generate-dev-secrets.sh` script generates consistent dev secrets and 
 - [[security/data-classification|Data Classification]] — encrypted column inventory
 - [[infrastructure/environment-parity|Environment Parity]] — environment comparison table
 - [[modules/auth/overview|Auth Module]] — `ISecretsService` usage
-- [[backend/bridge-api-contracts|Bridge API Contracts]] — bridge client secret lifecycle
+- [[backend/api-conventions|API Conventions]] - first-party API authentication and device JWT rules

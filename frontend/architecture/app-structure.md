@@ -33,6 +33,54 @@ src/
 ├── App.tsx                            # Provider stack + <RouterProvider router={router} />
 ├── router.tsx                         # ALL routes defined here using createBrowserRouter()
 │
+├── lib/
+│   ├── api/
+│   │   ├── client.ts                         # Fetch wrapper — runs interceptor chain
+│   │   ├── index.ts                          # Re-exports apiClient + all endpoint modules
+│   │   ├── errors.ts                         # ApiError, AuthError, ProblemDetails type
+│   │   ├── interceptors/
+│   │   │   ├── auth.interceptor.ts           # Attaches Bearer token; triggers refresh when expiring
+│   │   │   ├── tenant.interceptor.ts         # Injects X-Entity-Id from active entity in authStore
+│   │   │   ├── correlation.interceptor.ts    # Injects X-Correlation-Id (crypto.randomUUID)
+│   │   │   └── error.interceptor.ts          # 401 retry after refresh; toast on 4xx/5xx
+│   │   └── endpoints/
+│   │       ├── auth.ts
+│   │       ├── employees.ts
+│   │       ├── leave.ts
+│   │       ├── org.ts
+│   │       ├── workforce.ts
+│   │       ├── calendar.ts
+│   │       ├── notifications.ts
+│   │       ├── settings.ts
+│   │       ├── admin.ts
+│   │       ├── agents.ts
+│   │       ├── identity.ts
+│   │       └── wms/
+│   │           ├── projects.ts
+│   │           ├── tasks.ts
+│   │           ├── planner.ts
+│   │           ├── goals.ts
+│   │           ├── docs.ts
+│   │           ├── time.ts
+│   │           └── chat.ts
+│   ├── security/
+│   │   ├── token-manager.ts                  # In-memory access token store + isExpiringSoon()
+│   │   ├── idle-timeout.ts                   # Auto-logout after inactivity
+│   │   ├── sanitizer.ts                      # DOMPurify wrapper — used on all user-generated HTML
+│   │   └── permission-guard.tsx              # <ProtectedRoute> component + redirect to /403
+│   ├── signalr/
+│   │   └── client.ts                         # HubConnectionBuilder setup; re-export hub instance
+│   ├── i18n.ts                               # i18next init (browser language detector + HTTP backend)
+│   └── utils/
+│       ├── cn.ts                             # clsx + tailwind-merge shorthand
+│       ├── format-date.ts                    # date-fns wrappers
+│       └── to-params.ts                      # Object → URLSearchParams
+│
+├── stores/
+│   ├── use-auth-store.ts                     # Zustand: current user, activeEntityId, token expiry
+│   ├── use-sidebar-store.ts                  # Zustand: expanded pillar, active item
+│   └── use-filter-store.ts                   # Zustand: per-module filter state
+│
 │── ─── AUTH PAGES (public, no nav) ────
 │
 ├── pages/auth/
@@ -287,6 +335,8 @@ export function App() {
   );
 }
 ```
+
+> `PermissionProvider` loads both role-level and per-employee-override permissions on mount and exposes them via `usePermissions()`. `usePermissions().hasPermission(key)` is the only correct way to gate UI — never read role names directly.
 
 ## Colocated Component Pattern
 
