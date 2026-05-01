@@ -2,7 +2,7 @@
 
 **Area:** Workforce → Presence (`/workforce`)  
 **Trigger:** User clicks the Workforce pillar icon, or navigates to `/workforce`  
-**Required Permission:** `workforce:read`
+**Required Permission:** `workforce:view`
 
 ## Purpose
 
@@ -47,7 +47,7 @@ If the exception engine or desktop agent detects a problem with an employee (mis
 ## Flow Steps
 
 1. User opens Workforce pillar — default route is `/workforce`
-2. System loads all employees in the entity scope that the user has `workforce:read` access to
+2. System loads all employees in the entity scope that the user has `workforce:view` access to
 3. Cards render in sort order (flagged first, then online, then break, then offline)
 4. Live updates stream via SignalR — presence status and productivity scores update without page refresh
 5. User clicks any card → navigates to `/workforce/[employeeId]` (Employee Activity Detail)

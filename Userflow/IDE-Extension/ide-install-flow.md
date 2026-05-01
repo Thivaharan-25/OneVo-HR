@@ -11,6 +11,12 @@
 
 The IDE Extension (VS Code) connects a developer's editor to ONEVO WorkSync. Before any tag execution or context detection can work, the extension must be installed and authenticated via PKCE OAuth. Monitoring-agent installation is optional and only appears when the tenant has an active `agent_install_entitlement`.
 
+IDE authentication and desktop-agent enrollment are intentionally separate:
+- IDE authentication creates the developer's editor session and stores the user token in VS Code SecretStorage.
+- TrayApp enrollment creates the Windows device session and stores a separate device credential with DPAPI / Windows Credential Manager.
+
+If the user already authenticated in the browser for the IDE PKCE flow, the TrayApp should reuse that SSO session where possible. The user may still see a second approval/sign-in screen, but they should not need to manually enter API keys, tenant keys, or tenant IDs.
+
 ---
 
 ## Flow 1: Extension Installation & First Launch
@@ -124,7 +130,13 @@ Server checks agent_install_entitlements:
                 Extension downloads signed installer and verifies SHA256
                         │
                         ▼
-                Agent registers through Agent Gateway
+                TrayApp starts and opens Sign in
+                        â”‚
+                        â–¼
+                User completes TrayApp/browser SSO enrollment
+                        â”‚
+                        â–¼
+                Agent enrolls through Agent Gateway
                 Extension calls PUT /api/v1/ide/agent-install/{id}/installed
                         │
                         ▼
@@ -158,6 +170,7 @@ ide_sessions.ended_at set — session closed
 | JWT stored in SecretStorage only — never in settings or disk | Extension (client) |
 | device_fingerprint is OS + hardware hash, not PII | Server — strip PII before storing |
 | Agent install always requires explicit user approval | Server + Extension UI |
+| IDE login does not replace TrayApp enrollment | Separate user token and device credential |
 | Entitlement check always server-side | Never trust client-side feature flag |
 | One active session per install (ended_at = null) | Application layer |
 | Entitlement is tenant-level — any user in tenant can approve | Server |

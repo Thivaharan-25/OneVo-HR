@@ -74,9 +74,9 @@ Tasks reference labels via `task_tags.label_id`.
 | GET | `/api/v1/workspaces/{wsId}/projects` | `projects:read` | List workspace projects |
 | POST | `/api/v1/workspaces/{wsId}/projects` | `projects:create` | Create project |
 | GET | `/api/v1/projects/{id}` | `projects:read` | Get project |
-| PATCH | `/api/v1/projects/{id}` | `projects:manage` | Update project |
+| PATCH | `/api/v1/projects/{id}` | `projects:write` | Update project |
 | GET | `/api/v1/projects/{id}/members` | `projects:read` | List project members |
-| POST | `/api/v1/projects/{id}/members` | `projects:manage` | Add member |
+| POST | `/api/v1/projects/{id}/members` | `projects:write` | Add member |
 | GET | `/api/v1/projects/{id}/epics` | `projects:read` | List epics |
 | POST | `/api/v1/projects/{id}/epics` | `projects:write` | Create epic |
 | GET | `/api/v1/projects/{id}/milestones` | `projects:read` | List milestones |

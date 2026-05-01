@@ -205,19 +205,19 @@ Records the module whitelist for employees who were granted `roles:manage` via d
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `DepartmentChanged` | `org.department.changed` | Department created, updated, or restructured | Downstream modules that index department context |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `DepartmentChanged` | Department created, updated, or restructured | Downstream modules that index department context |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `TenantCreated` | `infrastructure.tenant.created` | [[modules/infrastructure/overview\|Infrastructure]] | Seed default department structure for new tenant |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `TenantCreated` | [[modules/infrastructure/overview\|Infrastructure]] | Seed default department structure for new tenant |
 
 ---
 

@@ -3,7 +3,7 @@
 **Area:** Dashboard  
 **Trigger:** User clicks "Customize" button in the dashboard topbar (user action — on demand)  
 **Required Permission(s):** Any authenticated user (customization is within the user's own permission ceiling — they cannot add zones or widgets they don't have access to)  
-**Related Permissions:** `workforce:read`, `employees:read`, `leave:read`, `audit:read`, `grievance:read` — each gates specific widgets in the Widget Library
+**Related Permissions:** `workforce:view`, `employees:read`, `leave:read`, `settings:system`, `grievance:read` — each gates specific widgets in the Widget Library
 
 ---
 
@@ -41,10 +41,10 @@
 
 | Widget | Permission Required | Scope Restriction |
 |:-------|:--------------------|:-----------------|
-| Top Performers | `workforce:read` + WI module | None |
+| Top Performers | `workforce:view` + WI module | None |
 | Dept Headcount Breakdown | `employees:read` | None |
 | Leave Calendar Preview | `leave:read` | None |
-| Recent Audit Log | `audit:read` | None |
+| Recent Audit Log | `settings:system` | None |
 | Grievance Summary | `grievance:read` | None |
 | Contract Renewals (30d) | `employees:read` | None |
 | My Team Quick Stats | `employees:read` | `hierarchy_scope` ≠ `self` |
@@ -120,7 +120,7 @@
 - If no changes were made: edit mode exits immediately with no confirmation
 
 ### Permission Revoked Between Sessions
-- User had "Top Performers" widget added when they had `workforce:read`
+- User had "Top Performers" widget added when they had `workforce:view`
 - Permission is revoked by admin
 - On next dashboard load: `addedWidgets` contains "top-performers" but permission check fails
 - Widget silently dropped from rendered layout (no error shown to user)

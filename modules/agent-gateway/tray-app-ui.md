@@ -4,12 +4,15 @@
 
 The MAUI Tray App (`ONEVO.Agent.TrayApp`) is the user-facing component of the desktop agent. It provides:
 - System tray icon with status indication
-- Employee login/logout
+- Employee sign-in, login-based device enrollment, and logout
 - Photo capture for identity verification
+- Remote workplace setup and work-location verification prompts
 - Status popup showing collector and sync state
 - Notification toasts for important events
 
 The TrayApp communicates with the Windows Service via Named Pipes. See [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] for the full message contract.
+
+**Phase 1 enrollment source of truth:** the TrayApp is the employee-facing enrollment surface. Employees do not type an API key, tenant key, tenant ID, or server URL. They click **Sign in**, authenticate through the system browser or a secure embedded auth flow, and the backend resolves tenant/user before issuing an internal device credential to the Service.
 
 ---
 
@@ -19,6 +22,14 @@ The tray icon uses `CommunityToolkit.Maui` and changes appearance based on agent
 
 ### Icon States
 
+Additional enrollment states required for login-based enrollment:
+
+| State | Tooltip | When |
+|:------|:--------|:-----|
+| **Sign in required** | "ONEVO Agent - Sign in required" | Service is installed but device is not enrolled |
+| **Enrolling device** | "ONEVO Agent - Enrolling device..." | User completed sign-in and Service is completing enrollment |
+| **Consent required / policy blocked** | "ONEVO Agent - Monitoring paused" | Consent is missing, policy blocks collection, or Workforce Presence lifecycle is paused |
+
 | State | Icon | Tooltip | When |
 |:------|:-----|:--------|:-----|
 | **Disconnected** | Gray circle | "ONEVO Agent — Not connected" | Service not running or pipe disconnected |
@@ -27,6 +38,8 @@ The tray icon uses `CommunityToolkit.Maui` and changes appearance based on agent
 | **Syncing** | Green circle with arrows | "ONEVO Agent — Syncing data..." | During active data upload |
 | **Error** | Red circle with ! | "ONEVO Agent — Error (click for details)" | Sync failure, auth error, or service error |
 | **Verification needed** | Orange circle with camera | "ONEVO Agent — Verification required" | Photo capture pending |
+
+| **Work location check** | Orange circle with location/camera | "ONEVO Agent - Work location verification required" | Work-location mismatch requires photo verification |
 
 ### Tray Icon Service
 
@@ -69,6 +82,8 @@ public class TrayIconService
 
 ### Tray Icon Context Menu
 
+For the default Phase 1 flow, the employee-facing action is **Sign in**, not "enter tenant key" or "configure server". Sign in starts or resumes login-based enrollment.
+
 Right-clicking the tray icon shows:
 
 | Menu Item | Action | Visibility |
@@ -76,6 +91,7 @@ Right-clicking the tray icon shows:
 | **Status** | Opens status popup | Always |
 | **Login** | Opens login window | When no employee logged in |
 | **Logout** | Sends logout IPC message | When employee logged in |
+| **Remote Work Location** | Opens remote location setup/change request | When employee is remote/hybrid and policy allows |
 | **About** | Shows version info | Always |
 
 There is no "Exit" or "Quit" option. The agent is managed by IT — employees cannot stop it. The service continues running regardless of whether the TrayApp is open.
@@ -84,7 +100,21 @@ There is no "Exit" or "Quit" option. The agent is managed by IT — employees ca
 
 ## Login Window
 
-A modal window shown when the employee clicks "Login" from the tray menu or when the TrayApp first launches with no logged-in employee.
+A modal window shown when the employee clicks "Sign in" from the tray menu or when the TrayApp first launches with no enrolled employee session.
+
+The preferred UX is browser-based sign-in:
+
+1. TrayApp sends `start_enrollment` to the Service over Named Pipes.
+2. Service calls `POST /api/v1/agent/enroll/start`.
+3. TrayApp opens the returned `auth_url` in the system browser, or a secure embedded auth flow if browser handoff is unavailable.
+4. User signs in with normal OneVo auth/SSO.
+5. Service calls `POST /api/v1/agent/enroll/complete`.
+6. Service stores the returned device credential with DPAPI / Windows Credential Manager.
+7. TrayApp changes state to "Monitoring active" only after policy fetch, consent gate, and lifecycle allow collection.
+
+For remote or hybrid employees, the first approved remote clock-in may also require a remote workplace capture. The TrayApp asks the employee to confirm the current workplace, captures a verification photo, and sends network evidence to the Service. After the remote workplace is locked, changes must be requested from Employee Settings and approved by the reporting manager. See [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]].
+
+The email/password form below is a fallback UI pattern only. It must not ask for API keys, tenant keys, tenant IDs, or server URLs.
 
 ### Layout
 

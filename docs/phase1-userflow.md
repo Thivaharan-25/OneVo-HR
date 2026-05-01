@@ -64,6 +64,7 @@
 | X | Notification Delivery | System + All |
 | Y | User Invitations & Permission Management | Super Admin + HR Admin |
 | Z | System Background Job Schedule | System |
+| AA | Workflow Engine Configuration | HR Admin |
 
 ---
 
@@ -1317,6 +1318,292 @@ HIERARCHY VALIDATION:
 | 3:00 AM | `CleanupOldBaselinesJob` | Low | Prune employee_discrepancy_baselines >90 days |
 | 3:30 AM | `ImportFileCleanupJob` | Low | Delete S3 files: success imports >48h, failed >7 days |
 | On event | `DiscrepancyEnrichmentHandler` | MediatR | Handle DiscrepancyCriticalDetected → fetch history → Claude API → enriched notification |
+
+---
+
+## AA. Workflow Engine Configuration
+
+**Actor:** HR Admin (`settings:admin`)
+**Entry:** Settings → Workflow Engine
+
+The Workflow Engine is a form-based (not visual canvas) configuration layer. Customers configure three areas: Approval Chains, Alert Routing, and Offboarding Workflows. Each area uses structured dropdowns and step builders — no drag-and-drop canvas in Phase 1.
+
+  KEY PRINCIPLE — Multiple Workflows + Assignment:
+  In every section, the admin can create MULTIPLE named workflow configs and assign
+  each one to specific departments, teams, roles, or individual employees.
+  More than one workflow can be active at the same time for different groups.
+  Assignment is done from the workflow card itself after configuration.
+
+  Example:
+    "Senior Leadership Approval Chain" → assigned to: Executive Team, Finance Dept
+    "Standard Approval Chain"          → assigned to: All other departments
+  Both are active simultaneously. The system resolves which workflow applies
+  to an employee at runtime based on their department, team, and role.
+
+---
+
+### AA-1. Approval Chains
+
+```
+[Settings → Workflow Engine → Approval Chains]
+
+  Admin can create multiple named approval chain configs per event type.
+  Each config is assigned to specific departments, teams, or roles.
+  Multiple configs can be active simultaneously for different groups.
+
+  Event types:
+    - Promotion / Transfer
+    - Leave Request
+    - Leave Cancellation
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ Approval Chains                              [ + New Chain ]     │
+  │                                                                  │
+  │  ┌─────────────────────────────────────────────────────────┐    │
+  │  │ Senior Leadership Chain          [Edit] [Assign] [Delete]│    │
+  │  │ Event: Promotion / Transfer                              │    │
+  │  │ Steps: Direct Manager → Super Admin                      │    │
+  │  │ Assigned to: Executive Team, Finance Dept                │    │
+  │  └─────────────────────────────────────────────────────────┘    │
+  │                                                                  │
+  │  ┌─────────────────────────────────────────────────────────┐    │
+  │  │ Standard Leave Chain             [Edit] [Assign] [Delete]│    │
+  │  │ Event: Leave Request                                     │    │
+  │  │ Steps: Direct Manager → HR Admin                         │    │
+  │  │ Assigned to: All Departments (default)                   │    │
+  │  └─────────────────────────────────────────────────────────┘    │
+  └──────────────────────────────────────────────────────────────────┘
+
+  [Assign] button opens assignment panel:
+    Assign to:
+      □ Specific Departments  [ Select departments... ▼ ]
+      □ Specific Teams        [ Select teams...       ▼ ]
+      □ Specific Roles        [ Select roles...        ▼ ]
+      □ Specific Employees    [ Search employees...   ▼ ]
+      ✓ All (default fallback — applies when no specific match)
+
+    Multiple selections allowed. Saved immediately on confirm.
+
+  Per chain, admin configures approval steps:
+
+  ┌─────────────────────────────────────────────────────┐
+  │ Chain name: [ Standard Leave Chain              ]    │
+  │ Event type: [ Leave Request             ▼ ]         │
+  │                                                      │
+  │  Step 1:  [ Direct Manager          ▼ ]             │
+  │  Step 2:  [ HR Admin                ▼ ]  [ Remove ] │
+  │           [ + Add Step ]                            │
+  │                                                      │
+  │  Auto-approve if: [ Duration < 1 day  ▼ ]          │
+  └─────────────────────────────────────────────────────┘
+
+  Approver options per step:
+    Direct Manager / HR Admin / Department Head /
+    Super Admin / Specific Role (dropdown of all roles)
+
+  Auto-approve conditions (Leave only):
+    Never / Duration < 1 day / Duration < 3 days / Same-day sick leave
+
+  Runtime resolution:
+    When an event fires for an employee, the system picks the most specific
+    matching chain (employee-level > role-level > team > department > default).
+    If no specific chain matches, the "All (default)" chain is used.
+
+  On each approval step:
+    → Notification sent to next approver (in-app + email)
+    → Each approver: Approve / Reject / Request Amendment
+    → On full approval: domain event fired, employee record updated
+
+  System writes: workflow_chain_configs + workflow_chain_assignments tables
+```
+
+---
+
+### AA-2. Alert Routing
+
+```
+[Settings → Workflow Engine → Alert Routing]
+
+  Admin configures who receives alerts when something goes wrong with an employee.
+  Multiple recipients allowed per alert type.
+  Severity filters control when each recipient is notified.
+
+  Alert types (customer-facing names):
+    ┌─────────────────────────────────────────────────────────────────────┐
+    │ Alert Name                  │ When it fires                         │
+    ├─────────────────────────────────────────────────────────────────────┤
+    │ Low Activity Alert          │ Employee activity is unusually low     │
+    │ Unaccounted Time Alert      │ Large gap between HR hours and actual  │
+    │ Identity Check Failed       │ Photo verification did not match       │
+    │ Monitoring Connection Lost  │ Employee's desktop agent went offline  │
+    │ Prohibited App Used         │ Employee opened a blocked application  │
+    └─────────────────────────────────────────────────────────────────────┘
+
+  Admin can create multiple named alert routing configs per alert type.
+  Each config is assigned to specific departments, teams, roles, or employees.
+  Multiple configs active simultaneously for different groups.
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ Alert Routing                                  [ + New Config ]  │
+  │                                                                  │
+  │  ┌─────────────────────────────────────────────────────────┐    │
+  │  │ Finance Low Activity Routing     [Edit] [Assign] [Delete]│    │
+  │  │ Alert: Low Activity Alert  │  Severity: Any              │    │
+  │  │ Recipients: Manager, HR Admin, Finance Director          │    │
+  │  │ Assigned to: Finance Dept                                │    │
+  │  └─────────────────────────────────────────────────────────┘    │
+  │                                                                  │
+  │  ┌─────────────────────────────────────────────────────────┐    │
+  │  │ Default Low Activity Routing     [Edit] [Assign] [Delete]│    │
+  │  │ Alert: Low Activity Alert  │  Severity: Critical only    │    │
+  │  │ Recipients: Direct Manager                               │    │
+  │  │ Assigned to: All (default)                               │    │
+  │  └─────────────────────────────────────────────────────────┘    │
+  └──────────────────────────────────────────────────────────────────┘
+
+  [Assign] button opens assignment panel (same as AA-1):
+    Assign to: Departments / Teams / Roles / Employees / All (default)
+    Multiple selections allowed.
+
+  Per config, admin sets alert type, severity filter, and recipients:
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ Config name:  [ Finance Low Activity Routing            ]        │
+  │ Alert type:   [ Low Activity Alert              ▼ ]             │
+  │                                                                  │
+  │  Severity filter: [ Any severity    ▼ ]                         │
+  │                                                                  │
+  │  Recipients:                                                     │
+  │    ✓ Direct Manager          (in-app + email)                    │
+  │    ✓ HR Admin                (in-app + email)                    │
+  │    □ Department Head                                             │
+  │    □ Super Admin                                                 │
+  │    □ Specific Role: [ _____________ ▼ ]                         │
+  │                                                                  │
+  │  Also notify via webhook:  [ OFF ]                               │
+  └──────────────────────────────────────────────────────────────────┘
+
+  Severity filter options:
+    Any severity / High or Critical / Critical only
+
+  Recipient options:
+    Direct Manager / HR Admin / Department Head /
+    Super Admin / Specific Role / External Webhook URL
+
+  Internal alert_type mapping (backend only — not shown to customer):
+    Low Activity Alert          → exception_detected
+    Unaccounted Time Alert      → discrepancy_critical
+    Identity Check Failed       → identity_mismatch
+    Monitoring Connection Lost  → agent_heartbeat_lost
+    Prohibited App Used         → app_violation_detected
+
+  System writes: alert_routing_configs table
+    (alert_type, tenant_id, severity_filter, recipient_type, recipient_role_id, webhook_url)
+
+  On alert fired (runtime):
+    → alert_routing_configs queried for this tenant + alert_type
+    → Severity filter evaluated
+    → All matching recipients notified (in-app + email per channel config)
+    → Webhook POST fired if configured
+```
+
+---
+
+### AA-3. Offboarding Workflows
+
+```
+[Settings → Workflow Engine → Offboarding]
+
+  Offboarding = the process that runs when an employee leaves the company.
+  When HR initiates an offboarding (Flow G), the system generates a task checklist
+  automatically. This section lets the HR Admin define WHAT tasks appear in that
+  checklist, WHO is responsible for each task, and WHEN each task is due.
+
+  Example: when someone is leaving, you might need the manager to collect their
+  laptop 3 days before their last day, IT to cancel their software access on the
+  last day, and HR to run an exit interview 5 days before they go. All of this
+  is configured here once — and applied automatically every time someone leaves.
+
+  Admin can create multiple named offboarding templates and assign each to
+  specific departments, teams, or roles. Multiple templates active simultaneously.
+  When an offboarding is initiated, the system picks the most specific matching
+  template for that employee. If none match specifically, the default template applies.
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ Offboarding Templates                        [ + New Template ]  │
+  │                                                                  │
+  │  ┌─────────────────────────────────────────────────────────┐    │
+  │  │ Engineering Offboarding          [Edit] [Assign] [Delete]│    │
+  │  │ 6 tasks · Assigned to: Engineering, Product             │    │
+  │  └─────────────────────────────────────────────────────────┘    │
+  │                                                                  │
+  │  ┌─────────────────────────────────────────────────────────┐    │
+  │  │ Standard Offboarding             [Edit] [Assign] [Delete]│    │
+  │  │ 4 tasks · Assigned to: All (default)                    │    │
+  │  └─────────────────────────────────────────────────────────┘    │
+  └──────────────────────────────────────────────────────────────────┘
+
+  [Assign] button opens assignment panel (same as AA-1):
+    Assign to: Departments / Teams / Roles / Employees / All (default)
+    Multiple selections allowed.
+
+  HR Admin builds each offboarding task template for the tenant.
+  The template defines what tasks run automatically when someone leaves.
+
+  Default task template (pre-loaded for all new tenants):
+    □ Equipment return          → assigned to: Direct Manager
+    □ Access revocation         → assigned to: System (auto, on termination date)
+    □ Final leave balance calc  → assigned to: System (auto)
+    □ Exit interview scheduling → assigned to: HR Admin
+
+  Admin can:
+    - Add custom tasks
+    - Remove default tasks
+    - Change assignee per task
+    - Set due date offset (e.g., "3 days before termination date")
+    - Mark task as: blocking (must be complete before next) / non-blocking
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ Offboarding Task Template                            [ + Add Task]│
+  │                                                                  │
+  │  1. Equipment return                                             │
+  │     Assigned to: [ Direct Manager       ▼ ]                     │
+  │     Due:         [ 3 days before termination ▼ ]                │
+  │     Blocking:    [ Yes ▼ ]                                       │
+  │                                                                  │
+  │  2. Revoke system access                                         │
+  │     Assigned to: [ System (automatic)   ▼ ]                     │
+  │     Due:         [ On termination date  ▼ ]                      │
+  │     Blocking:    [ Yes ▼ ]                                       │
+  │                                                                  │
+  │  3. Exit interview                                               │
+  │     Assigned to: [ HR Admin             ▼ ]                     │
+  │     Due:         [ 5 days before termination ▼ ]                │
+  │     Blocking:    [ No  ▼ ]                                       │
+  └──────────────────────────────────────────────────────────────────┘
+
+  Assignee options per task:
+    Direct Manager / HR Admin / Department Head /
+    IT Team (role) / Specific Role / System (automatic)
+
+  Due date offset options:
+    On termination date / N days before termination / Immediately on initiation
+
+  Notification routing for offboarding tasks:
+    → Each assignee notified when task is created (in-app + email)
+    → HR Admin notified when all tasks are complete
+    → Overdue tasks: daily reminder to assignee until complete
+
+  System writes: offboarding_task_templates table
+    (tenant_id, task_name, assignee_type, assignee_role_id, due_offset_days, is_blocking)
+
+  On offboarding initiated (Flow G runtime):
+    → offboarding_task_templates queried for this tenant
+    → Task list generated from template (offboarding_tasks table)
+    → Due dates computed from termination_date
+    → Notifications dispatched to each assignee
+    → Blocking tasks create a dependency gate: next task not visible until prior complete
+```
 
 ---
 

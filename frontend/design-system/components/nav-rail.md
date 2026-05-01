@@ -100,12 +100,12 @@ Display order top to bottom. Pillars marked **No Panel** navigate directly witho
 | 1 | Home | `House` | **No** | `/` | Any authenticated |
 | 2 | Inbox | `Inbox` | **No** | `/inbox` | Any authenticated |
 | 3 | People | `Users` | Yes | `/people/employees` | `employees:read` OR `leave:read` |
-| 4 | Workforce | `LayoutDashboard` | Yes | `/workforce` | `workforce:read` |
+| 4 | Workforce | `LayoutDashboard` | Yes | `/workforce` | `workforce:view` |
 | 5 | Org | `Network` | Yes | `/org` | `org:read` |
 | 6 | Calendar | `Calendar` | Yes | `/calendar` | `calendar:read` |
 | 7 | Chat | `MessageCircle` | **No** | `/chat` | `chat:read` |
 | — | *separator* | — | — | — | — |
-| 8 | Admin | `Shield` | Yes | `/admin/users` | `admin:read` |
+| 8 | Admin | `Shield` | Yes | `/admin/users` | `users:read` |
 | 9 | Settings | `Settings` | Yes | `/settings/general` | `settings:read` |
 
 > **Critical:** Home, Inbox, and Chat have **no panel**. Clicking them closes any open panel and navigates directly. Do not render a panel for these three.

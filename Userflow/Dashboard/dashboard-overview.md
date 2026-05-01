@@ -2,7 +2,7 @@
 
 **Area:** Dashboard  
 **Trigger:** User successfully signs in and is redirected to `/dashboard` (every authenticated session)  
-**Required Permission(s):** Any of `employees:read`, `workforce:read`, `leave:read` (users with none are redirected to a "no access" page)  
+**Required Permission(s):** Any of `employees:read`, `workforce:view`, `leave:read` (users with none are redirected to a "no access" page)  
 **Related Permissions:** All — each dashboard zone has its own permission gate; the set of visible zones changes per user
 
 ---
@@ -11,7 +11,7 @@
 
 - User has a valid JWT access token (issued by login or silent refresh)
 - User's account is active
-- User has at least one read permission (`employees:read`, `workforce:read`, or `leave:read`)
+- User has at least one read permission (`employees:read`, `workforce:view`, or `leave:read`)
 
 ---
 
@@ -46,17 +46,17 @@
   ```json
   { "count": 3, "preview": "Ahmed idle 52min · Sara low activity" }
   ```
-- **Backend:** `ExceptionService.GetActiveCountAsync()` — scoped to `hierarchy_scope`; requires `workforce:read` + `workforce_intelligence` module
+- **Backend:** `ExceptionService.GetActiveCountAsync()` — scoped to `hierarchy_scope`; requires `workforce:view` + `workforce_intelligence` module
 - **Validation:** Condition: `granted_modules.includes("workforce_intelligence") && openExceptions > 0`
 - **DB:** `exceptions`
 
 ### Step 4: KPI Cards Render (Zone 2 — conditional)
 
 - **UI:** 4-column responsive grid (collapses to 2-col on narrow viewports). Each card: 2px top color bar, large number (26px, weight 900), small delta badge (↑↓ vs yesterday). Cards visible only if user has the specific permission for that card:
-  - Active Now: `workforce:read` + WI module → green bar
+  - Active Now: `workforce:view` + WI module → green bar
   - On Leave Today: `leave:read` → info blue bar
-  - Open Exceptions: `workforce:read` + WI module → red bar
-  - Avg Productivity: `workforce:read` + WI module → cyan bar
+  - Open Exceptions: `workforce:view` + WI module → red bar
+  - Avg Productivity: `workforce:view` + WI module → cyan bar
   Absent cards leave no empty slot — grid reflows
 - **API:** `GET /api/v1/dashboard/kpis?scope={hierarchy_scope}`
   ```json
@@ -101,7 +101,7 @@
     "totalTracked": 109
   }
   ```
-- **Backend:** `WorkforceService.GetLivePresenceAsync()` — requires `workforce:read` + `workforce_intelligence` module. `IHierarchyScope` scopes to subordinates if `hierarchy_scope != "all"`
+- **Backend:** `WorkforceService.GetLivePresenceAsync()` — requires `workforce:view` + `workforce_intelligence` module. `IHierarchyScope` scopes to subordinates if `hierarchy_scope != "all"`
 - **Validation:** Zone only rendered if server returned it in `enabledZones`
 - **DB:** `activity_snapshots`, `presence_records`
 
@@ -116,7 +116,7 @@
     "unit": "%"
   }
   ```
-- **Backend:** `AnalyticsService.GetTrendAsync(type, days, user)` — returns only the type the user has permission for. `workforce:read` for productivity/attendance; `leave:read` for leave
+- **Backend:** `AnalyticsService.GetTrendAsync(type, days, user)` — returns only the type the user has permission for. `workforce:view` for productivity/attendance; `leave:read` for leave
 - **Validation:** Backend returns 403 if `type` requested is outside user's permissions
 - **DB:** `productivity_snapshots`, `attendance_records`, `leave_requests`
 
@@ -173,7 +173,7 @@
 
 ### Employee (`hierarchy_scope: self`, no approval permissions)
 - Zone 1: absent
-- KPI cards: absent (no `workforce:read` or `leave:read` at org level)
+- KPI cards: absent (no `workforce:view` or `leave:read` at org level)
 - Zone 3: self-service mode — own leave balance, payslip status
 - Zones 4, 5, 6: absent
 

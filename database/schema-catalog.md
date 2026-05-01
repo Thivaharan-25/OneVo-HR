@@ -8,7 +8,7 @@ Central index of all database tables across ONEVO modules. This is the **single 
 
 ## Summary
 
-- **Total Tables:** 240 unique schema tables after removing bridge-era entities and adding Microsoft Teams sync entities
+- **Total Tables:** 244 unique schema tables after removing bridge-era entities, adding Microsoft Teams sync entities, and adding work-location compliance tables
 - **Pillars:** HR Management · Workforce Intelligence · WorkSync
 - **IDE Extension:** 5 tables (Phase 1)
 - **Entity-map sections:** 39 numbered sections; these are planning/domain sections, not necessarily one backend module each
@@ -129,16 +129,20 @@ These tables are referenced by many others — design changes here have wide imp
 |:------|:--------|:--------|
 | `calendar_events` | 14 | created_by_id→users |
 
-### [[database/schemas/configuration|Configuration]] (6 tables)
+### [[database/schemas/configuration|Configuration]] (10 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `app_allowlist_audit` | 8 | tenant_id→tenants, changed_by_id→users |
-| `app_allowlists` | 10 | tenant_id→tenants, set_by_id→users |
-| `employee_monitoring_overrides` | 14 | tenant_id→tenants, employee_id→employees, set_by_id→users |
-| `integration_connections` | 7 | tenant_id→tenants |
-| `monitoring_feature_toggles` | 11 | tenant_id→tenants |
-| `tenant_settings` | 12 | tenant_id→tenants |
+| `app_allowlist_audit` | 8 | tenant_id->tenants, changed_by_id->users |
+| `app_allowlists` | 10 | tenant_id->tenants, set_by_id->users |
+| `employee_monitoring_overrides` | 14 | tenant_id->tenants, employee_id->employees, set_by_id->users |
+| `employee_remote_work_profiles` | 15 | tenant_id->tenants, employee_id->employees, verification_record_id->verification_records |
+| `employee_work_location_settings` | 11 | tenant_id->tenants, employee_id->employees, primary_work_location_id->work_locations |
+| `integration_connections` | 7 | tenant_id->tenants |
+| `monitoring_feature_toggles` | 11 | tenant_id->tenants |
+| `remote_work_location_change_requests` | 11 | tenant_id->tenants, employee_id->employees, reviewed_by_id->users |
+| `tenant_settings` | 12 | tenant_id->tenants |
+| `work_locations` | 16 | tenant_id->tenants, legal_entity_id->legal_entities, created_by_id->users |
 
 ---
 

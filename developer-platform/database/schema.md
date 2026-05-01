@@ -144,7 +144,7 @@ API keys for programmatic access to the developer platform admin API. Supports r
 | id | uuid | PRIMARY KEY |
 | key_hash | varchar(64) | SHA256 hash of the API key, NOT NULL, UNIQUE |
 | name | varchar(100) | NOT NULL; human-readable label for key management |
-| scopes | text[] | Array of permission scopes; e.g., `ARRAY['agent:read', 'deployment:write']` |
+| scopes | text[] | Array of permission scopes; e.g., `ARRAY['agent:view-health', 'deployment:write']` |
 | created_by_id | uuid | FOREIGN KEY → dev_platform_accounts(id), NOT NULL |
 | expires_at | timestamptz | Nullable; if set, key becomes invalid after this time |
 | revoked_at | timestamptz | Nullable; if set, key is revoked and unusable |

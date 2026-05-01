@@ -161,7 +161,7 @@ Optional periodic screenshots. **RESTRICTED data classification.**
 | `employee_id` | `uuid` | FK → employees |
 | `captured_at` | `timestamptz` | |
 | `file_record_id` | `uuid` | FK → file_records (blob storage) |
-| `trigger_type` | `varchar(20)` | `scheduled`, `random`, `manual`, `on_demand` |
+| `trigger_type` | `varchar(20)` | `manual`, `on_demand` only. Never `scheduled` or `random` in Phase 1. |
 | `created_at` | `timestamptz` | |
 
 **Screenshots are stored in blob storage, NOT in the database.** Only metadata lives here.
@@ -228,22 +228,22 @@ Device interaction tracking per day.
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `ExceptionDetected` | `activity.exception` | Activity snapshot triggers an exception condition | [[modules/exception-engine/overview\|Exception Engine]] |
-| `DiscrepancyDetected` | `activity.discrepancy` | Discrepancy detected during processing | [[modules/discrepancy-engine/overview\|Discrepancy Engine]] |
-| `ActivitySnapshotReceived` | `activity.snapshot` | Raw data processed into snapshot | [[modules/exception-engine/overview\|Exception Engine]], [[modules/identity-verification/overview\|Identity Verification]] |
-| `DailySummaryAggregated` | `activity.summary` | Daily summary job completes | [[modules/productivity-analytics/overview\|Productivity Analytics]], [[modules/discrepancy-engine/overview\|Discrepancy Engine]] |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `ExceptionDetected` | Activity snapshot triggers an exception condition | [[modules/exception-engine/overview\|Exception Engine]] |
+| `DiscrepancyDetected` | Discrepancy detected during processing | [[modules/discrepancy-engine/overview\|Discrepancy Engine]] |
+| `ActivitySnapshotReceived` | Raw data processed into snapshot | [[modules/exception-engine/overview\|Exception Engine]], [[modules/identity-verification/overview\|Identity Verification]] |
+| `DailySummaryAggregated` | Daily summary job completes | [[modules/productivity-analytics/overview\|Productivity Analytics]], [[modules/discrepancy-engine/overview\|Discrepancy Engine]] |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `PresenceSessionStarted` | `workforce.presence.started` | [[modules/workforce-presence/overview\|Workforce Presence]] | Begin accepting snapshots for the employee's active session |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `PresenceSessionStarted` | [[modules/workforce-presence/overview\|Workforce Presence]] | Begin accepting snapshots for the employee's active session |
 
 ---
 

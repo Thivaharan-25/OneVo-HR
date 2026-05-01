@@ -82,7 +82,7 @@ app/(dashboard)/workforce/presence/
   - Request detail: employee, date, scheduled hours, actual hours, overtime hours
   - Approve/reject with comments
   - Auto-flagged overtime list
-- [ ] PermissionGate: `workforce:manage-biometric`, `workforce:correct-attendance`, `workforce:approve-overtime`
+- [ ] PermissionGate: `settings:device:configure`, `attendance:write`, `attendance:approve`
 
 ### Userflows
 

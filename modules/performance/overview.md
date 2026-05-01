@@ -183,22 +183,22 @@ OKR-style goals with parent-child hierarchy.
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `ReviewCycleStarted` | `performance.review.started` | Review cycle activated | [[modules/calendar/overview\|Calendar]] (create review calendar events) |
-| `ReviewCompleted` | `performance.review.completed` | Review submitted and finalized | [[modules/notifications/overview\|Notifications]], [[modules/skills/overview\|Skills]] (update skill assessments from review) |
-| `GoalCreated` | `performance.goal.created` | New goal created for employee | Audit trail |
-| `RecognitionGiven` | `performance.recognition` | Peer recognition submitted | [[modules/notifications/overview\|Notifications]] (notify recipient) |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `ReviewCycleStarted` | Review cycle activated | [[modules/calendar/overview\|Calendar]] (create review calendar events) |
+| `ReviewCompleted` | Review submitted and finalized | [[modules/notifications/overview\|Notifications]], [[modules/skills/overview\|Skills]] (update skill assessments from review) |
+| `GoalCreated` | New goal created for employee | Audit trail |
+| `RecognitionGiven` | Peer recognition submitted | [[modules/notifications/overview\|Notifications]] (notify recipient) |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Enroll new employee in active review cycle if one exists |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `EmployeeHired` | [[modules/core-hr/overview\|Core HR]] | Enroll new employee in active review cycle if one exists |
 
 ---
 

@@ -25,40 +25,48 @@
 ### Step 2: Click Create Role
 - **UI:** Full-page form opens with sections:
   - **Basic Info:** Role Name (required, e.g., "HR Business Partner"), Description (optional, e.g., "Can manage employees in assigned departments")
-  - **Permission Browser:** Accordion-style category list showing all 90+ permissions grouped by module
-- **API:** `GET /api/v1/permissions` (loads all available permissions)
+  - **Permission Browser:** Accordion-style category list showing all 106 explicitly grantable permissions grouped by module. Universal permissions are shown separately as read-only auto-grants and cannot be selected.
+- **API:** `GET /api/v1/permissions` (loads all explicitly grantable permissions; universal permissions are excluded from assignment payloads)
 - **Backend:** `PermissionService.GetAllPermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** N/A
 - **DB:** `permissions`
 
 ### Step 3: Browse and Select Permissions
 - **UI:** Permission categories (accordions):
-  - **Employees:** `employees:read`, `employees:read-own`, `employees:read-team`, `employees:write`, `employees:delete`
+  - **Universal auto-grants (read-only):** `inbox:read`, `notifications:read`, `employees:read-own`, `leave:read-own`, `attendance:read-own`, `payroll:read-own`, `performance:read-own`, `documents:read-own`, `calendar:read`, `activity:read:self`, `workforce:dashboard`
+  - **Employees:** `employees:read`, `employees:read-team`, `employees:write`, `employees:delete`
   - **Organization:** `org:read`, `org:manage`
-  - **Leave:** `leave:read`, `leave:read-own`, `leave:read-team`, `leave:create`, `leave:approve`, `leave:manage`
-  - **Payroll:** `payroll:read`, `payroll:read-own`, `payroll:write`, `payroll:run`, `payroll:approve`
-  - **Performance:** `performance:read`, `performance:read-own`, `performance:read-team`, `performance:write`, `performance:manage`
-  - **Documents:** `documents:read`, `documents:read-own`, `documents:write`, `documents:manage`
+  - **Leave:** `leave:read`, `leave:read-team`, `leave:create`, `leave:approve`, `leave:manage`
+  - **Attendance:** `attendance:read`, `attendance:read-team`, `attendance:approve`, `attendance:write`
+  - **Payroll:** `payroll:read`, `payroll:write`, `payroll:run`, `payroll:approve`
+  - **Performance:** `performance:read`, `performance:read-team`, `performance:write`, `performance:manage`
+  - **Documents:** `documents:read`, `documents:write`, `documents:approve`, `documents:manage`, `documents:admin`
   - **Workforce Intelligence:** `workforce:view`, `workforce:manage`, `monitoring:configure`, `monitoring:view-settings`
   - **Exceptions:** `exceptions:view`, `exceptions:manage`, `exceptions:acknowledge`
-  - **Analytics:** `analytics:view`, `analytics:export`
+  - **Analytics:** `analytics:read`, `analytics:view`, `analytics:export`, `analytics:write`
   - **Reporting:** `reports:read`, `reports:create`
   - **Skills:** `skills:read`, `skills:write`, `skills:validate`, `skills:manage`
   - **Grievance:** `grievance:read`, `grievance:write`, `grievance:manage`
   - **Expense:** `expense:read`, `expense:create`, `expense:approve`, `expense:manage`
-  - **Calendar:** `calendar:read`, `calendar:write`
-  - **Notifications:** `notifications:read`, `notifications:manage`
-  - **Settings:** `settings:read`, `settings:admin`
+  - **Calendar:** `calendar:write`
+  - **Notifications:** `notifications:manage`
+  - **Settings:** `settings:read`, `settings:admin`, `settings:billing`, `settings:branding`, `settings:integrations`, `settings:notifications`, `settings:alerts`, `settings:system`, `settings:device`, `settings:device:configure`
   - **Users:** `users:read`, `users:manage`
   - **Roles:** `roles:read`, `roles:manage`
   - **Billing:** `billing:read`, `billing:manage`
-  - **Agent:** `agent:register`, `agent:manage`, `agent:view-health`
-  - **Verification:** `verification:view`, `verification:configure`
+  - **Integrations:** `integrations:read`, `integrations:manage`
+  - **Agent:** `agent:command`, `agent:register`, `agent:manage`, `agent:view-health`
+  - **Verification:** `verification:view`, `verification:review`, `verification:configure`
+  - **Chat:** `chat:read`, `chat:write`, `chat:manage`
+  - **Tasks:** `tasks:read`, `tasks:write`, `tasks:approve`, `tasks:delete`
+  - **Time Tracking:** `time:read`, `time:write`, `time:approve`
+  - **Projects:** `projects:read`, `projects:write`, `projects:create`
+  - **Work Management:** `okr:read`, `okr:write`, `wiki:read`, `wiki:write`, `sprints:read`, `sprints:manage`, `workspaces:read`, `workspaces:create`, `workspaces:manage`, `resources:read`, `resources:manage`, `roadmaps:read`, `roadmaps:write`
   
-  Each permission has: checkbox, permission code, human-readable description, module badge. "Select All" per category. Search/filter across permissions. Selected count shown: "23 of 90+ permissions selected"
+  Each explicitly grantable permission has: checkbox, permission code, human-readable description, module badge. "Select All" per category. Search/filter across assignable permissions. Selected count shown: "23 of 106 permissions selected". Universal auto-grants are shown without checkboxes.
 - **API:** N/A (client-side selection)
 - **Backend:** N/A
-- **Validation:** At least one permission must be selected
+- **Validation:** At least one explicitly grantable permission must be selected. Universal permissions cannot be selected, submitted, added, or removed.
 - **DB:** None
 
 ### Step 4: Save Role

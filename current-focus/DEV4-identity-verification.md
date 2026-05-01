@@ -67,7 +67,7 @@ app/(dashboard)/workforce/verification/
 - [ ] Verification statistics dashboard widget:
   - Success rate %, total verifications today, failed count
   - Trend chart (daily success rate over time)
-- [ ] PermissionGate: `verification:read`, `verification:configure`
+- [ ] PermissionGate: `verification:view`, `verification:configure`
 
 ### Userflows
 

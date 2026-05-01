@@ -76,7 +76,7 @@ app/(dashboard)/hr/employees/
 - [ ] Employee self-service: own profile view (read-only except allowed fields, permission-driven — no separate route group)
 - [ ] Colocated components: EmployeeDataTable, EmployeeTabs, EmployeeWizardSteps, AvatarUpload
 - [ ] `loading.tsx` skeleton for detail page, `not-found.tsx` for invalid employee IDs
-- [ ] PermissionGate wrapper for edit/delete actions (`employees:update`, `employees:delete`)
+- [ ] PermissionGate wrapper for edit/delete actions (`employees:write`, `employees:delete`)
 
 ### Userflows
 

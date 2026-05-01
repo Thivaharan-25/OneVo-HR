@@ -2,7 +2,7 @@
 
 **Area:** Workforce → Presence → Employee (`/workforce/[employeeId]`)  
 **Trigger:** User clicks an employee card on the Presence screen  
-**Required Permission:** `workforce:read` (view); `activity:read:team` (view another employee's activity)
+**Required Permission:** `workforce:view` (view); `workforce:view` (view another employee's activity)
 
 ## Purpose
 

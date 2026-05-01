@@ -1,17 +1,21 @@
 # Tenant Provisioning
 
 **Area:** Platform Setup
-**Trigger:** Super Admin creates new tenant (user action — first-time setup)
-**Required Permission(s):** `settings:admin`
+**Trigger:** ONEVO operator creates a new tenant after a sales agreement (operator action — internal only)
+**Actor:** ONEVO operator (internal staff only — via `console.onevo.io`)
+**Required Permission(s):** `settings:admin` on the developer console
 **Related Permissions:** `billing:manage` (to activate subscription after provisioning)
+
+> **This is NOT a customer self-service flow.** Customers cannot sign up themselves. A tenant is only created after a direct sales agreement with ONEVO. The operator uses the developer console (`console.onevo.io`) to provision the tenant with the agreed module set.
 
 ---
 
 ## Preconditions
 
-- Super admin access to the ONEVO platform management console
-- Valid business email and company registration details available
-- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+- ONEVO operator account with access to the developer console (`console.onevo.io`)
+- Sales agreement confirmed: which pillars/modules the customer has purchased
+- Valid company registration details provided by the customer
+- Required permissions: operator-level `settings:admin` on the admin console
 
 ## Flow Steps
 
@@ -73,9 +77,11 @@
 - Admin sees error message with option to retry
 - Failed provisioning attempt logged in `audit_logs`
 
-### When tenant has custom module selection
-- If `billing:manage` permission is also held, admin can pre-select which modules to enable via [[Userflow/Platform-Setup/feature-flag-management|Feature Flags]]
-- Only selected modules' seed data is provisioned
+### Module entitlement selection (always required)
+- During provisioning, the operator selects which pillars are enabled for this tenant based on what was purchased: HR Management, Workforce Intelligence, WorkSync, or any combination
+- Only selected pillars' seed data and feature flags are provisioned — e.g., a tenant without Workforce Intelligence gets no monitoring tables seeded and no `/workforce/*` routes visible
+- Module entitlement is stored on the `tenants` record (`enabled_pillars`) and checked server-side on every API request and client-side for route visibility
+- When ONEVO releases a new module in the future, an operator manually enables it for tenants that have paid for the upgrade — no automatic upgrade
 
 ### When Workforce Intelligence (monitoring) is enabled
 Recommended setup sequence after provisioning completes:

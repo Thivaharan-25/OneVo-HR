@@ -100,21 +100,21 @@ API endpoints:
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `ExpenseClaimSubmitted` | `expense.submitted` | Employee submits expense claim for approval | [[modules/notifications/overview\|Notifications]] (notify approver) |
-| `ExpenseClaimApproved` | `expense.approved` | Expense claim approved | [[modules/payroll/overview\|Payroll]] (include in next payroll run) |
-| `ExpenseClaimPaid` | `expense.paid` | Expense reimbursement paid | [[modules/notifications/overview\|Notifications]] (notify employee) |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `ExpenseClaimSubmitted` | Employee submits expense claim for approval | [[modules/notifications/overview\|Notifications]] (notify approver) |
+| `ExpenseClaimApproved` | Expense claim approved | [[modules/payroll/overview\|Payroll]] (include in next payroll run) |
+| `ExpenseClaimPaid` | Expense reimbursement paid | [[modules/notifications/overview\|Notifications]] (notify employee) |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| _(none)_ | — | — | — |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| _(none)_ | — | — |
 
 ---
 

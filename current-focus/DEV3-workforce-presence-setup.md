@@ -76,7 +76,7 @@ app/(dashboard)/workforce/presence/
 - [ ] Holiday management page:
   - Calendar view with holidays marked
   - CRUD holidays (name, date, country, recurring)
-- [ ] PermissionGate: `workforce:read`, `workforce:manage-shifts`
+- [ ] PermissionGate: `workforce:view`, `attendance:write`
 
 ### Userflows
 

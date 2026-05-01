@@ -12,7 +12,7 @@
 ```
 POST /api/v1/org/cost-centers
   -> CostCenterController.Create(CreateCostCenterCommand)
-    -> [RequirePermission("org:write")]
+    -> [RequirePermission("org:manage")]
     -> CostCenterService.CreateAsync(command, ct)
       -> 1. Validate: code unique within tenant, name required
       -> 2. INSERT into cost_centers
@@ -26,7 +26,7 @@ POST /api/v1/org/cost-centers
 ```
 PUT /api/v1/org/departments/{id}/cost-center
   -> DepartmentController.AssignCostCenter(id, AssignCostCenterCommand)
-    -> [RequirePermission("org:write")]
+    -> [RequirePermission("org:manage")]
     -> OrgStructureService.AssignCostCenterAsync(departmentId, costCenterId, ct)
       -> 1. Validate both exist
       -> 2. UPDATE departments SET cost_center_id = @id

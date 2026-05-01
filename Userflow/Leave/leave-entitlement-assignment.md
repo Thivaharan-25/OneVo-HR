@@ -3,7 +3,7 @@
 **Area:** Leave Management  
 **Trigger:** System auto-assigns on employee creation or year rollover (system-triggered — scheduled/reaction)
 **Required Permission(s):** `leave:manage`  
-**Related Permissions:** `employee:read` (to view employee details)
+**Related Permissions:** `employees:read` (to view employee details)
 
 ---
 

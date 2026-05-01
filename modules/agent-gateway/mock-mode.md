@@ -328,7 +328,7 @@ When the ONEVO backend server is available:
 
 1. Set `"UseMockGateway": false` in `appsettings.Development.json`
 2. Set `"BaseUrl"` to your backend URL (e.g., `"https://localhost:5001"` or staging)
-3. Ensure a valid tenant API key is configured
+3. Use the login-based TrayApp enrollment flow; tenant API key configuration is legacy-only and not required for the default Phase 1 path
 4. Restart the service
 
 ```json
@@ -337,7 +337,7 @@ When the ONEVO backend server is available:
     "BaseUrl": "https://staging.onevo.app",
     "UseMockGateway": false
   },
-  "TenantApiKey": "your-tenant-api-key-here"
+  "TenantApiKey": "legacy-only-not-used-by-default-enrollment"
 }
 ```
 

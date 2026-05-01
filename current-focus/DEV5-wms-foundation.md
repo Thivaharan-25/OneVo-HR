@@ -50,7 +50,7 @@
 - [ ] `versions` table: id, project_id → projects, name, description, release_date, status (planned/released), created_at
 - [ ] `release_calendar` table: id, version_id → versions, workspace_id → workspaces, scheduled_date, notes
 - [ ] `labels` table: id, project_id → projects, name, color, created_at. Scoped to project.
-- [ ] CRUD APIs for all entities with appropriate permissions (`projects:read`, `projects:write`, `projects:manage`)
+- [ ] CRUD APIs for all entities with appropriate permissions (`projects:read`, `projects:write`, `projects:write`)
 - [ ] Project member auto-added when user is assigned a task in the project
 - [ ] Domain event: `ProjectCreatedEvent` → Notifications module (notify workspace Admin)
 

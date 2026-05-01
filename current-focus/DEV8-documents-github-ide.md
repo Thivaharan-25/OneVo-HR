@@ -180,3 +180,11 @@ app/(dashboard)/workspaces/[id]/
 - [[Userflow/Work-Management/github-integration|GitHub Integration]]
 - [[Userflow/Work-Management/automation-rules|Automation Rules]]
 - [[Userflow/Work-Management/ide-extension-agent-install|IDE Agent Install Flow]]
+
+### Agent Install Auth Boundary
+
+- IDE extension login creates the developer's editor session for WorkSync, chat, tasks, and tags.
+- TrayApp enrollment creates the Windows device session and issues the agent's separate device credential.
+- The IDE JWT must never be reused as the agent device credential.
+- After the IDE extension downloads/runs the installer, the TrayApp must complete login-based enrollment through Agent Gateway.
+- If browser SSO is already active from the IDE login, TrayApp enrollment may feel like a confirmation instead of a second password entry.

@@ -11,9 +11,9 @@
 
 ## Purpose
 
-Handles authentication (JWT RS256), authorization (**hybrid permission control** with 90+ permissions, per-employee overrides, hierarchy-scoped access), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
+Handles authentication (JWT RS256), authorization (**hybrid permission control** with 106 explicitly grantable permissions plus universal auto-grants, per-employee overrides, hierarchy-scoped access), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
 
-**Authorization model:** NOT role-based. Roles are convenience templates. Super Admin grants feature/module access to any role or individual employee. Per-employee permission overrides (grant/revoke) always win over role defaults. All data access is scoped to the user's position in the org hierarchy (they only see employees below them).
+**Authorization model:** NOT role-based. Roles are convenience templates. Super Admin grants feature/module access to any role or individual employee. Universal permissions are auto-granted to every active employee and cannot be revoked. Per-employee permission overrides (grant/revoke) always win over role defaults for explicitly grantable permissions. All data access is scoped to the user's position in the org hierarchy (they only see employees below them).
 
 ---
 
@@ -54,7 +54,7 @@ public interface IRoleService
 
 public interface IPermissionResolver
 {
-    /// Resolves effective permissions: role permissions + individual overrides, filtered by feature grants
+    /// Resolves effective permissions: universal auto-grants + role permissions + individual overrides, filtered by feature grants
     Task<List<string>> ResolveAsync(Guid userId, Guid tenantId, CancellationToken ct);
 }
 
@@ -132,7 +132,7 @@ Global permission definitions — NOT tenant-scoped.
 | `description` | `varchar(255)` | |
 | `module` | `varchar(50)` | Which module this permission belongs to |
 
-**Includes all Workforce Intelligence permissions:** `workforce:view`, `workforce:manage`, `exceptions:view`, `exceptions:manage`, `exceptions:acknowledge`, `monitoring:configure`, `monitoring:view-settings`, `agent:register`, `agent:manage`, `agent:view-health`, `analytics:view`, `analytics:export`, `verification:view`, `verification:configure`
+**Includes all Workforce Intelligence permissions:** `workforce:view`, `workforce:manage`, `exceptions:view`, `exceptions:manage`, `exceptions:acknowledge`, `monitoring:configure`, `monitoring:view-settings`, `agent:register`, `agent:manage`, `agent:view-health`, `agent:command`, `analytics:view`, `analytics:export`, `verification:view`, `verification:review`, `verification:configure`
 
 ### `role_permissions`
 
@@ -249,29 +249,29 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `UserLoggedIn` | `auth.login` | User successfully authenticates | [[modules/shared-platform/overview\|Shared Platform]] (session tracking) |
-| `UserLoggedOut` | `auth.logout` | User logs out or session expires | [[modules/shared-platform/overview\|Shared Platform]] |
-| `RoleAssigned` | `auth.role` | Role assigned to a user | Downstream permission consumers |
-| `PermissionChanged` | `auth.permission` | Individual permission override set or removed | Downstream permission consumers |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `UserLoggedIn` | User successfully authenticates | [[modules/shared-platform/overview\|Shared Platform]] (session tracking) |
+| `UserLoggedOut` | User logs out or session expires | [[modules/shared-platform/overview\|Shared Platform]] |
+| `RoleAssigned` | Role assigned to a user | Downstream permission consumers |
+| `PermissionChanged` | Individual permission override set or removed | Downstream permission consumers |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `UserStatusChanged` | `infrastructure.user.status` | [[modules/infrastructure/overview\|Infrastructure]] | Activate or deactivate user login access |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `UserStatusChanged` | [[modules/infrastructure/overview\|Infrastructure]] | Activate or deactivate user login access |
 
 ---
 
 ## Key Business Rules
 
 1. **JWT RS256** — access tokens (15 min), refresh tokens (7 days) with rotation.
-2. **Hybrid permission control** — roles are templates; effective permissions = role permissions + individual overrides; filtered by feature grants; scoped by org hierarchy.
+2. **Hybrid permission control** — roles are templates; effective permissions = universal auto-grants + role permissions + individual overrides; filtered by feature grants; scoped by org hierarchy.
 3. **Hierarchy scoping** — users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Super Admin bypasses hierarchy.
 4. **Never hardcode role names** — roles are custom, created by Super Admin. Always check permissions, never role names.
 5. **Device JWT** for agents — contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.

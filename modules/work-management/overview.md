@@ -78,7 +78,7 @@ tasks ──────> code_activity_events (via webhook)
 
 WorkSync uses a **dual-layer** permission model:
 
-1. **Tenant-level RBAC** (from HR Auth module): standard `roles` + `role_permissions` + `user_permission_overrides`. WorkSync-specific permissions like `tasks:write`, `projects:manage`, `sprints:manage` are seeded here.
+1. **Tenant-level RBAC** (from HR Auth module): standard `roles` + `role_permissions` + `user_permission_overrides`. WorkSync-specific permissions like `tasks:write`, `projects:write`, `sprints:manage` are seeded here.
 
 2. **Workspace-level roles** (from WorkSync Foundation): `workspace_roles` (Admin/Member/Viewer) scoped to a specific workspace. These are evaluated together with tenant-level permissions. A user must pass both checks to act.
 

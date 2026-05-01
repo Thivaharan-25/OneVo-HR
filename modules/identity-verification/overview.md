@@ -184,21 +184,21 @@ Tamper detection and device health.
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `VerificationCompleted` | `identity.verified` | Successful photo/fingerprint match | [[modules/workforce-presence/overview\|Workforce Presence]] (confirm identity for presence record) |
-| `VerificationFailed` | `identity.failed` | Photo/fingerprint match below threshold | [[modules/exception-engine/overview\|Exception Engine]], [[modules/notifications/overview\|Notifications]] (alert manager) |
-| `BiometricDeviceOffline` | `identity.device_offline` | No heartbeat from biometric terminal for 5+ minutes | [[modules/notifications/overview\|Notifications]] (alert admin) |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `VerificationCompleted` | Successful photo/fingerprint match | [[modules/workforce-presence/overview\|Workforce Presence]] (confirm identity for presence record) |
+| `VerificationFailed` | Photo/fingerprint match below threshold | [[modules/exception-engine/overview\|Exception Engine]], [[modules/notifications/overview\|Notifications]] (alert manager) |
+| `BiometricDeviceOffline` | No heartbeat from biometric terminal for 5+ minutes | [[modules/notifications/overview\|Notifications]] (alert admin) |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `ActivitySnapshotReceived` | `activity.snapshot` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Trigger periodic identity verification if interval policy requires it |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `ActivitySnapshotReceived` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Trigger periodic identity verification if interval policy requires it |
 
 ---
 

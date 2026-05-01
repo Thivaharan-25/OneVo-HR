@@ -2,7 +2,7 @@
 
 **Module:** [[modules/configuration/overview|Configuration]]
 **Phase:** Phase 1
-**Tables:** 6
+**Tables:** 10
 
 ---
 
@@ -97,6 +97,99 @@ Auto-populated by the ingest processor whenever an app is seen on an employee de
 
 ---
 
+## `work_locations`
+
+Legal entity workplaces configured by Admin / HR admin for office, branch, remote-allowed, or field work.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `legal_entity_id` | `uuid` | FK -> legal_entities |
+| `name` | `varchar(150)` | e.g., `Colombo Office` |
+| `location_type` | `varchar(30)` | `office`, `branch`, `remote_allowed`, `field` |
+| `allowed_wifi_ssids_json` | `jsonb` | Optional display/matching hints |
+| `allowed_bssid_hashes_json` | `jsonb` | Recommended; hashed access point IDs |
+| `allowed_gateway_hashes_json` | `jsonb` | Recommended; hashed router/gateway IDs |
+| `allowed_public_ip_ranges_json` | `jsonb` | CIDR ranges |
+| `allowed_vpn_ip_ranges_json` | `jsonb` | Optional approved VPN egress ranges |
+| `default_grace_period_minutes` | `int` | Nullable; falls back to tenant/rule default |
+| `default_alert_severity` | `varchar(20)` | Nullable; `info`, `warning`, `critical` |
+| `is_active` | `boolean` |  |
+| `created_by_id` | `uuid` | FK -> users |
+| `created_at` | `timestamptz` |  |
+| `updated_at` | `timestamptz` |  |
+
+**Rule:** At least one verification method must be configured: BSSID/gateway hash, public IP range, or approved VPN range.
+
+---
+
+## `employee_work_location_settings`
+
+Employee work mode and assigned office/remote enforcement settings.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `work_mode` | `varchar(30)` | `office`, `remote`, `hybrid`, `field`, `no_enforcement` |
+| `primary_work_location_id` | `uuid` | Nullable FK -> work_locations |
+| `work_location_verification_enabled` | `boolean` | Employee-level resolved setting |
+| `grace_period_minutes` | `int` | Nullable override |
+| `photo_challenge_on_mismatch` | `boolean` | Default true when enforcement is enabled |
+| `set_by_id` | `uuid` | FK -> users |
+| `created_at` | `timestamptz` |  |
+| `updated_at` | `timestamptz` |  |
+
+---
+
+## `employee_remote_work_profiles`
+
+Locked remote workplace profile captured from the employee's approved remote clock-in.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `status` | `varchar(20)` | `pending_capture`, `active`, `archived`, `rejected` |
+| `captured_at` | `timestamptz` | When profile was captured |
+| `public_ip` | `inet` | Nullable; IP may change by ISP |
+| `wifi_ssid` | `varchar(255)` | Nullable |
+| `wifi_bssid_hash` | `varchar(100)` | Nullable |
+| `gateway_mac_hash` | `varchar(100)` | Nullable |
+| `vpn_detected` | `boolean` | Default false |
+| `coarse_location_json` | `jsonb` | Nullable; permission-based only |
+| `verification_record_id` | `uuid` | FK -> verification_records |
+| `approved_by_id` | `uuid` | Nullable FK -> users |
+| `created_at` | `timestamptz` |  |
+| `archived_at` | `timestamptz` | Nullable |
+
+**Unique constraint:** `(tenant_id, employee_id) WHERE status = 'active'` - only one active remote workplace profile by default.
+
+---
+
+## `remote_work_location_change_requests`
+
+Employee requests to replace a locked remote workplace profile.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `current_profile_id` | `uuid` | Nullable FK -> employee_remote_work_profiles |
+| `reason` | `text` | Employee-provided reason |
+| `status` | `varchar(20)` | `pending`, `approved`, `rejected`, `captured`, `expired` |
+| `requested_at` | `timestamptz` |  |
+| `reviewed_by_id` | `uuid` | Nullable FK -> users |
+| `reviewed_at` | `timestamptz` | Nullable |
+| `review_comment` | `text` | Nullable |
+| `new_profile_id` | `uuid` | Nullable FK -> employee_remote_work_profiles |
+
+---
+
 ## `integration_connections`
 
 | Column | Type | Notes |
@@ -124,6 +217,7 @@ Auto-populated by the ingest processor whenever an app is seen on an employee de
 | `screenshot_capture` | `boolean` | Periodic screenshots |
 | `meeting_detection` | `boolean` | Meeting time tracking |
 | `device_tracking` | `boolean` | Device usage tracking |
+| `work_location_verification` | `boolean` | Network-based work-location compliance |
 | `identity_verification` | `boolean` | Photo verification |
 | `biometric` | `boolean` | Fingerprint terminals |
 | `created_at` | `timestamptz` |  |

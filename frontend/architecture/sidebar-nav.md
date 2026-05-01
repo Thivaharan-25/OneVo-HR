@@ -31,12 +31,12 @@ Display order (top to bottom). A separator line appears between Chat (7) and Adm
 | 1 | Home | `House` | No | `/` | Any authenticated user |
 | 2 | Inbox | `Inbox` | No | `/inbox` | Any authenticated user |
 | 3 | People | `Users` | Yes | `/people/employees` | `employees:read` OR `leave:read` |
-| 4 | Workforce | `LayoutDashboard` | Yes | `/workforce` | `workforce:read` |
+| 4 | Workforce | `LayoutDashboard` | Yes | `/workforce` | `workforce:view` |
 | 5 | Org | `Network` | Yes | `/org` | `org:read` |
 | 6 | Calendar | `Calendar` | Yes | `/calendar` | `calendar:read` |
 | 7 | Chat | `MessageCircle` | No | `/chat` | `chat:read` |
 | — | *separator* | — | — | — | — |
-| 8 | Admin | `Shield` | Yes | `/admin/users` | `admin:read` |
+| 8 | Admin | `Shield` | Yes | `/admin/users` | `users:read` |
 | 9 | Settings | `Settings` | Yes | `/settings/general` | `settings:read` |
 
 See [[frontend/design-system/components/nav-rail|Nav Rail]] for exact dimensions, colors, and Tailwind implementation.
@@ -54,12 +54,12 @@ See [[frontend/design-system/components/nav-rail|Nav Rail]] for exact dimensions
 
 | Label | Route | Permission Key | WMS Module(s) | Notes |
 |---|---|---|---|---|
-| Presence | `/workforce` | `workforce:read` | workforce-presence, productivity-analytics, exception-engine | Default — live employee card grid |
+| Presence | `/workforce` | `workforce:view` | workforce-presence, productivity-analytics, exception-engine | Default — live employee card grid |
 | Projects | `/workforce/projects` | `projects:read` | project | All projects in entity scope |
 | My Work | `/workforce/my-work` | `tasks:read` | task | My assigned tasks across all projects |
-| Planner | `/workforce/planner` | `planning:read` | planning | Sprints, Boards, Roadmap, Releases |
-| Goals | `/workforce/goals` | `goals:read` | okr | Objectives, key results, check-ins |
-| Docs | `/workforce/docs` | `docs:read` | collab | Documents and Wiki |
+| Planner | `/workforce/planner` | `sprints:read` | planning | Sprints, Boards, Roadmap, Releases |
+| Goals | `/workforce/goals` | `okr:read` | okr | Objectives, key results, check-ins |
+| Docs | `/workforce/docs` | `documents:read` | collab | Documents and Wiki |
 | Timesheets | `/workforce/time` | `time:read` | time | Time logs, timesheets, reports |
 | Analytics | `/workforce/analytics` | `analytics:read` | productivity-analytics, resource | Productivity scores + capacity |
 
@@ -78,9 +78,9 @@ See [[frontend/design-system/components/nav-rail|Nav Rail]] for exact dimensions
 | Label | Route | Permission Key | Notes |
 |---|---|---|---|
 | Calendar | `/calendar` | `calendar:read` | Unified: leave, holidays, review cycles |
-| Schedules | `/calendar/schedule` | `schedule:read` | Shift schedules (was "Shifts & Schedules") |
+| Schedules | `/calendar/schedule` | `calendar:read` | Shift schedules (was "Shifts & Schedules") |
 | Attendance | `/calendar/attendance` | `attendance:read` | Attendance corrections (was "Attendance Correction") |
-| Overtime | `/calendar/overtime` | `overtime:read` | Overtime requests and approvals |
+| Overtime | `/calendar/overtime` | `attendance:read` | Overtime requests and approvals |
 
 ### Chat (no panel)
 
@@ -96,12 +96,12 @@ Permission key: any authenticated user (content filtered by their permissions).
 
 | Label | Route | Permission Key | Was Named |
 |---|---|---|---|
-| People Access | `/admin/users` | `admin:users` | Users |
-| Permissions | `/admin/roles` | `admin:roles` | Roles |
-| Activity Trail | `/admin/audit` | `admin:audit` | Audit Logs |
-| Agents | `/admin/agents` | `admin:agents` | — |
-| Devices | `/admin/devices` | `admin:devices` | — |
-| Data & Privacy | `/admin/compliance` | `admin:compliance` | Compliance |
+| People Access | `/admin/users` | `users:manage` | Users |
+| Permissions | `/admin/roles` | `roles:manage` | Roles |
+| Activity Trail | `/admin/audit` | `settings:system` | Audit Logs |
+| Agents | `/admin/agents` | `agent:manage` | — |
+| Devices | `/admin/devices` | `settings:device` | — |
+| Data & Privacy | `/admin/compliance` | `settings:system` | Compliance |
 
 ### Settings
 

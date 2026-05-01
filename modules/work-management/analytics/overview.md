@@ -69,7 +69,7 @@ Fine-grained ACL for saved views. Key columns: `saved_view_id`, `share_type`, `t
 | POST | `/api/v1/workspaces/{wsId}/dashboards` | `analytics:write` | Create dashboard |
 | PATCH | `/api/v1/dashboards/{id}` | `analytics:write` | Update dashboard |
 | POST | `/api/v1/dashboards/{id}/widgets` | `analytics:write` | Add widget |
-| POST | `/api/v1/dashboards/{id}/share` | `analytics:manage` | Share dashboard |
+| POST | `/api/v1/dashboards/{id}/share` | `analytics:write` | Share dashboard |
 | GET | `/api/v1/workspaces/{wsId}/saved-views` | `analytics:read` | List saved views |
 | POST | `/api/v1/workspaces/{wsId}/saved-views` | `analytics:write` | Save view |
 | POST | `/api/v1/workspaces/{wsId}/reports/export` | `analytics:read` | Queue export |

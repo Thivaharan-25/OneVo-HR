@@ -39,13 +39,15 @@
 
 | Action | File |
 |:-------|:-----|
+| Create | `src/ONEVO.Domain/ValueObjects/EnvironmentLabel.cs` |
+| Create | `src/ONEVO.Application/Configuration/RekognitionOptions.cs` |
 | Create | `src/ONEVO.Application/Contracts/IRekognitionService.cs` |
+| Create | `src/ONEVO.Application/Contracts/IBlobStorage.cs` |
 | Create | `src/ONEVO.Application/Models/RekognitionModels.cs` |
 | Create | `src/ONEVO.Application/Models/VerificationPipelineResult.cs` |
 | Create | `src/ONEVO.Application/Services/RekognitionVerificationService.cs` |
 | Create | `src/ONEVO.Domain/Events/SuspiciousEnvironmentDetectedEvent.cs` |
 | Create | `src/ONEVO.Infrastructure/Services/AwsRekognitionService.cs` |
-| Create | `src/ONEVO.Infrastructure/Configuration/RekognitionOptions.cs` |
 | Create | `src/ONEVO.Infrastructure/Persistence/Migrations/<timestamp>_AddEnvironmentContextToVerificationRecords.cs` |
 | Modify | `src/ONEVO.Infrastructure/DependencyInjection.cs` |
 | Modify | `src/ONEVO.Api/appsettings.json` |
@@ -62,7 +64,7 @@
 
 **Files:**
 - Modify: `src/ONEVO.Infrastructure/ONEVO.Infrastructure.csproj`
-- Create: `src/ONEVO.Infrastructure/Configuration/RekognitionOptions.cs`
+- Create: `src/ONEVO.Application/Configuration/RekognitionOptions.cs`
 - Modify: `src/ONEVO.Api/appsettings.json`
 
 - [ ] **Step 1: Add AWSSDK.Rekognition NuGet package**
@@ -77,10 +79,10 @@ Expected output: packages added, no errors.
 
 - [ ] **Step 2: Create RekognitionOptions**
 
-Create `src/ONEVO.Infrastructure/Configuration/RekognitionOptions.cs`:
+Create `src/ONEVO.Application/Configuration/RekognitionOptions.cs`:
 
 ```csharp
-namespace ONEVO.Infrastructure.Configuration;
+namespace ONEVO.Application.Configuration;
 
 public class RekognitionOptions
 {
@@ -119,7 +121,7 @@ Expected: Build succeeded, 0 errors.
 
 ```bash
 git add src/ONEVO.Infrastructure/ONEVO.Infrastructure.csproj \
-        src/ONEVO.Infrastructure/Configuration/RekognitionOptions.cs \
+        src/ONEVO.Application/Configuration/RekognitionOptions.cs \
         src/ONEVO.Api/appsettings.json
 git commit -m "feat: add AWSSDK.Rekognition package and RekognitionOptions config"
 ```
@@ -129,15 +131,44 @@ git commit -m "feat: add AWSSDK.Rekognition package and RekognitionOptions confi
 ## Task 2: Define IRekognitionService Interface and Models
 
 **Files:**
+- Create: `src/ONEVO.Domain/ValueObjects/EnvironmentLabel.cs`
 - Create: `src/ONEVO.Application/Contracts/IRekognitionService.cs`
+- Create: `src/ONEVO.Application/Contracts/IBlobStorage.cs`
 - Create: `src/ONEVO.Application/Models/RekognitionModels.cs`
 - Create: `src/ONEVO.Application/Models/VerificationPipelineResult.cs`
 
-- [ ] **Step 1: Create shared model types**
+- [ ] **Step 1: Create EnvironmentLabel value object in Domain**
+
+Create `src/ONEVO.Domain/ValueObjects/EnvironmentLabel.cs`:
+
+```csharp
+namespace ONEVO.Domain.ValueObjects;
+
+public record EnvironmentLabel(string Name, float Confidence);
+```
+
+This lives in Domain so both Domain events and Application services can reference it without a layer violation.
+
+- [ ] **Step 2: Create IBlobStorage contract**
+
+Create `src/ONEVO.Application/Contracts/IBlobStorage.cs`:
+
+```csharp
+namespace ONEVO.Application.Contracts;
+
+public interface IBlobStorage
+{
+    Task<Stream> DownloadFileAsync(string key, CancellationToken ct = default);
+}
+```
+
+- [ ] **Step 3: Create shared model types**
 
 Create `src/ONEVO.Application/Models/RekognitionModels.cs`:
 
 ```csharp
+using ONEVO.Domain.ValueObjects;
+
 namespace ONEVO.Application.Models;
 
 public record DetectFacesResult(
@@ -155,12 +186,10 @@ public record CompareFacesResult(
     bool FaceMatched,
     float Similarity);
 
-public record EnvironmentLabel(string Name, float Confidence);
-
 public record DetectLabelsResult(IReadOnlyList<EnvironmentLabel> Labels);
 ```
 
-- [ ] **Step 2: Create VerificationPipelineResult**
+- [ ] **Step 4: Create VerificationPipelineResult**
 
 Create `src/ONEVO.Application/Models/VerificationPipelineResult.cs`:
 
@@ -180,7 +209,7 @@ public record VerificationPipelineResult(
 }
 ```
 
-- [ ] **Step 3: Create IRekognitionService interface**
+- [ ] **Step 5: Create IRekognitionService interface**
 
 Create `src/ONEVO.Application/Contracts/IRekognitionService.cs`:
 
@@ -197,22 +226,25 @@ public interface IRekognitionService
 }
 ```
 
-- [ ] **Step 4: Build Application layer**
+- [ ] **Step 6: Build Application and Domain layers**
 
 ```bash
-cd src/ONEVO.Application
-dotnet build
+cd src/ONEVO.Domain && dotnet build
+cd ../ONEVO.Application && dotnet build
 ```
 
-Expected: Build succeeded, 0 errors.
+Expected: Both build succeeded, 0 errors.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/ONEVO.Application/Contracts/IRekognitionService.cs \
+git add src/ONEVO.Domain/ValueObjects/EnvironmentLabel.cs \
+        src/ONEVO.Application/Configuration/RekognitionOptions.cs \
+        src/ONEVO.Application/Contracts/IRekognitionService.cs \
+        src/ONEVO.Application/Contracts/IBlobStorage.cs \
         src/ONEVO.Application/Models/RekognitionModels.cs \
         src/ONEVO.Application/Models/VerificationPipelineResult.cs
-git commit -m "feat: add IRekognitionService interface and Rekognition result models"
+git commit -m "feat: add EnvironmentLabel (Domain), IBlobStorage, IRekognitionService, and Rekognition result models"
 ```
 
 ---
@@ -355,6 +387,7 @@ using Amazon.Rekognition.Model;
 using Microsoft.Extensions.Logging;
 using ONEVO.Application.Contracts;
 using ONEVO.Application.Models;
+using ONEVO.Domain.ValueObjects;
 
 namespace ONEVO.Infrastructure.Services;
 
@@ -459,7 +492,7 @@ Create `src/ONEVO.Domain/Events/SuspiciousEnvironmentDetectedEvent.cs`:
 
 ```csharp
 using MediatR;
-using ONEVO.Application.Models;
+using ONEVO.Domain.ValueObjects;
 
 namespace ONEVO.Domain.Events;
 
@@ -494,6 +527,8 @@ git commit -m "feat: add SuspiciousEnvironmentDetectedEvent domain event"
 - Create: `src/ONEVO.Application/Services/RekognitionVerificationService.cs`
 - Create: `tests/ONEVO.Tests.Unit/Modules/IdentityVerification/RekognitionVerificationServiceTests.cs`
 
+> **Note:** This service uses `IBlobStorage` (defined in Task 2) — not `IImportFileStorage`. `IImportFileStorage` belongs to the data-import module and must not be reused here.
+
 - [ ] **Step 1: Write failing tests**
 
 Create `tests/ONEVO.Tests.Unit/Modules/IdentityVerification/RekognitionVerificationServiceTests.cs`:
@@ -504,9 +539,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using ONEVO.Application.Contracts;
+using ONEVO.Application.Configuration;
 using ONEVO.Application.Models;
 using ONEVO.Application.Services;
-using ONEVO.Infrastructure.Configuration;
 using Xunit;
 
 namespace ONEVO.Tests.Unit.Modules.IdentityVerification;
@@ -514,7 +549,7 @@ namespace ONEVO.Tests.Unit.Modules.IdentityVerification;
 public class RekognitionVerificationServiceTests
 {
     private readonly Mock<IRekognitionService> _rekognitionMock = new();
-    private readonly Mock<IImportFileStorage> _storageMock = new();
+    private readonly Mock<IBlobStorage> _storageMock = new();
     private readonly RekognitionVerificationService _sut;
 
     private static readonly byte[] FakePhoto = new byte[] { 1, 2, 3 };
@@ -537,7 +572,7 @@ public class RekognitionVerificationServiceTests
     private void SetupGoodMatch(float similarity = 90f)
     {
         _storageMock.Setup(s => s.DownloadFileAsync(ProfileKey, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MemoryStream(new byte[] { 9, 8, 7 }));
+            .ReturnsAsync((Stream)new MemoryStream(new byte[] { 9, 8, 7 }));
         _rekognitionMock.Setup(r => r.CompareFacesAsync(It.IsAny<byte[]>(), FakePhoto, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new CompareFacesResult(true, similarity));
     }
@@ -618,7 +653,7 @@ public class RekognitionVerificationServiceTests
     {
         SetupGoodFace();
         _storageMock.Setup(s => s.DownloadFileAsync(ProfileKey, It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new FileNotFoundException());
+            .ThrowsAsync(new FileNotFoundException("Profile photo not found"));
         SetupWorkLabels();
 
         var result = await _sut.RunAsync(FakePhoto, ProfileKey);
@@ -723,9 +758,10 @@ Create `src/ONEVO.Application/Services/RekognitionVerificationService.cs`:
 ```csharp
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ONEVO.Application.Configuration;
 using ONEVO.Application.Contracts;
 using ONEVO.Application.Models;
-using ONEVO.Infrastructure.Configuration;
+using ONEVO.Domain.ValueObjects;
 
 namespace ONEVO.Application.Services;
 
@@ -744,13 +780,13 @@ public class RekognitionVerificationService
     };
 
     private readonly IRekognitionService _rekognition;
-    private readonly IImportFileStorage _storage;
+    private readonly IBlobStorage _storage;
     private readonly IOptions<RekognitionOptions> _options;
     private readonly ILogger<RekognitionVerificationService> _logger;
 
     public RekognitionVerificationService(
         IRekognitionService rekognition,
-        IImportFileStorage storage,
+        IBlobStorage storage,
         IOptions<RekognitionOptions> options,
         ILogger<RekognitionVerificationService> logger)
     {
@@ -1033,12 +1069,12 @@ In `src/ONEVO.Infrastructure/DependencyInjection.cs`, add inside `AddInfrastruct
 ```csharp
 using Amazon;
 using Amazon.Rekognition;
+using ONEVO.Application.Configuration;
 using ONEVO.Application.Contracts;
 using ONEVO.Application.Services;
-using ONEVO.Infrastructure.Configuration;
 using ONEVO.Infrastructure.Services;
 
-// AWS Rekognition
+// AWS Rekognition — RekognitionOptions lives in Application layer, not Infrastructure
 services.Configure<RekognitionOptions>(config.GetSection("Rekognition"));
 
 var rekognitionConfig = new AmazonRekognitionConfig
@@ -1053,6 +1089,10 @@ services.AddSingleton<IAmazonRekognition>(new AmazonRekognitionClient(
 
 services.AddScoped<IRekognitionService, AwsRekognitionService>();
 services.AddScoped<RekognitionVerificationService>();
+
+// IBlobStorage — register the existing blob storage implementation against this contract.
+// If MinIO/S3 storage is already registered under a different interface, add an adapter here.
+// Example: services.AddScoped<IBlobStorage, MinioStorageService>();
 ```
 
 - [ ] **Step 3: Build entire solution**

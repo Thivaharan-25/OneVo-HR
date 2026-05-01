@@ -29,8 +29,8 @@ public class PermissionResolverTests
     [Fact]
     public async Task Resolve_RevokeOverrideRemovesRolePermission()
     {
-        // Role gives: employees:read, employees:update
-        // Override revokes: employees:update
+        // Role gives: employees:read, employees:write
+        // Override revokes: employees:write
         // Expected: [employees:read]
     }
 

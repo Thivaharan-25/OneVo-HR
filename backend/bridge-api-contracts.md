@@ -214,7 +214,7 @@ Sourced from `wms_role_mappings` table. Configured by tenant admin. Examples:
 | Status | Code | When |
 |:-------|:-----|:-----|
 | `401` | `BRIDGE_KEY_INVALID` | Key missing or revoked |
-| `403` | `BRIDGE_SCOPE_INSUFFICIENT` | Key lacks `bridges:read` scope |
+| `403` | `BRIDGE_SCOPE_INSUFFICIENT` | Key lacks bridges:read scope |
 | `429` | `RATE_LIMIT_EXCEEDED` | >100 requests/minute |
 
 ### Delta sync pattern

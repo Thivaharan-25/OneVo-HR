@@ -119,25 +119,25 @@ See [[backend/notification-system|Notification System]] for the full 6-step pipe
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| _(none)_ | — | — | — |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| _(none)_ | — | — |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `LeaveRequested` | `leave.request.requested` | [[modules/leave/overview\|Leave]] | Notify manager of pending leave request |
-| `LeaveApproved` | `leave.request.approved` | [[modules/leave/overview\|Leave]] | Notify employee of approval |
-| `LeaveRejected` | `leave.request.rejected` | [[modules/leave/overview\|Leave]] | Notify employee of rejection |
-| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Send onboarding welcome notification |
-| `PayrollRunCompleted` | `payroll.run.completed` | [[modules/payroll/overview\|Payroll]] | Notify employees that payslips are ready |
-| `ReviewCompleted` | `performance.review.completed` | [[modules/performance/overview\|Performance]] | Notify employee of completed review |
-| `ExceptionAlertCreated` | `exception.alert` | [[modules/exception-engine/overview\|Exception Engine]] | Send alert notification via escalation chain |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `LeaveRequested` | [[modules/leave/overview\|Leave]] | Notify manager of pending leave request |
+| `LeaveApproved` | [[modules/leave/overview\|Leave]] | Notify employee of approval |
+| `LeaveRejected` | [[modules/leave/overview\|Leave]] | Notify employee of rejection |
+| `EmployeeHired` | [[modules/core-hr/overview\|Core HR]] | Send onboarding welcome notification |
+| `PayrollRunCompleted` | [[modules/payroll/overview\|Payroll]] | Notify employees that payslips are ready |
+| `ReviewCompleted` | [[modules/performance/overview\|Performance]] | Notify employee of completed review |
+| `ExceptionAlertCreated` | [[modules/exception-engine/overview\|Exception Engine]] | Send alert notification via escalation chain |
 
 ---
 

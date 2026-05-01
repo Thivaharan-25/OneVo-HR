@@ -28,7 +28,7 @@ function EmployeesPage() {
 
   return (
     <>
-      <PageHeader title="Employees" actions={[{ label: 'Add Employee', permission: 'employees:create' }]} />
+      <PageHeader title="Employees" actions={[{ label: 'Add Employee', permission: 'employees:write' }]} />
       <EmployeeFilters />
       <DataTable
         columns={columns}
@@ -103,7 +103,7 @@ function EmployeeCell({ employee }: { employee: Employee }) {
   accessorKey: 'salary',
   header: () => <div className="text-right">Salary</div>,
   cell: ({ row }) => (
-    <PermissionGate permission="payroll:view-salary" fallback={<span className="text-muted-foreground">***</span>}>
+    <PermissionGate permission="payroll:read" fallback={<span className="text-muted-foreground">***</span>}>
       <div className="text-right font-mono text-sm tabular-nums">
         {formatCurrency(row.original.salary, row.original.currency)}
       </div>
@@ -127,7 +127,7 @@ function EmployeeCell({ employee }: { employee: Employee }) {
         <DropdownMenuItem onClick={() => router.push(`/people/employees/${row.original.id}`)}>
           <Eye className="h-4 w-4 mr-2" /> View
         </DropdownMenuItem>
-        <PermissionGate permission="employees:update">
+        <PermissionGate permission="employees:write">
           <DropdownMenuItem onClick={() => openEditDialog(row.original)}>
             <Pencil className="h-4 w-4 mr-2" /> Edit
           </DropdownMenuItem>
@@ -161,7 +161,7 @@ function EmployeeBulkActions() {
       <Button size="sm" variant="outline" onClick={handleBulkExport}>
         <Download className="h-3.5 w-3.5 mr-1" /> Export
       </Button>
-      <PermissionGate permission="employees:bulk-update">
+      <PermissionGate permission="employees:write">
         <Button size="sm" variant="outline" onClick={handleBulkDepartmentChange}>
           Change Department
         </Button>

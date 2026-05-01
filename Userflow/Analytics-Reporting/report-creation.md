@@ -3,7 +3,7 @@
 **Area:** Analytics & Reporting  
 **Trigger:** User creates custom report (user action)
 **Required Permission(s):** `reports:create`  
-**Related Permissions:** `reports:manage` (save as template, schedule)
+**Related Permissions:** `reports:create` (save as template, schedule)
 
 ---
 

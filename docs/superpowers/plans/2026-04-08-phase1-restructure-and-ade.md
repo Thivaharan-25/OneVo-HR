@@ -416,7 +416,7 @@ app/(dashboard)/settings/
 - [ ] Retention policy management: per data type, retention period
 - [ ] Tenant settings page: timezone, date format, work hours, privacy mode
 - [ ] Integration connections: list, add, test connections
-- [ ] PermissionGate: `monitoring:view-settings`, `monitoring:configure`, `settings:manage`
+- [ ] PermissionGate: `monitoring:view-settings`, `monitoring:configure`, `settings:admin`
 
 ### Userflows
 

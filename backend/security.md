@@ -112,7 +112,7 @@ public async Task<IActionResult> ApproveLeave(...)
 
 // Middleware reads JWT claims
 // Permission format: "{resource}:{action}"
-// Examples: "leave:approve", "employee:create", "payroll:run"
+// Examples: "leave:approve", "employees:write", "payroll:run"
 ```
 
 Missing permission → `ForbiddenException` → `ExceptionHandlerMiddleware` → HTTP 403 RFC 7807.

@@ -283,6 +283,8 @@ Context variables auto-resolved in tag params:
 
 Only triggered when `has_monitoring_entitlement: true` in entitlements response.
 
+The IDE extension login does not replace TrayApp enrollment. IDE login creates a user/editor session; TrayApp enrollment creates the Windows device session and receives a separate device credential from Agent Gateway. If the browser SSO session is already active, the TrayApp step may only require confirmation, but the extension JWT must never be reused as the agent credential.
+
 1. Extension shows a non-intrusive prompt: "Your organisation uses productivity monitoring. Set up the OneVo agent?"
 2. User clicks "Set Up" → `POST /api/v1/ide/agent-install/request`
 3. Backend validates entitlement server-side, creates `agent_install_jobs` record

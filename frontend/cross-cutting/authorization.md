@@ -28,21 +28,20 @@ JWT claims:
 
 Examples:
 ```
-employees:read            — Can view employee list (scoped to subordinates)
-employees:create          — Can create employees
-employees:update          — Can edit employee details
-employees:delete          — Can delete employees
-employees:update:salary   — Can edit salary specifically (field-level)
-leave:approve             — Can approve leave requests (scoped to subordinates)
-payroll:read              — Can view payroll data
-payroll:run               — Can execute payroll runs
-workforce:view            — Can view workforce intelligence
-exceptions:view           — Can view exception alerts
-exceptions:manage         — Can acknowledge/dismiss alerts
-monitoring:view-settings  — Can view monitoring configuration
-monitoring:update-settings — Can change monitoring settings
-settings:read             — Can view tenant settings
-billing:read              — Can view billing
+employees:read            - Can view employee list (scoped to subordinates)
+employees:write           - Can create or edit employees
+employees:delete          - Can delete employees
+leave:approve             - Can approve leave requests (scoped to subordinates)
+payroll:read              - Can view payroll data
+payroll:run               - Can execute payroll runs
+workforce:view            - Can view workforce intelligence
+exceptions:view           - Can view exception alerts
+exceptions:acknowledge    - Can acknowledge/dismiss alerts
+exceptions:manage         - Can configure exception rules
+monitoring:view-settings  - Can view monitoring configuration
+monitoring:configure      - Can change monitoring settings
+settings:read             - Can view tenant settings
+billing:read              - Can view billing
 ```
 
 ## Gating Levels
@@ -226,7 +225,7 @@ The frontend must NEVER hardcode role names (e.g., "HR Manager", "Team Lead"). R
 if (user.role === 'HR Manager') { ... }
 
 // RIGHT - check the permission
-if (hasPermission('employees:update')) { ... }
+if (hasPermission('employees:write')) { ... }
 
 // RIGHT - check module access
 if (isModuleGranted('leave')) { ... }

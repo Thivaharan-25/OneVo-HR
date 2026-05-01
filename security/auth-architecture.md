@@ -103,7 +103,7 @@ skills:read, skills:write, skills:validate, skills:manage
 documents:read, documents:write, documents:manage
 grievance:read, grievance:write, grievance:manage
 expense:read, expense:create, expense:approve, expense:manage
-reports:read, reports:create, reports:manage
+reports:read, reports:create, reports:create
 
 // Workforce Intelligence (NEW)
 workforce:view, workforce:manage
