@@ -7,13 +7,13 @@
 
 ---
 
-> **This is the KEY flow in the ONEVO RBAC system.** All other flows depend on permissions being correctly assigned. Permissions can be assigned at two levels: (1) to a Role (affects all users with that role), or (2) as per-employee overrides (adds or removes specific permissions for one user).
+> **This is the KEY flow in the ONEVO RBAC system.** All other flows depend on permissions being correctly assigned. Explicit permissions can be assigned at two levels: (1) to a Role (affects all users with that role), or (2) as per-employee overrides (adds or removes specific permissions for one user). Universal permissions are auto-granted to every active employee and are never assigned or revoked here.
 
 ## Preconditions
 
 - Tenant is active
 - Roles exist (system or custom via [[Userflow/Auth-Access/role-creation|Role Creation Flow]])
-- Permissions are seeded (90+ permissions seeded during [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]])
+- Explicit permissions are seeded (106 assignable permissions during [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]). Universal permissions are resolved automatically by the auth layer.
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]] (recursive: an admin who already has `roles:manage`)
 
 ## Flow Steps
@@ -30,14 +30,15 @@
 #### Step A2: Manage Role Permissions
 - **UI:** Click "Manage Permissions" button. Full permission browser opens (same as [[Userflow/Auth-Access/role-creation|Role Creation]]):
   - Accordion categories by module
-  - Checkboxes for each permission
+  - Checkboxes for each explicitly grantable permission
+  - Universal auto-grants shown in a read-only section without checkboxes
   - Currently assigned permissions pre-checked
   - Search bar to filter permissions
   - "Select All" / "Deselect All" per category
   - Change summary panel: "Adding 3, Removing 1"
 - **API:** N/A (client-side selection)
 - **Backend:** N/A
-- **Validation:** At least one permission must remain
+- **Validation:** At least one explicitly grantable permission must remain. Universal permissions cannot be added, removed, selected, or submitted.
 - **DB:** None
 
 #### Step A3: Save Permission Changes
@@ -55,38 +56,39 @@
   4. Invalidate permission cache for all users with this role
   5. Publish `RolePermissionsUpdatedEvent`
   6. Audit log entry with old and new permission lists
-- **Validation:** Cannot remove all permissions. Cannot modify system role permissions
+- **Validation:** Cannot remove all explicitly grantable permissions. Cannot modify system role permissions. Reject any universal permission ID in the payload.
 - **DB:** `role_permissions` (inserts + deletes), `audit_logs`
 
 #### Step A4: Propagation
 - **UI:** Toast: "Permissions updated. Changes will take effect within 15 minutes for active users"
 - **API:** N/A
-- **Backend:** Permission cache invalidated. On next token refresh, JWT will contain updated permission claims. Active SignalR connections receive a `permissions-changed` event prompting client-side navigation refresh
+- **Backend:** Permission cache invalidated. On next token refresh, JWT will contain updated explicit permission claims plus the universal auto-grants. Active SignalR connections receive a `permissions-changed` event prompting client-side navigation refresh
 - **Validation:** N/A
 - **DB:** None
 
 ### Path B: Per-Employee Permission Override
 
 #### Step B1: Navigate to Employee Profile
-- **UI:** Employees > search for employee > click profile > Security tab. Shows: Assigned Role (from job family or manual assignment), Effective Permissions list (role permissions + overrides), "Override Permissions" button
+- **UI:** Employees > search for employee > click profile > Security tab. Shows: Assigned Role (from job family or manual assignment), Effective Permissions list (universal auto-grants + role permissions + overrides), "Override Permissions" button
 - **API:** `GET /api/v1/employees/{employeeId}/permissions`
 - **Backend:** `PermissionService.GetEffectivePermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
-  - Computes: Role permissions + added overrides - removed overrides = effective permissions
+  - Computes: Universal auto-grants + role permissions + added overrides - removed overrides = effective permissions
 - **Validation:** Permission check for `roles:manage` AND (`users:manage` OR `employees:write`)
 - **DB:** `user_roles`, `role_permissions`, `user_permission_overrides`, `permissions`
 
 #### Step B2: Add or Remove Permission Overrides
 - **UI:** Permission override panel shows three columns:
-  1. **From Role:** Permissions inherited from the assigned role (read-only, grayed out checkboxes)
-  2. **Added Overrides:** Extra permissions granted to this specific employee (green highlight)
-  3. **Removed Overrides:** Role permissions revoked for this specific employee (red strikethrough)
+  1. **Universal:** Auto-granted permissions inherited by every active employee (read-only, no checkboxes)
+  2. **From Role:** Explicit permissions inherited from the assigned role (read-only, grayed out checkboxes)
+  3. **Added Overrides:** Extra explicit permissions granted to this specific employee (green highlight)
+  4. **Removed Overrides:** Explicit role permissions revoked for this specific employee (red strikethrough)
   
   To add an override: click "+" next to any unassigned permission → moves to "Added Overrides"
   To remove a role permission: click "-" next to any role permission → moves to "Removed Overrides"
   To revert an override: click "x" next to any override → returns to original state
 - **API:** N/A (client-side editing)
 - **Backend:** N/A
-- **Validation:** Cannot override system-critical permissions (e.g., cannot remove `employees:read-own` from any user)
+- **Validation:** Cannot override universal permissions such as `employees:read-own`, `leave:read-own`, or `workforce:dashboard`.
 - **DB:** None
 
 #### Step B3: Save Employee Overrides
@@ -103,7 +105,7 @@
   2. Invalidate permission cache for this specific user
   3. Publish `UserPermissionsOverriddenEvent`
   4. Audit log entry with full before/after permission diff
-- **Validation:** Cannot create circular situations (e.g., removing `roles:manage` from the last admin)
+- **Validation:** Cannot create circular situations (e.g., removing `roles:manage` from the last admin). Reject any universal permission ID in `addedPermissionIds` or `removedPermissionIds`.
 - **DB:** `user_permission_overrides`, `audit_logs`
 
 #### Step B4: Immediate Effect
@@ -206,10 +208,11 @@ Triggered automatically when granting `roles:manage` to an employee via role ass
 
 The system resolves effective permissions in this order:
 
-1. **Base:** Permissions from the user's assigned role (via `role_permissions`)
-2. **Add:** Permissions in `user_permission_overrides` with type `grant`
-3. **Remove:** Permissions in `user_permission_overrides` with type `revoke`
-4. **Result:** `(Role Permissions + Grants) - Revokes = Effective Permissions`
+1. **Universal:** Auto-grants for every active employee
+2. **Base:** Explicit permissions from the user's assigned role (via `role_permissions`)
+3. **Add:** Explicit permissions in `user_permission_overrides` with type `grant`
+4. **Remove:** Explicit permissions in `user_permission_overrides` with type `revoke`
+5. **Result:** `Universal + (Role Permissions + Grants - Revokes) = Effective Permissions`
 
 This effective permission set is embedded in the JWT access token claims.
 
@@ -237,6 +240,7 @@ This effective permission set is embedded in the JWT access token claims.
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | Removing last admin's `roles:manage` | Save blocked | "Cannot remove this permission: at least one user must retain roles:manage" |
+| Attempting to assign or revoke a universal permission | Save blocked | "Universal permissions are auto-granted and cannot be manually assigned or revoked" |
 | System role modification attempt | `403 Forbidden` returned | "System roles cannot be modified. Create a custom role instead" |
 | Employee not found | `404 Not Found` returned | "Employee not found" |
 | Circular permission removal | Save blocked | "This change would lock out the last administrator. Operation cancelled" |

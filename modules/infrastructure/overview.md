@@ -142,23 +142,23 @@ API endpoints:
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `TenantCreated` | `infrastructure.tenant.created` | New tenant provisioned | [[modules/configuration/overview\|Configuration]] (seed monitoring defaults), [[modules/org-structure/overview\|Org Structure]] (seed default department) |
-| `TenantActivated` | `infrastructure.tenant.activated` | Tenant moves from trial to active | [[modules/shared-platform/overview\|Shared Platform]] |
-| `TenantDeactivated` | `infrastructure.tenant.deactivated` | Tenant suspended or cancelled | [[modules/shared-platform/overview\|Shared Platform]] |
-| `UserCreated` | `infrastructure.user.created` | New user record created | Downstream modules that need user context |
-| `UserStatusChanged` | `infrastructure.user.status` | User activated or deactivated | [[modules/auth/overview\|Auth]] (update login access) |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `TenantCreated` | New tenant provisioned | [[modules/configuration/overview\|Configuration]] (seed monitoring defaults), [[modules/org-structure/overview\|Org Structure]] (seed default department) |
+| `TenantActivated` | Tenant moves from trial to active | [[modules/shared-platform/overview\|Shared Platform]] |
+| `TenantDeactivated` | Tenant suspended or cancelled | [[modules/shared-platform/overview\|Shared Platform]] |
+| `UserCreated` | New user record created | Downstream modules that need user context |
+| `UserStatusChanged` | User activated or deactivated | [[modules/auth/overview\|Auth]] (update login access) |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| _(none)_ | — | — | — |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| _(none)_ | — | — |
 
 ---
 

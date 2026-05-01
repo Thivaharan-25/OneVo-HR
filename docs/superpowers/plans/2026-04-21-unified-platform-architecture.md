@@ -202,7 +202,7 @@ Both teams must agree on these before sprint 1.
   "tenant_id": "tenant-uuid",
   "employee_id": "employee-uuid",
   "email": "user@company.com",
-  "permissions": ["leave:read", "tasks:write", "payroll:view"],
+  "permissions": ["leave:read", "tasks:write", "payroll:read"],
   "wms_access": true,
   "exp": 1714000000,
   "iss": "onevo-auth"
@@ -310,7 +310,7 @@ Response:
       "employment_type": "full_time",
       "hire_date": "2024-01-15",
       "is_active": true,
-      "wms_role_permissions": ["project:create", "task:assign", "sprint:manage"],
+      "wms_role_permissions": ["projects:create", "task:assign", "sprints:manage"],
       "skill_ids": ["uuid1", "uuid2"]
     }
   ],
@@ -704,7 +704,7 @@ Tenants can change their industry profile from settings. When changed: ONEVO rec
 
 > **Update:** The `/platform-admin` concept has been promoted to a separate standalone app — see `developer-platform/overview.md` for the full specification.
 
-~~Lives inside the ONEVO frontend at `/platform-admin`, guarded by `platform:admin` permission (only ONEVO team accounts get this, never customers).~~
+~~Lives inside the ONEVO frontend at `/platform-admin`, guarded by `settings:admin` permission (only ONEVO team accounts get this, never customers).~~
 
 ~~**Phase 1 scope (minimal, ship early):**~~
 ~~- Tenant list: name, plan, status, employee count, created date~~
@@ -845,7 +845,7 @@ Industry switcher in tenant settings (changeable, re-evaluates module config)
 
 ### Phase 9 — Platform Admin (Weeks 16-17)
 ```
-/platform-admin route (guarded by platform:admin permission)
+/platform-admin route (guarded by settings:admin permission)
 Tenant management: list, view, suspend/unsuspend
 Feature flag override per tenant (for sales/support use)
 Billing sync: Stripe webhooks → tenant plan updates

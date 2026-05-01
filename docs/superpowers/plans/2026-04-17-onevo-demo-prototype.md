@@ -386,14 +386,14 @@ const personas: Record<PersonaKey, Omit<AuthState, 'login' | 'logout' | 'updateB
     personaKey: 'admin',
     user: { id: 'e1', name: 'Sarah Lim', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah', jobTitle: 'Super Admin' },
     grantedModules: ['core-hr','leave','org-structure','workforce','activity-monitoring','identity-verification','exception-engine','productivity-analytics','calendar','notifications','admin','settings','skills'],
-    permissions: ['employees:read','employees:write','leave:read','leave:approve','workforce:read','exceptions:read','exceptions:resolve','admin:read','admin:write','settings:write','skills:manage'],
+    permissions: ['employees:read','employees:write','leave:read','leave:approve','workforce:view','exceptions:view','exceptions:acknowledge','users:read','settings:admin','settings:admin','skills:manage'],
     tenantId: 't1',
   },
   manager: {
     personaKey: 'manager',
     user: { id: 'e2', name: 'James Rajan', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=james', jobTitle: 'Engineering Manager' },
     grantedModules: ['core-hr','leave','workforce','activity-monitoring','exception-engine','productivity-analytics','calendar','notifications','skills'],
-    permissions: ['employees:read','leave:read','leave:approve','workforce:read','exceptions:read','skills:validate'],
+    permissions: ['employees:read','leave:read','leave:approve','workforce:view','exceptions:view','skills:validate'],
     tenantId: 't1',
   },
   employee: {

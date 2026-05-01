@@ -6,6 +6,8 @@ The WorkPulse Agent is packaged as an **MSIX bundle** containing both the Window
 
 **Phase 1: Windows MSIX only.** macOS `.pkg` packaging is Phase 2. See [[modules/agent-gateway/agent-overview|Agent Overview]] for the macOS Phase 2 architecture.
 
+**Enrollment source of truth:** the Phase 1 MSIX is generic and signed. It does not need an embedded tenant API key for the default flow. IT/admin tools may deploy the package silently, but tenant/user resolution happens only after the employee signs in through the TrayApp. The Service stores the backend-issued device credential with DPAPI / Windows Credential Manager after `POST /api/v1/agent/enroll/complete`.
+
 ---
 
 ## MSIX Package Structure
@@ -110,6 +112,29 @@ For enterprise deployment via Microsoft Intune, SCCM, or Group Policy:
 
 ## First-Run Flow
 
+**Default Phase 1 flow:**
+
+```
+Install completes
+  -> Windows Service starts automatically
+  -> Service generates device_id (UUID v7)
+  -> User logs in to Windows
+  -> Tray App starts (startup task)
+  -> Tray App connects to Service via Named Pipe
+  -> Tray App shows Sign in
+  -> User signs in through system browser or secure embedded auth
+  -> Service calls POST /api/v1/agent/enroll/start
+  -> Backend resolves tenant and employee from authenticated login
+  -> Service calls POST /api/v1/agent/enroll/complete
+  -> Backend creates/updates registered_agents and agent_sessions
+  -> Server returns internal device credential + policy
+  -> Service stores device credential via DPAPI / Windows Credential Manager
+  -> Service begins heartbeat loop
+  -> Collectors start only when policy, consent, and Workforce Presence lifecycle allow collection
+```
+
+The older tenant-key flow below is legacy/admin-only and must not be used as the default ADE implementation task.
+
 ```
 Install completes
   → Windows Service starts automatically
@@ -129,6 +154,8 @@ Install completes
 ```
 
 ### Tenant API Key Provisioning
+
+Legacy/admin-only. Do not use this as the Phase 1 employee install flow. Default enrollment is login-based through the TrayApp and `POST /api/v1/agent/enroll/start` / `POST /api/v1/agent/enroll/complete`.
 
 The tenant API key must be provided during installation. Options:
 

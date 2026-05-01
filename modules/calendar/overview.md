@@ -110,21 +110,21 @@ API endpoints:
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| _(none)_ | — | — | — |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| _(none)_ | — | — |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `LeaveApproved` | `leave.request.approved` | [[modules/leave/overview\|Leave]] | Create a `leave` calendar event for the approved leave period |
-| `ReviewCycleStarted` | `performance.review.started` | [[modules/performance/overview\|Performance]] | Create a `review` calendar event for the cycle dates |
-| `EmployeeHired` | `core-hr.employee.hired` | [[modules/core-hr/overview\|Core HR]] | Seed onboarding events for new employee |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `LeaveApproved` | [[modules/leave/overview\|Leave]] | Create a `leave` calendar event for the approved leave period |
+| `ReviewCycleStarted` | [[modules/performance/overview\|Performance]] | Create a `review` calendar event for the cycle dates |
+| `EmployeeHired` | [[modules/core-hr/overview\|Core HR]] | Seed onboarding events for new employee |
 
 ---
 

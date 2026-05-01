@@ -199,22 +199,22 @@ Inbound productivity data from WorkManage Pro (Phase 2 bridge). One row per empl
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `DailyReportReady` | `analytics.daily` | Daily report aggregation complete | [[modules/notifications/overview\|Notifications]] (send summary to managers) |
-| `WeeklyReportReady` | `analytics.weekly` | Weekly report aggregation complete | [[modules/notifications/overview\|Notifications]] (send weekly digest) |
-| `MonthlyReportReady` | `analytics.monthly` | Monthly report aggregation complete | [[modules/notifications/overview\|Notifications]] |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `DailyReportReady` | Daily report aggregation complete | [[modules/notifications/overview\|Notifications]] (send summary to managers) |
+| `WeeklyReportReady` | Weekly report aggregation complete | [[modules/notifications/overview\|Notifications]] (send weekly digest) |
+| `MonthlyReportReady` | Monthly report aggregation complete | [[modules/notifications/overview\|Notifications]] |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `ActivitySnapshotReceived` | `activity.snapshot` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Update real-time workforce status feed |
-| `ExceptionAlertCreated` | `exception.alert` | [[modules/exception-engine/overview\|Exception Engine]] | Increment daily exception count in workforce snapshot |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `ActivitySnapshotReceived` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Update real-time workforce status feed |
+| `ExceptionAlertCreated` | [[modules/exception-engine/overview\|Exception Engine]] | Increment daily exception count in workforce snapshot |
 
 ---
 
@@ -225,8 +225,8 @@ Inbound productivity data from WorkManage Pro (Phase 2 bridge). One row per empl
 3. **Comparative rankings** (department rank) are only shown to managers with `analytics:view` permission, never to the employee themselves.
 4. **Export formats:** CSV and Excel via the [[modules/reporting-engine/overview|Reporting Engine]]. PDF deferred to Phase 2.
 5. **Workforce snapshot** includes ALL active employees, even those with monitoring disabled (they show presence data only, no activity breakdown).
-6. **Employee self-service dashboard** uses `analytics:view:self` permission — employee can ONLY see their own data. No access to team/department aggregates. No comparative rankings. Shows: daily hours, active %, app usage breakdown, meeting time, weekly/monthly trends.
-7. **CEO dashboard** uses `analytics:view:ceo` permission — shows workforce-level summary only. Individual employee data is NOT shown unless they have an escalated/critical exception alert. Designed to avoid information overload — key metrics + exceptions only.
+6. **Employee self-service dashboard** uses `analytics:view` permission — employee can ONLY see their own data. No access to team/department aggregates. No comparative rankings. Shows: daily hours, active %, app usage breakdown, meeting time, weekly/monthly trends.
+7. **CEO dashboard** uses `analytics:view` permission — shows workforce-level summary only. Individual employee data is NOT shown unless they have an escalated/critical exception alert. Designed to avoid information overload — key metrics + exceptions only.
 8. **Manager micro-management view** — managers with `analytics:view` can drill into any employee in their hierarchy: full app usage breakdown, per-app time, allowlist violations, activity timeline. This enables the "micro manage everyone about app usage" requirement.
 
 ---
@@ -243,12 +243,12 @@ Inbound productivity data from WorkManage Pro (Phase 2 bridge). One row per empl
 | GET | `/api/v1/analytics/export/daily` | `analytics:export` | Export daily report (CSV/Excel) |
 | GET | `/api/v1/analytics/export/weekly` | `analytics:export` | Export weekly report |
 | GET | `/api/v1/analytics/export/workforce` | `analytics:export` | Export workforce snapshot |
-| GET | `/api/v1/analytics/my/daily` | `analytics:view:self` | Employee's own daily report (self-service) |
-| GET | `/api/v1/analytics/my/weekly` | `analytics:view:self` | Employee's own weekly report |
-| GET | `/api/v1/analytics/my/monthly` | `analytics:view:self` | Employee's own monthly report |
-| GET | `/api/v1/analytics/my/trends` | `analytics:view:self` | Employee's own trend data for charts |
-| GET | `/api/v1/analytics/ceo/summary` | `analytics:view:ceo` | CEO-level workforce summary (exceptions only, no individual drill-down) |
-| GET | `/api/v1/analytics/ceo/exceptions` | `analytics:view:ceo` | CEO-level exception overview (escalated/critical only) |
+| GET | `/api/v1/analytics/my/daily` | `analytics:view` | Employee's own daily report (self-service) |
+| GET | `/api/v1/analytics/my/weekly` | `analytics:view` | Employee's own weekly report |
+| GET | `/api/v1/analytics/my/monthly` | `analytics:view` | Employee's own monthly report |
+| GET | `/api/v1/analytics/my/trends` | `analytics:view` | Employee's own trend data for charts |
+| GET | `/api/v1/analytics/ceo/summary` | `analytics:view` | CEO-level workforce summary (exceptions only, no individual drill-down) |
+| GET | `/api/v1/analytics/ceo/exceptions` | `analytics:view` | CEO-level exception overview (escalated/critical only) |
 
 ---
 
@@ -275,8 +275,8 @@ Inbound productivity data from WorkManage Pro (Phase 2 bridge). One row per empl
 - [[modules/productivity-analytics/weekly-reports/overview|Weekly Reports]] — Weekly aggregation with trend vs prior week
 - [[modules/productivity-analytics/monthly-reports/overview|Monthly Reports]] — Monthly aggregation with department comparative ranking
 - [[modules/productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]] — Tenant-wide daily metrics and per-department breakdown
-- Employee Self Service — Employee-facing dashboard: own hours, active %, app usage, trends (`analytics:view:self`)
-- Ceo Dashboard — CEO-level workforce summary: key metrics + exceptions only (`analytics:view:ceo`)
+- Employee Self Service — Employee-facing dashboard: own hours, active %, app usage, trends (`analytics:view`)
+- Ceo Dashboard — CEO-level workforce summary: key metrics + exceptions only (`analytics:view`)
 - Manager Detail View — Manager drill-down: per-employee app usage, activity timeline, allowlist violations
 
 ---

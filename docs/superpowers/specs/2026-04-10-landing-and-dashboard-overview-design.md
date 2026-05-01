@@ -205,16 +205,16 @@ Priority drives vertical position. Zones render top-to-bottom in this order. If 
 - **Actions:** `Review Now` (navigates to `/workforce/exceptions`) · `Dismiss` (hides strip until next refresh)
 
 #### Zone 2 — KPI Cards
-- **Condition:** User has any of: `employees:read`, `workforce:read`, `leave:read`
+- **Condition:** User has any of: `employees:read`, `workforce:view`, `leave:read`
 - **Layout:** 4-column responsive grid (collapses to 2-col on narrow viewports)
 - **Cards (all conditional on specific permission):**
 
 | Card | Permission Required | Scope |
 |:-----|:--------------------|:------|
-| Active Now | `workforce:read` + WI module | `hierarchy_scope` |
+| Active Now | `workforce:view` + WI module | `hierarchy_scope` |
 | On Leave Today | `leave:read` | `hierarchy_scope` |
-| Open Exceptions | `workforce:read` + WI module | `hierarchy_scope` |
-| Avg Productivity | `workforce:read` + WI module | `hierarchy_scope` |
+| Open Exceptions | `workforce:view` + WI module | `hierarchy_scope` |
+| Avg Productivity | `workforce:view` + WI module | `hierarchy_scope` |
 
 - **Scope adaptation:** `hierarchy_scope: "subordinates"` relabels "Active Now" → "My Team Active" and scopes the number to the user's subordinate tree.
 - **Visual:** 2px top color bar per card (green/amber/red/cyan), large number (26px, weight 900), small delta badge (↑↓ vs yesterday).
@@ -234,13 +234,13 @@ Priority drives vertical position. Zones render top-to-bottom in this order. If 
 - **Employee self-service view:** If user has no approval permissions, Zone 3 shows their own pending items (leave balance, payslips due) rather than disappearing entirely.
 
 #### Zone 4 — Workforce Live
-- **Condition:** `granted_modules.includes("workforce_intelligence") && hasPermission("workforce:read")`
+- **Condition:** `granted_modules.includes("workforce_intelligence") && hasPermission("workforce:view")`
 - **When absent:** Zone 3 (Pending Actions) expands to full width — `grid-template-columns: 1fr` on mid-row.
 - **Content:** Live presence bar (Active/Idle/Alert/Offline counts) + top employee rows with status and score + "Full view →" link to `/workforce`
 - **Data freshness:** Polling every 30s or WebSocket push (per `monitoring-toggles` config)
 
 #### Zone 5 — Trends & Charts
-- **Condition:** `hasPermission("workforce:read") || hasPermission("leave:read")`
+- **Condition:** `hasPermission("workforce:view") || hasPermission("leave:read")`
 - **Default view:** Productivity trend (14-day bar chart) — requires WI module
 - **Fallback view (HR-only):** Headcount trend or leave distribution chart
 - **Tab switcher:** `Productivity · Attendance · Leave` (tabs visible only if permission allows each)
@@ -292,10 +292,10 @@ All widgets in the library are permission-gated — users only see widgets their
 
 | Widget | Icon | Permission Required |
 |:-------|:-----|:--------------------|
-| Top Performers | 🏆 | `workforce:read` + WI module |
+| Top Performers | 🏆 | `workforce:view` + WI module |
 | Dept Headcount Breakdown | 🏢 | `employees:read` |
 | Leave Calendar Preview | 📆 | `leave:read` |
-| Recent Audit Log | 📝 | `audit:read` |
+| Recent Audit Log | 📝 | `settings:system` |
 | Grievance Summary | ⚠️ | `grievance:read` |
 | Contract Renewals (30d) | 🔄 | `employees:read` |
 | My Team Quick Stats | 👥 | `employees:read`, scope ≠ `self` |

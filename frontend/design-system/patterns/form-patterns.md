@@ -164,7 +164,7 @@ function InlineEditField({ label, value, fieldName, onSave }) {
           <p className="text-xs text-muted-foreground">{label}</p>
           <p className="text-sm">{value}</p>
         </div>
-        <PermissionGate permission={`employees:update:${fieldName}`}>
+        <PermissionGate permission={`employees:write:${fieldName}`}>
           <Button
             variant="ghost" size="icon"
             className="opacity-0 group-hover:opacity-100 transition-opacity"

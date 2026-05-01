@@ -2,7 +2,7 @@
 
 **Area:** Workforce → Planner (`/workforce/planner`) and Workforce → Projects → Sprints / Roadmap  
 **Trigger:** User clicks "Planner" in the Workforce panel, or navigates to a project's sprint or roadmap sub-route  
-**Required Permission:** `planning:read` (view); `planning:write` (create/edit sprints and boards)
+**Required Permission:** `sprints:read` (view); `sprints:manage` (create/edit sprints and boards)
 
 ## Purpose
 

@@ -15,7 +15,7 @@
 - [ ] SharedKernel implemented: BaseEntity, BaseRepository, ITenantContext, Result<T>, IEncryptionService
 - [ ] PostgreSQL with EF Core configured (snake_case convention, RLS policies)
 - [ ] Redis connection configured
-- [ ] Tenant CRUD + provisioning flow (signup -> seed -> activate) **with `industry_profile` selection**
+- [ ] Tenant CRUD + provisioning flow (operator-provisioned: create → seed → activate) **with `industry_profile` and `enabled_pillars` selection** — **this is NOT a public self-service signup. Tenants are created only by ONEVO operators via the developer console (`console.onevo.io`). No public signup endpoint or page.**
 - [ ] Industry profile sets default monitoring toggles in `monitoring_feature_toggles` — see [[modules/configuration/monitoring-toggles/overview|configuration]]
 - [ ] User CRUD with password hashing (Argon2id)
 - [ ] File upload service (local disk for dev, configurable for production)
@@ -42,6 +42,8 @@ When generating code for this task:
 3. Ensure all entities inherit from BaseEntity
 4. Include tenant_id on all tenant-scoped entities
 5. Use UUID v7 for primary keys
+6. **Tenant provisioning lives in `ONEVO.Admin.Api` — not in the customer-facing `ONEVO.Api`**. Do NOT create a public `POST /api/v1/tenants` endpoint. No public signup page. No self-service registration flow. See [[developer-platform/overview|Developer Platform]] for the admin API host.
+7. The `tenants` table must include an `enabled_pillars` column (jsonb or flags) recording which pillars/modules are active for this tenant. All pillar-gated features must check this before responding.
 
 ---
 
@@ -85,8 +87,8 @@ app/
 
 | Method | Endpoint | Purpose |
 |:-------|:---------|:--------|
-| GET | `/api/v1/tenants/resolve?domain={hostname}` | Resolve tenant from subdomain |
-| POST | `/api/v1/tenants` | Create tenant (provisioning) |
+| GET | `/api/v1/tenants/resolve?domain={hostname}` | Resolve tenant from subdomain (public — used by frontend to identify the tenant from the URL) |
+| POST | `/admin/v1/tenants` | Create tenant — **admin API only** (`ONEVO.Admin.Api`), not `/api/v1/`. Never expose this on the customer-facing API host. |
 | GET | `/api/v1/dashboard` | Dashboard widgets |
 | GET | `/api/v1/health` | Health check |
 

@@ -72,15 +72,21 @@ MAUI captures photo (PhotoCaptureWindow — unchanged)
 
 | Component | Location | Purpose |
 |:----------|:---------|:--------|
+| `EnvironmentLabel` | `Domain/ValueObjects/EnvironmentLabel.cs` | Domain value object — referenced by both Domain events and Application services |
 | `IRekognitionService` | `Application/Contracts/IRekognitionService.cs` | Interface for AWS calls (mockable in tests) |
+| `IBlobStorage` | `Application/Contracts/IBlobStorage.cs` | Interface for blob storage downloads — implemented in Infrastructure |
+| `RekognitionOptions` | `Application/Configuration/RekognitionOptions.cs` | Threshold config — lives in Application so it can be injected without Infrastructure reference |
 | `AwsRekognitionService` | `Infrastructure/Services/AwsRekognitionService.cs` | Wraps `AWSSDK.Rekognition` — DetectFaces, CompareFaces, DetectLabels |
 | `RekognitionVerificationService` | `Application/Services/RekognitionVerificationService.cs` | Orchestrates 4-step pipeline, replaces current simple comparison |
 | `VerificationPipelineResult` | `Application/Models/VerificationPipelineResult.cs` | Result record passed to command handler |
 
-All components follow existing Clean Architecture layering:
-- `IRekognitionService` in Application layer (no AWS dependency)
-- `AwsRekognitionService` in Infrastructure layer (AWS SDK dependency)
+All components follow Clean Architecture layering (no violations):
+- `EnvironmentLabel` in Domain (deepest layer — no outward dependencies)
+- `IRekognitionService`, `IBlobStorage`, `RekognitionOptions` in Application (depends on Domain only)
+- `AwsRekognitionService` in Infrastructure (implements Application interfaces, depends on AWS SDK)
 - Registered via DI in `Infrastructure/DependencyInjection.cs`
+
+**Layer dependency rule:** Application → Domain. Infrastructure → Application + Domain. Never reverse.
 
 ---
 

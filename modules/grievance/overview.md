@@ -93,21 +93,21 @@ API endpoints:
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `GrievanceFiled` | `grievance.filed` | Employee files a grievance | [[modules/notifications/overview\|Notifications]] (notify HR Admin) |
-| `DisciplinaryActionIssued` | `grievance.disciplinary` | Disciplinary action issued against employee | [[modules/notifications/overview\|Notifications]] (notify employee and manager) |
-| `GrievanceResolved` | `grievance.resolved` | Grievance case resolved or closed | [[modules/notifications/overview\|Notifications]] (notify filer) |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `GrievanceFiled` | Employee files a grievance | [[modules/notifications/overview\|Notifications]] (notify HR Admin) |
+| `DisciplinaryActionIssued` | Disciplinary action issued against employee | [[modules/notifications/overview\|Notifications]] (notify employee and manager) |
+| `GrievanceResolved` | Grievance case resolved or closed | [[modules/notifications/overview\|Notifications]] (notify filer) |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| _(none)_ | — | — | — |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| _(none)_ | — | — |
 
 ---
 

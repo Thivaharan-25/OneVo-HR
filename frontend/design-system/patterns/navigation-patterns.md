@@ -116,7 +116,7 @@ const pillars: Pillar[] = [
     id: 'workforce',
     icon: Activity,
     label: 'Workforce',
-    permission: 'workforce:read',
+    permission: 'workforce:view',
     items: [
       {
         label: 'Live Dashboard',
@@ -163,8 +163,8 @@ const pillars: Pillar[] = [
     permission: 'admin:access',
     items: [
       { label: 'Users & Roles', href: '/admin/users',      permission: 'users:manage' },
-      { label: 'Audit Log',     href: '/admin/audit',      permission: 'audit:read' },
-      { label: 'Agents',        href: '/admin/agents',     permission: 'agents:manage' },
+      { label: 'Audit Log',     href: '/admin/audit',      permission: 'settings:system' },
+      { label: 'Agents',        href: '/admin/agents',     permission: 'agent:manage' },
       { label: 'Devices',       href: '/admin/devices',    permission: 'devices:manage' },
       { label: 'Compliance',    href: '/admin/compliance', permission: 'compliance:manage' },
     ],

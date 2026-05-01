@@ -66,7 +66,7 @@ app/(dashboard)/settings/
 - [ ] Tenant settings page: timezone, date format, work hours, privacy mode (SettingsForm)
 - [ ] Integration connections: IntegrationCard list, add, test connections
 - [ ] Colocated components: SettingsForm, IntegrationCard
-- [ ] PermissionGate: `monitoring:view-settings`, `monitoring:configure`, `settings:manage`
+- [ ] PermissionGate: `monitoring:view-settings`, `monitoring:configure`, `settings:admin`
 
 ### Userflows
 

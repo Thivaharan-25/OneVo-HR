@@ -2,7 +2,7 @@
 
 **Area:** Workforce → Goals (`/workforce/goals`)  
 **Trigger:** User clicks "Goals" in the Workforce panel  
-**Required Permission:** `goals:read` (view); `goals:write` (create/edit)
+**Required Permission:** `okr:read` (view); `okr:write` (create/edit)
 
 ## Purpose
 

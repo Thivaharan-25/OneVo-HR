@@ -3,7 +3,7 @@
 **Area:** Payroll  
 **Trigger:** Admin configures external payroll provider (user action — configuration)
 **Required Permission(s):** `payroll:write` + `settings:admin`  
-**Related Permissions:** `payroll:manage` (full provider lifecycle)
+**Related Permissions:** `payroll:write` (full provider lifecycle)
 
 ---
 

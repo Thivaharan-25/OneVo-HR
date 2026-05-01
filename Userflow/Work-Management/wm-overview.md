@@ -2,7 +2,7 @@
 
 **Area:** Workforce Pillar  
 **Trigger:** User navigates to any Workforce panel item (Projects, My Work, Planner, Goals, Docs, Timesheets, Analytics)  
-**Required Permission:** `workforce:read` minimum; specific features gated by additional permission keys (see sidebar-nav.md)
+**Required Permission:** `workforce:view` minimum; specific features gated by additional permission keys (see sidebar-nav.md)
 
 ## Purpose
 

@@ -17,6 +17,19 @@ A second standalone frontend app (`dev-console` at `console.onevo.io`) exists fo
 
 ## 2. Product Strategy
 
+### Sales Model (Phase 1) — IMPORTANT FOR ADE
+
+**ONEVO is NOT a self-service SaaS in Phase 1.** Customers cannot sign up themselves.
+
+- **How tenants are acquired:** Customers contact ONEVO directly. A sales conversation happens first — this is intentional, especially because the platform includes employee activity monitoring which requires explicit company buy-in before deployment.
+- **How tenants are provisioned:** After a sale is agreed, an ONEVO operator creates the tenant via the **developer console** (`console.onevo.io` → `ONEVO.Admin.Api`). There is no public signup page or public tenant creation endpoint.
+- **Module gating:** Each tenant is provisioned with a specific set of pillars/modules enabled. If ONEVO introduces a new module in the future, existing tenants remain on their current set unless they upgrade (pay for the new module) — then an operator enables it for them via the developer console.
+- **Phase 2 (future, not yet designed):** ONEVO may introduce a self-service SaaS model. Until that is explicitly specced, assume all tenant lifecycle operations are operator-driven.
+
+**ADE rule:** Never build a public tenant signup flow, public registration page, or expose `POST /api/v1/tenants` on the customer-facing API. Tenant creation is always via `ONEVO.Admin.Api`.
+
+---
+
 ONEVO is designed around **three core pillars** sold in multiple configurations:
 
 | Configuration | Target Market | Modules Included |
@@ -332,6 +345,8 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 - **WorkSync is internal:** No bridge APIs. WorkSync features live in `Features/WorkSync/*` same as HR features
 - **IDE Extension tag security:** All `@entity:action` permission checks happen server-side. Never trust client-side validation
 - **Monitoring Privacy:** Always check monitoring configuration before processing activity data
+- **No public signup:** Tenant provisioning is operator-only via `ONEVO.Admin.Api`. Never build a public signup/registration flow. See Section 2 (Sales Model) above.
+- **Module gating:** Every pillar-gated feature must check the tenant's `enabled_pillars` before serving data or rendering UI. A tenant without Workforce Intelligence enabled must never see `/workforce/*` routes or receive monitoring data.
 
 ## Related
 

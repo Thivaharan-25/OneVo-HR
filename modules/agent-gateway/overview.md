@@ -11,7 +11,7 @@
 
 ## Purpose
 
-High-throughput ingestion API and **bidirectional command channel** for the desktop agent. Handles agent registration, heartbeat monitoring, policy distribution, activity data ingestion, and **server-to-agent command dispatch**. This is the **only entry point** for desktop agent data into the ONEVO backend, and the **only channel** for pushing commands back to agents.
+High-throughput ingestion API and **bidirectional command channel** for the desktop agent. Handles agent registration, heartbeat monitoring, policy distribution, activity data ingestion, work-location evidence ingestion, and **server-to-agent command dispatch**. This is the **only entry point** for desktop agent data into the ONEVO backend, and the **only channel** for pushing commands back to agents.
 
 Agent Gateway uses **device-level JWT authentication**, separate from user JWT. See [[security/auth-architecture|Auth Architecture]] for details.
 
@@ -81,7 +81,7 @@ API endpoints:
 
 ---
 
-## Database Tables (4)
+## Database Tables (5)
 
 ### `registered_agents`
 
@@ -130,6 +130,7 @@ Policy pushed to each agent — defines what features are enabled for the linked
   "screenshot_capture": false,
   "meeting_detection": true,
   "device_tracking": true,
+  "work_location_verification": true,
   "identity_verification": true,
   "verification_on_login": true,
   "verification_on_logout": false,
@@ -137,6 +138,12 @@ Policy pushed to each agent — defines what features are enabled for the linked
   "idle_threshold_seconds": 300,
   "snapshot_interval_seconds": 150,
   "heartbeat_interval_seconds": 60,
+  "work_location": {
+    "mode": "office",
+    "grace_period_minutes": 5,
+    "strict_unknown_evidence": false,
+    "photo_challenge_on_mismatch": true
+  },
   "app_allowlist": {
     "mode": "allowlist",
     "apps": [
@@ -172,6 +179,28 @@ Agent uptime, errors, tamper detection.
 
 **Indexes:** `(agent_id, reported_at)`
 
+### `agent_work_location_evidence`
+
+Network and optional coarse location evidence captured only while the agent monitoring lifecycle is active.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `agent_id` | `uuid` | FK -> registered_agents |
+| `employee_id` | `uuid` | FK -> employees |
+| `presence_session_id` | `uuid` | FK -> presence_sessions, nullable until reconciliation |
+| `captured_at` | `timestamptz` | Agent capture time |
+| `public_ip` | `inet` | Captured from backend request metadata |
+| `local_ip` | `inet` | Nullable |
+| `wifi_ssid` | `varchar(255)` | Nullable, display only |
+| `wifi_bssid_hash` | `varchar(100)` | Nullable |
+| `gateway_mac_hash` | `varchar(100)` | Nullable |
+| `vpn_detected` | `boolean` | Default false |
+| `match_status` | `varchar(20)` | `matched`, `mismatch`, `unknown`, `not_evaluated` |
+| `confidence` | `varchar(20)` | `high`, `medium`, `low`, `unknown` |
+| `matched_work_location_id` | `uuid` | Nullable FK -> work_locations |
+
 ### `agent_commands`
 
 Pending and completed commands sent from server to agent.
@@ -181,7 +210,7 @@ Pending and completed commands sent from server to agent.
 | `id` | `uuid` | PK |
 | `agent_id` | `uuid` | FK → registered_agents |
 | `tenant_id` | `uuid` | FK → tenants |
-| `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
+| `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `capture_remote_workplace`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
 | `requested_by` | `uuid` | FK → users (manager/CEO who initiated) |
 | `payload_json` | `jsonb` | Command-specific parameters |
 | `status` | `varchar(20)` | `pending`, `delivered`, `completed`, `failed`, `expired` |
@@ -205,21 +234,21 @@ Pending and completed commands sent from server to agent.
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `AgentRegistered` | `agent.gateway.registered` | New device registered | [[modules/configuration/overview\|Configuration]] (push initial policy) |
-| `AgentHeartbeatLost` | `agent.gateway.heartbeat_lost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview\|Exception Engine]] (flag offline agent) |
-| `AgentRevoked` | `agent.gateway.revoked` | Admin revokes agent access | Agent receives 401 on next request |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `AgentRegistered` | New device registered | [[modules/configuration/overview\|Configuration]] (push initial policy) |
+| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview\|Exception Engine]] (flag offline agent) |
+| `AgentRevoked` | Admin revokes agent access | Agent receives 401 on next request |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `EmployeeOffboarded` | `core-hr.employee.offboarded` | [[modules/core-hr/overview\|Core HR]] | Revoke agent registration for offboarded employee |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `EmployeeOffboarded` | [[modules/core-hr/overview\|Core HR]] | Revoke agent registration for offboarded employee |
 
 ---
 
@@ -231,7 +260,7 @@ Pending and completed commands sent from server to agent.
    - Return **202 Accepted** immediately, process asynchronously
    - Rate limit per device (not per user)
 2. **Device JWT ≠ User JWT.** Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. See [[security/auth-architecture|Auth Architecture]].
-3. **Employee linking:** Device is registered with `employee_id = null`. When employee logs in via MAUI tray app, the device is linked: `employee_id` is set.
+3. **Login-based enrollment:** Device enrollment starts from the TrayApp sign-in flow. The backend resolves `tenant_id` and `employee_id` from authenticated user login, creates/updates `registered_agents`, creates the active `agent_sessions` row, and returns an internal device credential. Employees never enter tenant keys or API keys.
 4. **Policy merge pattern:**
    ```csharp
    var tenantPolicy = await _configService.GetMonitoringTogglesAsync(tenantId, ct);
@@ -248,12 +277,13 @@ Pending and completed commands sent from server to agent.
 
 | Method | Route | Auth | Description |
 |:-------|:------|:-----|:------------|
-| POST | `/api/v1/agent/register` | Tenant API key | Register new device, receive device JWT |
+| POST | `/api/v1/agent/enroll/start` | User sign-in challenge | Start login-based device enrollment |
+| POST | `/api/v1/agent/enroll/complete` | Authenticated user + challenge | Enroll device, create/link session, receive internal device credential |
 | POST | `/api/v1/agent/heartbeat` | Device JWT | Update `last_heartbeat_at`, report health, receive pending commands |
 | GET | `/api/v1/agent/policy` | Device JWT | Fetch current monitoring policy (includes app allowlist) |
 | POST | `/api/v1/agent/ingest` | Device JWT | Submit activity data batch (202 Accepted) |
-| POST | `/api/v1/agent/login` | Device JWT + employee credentials | Link employee to device |
-| POST | `/api/v1/agent/logout` | Device JWT | Unlink employee from device |
+| POST | `/api/v1/agent/login` | Device JWT | Resume/refresh employee-device session |
+| POST | `/api/v1/agent/logout` | Device JWT | End active employee-device session |
 | GET | `/api/v1/agent/commands` | Device JWT | Fetch pending commands (fallback if SignalR disconnected) |
 | POST | `/api/v1/agent/commands/{id}/ack` | Device JWT | Acknowledge command receipt |
 | POST | `/api/v1/agent/commands/{id}/complete` | Device JWT | Report command completion with result |

@@ -74,6 +74,8 @@ The dev builds backend first, then frontend for the same module. Each task file 
 
 > Shared Platform task must include `agent_install_entitlements` and `agent_install_jobs` tables. These are needed by DEV8's IDE extension agent provisioning flow.
 
+> **ADE task creation note:** For DEV4 Agent Gateway, generate one implementation task named **"Implement login-based Windows agent enrollment"**. The default Phase 1 flow is install MSIX -> user signs in through TrayApp -> backend resolves tenant/user -> device is enrolled -> policy/lifecycle starts monitoring. Use [[modules/agent-gateway/overview|Agent Gateway]], [[modules/agent-gateway/agent-registration/overview|Agent Registration]], [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]], [[modules/agent-gateway/tray-app-ui|Tray App UI]], [[modules/agent-gateway/agent-installer|Agent Installer]], [[modules/auth/overview|Auth]], and [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]]. Do not generate a tenant-key installer task for the default flow.
+
 **Dev 4 Frontend Pages:** Settings (monitoring config, tenant settings, integrations, retention), Agent management, Biometric devices, Attendance/Overtime, Verification log
 
 ---

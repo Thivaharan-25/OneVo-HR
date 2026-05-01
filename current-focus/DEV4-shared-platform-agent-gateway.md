@@ -27,16 +27,23 @@
 
 #### Agent Gateway
 - [ ] `registered_agents` table + CRUD
+- [ ] `agent_sessions` table - one active employee session per device; ingest validates employee_id against the active session
 - [ ] `agent_policies` table — policy JSON schema validated; includes `document_tracking`, `communication_tracking`, `browser_extension_enabled` flags
 - [ ] `agent_health_logs` table
-- [ ] `POST /api/v1/agent/register` — register device, return device JWT
+- [ ] **Login-based Windows agent enrollment:** default Phase 1 flow is install app -> user signs in through TrayApp -> backend resolves tenant/user -> backend enrolls device -> device credential issued internally
+- [ ] `POST /api/v1/agent/enroll/start` - start authenticated enrollment from TrayApp/system-browser sign-in, return short-lived enrollment challenge
+- [ ] `POST /api/v1/agent/enroll/complete` - validate login/enrollment challenge, create or update `registered_agents`, create `agent_sessions`, return internal device credential
+- [ ] No employee-facing API key, tenant key, tenant ID, or server URL entry. The employee only signs in.
+- [ ] Device credential is issued only after authenticated enrollment and is stored locally with DPAPI / Windows Credential Manager
 - [ ] `POST /api/v1/agent/heartbeat` — update last_heartbeat_at, report health
 - [ ] `GET /api/v1/agent/policy` — fetch monitoring policy (merged tenant toggles + employee overrides)
 - [ ] `POST /api/v1/agent/ingest` — high-throughput data ingestion (202 Accepted, async processing); handles `document_usage` and `communication_usage` batch types in addition to existing types
-- [ ] `POST /api/v1/agent/login` — link employee to device
-- [ ] `POST /api/v1/agent/logout` — unlink employee
 - [ ] Device JWT authentication (separate from user JWT, `type: "agent"` claim) — see [[modules/auth/authentication/overview|authentication]]
 - [ ] Rate limiting per device (30 req/min/device)
+- [ ] `POST /api/v1/agent/login` resumes or refreshes an enrolled employee session; `POST /api/v1/agent/logout` ends the active `agent_sessions` row and stops collection
+- [ ] Monitoring starts only after successful employee login, policy fetch, consent gate, and Workforce Presence lifecycle permits collection
+
+> **ADE task creation note:** Generate one implementation task named **"Implement login-based Windows agent enrollment"** from this section. Use [[modules/agent-gateway/overview|Agent Gateway]], [[modules/agent-gateway/agent-registration/overview|Agent Registration]], [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]], [[modules/agent-gateway/tray-app-ui|Tray App UI]], [[modules/agent-gateway/agent-installer|Agent Installer]], [[modules/auth/overview|Auth]], and [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] as the source docs. Do not create a tenant-key installer task for the default flow.
 - [ ] `DetectOfflineAgentsJob` Hangfire job — flag agents with no heartbeat for 5+ min
 - [ ] Policy merge logic: tenant toggles + employee overrides — see [[modules/configuration/monitoring-toggles/overview|configuration]]
 
@@ -107,7 +114,7 @@ app/(dashboard)/admin/
   - StatusBadge: green (online), red (offline > 5 min), yellow (degraded)
   - Agent detail: health log, policy view, registration info
   - Bulk actions: update policy, deregister
-- [ ] PermissionGate: `settings:manage`, `agent:read`, `agent:manage`
+- [ ] PermissionGate: `settings:admin`, `agent:view-health`, `agent:manage`
 
 ### Userflows
 

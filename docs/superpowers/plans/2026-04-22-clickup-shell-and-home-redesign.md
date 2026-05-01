@@ -24,9 +24,9 @@
 | `demo/src/components/ui/MetricCard.tsx` | Modify | Light-mode gradient text overrides |
 | `demo/src/modules/home/homeWidgets.ts` | **Create** | Widget registry — definitions, ranking, permission filter |
 | `demo/src/modules/home/widgets/PendingLeaveWidget.tsx` | **Create** | Tier-1: pending leave approvals (requires `leave:approve`) |
-| `demo/src/modules/home/widgets/ActiveExceptionsWidget.tsx` | **Create** | Tier-1: active workforce exceptions (requires `exceptions:read`) |
+| `demo/src/modules/home/widgets/ActiveExceptionsWidget.tsx` | **Create** | Tier-1: active workforce exceptions (requires `exceptions:view`) |
 | `demo/src/modules/home/widgets/MyLeaveWidget.tsx` | **Create** | Tier-1: own leave balances (requires `leave:read`) |
-| `demo/src/modules/home/widgets/WorkforceStatusWidget.tsx` | **Create** | Tier-2: team presence status (requires `workforce:read`) |
+| `demo/src/modules/home/widgets/WorkforceStatusWidget.tsx` | **Create** | Tier-2: team presence status (requires `workforce:view`) |
 | `demo/src/modules/home/widgets/HeadcountWidget.tsx` | **Create** | Tier-2: employee headcount metrics (requires `employees:read`) |
 | `demo/src/modules/home/widgets/UpcomingEventsWidget.tsx` | **Create** | Tier-2: next calendar events (requires `calendar` module) |
 | `demo/src/modules/home/HomePage.tsx` | Modify | Replace 3 hardcoded dashboards with aurora hero + widget grid |
@@ -701,7 +701,7 @@ export const WIDGET_REGISTRY: HomeWidgetDef[] = [
     id: 'active-exceptions',
     tier: 1,
     colSpan: 1,
-    requiredPermission: 'exceptions:read',
+    requiredPermission: 'exceptions:view',
   },
   {
     id: 'my-leave',
@@ -714,7 +714,7 @@ export const WIDGET_REGISTRY: HomeWidgetDef[] = [
     id: 'workforce-status',
     tier: 2,
     colSpan: 2,
-    requiredPermission: 'workforce:read',
+    requiredPermission: 'workforce:view',
   },
   {
     id: 'headcount',
@@ -1393,9 +1393,9 @@ Within each tier, widgets appear in the order defined in `homeWidgets.ts`.
 | Widget | Required | Notes |
 |---|---|---|
 | Pending Leave Approvals | `leave:approve` | Shows pending leave requests for the user to approve |
-| Active Exceptions | `exceptions:read` | Shows unresolved workforce exceptions |
+| Active Exceptions | `exceptions:view` | Shows unresolved workforce exceptions |
 | My Leave Balance | `leave` module | Suppressed when user also has `leave:approve` |
-| Workforce Status | `workforce:read` | Live presence counts (online, break, clocked-out) |
+| Workforce Status | `workforce:view` | Live presence counts (online, break, clocked-out) |
 | Headcount | `employees:read` | Total / active / on-leave counts |
 | Upcoming Events | `calendar` module | Next company, team, or review events |
 
@@ -1404,7 +1404,7 @@ Within each tier, widgets appear in the order defined in `homeWidgets.ts`.
 **Super Admin** (all modules):  
 Pending Leave → Active Exceptions → Workforce Status (full row) → Headcount → Upcoming Events
 
-**Manager** (`leave:approve`, `workforce:read`, `calendar`):  
+**Manager** (`leave:approve`, `workforce:view`, `calendar`):  
 Pending Leave → Active Exceptions → Workforce Status (full row) → Upcoming Events
 
 **Employee** (`leave` module, `calendar` module):  

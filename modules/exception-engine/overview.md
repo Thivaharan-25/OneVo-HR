@@ -195,23 +195,23 @@ When the engine runs checks.
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| `ExceptionAlertCreated` | `exception.alert` | Rule threshold breached | [[modules/notifications/overview\|Notifications]] (send alert via escalation chain), [[modules/productivity-analytics/overview\|Productivity Analytics]] |
-| `AlertEscalated` | `exception.escalated` | Unacknowledged alert escalated to next level | [[modules/notifications/overview\|Notifications]] (notify next in chain) |
-| `AlertAcknowledged` | `exception.acknowledged` | Manager acknowledges/dismisses alert | Audit trail |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview\|Notifications]] (send alert via escalation chain), [[modules/productivity-analytics/overview\|Productivity Analytics]] |
+| `AlertEscalated` | Unacknowledged alert escalated to next level | [[modules/notifications/overview\|Notifications]] (notify next in chain) |
+| `AlertAcknowledged` | Manager acknowledges/dismisses alert | Audit trail |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| `ActivitySnapshotReceived` | `activity.snapshot` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Evaluate active exception rules against latest snapshot |
-| `BreakExceeded` | `workforce.presence.break` | [[modules/workforce-presence/overview\|Workforce Presence]] | Fire break-exceeded alert if over allowed duration |
-| `AgentHeartbeatLost` | `agent.gateway.heartbeat_lost` | [[modules/agent-gateway/overview\|Agent Gateway]] | Fire heartbeat-gap alert for the affected employee |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| `ActivitySnapshotReceived` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Evaluate active exception rules against latest snapshot |
+| `BreakExceeded` | [[modules/workforce-presence/overview\|Workforce Presence]] | Fire break-exceeded alert if over allowed duration |
+| `AgentHeartbeatLost` | [[modules/agent-gateway/overview\|Agent Gateway]] | Fire heartbeat-gap alert for the affected employee |
 
 ---
 

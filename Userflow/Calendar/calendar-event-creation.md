@@ -75,7 +75,7 @@ The `audience` field controls who receives the event. Available options depend o
 - Only events where the user has `calendar:write` can be dragged
 
 ### External sync
-- Tenant admin connects Google Calendar or Outlook via tenant settings (`calendar:sync` permission)
+- Tenant admin connects Google Calendar or Outlook via tenant settings (`settings:integrations` permission)
 - Synced events appear read-only with a sync badge — `source_type = 'external_sync'`
 - No drag, no edit, no delete on synced events
 

@@ -165,12 +165,12 @@ Create actions: `UserPlus` Invite employee · `PlaneTakeoff` Submit leave reques
 ### Workforce
 | Label | Lucide Icon | Route | Permission |
 |:------|:------------|:------|:-----------|
-| Presence | `Radio` | `/workforce` | `workforce:read` |
+| Presence | `Radio` | `/workforce` | `workforce:view` |
 | Projects | `FolderKanban` | `/workforce/projects` | `projects:read` |
 | My Work | `CircleCheck` | `/workforce/my-work` | `tasks:read` |
-| Planner | `GanttChart` | `/workforce/planner` | `planning:read` |
-| Goals | `Target` | `/workforce/goals` | `goals:read` |
-| Docs | `FileText` | `/workforce/docs` | `docs:read` |
+| Planner | `GanttChart` | `/workforce/planner` | `sprints:read` |
+| Goals | `Target` | `/workforce/goals` | `okr:read` |
+| Docs | `FileText` | `/workforce/docs` | `documents:read` |
 | Timesheets | `Clock` | `/workforce/time` | `time:read` |
 | Analytics | `BarChart2` | `/workforce/analytics` | `analytics:read` |
 
@@ -191,21 +191,21 @@ Create actions: `Building2` New department · `Users2` New team · `Briefcase` N
 | Label | Lucide Icon | Route | Permission |
 |:------|:------------|:------|:-----------|
 | Calendar | `CalendarDays` | `/calendar` | `calendar:read` |
-| Schedules | `CalendarClock` | `/calendar/schedule` | `schedule:read` |
+| Schedules | `CalendarClock` | `/calendar/schedule` | `calendar:read` |
 | Attendance | `UserCheck2` | `/calendar/attendance` | `attendance:read` |
-| Overtime | `Timer` | `/calendar/overtime` | `overtime:read` |
+| Overtime | `Timer` | `/calendar/overtime` | `attendance:read` |
 
 Create actions: `CalendarPlus` New schedule · `Timer` Add overtime
 
 ### Admin
 | Label | Lucide Icon | Route | Permission |
 |:------|:------------|:------|:-----------|
-| People Access | `Users` | `/admin/users` | `admin:users` |
-| Permissions | `Lock` | `/admin/roles` | `admin:roles` |
-| Activity Trail | `ScrollText` | `/admin/audit` | `admin:audit` |
-| Agents | `Bot` | `/admin/agents` | `admin:agents` |
-| Devices | `Monitor` | `/admin/devices` | `admin:devices` |
-| Data & Privacy | `ShieldCheck` | `/admin/compliance` | `admin:compliance` |
+| People Access | `Users` | `/admin/users` | `users:manage` |
+| Permissions | `Lock` | `/admin/roles` | `roles:manage` |
+| Activity Trail | `ScrollText` | `/admin/audit` | `settings:system` |
+| Agents | `Bot` | `/admin/agents` | `agent:manage` |
+| Devices | `Monitor` | `/admin/devices` | `settings:device` |
+| Data & Privacy | `ShieldCheck` | `/admin/compliance` | `settings:system` |
 
 Create actions: `UserPlus` Add user · `Lock` New role · `Bot` Add agent
 

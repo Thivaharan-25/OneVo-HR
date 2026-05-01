@@ -96,7 +96,7 @@ Used for baseline comparison (planned vs actual timeline).
 | PATCH | `/api/v1/sprints/{id}/complete` | `sprints:manage` | Complete sprint |
 | GET | `/api/v1/sprints/{id}/burndown` | `sprints:read` | Burndown chart data |
 | GET | `/api/v1/projects/{id}/boards` | `tasks:read` | List boards |
-| POST | `/api/v1/projects/{id}/boards` | `projects:manage` | Create board |
+| POST | `/api/v1/projects/{id}/boards` | `projects:write` | Create board |
 | PATCH | `/api/v1/boards/{id}/tasks/{taskId}/move` | `tasks:write` | Move card |
 | GET | `/api/v1/workspaces/{wsId}/roadmaps` | `roadmaps:read` | List roadmaps |
 | POST | `/api/v1/workspaces/{wsId}/roadmaps` | `roadmaps:write` | Create roadmap |

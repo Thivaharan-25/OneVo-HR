@@ -1,77 +1,105 @@
 # Desktop Agent Deployment
 
 **Area:** Workforce Intelligence  
-**Trigger:** Admin initiates desktop agent install for employee (user action)
+**Trigger:** Admin deploys the Windows agent package, employee signs in through TrayApp  
 **Required Permission(s):** `agent:manage`  
-**Related Permissions:** `settings:admin` (download installer), `employees:read` (map agents to employees)
+**Related Permissions:** `settings:admin` (download package), `employees:read` (view linked agents)
 
 ---
 
 ## Preconditions
 
-- Monitoring configuration set → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
-- Windows machines available for employees
-- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+- Monitoring configuration set -> [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- Windows 10/11 machines available for employees
+- WorkPulse Agent MSIX package is signed and available
+- Required permissions configured -> [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+
+## Source of Truth
+
+Phase 1 Windows deployment uses a generic signed MSIX package. The installer does not embed a tenant key. Employees do not enter an API key, tenant key, tenant ID, or server URL.
+
+Tenant and employee identity are resolved after the user signs in through the TrayApp. The backend then enrolls the device, creates/updates `registered_agents`, creates an active `agent_sessions` row, and returns an internal device credential for the Service to store securely.
 
 ## Flow Steps
 
-### Step 1: Download Installer
-- **UI:** Workforce → Agent → "Download Installer" → .msi file downloaded with embedded tenant key
+### Step 1: Download MSIX Package
+- **UI:** Workforce -> Agent -> "Download Windows Agent" -> `.msixbundle` downloaded
 - **API:** `GET /api/v1/agent/installer`
+- **Backend:** Returns the signed generic WorkPulse Agent package and hash/signature metadata
 
 ### Step 2: Deploy to Machines
-- **UI:** IT deploys .msi via Group Policy, SCCM, or manual install on employee Windows machines
-- **Backend:** Agent installs as Windows Service + MAUI tray app
+- **UI:** IT deploys the `.msixbundle` via Intune, Group Policy, SCCM, or manual admin install
+- **Backend:** No tenant key is required during install
+- **Device:** Package installs Windows Service + MAUI TrayApp
 
-### Step 3: Agent Auto-Registration
-- **Backend:** On first run: agent sends registration request with machine ID + tenant key → server validates → agent registered
-- **API:** `POST /api/v1/agent/register` (agent-to-server)
-- **DB:** `agent_registrations` — agent_id, machine_id, employee_id (mapped)
+### Step 3: Employee Signs In
+- **UI:** TrayApp shows "Sign in"
+- **Device:** TrayApp opens system browser or secure embedded auth flow
+- **API:** `POST /api/v1/agent/enroll/start`
+- **Backend:** Creates short-lived enrollment challenge
 
-### Step 4: Map Agent to Employee
-- **UI:** Agent → Registrations → list of registered agents → map each to employee (auto-matched by logged-in Windows user if possible, manual otherwise)
-- **API:** `PUT /api/v1/agent/registrations/{id}/map`
+### Step 4: Device Enrollment
+- **Backend:** After successful auth, resolves tenant and employee from the login session
+- **API:** `POST /api/v1/agent/enroll/complete`
+- **DB:** `registered_agents` created/updated; previous active `agent_sessions` for the device ended; new active `agent_sessions` row created
+- **Device:** Stores internal device credential with DPAPI / Windows Credential Manager
 
 ### Step 5: Policy Distribution
-- **Backend:** Server sends monitoring policy to agent (what to track, intervals, screenshot settings) → agent starts collecting data
+- **API:** `GET /api/v1/agent/policy`
+- **Backend:** Sends effective monitoring policy from tenant toggles + role policies + employee overrides
+- **Device:** Shows "Monitoring active" only when policy, GDPR consent, and Workforce Presence lifecycle allow collection
 - Links: [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
 
 ### Step 6: Monitor Health
-- **UI:** Agent → Health Dashboard → see all agents: online/offline status, last heartbeat, version, data sync status
-- **API:** `GET /api/v1/agent/health`
-- **Real-time:** Agent heartbeats every 60 seconds → offline detection via SignalR
+- **UI:** Agent -> Health Dashboard -> see all agents: online/offline status, last heartbeat, version, data sync status
+- **API:** `POST /api/v1/agent/heartbeat`; `GET /api/v1/agents`
+- **Real-time:** Agent heartbeats every 60 seconds; offline detection updates the dashboard via SignalR
 
 ## Variations
 
-### Agent updates
-- New version deployed → agents auto-update on next check-in
+### IDE Extension Bootstrapper
+- IDE extension may prompt entitled users to set up the monitoring agent.
+- The extension only downloads/runs the signed installer after explicit user consent and backend entitlement check.
+- Enrollment still happens through the same TrayApp login-based flow. The IDE extension does not own registration, policy, health, or telemetry.
 
-### Agent unregistration
-- On employee offboarding → agent automatically unregistered → [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]]
+### Agent Updates
+- New version deployed -> agents auto-update on next check-in or assigned deployment ring.
+
+### Agent Unregistration
+- On employee offboarding -> agent session is ended and registration can be revoked -> [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]]
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| Registration key invalid | Agent rejected | "Invalid tenant key — regenerate installer" |
-| Agent goes offline | Dashboard shows offline | "Agent offline since [time] — check machine" |
-| Duplicate machine ID | Warning | "Agent already registered for this machine" |
+| Sign-in fails | Enrollment does not complete | "Sign in failed. Please try again." |
+| Device credential revoked | Agent stops syncing and returns to sign-in/enrollment | "Device access revoked. Sign in again or contact admin." |
+| Consent missing | Ingest rejected, collectors pause | "Monitoring paused - consent required." |
+| Policy blocks collection | Agent remains enrolled but does not collect | "Monitoring paused by policy." |
+| Agent goes offline | Dashboard shows offline | "Agent offline since [time] - check machine." |
+| Duplicate device ID | Existing registration is updated or admin warning shown | "Device already registered." |
 
 ## Events Triggered
 
-- `AgentRegistered` → [[backend/messaging/event-catalog|Event Catalog]]
-- `AgentOffline` → [[backend/messaging/event-catalog|Event Catalog]]
-- `PolicyDistributed` → [[backend/messaging/event-catalog|Event Catalog]]
+- `AgentRegistered` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `AgentSessionStarted` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `AgentOffline` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `PolicyDistributed` -> [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
 - [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
 - [[Userflow/Workforce-Intelligence/live-dashboard|Live Dashboard]]
 - [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]]
+- [[Userflow/IDE-Extension/agent-install-flow|IDE Agent Install]]
 
 ## Module References
 
 - [[modules/agent-gateway/agent-registration/overview|Agent Registration]]
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]]
+- [[modules/agent-gateway/tray-app-ui|Tray App UI]]
+- [[modules/agent-gateway/agent-installer|Agent Installer]]
 - [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
 - [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]]
+- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]]
 - [[modules/agent-gateway/overview|Agent Gateway]]

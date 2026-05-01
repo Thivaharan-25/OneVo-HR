@@ -5,7 +5,7 @@ The personal action center — everything waiting for YOUR decision, in one plac
 ## Preconditions
 
 - User is authenticated
-- User has `approvals:read` permission
+- User has `inbox:read` permission
 
 ## Flow Steps
 

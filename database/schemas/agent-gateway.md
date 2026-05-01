@@ -2,7 +2,7 @@
 
 **Module:** [[modules/agent-gateway/overview|Agent Gateway]]
 **Phase:** Phase 1
-**Tables:** 5
+**Tables:** 6
 
 ---
 
@@ -13,7 +13,7 @@
 | `id`           | `uuid`        | PK                                                                                                                                      |
 | `agent_id`     | `uuid`        | FK → registered_agents                                                                                                                  |
 | `tenant_id`    | `uuid`        | FK → tenants                                                                                                                            |
-| `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
+| `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `capture_remote_workplace`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
 | `requested_by` | `uuid`        | FK → users (manager/CEO who initiated)                                                                                                  |
 | `payload_json` | `jsonb`       | Command-specific parameters                                                                                                             |
 | `status`       | `varchar(20)` | `pending`, `delivered`, `completed`, `failed`, `expired`                                                                                |
@@ -41,6 +41,35 @@
 | `tamper_detected` | `boolean` | Service stopped/modified |
 
 **Foreign Keys:** `agent_id` → [[#`registered_agents`|registered_agents]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+
+---
+
+## `agent_work_location_evidence`
+
+Network and optional coarse location evidence captured only while monitoring is active.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `agent_id` | `uuid` | FK -> registered_agents |
+| `employee_id` | `uuid` | FK -> employees |
+| `presence_session_id` | `uuid` | FK -> presence_sessions, nullable until reconciliation |
+| `captured_at` | `timestamptz` | Agent capture time |
+| `received_at` | `timestamptz` | Server receive time |
+| `public_ip` | `inet` | Captured from request metadata |
+| `local_ip` | `inet` | Nullable |
+| `wifi_ssid` | `varchar(255)` | Nullable, display only |
+| `wifi_bssid_hash` | `varchar(100)` | Nullable, hashed access point identifier |
+| `gateway_mac_hash` | `varchar(100)` | Nullable, hashed gateway identifier |
+| `vpn_detected` | `boolean` | Default false |
+| `coarse_location_json` | `jsonb` | Nullable; only when policy and OS permission allow |
+| `match_status` | `varchar(20)` | `matched`, `mismatch`, `unknown`, `not_evaluated` |
+| `confidence` | `varchar(20)` | `high`, `medium`, `low`, `unknown` |
+| `matched_work_location_id` | `uuid` | Nullable FK -> work_locations |
+| `created_at` | `timestamptz` |  |
+
+**Indexes:** `(tenant_id, employee_id, captured_at)`, `(tenant_id, presence_session_id)`, `(tenant_id, match_status, captured_at)`
 
 ---
 
@@ -140,6 +169,7 @@ Idempotency table — prevents double-processing if RabbitMQ redelivers a messag
 
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
 - [[modules/agent-gateway/data-collection|Data Collection]] — employee-device binding flow
+- [[modules/agent-gateway/work-location-evidence|Work Location Evidence]]
 - [[database/schema-catalog|Schema Catalog]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[database/performance|Performance]]

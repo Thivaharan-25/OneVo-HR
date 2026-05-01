@@ -27,6 +27,7 @@
   | Meeting Detection | ON | 0 |
   | Idle Detection | ON | 5 custom thresholds |
   | Identity Verification | OFF | 0 |
+  | Work Location Verification | OFF | 0 |
 - Toggle each ON/OFF at tenant level
 
 ### Step 2b: Configure App Allowlist Mode
@@ -59,6 +60,7 @@
 ## Related Flows
 
 - [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]]
 - [[Userflow/Configuration/employee-override|Employee Override]]
 - [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] — configure which apps are allowed/blocked
 - [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]

@@ -28,7 +28,7 @@
 
 #### Screenshots
 - [ ] `screenshots` table — metadata only, files in blob storage via `IFileService`
-- [ ] Screenshot trigger types: `scheduled`, `random`, `manual`
+- [ ] Screenshot trigger types: `manual`, `on_demand` only. Do not build `scheduled` or `random` screenshot capture in Phase 1.
 - [ ] `PurgeExpiredScreenshotsJob` (daily 4 AM) — per tenant retention policy
 - [ ] Screenshot classified as RESTRICTED data
 
@@ -96,9 +96,9 @@ app/(dashboard)/settings/
   - Uncategorized apps list with quick-assign
 - [ ] Screenshot settings page (admin):
   - Enable/disable screenshots
-  - Frequency: interval (minutes) or random
+  - Trigger policy: manual/on-demand only; no interval or random screenshot scheduling
   - Retention period
-- [ ] PermissionGate: `monitoring:read`, `monitoring:manage`, `monitoring:screenshots`
+- [ ] PermissionGate: `monitoring:view-settings`, `monitoring:configure`, `workforce:view`
 
 ### Userflows
 

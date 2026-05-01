@@ -71,12 +71,12 @@ All endpoints follow `backend/api-conventions.md`. All protected endpoints requi
 |:---------|:-------|:-----|:-----------|:------|:--------|
 | `/api/v1/tenants/current/branding` | GET | None | None (public) | DEV4 | Landing page |
 | `/api/v1/auth/login` | POST | None | None | DEV2 (exists) | SignInModal |
-| `/api/v1/dashboard` | GET | JWT | `employees:read` OR `workforce:read` OR `leave:read` | DEV1 | Dashboard shell |
-| `/api/v1/dashboard/exceptions/active` | GET | JWT | `workforce:read` + `workforce_intelligence` module | DEV2 | Zone 1 |
-| `/api/v1/dashboard/kpis` | GET | JWT | `employees:read` OR `workforce:read` OR `leave:read` | DEV1 | Zone 2 |
+| `/api/v1/dashboard` | GET | JWT | `employees:read` OR `workforce:view` OR `leave:read` | DEV1 | Dashboard shell |
+| `/api/v1/dashboard/exceptions/active` | GET | JWT | `workforce:view` + `workforce_intelligence` module | DEV2 | Zone 1 |
+| `/api/v1/dashboard/kpis` | GET | JWT | `employees:read` OR `workforce:view` OR `leave:read` | DEV1 | Zone 2 |
 | `/api/v1/dashboard/pending-actions` | GET | JWT | Any `*:approve` OR self scope | DEV1 | Zone 3 |
-| `/api/v1/dashboard/workforce-live` | GET | JWT | `workforce:read` + `workforce_intelligence` module | DEV3 | Zone 4 |
-| `/api/v1/dashboard/trends` | GET | JWT | `workforce:read` OR `leave:read` | DEV1 | Zone 5 |
+| `/api/v1/dashboard/workforce-live` | GET | JWT | `workforce:view` + `workforce_intelligence` module | DEV3 | Zone 4 |
+| `/api/v1/dashboard/trends` | GET | JWT | `workforce:view` OR `leave:read` | DEV1 | Zone 5 |
 | `/api/v1/dashboard/workforce-events` | GET | JWT | `employees:read` OR `leave:read` | DEV3 | Zone 6 |
 | `/api/v1/users/me/dashboard-prefs` | GET | JWT | Self (any auth user) | DEV1 | Customization |
 | `/api/v1/users/me/dashboard-prefs` | PATCH | JWT | Self (any auth user) | DEV1 | Customization |
@@ -387,7 +387,7 @@ export function DashboardShell() {
 
 - [ ] **Step 3: ExceptionAlertStrip — Zone 1 (DEV2)**
 
-Condition: `enabled_zones.includes('exception-alert')` (server already checked `workforce:read` + WI module).
+Condition: `enabled_zones.includes('exception-alert')` (server already checked `workforce:view` + WI module).
 
 ```tsx
 // src/components/dashboard/zones/ExceptionAlertStrip.tsx
@@ -422,7 +422,7 @@ Backend response shape:
 
 ```csharp
 [HttpGet("dashboard")]
-[RequirePermission("employees:read", "workforce:read", "leave:read", matchAny: true)]
+[RequirePermission("employees:read", "workforce:view", "leave:read", matchAny: true)]
 public async Task<IResult> GetDashboard(
     [FromServices] DashboardService svc,
     ICurrentUser currentUser,
@@ -472,7 +472,7 @@ Zone 3 grid behaviour: if Zone 4 is absent, CSS class `mid-row--full` applies `g
 
 ```csharp
 [HttpGet("dashboard/kpis")]
-[RequirePermission("employees:read", "workforce:read", "leave:read", matchAny: true)]
+[RequirePermission("employees:read", "workforce:view", "leave:read", matchAny: true)]
 public async Task<IResult> GetKpis(ICurrentUser user, CancellationToken ct)
 {
     // IHierarchyScope auto-scopes queries to subordinates
@@ -528,7 +528,7 @@ NOT personal calendar meetings. Only org workforce events (new hires this week, 
 
 ```csharp
 [HttpGet("dashboard/workforce-live")]
-[RequirePermission("workforce:read")]
+[RequirePermission("workforce:view")]
 [RequireModule("workforce_intelligence")]
 public async Task<IResult> GetWorkforceLive(ICurrentUser user, CancellationToken ct)
 {
@@ -582,8 +582,8 @@ In `DashboardShell`, apply CSS class to mid-row div:
 ```
 
 Tab switcher: `Productivity · Attendance · Leave`. Tab visible only if permission allows:
-- Productivity tab: `workforce:read` + WI module
-- Attendance tab: `workforce:read`
+- Productivity tab: `workforce:view` + WI module
+- Attendance tab: `workforce:view`
 - Leave tab: `leave:read`
 
 Default view if WI module absent: headcount trend or leave distribution (HR-only fallback).
@@ -594,7 +594,7 @@ Chart: Recharts `<AreaChart>` with ONEVO theme wrapper. Violet gradient fill (20
 
 ```csharp
 [HttpGet("dashboard/trends")]
-[RequirePermission("workforce:read", "leave:read", matchAny: true)]
+[RequirePermission("workforce:view", "leave:read", matchAny: true)]
 public async Task<IResult> GetTrends(
     [FromQuery] string type,
     [FromQuery] int days,
@@ -658,10 +658,10 @@ Reordering is cross-zone (users can promote Zone 5 above Zone 2 if they choose).
 
 | Widget | Permission |
 |:-------|:-----------|
-| Top Performers | `workforce:read` + WI module |
+| Top Performers | `workforce:view` + WI module |
 | Dept Headcount Breakdown | `employees:read` |
 | Leave Calendar Preview | `leave:read` |
-| Recent Audit Log | `audit:read` |
+| Recent Audit Log | `settings:system` |
 | Grievance Summary | `grievance:read` |
 | Contract Renewals (30d) | `employees:read` |
 | My Team Quick Stats | `employees:read`, scope ≠ `self` |

@@ -73,12 +73,12 @@ See `topbar.md` for full legal entity switcher design.
 |---|---|---|---|---|
 | 1 | Home | No | `/` | Any authenticated user |
 | 2 | People | Yes | `/people/employees` | `employees:read` OR `leave:read` |
-| 3 | Workforce | Yes | `/workforce` | `workforce:read` |
+| 3 | Workforce | Yes | `/workforce` | `workforce:view` |
 | 4 | Org | Yes | `/org` | `org:read` |
 | 5 | Calendar | Yes | `/calendar` | `calendar:read` |
 | 6 | Chat | No | `/chat` | `chat:read` |
 | 7 | Inbox | No | `/inbox` | Any authenticated user |
-| 8 | Admin | Yes | `/admin/users` | `admin:read` |
+| 8 | Admin | Yes | `/admin/users` | `users:read` |
 | 9 | Settings | Yes | `/settings/general` | `settings:read` |
 
 ## Expansion Panel Items
@@ -94,12 +94,12 @@ See `topbar.md` for full legal entity switcher design.
 
 | Label | Route | Permission Key | WMS Module(s) | Notes |
 |---|---|---|---|---|
-| Presence | `/workforce` | `workforce:read` | workforce-presence, productivity-analytics, exception-engine | Default — live employee card grid |
+| Presence | `/workforce` | `workforce:view` | workforce-presence, productivity-analytics, exception-engine | Default — live employee card grid |
 | Projects | `/workforce/projects` | `projects:read` | project | All projects in entity scope |
 | My Work | `/workforce/my-work` | `tasks:read` | task | My assigned tasks across all projects |
-| Planner | `/workforce/planner` | `planning:read` | planning | Sprints, Boards, Roadmap, Releases |
-| Goals | `/workforce/goals` | `goals:read` | okr | Objectives, key results, check-ins |
-| Docs | `/workforce/docs` | `docs:read` | collab | Documents and Wiki |
+| Planner | `/workforce/planner` | `sprints:read` | planning | Sprints, Boards, Roadmap, Releases |
+| Goals | `/workforce/goals` | `okr:read` | okr | Objectives, key results, check-ins |
+| Docs | `/workforce/docs` | `documents:read` | collab | Documents and Wiki |
 | Timesheets | `/workforce/time` | `time:read` | time | Time logs, timesheets, reports |
 | Analytics | `/workforce/analytics` | `analytics:read` | productivity-analytics, resource | Productivity scores + capacity |
 
@@ -118,9 +118,9 @@ See `topbar.md` for full legal entity switcher design.
 | Label | Route | Permission Key | Notes |
 |---|---|---|---|
 | Calendar | `/calendar` | `calendar:read` | Unified: leave, holidays, review cycles |
-| Schedules | `/calendar/schedule` | `schedule:read` | Shift schedules (was "Shifts & Schedules") |
+| Schedules | `/calendar/schedule` | `calendar:read` | Shift schedules (was "Shifts & Schedules") |
 | Attendance | `/calendar/attendance` | `attendance:read` | Attendance corrections (was "Attendance Correction") |
-| Overtime | `/calendar/overtime` | `overtime:read` | Overtime requests and approvals |
+| Overtime | `/calendar/overtime` | `attendance:read` | Overtime requests and approvals |
 
 ### Chat (no panel)
 
@@ -136,12 +136,12 @@ Permission key: any authenticated user (content filtered by their permissions).
 
 | Label | Route | Permission Key | Was Named |
 |---|---|---|---|
-| People Access | `/admin/users` | `admin:users` | Users |
-| Permissions | `/admin/roles` | `admin:roles` | Roles |
-| Activity Trail | `/admin/audit` | `admin:audit` | Audit Logs |
-| Agents | `/admin/agents` | `admin:agents` | — |
-| Devices | `/admin/devices` | `admin:devices` | — |
-| Data & Privacy | `/admin/compliance` | `admin:compliance` | Compliance |
+| People Access | `/admin/users` | `users:manage` | Users |
+| Permissions | `/admin/roles` | `roles:manage` | Roles |
+| Activity Trail | `/admin/audit` | `settings:system` | Audit Logs |
+| Agents | `/admin/agents` | `agent:manage` | — |
+| Devices | `/admin/devices` | `settings:device` | — |
+| Data & Privacy | `/admin/compliance` | `settings:system` | Compliance |
 
 ### Settings
 
@@ -549,7 +549,7 @@ git commit -m "docs(frontend): add entity context header and WMS route guards to
 
 **Area:** Workforce Pillar  
 **Trigger:** User navigates to any Workforce panel item (Projects, My Work, Planner, Goals, Docs, Timesheets, Analytics)  
-**Required Permission:** `workforce:read` minimum; specific features gated by additional permission keys (see sidebar-nav.md)
+**Required Permission:** `workforce:view` minimum; specific features gated by additional permission keys (see sidebar-nav.md)
 
 ## Purpose
 
@@ -820,7 +820,7 @@ git commit -m "docs(userflow): task management flow — lifecycle, bugs, submiss
 
 **Area:** Workforce → Planner (`/workforce/planner`) and Workforce → Projects → Sprints / Roadmap  
 **Trigger:** User clicks "Planner" in the Workforce panel, or navigates to a project's sprint or roadmap sub-route  
-**Required Permission:** `planning:read` (view); `planning:write` (create/edit sprints and boards)
+**Required Permission:** `sprints:read` (view); `sprints:manage` (create/edit sprints and boards)
 
 ## Purpose
 
@@ -917,7 +917,7 @@ git commit -m "docs(userflow): planning flow — sprints, boards, roadmap, relea
 
 **Area:** Workforce → Goals (`/workforce/goals`)  
 **Trigger:** User clicks "Goals" in the Workforce panel  
-**Required Permission:** `goals:read` (view); `goals:write` (create/edit)
+**Required Permission:** `okr:read` (view); `okr:write` (create/edit)
 
 ## Purpose
 
@@ -1006,7 +1006,7 @@ git commit -m "docs(userflow): goals and OKR flow — objectives, key results, c
 
 **Area:** Workforce → Timesheets (`/workforce/time`)  
 **Trigger:** User clicks "Timesheets" in the Workforce panel, or logs time from within a task  
-**Required Permission:** `time:read` (view own); `time:read:team` (view team); `time:write` (log time)
+**Required Permission:** `time:read` (view own); `time:read` (view team); `time:write` (log time)
 
 ## Purpose
 
@@ -1055,7 +1055,7 @@ Time tracking captures how long employees spend on tasks. Time logs roll up into
 2. The correction adjusts the attendance record to match actual logged time
 
 ### Time Reports (`/workforce/time/reports`)
-1. User with `time:read:team` permission opens time reports
+1. User with `time:read` permission opens time reports
 2. Filters: date range, employee, project, task, billable / non-billable
 3. System generates `TIME_REPORT` — exportable as CSV or PDF
 
@@ -1182,7 +1182,7 @@ git commit -m "docs(userflow): resource management flow — capacity, skills, al
 
 **Area:** Workforce → Presence (`/workforce`)  
 **Trigger:** User clicks the Workforce pillar icon, or navigates to `/workforce`  
-**Required Permission:** `workforce:read`
+**Required Permission:** `workforce:view`
 
 ## Purpose
 
@@ -1227,7 +1227,7 @@ If the exception engine or desktop agent detects a problem with an employee (mis
 ## Flow Steps
 
 1. User opens Workforce pillar — default route is `/workforce`
-2. System loads all employees in the entity scope that the user has `workforce:read` access to
+2. System loads all employees in the entity scope that the user has `workforce:view` access to
 3. Cards render in sort order (flagged first, then online, then break, then offline)
 4. Live updates stream via SignalR — presence status and productivity scores update without page refresh
 5. User clicks any card → navigates to `/workforce/[employeeId]` (Employee Activity Detail)
@@ -1266,7 +1266,7 @@ git commit -m "docs(userflow): workforce presence card view — anatomy, sort or
 
 **Area:** Workforce → Presence → Employee (`/workforce/[employeeId]`)  
 **Trigger:** User clicks an employee card on the Presence screen  
-**Required Permission:** `workforce:read` (view); `activity:read:team` (view another employee's activity)
+**Required Permission:** `workforce:view` (view); `workforce:view` (view another employee's activity)
 
 ## Purpose
 
@@ -1549,7 +1549,7 @@ git commit -m "docs(userflow): add WMS capacity and overtime connection to shift
 Open `Userflow/README.md`. After the last existing section in the flow index, add:
 
 ```markdown
-## Work Management — (`workforce:read` + feature-specific permissions)
+## Work Management — (`workforce:view` + feature-specific permissions)
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|

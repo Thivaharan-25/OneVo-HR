@@ -129,7 +129,7 @@ Index: (tenant_id, employee_id, date) UNIQUE
 - [ ] Response format: `[{ skill_name, category, proficiency_level, source }]`
 - [ ] `source` field included — WMS uses it to distinguish `manager_validated` vs `self_declared`
 - [ ] WMS uses this for AI task assignment suggestion (match required skill to available team member)
-- [ ] Auth: Bridge API key required (`bridges:read` scope)
+- [ ] Auth: Bridge API key required (bridges:read scope)
 
 ---
 
@@ -246,7 +246,7 @@ bridge_api_keys
 - name (varchar 100) — human label e.g. "WorkManage Pro"
 - key_hash (varchar) — SHA-256 hash of the key (hex-encoded, constant-time verified via CryptographicOperations.FixedTimeEquals)
 - key_prefix (varchar 8) — first 8 chars for display
-- scopes (varchar[]) — e.g. ["bridges:read", "bridges:write"]
+- scopes (varchar[]) — e.g. [bridges:read, bridges:write]
 - last_used_at (timestamptz)
 - expires_at (timestamptz) — nullable
 - created_by_id (uuid) — FK → users

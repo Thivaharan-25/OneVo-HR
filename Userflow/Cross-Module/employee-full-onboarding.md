@@ -2,7 +2,7 @@
 
 **Area:** Cross-Module Scenario  
 **Trigger:** `Employee Created` event from Employee Management  
-**Required Permission(s):** `employees:write`, `payroll:write`, `leave:manage`, `attendance:manage`  
+**Required Permission(s):** `employees:write`, `payroll:write`, `leave:manage`, `attendance:write`  
 **Modules Involved:** Employee-Management, Auth-Access, Leave, Workforce-Presence, Payroll, Documents, Workforce-Intelligence
 
 ---

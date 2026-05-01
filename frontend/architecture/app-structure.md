@@ -14,7 +14,7 @@ All 22 backend modules + 9 WMS modules mapped to ~63 frontend pages. Single rout
 1. **Custom roles** — tenants create roles with custom names and assign granular permissions
 2. **Per-employee overrides** — individual employees can be granted/revoked specific module/feature access independent of their role
 
-**Never hardcode role names.** Always check permission keys (e.g., `leave:read`, `leave:approve`, `payroll:manage`).
+**Never hardcode role names.** Always check permission keys (e.g., `leave:read`, `leave:approve`, `payroll:write`).
 
 ```tsx
 // Permission check evaluates BOTH role permissions AND employee-level overrides

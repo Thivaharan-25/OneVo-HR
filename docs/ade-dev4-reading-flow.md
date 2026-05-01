@@ -276,7 +276,7 @@ Userflow/Configuration/tenant-settings.md              â† Manage tenant set
 3. `settings/general/page.tsx`: `SettingsForm.tsx` — timezone, date format, work hours, privacy mode
 4. `settings/integrations/page.tsx`: `IntegrationCard.tsx` list — add, test connections
 5. Colocated: `SettingsForm.tsx`, `IntegrationCard.tsx`
-6. `PermissionGate`: `monitoring:view-settings`, `monitoring:configure`, `settings:manage`
+6. `PermissionGate`: `monitoring:view-settings`, `monitoring:configure`, `settings:admin`
 
 **After Step 2:** Marks all checkboxes in `DEV4-configuration.md`. Commits.
 
@@ -358,7 +358,7 @@ Userflow/Workforce-Intelligence/identity-verification-review.md  â† Review 
    - Retention period for verification photos
    - Enable/disable per tenant
 4. Verification statistics widget: success rate %, total verifications today, failed count, trend chart
-5. `PermissionGate`: `verification:read`, `verification:configure`
+5. `PermissionGate`: `verification:view`, `verification:configure`
 6. Colocated: `VerificationLogTable.tsx`, `PendingRequestCard.tsx`
 
 **After Step 2:** Marks all checkboxes in `DEV4-identity-verification.md`. Commits.
@@ -451,7 +451,7 @@ Builds into `workforce/presence/` alongside DEV3's pages:
    - Device registration form (name, type, API key, location)
    - Device health alert for offline devices
 5. Employee enrollment management: list enrolled per device, enrollment flow with consent
-6. `PermissionGate`: `workforce:manage-biometric`, `workforce:correct-attendance`, `workforce:approve-overtime`
+6. `PermissionGate`: `settings:device:configure`, `attendance:write`, `attendance:approve`
 
 **After Step 2:** Marks all checkboxes in `DEV4-workforce-presence-biometric.md`. Commits.
 

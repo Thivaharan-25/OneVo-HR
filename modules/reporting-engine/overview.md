@@ -104,19 +104,19 @@ API endpoints:
 |:------|:---------------|:--------|
 | _(none)_ | — | — |
 
-## Integration Events (cross-module — RabbitMQ)
+## Cross-Module Events (cross-module — MediatR INotification)
 
 ### Publishes
 
-| Event | Routing Key | Published When | Consumers |
-|:------|:-----------|:---------------|:----------|
-| _(none)_ | — | — | — |
+| Event | Published When | Consumers |
+|:------|:---------------|:----------|
+| _(none)_ | — | — |
 
 ### Consumes
 
-| Event | Routing Key | Source Module | Action Taken |
-|:------|:-----------|:-------------|:-------------|
-| _(none — reads directly via query service interfaces)_ | — | — | — |
+| Event | Source Module | Action Taken |
+|:------|:-------------|:-------------|
+| _(none — reads directly via query service interfaces)_ | — | — |
 
 ---
 

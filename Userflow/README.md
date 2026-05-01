@@ -261,7 +261,7 @@ These flows track chain reactions across multiple modules — when one action tr
 | [[Userflow/Configuration/employee-override\|Employee Override]] | Override settings for specific employee | Documented | SHOULD |
 | [[Userflow/Configuration/retention-policy-setup\|Retention Policy Setup]] | Data retention configuration | Documented | SHOULD |
 
-### Work Management — `workforce:read` + feature-specific permissions
+### Work Management — `workforce:view` + feature-specific permissions
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|

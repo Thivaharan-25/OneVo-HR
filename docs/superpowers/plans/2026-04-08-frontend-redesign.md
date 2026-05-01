@@ -342,7 +342,7 @@ const pillars: Pillar[] = [
   {
     icon: Activity,
     label: 'Workforce',
-    permission: 'workforce:read',
+    permission: 'workforce:view',
     feature: 'workforceIntelligence',
     items: [
       { icon: Activity, label: 'Live Dashboard', href: '/workforce/live', permission: 'workforce:dashboard' },
@@ -375,7 +375,7 @@ const pillars: Pillar[] = [
     icon: Inbox,
     label: 'Inbox',
     href: '/inbox',
-    permission: 'approvals:read',
+    permission: 'inbox:read',
     badge: () => useUnresolvedInboxCount(),
   },
 
@@ -386,8 +386,8 @@ const pillars: Pillar[] = [
     permission: 'admin:access',
     items: [
       { icon: UserCog, label: 'Users & Roles', href: '/admin/users', permission: 'users:manage' },
-      { icon: ScrollText, label: 'Audit Log', href: '/admin/audit', permission: 'audit:read' },
-      { icon: Monitor, label: 'Agents', href: '/admin/agents', permission: 'agents:manage' },
+      { icon: ScrollText, label: 'Audit Log', href: '/admin/audit', permission: 'settings:system' },
+      { icon: Monitor, label: 'Agents', href: '/admin/agents', permission: 'agent:manage' },
       { icon: HardDrive, label: 'Devices', href: '/admin/devices', permission: 'devices:manage' },
       { icon: ShieldAlert, label: 'Compliance', href: '/admin/compliance', permission: 'compliance:manage' },
     ],
@@ -1509,7 +1509,7 @@ The personal action center — everything waiting for YOUR decision, in one plac
 ## Preconditions
 
 - User is authenticated
-- User has `approvals:read` permission
+- User has `inbox:read` permission
 
 ## Flow Steps
 

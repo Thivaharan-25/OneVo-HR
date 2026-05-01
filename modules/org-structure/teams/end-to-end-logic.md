@@ -12,7 +12,7 @@
 ```
 POST /api/v1/org/teams
   -> TeamController.Create(CreateTeamCommand)
-    -> [RequirePermission("org:write")]
+    -> [RequirePermission("org:manage")]
     -> TeamService.CreateAsync(command, ct)
       -> 1. Validate: name unique within department
       -> 2. Validate department_id exists
@@ -28,7 +28,7 @@ POST /api/v1/org/teams
 ```
 POST /api/v1/org/teams/{id}/members
   -> TeamController.AddMember(id, AddMemberCommand)
-    -> [RequirePermission("org:write")]
+    -> [RequirePermission("org:manage")]
     -> TeamService.AddMemberAsync(teamId, employeeId, ct)
       -> 1. Validate employee exists and is active
       -> 2. Check employee not already in team

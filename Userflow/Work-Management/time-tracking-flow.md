@@ -2,7 +2,7 @@
 
 **Area:** Workforce → Timesheets (`/workforce/time`)  
 **Trigger:** User clicks "Timesheets" in the Workforce panel, or logs time from within a task  
-**Required Permission:** `time:read` (view own); `time:read:team` (view team); `time:write` (log time)
+**Required Permission:** `time:read` (view own); `time:read` (view team); `time:write` (log time)
 
 ## Purpose
 
@@ -51,7 +51,7 @@ Time tracking captures how long employees spend on tasks. Time logs roll up into
 2. The correction adjusts the attendance record to match actual logged time
 
 ### Time Reports (`/workforce/time/reports`)
-1. User with `time:read:team` permission opens time reports
+1. User with `time:read` permission opens time reports
 2. Filters: date range, employee, project, task, billable / non-billable
 3. System generates `TIME_REPORT` — exportable as CSV or PDF
 

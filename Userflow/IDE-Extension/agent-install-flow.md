@@ -13,6 +13,12 @@ This flow covers installing the existing OneVo desktop monitoring agent from the
 
 The extension must never install the agent silently. Every install request is entitlement-checked server-side and requires explicit user consent.
 
+The IDE extension login and the TrayApp enrollment are separate security contexts:
+- IDE extension login creates the developer's OneVo editor session for WorkSync, chat, tasks, and tags.
+- TrayApp sign-in enrolls the Windows device for monitoring and issues the agent's internal device credential.
+
+In practice, the TrayApp should use the same browser/SSO session when possible, so the second step may feel like a quick confirmation instead of another password entry. The IDE extension JWT must not be reused as the agent device credential.
+
 ---
 
 ## Flow
@@ -65,7 +71,13 @@ GET /api/v1/ide/entitlements
         Desktop agent installer runs
                         |
                         v
-        Agent registers through Agent Gateway
+        TrayApp starts and asks user to Sign in
+                        |
+                        v
+        User completes TrayApp/browser SSO enrollment
+                        |
+                        v
+        Agent enrolls through Agent Gateway
                         |
                         v
         PUT /api/v1/ide/agent-install/{id}/installed
@@ -93,6 +105,7 @@ GET /api/v1/ide/entitlements
 |:--|:--|
 | IDE extension does not own the monitoring agent lifecycle | Agent Gateway remains system of record |
 | Agent install is explicit opt-in | VS Code prompt + OS installer prompt |
+| IDE login does not replace TrayApp enrollment | TrayApp obtains a separate device credential through Agent Gateway |
 | Entitlement is checked on every install request | Backend |
 | Binary integrity is verified before execution | Extension verifies SHA256 from signed backend response |
 | No duplicate agent database | Uses `agent_install_entitlements`, `agent_install_jobs`, and `registered_agents` |

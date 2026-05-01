@@ -2,7 +2,7 @@
 
 **Area:** Cross-Module Scenario  
 **Trigger:** `Employee Offboarding Initiated` event from Employee Management  
-**Required Permission(s):** `employees:write`, `payroll:write`, `leave:manage`, `attendance:manage`, `documents:manage`  
+**Required Permission(s):** `employees:write`, `payroll:write`, `leave:manage`, `attendance:write`, `documents:manage`  
 **Modules Involved:** Employee-Management, Auth-Access, Leave, Payroll, Documents, Workforce-Presence, Workforce-Intelligence
 
 ---

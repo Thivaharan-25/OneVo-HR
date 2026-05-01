@@ -66,7 +66,7 @@
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
 | `rule_name` | `varchar(100)` | Human-readable name |
-| `rule_type` | `varchar(30)` | `low_activity`, `excess_idle`, `unusual_pattern`, `excess_meeting`, `no_presence`, `break_exceeded`, `verification_failed`, `non_allowed_app`, `presence_without_activity`, `heartbeat_gap` |
+| `rule_type` | `varchar(30)` | `low_activity`, `excess_idle`, `unusual_pattern`, `excess_meeting`, `no_presence`, `break_exceeded`, `verification_failed`, `non_allowed_app`, `presence_without_activity`, `heartbeat_gap`, `work_location_mismatch` |
 | `threshold_json` | `jsonb` | Rule-specific thresholds (see below) |
 | `severity` | `varchar(20)` | `info`, `warning`, `critical` |
 | `is_active` | `boolean` |  |

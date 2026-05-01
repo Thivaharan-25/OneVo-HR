@@ -25,7 +25,7 @@
 - [ ] `task_links` table: id, source_task_id → tasks, target_task_id → tasks, link_type (blocks/is_blocked_by/relates_to/duplicates)
 - [ ] `custom_fields` table: id, project_id → projects, name, field_type (text/number/date/select/multiselect/user), options_json jsonb nullable, position int
 - [ ] `custom_field_values` table: id, task_id → tasks, field_id → custom_fields, value_text text nullable, value_number numeric nullable, value_date date nullable, value_json jsonb nullable
-- [ ] CRUD APIs with permission checks (`tasks:read`, `tasks:write`, `tasks:assign`)
+- [ ] CRUD APIs with permission checks (`tasks:read`, `tasks:write`, `tasks:write`)
 - [ ] `GET /api/v1/projects/{id}/tasks` — list tasks with filters (status, assignee, sprint, label)
 - [ ] `POST /api/v1/tasks/{id}/assign` — assign user
 - [ ] `PUT /api/v1/tasks/{id}/status` — change status (triggers domain event)

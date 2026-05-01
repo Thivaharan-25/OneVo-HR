@@ -53,21 +53,21 @@ export const router = createBrowserRouter([
       { path: '/people/leave/policies',element: <ProtectedRoute permission="leave:manage"><LeavePoliciesPage /></ProtectedRoute> },
 
       // Workforce
-      { path: '/workforce',              element: <ProtectedRoute permission="workforce:read"><WorkforcePage /></ProtectedRoute> },
-      { path: '/workforce/:employeeId',  element: <ProtectedRoute permission="workforce:read"><WorkforceEmployeePage /></ProtectedRoute> },
+      { path: '/workforce',              element: <ProtectedRoute permission="workforce:view"><WorkforcePage /></ProtectedRoute> },
+      { path: '/workforce/:employeeId',  element: <ProtectedRoute permission="workforce:view"><WorkforceEmployeePage /></ProtectedRoute> },
       { path: '/workforce/analytics',    element: <ProtectedRoute permission="analytics:read"><WorkforceAnalyticsPage /></ProtectedRoute> },
       { path: '/workforce/projects',     element: <ProtectedRoute permission="projects:read"><ProjectsPage /></ProtectedRoute> },
       { path: '/workforce/projects/new', element: <ProtectedRoute permission="projects:write"><ProjectNewPage /></ProtectedRoute> },
       { path: '/workforce/projects/:id',         element: <ProtectedRoute permission="projects:read"><ProjectDetailPage /></ProtectedRoute> },
       { path: '/workforce/projects/:id/board',   element: <ProtectedRoute permission="tasks:read"><ProjectBoardPage /></ProtectedRoute> },
-      { path: '/workforce/projects/:id/sprints', element: <ProtectedRoute permission="planning:read"><ProjectSprintsPage /></ProtectedRoute> },
-      { path: '/workforce/projects/:id/roadmap', element: <ProtectedRoute permission="planning:read"><ProjectRoadmapPage /></ProtectedRoute> },
+      { path: '/workforce/projects/:id/sprints', element: <ProtectedRoute permission="sprints:read"><ProjectSprintsPage /></ProtectedRoute> },
+      { path: '/workforce/projects/:id/roadmap', element: <ProtectedRoute permission="sprints:read"><ProjectRoadmapPage /></ProtectedRoute> },
       { path: '/workforce/my-work',  element: <ProtectedRoute permission="tasks:read"><MyWorkPage /></ProtectedRoute> },
-      { path: '/workforce/planner',  element: <ProtectedRoute permission="planning:read"><PlannerPage /></ProtectedRoute> },
-      { path: '/workforce/goals',    element: <ProtectedRoute permission="goals:read"><GoalsPage /></ProtectedRoute> },
-      { path: '/workforce/goals/:id',element: <ProtectedRoute permission="goals:read"><GoalDetailPage /></ProtectedRoute> },
-      { path: '/workforce/docs',     element: <ProtectedRoute permission="docs:read"><DocsPage /></ProtectedRoute> },
-      { path: '/workforce/docs/:id', element: <ProtectedRoute permission="docs:read"><DocDetailPage /></ProtectedRoute> },
+      { path: '/workforce/planner',  element: <ProtectedRoute permission="sprints:read"><PlannerPage /></ProtectedRoute> },
+      { path: '/workforce/goals',    element: <ProtectedRoute permission="okr:read"><GoalsPage /></ProtectedRoute> },
+      { path: '/workforce/goals/:id',element: <ProtectedRoute permission="okr:read"><GoalDetailPage /></ProtectedRoute> },
+      { path: '/workforce/docs',     element: <ProtectedRoute permission="documents:read"><DocsPage /></ProtectedRoute> },
+      { path: '/workforce/docs/:id', element: <ProtectedRoute permission="documents:read"><DocDetailPage /></ProtectedRoute> },
       { path: '/workforce/time',         element: <ProtectedRoute permission="time:read"><TimePage /></ProtectedRoute> },
       { path: '/workforce/time/reports', element: <ProtectedRoute permission="time:read"><TimeReportsPage /></ProtectedRoute> },
       { path: '/chat', element: <ProtectedRoute permission="chat:read"><ChatPage /></ProtectedRoute> },
@@ -83,22 +83,22 @@ export const router = createBrowserRouter([
 
       // Calendar
       { path: '/calendar',            element: <ProtectedRoute permission="calendar:read"><CalendarPage /></ProtectedRoute> },
-      { path: '/calendar/schedule',   element: <ProtectedRoute permission="schedule:read"><SchedulePage /></ProtectedRoute> },
+      { path: '/calendar/schedule',   element: <ProtectedRoute permission="calendar:read"><SchedulePage /></ProtectedRoute> },
       { path: '/calendar/attendance', element: <ProtectedRoute permission="attendance:read"><AttendancePage /></ProtectedRoute> },
-      { path: '/calendar/overtime',   element: <ProtectedRoute permission="overtime:read"><OvertimePage /></ProtectedRoute> },
+      { path: '/calendar/overtime',   element: <ProtectedRoute permission="attendance:read"><OvertimePage /></ProtectedRoute> },
 
       // Notifications
       { path: '/notifications',             element: <NotificationsPage /> },
       { path: '/notifications/preferences', element: <NotificationPreferencesPage /> },
 
       // Admin
-      { path: '/admin/users',      element: <ProtectedRoute permission="admin:users"><UsersPage /></ProtectedRoute> },
-      { path: '/admin/roles',      element: <ProtectedRoute permission="admin:roles"><RolesPage /></ProtectedRoute> },
-      { path: '/admin/audit',      element: <ProtectedRoute permission="admin:audit"><AuditPage /></ProtectedRoute> },
-      { path: '/admin/agents',     element: <ProtectedRoute permission="admin:agents"><AgentsPage /></ProtectedRoute> },
-      { path: '/admin/agents/:id', element: <ProtectedRoute permission="admin:agents"><AgentDetailPage /></ProtectedRoute> },
-      { path: '/admin/devices',    element: <ProtectedRoute permission="admin:devices"><DevicesPage /></ProtectedRoute> },
-      { path: '/admin/compliance', element: <ProtectedRoute permission="admin:compliance"><CompliancePage /></ProtectedRoute> },
+      { path: '/admin/users',      element: <ProtectedRoute permission="users:manage"><UsersPage /></ProtectedRoute> },
+      { path: '/admin/roles',      element: <ProtectedRoute permission="roles:manage"><RolesPage /></ProtectedRoute> },
+      { path: '/admin/audit',      element: <ProtectedRoute permission="settings:system"><AuditPage /></ProtectedRoute> },
+      { path: '/admin/agents',     element: <ProtectedRoute permission="agent:manage"><AgentsPage /></ProtectedRoute> },
+      { path: '/admin/agents/:id', element: <ProtectedRoute permission="agent:manage"><AgentDetailPage /></ProtectedRoute> },
+      { path: '/admin/devices',    element: <ProtectedRoute permission="settings:device"><DevicesPage /></ProtectedRoute> },
+      { path: '/admin/compliance', element: <ProtectedRoute permission="settings:system"><CompliancePage /></ProtectedRoute> },
 
       // Settings
       { path: '/settings/general',       element: <ProtectedRoute permission="settings:read"><GeneralPage /></ProtectedRoute> },
@@ -162,7 +162,7 @@ Fine-grained UI hiding within pages — does NOT replace route guards:
 
 // Render different content based on permission
 <PermissionGate
-  permission="payroll:view-salary"
+  permission="payroll:read"
   fallback={<RestrictedField label="Salary" />}
 >
   <SalaryDisplay amount={employee.salary} />

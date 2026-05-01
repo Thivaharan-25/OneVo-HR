@@ -2,7 +2,7 @@
 
 **Area:** Cross-Module Scenario  
 **Trigger:** HR Admin or Manager initiates department/team/location transfer (user action)  
-**Required Permission(s):** `employees:write`, `org:manage`, `attendance:manage`, `leave:manage`  
+**Required Permission(s):** `employees:write`, `org:manage`, `attendance:write`, `leave:manage`  
 **Modules Involved:** Employee-Management, Org-Structure, Workforce-Presence, Leave, Payroll, Auth-Access, Notifications
 
 ---

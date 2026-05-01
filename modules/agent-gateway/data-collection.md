@@ -148,6 +148,35 @@ if (meetingProcess != null)
 - Session splits when idle exceeds threshold
 - Session ends on logout/shutdown
 
+### 5b. Work Location Evidence Collector (`WorkLocationEvidenceCollector.cs`)
+
+**What:** Captures network evidence used to verify that a clocked-in employee is working from an approved office or approved remote workplace.
+
+**How:** Reads public IP from the backend request context, and local network signals from the agent:
+- local IP
+- Wi-Fi SSID
+- Wi-Fi BSSID / access point MAC
+- gateway MAC
+- VPN detected flag
+- coarse OS location only when policy and OS permission allow it
+
+**Output:**
+```json
+{
+  "presence_session_id": "uuid",
+  "public_ip": "203.0.113.10",
+  "local_ip": "192.168.1.42",
+  "wifi_ssid": "OneVo-Office",
+  "wifi_bssid_hash": "sha256:...",
+  "gateway_mac_hash": "sha256:...",
+  "vpn_detected": false
+}
+```
+
+**Frequency:** Sent with heartbeat while monitoring is active. Never collected before clock-in, after clock-out, or during breaks.
+
+**Privacy:** This proves network/workplace compliance, not precise physical location. See [[modules/agent-gateway/work-location-evidence|Work Location Evidence]].
+
 ### 6. Document Tracker (`DocumentTracker.cs`)
 
 **What:** Tracks time spent in document editing applications by monitoring the foreground process name. Covers non-developer roles (HR, Finance, Operations, Sales, Management).

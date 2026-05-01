@@ -25,7 +25,7 @@ POST /api/v1/workspaces/{wsId}/projects
 
 ```
 PATCH /api/v1/projects/{id}/archive
-  → [RequirePermission("projects:manage") + must be Owner or Workspace Admin]
+  → [RequirePermission("projects:write") + must be Owner or Workspace Admin]
   → ArchiveProjectHandler
     → 1. Verify project status != "archived"
     → 2. Check active sprint: if sprint status = "active" → return 422
@@ -40,7 +40,7 @@ PATCH /api/v1/projects/{id}/archive
 
 ```
 POST /api/v1/projects/{id}/members
-  → [RequirePermission("projects:manage")]
+  → [RequirePermission("projects:write")]
   → AddProjectMemberHandler
     → 1. Verify user is a workspace member (must join workspace first)
     → 2. Verify user not already a project member

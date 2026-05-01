@@ -52,7 +52,7 @@ public async Task<IResult> GetEmployees([AsParameters] PagedRequest request, Can
 if (currentUser.RoleName == "HR Manager") { ... }
 
 // RIGHT
-if (currentUser.HasPermission("employees:update")) { ... }
+if (currentUser.HasPermission("employees:write")) { ... }
 ```
 
 ### Request/Response Format
