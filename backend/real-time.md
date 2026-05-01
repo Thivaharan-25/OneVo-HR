@@ -9,7 +9,7 @@ import { getAccessToken } from '@/lib/auth';
 
 export function createSignalRConnection() {
   return new HubConnectionBuilder()
-    .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/hubs/notifications`, {
+    .withUrl(`${import.meta.env.VITE_API_URL}/hubs/notifications`, {
       accessTokenFactory: () => getAccessToken() ?? '',
     })
     .withAutomaticReconnect([0, 1000, 2000, 5000, 10000, 30000]) // Backoff

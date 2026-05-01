@@ -12,6 +12,15 @@
 | Open redirect | Low | Whitelist redirect targets |
 | Dependency supply chain | Medium | Lock files, audit, Snyk/Dependabot |
 
+## Security Layer (`src/lib/security/`)
+
+| File | Responsibility |
+|------|---------------|
+| `token-manager.ts` | Stores access token in memory only (never localStorage). Exposes `getToken()`, `setToken()`, `clearToken()`, `isExpiringSoon()`. |
+| `idle-timeout.ts` | Listens to `mousemove`/`keydown`. Clears token and redirects to `/login` after configurable inactivity window. |
+| `sanitizer.ts` | DOMPurify wrapper. All user-generated HTML (doc content, comments, chat) must pass through `sanitize(html)` before rendering. |
+| `permission-guard.tsx` | `<ProtectedRoute permission="key">` — checks `hasPermission()` and redirects to `/403` if denied. Wraps individual routes in `router.tsx`. |
+
 ## Content Security Policy (CSP)
 
 Security headers are set in two places: `vite.config.ts` for local dev, and the web server / CDN config (nginx/Azure CDN) for production.
@@ -114,6 +123,10 @@ async fetch<T>(path: string, options?: RequestInit): Promise<T> {
   // ...
 }
 ```
+
+### Correlation Tracking
+
+Every outbound request gets a unique `X-Correlation-Id` header (via `correlation.interceptor.ts`) to enable end-to-end request tracing across backend services.
 
 ## Sensitive Data Handling
 

@@ -269,7 +269,7 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `attendance:read-own` | Universal |
 | `audit:read` | Covered by `settings:system` |
 | `branding:manage` | Renamed to `settings:branding` |
-| `bridges:read` / `bridges:write` | Bridge API key scopes, not user RBAC permissions |
+| `worksync:*` module permissions | Internal WorkSync module permissions; no bridge API scopes are active |
 | `calendar:sync` | Covered by `settings:integrations` |
 | `compliance:manage` | Not defined |
 | `departments:read` | Covered by `org:read` |

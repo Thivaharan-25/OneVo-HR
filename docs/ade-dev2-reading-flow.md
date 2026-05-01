@@ -421,20 +421,20 @@ Userflow/Notifications/notification-view.md              â† View notificati
 
 ---
 
-## Phase 7: WMS Bridge (Dev 2 Owned)
+## Phase 7: WorkSync People Access (No Bridge Endpoint)
 
-After all 4 tasks complete, Dev 2 also owns this Phase 1 bridge:
+After all 4 tasks complete, Dev 2 owns this internal WorkSync people-access projection. No bridge endpoint is built.
 
-### Bridge 1: People Sync (after Task 2 — Employee Lifecycle is done)
+### WorkSync People Access Projection (after Task 2 - Employee Lifecycle is done)
 
+```text
+current-focus/WMS-bridge-integration.md   archived/deprecated reference only; do not implement
+docs/wms-integration-analysis.md          archived historical analysis only
+backend/bridge-api-contracts.md           archived/deprecated reference only; do not implement
+backend/external-integrations.md          active first-party integration conventions
 ```
-current-focus/WMS-bridge-integration.md       â† Bridge spec + all bridge schemas
-docs/wms-integration-analysis.md              â† Context for why bridges exist
-backend/bridge-api-contracts.md               â† Request/response schemas
-backend/external-integrations.md              â† Bridge endpoint registry
-```
 
-Status: deprecated. WorkSync is internal to ONEVO now, so bridge endpoints and bridge-key storage are not built.`r`n`r`n---`r`n
+Status: deprecated. WorkSync is internal to ONEVO now, so bridge endpoints and bridge-key storage are not built.
 ## Phase 8: Orchestrator Final Report
 
 After all tasks complete (or are blocked), the orchestrator outputs:
@@ -442,7 +442,7 @@ After all tasks complete (or are blocked), the orchestrator outputs:
 ```
 Session complete.
   ✓ Completed: Task 1 (Auth & Security), Task 2 (Employee Lifecycle)
-  ✓ WMS Bridge: Bridge 1 (People Sync)
+  ✓ WorkSync people access: internal employee projection and module entitlement checks
   ✗ Blocked: Task 3 (Exception Engine) — needs IActivityMonitoringService from DEV3, IWorkforcePresenceService from DEV3
   ✗ Blocked: Task 4 (Notifications) — needs DEV4 Shared Platform notification scaffold
 
@@ -528,8 +528,8 @@ backend/notification-system.md
 Userflow/Notifications/notification-preference-setup.md
 Userflow/Notifications/notification-view.md
 
-## WMS BRIDGES (Dev 2)
-current-focus/WMS-bridge-integration.md
+## WORKSYNC INTERNAL INTEGRATION (Dev 2)
+current-focus/WMS-bridge-integration.md — archived/deprecated reference only; do not implement bridge endpoints
 docs/wms-integration-analysis.md
 backend/bridge-api-contracts.md
 backend/external-integrations.md

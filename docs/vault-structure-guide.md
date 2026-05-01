@@ -212,7 +212,7 @@ backend/
 ├── notification-system.md     â† How notifications work end-to-end
 ├── real-time.md               â† SignalR hub architecture
 ├── search-architecture.md     â† PostgreSQL FTS setup
-├── external-integrations.md   â† WorkManage Pro bridges
+├── external-integrations.md   ← External first-party integration conventions
 └── messaging/
     ├── README.md              â† MediatR domain event patterns
     ├── event-catalog.md       â† All domain events + publishers + consumers

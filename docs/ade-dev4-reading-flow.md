@@ -109,8 +109,8 @@ ADE-START-HERE.md
 - Screen recording is Phase 2 — do NOT build
 - App blocking is Phase 2 — do NOT build
 - `IConfigurationService` is a key public interface consumed by Activity Monitoring, Exception Engine, Agent Policy merge
-- Tenant Provisioning WMS bridge (Bridge 4) is Phase 1 — owned by Dev 4
-- Productivity Metrics bridge and Skills bridge are Phase 2 — do NOT build
+- WorkSync tenant/workspace provisioning is Phase 1 — owned by Dev 4; no bridge endpoint is built
+- Productivity metrics and skills integration are internal WorkSync/HR module flows — do NOT build bridge APIs
 
 ---
 
@@ -411,7 +411,7 @@ Biometric Integration:
 2. `biometric_enrollments` — employee fingerprint enrollment with consent tracking
 3. `biometric_events` — raw clock-in/out events from terminals
 4. `biometric_audit_logs` — tamper detection, device health records
-5. `POST /api/v1/biometric/webhook` — HMAC-SHA256 signature verification on every request
+5. `POST /api/v1/workforce/biometric/webhook` — HMAC-SHA256 signature verification on every request
 6. Biometric event flow: webhook → `biometric_events` → `attendance_records` → `presence_sessions` (via reconciliation job from DEV3)
 
 Attendance Operations:
@@ -457,24 +457,23 @@ Builds into `workforce/presence/` alongside DEV3's pages:
 
 ---
 
-## Phase 7: WMS Bridge (Dev 4 Owned)
+## Phase 7: WorkSync Tenant Provisioning (No Bridge Endpoint)
 
 After all 4 tasks complete, Dev 4 also owns this Phase 1 bridge:
 
-### Bridge 4: Tenant Provisioning (after Task 1 — Shared Platform is done)
+### WorkSync Tenant Provisioning (after Task 1 - Shared Platform is done)
 
-```
-current-focus/WMS-bridge-integration.md       â† Bridge spec + all bridge schemas
-docs/wms-integration-analysis.md              â† Context for why bridges exist
-backend/bridge-api-contracts.md               â† Request/response schemas
-backend/external-integrations.md              â† Bridge endpoint registry
+```text
+current-focus/WMS-bridge-integration.md   archived/deprecated reference only; do not implement
+docs/wms-integration-analysis.md          archived historical analysis only
+backend/bridge-api-contracts.md           archived/deprecated reference only; do not implement
+backend/external-integrations.md          active first-party integration conventions
 ```
 
 Builds:
-- `POST /api/v1/bridges/tenants/provision` — provision a new ONEVO tenant from WMS
-  (WMS sends tenant details → creates tenant + seeds defaults + returns tenant_id)
-- `POST /api/v1/bridges/tenants/{tenantId}/roles/map` — map WMS roles to ONEVO roles
-- Bridge authenticated via HMAC-SHA256 bridge API key (NOT bcrypt — see SEC-01 fix)
+- Internal WorkSync tenant/workspace provisioning from ONEVO tenant setup
+- Internal workspace role mapping through shared RBAC/module entitlements
+- No /api/v1/bridges/* routes, bridge API keys, or external WMS tenant links
 
 ---
 
@@ -486,7 +485,7 @@ Session complete.
   ✓ Completed: Task 1 (Shared Platform + Agent Gateway), Task 2 (Configuration)
   ✗ Blocked: Task 3 (Identity Verification) — biometric_devices table missing (needs Task 4)
   ✓ Completed: Task 4 (Workforce Presence Biometric)
-  ✓ WMS Bridge: Bridge 4 (Tenant Provisioning)
+  ✓ WorkSync tenant/workspace provisioning
 
   Task 3 is now unblocked (Task 4 just built biometric_devices).
   Re-run Dev 4 ADE session to complete Identity Verification.
@@ -568,8 +567,8 @@ Userflow/Workforce-Presence/overtime-management.md
 Userflow/Workforce-Presence/break-tracking.md
 frontend/design-system/foundations/color-tokens.md  â† device status colors
 
-## WMS BRIDGES (Dev 4)
-current-focus/WMS-bridge-integration.md
+## WORKSYNC INTERNAL INTEGRATION (Dev 4)
+current-focus/WMS-bridge-integration.md — archived/deprecated reference only; do not implement bridge endpoints
 docs/wms-integration-analysis.md
 backend/bridge-api-contracts.md
 backend/external-integrations.md

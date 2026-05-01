@@ -10,7 +10,7 @@
 ### Flow
 
 ```
-POST /api/v1/biometric/devices
+POST /api/v1/workforce/devices
   -> BiometricDeviceController.Register(RegisterDeviceCommand)
     -> [RequirePermission("verification:configure")]
     -> BiometricDeviceService.RegisterAsync(command, ct)
@@ -27,7 +27,7 @@ POST /api/v1/biometric/devices
 ### Flow
 
 ```
-POST /api/v1/biometric/webhook
+POST /api/v1/workforce/biometric/webhook
   -> BiometricWebhookController.ReceiveEvent(payload, signature)
     -> Auth: HMAC-SHA256 signature verification (not JWT)
     -> BiometricEventService.ProcessEventAsync(payload, ct)

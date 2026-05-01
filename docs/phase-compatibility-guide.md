@@ -163,7 +163,7 @@ Phase 2 inserts new templates into `notification_templates` for its events. Exis
 ## Skills Phase 1 → WMS Skill Gap Bridge (Phase 2)
 
 **Phase 1 table:** `employee_skills` (with `source` column added)
-**WMS bridge:** `POST /api/v1/bridges/skills/{employeeId}/gap-report`
+**WorkSync skills signal:** internal WorkSync-to-HR application service; no bridge endpoint
 
 When WMS observes a skill gap:
 1. Bridge creates/updates `employee_skills` row with `source = 'wms_observed'`, `status = 'pending'`
@@ -174,13 +174,13 @@ When WMS observes a skill gap:
 
 ---
 
-## WMS Bridges → Discrepancy Engine
+## WorkSync Internal Data → Discrepancy Engine
 
 **Phase 1 table:** `wms_daily_time_logs` (new, in Activity Monitoring schema)
 **Consumer:** Discrepancy Engine (runs nightly)
 
-If no WMS integration → `wms_daily_time_logs` is empty → Discrepancy Engine sets `wms_logged_minutes = 0` and only uses calendar cross-reference. Already handled by business rule:
-> "WMS bridge is optional. If the tenant has no WMS integration, `wms_logged_minutes = 0` and only the calendar cross-reference is used."
+If WorkSync is not enabled for the tenant, `wms_daily_time_logs` is empty. Discrepancy Engine sets `wms_logged_minutes = 0` and only uses calendar cross-reference. Already handled by business rule:
+> "WorkSync is optional. If the tenant has no WorkSync entitlement, `wms_logged_minutes = 0` and only the calendar cross-reference is used."
 
 **Verdict: ✓ Safe.** Optional dependency, gracefully handled.
 

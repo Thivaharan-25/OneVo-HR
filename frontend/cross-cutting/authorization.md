@@ -140,6 +140,22 @@ Sensitive fields masked or hidden:
 </PermissionGate>
 ```
 
+## Route Guard (`src/lib/security/permission-guard.tsx`)
+
+`<ProtectedRoute>` wraps any route that requires auth or a specific permission:
+
+```tsx
+// Auth-only (no permission key required)
+<ProtectedRoute><DashboardLayout /></ProtectedRoute>
+
+// Permission-gated
+<ProtectedRoute permission="employees:read"><EmployeesPage /></ProtectedRoute>
+```
+
+Behavior:
+- Not authenticated → redirect to `/login`
+- Authenticated but missing permission → redirect to `/403`
+
 ## PermissionGate Component
 
 ```tsx
@@ -183,6 +199,17 @@ export function useIsModuleGranted(module: string): boolean {
   return useAuthStore((state) => state.isModuleGranted(module));
 }
 ```
+
+## usePermissions Hook
+
+Provided by `PermissionProvider` in `App.tsx`. Evaluates **both** role permissions and per-employee overrides in a single call:
+
+```tsx
+const { hasPermission } = usePermissions();
+const canApprove = hasPermission('leave:approve');
+```
+
+Never read raw role names from the auth store for permission checks.
 
 ## Data Scoping (Hierarchy)
 

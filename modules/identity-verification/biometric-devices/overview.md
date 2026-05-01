@@ -27,9 +27,9 @@ Tamper detection and device health: `event_type` (`heartbeat`, `tamper_detected`
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/biometric/devices` | `verification:view` | List devices |
-| POST | `/api/v1/biometric/devices` | `verification:configure` | Register device |
-| PUT | `/api/v1/biometric/devices/{id}` | `verification:configure` | Update device |
+| GET | `/api/v1/workforce/devices` | `verification:view` | List devices |
+| POST | `/api/v1/workforce/devices` | `verification:configure` | Register device |
+| PUT | `/api/v1/workforce/devices/{id}` | `verification:configure` | Update device |
 
 ## Hangfire Jobs
 

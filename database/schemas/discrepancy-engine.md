@@ -48,7 +48,7 @@ Daily discrepancy detection results — comparing HR active time (from agent) vs
 
 ## `wms_daily_time_logs`
 
-WMS-submitted task time per employee per day. Populated by the Work Activity bridge (`POST /api/v1/bridges/work-activity/time-logs`). Consumed by `DiscrepancyEngineJob` as the `wms_logged_minutes` input stream. Upserted — re-submission for same employee + date overwrites.
+WMS-submitted task time per employee per day. Populated from internal WorkSync `time_logs` projections. Consumed by `DiscrepancyEngineJob` as the `wms_logged_minutes` input stream. Upserted — re-submission for same employee + date overwrites.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|

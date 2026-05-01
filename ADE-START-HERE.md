@@ -28,7 +28,7 @@ Plus an **IDE Extension** — a full chat sidebar and tag-based automation surfa
 |:------|:-----------|
 | **Backend** | .NET 9, C# 13, Minimal APIs |
 | **Database** | PostgreSQL 16 + EF Core 9 — single `ApplicationDbContext`, ~288 tables |
-| **Frontend** | Next.js 15, TypeScript, shadcn/ui, TanStack Query |
+| **Frontend** | Vite + React 19, TypeScript, React Router v7, shadcn/ui, TanStack Query |
 | **Real-time** | SignalR — agent↔server bidirectional; server→browser for WorkSync live updates and IDE extension |
 | **Background Jobs** | Hangfire |
 | **Messaging** | MediatR (in-process domain events) |

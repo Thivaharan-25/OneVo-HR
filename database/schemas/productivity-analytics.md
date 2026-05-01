@@ -98,7 +98,7 @@
 
 ## `wms_productivity_snapshots`
 
-WMS-submitted task productivity metrics per employee per period. Populated via the Productivity Metrics bridge (`POST /api/v1/bridges/productivity-metrics/snapshots`). This is the Phase 1 landing table for WMS performance data — allows the bridge to receive data immediately without waiting for the Phase 2 Performance module. Phase 2 Performance module reads from this table alongside agent-based scores.
+WorkSync-derived task productivity metrics per employee per period. Populated internally from WorkSync task, sprint, time, and delivery records when WorkSync is enabled. Phase 2 Performance can read from this table alongside agent-based scores.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|

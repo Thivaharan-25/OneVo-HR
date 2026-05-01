@@ -1,246 +1,187 @@
-# Current Focus: ONEVO
+# Current Focus: ONEVO Build Packs
 
-**Current Phase:** Phase 1
-**Team Size:** 8 developers
-**Development Approach:** Agentic Development Environment (AI-assisted)
-
----
-
-## How to Use This Folder
-
-Each file below is a **self-contained task** for one developer. It includes:
-1. **Step 1: Backend** — acceptance criteria, module doc links
-2. **Step 2: Frontend** — pages to build, userflow links, API endpoints to consume
-
-The dev builds backend first, then frontend for the same module. Each task file links to the relevant Userflows so the AI knows the full user journey.
-
-> **Architecture note:** WorkSync (Pillar 3) is built internally — same backend, same database. There are no bridge APIs. `WMS-bridge-integration.md` is **DEPRECATED**. Do not implement it.
+**Team size:** 8 developers
+**Build model:** 4 backend developers + 4 frontend developers
+**ADE rule:** when a developer asks to continue their work, open that developer's canonical file and start from the first unchecked item.
 
 ---
 
-## Task Assignment — Dev 1 (HR Foundation + Analytics)
+## Canonical Developer Files
 
-| # | Task | Module | Priority | Task File |
-|:--|:-----|:-------|:---------|:----------|
-| 1 | Infrastructure & Foundation | Infrastructure + SharedKernel | Critical | [[current-focus/DEV1-infrastructure-setup\|DEV1 Infrastructure Setup]] |
-| 2 | Employee Profile | CoreHR | Critical | [[current-focus/DEV1-core-hr-profile\|DEV1 Core HR Profile]] |
-| 3 | Leave | Leave | High | [[current-focus/DEV1-leave\|DEV1 Leave]] |
-| 4 | Productivity Analytics | ProductivityAnalytics | High | [[current-focus/DEV1-productivity-analytics\|DEV1 Productivity Analytics]] |
-| 5 | HR Import Onboarding | DataImport | High | [[current-focus/DEV1-hr-import-onboarding\|DEV1 HR Import Onboarding]] |
+Use these files as the active source of truth:
 
-**Dev 1 Frontend Pages:** Dashboard layout, Employee list/detail/create, Leave management, Productivity reports, HR Import wizard
+| Developer | Track | Canonical File | Owns |
+|---|---|---|---|
+| Dev 1 | Backend | [[current-focus/DEV1|DEV1]] | Platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API |
+| Dev 2 | Backend | [[current-focus/DEV2|DEV2]] | HR core, leave, calendar, workforce presence, notifications |
+| Dev 3 | Backend | [[current-focus/DEV3|DEV3]] | WorkSync backend, chat, Chat AI, IDE backend APIs, tag execution |
+| Dev 4 | Backend | [[current-focus/DEV4|DEV4]] | Monitoring agent, Agent Gateway, activity ingestion, IDE install jobs, agent version rollout |
+| Dev 5 | Frontend | [[current-focus/DEV5|DEV5]] | Main app foundation, auth UI, shared components, standalone Developer Platform console |
+| Dev 6 | Frontend | [[current-focus/DEV6|DEV6]] | HR, leave, calendar, presence, agent management UI |
+| Dev 7 | Frontend | [[current-focus/DEV7|DEV7]] | WorkSync web UI, projects, tasks, boards, docs, time, analytics |
+| Dev 8 | Frontend | [[current-focus/DEV8|DEV8]] | VS Code IDE extension |
 
----
-
-## Task Assignment — Dev 2 (Auth + Lifecycle + Intelligence)
-
-| # | Task | Module | Priority | Task File |
-|:--|:-----|:-------|:---------|:----------|
-| 1 | Auth & Security | Auth | Critical | [[current-focus/DEV2-auth-security\|DEV2 Auth Security]] |
-| 2 | Employee Lifecycle | CoreHR | Critical | [[current-focus/DEV2-core-hr-lifecycle\|DEV2 Core HR Lifecycle]] |
-| 3 | Exception Engine | ExceptionEngine | Critical | [[current-focus/DEV2-exception-engine\|DEV2 Exception Engine]] |
-| 4 | Notifications | Notifications | High | [[current-focus/DEV2-notifications\|DEV2 Notifications]] |
-
-> Auth task must include `must_change_password`, `password_set_by_admin`, `temporary_password_expires_at` fields on `users` table and the forced-change flow (backend blocks session until password changed).
-
-**Dev 2 Frontend Pages:** Login/MFA/Password reset/Forced-change flow, Role/User management, Onboarding/Offboarding, Exception dashboard, Notification bell + preferences
+Only these eight developer files are active in this folder. Supporting architecture, schema, module, and userflow references live outside `current-focus`.
 
 ---
 
-## Task Assignment — Dev 3 (Org + Monitoring + Calendar)
+## ADE Start Protocol
 
-| # | Task | Module | Priority | Task File |
-|:--|:-----|:-------|:---------|:----------|
-| 1 | Org Structure | OrgStructure | Critical | [[current-focus/DEV3-org-structure\|DEV3 Org Structure]] |
-| 2 | Skills Core (Phase 1) | Skills (5 tables) | High | [[current-focus/DEV3-skills-core\|DEV3 Skills Core]] |
-| 3 | Workforce Presence (Setup) | WorkforcePresence | Critical | [[current-focus/DEV3-workforce-presence-setup\|DEV3 Workforce Presence Setup]] |
-| 4 | Activity Monitoring | ActivityMonitoring | Critical | [[current-focus/DEV3-activity-monitoring\|DEV3 Activity Monitoring]] |
-| 5 | Calendar | Calendar | High | [[current-focus/DEV3-calendar\|DEV3 Calendar]] |
+When a developer says "build my unfinished task" or "continue Dev N":
 
-> Org Structure task must include `team_roles`, `team_role_permissions`, `team_member_roles` tables for WorkSync team permission stacking.
+1. Open `current-focus/DEVN.md`.
+2. Read the **Current Unfinished Task** section.
+3. Check the **Blocked By** line.
+4. Read only the linked wiki references needed for that task.
+5. Implement the first unchecked acceptance criteria.
+6. Run the task's verification commands.
+7. Update checkbox status in the same `DEVN.md` file.
+8. Stop only when the task is complete, blocked, or verification exposes a real issue.
 
-**Dev 3 Frontend Pages:** Department/Team/Job management, Skill taxonomy admin, Employee skills profile, Shift/Holiday management, Live workforce dashboard, Activity detail/screenshots, Unified calendar
-
----
-
-## Task Assignment — Dev 4 (Platform + Agent + Presence)
-
-| # | Task | Module | Priority | Task File |
-|:--|:-----|:-------|:---------|:----------|
-| 1 | Shared Platform + Agent Gateway | SharedPlatform + AgentGateway | Critical | [[current-focus/DEV4-shared-platform-agent-gateway\|DEV4 Shared Platform Agent Gateway]] |
-| 2 | Configuration | Configuration | High | [[current-focus/DEV4-configuration\|DEV4 Configuration]] |
-| 3 | Identity Verification | IdentityVerification | High | [[current-focus/DEV4-identity-verification\|DEV4 Identity Verification]] |
-| 4 | Workforce Presence (Biometric) | WorkforcePresence | Critical | [[current-focus/DEV4-workforce-presence-biometric\|DEV4 Workforce Presence Biometric]] |
-
-> Shared Platform task must include `agent_install_entitlements` and `agent_install_jobs` tables. These are needed by DEV8's IDE extension agent provisioning flow.
-
-> **ADE task creation note:** For DEV4 Agent Gateway, generate one implementation task named **"Implement login-based Windows agent enrollment"**. The default Phase 1 flow is install MSIX -> user signs in through TrayApp -> backend resolves tenant/user -> device is enrolled -> policy/lifecycle starts monitoring. Use [[modules/agent-gateway/overview|Agent Gateway]], [[modules/agent-gateway/agent-registration/overview|Agent Registration]], [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]], [[modules/agent-gateway/tray-app-ui|Tray App UI]], [[modules/agent-gateway/agent-installer|Agent Installer]], [[modules/auth/overview|Auth]], and [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]]. Do not generate a tenant-key installer task for the default flow.
-
-**Dev 4 Frontend Pages:** Settings (monitoring config, tenant settings, integrations, retention), Agent management, Biometric devices, Attendance/Overtime, Verification log
+If a dependency is missing, build the smallest mock or contract stub needed for local progress, then record it under **Open Backend Contracts** or **Open Frontend Contracts** in that developer file.
 
 ---
 
-## Task Assignment — Dev 5 (WorkSync Foundation + Projects + OKR + Time)
+## Ownership Rules
 
-| # | Task | Module | Priority | Task File |
-|:--|:-----|:-------|:---------|:----------|
-| 1 | WorkSync Foundation | WorkSync (workspaces, members, roles) | Critical | [[current-focus/DEV5-wms-foundation\|DEV5 WMS Foundation]] |
-| 2 | Project Management | Projects, members, epics, milestones, versions | Critical | [[current-focus/DEV5-wms-foundation\|DEV5 WMS Foundation]] |
-| 3 | OKR | Objectives, key results, check-ins | High | [[current-focus/DEV5-wms-foundation\|DEV5 WMS Foundation]] |
-| 4 | Time Management | Time logs, timesheets | High | [[current-focus/DEV5-wms-foundation\|DEV5 WMS Foundation]] |
-| 5 | Resource Management | Resource plans, allocations | Medium | [[current-focus/DEV5-wms-foundation\|DEV5 WMS Foundation]] |
-
-> WorkSync Foundation (workspaces) is the hardest dependency for DEV6 and DEV7. DEV5 task 1 must complete before DEV6 boards/tasks and DEV7 chat can proceed.
-
-**Dev 5 Frontend Pages:** Workspace switcher, Project list/detail/create, OKR dashboard, Time tracking panel, Resource planner
+- Backend Devs 1-4 own server code, database schema, permissions, SignalR contracts, background jobs, and the Windows monitoring agent.
+- Frontend Devs 5-8 own web UI and the VS Code IDE extension.
+- Dev 4 owns the monitoring agent lifecycle: installer, TrayApp enrollment, device credential, policy, telemetry, health, ingestion, and rollout rings.
+- Dev 8 owns the IDE extension UX. The extension can request an agent install job, but backend entitlement and the monitoring agent own enrollment.
+- Authorization is always backend-enforced. Frontend and IDE clients only hide/show actions based on backend responses.
+- Every IDE tag execution attempt must be logged server-side.
 
 ---
 
-## Task Assignment — Dev 6 (Tasks + Boards + Planning + Analytics)
+## Developer Platform Ownership
 
-| # | Task | Module | Priority | Task File |
-|:--|:-----|:-------|:---------|:----------|
-| 1 | Task Management | Tasks, assignments, checklists, custom fields | Critical | [[current-focus/DEV6-tasks-boards-planning\|DEV6 Tasks Boards Planning]] |
-| 2 | Boards + Board Columns | Boards, board_columns, board_task_positions | Critical | [[current-focus/DEV6-tasks-boards-planning\|DEV6 Tasks Boards Planning]] |
-| 3 | Sprint Planning | Sprints, sprint_backlog_items, sprint_daily_snapshots (burndown) | Critical | [[current-focus/DEV6-tasks-boards-planning\|DEV6 Tasks Boards Planning]] |
-| 4 | Roadmaps | Roadmaps, roadmap_items, baselines (Phase 1 for WorkSync) | High | [[current-focus/DEV6-tasks-boards-planning\|DEV6 Tasks Boards Planning]] |
-| 5 | Analytics | Dashboards, chart_widgets, sprint_reports, dashboard_shares, saved_view_shares | High | [[current-focus/DEV6-tasks-boards-planning\|DEV6 Tasks Boards Planning]] |
+The Developer Platform is a standalone internal control plane. It is not part of the main customer frontend and is not part of the IDE extension.
 
-> Board columns (task 2) require boards (task 1). Burndown snapshots (task 3) require sprints. Roadmaps are Phase 1 for WorkSync — do not defer.
+| Layer | Owner | Scope | Required Wiki References |
+|---|---|---|---|
+| Admin API host | Dev 1 | `ONEVO.Admin.Api`, `/admin/v1/*`, platform-admin auth, issuer isolation | [[developer-platform/system-design|Developer Platform System Design]], [[developer-platform/backend/admin-api-layer|Admin API Layer]] |
+| DevPlatform backend feature | Dev 1 | `dev_platform_accounts`, `dev_platform_sessions`, admin auth/session CQRS | [[modules/dev-platform/overview|Dev Platform Feature]], [[developer-platform/database/schema|Developer Platform Schema]] |
+| Tenant Console backend | Dev 1 | tenant list/detail/status/provisioning/subscription/impersonation APIs | [[developer-platform/modules/tenant-console/overview|Tenant Console]], [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] |
+| Feature Flag backend | Dev 1 | global flags, per-tenant overrides, module toggles | [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]], [[developer-platform/userflow/feature-flags|Feature Flag Flows]] |
+| Audit/System/App Catalog backend | Dev 1 | cross-tenant audit query, global config, catalog management contracts | [[developer-platform/modules/audit-console/overview|Audit Console]], [[developer-platform/modules/system-config/overview|System Config]], [[developer-platform/modules/app-catalog-manager/overview|App Catalog Manager]] |
+| Agent release backend | Dev 4 | agent versions, deployment rings, tenant ring assignments, force-update dispatch via Agent Gateway | [[developer-platform/modules/agent-version-manager/overview|Agent Version Manager]], [[developer-platform/userflow/agent-versions|Agent Version Flows]] |
+| Dev Console frontend | Dev 5 | standalone Next.js console at `console.onevo.io` | [[developer-platform/frontend/overview|Developer Platform Frontend]], [[developer-platform/frontend/app-structure|Developer Platform App Structure]] |
 
-**Dev 6 Frontend Pages:** Task board (Kanban/Scrum), Sprint planning board, Backlog, Burndown chart, Roadmap timeline, Analytics dashboard
+Required boundary:
 
----
-
-## Task Assignment — Dev 7 (Chat + AI + My Space + IDE Extension core)
-
-| # | Task | Module | Priority | Task File |
-|:--|:-----|:-------|:---------|:----------|
-| 1 | Chat | Channels, messages, reactions, attachments | Critical | [[current-focus/DEV7-chat-ai-reminders\|DEV7 Chat AI Reminders]] |
-| 2 | Chat AI | Premium AI detection, ai_action_jobs, undo state machine | High | [[current-focus/DEV7-chat-ai-reminders\|DEV7 Chat AI Reminders]] |
-| 3 | My Space + Reminders | Personal boards, personal board columns, todos, reminders | High | [[current-focus/DEV7-chat-ai-reminders\|DEV7 Chat AI Reminders]] |
-| 4 | IDE Extension Core | VS Code sidebar (Chat panel, Tasks panel, Notifications panel), WebSocket connection | High | [[current-focus/DEV7-chat-ai-reminders\|DEV7 Chat AI Reminders]] |
-| 5 | IDE Extension Tag Engine | Tag parser, all @entity:action types, permission validation, ide_tag_executions | High | [[current-focus/DEV7-chat-ai-reminders\|DEV7 Chat AI Reminders]] |
-
-> Chat (task 1) must complete before Chat AI (task 2) — the `messages` table is required. IDE Extension tasks are Weeks 5–6.
-
-**Dev 7 Frontend Pages:** Chat sidebar, Channel/DM view, My Space personal board, Todo list, Reminder notifications
-**Dev 7 IDE Extension:** Chat panel, task quick-view, notification feed, `@entity:action` tag parser
+- `ONEVO.Admin.Api` is a separate host inside `ONEVO.sln`, not a separate microservice.
+- Admin data access goes through module interfaces. Admin controllers must not bypass feature modules.
+- Platform-admin JWTs are rejected at `/api/v1/*`.
+- Tenant JWTs are rejected at `/admin/v1/*`.
+- DevPlatform entities have no `TenantId` and are excluded from tenant query filters.
 
 ---
 
-## Task Assignment — Dev 8 (Documents + GitHub + IDE Tag Engine + Agent Entitlement)
+## Cross-Team Contracts
 
-| # | Task | Module | Priority | Task File |
-|:--|:-----|:-------|:---------|:----------|
-| 1 | Documents (WMS scope) | Documents, document_approvals, wiki_pages, task_documents | Critical | [[current-focus/DEV8-documents-github-ide\|DEV8 Documents GitHub IDE]] |
-| 2 | GitHub Integration | Repositories, task_repository_links, code_activity_events | High | [[current-focus/DEV8-documents-github-ide\|DEV8 Documents GitHub IDE]] |
-| 3 | CI/CD + Automation | commit_records, pull_request_records, ci_pipeline_runs, task_automation_rules | High | [[current-focus/DEV8-documents-github-ide\|DEV8 Documents GitHub IDE]] |
-| 4 | IDE Context Engine | ide_extension_installs, ide_sessions, ide_context_links, branch→task detection | High | [[current-focus/DEV8-documents-github-ide\|DEV8 Documents GitHub IDE]] |
-| 5 | IDE Agent Entitlement | agent_install_entitlements check, agent_install_jobs provisioning flow | Critical | [[current-focus/DEV8-documents-github-ide\|DEV8 Documents GitHub IDE]] |
-
-> Documents (task 1) must exist before task_documents join can be created. IDE tasks are Weeks 5–6. Agent entitlement flow depends on DEV4's `agent_install_entitlements` table.
-
-**Dev 8 Frontend Pages:** Document editor, Document approval flow, Wiki page view/edit, GitHub repository linking, CI/CD status on tasks
-**Dev 8 IDE Extension:** Context engine (branch→task, file→task), agent install prompt flow
+| Contract | Backend Owner | Frontend Consumer |
+|---|---|---|
+| Auth session + refresh | Dev 1 | Dev 5, Dev 8 |
+| Permissions and module entitlements | Dev 1 | Dev 5, Dev 6, Dev 7, Dev 8 |
+| Developer Platform Admin API `/admin/v1/*` | Dev 1 | Dev 5 |
+| Platform-admin JWT exchange | Dev 1 | Dev 5 |
+| Tenant provisioning/admin DTOs | Dev 1 | Dev 5 |
+| Feature flag/admin config DTOs | Dev 1 | Dev 5 |
+| App catalog admin DTOs | Dev 1 | Dev 5 |
+| HR employee/leave/calendar APIs | Dev 2 | Dev 6, Dev 8 |
+| Presence and time APIs | Dev 2 | Dev 6, Dev 8 |
+| WorkSync project/task/board APIs | Dev 3 | Dev 7, Dev 8 |
+| Chat APIs and SignalR events | Dev 3 | Dev 7, Dev 8 |
+| IDE entitlements and tag execution | Dev 3 | Dev 8 |
+| Agent install request/status APIs | Dev 4 | Dev 8 |
+| Agent health and activity APIs | Dev 4 | Dev 6 |
+| Agent version release/ring DTOs | Dev 4 | Dev 5 |
 
 ---
 
-## Task Execution Order
+## Backend Module Reference Map
 
-### Critical Path
+Use these module folders when implementing backend tasks:
 
-```
-DEV1 Infrastructure Setup ──────────────> (all modules depend on this)
-DEV2 Auth & Security ───────────────────> (all modules use RBAC from this)
-DEV3 Org Structure ─────────────────────> (legal_entities needed by DEV5 workspaces)
-DEV5 WorkSync Foundation ───────────────> (workspaces needed by DEV6 + DEV7)
-```
+| Area | Backend Feature Folder | Wiki References |
+|---|---|---|
+| Auth | `Features/Auth` | [[modules/auth/overview|Auth]], [[security/auth-architecture|Auth Architecture]] |
+| Infrastructure | `Features/InfrastructureModule` | [[modules/infrastructure/overview|Infrastructure]], [[backend/shared-kernel|Shared Kernel]] |
+| Shared Platform | `Features/SharedPlatform` | [[modules/shared-platform/overview|Shared Platform]] |
+| Configuration | `Features/Configuration` | [[modules/configuration/overview|Configuration]] |
+| Core HR | `Features/CoreHR` | [[modules/core-hr/overview|Core HR]] |
+| Leave | `Features/Leave` | [[modules/leave/overview|Leave]] |
+| Calendar | `Features/Calendar` | [[modules/calendar/overview|Calendar]] |
+| Workforce Presence | `Features/WorkforcePresence` | [[modules/workforce-presence/overview|Workforce Presence]] |
+| Notifications | `Features/Notifications` | [[modules/notifications/overview|Notifications]] |
+| WorkSync Foundation | `Features/WorkSync/Foundation` | [[modules/work-management/foundation/overview|WorkSync Foundation]] |
+| WorkSync Tasks | `Features/WorkSync/TaskManagement` | [[modules/work-management/tasks/overview|Tasks]] |
+| WorkSync Planning | `Features/WorkSync/SprintPlanning` | [[modules/work-management/planning/overview|Planning]] |
+| WorkSync Chat | `Features/WorkSync/Chat` | [[modules/work-management/chat/overview|Chat]] |
+| WorkSync Chat AI | `Features/WorkSync/ChatAI` | [[modules/work-management/chat-ai/overview|Chat AI]] |
+| WorkSync Collaboration | `Features/WorkSync/Collaboration` | [[modules/work-management/collaboration/overview|Collaboration]] |
+| IDE Extension | `Features/IDEExtension` | [[modules/ide-extension/overview|IDE Extension]] |
+| Agent Gateway | `Features/AgentGateway` | [[modules/agent-gateway/overview|Agent Gateway]] |
+| Activity Monitoring | `Features/ActivityMonitoring` | [[modules/activity-monitoring/overview|Activity Monitoring]] |
+| Dev Platform | `Features/DevPlatform` served by `ONEVO.Admin.Api` | [[modules/dev-platform/overview|Dev Platform]], [[developer-platform/backend/admin-api-layer|Admin API Layer]] |
 
-These four tasks are the foundation. Everything else can proceed once they are done.
+---
 
-### Cross-Dev Dependencies
+## In-Scope Module Assignment Matrix
 
-```
-DEV1 Infrastructure ──────────────────────> unblocks ALL other modules
-DEV2 Auth & Security ─────────────────────> unblocks ALL other modules
-DEV3 Org Structure ───────────────────────> unblocks DEV3 Skills Core
-                                           > unblocks DEV5 WorkSync Foundation (legal_entities)
-DEV5 WorkSync Foundation ─────────────────> unblocks DEV6 Tasks + Boards
-                                           > unblocks DEV7 Chat + Chat AI
-DEV4 Shared Platform + Agent Gateway ─────> unblocks DEV8 IDE agent entitlement
-DEV1 Core HR Profile ─────────────────────> unblocks DEV1 HR Import
-                                           > unblocks DEV3 Skills Core (employees table)
-DEV3 Workforce Presence Setup ────────────> unblocks DEV4 Biometric
-DEV3 Activity Monitoring ─────────────────> unblocks DEV1 Productivity Analytics
-DEV7 Chat ────────────────────────────────> unblocks DEV7 Chat AI
-DEV8 Documents ───────────────────────────> unblocks DEV8 task_documents
-DEV6 Boards + Sprints ────────────────────> unblocks DEV6 Burndown snapshots
-DEV7 IDE Extension Core (Week 5) ─────────> unblocks DEV7 Tag Engine (Week 6)
-DEV8 IDE Context Engine (Week 5) ─────────> unblocks DEV8 Agent Entitlement flow (Week 6)
+This matrix is the coverage check. If ADE is asked to build an unfinished task, every module below must map back to one canonical developer file.
+
+| Module / Feature | Backend Owner | Frontend Owner | Canonical Build Pack |
+|---|---|---|---|
+| Infrastructure | Dev 1 | Dev 5 | [[current-focus/DEV1|DEV1]], [[current-focus/DEV5|DEV5]] |
+| Auth & Security | Dev 1 | Dev 5 | [[current-focus/DEV1|DEV1]], [[current-focus/DEV5|DEV5]] |
+| Shared Platform: SSO, billing, feature flags, workflow engine, notification infrastructure, compliance, hardware terminals, real-time integrations | Dev 1 | Dev 6 | [[current-focus/DEV1|DEV1]], [[current-focus/DEV6|DEV6]] |
+| Configuration: tenant settings, monitoring toggles, employee overrides, app allowlist, integrations, retention | Dev 1 | Dev 6 | [[current-focus/DEV1|DEV1]], [[current-focus/DEV6|DEV6]] |
+| Developer Platform Admin API | Dev 1 | Dev 5 | [[current-focus/DEV1|DEV1]], [[current-focus/DEV5|DEV5]] |
+| Org Structure | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
+| Core HR + Employee Lifecycle | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
+| Skills Core | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
+| HR Import / Data Import | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
+| Leave + Calendar | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
+| Workforce Presence | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
+| Notifications | Dev 2 | Dev 6, Dev 8 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]], [[current-focus/DEV8|DEV8]] |
+| WorkSync Foundation, Projects, Tasks, Boards, Planning, OKR, Time, Resources | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]], [[current-focus/DEV7|DEV7]], [[current-focus/DEV8|DEV8]] |
+| WorkSync Chat + Chat AI | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]], [[current-focus/DEV7|DEV7]], [[current-focus/DEV8|DEV8]] |
+| WorkSync Collaboration, Docs/Wiki, Integrations, Analytics | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]], [[current-focus/DEV7|DEV7]], [[current-focus/DEV8|DEV8]] |
+| IDE Extension backend APIs | Dev 3 | Dev 8 | [[current-focus/DEV3|DEV3]], [[current-focus/DEV8|DEV8]] |
+| Agent Gateway + Windows monitoring agent | Dev 4 | Dev 6, Dev 8 | [[current-focus/DEV4|DEV4]], [[current-focus/DEV6|DEV6]], [[current-focus/DEV8|DEV8]] |
+| Activity Monitoring | Dev 4 | Dev 6 | [[current-focus/DEV4|DEV4]], [[current-focus/DEV6|DEV6]] |
+| Identity Verification + Biometric Device Backend | Dev 4 | Dev 6 | [[current-focus/DEV4|DEV4]], [[current-focus/DEV6|DEV6]] |
+| Exception Engine | Dev 4 | Dev 6 | [[current-focus/DEV4|DEV4]], [[current-focus/DEV6|DEV6]] |
+| Discrepancy Engine | Dev 4 | Dev 6, Dev 7 | [[current-focus/DEV4|DEV4]], [[current-focus/DEV6|DEV6]], [[current-focus/DEV7|DEV7]] |
+| Productivity Analytics | Dev 4 | Dev 6, Dev 7 | [[current-focus/DEV4|DEV4]], [[current-focus/DEV6|DEV6]], [[current-focus/DEV7|DEV7]] |
+| Agent Version Manager backend | Dev 4 | Dev 5 | [[current-focus/DEV4|DEV4]], [[current-focus/DEV5|DEV5]] |
+
+---
+
+## Shared Verification Expectations
+
+Backend tasks should usually finish with:
+
+```bash
+dotnet test ONEVO.sln
 ```
 
----
+Frontend app tasks should usually finish with:
 
-## What We Are NOT Working On Right Now
+```bash
+npm run lint
+npm run test
+npm run build
+```
 
-- **Payroll** — deferred to Phase 2
-- **Performance** — deferred to Phase 2
-- **Grievance** — deferred to Phase 2
-- **Expense** — deferred to Phase 2
-- **Skills & Learning (LMS)** — 5 core tables are Phase 1 (see DEV3 Skills Core). Courses, assessments, dev plans, certifications deferred to Phase 2
-- **KPI Targets** — WorkSync Phase 2 feature
-- **Billable Rates** — WorkSync Phase 2 feature
-- **JetBrains Plugin** — IDE extension Phase 1 is VS Code only; JetBrains in Phase 2
-- **MacOS Desktop Agent** — Windows only in Phase 1
-- **Teams Graph API deep integration** — Phase 2; Phase 1 uses process-name detection
-- **Meilisearch** — PostgreSQL FTS sufficient for Phase 1
-- **RabbitMQ** — using in-process domain events; RabbitMQ for scale later
-- **Bridge APIs** — `WMS-bridge-integration.md` is DEPRECATED. WorkSync is internal.
+IDE extension tasks should usually finish with:
 
----
+```bash
+npm run lint
+npm run compile
+npm test
+npm run test:vscode
+```
 
-## Milestones
-
-| Milestone | Scope | Notes |
-|:----------|:------|:------|
-| Foundation | DEV1 infra + DEV2 auth + DEV3 org + DEV5 workspaces | All other tasks depend on this |
-| HR Core complete | DEV1/2/3/4 tasks 1–2 | Employee, lifecycle, presence, auth flows working |
-| WorkSync Core complete | DEV5/6/7/8 tasks 1–2 | Projects, tasks, boards, chat working |
-| Intelligence + Planning | DEV1/2/3/4 tasks 3–4 + DEV5/6/7/8 tasks 3–4 | Leave, exception, monitoring, sprints, roadmaps |
-| IDE Extension core | DEV7/8 Weeks 5–6 | Chat sidebar, tag engine, agent entitlement |
-| Integration testing | All devs | Cross-module flows, WorkSync ↔ HR, IDE ↔ backend |
-| Deployment ready | All devs | Load testing, security review |
-
----
-
-## Frontend Phase (Per Module)
-
-Each dev builds the frontend for their module **immediately after** completing the backend for that module.
-
-### Key Frontend Resources
-
-**Shell layout:**
-- [[frontend/design-system/components/shell-layout|Shell Layout]] — floating-cards layout
-- [[frontend/design-system/components/nav-rail|Nav Rail]] — icon rail (52px, dark, pillars)
-- [[frontend/design-system/components/expansion-panel|Expansion Panel]] — slide-out panel
-- [[frontend/architecture/topbar|Topbar]] — topbar with workspace switcher
-
-**General:**
-- [[frontend/architecture/app-structure|Frontend Structure]] — Next.js app directory layout
-- [[frontend/design-system/README|Design System]] — shadcn/ui components, design tokens
-- [[frontend/data-layer/api-integration|API Integration]] — API client, error handling, pagination
-- [[frontend/data-layer/state-management|State Management]] — TanStack Query + Zustand
-
----
-
-## Related
-
-- [[AI_CONTEXT/project-context|Project Context]]
-- [[AI_CONTEXT/tech-stack|Tech Stack]]
-- [[backend/module-catalog|Module Catalog]]
-- [[database/schema-catalog|Schema Catalog]]
-- [[onevo-unified-entity-map|Entity Map]]
-- [[modules/ide-extension/overview|IDE Extension Spec]]
-- [[AI_CONTEXT/rules|Rules]]
-- [[AI_CONTEXT/known-issues|Known Issues]]
+Use the closest available command if the repo has different scripts.

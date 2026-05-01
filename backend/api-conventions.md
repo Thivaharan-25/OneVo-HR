@@ -22,14 +22,13 @@ All endpoints require JWT Bearer token (except `/api/v1/auth/login`, `/api/v1/au
 Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
 ```
 
-#### Bridge API Authentication (service-to-service)
+#### Internal Module Authentication
 
-`/api/v1/bridges/*` endpoints use a **separate bridge JWT** — user tokens are rejected.
+There are no bridge APIs in the active architecture. HR Management, Workforce Intelligence, and WorkSync all live in the same backend and PostgreSQL database. The React frontend, IDE extension, and desktop agent call first-party ONEVO endpoints only.
 
-1. Obtain a bridge JWT via `POST /api/v1/auth/bridge/token` (OAuth 2.0 Client Credentials)
-2. Include it as `Authorization: Bearer <bridge_jwt>` on all bridge endpoint calls
-
-Bridge JWT audience is `"onevo-bridge"` (user JWT audience is `"onevo-api"`). The bridge JWT carries a `bridges` claim listing which bridge endpoints the client may call. Middleware validates audience, claim, and bridge scope — user JWTs on bridge endpoints return `403`. See [[backend/bridge-api-contracts|Bridge API Contracts]] for the full auth flow.
+- Web and IDE clients use the normal user JWT audience (`onevo-api`).
+- Desktop agents use device JWTs on `/api/v1/agent/*`; device JWTs cannot access HR or WorkSync user APIs.
+- Cross-pillar data flow uses direct foreign keys, application services, and in-process domain events, not `/api/v1/bridges/*`.
 
 ### Authorization (Hybrid Permission Control)
 
@@ -201,21 +200,25 @@ POST   /api/v1/employees/{id}/onboarding   # Create onboarding steps
 POST   /api/v1/employees/{id}/offboarding  # Initiate offboarding
 ```
 
-### Attendance
+### Workforce Presence
 
 ```
 CRUD   /api/v1/shifts
 CRUD   /api/v1/work-schedules
 CRUD   /api/v1/schedule-templates
 POST   /api/v1/employees/{id}/shift-assignment
-GET    /api/v1/attendance?date=2026-04-05&departmentId=uuid
-POST   /api/v1/attendance/clock-in         # Manual clock-in
-POST   /api/v1/attendance/clock-out        # Manual clock-out
-POST   /api/v1/biometric/webhook           # Biometric device webhook
-CRUD   /api/v1/overtime-requests
-CRUD   /api/v1/attendance-corrections
+GET    /api/v1/workforce/presence?date=2026-04-05&departmentId=uuid
+POST   /api/v1/workforce/clock-in          # Policy-gated clock-in
+POST   /api/v1/workforce/clock-out         # Policy-gated clock-out
+POST   /api/v1/workforce/breaks/start      # Start break and pause monitoring
+POST   /api/v1/workforce/breaks/end        # End break and resume monitoring
+POST   /api/v1/workforce/biometric/webhook # Biometric device webhook
+CRUD   /api/v1/workforce/overtime-requests
+CRUD   /api/v1/workforce/attendance-corrections
 CRUD   /api/v1/holidays
 ```
+
+Clock-in source validation is server-side. Office employees normally clock in through biometric terminals only. Remote employees may clock in through approved web/tray flows with identity and work-location evidence. Hybrid employees use biometric onsite and web/tray remotely. Onsite web/tray clock-in is allowed only during a time-limited biometric outage override for the affected legal entity/location/device. IDE extension and WorkSync time logging must never create Workforce Presence clock-in/out records.
 
 ### Leave
 
@@ -269,15 +272,22 @@ GET    /api/v1/payroll-runs/{id}            # Run status + line items
 GET    /api/v1/payroll-runs/{id}/line-items # Detailed line items
 ```
 
-### WorkManage Pro Bridges
+### WorkSync
 
 ```
-GET    /api/v1/bridges/people-sync/employees    # Employee data for WorkManage
-GET    /api/v1/bridges/availability/{empId}      # Leave + attendance for scheduling
-POST   /api/v1/bridges/performance/metrics       # Accept work metrics from WorkManage
-GET    /api/v1/bridges/skills/{empId}            # Skill data for task matching
-POST   /api/v1/bridges/skills/{empId}            # Update skills from WorkManage
+CRUD   /api/v1/workspaces
+CRUD   /api/v1/projects
+CRUD   /api/v1/tasks
+CRUD   /api/v1/sprints
+CRUD   /api/v1/boards
+CRUD   /api/v1/okr/objectives
+CRUD   /api/v1/time-logs
+CRUD   /api/v1/channels
+CRUD   /api/v1/documents
+CRUD   /api/v1/repositories
 ```
+
+WorkSync is an internal ONEVO pillar. It uses the same user JWT and the same tenant/module entitlement checks as HR. Do not implement or call `/api/v1/bridges/*`.
 
 ## Rate Limiting
 
@@ -295,4 +305,4 @@ POST   /api/v1/bridges/skills/{empId}            # Update skills from WorkManage
 - [[code-standards/backend-standards|Backend Standards]] — Minimal API endpoint conventions
 - [[backend/module-catalog|Module Catalog]] — module-specific API endpoints
 - [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant scoping for all API requests
-- [[backend/external-integrations|External Integrations]] — WorkManage Pro bridge API contracts
+- [[backend/external-integrations|External Integrations]] - third-party integrations only; not WorkSync bridge contracts

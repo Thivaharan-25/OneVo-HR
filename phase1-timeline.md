@@ -3,7 +3,7 @@
 **Duration:** 4 weeks · **Apr 20 → May 15**
 **Scope:** 2 pillars (HR Management + Workforce Intelligence) MVP
 **Scale:** 16 modules · 170 DB tables
-**Stack:** .NET 9 · Next.js 14 · PostgreSQL 16 (RLS) · Redis · .NET MAUI Desktop Agent
+**Stack:** .NET 9 · Vite + React 19 responsive SPA · PostgreSQL 16 (RLS) · Redis · .NET MAUI Desktop Agent
 
 ---
 
@@ -88,7 +88,7 @@
 
 ---
 
-### Week 4 — Analytics + Monitoring + WMS Bridges (May 11 – 15)
+### Week 4 — Analytics + Monitoring + WorkSync Internal Integration (May 11 – 15)
 
 **Backend**
 - [ ] Activity Monitoring: screenshots, process tracking, window titles, idle detection, categorization
@@ -96,7 +96,7 @@
 - [ ] Workforce Presence — Biometric attendance + Overtime tracking
 - [ ] Productivity Analytics: scoring, reports, team + individual dashboards
 - [ ] Notifications: in-app, email, delivery preferences, digests
-- [ ] WMS Phase 1 bridges:
+- [ ] WorkSync Phase 1 internal integration:
   - People Sync
   - Availability
   - Work Activity
@@ -127,7 +127,7 @@
 | HR Management pillar | Employees · Lifecycle · Org · Skills (core) · Leave · Calendar · Configuration · Notifications |
 | Workforce Intelligence pillar | Presence · Biometric · Identity Verification · Activity Monitoring · Discrepancy Engine · Exception Engine · Productivity Analytics |
 | Desktop Agent pipeline | Agent Gateway + ingestion live |
-| WMS Integration | 3 bridges (People, Availability, Work Activity) + tenant provisioning |
+| WorkSync Integration | Internal people, availability, and work-activity projections + module entitlement provisioning |
 | Frontend | All Phase 1 pages (dashboard, HR, presence, monitoring, settings) |
 | Infrastructure | Docker, Postgres, Redis, Swagger, Health checks |
 
@@ -144,8 +144,8 @@
 - Skills LMS (courses, assessments, development plans, certifications)
 - Nexis AI Chatbot
 - Flutter Mobile Application
-- Productivity Metrics Bridge
-- Skills Bidirectional Bridge
+- WorkSync Productivity Projection
+- Shared Skills WorkSync Integration
 - Teams Graph API deep integration
 - Meilisearch (Postgres FTS sufficient for Phase 1)
 - RabbitMQ (in-process domain events for Phase 1)

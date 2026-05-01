@@ -4,7 +4,7 @@
 given the command: "You are Dev 1. Build all your tasks."
 
 This covers the full journey — orchestrator startup, base context loading, each of Dev 1's
-4 tasks, and the WMS bridges Dev 1 owns.
+4 tasks. WorkSync bridge work is deprecated; Dev 1 uses internal services and shared database projections instead.
 
 ---
 
@@ -422,24 +422,24 @@ Reporting Engine (built within ProductivityAnalytics namespace):
 
 ---
 
-## Phase 7: WMS Bridges (Dev 1 Owned)
+## Phase 7: WorkSync Internal Integration (No Bridge Endpoints)
 
-After all 4 tasks are complete, Dev 1 also owns these Phase 1 bridges:
+After all 4 tasks are complete, Dev 1 owns these internal WorkSync integration projections. No bridge endpoints are built.
 
-### Bridge 2: Availability (after Task 3 — Leave is done)
+### WorkSync Availability Projection (after Task 3 - Leave is done)
 
+```text
+current-focus/WMS-bridge-integration.md   archived/deprecated reference only; do not implement
+docs/wms-integration-analysis.md          archived historical analysis only
+backend/bridge-api-contracts.md           archived/deprecated reference only; do not implement
+backend/external-integrations.md          active first-party integration conventions
 ```
-current-focus/WMS-bridge-integration.md       â† Bridge spec
-docs/wms-integration-analysis.md              â† Context for why bridges exist
-backend/bridge-api-contracts.md               â† Request/response schemas
-backend/external-integrations.md              â† Bridge endpoint registry
-```
 
-Builds: `GET /api/v1/bridges/availability/{employeeId}` — leave periods + today's presence status + shift info
+Builds: internal `IWorkSyncAvailabilityService` projection — leave periods + today's workforce presence status + shift info
 
-### Bridge 3: Work Activity (before Discrepancy Engine goes live)
+### WorkSync Work Activity Projection (before Discrepancy Engine goes live)
 
-Builds: `POST /api/v1/bridges/work-activity/time-logs` — accepts WMS time logs, aggregates into `wms_daily_time_logs`
+Builds: internal WorkSync time-log ingestion into `wms_daily_time_logs`; no `/api/v1/bridges/*` endpoint
 
 ---
 
@@ -450,7 +450,7 @@ After all tasks complete (or are blocked), the orchestrator outputs:
 ```
 Session complete.
   ✓ Completed: Task 1 (Infrastructure), Task 2 (Employee Profile), Task 3 (Leave), Task 4 (Productivity Analytics)
-  ✓ WMS Bridges: Bridge 2 (Availability), Bridge 3 (Work Activity)
+  ✓ WorkSync internal integration: Availability projection, Work Activity time-log projection
   ✗ Blocked: [any skipped tasks with reason]
 
   All Dev 1 Phase 1 tasks complete.
@@ -530,8 +530,8 @@ Userflow/Analytics-Reporting/data-export.md
 Userflow/Analytics-Reporting/workforce-snapshot.md
 frontend/design-system/patterns/data-visualization.md
 
-## WMS BRIDGES (Dev 1)
-current-focus/WMS-bridge-integration.md
+## WORKSYNC INTERNAL INTEGRATION (Dev 1)
+current-focus/WMS-bridge-integration.md — archived/deprecated reference only; do not implement bridge endpoints
 docs/wms-integration-analysis.md
 backend/bridge-api-contracts.md
 backend/external-integrations.md

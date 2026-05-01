@@ -14,7 +14,7 @@ The orchestrator lives in this brain repo. It reads task definitions, injects co
 |:-----|:--------|:-----------|
 | **Brain repo** (this vault) | Knowledge base, task definitions, rules, specs | Read context + update checkboxes |
 | **Backend repo** (.NET 9) | Backend code | Write code (Step 1) |
-| **Frontend repo** (Next.js 14) | Frontend code | Write code (Step 2) |
+| **Frontend repo** (Vite + React 19 responsive SPA) | Frontend code | Write code (Step 2) |
 | **Desktop Agent repo** (.NET MAUI) | Desktop agent code | Write code (DEV4 agent tasks only) |
 
 ---
@@ -121,7 +121,7 @@ Where:
 - `--dev {N}` — Developer number (1-4)
 - `--brain` — Path to this brain repo
 - `--backend` — Path to the .NET 9 backend repo
-- `--frontend` — Path to the Next.js 14 frontend repo
+- `--frontend` — Path to the Vite + React 19 frontend repo
 - `--agent` — Path to the .NET MAUI desktop agent repo (optional, only needed for DEV4)
 
 ---

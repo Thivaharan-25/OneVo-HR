@@ -1,24 +1,24 @@
 # Work Management (WMS) — Overview
 
-**Area:** Workforce Pillar  
+**Area:** WorkSync / Work Management Pillar
 **Trigger:** User navigates to any Workforce panel item (Projects, My Work, Planner, Goals, Docs, Timesheets, Analytics)  
 **Required Permission:** `workforce:view` minimum; specific features gated by additional permission keys (see sidebar-nav.md)
 
 ## Purpose
 
-ONEVO's Work Management System (WMS) is the project and task management layer built on top of workforce data. It answers two questions together: who is working (Presence), and what are they working on (Projects, Tasks, Goals, Time). All WMS screens live under the Workforce pillar.
+ONEVO's Work Management System, branded as **WorkSync**, is the project and task management layer inside ONEVO. It can be sold independently from HR Management, or combined with HR and Workforce Intelligence in one tenant. It answers what teams are building through Projects, Tasks, Goals, Time, Chat, Docs, and Analytics. When Workforce Intelligence is also enabled, WorkSync can be shown beside presence/productivity data; when it is sold alone, it runs without monitoring.
 
 ## Ownership
 
 | Layer | Owner |
 |---|---|
-| WMS Frontend (UI, routing, state) | ONEVO team |
-| WMS Backend (API, business logic, data) | WMS backend team |
-| HR ↔ WMS Integration | ONEVO team |
+| WorkSync Frontend (UI, routing, state) | ONEVO team |
+| WorkSync Backend (API, business logic, data) | ONEVO backend |
+| HR to WorkSync Integration | Internal module services, direct FKs, domain events |
 
 ## Module Map
 
-| WMS Module | ONEVO Route | Backend Key |
+| WorkSync Module | ONEVO Route | Backend Key |
 |---|---|---|
 | Project | `/workforce/projects` | project |
 | Task (issues, bugs) | `/workforce/my-work`, `/workforce/projects/[id]/board` | task |
@@ -32,19 +32,27 @@ ONEVO's Work Management System (WMS) is the project and task management layer bu
 
 ## Integration Points with ONEVO HR
 
-| WMS Concept | ONEVO HR Connection |
+| WorkSync Concept | ONEVO HR Connection |
 |---|---|
-| WMS User | Maps to ONEVO Employee — profile at `/people/employees/[id]` |
+| WorkSync User | Maps to ONEVO User and optional Employee identity. WorkSync-only tenants still create a minimal CoreHR identity anchor, but HR pages remain hidden unless entitled. |
 | Task assignee | Must be an employee within the current legal entity scope |
 | Timesheet entry | Connects to Calendar → Attendance correction records |
 | Overtime entry | Connects to Calendar → Overtime approval records |
 | Resource capacity | Uses shift schedule data from Calendar → Schedules |
 | Project team member | Must be an employee within the same entity scope |
-| Productivity score | Surfaces on Workforce Presence card for each employee |
+| Productivity score | Surfaces on Workforce Presence card only when Workforce Intelligence is enabled |
 
 ## Data Scope
 
-All WMS data is scoped to the legal entity selected in the topbar. Switching legal entity changes which projects, tasks, goals, and docs are visible.
+All WorkSync data is tenant-scoped and, when legal entities are enabled, scoped to the selected legal entity/workspace. Switching legal entity or workspace changes which projects, tasks, goals, and docs are visible.
+
+## Packaging Rules
+
+- WorkSync can be sold without HR Management.
+- HR Management can be sold without WorkSync.
+- Individual WorkSync modules can be enabled separately, such as Projects + Tasks only, Chat only, or Time + Reports only.
+- The React frontend must hide disabled modules on every device size; route guards and backend APIs must enforce the same module entitlements server-side.
+- There are no WorkManage Pro bridge endpoints. Do not call `/api/v1/bridges/*`.
 
 ## Related Flows
 
