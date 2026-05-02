@@ -1,6 +1,6 @@
-# Schema: WMS — Collaboration (Documents + Wiki + Task-Document Links)
+# Schema: Work Management — Collaboration (Documents + Wiki + Task-Document Links)
 
-**Module:** `WorkSync.Collaboration`
+**Module:** `Work Management.Collaboration`
 **Phase:** 1
 **Owner:** DEV8
 
@@ -8,13 +8,13 @@
 
 ## `documents` — Phase 1 (Extended)
 
-> The `documents` table is shared with the HR Documents module. WorkSync extends it with `workspace_id`, `project_id`, `document_scope`, lock fields, and `approved` status. Do not create a separate WMS documents table.
+> The `documents` table is shared with the HR Documents module. Work Management extends it with `workspace_id`, `project_id`, `document_scope`, lock fields, and `approved` status. Do not create a separate Work Management documents table.
 
 **Columns added to existing `documents` table:**
 
 | Column | Type | Notes |
 |---|---|---|
-| `workspace_id` | uuid | FK → workspaces, nullable — WMS scope |
+| `workspace_id` | uuid | FK → workspaces, nullable — Work Management scope |
 | `project_id` | uuid | FK → projects, nullable — project scope |
 | `document_scope` | varchar(30) | company / legal_entity / employee / workspace / project |
 | `locked_at` | timestamptz | nullable — set when document is approved and locked |
@@ -36,7 +36,7 @@
 | `version_number` | int | Auto-incremented per document |
 | `content_snapshot` | text | Full content at this version (or Azure Blob key for large docs) |
 | `change_summary` | varchar(500) | nullable — optional description of changes |
-| `created_by` | uuid | FK → users |
+| `created_by_id` | uuid | FK → users |
 | `created_at` | timestamptz | |
 
 **Unique:** `(document_id, version_number)`
@@ -50,7 +50,7 @@
 |---|---|---|
 | `id` | uuid | PK |
 | `document_id` | uuid | FK → documents |
-| `requested_by` | uuid | FK → users |
+| `requested_by_id` | uuid | FK → users |
 | `approver_id` | uuid | FK → users |
 | `status` | varchar(20) | pending / approved / rejected |
 | `comment` | text | nullable |
@@ -83,14 +83,14 @@
 
 ## `task_documents` — Phase 1
 
-Durable relationship between a WorkSync task and an editable document. This is for document-editor links, not file attachments (file attachments use the existing `attachments` table).
+Durable relationship between a Work Management task and an editable document. This is for document-editor links, not file attachments (file attachments use the existing `attachments` table).
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
 | `task_id` | uuid | FK → tasks |
 | `document_id` | uuid | FK → documents |
-| `linked_by` | uuid | FK → users |
+| `linked_by_id` | uuid | FK → users |
 | `linked_at` | timestamptz | |
 
 **Unique:** `(task_id, document_id)`

@@ -7,12 +7,14 @@
 
 ## Purpose
 
-SSO provider management (Google, Microsoft, SAML, OIDC) and refresh token tracking with rotation.
+Phase 1 SSO provider management for Google only, plus refresh token tracking with rotation.
+
+Microsoft Teams is handled as an integration account link for team/chat sync, not as a Phase 1 SSO login provider.
 
 ## Database Tables
 
 ### `sso_providers`
-Key columns: `provider_type` (`google`, `microsoft`, `saml`, `oidc`), `client_id_encrypted`, `client_secret_encrypted`, `metadata_url`, `domain_hint`, `auto_provision_users`.
+Key columns: `provider_type` (`google` in Phase 1), `client_id_encrypted`, `client_secret_encrypted`, `metadata_url`, `domain_hint`, `auto_provision_users`.
 
 ### `refresh_tokens`
 JWT refresh token rotation: `token_hash`, `device_fingerprint`, `expires_at`, `is_revoked`, `replaced_by_id`.

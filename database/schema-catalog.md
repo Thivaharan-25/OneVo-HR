@@ -8,12 +8,12 @@ Central index of all database tables across ONEVO modules. This is the **single 
 
 ## Summary
 
-- **Total Tables:** 244 unique schema tables after removing bridge-era entities, adding Microsoft Teams sync entities, and adding work-location compliance tables
-- **Pillars:** HR Management · Workforce Intelligence · WorkSync
+- **Total Tables:** 258 unique product schema tables after removing old external-provisioning entities, adding Microsoft Teams sync entities, adding work-location compliance tables, promoting country holiday + Google/Outlook calendar sync to Phase 1, and adding the Phase 1 HR-to-Work-Management bridge tables. MassTransit outbox/idempotency infrastructure tables are intentionally not part of this catalog.
+- **Pillars:** HR Management · Workforce Intelligence · Work Management
 - **IDE Extension:** 5 tables (Phase 1)
 - **Entity-map sections:** 39 numbered sections; these are planning/domain sections, not necessarily one backend module each
 
-> **Note:** WorkSync is now Pillar 3 — internal to ONEVO, not external. Bridge-era WMS provisioning tables are removed from Shared Platform. `agent_install_entitlements` and `agent_install_jobs` added to Agent Gateway for IDE Extension entitlement gating. Org Structure gains 3 team permission tables (`team_roles`, `team_role_permissions`, `team_member_roles`). The `documents` table is shared between WorkSync.Collaboration (Phase 1, which defines it) and HR Documents (Phase 2, which adds HR-specific columns). WorkSync schemas (W5 OKR, W6 Time, W7 Resource) are pending detailed schema docs — table counts are estimates.
+> **Note:** Work Management is now Pillar 3 - internal to ONEVO, not external. Old external-provisioning tables are removed from Shared Platform. Phase 1 SSO is Google only; Microsoft Teams is modeled as an optional integration for team/member sync and ONEVO Chat collaboration sync, not as a login provider. `agent_install_entitlements` and `agent_install_jobs` added to Agent Gateway for IDE Extension entitlement gating. Org Structure gains 3 team permission tables (`team_roles`, `team_role_permissions`, `team_member_roles`). The `documents` table is shared between WorkManagement.Collaboration (Phase 1, which defines it) and HR Documents (Phase 2, which adds HR-specific columns). Work Management schemas (W5 OKR, W6 Time, W7 Resource) are pending detailed schema docs - table counts are estimates.
 
 ---
 
@@ -26,10 +26,10 @@ These tables are referenced by many others — design changes here have wide imp
 | `tenants` | Infrastructure | 120+ tables |
 | `employees` | Core HR | 71+ tables |
 | `users` | Infrastructure | 70+ tables |
-| `workspaces` | WorkSync.Foundation | 40+ tables |
-| `projects` | WorkSync.ProjectManagement | 20+ tables |
-| `tasks` | WorkSync.TaskManagement | 15+ tables |
-| `channels` | WorkSync.Chat | 10 tables |
+| `workspaces` | WorkManagement.Foundation | 40+ tables |
+| `projects` | WorkManagement.Projects | 20+ tables |
+| `tasks` | WorkManagement.Tasks | 15+ tables |
+| `channels` | WorkManagement.Chat | 10 tables |
 | `file_records` | Infrastructure | 10 tables |
 | `registered_agents` | Agent Gateway | 8 tables |
 | `skills` | Skills & Learning | 6 tables |
@@ -109,9 +109,9 @@ These tables are referenced by many others — design changes here have wide imp
 |:------|:--------|:--------|
 | `employee_skills` | 11 | tenant_id→tenants, employee_id→employees, validated_by_id→employees |
 | `job_skill_requirements` | 7 | tenant_id→tenants, job_family_id→job_families |
-| `skill_categories` | 7 | tenant_id→tenants, created_by_id→users |
+| `skill_categories` | 7 | tenant_id→tenants, created_by_id->users |
 | `skill_validation_requests` | 11 | tenant_id→tenants, employee_id→employees, validator_id→employees |
-| `skills` | 9 | tenant_id→tenants, category_id→skill_categories, created_by_id→users |
+| `skills` | 9 | tenant_id→tenants, category_id→skill_categories, created_by_id->users |
 
 ### [[database/schemas/leave|Leave]] (5 tables)
 
@@ -123,11 +123,15 @@ These tables are referenced by many others — design changes here have wide imp
 | `leave_requests` | 14 | employee_id→employees, approved_by_id→users, document_file_id→file_records |
 | `leave_types` | 9 | tenant_id→tenants |
 
-### [[database/schemas/calendar|Calendar]] (1 table)
+### [[database/schemas/calendar|Calendar]] (5 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `calendar_events` | 14 | created_by_id→users |
+| `calendar_events` | 18 | tenant_id→tenants, created_by_id->users |
+| `calendar_event_participants` | 2 | event_id→calendar_events, employee_id→employees |
+| `holiday_calendar_settings` | 13 | tenant_id→tenants, legal_entity_id→legal_entities, updated_by_id→users |
+| `external_calendar_connections` | 15 | tenant_id→tenants, user_id→users |
+| `external_calendar_event_links` | 14 | tenant_id→tenants, calendar_event_id→calendar_events, external_calendar_connection_id→external_calendar_connections |
 
 ### [[database/schemas/configuration|Configuration]] (10 tables)
 
@@ -155,7 +159,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `activity_daily_summary` | 19 | tenant_id→tenants, employee_id→employees |
 | `activity_raw_buffer` | 5 | tenant_id→tenants, agent_device_id→registered_agents |
 | `activity_snapshots` | 11 | tenant_id→tenants, employee_id→employees |
-| `application_categories` | 7 | tenant_id→tenants, created_by_id→users |
+| `application_categories` | 7 | tenant_id→tenants, created_by_id->users |
 | `application_usage` | 12 | tenant_id→tenants, employee_id→employees |
 | `browser_activity` | 9 | tenant_id→tenants, employee_id→employees |
 | `device_tracking` | 8 | tenant_id→tenants, employee_id→employees |
@@ -167,7 +171,7 @@ These tables are referenced by many others — design changes here have wide imp
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
 | `discrepancy_events` | 13 | tenant_id→tenants, employee_id→employees |
-| `wms_daily_time_logs` | 8 | tenant_id→tenants, employee_id→employees |
+| `work_management_daily_time_logs` | 8 | tenant_id→tenants, employee_id→employees |
 
 ### [[database/schemas/workforce-presence|Workforce Presence]] (12 tables)
 
@@ -181,7 +185,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `presence_sessions` | 12 | tenant_id→tenants, employee_id→employees |
 | `public_holidays` | 6 | country_id→countries |
 | `roster_entries` | 6 | tenant_id→tenants, employee_id→employees, shift_id→shifts |
-| `roster_periods` | 8 | tenant_id→tenants, created_by_id→users |
+| `roster_periods` | 8 | tenant_id→tenants, created_by_id->users |
 | `shift_assignments` | 7 | tenant_id→tenants, employee_id→employees, shift_id→shifts |
 | `shifts` | 9 | tenant_id→tenants |
 | `work_schedules` | 5 | tenant_id→tenants |
@@ -193,7 +197,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `alert_acknowledgements` | 6 | acknowledged_by_id→users |
 | `escalation_chains` | 8 | tenant_id→tenants |
 | `exception_alerts` | 10 | tenant_id→tenants, employee_id→employees |
-| `exception_rules` | 12 | tenant_id→tenants, created_by_id→users |
+| `exception_rules` | 12 | tenant_id→tenants, created_by_id->users |
 | `exception_schedules` | 9 | tenant_id→tenants |
 
 ### [[database/schemas/identity-verification|Identity Verification]] (6 tables)
@@ -201,7 +205,7 @@ These tables are referenced by many others — design changes here have wide imp
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
 | `biometric_audit_logs` | 6 | tenant_id→tenants |
-| `biometric_devices` | 10 | tenant_id→tenants, location_id→departments |
+| `biometric_devices` | 10 | tenant_id->tenants, office_location_id->office_locations |
 | `biometric_enrollments` | 8 | tenant_id→tenants, employee_id→employees |
 | `biometric_events` | 8 | tenant_id→tenants, employee_id→employees |
 | `verification_policies` | 9 | tenant_id→tenants |
@@ -214,16 +218,16 @@ These tables are referenced by many others — design changes here have wide imp
 | `daily_employee_report` | 15 | tenant_id→tenants, employee_id→employees |
 | `monthly_employee_report` | 15 | tenant_id→tenants, employee_id→employees |
 | `weekly_employee_report` | 13 | tenant_id→tenants, employee_id→employees |
-| `wms_productivity_snapshots` | 14 | tenant_id→tenants, employee_id→employees |
+| `work_management_productivity_snapshots` | 14 | tenant_id→tenants, employee_id→employees |
 | `workforce_snapshot` | 11 | tenant_id→tenants |
 
 ---
 
-## Phase 1 — WorkSync (Pillar 3)
+## Phase 1 — Work Management (Pillar 3)
 
-### [[database/schemas/wms-project-management|WorkSync Foundation + Project Management]] (12 tables)
+### [[database/schemas/wms-project-management|Work Management Foundation + Projects]] (13 tables)
 
-Microsoft Teams workspace sync additions:
+Phase 2 Microsoft Teams workspace sync additions (optional integration, not SSO):
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -232,14 +236,15 @@ Microsoft Teams workspace sync additions:
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `workspaces` | 9 | tenant_id→tenants, created_by→users |
-| `workspace_roles` | 5 | workspace_id→workspaces |
-| `workspace_members` | 7 | workspace_id→workspaces, user_id→users, role_id→workspace_roles |
-| `projects` | 13 | workspace_id→workspaces, tenant_id→tenants, owner_id→users |
-| `project_members` | 6 | project_id→projects, user_id→users |
-| `epics` | 9 | project_id→projects, assigned_to→users |
+| `workspaces` | 12 | tenant_id->tenants, owner_id->users, legal_entity_id->legal_entities |
+| `workspace_roles` | 4 | workspace_id->workspaces |
+| `workspace_members` | 11 | workspace_id->workspaces, user_id->users, employee_id->employees, workspace_role_id->workspace_roles |
+| `workspace_hr_team_links` | 10 | tenant_id->tenants, workspace_id->workspaces, hr_team_id->teams |
+| `projects` | 14 | workspace_id->workspaces, tenant_id->tenants, lead_id->users |
+| `project_members` | 9 | project_id->projects, user_id->users, employee_id->employees |
+| `epics` | 9 | project_id->projects, created_by_id->users |
 | `milestones` | 8 | project_id→projects |
-| `versions` | 8 | project_id→projects, released_by→users |
+| `versions` | 7 | project_id->projects |
 | `release_calendar` | 7 | project_id→projects, version_id→versions |
 | `labels` | 6 | workspace_id→workspaces |
 
@@ -247,13 +252,13 @@ Microsoft Teams workspace sync additions:
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `tasks` | 22 | project_id→projects, sprint_id→sprints, epic_id→epics, creator_id→users |
-| `task_assignments` | 5 | task_id→tasks, user_id→users, assigned_by→users |
-| `task_checklists` | 5 | task_id→tasks, created_by→users |
-| `task_checklist_items` | 7 | checklist_id→task_checklists, completed_by→users |
+| `tasks` | 19 | project_id->projects, sprint_id->sprints, epic_id->epics, created_by_id->users |
+| `task_assignments` | 9 | task_id->tasks, user_id->users, employee_id->employees, assigned_by_id->users |
+| `task_checklists` | 5 | task_id->tasks |
+| `task_checklist_items` | 7 | checklist_id->task_checklists, checked_by_id->users |
 | `task_tags` | 3 | task_id→tasks, label_id→labels |
-| `task_approvals` | 7 | task_id→tasks, requested_by→users, approver_id→users |
-| `task_watchers` | 4 | task_id→tasks, user_id→users |
+| `task_approvals` | 8 | task_id->tasks, requested_by_id->users, approver_id->users, approver_employee_id->employees |
+| `task_watchers` | 3 | task_id->tasks, user_id->users, employee_id->employees |
 | `task_links` | 6 | source_task_id→tasks, target_task_id→tasks |
 | `custom_fields` | 8 | workspace_id→workspaces |
 | `custom_field_values` | 6 | field_id→custom_fields, task_id→tasks |
@@ -261,23 +266,24 @@ Microsoft Teams workspace sync additions:
 | `board_columns` | 7 | board_id→boards (status_key maps to tasks.status, wip_limit enforced) |
 | `board_task_positions` | 5 | board_id→boards, column_id→board_columns, task_id→tasks |
 
-### [[database/schemas/wms-planning|Sprint Planning + Roadmaps]] (7 tables)
+### [[database/schemas/wms-planning|Sprint Planning + Roadmaps]] (8 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `sprints` | 12 | project_id→projects, workspace_id→workspaces, created_by→users |
-| `sprint_backlog_items` | 7 | sprint_id→sprints, task_id→tasks, added_by→users |
+| `sprints` | 9 | project_id->projects |
+| `sprint_backlog_items` | 7 | sprint_id->sprints, task_id->tasks, added_by_id->users |
 | `sprint_daily_snapshots` | 9 | sprint_id→sprints (total/completed/remaining/added/removed story_points for burndown) |
-| `sprint_reports` | 8 | sprint_id→sprints, generated_by→users |
-| `roadmaps` | 7 | project_id→projects, workspace_id→workspaces |
-| `roadmap_items` | 10 | roadmap_id→roadmaps, epic_id→epics, milestone_id→milestones |
-| `baselines` | 7 | roadmap_id→roadmaps, created_by→users |
+| `sprint_reports` | 7 | sprint_id->sprints |
+| `sprint_report_contributors` | 8 | sprint_report_id->sprint_reports, user_id->users, employee_id->employees |
+| `roadmaps` | 9 | workspace_id->workspaces, created_by_id->users |
+| `roadmap_items` | 7 | roadmap_id->roadmaps |
+| `baselines` | 6 | project_id->projects, created_by_id->users |
 
-> Roadmaps are **Phase 1** (WorkSync Phase 4 user flow depends on them).
+> Roadmaps are **Phase 1** (Work Management Phase 4 user flow depends on them).
 
 ### [[database/schemas/wms-chat|Chat + Chat AI]] (11 tables)
 
-Microsoft Teams chat sync additions:
+Phase 2 Microsoft Teams chat sync additions (optional integration, not SSO):
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -286,12 +292,12 @@ Microsoft Teams chat sync additions:
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `channels` | 9 | workspace_id→workspaces, tenant_id→tenants, created_by→users |
+| `channels` | 9 | workspace_id→workspaces, tenant_id→tenants, created_by_id->users |
 | `channel_members` | 6 | channel_id→channels, user_id→users |
 | `messages` | 11 | channel_id→channels, user_id→users, parent_message_id→messages |
 | `message_reactions` | 4 | message_id→messages, user_id→users |
 | `message_attachments` | 3 | message_id→messages, file_asset_id→file_assets |
-| `message_pins` | 5 | channel_id→channels, message_id→messages, pinned_by→users |
+| `message_pins` | 5 | channel_id→channels, message_id→messages, pinned_by_id->users |
 | `premium_ai_detections` | 10 | message_id→messages, channel_id→channels |
 | `ai_action_jobs` | 14 | detection_id→premium_ai_detections, tag_execution_id→ide_tag_executions, user_id→users |
 | `chat_reminder_items` | 8 | channel_id→channels, task_id→tasks, user_id→users |
@@ -302,21 +308,21 @@ Microsoft Teams chat sync additions:
 
 | Table | Columns | Key FKs | Notes |
 |:------|:--------|:--------|:------|
-| `documents` | extended | workspace_id→workspaces, project_id→projects | Shared with HR Documents. WorkSync adds workspace_id, project_id, document_scope, locked_at, locked_by, approved_version_id. Status enum gains `approved`. |
-| `document_versions` | 7 | document_id→documents, created_by→users | Canonical version table — Phase 1 |
-| `document_approvals` | 8 | document_id→documents, requested_by→users, approver_id→users | On approve: sets documents.status=approved + lock fields |
+| `documents` | extended | workspace_id→workspaces, project_id→projects | Shared with HR Documents. Work Management adds workspace_id, project_id, document_scope, locked_at, locked_by, approved_version_id. Status enum gains `approved`. |
+| `document_versions` | 7 | document_id→documents, created_by_id->users | Canonical version table — Phase 1 |
+| `document_approvals` | 8 | document_id→documents, requested_by_id->users, approver_id→users | On approve: sets documents.status=approved + lock fields |
 | `wiki_pages` | 11 | project_id→projects, parent_page_id→wiki_pages, author_id→users | Hierarchical wiki |
-| `task_documents` | 5 | task_id→tasks, document_id→documents, linked_by→users | Durable task↔document link |
+| `task_documents` | 5 | task_id→tasks, document_id→documents, linked_by_id->users | Durable task↔document link |
 
 ### [[database/schemas/wms-analytics|Analytics + Dashboards]] (7 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `dashboards` | 9 | workspace_id→workspaces, tenant_id→tenants, created_by→users |
+| `dashboards` | 9 | workspace_id→workspaces, tenant_id→tenants, created_by_id->users |
 | `chart_widgets` | 9 | dashboard_id→dashboards |
-| `saved_views` | 9 | workspace_id→workspaces, created_by→users |
+| `saved_views` | 9 | workspace_id→workspaces, created_by_id->users |
 | `report_snapshots` | 7 | workspace_id→workspaces |
-| `report_exports` | 10 | workspace_id→workspaces, requested_by→users, file_asset_id→file_assets |
+| `report_exports` | 10 | workspace_id→workspaces, requested_by_id->users, file_asset_id→file_assets |
 | `dashboard_shares` | 7 | dashboard_id→dashboards, shared_with_id→users/teams/workspaces |
 | `saved_view_shares` | 6 | saved_view_id→saved_views |
 
@@ -330,7 +336,7 @@ Microsoft Teams chat sync additions:
 | `commit_records` | 8 | repository_id→repositories, author_user_id→users (task_ids uuid[]) |
 | `pull_request_records` | 12 | repository_id→repositories, author_user_id→users (task_ids uuid[]) |
 | `ci_pipeline_runs` | 9 | repository_id→repositories (task_ids uuid[]) |
-| `task_automation_rules` | 10 | workspace_id→workspaces, created_by→users |
+| `task_automation_rules` | 10 | workspace_id→workspaces, created_by_id->users |
 
 ---
 
@@ -354,9 +360,9 @@ Microsoft Teams chat sync additions:
 
 ### [[database/schemas/shared-platform|Shared Platform]] (35 tables)
 
-> Bridge-era WMS provisioning tables removed (WorkSync is now internal).
+> Old external-provisioning tables removed because Work Management is internal.
 
-Microsoft Teams integration additions:
+Phase 2 Microsoft Teams integration additions (optional integration, not SSO):
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -367,34 +373,34 @@ Microsoft Teams integration additions:
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `api_keys` | 11 | tenant_id→tenants, created_by_id→users |
+| `api_keys` | 11 | tenant_id→tenants, created_by_id->users |
 | `approval_actions` | 8 | actor_id→employees, delegated_to_id→employees |
-| `compliance_exports` | 10 | tenant_id→tenants, requested_by_id→users, target_user_id→users |
-| `escalation_rules` | 11 | tenant_id→tenants, escalate_to_role_id→roles, created_by_id→users |
+| `compliance_exports` | 10 | tenant_id→tenants, requested_by_id->users, target_user_id→users |
+| `escalation_rules` | 11 | tenant_id→tenants, escalate_to_role_id→roles, created_by_id->users |
 | `global_app_catalog` | 11 | created_by_id→dev_platform_accounts |
 | `feature_flags` | 8 | tenant_id→tenants, toggled_by_id→users |
 | `hardware_terminals` | 11 | tenant_id→tenants |
 | `legal_holds` | 9 | tenant_id→tenants, placed_by_id→users, released_by_id→users |
 | `notification_channels` | 9 | tenant_id→tenants, configured_by_id→users |
-| `notification_templates` | 12 | tenant_id→tenants, created_by_id→users |
+| `notification_templates` | 12 | tenant_id→tenants, created_by_id->users |
 | `payment_methods` | 10 | tenant_id→tenants |
 | `plan_features` | 5 | — |
 | `rate_limit_rules` | 7 | tenant_id→tenants |
 | `refresh_tokens` | 9 | user_id→users, tenant_id→tenants |
-| `retention_policies` | 9 | tenant_id→tenants, created_by_id→users |
+| `retention_policies` | 9 | tenant_id→tenants, created_by_id->users |
 | `scheduled_tasks` | 9 | tenant_id→tenants |
 | `signalr_connections` | 9 | user_id→users, tenant_id→tenants |
-| `sso_providers` | 12 | tenant_id→tenants |
+| `sso_providers` | 12 | tenant_id→tenants; Phase 1 provider_type = google only |
 | `subscription_invoices` | 10 | tenant_id→tenants |
 | `subscription_plans` | 11 | — |
 | `system_settings` | 6 | updated_by_id→users |
 | `tenant_branding` | 9 | tenant_id→tenants, logo_file_id→file_records, updated_by_id→users |
 | `tenant_feature_flags` | 6 | tenant_id→tenants, overridden_by_id→users |
-| `tenant_subscriptions` | 11 | tenant_id→tenants, created_by_id→users |
+| `tenant_subscriptions` | 11 | tenant_id→tenants, created_by_id->users |
 | `user_preferences` | 6 | user_id→users, tenant_id→tenants |
 | `webhook_deliveries` | 9 | tenant_id→tenants |
-| `webhook_endpoints` | 8 | tenant_id→tenants, created_by_id→users |
-| `workflow_definitions` | 11 | tenant_id→tenants, created_by_id→users |
+| `webhook_endpoints` | 8 | tenant_id→tenants, created_by_id->users |
+| `workflow_definitions` | 11 | tenant_id→tenants, created_by_id->users |
 | `workflow_instances` | 10 | tenant_id→tenants, initiated_by_id→employees |
 | `workflow_step_instances` | 8 | assigned_to_id→employees |
 | `workflow_steps` | 9 | approver_role_id→roles |
@@ -403,7 +409,7 @@ Microsoft Teams integration additions:
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `agent_commands` | 12 | tenant_id→tenants, requested_by→users |
+| `agent_commands` | 12 | tenant_id→tenants, requested_by_id->users |
 | `agent_health_logs` | 8 | tenant_id→tenants |
 | `agent_install_entitlements` | 8 | tenant_id→tenants, granted_by→users — checked server-side on every IDE install request |
 | `agent_install_jobs` | 9 | tenant_id→tenants, user_id→users, install_id→ide_extension_installs — created when user approves monitoring agent install from IDE |
@@ -456,25 +462,25 @@ Microsoft Teams integration additions:
 |:------|:--------|:--------|
 | `course_enrollments` | 10 | tenant_id→tenants, employee_id→employees, assigned_by_id→employees |
 | `course_skill_tags` | 4 | tenant_id→tenants |
-| `courses` | 11 | tenant_id→tenants, created_by_id→users |
+| `courses` | 11 | tenant_id→tenants, created_by_id->users |
 | `development_plan_items` | 9 | tenant_id→tenants |
-| `development_plans` | 9 | tenant_id→tenants, employee_id→employees, created_by_id→users |
+| `development_plans` | 9 | tenant_id→tenants, employee_id→employees, created_by_id->users |
 | `employee_certifications` | 14 | tenant_id→tenants, employee_id→employees, certificate_file_record_id→file_records |
-| `lms_providers` | 9 | tenant_id→tenants, created_by_id→users |
+| `lms_providers` | 9 | tenant_id→tenants, created_by_id->users |
 | `skill_assessment_responses` | 10 | tenant_id→tenants, employee_id→employees, file_record_id→file_records |
 | `skill_question_options` | 6 | tenant_id→tenants |
-| `skill_questions` | 11 | tenant_id→tenants, created_by_id→users |
+| `skill_questions` | 11 | tenant_id→tenants, created_by_id->users |
 
 ### [[database/schemas/documents|HR Documents]] (4 tables — Phase 2 additions)
 
-> `documents` and `document_versions` are created in Phase 1 by WorkSync.Collaboration. HR Documents (Phase 2) adds the HR-specific tables only.
+> `documents` and `document_versions` are created in Phase 1 by WorkManagement.Collaboration. HR Documents (Phase 2) adds the HR-specific tables only.
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
 | `document_access_logs` | 7 | tenant_id→tenants, employee_id→employees |
 | `document_acknowledgements` | 7 | employee_id→employees, acknowledged_by_id→users |
 | `document_categories` | 8 | tenant_id→tenants |
-| `document_templates` | 10 | tenant_id→tenants, created_by_id→users |
+| `document_templates` | 10 | tenant_id→tenants, created_by_id->users |
 
 ### [[database/schemas/grievance|Grievance]] (2 tables)
 
@@ -526,8 +532,9 @@ Microsoft Teams integration additions:
 ## Known Issues
 
 - **Escalation boundary:** `escalation_rules` (Shared Platform) handles workflow SLA timeouts; `escalation_chains` (Exception Engine) handles alert routing for anomalies. These are distinct — do not merge.
-- **documents table shared ownership:** WorkSync.Collaboration owns the Phase 1 definition. HR Documents Phase 2 adds columns via migration. If `documents` columns conflict between HR and WMS concerns, HR Documents wins for `employee_id`/`legal_entity_id` scope; WorkSync wins for `workspace_id`/`project_id` scope.
-- **WorkSync schema coverage:** Core WorkSync schema files now exist for project management, task management, planning, chat, collaboration, analytics, integrations, and IDE extension. OKR, time management, and resource management are covered in the unified entity map and module docs; create dedicated schema files if the implementation team wants one file per WorkSync subdomain.
+- **documents table shared ownership:** WorkManagement.Collaboration owns the Phase 1 definition. HR Documents Phase 2 adds columns via migration. If `documents` columns conflict between HR and Work Management concerns, HR Documents wins for `employee_id`/`legal_entity_id` scope; Work Management wins for `workspace_id`/`project_id` scope.
+- **HR/Work Management identity bridge:** Work Management membership, assignment, watcher, approval, and contributor tables persist both `user_id` and `employee_id` where HR state matters. Phase 1 must not assign work to users without active employee records.
+- **Work Management schema coverage:** Core Work Management schema files now exist for project management, task management, planning, chat, collaboration, analytics, integrations, and IDE extension. OKR, time management, and resource management are covered in the unified entity map and module docs; create dedicated schema files if the implementation team wants one file per Work Management subdomain.
 
 ---
 
@@ -537,3 +544,7 @@ Microsoft Teams integration additions:
 - [[database/cross-module-relationships|Cross-Module Relationships]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[database/performance|Performance]]
+
+
+
+

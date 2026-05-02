@@ -73,12 +73,21 @@ Charts & Graphs (attendance trend, dept headcount) — glass containers
 
 ## Responsive Breakpoints
 
-| Breakpoint | Width | Layout |
-|:-----------|:------|:-------|
-| Desktop | ≥1280px | Full sidebar + content |
-| Small Desktop | ≥1024px | Collapsed sidebar + content |
-| Tablet | ≥768px | Hidden sidebar (hamburger) + content |
-| Mobile | <768px | Not optimized (Phase 2) |
+Responsive behavior is a Phase 1 requirement. Every layout must adapt smoothly across mobile, tablet, laptop, and desktop viewports.
+
+| Breakpoint | Width | Shell behavior | Page behavior |
+|:-----------|:------|:---------------|:--------------|
+| Mobile | `<640px` | Topbar with hamburger; rail and panel hidden; navigation opens as a full-height drawer | Single-column content, card/list views for dense data, sticky primary actions where useful |
+| Tablet | `640-1023px` | Sidebar hidden by default; hamburger opens drawer; entity/search/actions compact | Content-first layout, filters collapse into sheet/drawer, two-column only for simple sections |
+| Laptop | `1024-1279px` | Compact rail visible; expansion panel collapsed or flyout; topbar keeps key actions visible | Dense work surfaces allowed, but tables/forms must still avoid page overflow |
+| Desktop | `>=1280px` | Full floating shell with rail, expansion panel, topbar, and content area | Full dashboard, table, chart, and detail layouts |
+
+Rules:
+
+- No page may rely on horizontal page scrolling for primary use.
+- Tables must provide a mobile card/list representation or an intentionally constrained scroll region.
+- Primary navigation, search, entity context, notifications, and profile access must remain reachable at every breakpoint.
+- Page padding should scale with viewport size, typically `p-3 sm:p-4 lg:p-6`.
 
 ## Spacing Tokens
 

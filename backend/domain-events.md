@@ -90,7 +90,7 @@ public class LeaveApprovedEventHandler : INotificationHandler<LeaveApprovedEvent
 | `LeaveApprovedEvent` | Leave | Payroll | Create deduction entry |
 | `EmployeeCreatedEvent` | CoreHR | Auth | Create user account |
 | `EmployeeTerminatedEvent` | CoreHR | Auth | Deactivate user |
-| `EmployeeTerminatedEvent` | CoreHR | WorkSync access handler | Revoke WorkSync workspace access |
+| `EmployeeTerminatedEvent` | CoreHR | Work Management access handler | Revoke Work Management workspace access |
 | `SnapshotCapturedEvent` | ActivityMonitoring | ExceptionEngine | Evaluate anomaly rules |
 | `PresenceRecordedEvent` | WorkforcePresence | ActivityMonitoring | Correlate agent snapshots |
 | `AnomalyDetectedEvent` | ExceptionEngine | Notifications | Send alert |

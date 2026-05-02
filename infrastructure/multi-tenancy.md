@@ -128,7 +128,7 @@ public void No_Repository_Should_Bypass_BaseRepository()
 ## Tenant Provisioning Flow
 
 ```
-1. Signup      → Create tenant record (status: provisioning)
+1. Operator provisions via Developer Console (`POST /admin/v1/tenants`) → Create tenant record (status: provisioning)
 2. Seed        → Create default roles, permissions, settings, department
 3. Activate    → Set status to active, send welcome email
 4. Configure   → Admin sets up org structure, imports employees

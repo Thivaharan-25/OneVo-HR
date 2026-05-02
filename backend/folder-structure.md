@@ -8,13 +8,13 @@ The canonical reference for ONEVO backend organisation. All other docs defer to 
 
 ## Architecture
 
-ONEVO follows **Clean Architecture + CQRS** (.NET 9). The solution is divided into four layer projects and two host projects. Modules from the earlier design become **feature folders** within each layer — there are no separate module `.csproj` files.
+ONEVO follows **Clean Architecture + CQRS** (.NET 9). The solution is divided into four layer projects and two host projects. Modules from the planning docs become **feature folders** within each layer — there are no separate module `.csproj` files.
 
 ## Deployment Boundary (Definitive)
 
 | Unit | Solution | Deployment artifact |
 |:-----|:---------|:-------------------|
-| HR + WorkSync web backend | `ONEVO.sln` | Single ASP.NET Core host |
+| HR + Work Management web backend | `ONEVO.sln` | Single ASP.NET Core host |
 | Developer admin console API | `ONEVO.sln` | Second host in same solution |
 | Desktop monitoring agent | `ONEVO.Agent.sln` | **Separate solution, separate MSIX release cycle** |
 | VS Code IDE extension | Published to VS Code Marketplace separately | TypeScript VSIX |
@@ -75,19 +75,19 @@ ONEVO.sln
 │   │       ├── AgentGateway/Entities/ + Events/
 │   │       └── DevPlatform/Entities/ + Events/
 │   │       │
-│   │       │  ── WORKSYNC (Pillar 3) feature folders ──
-│   │       ├── WorkSync/Foundation/Entities/ + Events/
-│   │       ├── WorkSync/ProjectManagement/Entities/ + Events/
-│   │       ├── WorkSync/TaskManagement/Entities/ + Events/
-│   │       ├── WorkSync/SprintPlanning/Entities/ + Events/
-│   │       ├── WorkSync/OKR/Entities/ + Events/
-│   │       ├── WorkSync/TimeManagement/Entities/ + Events/
-│   │       ├── WorkSync/ResourceManagement/Entities/ + Events/
-│   │       ├── WorkSync/Chat/Entities/ + Events/
-│   │       ├── WorkSync/ChatAI/Entities/ + Events/
-│   │       ├── WorkSync/Collaboration/Entities/ + Events/
-│   │       ├── WorkSync/Analytics/Entities/ + Events/
-│   │       ├── WorkSync/Integrations/Entities/ + Events/
+│   │       │  ── WORK MANAGEMENT (Pillar 3) feature folders ──
+│   │       ├── WorkManagement/Foundation/Entities/ + Events/
+│   │       ├── WorkManagement/Projects/Entities/ + Events/
+│   │       ├── WorkManagement/Tasks/Entities/ + Events/
+│   │       ├── WorkManagement/Planning/Entities/ + Events/
+│   │       ├── WorkManagement/OKR/Entities/ + Events/
+│   │       ├── WorkManagement/Time/Entities/ + Events/
+│   │       ├── WorkManagement/Resources/Entities/ + Events/
+│   │       ├── WorkManagement/Chat/Entities/ + Events/
+│   │       ├── WorkManagement/ChatAI/Entities/ + Events/
+│   │       ├── WorkManagement/Collaboration/Entities/ + Events/
+│   │       ├── WorkManagement/Analytics/Entities/ + Events/
+│   │       ├── WorkManagement/Integrations/Entities/ + Events/
 │   │       ├── Integrations/MicrosoftTeams/Entities/ + Events/
 │   │       └── IDEExtension/Entities/ + Events/
 │   │
@@ -118,7 +118,7 @@ ONEVO.sln
 │   │   │       ├── Result.cs
 │   │   │       ├── PagedRequest.cs
 │   │   │       └── PagedResult.cs
-│   │   ├── Features/                          # ~38 feature folders (HR + WFI + WorkSync + IDE)
+│   │   ├── Features/                          # ~38 feature folders (HR + WFI + Work Management + IDE)
 │   │   │   └── {Feature}/
 │   │   │       ├── Commands/{UseCase}/
 │   │   │       │   ├── {UseCase}Command.cs    # record : IRequest<Result<ResponseDto>>
@@ -136,7 +136,7 @@ ONEVO.sln
 │   │  ── LAYER 3: INFRASTRUCTURE ──
 │   ├── ONEVO.Infrastructure/
 │   │   ├── Persistence/
-│   │   │   ├── ApplicationDbContext.cs        # ALL ~300 tables (HR + WorkSync + IDE), global tenant + workspace + soft-delete filters
+│   │   │   ├── ApplicationDbContext.cs        # ALL 252 cataloged tables (HR + Work Management + IDE), global tenant + workspace + soft-delete filters
 │   │   │   ├── ApplicationDbContextFactory.cs
 │   │   │   ├── Migrations/                    # ONE migration set
 │   │   │   ├── Interceptors/
@@ -160,9 +160,6 @@ ONEVO.sln
 │   │   │   ├── HangfireConfiguration.cs
 │   │   │   ├── Queues.cs
 │   │   │   └── BackgroundJobService.cs
-│   │   ├── RealTime/
-│   │   │   ├── SignalRNotificationDispatcher.cs
-│   │   │   └── HubRegistration.cs
 │   │   ├── Email/SmtpEmailService.cs
 │   │   ├── Storage/BlobStorageService.cs
 │   │   ├── Security/AesEncryptionService.cs

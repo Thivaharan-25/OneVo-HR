@@ -11,7 +11,7 @@ Three scenarios: reading data to the frontend, writing data from a button click,
 User opens a page or a list loads.
 
 ```
-Browser (Next.js)
+Browser (Vite + React)
   │
   │  GET /api/v1/leave/requests?employeeId=xxx
   ▼
@@ -68,7 +68,7 @@ Browser receives JSON → React renders the list
 User clicks "Approve Leave Request" button.
 
 ```
-Browser (Next.js)
+Browser (Vite + React)
   │
   │  POST /api/v1/leave/requests/{id}/approve
   │  Body: { "approverId": "uuid" }

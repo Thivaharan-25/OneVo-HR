@@ -86,6 +86,8 @@ Webhook-triggered automation rules. Key columns: `workspace_id`, `tenant_id`, `n
 
 ## Related
 
+- [[Userflow/Work-Management/integration-automation-flow|WorkSync Integration Automation]] — repository connection and rule user flow
+
 - [[modules/work-management/tasks/overview|Task Management]] — task_ids auto-detection, task_repository_links
 - [[modules/ide-extension/overview|IDE Extension]] — IDE events also write to code_activity_events
 - [[database/schemas/wms-integrations|WMS Integrations Schema]]

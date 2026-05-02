@@ -12,7 +12,9 @@ Manages fingerprint terminal hardware. API key authenticated via HMAC-SHA256.
 ## Database Tables
 
 ### `biometric_devices`
-Fields: `device_name`, `location_id`, `api_key_encrypted` (HMAC-SHA256), `model`, `is_active`, `last_heartbeat_at`.
+Fields: `device_name`, `office_location_id`, `api_key_encrypted` (HMAC-SHA256), `model`, `is_active`, `last_heartbeat_at`.
+
+`office_location_id` points to a physical office location, not a logical department. Department-level reporting must be derived from employees and org structure, not device placement.
 
 ### `biometric_audit_logs`
 Tamper detection and device health: `event_type` (`heartbeat`, `tamper_detected`, `firmware_update`, `error`), `details_json`.

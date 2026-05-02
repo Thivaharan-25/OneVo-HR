@@ -70,7 +70,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Platform-Setup/billing-subscription\|Billing Subscription]] | Plan selection, payment, upgrade/downgrade | Documented | MUST |
 | [[Userflow/Platform-Setup/sso-configuration\|SSO Configuration]] | SSO provider setup (Google, Azure AD) | Documented | SHOULD |
 | [[Userflow/Platform-Setup/feature-flag-management\|Feature Flag Management]] | Enable/disable modules per tenant | Documented | MUST |
-| [[frontend/design-system/theming/tenant-branding\|Tenant Branding]] | Logo, colors, custom domain | Documented | COULD |
+| [[Userflow/Platform-Setup/tenant-branding\|Tenant Branding]] | Logo, colors, custom domain | Documented | COULD |
 
 ### Auth & Access — `roles:manage`, `users:manage`
 
@@ -106,6 +106,12 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Employee-Management/employee-offboarding\|Employee Offboarding]] | Exit workflow: checklist → access revoke → final pay | Documented | MUST |
 | [[Userflow/Employee-Management/dependent-management\|Dependent Management]] | Add/edit dependents and emergency contacts | Documented | SHOULD |
 | [[Userflow/Employee-Management/qualification-tracking\|Qualification Tracking]] | Education, certifications, experience | Documented | COULD |
+
+### Data Import — `employees:write`
+
+| Flow | Description | Status | Priority |
+|:-----|:------------|:-------|:---------|
+| [[Userflow/Data-Import/data-import-wizard\|Data Import Wizard]] | Bulk employee/org import from CSV, Excel, or PeopleHR | Documented | MUST |
 
 ### Leave — `leave:create/approve/manage`
 
@@ -189,6 +195,12 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Workforce-Intelligence/identity-verification-review\|Identity Verification Review]] | Review flagged verification failures | Documented | SHOULD |
 | [[Userflow/Workforce-Intelligence/agent-deployment\|Agent Deployment]] | Install, register, monitor desktop agent | Documented | MUST |
 
+### Discrepancy Engine — `exceptions:manage`
+
+| Flow | Description | Status | Priority |
+|:-----|:------------|:-------|:---------|
+| [[Userflow/Discrepancy-Engine/discrepancy-review\|Discrepancy Review]] | Review mismatches between active time, WorkSync logs, and calendar context | Documented | MUST |
+
 ### Exception Engine — `exceptions:view/manage/acknowledge`
 
 | Flow | Description | Status | Priority |
@@ -229,6 +241,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Calendar/calendar-event-creation\|Calendar Event Creation]] | Create events (meetings, holidays) | Documented | SHOULD |
+| [[Userflow/Calendar/calendar-integrations\|Calendar Integrations]] | Country holiday sync plus Google/Outlook calendar pull/push sync | Documented | MUST |
 | [[Userflow/Calendar/conflict-detection\|Conflict Detection]] | View scheduling conflicts | Documented | COULD |
 
 ### Notifications — `notifications:read/manage`
@@ -236,6 +249,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Notifications/notification-preference-setup\|Notification Preference Setup]] | User configures notification channels | Documented | SHOULD |
+| [[Userflow/Notifications/inbox\|Inbox]] | Unified approval, alert, and notification queue | Documented | MUST |
 | [[Userflow/Notifications/notification-view\|Notification View]] | View/dismiss notifications | Documented | MUST |
 
 ### Cross-Module Scenarios
@@ -260,6 +274,8 @@ These flows track chain reactions across multiple modules — when one action tr
 | [[Userflow/Configuration/monitoring-toggles\|Monitoring Toggles]] | Per-feature monitoring on/off | Documented | SHOULD |
 | [[Userflow/Configuration/employee-override\|Employee Override]] | Override settings for specific employee | Documented | SHOULD |
 | [[Userflow/Configuration/retention-policy-setup\|Retention Policy Setup]] | Data retention configuration | Documented | SHOULD |
+| [[Userflow/Configuration/app-allowlist-setup\|App Allowlist Setup]] | Configure productive/allowed applications for monitoring | Documented | SHOULD |
+| [[Userflow/Configuration/integration-connection\|Integration Connection]] | Connect and test external providers and module integrations | Documented | SHOULD |
 
 ### Work Management — `workforce:view` + feature-specific permissions
 
@@ -272,12 +288,28 @@ These flows track chain reactions across multiple modules — when one action tr
 | [[Userflow/Work-Management/goals-okr-flow\|Goals and OKRs]] | Objectives, key results, check-ins, alignment | Documented | MUST |
 | [[Userflow/Work-Management/time-tracking-flow\|Time Tracking]] | Time logs, timesheets, overtime and attendance connections | Documented | MUST |
 | [[Userflow/Work-Management/resource-flow\|Resource Management]] | Capacity, skills, allocation planning | Documented | MUST |
+| [[Userflow/Work-Management/my-space-flow\|My Space]] | Personal boards, reminders, and saved views | Documented | SHOULD |
+| [[Userflow/Work-Management/chat-ai-flow\|Chat AI]] | AI-detected actions with undo window from chat messages | Documented | SHOULD |
+| [[Userflow/Work-Management/collaboration-flow\|WorkSync Collaboration]] | Workspace documents, wiki pages, approvals, and task document links | Documented | SHOULD |
+| [[Userflow/Work-Management/work-analytics-flow\|WorkSync Analytics]] | Dashboards, widgets, saved views, and async report exports | Documented | SHOULD |
+| [[Userflow/Work-Management/integration-automation-flow\|Integration Automation]] | Repository connections, code events, and automation rules | Documented | SHOULD |
+| [[Userflow/Work-Management/workspace-teams-sync\|Workspace Teams Sync]] | Link WorkSync workspaces and chat channels with Microsoft Teams | Documented | SHOULD |
 
 ### Chat — `chat:read`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Chat/chat-overview\|Chat Overview]] | Channels, DMs, messages, reactions, file attachments | Documented | MUST |
+
+### Developer Platform — platform-admin only
+
+| Flow | Description | Status | Priority |
+|:-----|:------------|:-------|:---------|
+| [[developer-platform/userflow/overview\|Developer Platform Overview]] | Internal operator console navigation and access levels | Documented | MUST |
+| [[developer-platform/userflow/provisioning-flow\|Manual Customer Provisioning]] | Internal 6-step tenant provisioning wizard | Documented | SHOULD |
+| [[developer-platform/userflow/tenant-management\|Tenant Management]] | Manage tenant status, details, and operational actions | Documented | SHOULD |
+| [[developer-platform/userflow/feature-flags\|Feature Flags]] | Manage global and tenant-level feature flags | Documented | SHOULD |
+| [[developer-platform/userflow/agent-versions\|Agent Versions]] | Manage desktop agent rollout rings and versions | Documented | SHOULD |
 
 ---
 

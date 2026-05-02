@@ -22,6 +22,24 @@ Right: Notification bell · Theme toggle · User avatar menu
 
 See [[frontend/architecture/topbar|Topbar Architecture]] for full legal entity switcher design.
 
+
+## Responsive Navigation Mapping
+
+The route map below is the single source of truth for both desktop sidebar navigation and mobile/tablet drawer navigation.
+
+| Viewport | Component | Mapping rule |
+|:---------|:----------|:-------------|
+| Mobile `<640px` | `MobileNavDrawer` | Render visible pillars as accordion groups. Direct routes navigate immediately; panel routes expand to show sub-items. |
+| Tablet `640-1023px` | `MobileNavDrawer` | Same as mobile, with optional two-column grouping if space allows. |
+| Laptop `1024-1279px` | `NavRail` + flyout/collapsed `ExpansionPanel` | Show rail icons. Open sub-items as flyout or temporary panel. |
+| Desktop `>=1280px` | `NavRail` + `ExpansionPanel` | Full rail and pinnable panel. |
+
+Rules:
+
+- Never create a separate mobile route map.
+- Permission filtering, badges, active states, labels, and routes must come from the same pillar config.
+- Drawer navigation must include search access, entity context, profile/settings access, and close-on-navigation behavior.
+
 ## Icon Rail — 9 Pillars
 
 Display order (top to bottom). A separator line appears between Chat (7) and Admin (8).

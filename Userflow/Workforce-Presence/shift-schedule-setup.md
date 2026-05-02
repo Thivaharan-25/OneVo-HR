@@ -39,7 +39,7 @@
 - Define multi-week pattern (Week A: Morning, Week B: Night) → system auto-rotates
 
 ### Holiday overrides
-- Public holidays auto-applied from legal entity calendar → [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]]
+- Public holidays auto-apply from the legal entity's Calendar holiday settings -> [[Userflow/Calendar/calendar-integrations|Calendar Integrations]]
 
 ## Error Scenarios
 

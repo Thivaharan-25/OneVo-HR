@@ -4,7 +4,7 @@
 
 - **RDBMS:** PostgreSQL 16
 - **ORM:** Entity Framework Core 9
-- **Total Tables:** 240 unique schema tables — see [[database/schema-catalog|Schema Catalog]]
+- **Total Tables:** 252 unique schema tables — see [[database/schema-catalog|Schema Catalog]]
 - **Multi-tenancy:** `tenant_id` on all tenant-scoped tables + PostgreSQL RLS
 - **Connection Pooling:** PgBouncer
 - **Partitioning:** `pg_partman` for time-series tables
@@ -89,7 +89,7 @@ All encrypted via `IEncryptionService` (AES-256) in [[backend/shared-kernel|Shar
 
 | Document | Purpose |
 |:---------|:--------|
-| [[database/schema-catalog\|Schema Catalog]] | Master index of unified HR + WorkSync tables, grouped by module with phase tags |
+| [[database/schema-catalog\|Schema Catalog]] | Master index of unified HR + Work Management tables, grouped by module with phase tags |
 | [[database/cross-module-relationships\|Cross-Module Relationships]] | FK dependencies across module boundaries + migration order |
 | [[database/migration-patterns\|Migration Patterns]] | EF Core migrations, zero-downtime strategies |
 | [[database/performance\|Performance]] | Indexing, query optimization, N+1 prevention |
@@ -117,13 +117,13 @@ All encrypted via `IEncryptionService` (AES-256) in [[backend/shared-kernel|Shar
 | [[database/schemas/performance\|Performance (module)]] | 7 | 2 |
 | [[database/schemas/skills\|Skills & Learning]] | 15 | 2 |
 | [[database/schemas/documents\|Documents]] | Shared Phase 1 core + HR additions | 1/2 |
-| [[database/schemas/wms-project-management\|WMS Project Management]] | 12 | 1 |
-| [[database/schemas/wms-task-management\|WMS Task Management]] | 13 | 1 |
-| [[database/schemas/wms-planning\|WMS Planning]] | 10 | 1 |
-| [[database/schemas/wms-chat\|WMS Chat]] | 11 | 1/2 |
-| [[database/schemas/wms-collaboration\|WMS Collaboration]] | 9 | 1 |
-| [[database/schemas/wms-analytics\|WMS Analytics]] | 9 | 1 |
-| [[database/schemas/wms-integrations\|WMS Integrations]] | 10 | 1 |
+| [[database/schemas/wms-project-management\|Work Management Projects]] | 12 | 1 |
+| [[database/schemas/wms-task-management\|Work Management Tasks]] | 13 | 1 |
+| [[database/schemas/wms-planning\|Work Management Planning]] | 7 | 1 |
+| [[database/schemas/wms-chat\|Work Management Chat]] | 11 | 1/2 |
+| [[database/schemas/wms-collaboration\|Work Management Collaboration]] | 4 new + shared documents | 1 |
+| [[database/schemas/wms-analytics\|Work Management Analytics]] | 7 | 1 |
+| [[database/schemas/wms-integrations\|Work Management Integrations]] | 7 | 1 |
 | [[database/schemas/ide-extension\|IDE Extension]] | 5 | 1 |
 | [[database/schemas/grievance\|Grievance]] | 2 | 2 |
 | [[database/schemas/expense\|Expense]] | 3 | 2 |

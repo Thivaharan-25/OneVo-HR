@@ -126,6 +126,44 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
 }
 ```
 
+## Responsive Shell Behavior
+
+The shell is responsive from Phase 1. The same permission-aware navigation model powers desktop rail/panel navigation and the mobile drawer.
+
+| Viewport | Shell behavior |
+|:---------|:---------------|
+| Mobile `<640px` | Show compact topbar with hamburger, page title, primary action, and overflow menu. Hide `NavRail` and `ExpansionPanel`. Open `MobileNavDrawer` for navigation and search. |
+| Tablet `640-1023px` | Keep content first. Hide sidebar by default and expose navigation through hamburger/drawer. Use compact topbar controls. |
+| Laptop `1024-1279px` | Show `NavRail`; keep `ExpansionPanel` collapsed or flyout unless pinned by available width. |
+| Desktop `>=1280px` | Show full rail, optional pinned expansion panel, topbar, and content surface. |
+
+Implementation notes:
+
+- Use `min-h-dvh` for the app shell so mobile browser chrome does not cause clipped layouts.
+- Use `min-w-0` on every flex child that can contain long labels, tables, charts, or forms.
+- Scale content padding by breakpoint: `p-3 sm:p-4 lg:p-6`.
+- Keep shell overflow controlled, but let the content surface scroll independently.
+- `MobileNavDrawer` must reuse the same pillar config and permission filters as `NavRail` and `ExpansionPanel`.
+
+```tsx
+// src/app/shell-layout.tsx
+export function ShellLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-dvh flex-col gap-1.5 overflow-hidden bg-[#EDEEF2] p-2 dark:bg-[#0A0A0D]">
+      <Topbar />
+      <MobileNavDrawer />
+      <div className="flex flex-1 gap-1.5 min-h-0">
+        <NavRail className="hidden lg:flex" />
+        <ExpansionPanel className="hidden xl:flex" />
+        <main className="flex-1 min-w-0 overflow-y-auto rounded-[10px] bg-white p-3 sm:p-4 lg:p-6 dark:bg-[#111118]">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
+```
+
 ## What Makes This Layout Different from a Traditional Sidebar
 
 A traditional sidebar is flush left, edge to edge, full height. This is **not that**.

@@ -297,13 +297,31 @@ Use React Suspense boundaries around async data components.
 
 ## Layout System
 
+
+### Responsive Layout Components
+
+Responsive behavior is centralized in shared shell primitives instead of repeated page-level viewport checks:
+
+```text
+src/components/layout/
+|-- ShellLayout.tsx             # Responsive shell wrapper: topbar, rail, panel, drawer, content
+|-- Topbar.tsx                  # Responsive entity/search/actions header
+|-- NavRail.tsx                 # Laptop/desktop rail navigation
+|-- ExpansionPanel.tsx          # Desktop/laptop secondary navigation panel
+|-- MobileNavDrawer.tsx         # Mobile/tablet drawer using the same pillar config
+|-- ResponsivePage.tsx          # Page padding, width, overflow, and header slots
+`-- BreakpointProvider.tsx      # Shared breakpoint state for shell/page adaptations
+```
+
+Pages may adjust their own content density, but the shell, navigation, topbar, drawer, and base page spacing should come from these shared components.
+
 ### Dashboard Layout (`src/pages/dashboard/DashboardLayout.tsx`)
 
 The shell uses a **floating-cards** layout — every element is a separate rounded card with `8px` body padding and `6px` gaps between cards. See [[frontend/design-system/components/shell-layout|Shell Layout]] for the full implementation pattern.
 
-- **Icon Rail:** **52px** floating dark card (`#17181F`, radius 12px). Permission-gated, always visible. See [[frontend/design-system/components/nav-rail|Nav Rail]].
-- **Topbar:** **40px** height, floating white/dark card (radius 10px). See [[frontend/architecture/topbar|Topbar Architecture]] for pixel-precise spec.
-- **Expansion Panel:** **210px** floating card, width+opacity animation (220ms ease-out). See [[frontend/design-system/components/expansion-panel|Expansion Panel]].
+- **Icon Rail:** **52px** floating dark card (`#17181F`, radius 12px). Permission-gated; visible on laptop/desktop and replaced by `MobileNavDrawer` on mobile/tablet. See [[frontend/design-system/components/nav-rail|Nav Rail]].
+- **Topbar:** **40px** height, floating white/dark card (radius 10px) with compact mobile/tablet variants. See [[frontend/architecture/topbar|Topbar Architecture]] for pixel-precise spec.
+- **Expansion Panel:** **210px** floating card, width+opacity animation (220ms ease-out); hidden/collapsed below desktop. See [[frontend/design-system/components/expansion-panel|Expansion Panel]].
 - **Pillar visibility:** Permission-gated via `hasPermission()` — never hardcode role names
 - Renders `<Outlet />` from React Router for all child pages
 

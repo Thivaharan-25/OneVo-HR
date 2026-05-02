@@ -141,6 +141,8 @@ Methods: `UpdateProgress(processed, success, failed, skipped)`, `Complete()`
 
 ## Related
 
+- [[Userflow/Data-Import/data-import-wizard|Data Import Wizard]] — end-to-end HR admin import flow
+
 - [[modules/core-hr/overview|CoreHR]] — `employees` table target for bulk writes
 - [[modules/org-structure/overview|OrgStructure]] — department and job-family resolution during ETL
 - [[modules/auth/overview|Auth]] — `employees:write` permission

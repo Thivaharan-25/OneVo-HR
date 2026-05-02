@@ -2,7 +2,7 @@
 
 **Module:** [[modules/shared-platform/overview|Shared Platform]]
 **Phase:** Phase 1 + Phase 2 integration additions
-**Tables:** 35
+**Tables:** 36
 
 ---
 
@@ -331,7 +331,7 @@ Global catalog of known applications managed by the OneVo dev team via the devel
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `provider_type` | `varchar(30)` | `google`, `microsoft`, `saml`, `oidc` |
+| `provider_type` | `varchar(30)` | Phase 1: `google` only. Future: `saml`, `oidc` if needed. Microsoft Teams is not an SSO provider in Phase 1. |
 | `name` | `varchar(100)` | Display name |
 | `client_id_encrypted` | `bytea` | Encrypted via IEncryptionService |
 | `client_secret_encrypted` | `bytea` | Encrypted via IEncryptionService |
@@ -348,7 +348,7 @@ Global catalog of known applications managed by the OneVo dev team via the devel
 
 ## `external_account_connections`
 
-User-level links to external identity/product accounts such as Microsoft Teams. Used to verify whether a ONEVO user can send/sync Teams messages.
+User-level links to external product accounts such as Microsoft Teams. Used to verify whether a ONEVO user can send/sync Teams messages. This is integration account linking, not ONEVO login SSO.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -447,6 +447,27 @@ Stores Microsoft Graph delta tokens and cursor state for reliable Teams message 
 | `paid_at` | `timestamptz` | Nullable |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `subscription_id` → [[#`tenant_subscriptions`|tenant_subscriptions]]
+
+---
+
+## `billing_snapshots`
+
+End-of-month snapshot of billable units per tenant. Used to generate `subscription_invoices` and as a cached fallback when live active-user/device counts are unavailable.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK → tenants |
+| `snapshot_date` | `date` | Last day of the billing month |
+| `active_employee_count` | `integer` | Active employees at snapshot time |
+| `enrolled_device_count` | `integer` | Enrolled devices at snapshot time |
+| `employee_breakdown` | `jsonb` | Count by department |
+| `device_breakdown` | `jsonb` | Count by department |
+| `created_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+
+**Unique:** `(tenant_id, snapshot_date)` — one snapshot per tenant per month.
 
 ---
 
@@ -657,39 +678,6 @@ Stores Microsoft Graph delta tokens and cursor state for reliable Teams message 
 | `on_timeout_action` | `varchar(30)` | `escalate`, `auto_approve`, `auto_reject` |
 
 **Foreign Keys:** `workflow_definition_id` → [[#`workflow_definitions`|workflow_definitions]], `approver_role_id` → [[database/schemas/auth#`roles`|roles]]
-
----
-
-## Messaging Tables (MassTransit Outbox + Idempotency)
-
-> These tables are managed by MassTransit and must not be written to directly. They are part of each module's DbContext.
-
-### `shared_platform_outbox_events`
-
-Transactional outbox — written in the same DB transaction as the business write. A background processor reads and forwards to RabbitMQ.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | |
-| `event_type` | `varchar(200)` | Fully-qualified event class name |
-| `payload` | `jsonb` | Serialized IntegrationEvent |
-| `created_at` | `timestamptz` | |
-| `processed_at` | `timestamptz` | NULL = not yet delivered to RabbitMQ |
-| `retry_count` | `integer` | Default 0; max 5 |
-| `last_error` | `text` | Last failure message if any |
-
-Index: `WHERE processed_at IS NULL` on `created_at` — the outbox processor queries this.
-
-### `processed_integration_events`
-
-Idempotency table — prevents double-processing if RabbitMQ redelivers a message.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `event_id` | `uuid` | PK — same as `IntegrationEvent.EventId` |
-| `event_type` | `varchar(200)` | |
-| `processed_at` | `timestamptz` | |
 
 ---
 

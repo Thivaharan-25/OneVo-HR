@@ -2,14 +2,14 @@
 
 ## Purpose
 
-The provisioning wizard lets the dev team create a fully configured tenant account without the customer going through self-service signup. It is **not required for every customer** — use it when the situation calls for it.
+The provisioning wizard is the **only way** a tenant is created in ONEVO. There is no public self-signup, no public tenant registration endpoint, and no customer-facing checkout flow. Every tenant — regardless of size or plan — is created by an ONEVO operator through this wizard after a sales agreement is reached.
 
-**Use this flow when:**
-- Enterprise deal closed by sales — customer is not going through self-signup
-- White-glove onboarding — OneVo team sets up the environment on behalf of the customer
+**Use this flow for all tenant creation:**
+- Enterprise deal closed by sales
+- White-glove onboarding — ONEVO team sets up the environment on behalf of the customer
 - Internal test tenants — creating isolated test accounts
 
-**Do not use this flow for:** standard signups. Those go through the normal customer self-signup → Stripe → auto-provisioning path.
+**ADE rule:** Do not build or expose a public tenant creation path. `POST /api/v1/tenants` must not exist on the customer-facing API. Tenant creation is always through `POST /admin/v1/tenants` via this console.
 
 ---
 

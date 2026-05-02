@@ -28,7 +28,7 @@
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
 | `device_name` | `varchar(100)` | Human-readable name |
-| `location_id` | `uuid` | FK → departments or custom location |
+| `office_location_id` | `uuid` | FK -> office_locations |
 | `api_key_encrypted` | `bytea` | HMAC-SHA256 key (encrypted at rest via `IEncryptionService`) |
 | `model` | `varchar(100)` | Device model |
 | `is_active` | `boolean` |  |
@@ -36,7 +36,7 @@
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `location_id` → [[database/schemas/org-structure#`departments`|departments]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `office_location_id` -> [[database/schemas/org-structure#`office_locations`|office_locations]]
 
 ---
 
@@ -113,39 +113,6 @@
 | `created_at` | `timestamptz` |  |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]], `photo_file_id` → [[database/schemas/infrastructure#`file_records`|file_records]], `device_id` → [[database/schemas/agent-gateway#`registered_agents`|registered_agents]], `requested_by_id` → [[database/schemas/infrastructure#`users`|users]], `alert_id` → [[database/schemas/exception-engine#`exception_alerts`|exception_alerts]]
-
----
-
-## Messaging Tables (MassTransit Outbox + Idempotency)
-
-> These tables are managed by MassTransit and must not be written to directly. They are part of each module's DbContext.
-
-### `identity_verification_outbox_events`
-
-Transactional outbox — written in the same DB transaction as the business write. A background processor reads and forwards to RabbitMQ.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | |
-| `event_type` | `varchar(200)` | Fully-qualified event class name |
-| `payload` | `jsonb` | Serialized IntegrationEvent |
-| `created_at` | `timestamptz` | |
-| `processed_at` | `timestamptz` | NULL = not yet delivered to RabbitMQ |
-| `retry_count` | `integer` | Default 0; max 5 |
-| `last_error` | `text` | Last failure message if any |
-
-Index: `WHERE processed_at IS NULL` on `created_at` — the outbox processor queries this.
-
-### `processed_integration_events`
-
-Idempotency table — prevents double-processing if RabbitMQ redelivers a message.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `event_id` | `uuid` | PK — same as `IntegrationEvent.EventId` |
-| `event_type` | `varchar(200)` | |
-| `processed_at` | `timestamptz` | |
 
 ---
 

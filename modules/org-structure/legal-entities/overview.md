@@ -9,6 +9,8 @@
 
 Company legal entities with registration and country information.
 
+When a legal entity is created, Calendar creates a Phase 1 holiday calendar setting that defaults to the legal entity country. Calendar admins can later disable holiday sync or choose a different calendar country from the Calendar screen without changing the legal entity country.
+
 ## Database Tables
 
 ### `legal_entities`
@@ -20,6 +22,10 @@ Fields: `name`, `registration_number`, `country_id`, `address_json`, `is_active`
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/legal-entities` | `settings:admin` | List |
 | POST | `/api/v1/legal-entities` | `settings:admin` | Create |
+
+## Calendar Integration
+
+`POST /api/v1/legal-entities` publishes `LegalEntityCreated` with the selected country. The Calendar module consumes it to create `holiday_calendar_settings` and queue country holiday import.
 
 ## Related
 

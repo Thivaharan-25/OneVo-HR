@@ -10,7 +10,7 @@
 
 ## `discrepancy_events`
 
-Daily discrepancy detection results — comparing HR active time (from agent) vs WMS-reported task time vs calendar-explained time. Written by `DiscrepancyEngineJob` (daily 10:30 PM). Read by managers, HR Admins, and Productivity Analytics.
+Daily discrepancy detection results — comparing HR active time (from agent) vs Work Management-reported task time vs calendar-explained time. Written by `DiscrepancyEngineJob` (daily 10:30 PM). Read by managers, HR Admins, and Productivity Analytics.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -19,9 +19,9 @@ Daily discrepancy detection results — comparing HR active time (from agent) vs
 | `employee_id` | `uuid` | FK → employees |
 | `date` | `date` | |
 | `hr_active_minutes` | `int` | Ground truth from `activity_daily_summary` |
-| `wms_logged_minutes` | `int` | What employee logged in WMS task time |
+| `work_management_logged_minutes` | `int` | What employee logged in Work Management task time |
 | `calendar_minutes` | `int` | Explained time from `calendar_events` (meetings, OOO) |
-| `unaccounted_minutes` | `int` | Computed: `hr_active - wms_logged - calendar`. Negative = under-reporter |
+| `unaccounted_minutes` | `int` | Computed: `hr_active - work_management_logged - calendar`. Negative = under-reporter |
 | `severity` | `varchar(20)` | `none`, `low`, `high`, `critical` — based on tenant threshold config |
 | `threshold_minutes` | `int` | Tenant-configured acceptable gap (default 60 min) |
 | `notified_manager` | `boolean` | Whether manager was alerted |
@@ -46,9 +46,9 @@ Daily discrepancy detection results — comparing HR active time (from agent) vs
 
 ---
 
-## `wms_daily_time_logs`
+## `work_management_daily_time_logs`
 
-WMS-submitted task time per employee per day. Populated from internal WorkSync `time_logs` projections. Consumed by `DiscrepancyEngineJob` as the `wms_logged_minutes` input stream. Upserted — re-submission for same employee + date overwrites.
+Work Management-submitted task time per employee per day. Populated from internal Work Management `time_logs` projections. Consumed by `DiscrepancyEngineJob` as the `work_management_logged_minutes` input stream. Upserted — re-submission for same employee + date overwrites.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -65,7 +65,7 @@ WMS-submitted task time per employee per day. Populated from internal WorkSync `
 
 **Index:** `(tenant_id, employee_id, date)` UNIQUE
 
-**Note:** If no WMS integration exists, this table stays empty. Discrepancy Engine skips it gracefully (`wms_logged_minutes = 0`, only calendar cross-reference used).
+**Note:** If Work Management is disabled, this table stays empty. Discrepancy Engine skips it gracefully (`work_management_logged_minutes = 0`, only calendar cross-reference used).
 
 ---
 
@@ -91,39 +91,6 @@ Rolling per-employee statistical baseline for discrepancy severity calculation. 
 **Index:** `(tenant_id, employee_id, computed_at)` UNIQUE
 
 **Retention:** 90 days (small table, pruned by `CleanupOldBaselinesJob`)
-
----
-
-## Messaging Tables (MassTransit Outbox + Idempotency)
-
-> These tables are managed by MassTransit and must not be written to directly. They are part of each module's DbContext.
-
-### `discrepancy_engine_outbox_events`
-
-Transactional outbox — written in the same DB transaction as the business write. A background processor reads and forwards to RabbitMQ.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | |
-| `event_type` | `varchar(200)` | Fully-qualified event class name |
-| `payload` | `jsonb` | Serialized IntegrationEvent |
-| `created_at` | `timestamptz` | |
-| `processed_at` | `timestamptz` | NULL = not yet delivered to RabbitMQ |
-| `retry_count` | `integer` | Default 0; max 5 |
-| `last_error` | `text` | Last failure message if any |
-
-Index: `WHERE processed_at IS NULL` on `created_at` — the outbox processor queries this.
-
-### `processed_integration_events`
-
-Idempotency table — prevents double-processing if RabbitMQ redelivers a message.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `event_id` | `uuid` | PK — same as `IntegrationEvent.EventId` |
-| `event_type` | `varchar(200)` | |
-| `processed_at` | `timestamptz` | |
 
 ---
 

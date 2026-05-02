@@ -1,6 +1,6 @@
-# Schema: WMS — Chat + Chat AI
+# Schema: Work Management — Chat + Chat AI
 
-**Module:** `WorkSync.Chat` + `WorkSync.ChatAI`
+**Module:** `Work Management.Chat` + `Work Management.ChatAI`
 **Phase:** 1 + Phase 2 Teams sync additions
 **Owner:** DEV7
 
@@ -16,7 +16,7 @@
 | `name` | varchar(100) | nullable for DMs |
 | `description` | text | nullable |
 | `channel_type` | varchar(20) | public / private / direct |
-| `created_by` | uuid | FK → users |
+| `created_by_id` | uuid | FK → users |
 | `is_archived` | boolean | default false |
 | `created_at` | timestamptz | |
 
@@ -56,8 +56,8 @@
 | `created_at` | timestamptz | |
 
 **Index:** `(channel_id, created_at DESC)`, `(parent_message_id)` where not null
-**Teams sync columns:** `external_source`, `external_message_id`, `sync_direction`, and `sync_status` are required for Microsoft Teams two-way sync.
-**Teams sync unique key:** `(tenant_id, external_source, external_message_id)` where `external_message_id IS NOT NULL`.
+**Phase 2 Teams sync columns:** `external_source`, `external_message_id`, `sync_direction`, and `sync_status` are required only when Microsoft Teams two-way sync is enabled.
+**Phase 2 Teams sync unique key:** `(tenant_id, external_source, external_message_id)` where `external_message_id IS NOT NULL`.
 
 ---
 
@@ -91,7 +91,7 @@
 | `id` | uuid | PK |
 | `channel_id` | uuid | FK → channels |
 | `message_id` | uuid | FK → messages |
-| `pinned_by` | uuid | FK → users |
+| `pinned_by_id` | uuid | FK → users |
 | `pinned_at` | timestamptz | |
 
 **Unique:** `(channel_id, message_id)`
@@ -164,7 +164,7 @@ Two-way sync between chat and task status.
 
 ## `channel_teams_links` - Phase 2
 
-Maps ONEVO chat channels to Microsoft Teams channels or chats. Owned by WorkSync Chat; Graph credentials remain in Shared Platform integration tables.
+Maps ONEVO chat channels to Microsoft Teams channels or chats. Owned by Work Management Chat; Graph credentials remain in Shared Platform integration tables.
 
 | Column | Type | Notes |
 |---|---|---|

@@ -1,5 +1,7 @@
 # Backend Architecture
 
+> Planning status: backend implementation has not started yet. This folder is the architecture and implementation blueprint.
+
 **.NET 9 Clean Architecture + CQRS** — feature folders, single ApplicationDbContext, strict layer boundaries.
 
 ## Quick Links
@@ -12,7 +14,7 @@
 - [[backend/real-time|Real-Time Architecture]] — SignalR architecture
 - [[backend/search-architecture|Search Architecture]] — PostgreSQL FTS → Meilisearch
 - [[backend/monitoring-data-flow|Monitoring Data Flow]] — Agent → API → Dashboard data flow
-- [[backend/external-integrations|External Integrations]] — Bridges, Stripe, Resend
+- [[backend/external-integrations|External Integrations]] - Stripe, Resend, biometric terminals, calendar, Slack, Microsoft Teams, payroll, LMS
 
 ## Messaging & Events
 

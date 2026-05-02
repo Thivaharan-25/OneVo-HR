@@ -1,6 +1,6 @@
-# Schema: WMS — Integration & API
+# Schema: Work Management — Integration & API
 
-**Module:** `WorkSync.Integrations`
+**Module:** `Work Management.Integrations`
 **Phase:** 1
 **Owner:** DEV8
 
@@ -33,7 +33,7 @@
 | `id` | uuid | PK |
 | `task_id` | uuid | FK → tasks |
 | `repository_id` | uuid | FK → repositories |
-| `linked_by` | uuid | FK → users |
+| `linked_by_id` | uuid | FK → users |
 | `linked_at` | timestamptz | |
 
 **Unique:** `(task_id, repository_id)`
@@ -127,7 +127,7 @@ Unified event stream from GitHub/GitLab webhooks and IDE extension.
 | `action_type` | varchar(50) | update_task_status / assign_task / add_label / log_time / post_chat_message |
 | `action_params` | jsonb | Parameters for the action e.g. `{ "status": "in_progress" }` |
 | `is_active` | boolean | default true |
-| `created_by` | uuid | FK → users |
+| `created_by_id` | uuid | FK → users |
 | `created_at` | timestamptz | |
 
 **Index:** `(workspace_id, is_active, trigger_type)` — used by automation rule engine query

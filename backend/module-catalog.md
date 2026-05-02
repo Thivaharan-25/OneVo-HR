@@ -6,7 +6,7 @@
 
 ONEVO follows **Clean Architecture + CQRS** (.NET 9). All features are **feature folders** within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`.
 
-There are **no separate module `.csproj` files**. All ~240 tables live in a single `ApplicationDbContext`.
+There are **no separate module `.csproj` files**. The canonical database catalog currently lists **252 unique schema tables**, all served by a single `ApplicationDbContext`.
 
 See [[backend/folder-structure|Folder Structure]] for the full solution layout.
 
@@ -17,28 +17,45 @@ See [[backend/folder-structure|Folder Structure]] for the full solution layout.
 ```
 ONEVO PLATFORM
   ┌─────────────────────────────────────────────────────┐
-  │  ONEVO Frontend (Next.js)                           │
+  │  ONEVO Frontend (Vite + React 19)                           │
   │    HR Sidebar ──────┐                               │
-  │    WorkSync Sidebar─┼──→  ONEVO.Api (.NET 9)        │
+  │    Work Management Sidebar─┼──→  ONEVO.Api (.NET 9)        │
   │    IDE Extension ───┘      single host, all pillars  │
   └─────────────────────────────────────────────────────┘
                                ↕ ApplicationDbContext
                             PostgreSQL (single database)
 ```
 
-WorkSync is **Pillar 3** — it is not external and does not use bridge contracts. All three pillars share the same database, the same ApplicationDbContext, and the same domain event bus.
+Work Management is **Pillar 3** - it is internal to ONEVO. All three pillars share the same database, the same ApplicationDbContext, and the same domain event bus.
 
 ---
 
 ## Product Configuration Matrix
 
-| Tier | Core | HR Pillar | Workforce Intel | WorkSync | IDE Extension |
-|------|:----:|:---------:|:---------------:|:--------:|:-------------:|
+IDE Extension is bundled inside the WorkSync Pack — it is not sold separately. Desktop Agent is bundled inside the Workforce Intelligence Pack. Chat AI is the only standalone add-on in Phase 1.
+
+| Tier | Core | HR Pack | Workforce Intelligence Pack (incl. Desktop Agent) | WorkSync Pack (incl. IDE Extension) | Chat AI Add-on |
+|------|:----:|:-------:|:-------------------------------------------------:|:------------------------------------:|:--------------:|
 | HR Management | ✓ | ✓ | ✗ | ✗ | ✗ |
-| WorkSync Only | ✓ | ✗ | ✗ | ✓ | ✓ |
+| WorkSync Only | ✓ | ✗ | ✗ | ✓ | optional |
 | HR + Workforce Intel | ✓ | ✓ | ✓ | ✗ | ✗ |
-| HR + WorkSync | ✓ | ✓ | ✗ | ✓ | ✓ |
-| Full Suite | ✓ | ✓ | ✓ | ✓ | ✓ |
+| HR + WorkSync | ✓ | ✓ | ✗ | ✓ | optional |
+| Full Suite | ✓ | ✓ | ✓ | ✓ | optional |
+
+---
+
+## Billing Packs
+
+Tenants are provisioned by an ONEVO operator with a specific pack set. Once active, tenant admins can self-add packs and the Chat AI add-on through the billing section of the app. See [[Userflow/Platform-Setup/billing-subscription|Billing & Subscription]].
+
+| Pack | Modules Included | Pricing Unit |
+|------|-----------------|--------------|
+| **HR Pack** | Org Structure, Core HR, Leave, Calendar, Skills Core | Per active employee / month |
+| **Workforce Intelligence Pack** | Workforce Presence, Activity Monitoring, Discrepancy Engine, Identity Verification, Exception Engine, Productivity Analytics + Desktop Agent | Per monitored device / month |
+| **WorkSync Pack** | Projects, Tasks, Planning, OKR, Time, Resources, Chat, Collaboration, Analytics, Integrations + IDE Extension | Per active employee / month |
+| **Chat AI Add-on** | AI-assisted chat actions, premium AI detections (W9) | Per active employee / month |
+
+Phase 2 modules (Payroll, Performance, HR Documents, Governance, Skill & Talent Development, etc.) are introduced as standalone add-ons when released. The operator adds them to the module catalog in the Developer Console; they then appear as purchasable add-ons for all tenants.
 
 ---
 
@@ -56,11 +73,11 @@ WorkSync is **Pillar 3** — it is not external and does not use bridge contract
 | 6 | Payroll | `Features/Payroll` | 11 | Phase 2 |
 | 7 | Performance | `Features/Performance` | 7 | Phase 2 |
 | 8 | Skills & Learning | `Features/Skills` | 15 (5 P1 + 10 P2) | Mixed |
-| 9 | HR Documents | `Features/Documents` | 4 P2 new (documents table shared with WorkSync.Collaboration) | Phase 2 |
+| 9 | HR Documents | `Features/Documents` | 4 P2 new (documents table shared with WorkManagement.Collaboration) | Phase 2 |
 
 > **Org Structure note:** Includes `team_roles`, `team_role_permissions`, `team_member_roles` for stacking permissions across multiple team memberships (12 tables, up from 9).
 
-> **HR Documents note:** The `documents` and `document_versions` tables are created in Phase 1 by WorkSync.Collaboration. HR Documents (Phase 2) adds `document_categories`, `document_templates`, `document_access_logs`, `document_acknowledgements` only.
+> **HR Documents note:** The `documents` and `document_versions` tables are created in Phase 1 by WorkManagement.Collaboration. HR Documents (Phase 2) adds `document_categories`, `document_templates`, `document_access_logs`, `document_acknowledgements` only.
 
 ### Pillar 2: Workforce Intelligence
 
@@ -73,22 +90,22 @@ WorkSync is **Pillar 3** — it is not external and does not use bridge contract
 | 13 | Exception Engine | `Features/ExceptionEngine` | 5 | Phase 1 |
 | 14 | Productivity Analytics | `Features/ProductivityAnalytics` | 5 | Phase 1 |
 
-### Pillar 3: WorkSync
+### Pillar 3: Work Management
 
 | # | Feature | Feature Folder | Tables | Phase |
 |:--|:--------|:---------------|:-------|:------|
-| W1 | WorkSync Foundation | `Features/WorkSync/Foundation` | 5 | Phase 1/2 |
-| W2 | Project Management | `Features/WorkSync/ProjectManagement` | 7 | Phase 1 |
-| W3 | Task Management | `Features/WorkSync/TaskManagement` | 13 | Phase 1 |
-| W4 | Sprint Planning | `Features/WorkSync/SprintPlanning` | 7 | Phase 1 |
-| W5 | OKR & Goals | `Features/WorkSync/OKR` | ~5 | Phase 1 |
-| W6 | Time Management | `Features/WorkSync/TimeManagement` | ~4 | Phase 1 |
-| W7 | Resource Management | `Features/WorkSync/ResourceManagement` | ~3 | Phase 1 |
-| W8 | Chat & Messaging | `Features/WorkSync/Chat` | 8 | Phase 1/2 |
-| W9 | Chat AI | `Features/WorkSync/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 |
-| W10 | Collaboration | `Features/WorkSync/Collaboration` | 4 new + extends documents | Phase 1 |
-| W11 | Analytics & Insights | `Features/WorkSync/Analytics` | 7 | Phase 1 |
-| W12 | Integrations | `Features/WorkSync/Integrations` | 7 | Phase 1 |
+| W1 | Foundation | `Features/WorkManagement/Foundation` | 5 | Phase 1/2 |
+| W2 | Projects | `Features/WorkManagement/Projects` | 7 | Phase 1 |
+| W3 | Tasks | `Features/WorkManagement/Tasks` | 13 | Phase 1 |
+| W4 | Planning | `Features/WorkManagement/Planning` | 7 | Phase 1 |
+| W5 | OKR & Goals | `Features/WorkManagement/OKR` | ~5 | Phase 1 |
+| W6 | Time | `Features/WorkManagement/Time` | ~4 | Phase 1 |
+| W7 | Resources | `Features/WorkManagement/Resources` | ~3 | Phase 1 |
+| W8 | Chat & Messaging | `Features/WorkManagement/Chat` | 8 | Phase 1/2 |
+| W9 | Chat AI | `Features/WorkManagement/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 — **standalone add-on, not bundled in WorkSync Pack** |
+| W10 | Collaboration | `Features/WorkManagement/Collaboration` | 4 new + extends documents | Phase 1 |
+| W11 | Analytics & Insights | `Features/WorkManagement/Analytics` | 7 | Phase 1 |
+| W12 | Integrations | `Features/WorkManagement/Integrations` | 7 | Phase 1 |
 
 Schema files: [[database/schemas/wms-project-management|Project Management]], [[database/schemas/wms-task-management|Task Management]], [[database/schemas/wms-planning|Sprint Planning]], [[database/schemas/wms-chat|Chat + Chat AI]], [[database/schemas/wms-collaboration|Collaboration]], [[database/schemas/wms-analytics|Analytics]], [[database/schemas/wms-integrations|Integrations]]
 
@@ -115,12 +132,12 @@ Tag engine, context engine, agent entitlement, and SignalR IDEHub spec: [[module
 | 21 | Expense | `Features/Expense` | 3 | Phase 2 |
 | 22 | Agent Gateway | `Features/AgentGateway` | 6 | Phase 1 |
 | 23 | Dev Platform | `Features/DevPlatform` | 5 (P1) + 1 (P2) | Mixed |
-| 24 | Microsoft Teams Integration | `Features/Integrations/MicrosoftTeams` | Uses Shared Platform + WorkSync Teams tables | Phase 2 |
+| 24 | Microsoft Teams Integration | `Features/Integrations/MicrosoftTeams` | Uses Shared Platform + Work Management Teams tables | Phase 2 |
 
-> **Shared Platform note:** Bridge-era WMS provisioning tables removed (WorkSync is now internal). Count is 35 after Microsoft Teams account/token/webhook/delta tables.
+> **Shared Platform note:** Old external-provisioning tables removed because Work Management is internal. Count is 35 after Microsoft Teams account/token/webhook/delta tables.
 > **Agent Gateway note:** Added `agent_install_entitlements` and `agent_install_jobs` for IDE Extension entitlement gating. Count is 6 (was 4).
 
-**Total: ~38 features, 240 unique schema tables**
+**Total: ~38 features, 252 unique schema tables in the canonical database catalog**
 
 ---
 
@@ -153,7 +170,7 @@ ONEVO.Infrastructure/Persistence/Configurations/{Feature}/
 └── {Entity}Configuration.cs    IEntityTypeConfiguration<T>
 ```
 
-WorkSync features live under `Features/WorkSync/{SubFeature}/` following the same layout.
+Work Management features live under `Features/WorkManagement/{SubFeature}/` following the same layout.
 
 ---
 
@@ -167,7 +184,7 @@ WorkSync features live under `Features/WorkSync/{SubFeature}/` following the sam
 | Background processing | `IBackgroundJobService` (Hangfire) injected in handler |
 | Real-time push to IDE | `IIDEHubService` → SignalR IDEHub (task:updated, chat:message, tag:executed, ai:action_pending) |
 
-No RabbitMQ. No IEventBus. No MassTransit. No bridge APIs. All communication is in-process.
+No RabbitMQ. No IEventBus. No MassTransit. All communication between HR, Workforce Intelligence, and Work Management is in-process.
 
 ---
 

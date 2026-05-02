@@ -1,57 +1,21 @@
-# Notifications — Schema
+# Notifications - Schema
 
 **Module:** [[modules/notifications/overview|Notifications]]
 **Phase:** Phase 1
-**Tables:** 2
+**Tables:** 0 owned tables
 
-> These tables are also listed under [[database/schemas/shared-platform|Shared Platform]] since the entities are configured in the shared `AppDbContext`. They are included here for module-level reference.
-
----
-
-## `notification_templates`
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `event_type` | `varchar(50)` | e.g., `leave.approved`, `exception.alert.created`, `alert.escalated` |
-| `channel` | `varchar(20)` | `email`, `in_app`, `push`, `signalr` |
-| `subject_template` | `varchar(255)` | |
-| `body_template` | `text` | Liquid/Handlebars template |
-| `is_active` | `boolean` | |
-
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+> Notification configuration is physically owned by [[database/schemas/shared-platform|Shared Platform]]. Do not create separate notification tables in the Notifications module.
 
 ---
 
-## `notification_channels`
+## Owned Tables
 
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `channel_type` | `varchar(20)` | `email`, `slack`, `webhook` |
-| `config_json` | `jsonb` | Channel-specific config |
-| `credentials_encrypted` | `bytea` | API keys etc. |
-| `is_active` | `boolean` | |
+None.
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+## Referenced Tables
 
----
-
-## Messaging Tables (MassTransit Idempotency)
-
-> These tables are managed by MassTransit and must not be written to directly. They are part of each module's DbContext.
-
-### `processed_integration_events`
-
-Idempotency table — prevents double-processing if RabbitMQ redelivers a message.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `event_id` | `uuid` | PK — same as `IntegrationEvent.EventId` |
-| `event_type` | `varchar(200)` | |
-| `processed_at` | `timestamptz` | |
+- [[database/schemas/shared-platform#`notification_templates`|notification_templates]]
+- [[database/schemas/shared-platform#`notification_channels`|notification_channels]]
 
 ---
 

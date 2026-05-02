@@ -198,3 +198,27 @@ Builds and exports a shared `HubConnection` instance using `HubConnectionBuilder
 - `frontend/data-layer/api-integration.md` — fully aligned, all 4 interceptors documented
 - `frontend/data-layer/state-management.md` — stores/ tree and Zustand usage fully documented
 - `frontend/architecture/routing.md` — ProtectedRoute, createBrowserRouter, lib/security ref all present
+
+---
+
+## Responsive Phase 1 Alignment
+
+**Reason:** The product requirement is that the application UI must be responsive by design from Phase 1, adapting smoothly across mobile, tablet, laptop, and desktop. Frontend docs must not defer mobile usability to Phase 2.
+
+**Files to keep aligned:**
+
+| File | Required alignment |
+|------|--------------------|
+| `frontend/design-system/README.md` | Canonical Phase 1 responsive requirement and viewport definitions |
+| `frontend/design-system/patterns/layout-patterns.md` | Mobile/tablet/laptop/desktop shell and page behavior |
+| `frontend/design-system/components/shell-layout.md` | Responsive shell implementation, including `MobileNavDrawer` |
+| `frontend/design-system/patterns/navigation-patterns.md` | Shared responsive navigation states |
+| `frontend/design-system/patterns/table-patterns.md` | Mobile card/list behavior and controlled table overflow |
+| `frontend/design-system/patterns/form-patterns.md` | Single-column mobile forms, tablet behavior, sticky wizard actions |
+| `frontend/architecture/app-structure.md` | Shared responsive layout components |
+| `frontend/architecture/topbar.md` | Responsive topbar behavior |
+| `frontend/architecture/sidebar-nav.md` | Shared route map for sidebar and drawer |
+| `frontend/testing/strategy.md` | Required viewport QA and Playwright coverage |
+| `frontend/performance/budget.md` | Mobile/responsive performance budget |
+
+**Guardrail:** Do not reintroduce language that says mobile is not optimized or deferred to Phase 2. Phase 2 may deepen native/mobile-specific polish, but Phase 1 web UI must already be usable on mobile.

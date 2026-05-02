@@ -79,6 +79,8 @@ Fine-grained ACL for saved views. Key columns: `saved_view_id`, `share_type`, `t
 
 ## Related
 
+- [[Userflow/Work-Management/work-analytics-flow|WorkSync Analytics]] — dashboards, saved views, and exports user flow
+
 - [[modules/work-management/planning/overview|Planning]] — burndown/velocity widget data sources
 - [[modules/work-management/tasks/overview|Task Management]] — task data source
 - [[database/schemas/wms-analytics|WMS Analytics Schema]]

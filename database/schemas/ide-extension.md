@@ -77,7 +77,7 @@ Full audit trail of every `@entity:action` command typed in the IDE extension.
 
 ## `ide_context_links` — Phase 1
 
-User-created or auto-detected links between code context (branch/file) and WorkSync entities.
+User-created or auto-detected links between code context (branch/file) and Work Management entities.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -121,9 +121,9 @@ Tracks chat threads that were started with code context (e.g. user opened a task
 | `agent_install_entitlements` | AgentGateway | Checked server-side on every install request |
 | `agent_install_jobs` | AgentGateway | Created when user approves monitoring agent install |
 | `registered_agents` | AgentGateway | Checked to determine if agent already installed |
-| `channels` | WorkSync.Chat | Chat sidebar panel — list and subscribe to channels |
-| `messages` | WorkSync.Chat | Chat sidebar panel — send and receive messages |
-| `tasks` | WorkSync.Tasks | Tasks panel — list assigned tasks |
-| `time_logs` | WorkSync.Time | Time tracking — start/stop timer |
-| `repositories` | WorkSync.Integrations | Context engine — resolve branch to repo |
-| `task_repository_links` | WorkSync.Integrations | Context engine — resolve branch to task |
+| `channels` | Work Management.Chat | Chat sidebar panel — list and subscribe to channels |
+| `messages` | Work Management.Chat | Chat sidebar panel — send and receive messages |
+| `tasks` | Work Management.Tasks | Tasks panel — list assigned tasks |
+| `time_logs` | Work Management.Time | Time tracking — start/stop timer |
+| `repositories` | Work Management.Integrations | Context engine — resolve branch to repo |
+| `task_repository_links` | Work Management.Integrations | Context engine — resolve branch to task |

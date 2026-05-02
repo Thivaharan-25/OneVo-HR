@@ -4,6 +4,25 @@
 
 The `<DataTable>` is the most-used component in ONEVO. It handles sorting, filtering, pagination, row selection, bulk actions, and row-level actions through a composable API built on TanStack Table.
 
+
+## Responsive Table Behavior
+
+Dense HR data must remain usable from Phase 1 on mobile, tablet, laptop, and desktop. Do not shrink full desktop tables until they become unreadable.
+
+| Viewport | Required behavior |
+|:---------|:------------------|
+| Mobile `<640px` | Render rows as stacked cards or list items with the primary identity, status, key metric/date, and row actions. Filters open in a sheet/drawer. Bulk actions appear in a sticky bottom action bar or action sheet. |
+| Tablet `640-1023px` | Use a reduced column set and compact filters. Horizontal scrolling is allowed only inside the table container, never as page overflow. |
+| Laptop `1024-1279px` | Use the standard table with lower-priority columns hidden behind column visibility controls. |
+| Desktop `>=1280px` | Use the full DataTable with sorting, filters, pagination, row actions, and bulk actions. |
+
+Implementation rules:
+
+- The same query, sorting, filtering, selection, and pagination state must power table and card/list views.
+- Mobile card rows must expose the same permission-gated row actions as desktop tables.
+- Table containers must use `min-w-0` and controlled `overflow-x-auto` when horizontal scroll is unavoidable.
+- Important actions cannot be hidden only in hover states because touch devices do not have hover.
+
 ## Standard Table Page
 
 ```tsx

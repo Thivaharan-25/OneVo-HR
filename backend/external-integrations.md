@@ -84,13 +84,13 @@ public bool VerifyWebhookSignature(string payload, string signature, string apiK
 | **Auth** | App integration (Bot token) |
 | **Purpose** | Real-time notifications for leave approvals, reviews, etc. |
 
-### 6. Microsoft Teams (WorkSync Chat + Workspace Sync)
+### 6. Microsoft Teams (Work Management Chat + Workspace Sync)
 
 | Property | Value |
 |:---------|:------|
-| **Module** | Integrations + WorkSync Chat + WorkSync Foundation |
+| **Module** | Integrations + Work Management Chat + Work Management Foundation |
 | **Auth** | Microsoft OAuth 2.0 / Microsoft Graph delegated + tenant-admin approved scopes |
-| **Purpose** | Link ONEVO users to Teams accounts, fetch Teams contacts, create or link Teams groups for WorkSync workspaces, and two-way sync messages between ONEVO Chat and Teams |
+| **Purpose** | Link ONEVO users to Teams accounts, fetch Teams contacts, create or link Teams groups for Work Management workspaces, and two-way sync messages between ONEVO Chat and Teams |
 | **Tables** | `external_account_connections`, `microsoft_graph_tokens`, `teams_webhook_subscriptions`, `teams_delta_sync_state`, `workspace_teams_links`, `channel_teams_links`, `teams_message_sync_state` |
 
 **Key Flows:**
@@ -129,4 +129,4 @@ See [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]
 - [[backend/notification-system|Notification System]] — Resend email pipeline
 - [[AI_CONTEXT/tech-stack|Tech Stack]] — integration technology choices
 - [[backend/domain-events|Domain Events]] — retry and circuit breaker patterns for external calls
-- [[AI_CONTEXT/known-issues|Known Issues]] - integration gotchas; WorkSync is internal and does not use bridge APIs
+- [[AI_CONTEXT/known-issues|Known Issues]] - integration gotchas; Work Management is internal

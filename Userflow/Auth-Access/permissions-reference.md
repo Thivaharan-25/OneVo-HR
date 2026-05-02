@@ -98,6 +98,7 @@ Universal permissions must not appear in the role creation permission browser, r
 | # | Permission | Description |
 |:--|:-----------|:------------|
 | 33 | `calendar:write` | Create and manage calendar events for others |
+| 33a | `calendar:admin` | Manage country holiday sync, legal-entity calendar overrides, and calendar integrations |
 
 ### Notifications
 | # | Permission | Description |
@@ -111,7 +112,7 @@ Universal permissions must not appear in the role creation permission browser, r
 | 36 | `settings:admin` | Manage core system settings — timezone, work hours, privacy mode, data retention |
 | 37 | `settings:billing` | Manage subscription, plan, and payment methods |
 | 38 | `settings:branding` | Manage company logo, colors, and custom domain |
-| 39 | `settings:integrations` | Connect or disconnect tenant-wide app integrations via OAuth (Teams, Slack, Google Calendar, LMS) and enter migration API keys for onboarding from existing HR systems |
+| 39 | `settings:integrations` | Connect or disconnect tenant-wide app integrations via OAuth (Teams, Slack, LMS) and enter migration API keys for onboarding from existing HR systems. Google/Outlook Calendar is managed under `calendar:admin` / user-owned Calendar connections. |
 | 40 | `settings:notifications` | Manage notification templates and delivery channels |
 | 41 | `settings:alerts` | Configure alert thresholds and escalation rules |
 | 42 | `settings:system` | Manage system-level settings — audit config, data retention policies |

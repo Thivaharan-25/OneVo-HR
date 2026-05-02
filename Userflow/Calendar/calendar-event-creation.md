@@ -67,7 +67,8 @@ The `audience` field controls who receives the event. Available options depend o
 ## Variations
 
 ### Company holiday
-- Type = Holiday → applies to all employees in legal entity → affects leave calculations and shift schedules
+- Type = Holiday -> applies to all employees in legal entity -> affects leave calculations and shift schedules.
+- Country holidays are normally imported through [[Userflow/Calendar/calendar-integrations|Calendar Integrations]]. Manual holiday creation is for company-specific closures that are not provided by the country calendar.
 
 ### Drag-and-drop rescheduling
 - User drags an existing event card to a new date/time cell → triggers `PUT /api/v1/calendar/events/{id}` with updated `start_date`/`end_date`
@@ -75,9 +76,9 @@ The `audience` field controls who receives the event. Available options depend o
 - Only events where the user has `calendar:write` can be dragged
 
 ### External sync
-- Tenant admin connects Google Calendar or Outlook via tenant settings (`settings:integrations` permission)
-- Synced events appear read-only with a sync badge — `source_type = 'external_sync'`
-- No drag, no edit, no delete on synced events
+- User connects Google Calendar or Outlook from Calendar connections. Admins manage country holiday settings from Calendar settings.
+- Synced events appear with a sync badge and `source_type = 'external_sync'`.
+- Synced events are read-only unless the connection is `two_way` and the current user owns the external calendar connection.
 
 ---
 
@@ -100,6 +101,7 @@ The `audience` field controls who receives the event. Available options depend o
 ## Related Flows
 
 - [[Userflow/Calendar/conflict-detection|Conflict Detection]]
+- [[Userflow/Calendar/calendar-integrations|Calendar Integrations]]
 - [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
 
 ## Module References

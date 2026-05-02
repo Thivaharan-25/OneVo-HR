@@ -20,13 +20,17 @@ When Dev 2 asks to continue, start with the first unchecked item in **Current Un
 ### Acceptance Criteria
 
 - [ ] Legal entities, departments, teams, job families, jobs, locations, cost centers, and reporting lines exist.
+- [ ] Legal entity creation publishes `LegalEntityCreated` with the selected country so Calendar can seed default holiday settings.
 - [ ] Team permission stacking tables exist for `team_roles`, `team_role_permissions`, and `team_member_roles`.
 - [ ] Employee aggregate supports personal, contact, employment, manager, department, and team fields.
 - [ ] Employee create/update/list/detail APIs exist.
 - [ ] Employee lifecycle supports onboarding, transfer, promotion, and offboarding state changes.
+- [ ] Employee offboarding publishes `EmployeeOffboarded` with `employee_id`, `user_id`, and tenant context so Work Management can deactivate memberships, watchers, and future assignability.
+- [ ] Team membership changes publish `TeamMemberAdded` and `TeamMemberRemoved` with `team_id`, `employee_id`, `user_id`, and tenant context for Work Management HR team sync.
 - [ ] Org references validate legal entity, department, team, job, and location IDs.
 - [ ] Domain events are emitted for employee created, updated, transferred, and offboarded.
 - [ ] Tests cover create, update, lifecycle transition, and tenant isolation.
+- [ ] Tests cover event payloads consumed by Work Management (`EmployeeOffboarded`, `TeamMemberAdded`, `TeamMemberRemoved`).
 
 ### References
 
@@ -92,15 +96,21 @@ dotnet test ONEVO.sln --filter Skills
 - [ ] Leave request approval uses the Shared Platform workflow engine.
 - [ ] Leave request API validates balance, dates, overlap, and approval routing.
 - [ ] Calendar APIs return holidays, shifts, leaves, and company events in one feed.
+- [ ] Calendar supports Phase 1 country holiday sync through `holiday_calendar_settings`, defaulting to legal entity country.
+- [ ] Calendar admins can disable country holiday sync or override the holiday calendar country without changing the legal entity.
+- [ ] Google Calendar and Outlook Calendar connections support OAuth callback, encrypted token storage, pull/push/two-way sync direction, and idempotent event links.
 - [ ] IDE-ready endpoints exist for leave types, leave balance, and leave request creation.
 - [ ] Notifications are emitted for leave submitted, approved, rejected, and cancelled.
-- [ ] Tests cover balance validation, approval flow, and calendar feed composition.
+- [ ] Tests cover balance validation, approval flow, calendar feed composition, holiday setting default/override, and external calendar event deduplication.
 
 ### References
 
 - [[modules/leave/overview|Leave]]
 - [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
 - [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]]
+- [[Userflow/Calendar/calendar-integrations|Calendar Integrations]]
+- [[modules/calendar/calendar-events/end-to-end-logic|Calendar Events Logic]]
+- [[database/schemas/calendar|Calendar Schema]]
 - [[database/schemas/leave|Leave Schema]]
 
 ### Verification
@@ -170,3 +180,4 @@ dotnet test ONEVO.sln --filter Notifications
 ## Open Backend Contracts
 
 - [ ] Confirm exact auth user ID and tenant context interfaces from DEV1.
+- [ ] Confirm shared encryption abstraction from DEV1 for Google/Outlook calendar token storage.
