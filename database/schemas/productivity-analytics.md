@@ -96,9 +96,9 @@
 
 ---
 
-## `wms_productivity_snapshots`
+## `work_management_productivity_snapshots`
 
-WorkSync-derived task productivity metrics per employee per period. Populated internally from WorkSync task, sprint, time, and delivery records when WorkSync is enabled. Phase 2 Performance can read from this table alongside agent-based scores.
+Work Management-derived task productivity metrics per employee per period. Populated internally from Work Management task, sprint, time, and delivery records when Work Management is enabled. Phase 2 Performance can read from this table alongside agent-based scores.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -111,10 +111,10 @@ WorkSync-derived task productivity metrics per employee per period. Populated in
 | `tasks_completed` | `int` | |
 | `tasks_on_time` | `int` | |
 | `on_time_delivery_rate` | `decimal(5,2)` | 0–100 percentage |
-| `productivity_score` | `decimal(5,2)` | WMS-calculated composite score (0–100) |
+| `productivity_score` | `decimal(5,2)` | Work Management-calculated composite score (0–100) |
 | `active_projects_count` | `int` | |
 | `velocity_story_points` | `int` | Nullable — only for agile teams |
-| `submitted_at` | `timestamptz` | When WMS submitted this snapshot |
+| `submitted_at` | `timestamptz` | When Work Management submitted this snapshot |
 | `created_at` | `timestamptz` | |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
@@ -122,39 +122,6 @@ WorkSync-derived task productivity metrics per employee per period. Populated in
 **Index:** `(tenant_id, employee_id, period_type, period_start)` UNIQUE
 
 **Visibility:** Admin and Reporting Manager only. Not surfaced to the employee directly.
-
----
-
-## Messaging Tables (MassTransit Outbox + Idempotency)
-
-> These tables are managed by MassTransit and must not be written to directly. They are part of each module's DbContext.
-
-### `productivity_analytics_outbox_events`
-
-Transactional outbox — written in the same DB transaction as the business write. A background processor reads and forwards to RabbitMQ.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | |
-| `event_type` | `varchar(200)` | Fully-qualified event class name |
-| `payload` | `jsonb` | Serialized IntegrationEvent |
-| `created_at` | `timestamptz` | |
-| `processed_at` | `timestamptz` | NULL = not yet delivered to RabbitMQ |
-| `retry_count` | `integer` | Default 0; max 5 |
-| `last_error` | `text` | Last failure message if any |
-
-Index: `WHERE processed_at IS NULL` on `created_at` — the outbox processor queries this.
-
-### `processed_integration_events`
-
-Idempotency table — prevents double-processing if RabbitMQ redelivers a message.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `event_id` | `uuid` | PK — same as `IntegrationEvent.EventId` |
-| `event_type` | `varchar(200)` | |
-| `processed_at` | `timestamptz` | |
 
 ---
 

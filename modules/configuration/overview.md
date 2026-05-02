@@ -293,6 +293,11 @@ Tracks changes to app allowlists for compliance.
 
 ## Features
 
+- [[Userflow/Configuration/employee-override|Employee Override]] — Per-employee monitoring override flow
+- [[Userflow/Configuration/integration-connection|Integration Connection]] — External provider connection and health flow
+- [[Userflow/Configuration/retention-policy-setup|Retention Policy Setup]] — Per-data-type retention configuration flow
+- [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] — Tenant/role/employee app allowlist flow
+
 - [[Userflow/Configuration/tenant-settings|Tenant Settings]] — Timezone, currency, work hours, privacy mode — frontend: [[modules/configuration/tenant-settings/frontend|Frontend]]
 - [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]] — Global per-feature ON/OFF with industry profile defaults
 - [[modules/configuration/employee-overrides/overview|Employee Overrides]] — Per-employee monitoring overrides (null = inherit from tenant)

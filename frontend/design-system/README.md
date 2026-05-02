@@ -42,5 +42,18 @@ Reusable interaction patterns with code examples:
 5. **Status at a glance** — color-coded badges, pulsing dots, severity indicators
 6. **Permission-aware** — components hide or mask content based on permissions (role + employee-level overrides)
 7. **Accessible** — WCAG 2.1 AA, keyboard nav, screen reader support. Glass degrades gracefully under `prefers-contrast: more`
-8. **Desktop-first** — optimized for ≥1280px, functional at 768px, not optimized below
+8. **Responsive by design** - optimized across mobile, tablet, laptop, and desktop from Phase 1
 9. **Simple naming** — every label passes the "would a non-technical HR manager understand this in 1 second?" test
+
+## Phase 1 Responsive Requirement
+
+All OneVo HR frontend UI must be responsive by design from Phase 1. Every shell, page, form, table, dashboard, and workflow must provide a usable experience across mobile, tablet, laptop, and desktop viewports. Desktop-first layouts are acceptable only when they include explicit responsive adaptations for smaller screens.
+
+Every page must define behavior for:
+
+| Viewport | Width | Required behavior |
+|:---------|:------|:------------------|
+| Mobile | `<640px` | Single-column content, mobile navigation drawer, touch-safe controls, card/list alternatives for dense tables |
+| Tablet | `640-1023px` | Hidden or collapsible sidebar, content-first layout, compact filters/actions |
+| Laptop | `1024-1279px` | Compact rail-first shell, optional collapsed panel, dense but readable work surfaces |
+| Desktop | `>=1280px` | Full shell with rail, expansion panel, topbar, and full data surfaces |

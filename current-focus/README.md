@@ -142,7 +142,7 @@ This matrix is the coverage check. If ADE is asked to build an unfinished task, 
 | Core HR + Employee Lifecycle | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
 | Skills Core | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
 | HR Import / Data Import | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
-| Leave + Calendar | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
+| Leave + Calendar, country holidays, Google/Outlook calendar sync | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
 | Workforce Presence | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]] |
 | Notifications | Dev 2 | Dev 6, Dev 8 | [[current-focus/DEV2|DEV2]], [[current-focus/DEV6|DEV6]], [[current-focus/DEV8|DEV8]] |
 | WorkSync Foundation, Projects, Tasks, Boards, Planning, OKR, Time, Resources | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]], [[current-focus/DEV7|DEV7]], [[current-focus/DEV8|DEV8]] |

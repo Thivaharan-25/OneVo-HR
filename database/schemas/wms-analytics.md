@@ -1,6 +1,6 @@
-# Schema: WMS — Insight & Analytics
+# Schema: Work Management — Insight & Analytics
 
-**Module:** `WorkSync.Analytics`
+**Module:** `Work Management.Analytics`
 **Phase:** 1
 **Owner:** DEV6
 
@@ -15,7 +15,7 @@
 | `tenant_id` | uuid | FK → tenants |
 | `name` | varchar(200) | |
 | `description` | text | nullable |
-| `created_by` | uuid | FK → users |
+| `created_by_id` | uuid | FK → users |
 | `is_shared` | boolean | Quick flag — true means available via `dashboard_shares` to all workspace members |
 | `created_at` | timestamptz | |
 | `updated_at` | timestamptz | |
@@ -51,7 +51,7 @@ Saved filter + sort configurations for task lists, project lists, etc.
 | `filter_json` | jsonb | Filter conditions |
 | `sort_json` | jsonb | Sort fields and direction |
 | `group_by` | varchar(50) | nullable — status / assignee / priority / sprint |
-| `created_by` | uuid | FK → users |
+| `created_by_id` | uuid | FK → users |
 | `is_shared` | boolean | |
 | `created_at` | timestamptz | |
 
@@ -81,7 +81,7 @@ Async export jobs. Generates CSV/PDF/Excel files and stores in Azure Blob.
 |---|---|---|
 | `id` | uuid | PK |
 | `workspace_id` | uuid | FK → workspaces |
-| `requested_by` | uuid | FK → users |
+| `requested_by_id` | uuid | FK → users |
 | `export_type` | varchar(20) | csv / pdf / excel |
 | `entity_type` | varchar(30) | tasks / sprint_report / time_report / code_activity |
 | `filter_json` | jsonb | What to export |
@@ -90,7 +90,7 @@ Async export jobs. Generates CSV/PDF/Excel files and stores in Azure Blob.
 | `created_at` | timestamptz | |
 | `completed_at` | timestamptz | nullable |
 
-**Hangfire job:** Processes export, uploads to Azure Blob, sets `file_asset_id` and `status = ready`, sends notification to `requested_by`.
+**Hangfire job:** Processes export, uploads to Azure Blob, sets `file_asset_id` and `status = ready`, sends notification to `requested_by_id`.
 
 ---
 

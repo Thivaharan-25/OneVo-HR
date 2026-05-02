@@ -35,6 +35,26 @@
 | Leave Calendar | ≤1.5s | ≤170KB | Calendar component |
 | Settings | ≤1.0s | ≤100KB | Mostly static |
 
+
+## Responsive Performance Budget
+
+Phase 1 responsiveness includes mobile performance, not only visual resizing.
+
+| Concern | Requirement |
+|:--------|:------------|
+| Mobile initial JS | Keep critical mobile shell and first page under the same initial JS budget; lazy load charts, heavy tables, and non-visible panels. |
+| Dashboard cards | Render primary action cards first; defer lower-priority charts and analytics until visible. |
+| Navigation drawers | Drawer open/close must avoid layout shift and must not mount heavy page content. |
+| Data tables | Mobile card/list views should reuse loaded data and avoid loading desktop-only column renderers when hidden. |
+| Images and avatars | Use responsive image sizes and reserve dimensions to avoid CLS. |
+| Touch interactions | Keep INP within target for filters, drawer navigation, row actions, and form submission. |
+
+Rules:
+
+- Do not load chart libraries on mobile until the chart section is visible or explicitly opened.
+- Do not render hidden desktop panels on mobile/tablet if they contain expensive data or charts.
+- Use skeleton dimensions that match final mobile and desktop layouts to avoid layout shift.
+
 ## Enforcement
 
 ### CI Checks

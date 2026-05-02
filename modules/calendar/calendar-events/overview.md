@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Unified calendar aggregating leave, holidays, review cycles, and custom events into one view via `source_type` + `source_id` polymorphic references.
+Unified calendar aggregating leave, holidays, review cycles, custom events, country holidays, and connected Google/Outlook events into one view via `source_type` + `source_id` polymorphic references.
 
 ## Database Tables
 
@@ -46,6 +46,13 @@ Used only when `audience_type = individual`. For `department`, `team`, and `tena
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/calendar` | Authenticated | Calendar events for date range (filtered by `IHierarchyScope`) |
+| GET | `/api/v1/calendar/holiday-settings` | `calendar:admin` | Get legal-entity holiday sync settings |
+| PUT | `/api/v1/calendar/holiday-settings/{id}` | `calendar:admin` | Enable/disable country holiday sync or override calendar country |
+| POST | `/api/v1/calendar/holiday-settings/{id}/sync` | `calendar:admin` | Import holidays from configured provider |
+| GET | `/api/v1/calendar/connections` | Authenticated | List user's Google/Outlook calendar connections |
+| GET | `/api/v1/calendar/connections/{provider}/connect` | Authenticated | Start OAuth |
+| PUT | `/api/v1/calendar/connections/{id}` | Authenticated | Update sync direction |
+| DELETE | `/api/v1/calendar/connections/{id}` | Authenticated | Disconnect external calendar |
 | POST | `/api/v1/calendar` | `calendar:write` | Create event |
 | PUT | `/api/v1/calendar/{id}` | `calendar:write` | Update event (also used for drag-and-drop reschedule) |
 | DELETE | `/api/v1/calendar/{id}` | `calendar:write` | Delete event |

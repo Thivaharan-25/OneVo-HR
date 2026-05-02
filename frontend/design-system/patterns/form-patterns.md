@@ -9,6 +9,26 @@
 | UI | shadcn/ui Form components | Label, Input, Select, Error display |
 | URL state | React Router `useSearchParams` | Filter forms that sync to URL |
 
+
+## Responsive Form Behavior
+
+Forms must be usable from Phase 1 on mobile, tablet, laptop, and desktop. Form layouts should adapt by complexity, not simply by available width.
+
+| Viewport | Required behavior |
+|:---------|:------------------|
+| Mobile `<640px` | Single-column fields, full-width controls, touch-safe spacing, sticky footer actions for long forms and wizards. Dialog-style forms should become sheets or full-screen flows. |
+| Tablet `640-1023px` | One column for complex forms; two columns only for simple paired fields. Filters and secondary actions may collapse into a drawer/sheet. |
+| Laptop `1024-1279px` | Two-column or sectioned layouts are allowed when labels, errors, and helper text remain readable. |
+| Desktop `>=1280px` | Full sectioned layouts, side summaries, and multi-column grids are allowed. |
+
+Rules:
+
+- Never require horizontal scrolling to complete a form.
+- Primary and destructive actions must remain reachable without relying on hover.
+- Date pickers, selects, file upload, and multi-select controls must have mobile-safe variants.
+- Validation errors must wrap and remain associated with their fields at every breakpoint.
+- Multi-step wizards must show progress in a compact form on mobile and keep Back/Next/Submit reachable.
+
 ## Form Architecture
 
 ```tsx

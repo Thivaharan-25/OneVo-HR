@@ -3,105 +3,131 @@
 **Area:** Platform Setup
 **Trigger:** Admin navigates to billing settings (user action)
 **Required Permission(s):** `billing:manage`
-**Related Permissions:** `settings:admin` (for viewing invoice history and tax settings)
+**Related Permissions:** `settings:billing` (for viewing invoice history and tax settings)
+
+---
+
+## Billing Model
+
+ONEVO uses **active-user-based billing**. There is no self-service signup or checkout on the ONEVO website. Tenants are acquired via a sales conversation and provisioned by an ONEVO operator. Once active, tenant admins can add new packs or the Chat AI add-on directly from the billing section.
+
+### Pricing Packs
+
+| Pack | Modules Included | Pricing Unit |
+|------|-----------------|--------------|
+| **HR Pack** | Org Structure, Core HR, Leave, Calendar, Skills Core | Per active employee / month |
+| **Workforce Intelligence Pack** | Workforce Presence, Activity Monitoring, Discrepancy Engine, Identity Verification, Exception Engine, Productivity Analytics + Desktop Agent | Per monitored device / month |
+| **WorkSync Pack** | Projects, Tasks, Planning, OKR, Time, Resources, Chat, Collaboration, Analytics, Integrations + IDE Extension | Per active employee / month |
+| **Chat AI Add-on** | AI-assisted chat actions, premium AI detections | Per active employee / month |
+
+Future modules (Governance, Skill & Talent Development, Payroll, Performance, etc.) are released as standalone add-ons. When ONEVO introduces a new module, the operator adds it to the catalog in the Developer Console and it appears as a purchasable add-on for all tenants that don't have it.
+
+### Billing Calculation
+
+| Item | Rule |
+|------|------|
+| HR Pack / WorkSync Pack billing unit | Active employees (`employees.status = 'active'`) at end-of-month snapshot |
+| Workforce Intelligence Pack billing unit | Enrolled devices (`registered_agents` with `status = 'active'`) at end-of-month snapshot |
+| Chat AI add-on billing unit | Active employees at end-of-month snapshot |
+| Billing cycle | Calendar month (1st to last day) |
+| Invoice generation | ONEVO generates and sends invoice by 3rd of the following month |
+| Proration | New packs/add-ons added mid-cycle are prorated for remaining days. Removals take effect from the next billing cycle. |
 
 ---
 
 ## Preconditions
 
-- Tenant has been provisioned via [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning Flow]]
+- Tenant provisioned via [[developer-platform/userflow/provisioning-flow|Provisioning Flow]]
 - User has `billing:manage` permission
-- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+
+---
 
 ## Flow Steps
 
 ### Step 1: Navigate to Billing
-- **UI:** Settings sidebar > Billing & Subscription. Dashboard shows: current plan, billing cycle, next invoice date, payment method, usage summary (active employees count)
+
+- **UI:** Settings sidebar > Billing & Subscription. Dashboard shows:
+  - Active packs and add-ons with their current rates
+  - Active employee count and enrolled device count (billing basis)
+  - Current billing cycle dates
+  - Next invoice date and estimated amount
+  - Invoice history (view / download)
+  - Billing contact email
 - **API:** `GET /api/v1/billing/subscription`
-- **Backend:** `BillingService.GetCurrentSubscriptionAsync()` → [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
-- **Validation:** Permission check for `billing:manage`
-- **DB:** `subscriptions`, `billing_plans`
+- **Backend:** `BillingService.GetCurrentSubscriptionAsync()`
+- **DB:** `tenant_subscriptions`, `subscription_plans`
 
-### Step 2: Select or Change Plan
-- **UI:** Plan comparison cards showing: Free/Starter/Professional/Enterprise tiers. Each shows: price per employee per month, included modules, feature limits, support level. Current plan highlighted. Click "Upgrade" or "Downgrade"
-- **API:** `GET /api/v1/billing/plans` (list available plans)
-- **Backend:** `BillingService.GetAvailablePlansAsync()` — filters plans based on tenant's country and active employee count
-- **Validation:** Cannot downgrade if current usage exceeds target plan limits (e.g., active modules not available in lower plan)
-- **DB:** `billing_plans`
+### Step 2: View Active User / Device Count
 
-### Step 3: Enter Payment Details
-- **UI:** Stripe Elements embedded form: card number, expiry, CVC, billing address. For enterprise: option for invoice-based billing. Previously saved payment methods shown with option to use existing
-- **API:** `POST /api/v1/billing/payment-method` (saves Stripe payment method)
-- **Backend:** `PaymentService.SavePaymentMethodAsync()` — calls Stripe API to create/attach payment method to Stripe customer. Stores only Stripe payment method ID locally (no card details stored)
-- **Validation:** Stripe validates card in real-time. Billing address required for tax calculation
-- **DB:** `payment_methods` (stores Stripe reference only), `billing_addresses`
+- **UI:** Expandable breakdown — active employees by department, enrolled devices by department. Read-only. Helps the tenant understand how their invoice is calculated.
+- **API:** `GET /api/v1/billing/active-users`, `GET /api/v1/billing/enrolled-devices`
+- **Backend:** `BillingService.GetActiveUserCountAsync()`, `BillingService.GetEnrolledDeviceCountAsync()`
+- **DB:** `employees` (status filter), `registered_agents` (status filter), `billing_snapshots`
 
-### Step 4: Review and Confirm
-- **UI:** Order summary: plan name, price per employee, estimated monthly total (based on current active employee count), proration amount (if mid-cycle change), next billing date. Checkbox: "I agree to the terms of service"
-- **API:** `POST /api/v1/billing/subscription`
-- **Backend:** `SubscriptionService.CreateOrUpdateSubscriptionAsync()` → [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
-  1. Creates Stripe subscription via Stripe API
-  2. Stores subscription reference in local DB
-  3. If upgrade: immediately charges proration
-  4. If downgrade: scheduled for next billing cycle
-  5. Updates tenant feature flags based on new plan
-- **Validation:** Payment method must be valid. Terms must be accepted. Proration amount displayed must match calculated amount
-- **DB:** `subscriptions`, `subscription_history`, `tenant_feature_flags`
+### Step 3: View Invoice History
 
-### Step 5: Activation and Feature Access Update
-- **UI:** Success confirmation with new plan details. Page refreshes to show updated plan. Navigation menu may show new modules (if upgrade) or hide modules (if downgrade, effective next cycle)
-- **API:** `POST /api/v1/billing/subscription/{id}/activate`
-- **Backend:** `SubscriptionService.ActivateAsync()` — publishes `SubscriptionChangedEvent`. Feature flag service updates available modules for the tenant
-- **Validation:** Stripe webhook confirms payment success before activation
-- **DB:** `subscriptions` (status → `active`), `tenant_feature_flags`
+- **UI:** Table of past invoices — date, billing basis (user/device count), rate, total, status (paid/pending). Each row has a **Download PDF** link.
+- **API:** `GET /api/v1/billing/invoices`
+- **Backend:** `BillingService.GetInvoiceHistoryAsync()`
+- **DB:** `subscription_invoices`
 
-## Variations
+### Step 4: Add a New Pack or Add-on (Self-Service Upgrade)
 
-### When upgrading mid-cycle
-- Proration calculated: remaining days in current cycle charged at difference between old and new plan rate
-- New features available immediately after payment confirmation
-- Invoice generated for proration amount
+Tenant admins can add packs and the Chat AI add-on directly — no sales call needed for upgrades.
 
-### When downgrading
-- Downgrade effective at end of current billing cycle
-- Warning shown if any active features will be disabled
-- Users currently using soon-to-be-disabled features are notified
+- **UI:** "Available Add-ons" section shows all packs and add-ons the tenant has not purchased. Each card shows:
+  - Pack / add-on name and modules included
+  - Price per user or per device per month
+  - Estimated monthly cost based on current active user / device count
+  - Proration amount if adding mid-cycle
+  - **"Add [Pack Name]"** button
+- **API:** `POST /api/v1/billing/modules/{moduleId}/add`
+- **Backend:**
+  1. Validates Stripe payment method is on file
+  2. Charges proration via Stripe
+  3. Updates `module_registry` for the tenant
+  4. Publishes `SubscriptionChangedEvent` → feature flag service activates new modules immediately
+  5. Writes audit log entry
+- **DB:** `tenant_feature_flags`, `tenant_subscriptions`
 
-### When switching from monthly to annual billing
-- Annual discount applied (typically 20%)
-- Full annual amount charged immediately
-- Refund issued for remaining monthly cycle
+**Note:** Pack removal (downgrade) is not self-service — tenant contacts ONEVO. This prevents accidental data access loss.
 
-### Enterprise custom pricing
-- "Contact Sales" button instead of self-service checkout
-- Sales team configures custom plan with specific module selection and pricing
-- Manual approval workflow for enterprise subscriptions
+### Step 5: Upgrade Nudge (In-App)
+
+Locked features across the app surface an upgrade prompt to guide tenant admins to the billing section.
+
+- **UI:** Lock icon on any feature from an unpurchased pack. Tooltip: "Available in [Pack Name] — from $X/user/month. **Add it in Billing.**" Clicking the lock navigates to the billing section with that pack pre-highlighted in the Available Add-ons section.
+- No API call from the lock icon itself — it is a frontend navigation cue only.
+
+---
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| Card declined | Stripe returns decline code | "Payment declined. Please check your card details or try a different payment method" |
-| Insufficient plan for current usage | Downgrade blocked | "Cannot downgrade: you have 150 active employees but the Starter plan supports up to 50" |
-| Stripe API unavailable | Transaction deferred | "Payment service temporarily unavailable. Your plan change has been queued and will process shortly" |
-| Duplicate subscription attempt | Idempotency check | "You already have an active subscription. Please modify your existing plan instead" |
-| Webhook delivery failure | Retry with exponential backoff | No user impact (background process) |
+| Stripe payment method missing | Add pack blocked | "Please add a payment method before adding new modules." |
+| Stripe charge fails | Module not activated | "Payment failed. Please check your payment method and try again." |
+| Active user count API unavailable | Cached snapshot used | Count shown with "(estimate)" label |
+| Invoice PDF unavailable | Retry link shown | "Invoice PDF is being generated. Try again shortly." |
+
+---
 
 ## Events Triggered
 
-- `SubscriptionChangedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by feature flag service and notification module
-- `PaymentProcessedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by invoice generation
-- `AuditLogEntry` (action: `subscription.changed`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `BillingSnapshotTakenEvent` — end-of-month background job, triggers invoice generation
+- `SubscriptionChangedEvent` → feature flag service updates active modules for the tenant
+- `AuditLogEntry` (action: `billing.module_added`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+
+---
 
 ## Related Flows
 
-- [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]] — initial tenant setup before billing
-- [[Userflow/Platform-Setup/feature-flag-management|Feature Flag Management]] — modules enabled/disabled based on plan
-- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — billing address and tax settings
+- [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] — initial pack assignment by ONEVO operator
+- [[developer-platform/userflow/tenant-management|Tenant Management]] — operator changes plan or removes packs via Developer Console
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — billing contact email
 
 ## Module References
 
-- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] — billing logic and Stripe integration
-- [[backend/external-integrations|External Integrations]] — Stripe payment gateway
-- [[modules/configuration/overview|Configuration]] — feature flags per tenant
-- [[modules/notifications/overview|Notifications]] — billing-related email notifications
+- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
+- [[backend/module-catalog|Module Catalog]] — full pack and add-on definitions
+- [[modules/notifications/overview|Notifications]] — invoice and billing event emails

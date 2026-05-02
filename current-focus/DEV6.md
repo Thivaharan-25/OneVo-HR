@@ -53,13 +53,18 @@ npm run build
 - [ ] Manager approval screen supports approve, reject, and comment.
 - [ ] Calendar screen combines holidays, shifts, leave, and company events.
 - [ ] Shift and holiday admin screens exist.
-- [ ] Tests cover request validation, approval action, and calendar event render.
+- [ ] Calendar holiday settings screen lets admins disable country holiday sync or override the country calendar from the legal entity default.
+- [ ] Google/Outlook calendar connection controls support connect, disconnect, sync direction, sync status, and manual sync.
+- [ ] Tests cover request validation, approval action, calendar event render, holiday override controls, and external calendar connection states.
 
 ### References
 
 - [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
 - [[Userflow/Leave/leave-approval|Leave Approval]]
 - [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]]
+- [[Userflow/Calendar/calendar-integrations|Calendar Integrations]]
+- [[modules/calendar/overview|Calendar Module]]
+- [[modules/calendar/calendar-events/end-to-end-logic|Calendar Events Logic]]
 
 ### Verification
 
@@ -132,4 +137,5 @@ npm run build
 
 - [ ] Employee DTO from DEV2.
 - [ ] Leave balance DTO from DEV2.
+- [ ] Calendar holiday settings DTO and external calendar connection DTO from DEV2.
 - [ ] Agent health DTO from DEV4.

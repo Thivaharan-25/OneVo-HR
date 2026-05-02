@@ -80,6 +80,8 @@ pending/finalized ──(Hangfire error)──────────► failed
 
 ## Related
 
+- [[Userflow/Work-Management/chat-ai-flow|Chat AI Flow]] — user-facing AI action and undo flow
+
 - [[modules/work-management/chat/overview|Chat]] — messages feed AI detection
 - [[modules/work-management/my-space/overview|My Space]] — chat_reminder_items
 - [[modules/ide-extension/overview|IDE Extension]] — shares ai_action_jobs (30s window)

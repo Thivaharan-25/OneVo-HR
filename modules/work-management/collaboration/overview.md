@@ -85,6 +85,8 @@ File attachments use the existing `attachments` table — `task_documents` is fo
 
 ## Related
 
+- [[Userflow/Work-Management/collaboration-flow|WorkSync Collaboration]] — workspace documents and wiki user flow
+
 - [[modules/documents/overview|Documents Module]] — full shared table spec including HR columns
 - [[modules/work-management/tasks/overview|Task Management]] — task_documents FK
 - [[database/schemas/wms-collaboration|WMS Collaboration Schema]]

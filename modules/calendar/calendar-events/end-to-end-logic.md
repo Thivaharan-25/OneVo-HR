@@ -22,7 +22,8 @@ GET /api/v1/calendar?from=2026-04-01&to=2026-04-30
             -> 'private' -> own events only
       -> 3. Merge with leave requests (source_type = 'leave_request')
       -> 4. Merge with holidays (source_type = 'holiday')
-      -> 5. Merge with review cycles (source_type = 'review_cycle')
+      -> 5. Merge with external calendar events (source_type = 'external_sync')
+      -> 6. Merge with review cycles (source_type = 'review_cycle')
       -> Return Result.Success(eventDtos)
 ```
 
@@ -48,6 +49,66 @@ POST /api/v1/calendar
 | End date before start date | Return 422 |
 | Invalid event_type | Return 422 |
 | Event not found (update/delete) | Return 404 |
+
+## Legal Entity Holiday Calendar Default
+
+### Flow
+
+```
+LegalEntityCreated(legal_entity_id, country_code)
+  -> CalendarHolidaySettingsHandler
+    -> 1. Create holiday_calendar_settings
+       -> default_country_code = legal entity country
+       -> override_country_code = null
+       -> effective_country_code = default_country_code
+       -> holiday_sync_enabled = true
+       -> provider = "nager_date"
+    -> 2. Queue holiday sync for current year and next year
+    -> 3. Import public holidays as calendar_events
+       -> event_type = "holiday"
+       -> source_type = "holiday"
+       -> external_source = "country_holiday"
+```
+
+## Change Holiday Calendar Country
+
+### Flow
+
+```
+PUT /api/v1/calendar/holiday-settings/{id}
+  body: { holiday_sync_enabled, override_country_code? }
+  -> CalendarHolidaySettingsController.Update
+    -> [RequirePermission("calendar:admin")]
+    -> 1. Load setting and validate legal entity scope
+    -> 2. If override_country_code is set, use it as effective country
+    -> 3. If holiday_sync_enabled = false, stop future imports but keep existing events unless admin chooses resync
+    -> 4. If country changed, mark current imported holiday events as superseded and queue resync
+```
+
+## Country Holiday Sync
+
+### Flow
+
+```
+POST /api/v1/calendar/holiday-settings/{id}/sync?year=2026
+  -> CalendarHolidaySyncService.SyncCountryHolidaysAsync
+    -> 1. Resolve effective_country_code
+    -> 2. Fetch Nager.Date /api/v3/PublicHolidays/{year}/{countryCode}
+    -> 3. Upsert one all-day calendar_events row per holiday
+    -> 4. Use external_id = "{countryCode}:{year}:{date}:{localName}" for deduplication
+```
+
+## Google/Outlook Calendar Sync
+
+### Flow
+
+```
+User connects Google or Outlook calendar
+  -> OAuth callback stores external_calendar_connections with encrypted tokens
+  -> Sync job pulls provider events into calendar_events
+  -> OneVo-created events are pushed out only when sync_direction is push_only or two_way
+  -> external_calendar_event_links tracks provider event IDs and etags
+```
 
 ## Related
 

@@ -271,6 +271,8 @@ See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discr
 
 ## Related
 
+- [[Userflow/Discrepancy-Engine/discrepancy-review|Discrepancy Review]] — reviewer-facing flow for high/critical discrepancy records
+
 - [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discrepancy_events` and `wms_daily_time_logs` table definitions
 - [[modules/activity-monitoring/overview|Activity Monitoring]] — provides `activity_daily_summary`
 - [[modules/calendar/overview|Calendar]] — provides meeting/event time

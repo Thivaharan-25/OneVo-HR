@@ -52,13 +52,13 @@ API endpoints:
 
 #### `sso_providers`
 
-SSO configuration (Google, Microsoft, SAML). Encrypted fields via `IEncryptionService`.
+Phase 1 SSO configuration for Google. Encrypted fields via `IEncryptionService`. Microsoft Teams account linking is handled by the integrations module, not SSO.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `provider_type` | `varchar(30)` | `google`, `microsoft`, `saml`, `oidc` |
+| `provider_type` | `varchar(30)` | Phase 1: `google` only |
 | `name` | `varchar(100)` | Display name |
 | `client_id_encrypted` | `bytea` | Encrypted via IEncryptionService |
 | `client_secret_encrypted` | `bytea` | Encrypted via IEncryptionService |

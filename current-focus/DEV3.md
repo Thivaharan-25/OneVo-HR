@@ -21,13 +21,17 @@ When Dev 3 asks to continue, start with the first unchecked item in **Current Un
 
 - [ ] Workspaces table and APIs exist.
 - [ ] Workspace members and roles exist.
+- [ ] Workspace members store both `user_id` and `employee_id`, and reject users without an active employee record in Phase 1.
+- [ ] `workspace_hr_team_links` exists so HR teams can sync into workspace membership before Microsoft Teams integration.
 - [ ] Workspace role permissions can be resolved for a user.
 - [ ] Projects can be created, listed, updated, archived, and assigned members.
+- [ ] Project members store both `user_id` and `employee_id`, require active workspace membership, and deactivate on employee offboarding.
 - [ ] Project members, epics, milestones, versions, and repository links are represented.
 - [ ] Resource plans, resource allocations, capacity snapshots, and resource rates needed for planning are represented where in scope.
 - [ ] Workspace provisioning can be triggered from tenant module activation.
 - [ ] Workspace APIs are tenant-scoped.
 - [ ] Tests cover workspace membership, role permissions, project CRUD, and tenant isolation.
+- [ ] Tests cover HR team membership sync and employee offboarding deactivation for workspace/project memberships.
 
 ### References
 
@@ -53,14 +57,19 @@ dotnet test ONEVO.sln --filter WorkSync
 
 - [ ] Task create/list/detail/update APIs exist.
 - [ ] Task assignments, comments, checklists, labels, and status transitions exist.
+- [ ] Task assignments store both `user_id` and `employee_id`, reject inactive/deleted employees, and resolve HR profile data without application-only joins.
+- [ ] Task assignment checks Leave + Calendar availability and writes `availability_status`, `availability_checked_at`, and `availability_warning`.
 - [ ] Boards, columns, and task positions exist.
 - [ ] Sprint planning APIs exist for backlog, sprint assignment, start, complete, and burndown snapshots.
+- [ ] Sprint planning surfaces task assignment availability warnings before sprint activation.
+- [ ] Sprint reports store contributor metrics in typed `sprint_report_contributors` rows, not only JSON.
 - [ ] Roadmap APIs exist.
 - [ ] OKR APIs exist for objectives, key results, check-ins, and progress updates.
 - [ ] Time management APIs exist for time logs, timers, timesheets, and current period summary.
 - [ ] WorkSync time can provide daily logged minutes to the Discrepancy Engine.
 - [ ] `GET /api/v1/ide/tasks/assigned` returns tasks for the authenticated developer.
 - [ ] Tests cover task lifecycle, board moves, sprint assignment, and IDE assigned-task feed.
+- [ ] Tests cover leave-aware assignment warnings, offboarded employee assignment rejection, and typed sprint contributor reporting.
 
 ### References
 
@@ -70,6 +79,7 @@ dotnet test ONEVO.sln --filter WorkSync
 - [[modules/work-management/time/overview|Time]]
 - [[Userflow/Work-Management/task-flow|Task Flow]]
 - [[Userflow/Work-Management/planning-flow|Planning Flow]]
+- [[database/cross-module-relationships|Cross-Module Relationships]]
 
 ### Verification
 

@@ -144,7 +144,7 @@ dotnet test ONEVO.sln --filter Audit
 
 ### Acceptance Criteria
 
-- [ ] SSO provider configuration exists for Google, Microsoft, SAML, and OIDC, with encrypted client credentials.
+- [ ] SSO provider configuration exists for Google only in Phase 1, with encrypted client credentials.
 - [ ] Subscription plan catalog exists with plan features and tenant subscription state.
 - [ ] Stripe-facing subscription and invoice records are represented behind module interfaces.
 - [ ] Feature flag service resolves tenant flags and module gates.
@@ -197,6 +197,7 @@ dotnet test ONEVO.sln --filter Workflow
 - [ ] Employee monitoring overrides support nullable inherit/override behavior.
 - [ ] Bulk overrides can apply by department, team, or job family.
 - [ ] Integration connections support encrypted credentials and health status.
+- [ ] Shared encryption abstraction is available for Calendar Google/Outlook OAuth token storage owned by DEV2.
 - [ ] Retention policy records exist per data type.
 - [ ] App allowlist supports tenant, role, and employee scopes.
 - [ ] Effective app allowlist resolution uses employee > role > tenant precedence.

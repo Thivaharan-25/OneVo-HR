@@ -31,6 +31,7 @@
 - **API:** `POST /api/v1/org/legal-entities`
 - **DB:** `legal_entities` — new record created
 - **Result:** Entity available for department assignment, payroll configuration, leave policies
+- **Calendar result:** `LegalEntityCreated` seeds `holiday_calendar_settings` with the selected country as the default holiday calendar and queues country holiday import.
 
 ## Variations
 
@@ -56,6 +57,7 @@
 - [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
 - [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
 - [[Userflow/Leave/leave-policy-setup|Leave Policy Setup]]
+- [[Userflow/Calendar/calendar-integrations|Calendar Integrations]]
 
 ## Module References
 

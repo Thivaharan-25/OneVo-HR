@@ -14,7 +14,7 @@ POST /api/v1/sso/providers
   -> SsoController.Create(CreateSsoProviderCommand)
     -> [RequirePermission("settings:admin")]
     -> SsoProviderService.CreateAsync(command, ct)
-      -> 1. Validate provider_type: google, microsoft, saml, oidc
+      -> 1. Validate provider_type: google (Phase 1 only)
       -> 2. Encrypt client_id and client_secret via IEncryptionService
       -> 3. INSERT into sso_providers
          -> domain_hint for auto-selecting provider by email domain
@@ -27,7 +27,7 @@ POST /api/v1/sso/providers
 ### Flow
 
 ```
-User clicks "Login with Google/Microsoft":
+User clicks "Login with Google":
   -> 1. Redirect to SSO provider with client_id, redirect_uri
   -> 2. User authenticates with provider
   -> 3. Provider redirects back with auth code

@@ -16,7 +16,7 @@ https://api.onevo.com/api/v{version}/{resource}
 
 ### Authentication
 
-All endpoints require JWT Bearer token (except `/api/v1/auth/login`, `/api/v1/auth/register`, `/api/v1/auth/refresh`):
+All endpoints require JWT Bearer token (except `/api/v1/auth/login`, `/api/v1/auth/refresh`):
 
 ```
 Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
@@ -24,11 +24,11 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
 
 #### Internal Module Authentication
 
-There are no bridge APIs in the active architecture. HR Management, Workforce Intelligence, and WorkSync all live in the same backend and PostgreSQL database. The React frontend, IDE extension, and desktop agent call first-party ONEVO endpoints only.
+HR Management, Workforce Intelligence, and Work Management all live in the same backend and PostgreSQL database. The Vite + React frontend, IDE extension, and desktop agent call first-party ONEVO endpoints only.
 
 - Web and IDE clients use the normal user JWT audience (`onevo-api`).
-- Desktop agents use device JWTs on `/api/v1/agent/*`; device JWTs cannot access HR or WorkSync user APIs.
-- Cross-pillar data flow uses direct foreign keys, application services, and in-process domain events, not `/api/v1/bridges/*`.
+- Desktop agents use device JWTs on `/api/v1/agent/*`; device JWTs cannot access HR or Work Management user APIs.
+- Cross-pillar data flow uses direct foreign keys, application services, and in-process domain events.
 
 ### Authorization (Hybrid Permission Control)
 
@@ -218,7 +218,7 @@ CRUD   /api/v1/workforce/attendance-corrections
 CRUD   /api/v1/holidays
 ```
 
-Clock-in source validation is server-side. Office employees normally clock in through biometric terminals only. Remote employees may clock in through approved web/tray flows with identity and work-location evidence. Hybrid employees use biometric onsite and web/tray remotely. Onsite web/tray clock-in is allowed only during a time-limited biometric outage override for the affected legal entity/location/device. IDE extension and WorkSync time logging must never create Workforce Presence clock-in/out records.
+Clock-in source validation is server-side. Office employees normally clock in through biometric terminals only. Remote employees may clock in through approved web/tray flows with identity and work-location evidence. Hybrid employees use biometric onsite and web/tray remotely. Onsite web/tray clock-in is allowed only during a time-limited biometric outage override for the affected legal entity/location/device. IDE extension and Work Management time logging must never create Workforce Presence clock-in/out records.
 
 ### Leave
 
@@ -272,7 +272,7 @@ GET    /api/v1/payroll-runs/{id}            # Run status + line items
 GET    /api/v1/payroll-runs/{id}/line-items # Detailed line items
 ```
 
-### WorkSync
+### Work Management
 
 ```
 CRUD   /api/v1/workspaces
@@ -287,7 +287,7 @@ CRUD   /api/v1/documents
 CRUD   /api/v1/repositories
 ```
 
-WorkSync is an internal ONEVO pillar. It uses the same user JWT and the same tenant/module entitlement checks as HR. Do not implement or call `/api/v1/bridges/*`.
+Work Management is an internal ONEVO pillar. It uses the same user JWT and the same tenant/module entitlement checks as HR.
 
 ## Rate Limiting
 
@@ -305,4 +305,4 @@ WorkSync is an internal ONEVO pillar. It uses the same user JWT and the same ten
 - [[code-standards/backend-standards|Backend Standards]] — Minimal API endpoint conventions
 - [[backend/module-catalog|Module Catalog]] — module-specific API endpoints
 - [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant scoping for all API requests
-- [[backend/external-integrations|External Integrations]] - third-party integrations only; not WorkSync bridge contracts
+- [[backend/external-integrations|External Integrations]] - third-party integrations only

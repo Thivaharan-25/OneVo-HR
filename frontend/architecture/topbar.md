@@ -9,6 +9,25 @@ Left (fixed width ~200px)        Center (flex-grow)       Right (fixed width)
 
 Height: 40px (`h-10`). Spans full width above both the icon rail and expansion panel.
 
+
+## Responsive Behavior
+
+The topbar must preserve entity context, navigation access, search, notifications, and profile access across all Phase 1 breakpoints.
+
+| Viewport | Topbar behavior |
+|:---------|:----------------|
+| Mobile `<640px` | Show hamburger, concise page title, one primary action when present, and overflow menu. Entity switcher and search move into the navigation drawer or icon triggers. |
+| Tablet `640-1023px` | Show hamburger, active entity in compact form, search icon, notifications, and avatar/overflow menu. Breadcrumbs collapse to current page or one parent. |
+| Laptop `1024-1279px` | Show compact entity switcher, short breadcrumb, search pill, notifications, theme, and avatar. Hide low-priority labels before actions. |
+| Desktop `>=1280px` | Show full entity switcher, breadcrumb, search, notification, theme, and avatar controls. |
+
+Rules:
+
+- Text must truncate safely with tooltips or accessible labels where needed.
+- Critical actions cannot disappear; they move into the overflow menu or drawer.
+- Search must remain reachable at every viewport, even when the full search pill is hidden.
+- Hamburger controls the same permission-aware `MobileNavDrawer` used by tablet/mobile navigation.
+
 ## Left — Legal Entity Switcher
 
 ### What it shows

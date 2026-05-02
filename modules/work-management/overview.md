@@ -98,15 +98,15 @@ Request arrives →
 
 ## Key Invariants
 
-1. **All WorkSync entities are tenant-scoped.** Every table has `tenant_id` + either `workspace_id` or `project_id` (which implies workspace). Global query filters enforce both.
+1. **All Work Management entities are tenant-scoped.** Every table has `tenant_id` + either `workspace_id` or `project_id` (which implies workspace). Global query filters enforce both.
 
-2. **WorkSync time logs feed HR analytics.** `time_logs.user_id` → `employees.user_id` → HR payroll and overtime reports. `IEmployeeService.GetEmployeeIdAsync()` is the bridge — never store `employee_id` directly in WorkSync tables.
+2. **Work Management time logs feed HR analytics.** Time records store both `user_id` and `employee_id` where payroll, department, employment-status, or overtime reporting needs HR joins. `employee_id` is resolved from `employees.user_id` at write time.
 
-3. **Documents are shared infrastructure.** The `documents` table is extended (not duplicated) with `workspace_id` and `project_id` for WorkSync scope. The HR documents module and WorkSync collaboration module share the same table with different `document_scope` values.
+3. **Documents are shared infrastructure.** The `documents` table is extended (not duplicated) with `workspace_id` and `project_id` for Work Management scope. The HR documents module and Work Management collaboration module share the same table with different `document_scope` values.
 
-4. **Notifications are centralized.** WorkSync domain events publish to the Notifications module exactly like HR events. No separate WorkSync notification table.
+4. **Notifications are centralized.** Work Management domain events publish to the Notifications module exactly like HR events. No separate Work Management notification table.
 
-5. **Roadmaps are Phase 1 for WorkSync.** Although the HR phase plan originally deferred roadmaps to Phase 2, WorkSync requires roadmaps in its Phase 4 user flow. `roadmaps` and `roadmap_items` are Phase 1 for WorkSync.
+5. **Roadmaps are Phase 1 for Work Management.** Although the HR phase plan originally deferred roadmaps to Phase 2, Work Management requires roadmaps in its Phase 4 user flow. `roadmaps` and `roadmap_items` are Phase 1 for Work Management.
 
 ---
 
@@ -125,6 +125,14 @@ Request arrives →
 
 ## Related
 
+- [[Userflow/Work-Management/wm-overview|WorkSync Userflow Overview]] — user-facing module map
+- [[Userflow/Work-Management/my-space-flow|My Space]] — personal boards, reminders, saved views
+- [[Userflow/Work-Management/chat-ai-flow|Chat AI Flow]] — AI action detection and undo window
+- [[Userflow/Work-Management/collaboration-flow|Work Management collaboration]] — documents, wiki, task document links
+- [[Userflow/Work-Management/work-analytics-flow|WorkSync Analytics]] — dashboards, saved views, exports
+- [[Userflow/Work-Management/integration-automation-flow|Integration Automation]] — repository events and automation rules
+- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]] — Microsoft Teams workspace/channel linking
+
 - [[ADE-START-HERE|ADE Start Here]] — Build order for WorkSync (Weeks 1–4)
 - [[onevo-unified-entity-map|Entity Map]] — Sections 25–38 (all WorkSync tables)
 - [[database/schema-catalog|Schema Catalog]] — WorkSync section
@@ -133,3 +141,5 @@ Request arrives →
 - [[current-focus/DEV6-tasks-boards-planning|DEV6 Task Pack]]
 - [[current-focus/DEV7-chat-ai-reminders|DEV7 Task Pack]]
 - [[current-focus/DEV8-documents-github-ide|DEV8 Task Pack]]
+
+

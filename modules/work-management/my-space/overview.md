@@ -75,6 +75,8 @@ Workspace-scoped saved views can optionally be shared via `saved_view_shares` (A
 
 ## Related
 
+- [[Userflow/Work-Management/my-space-flow|My Space]] — personal work area user flow
+
 - [[modules/work-management/chat-ai/overview|Chat AI]] — chat_reminder_items source
 - [[modules/work-management/planning/overview|Planning]] — board mechanics shared
 - [[modules/work-management/analytics/overview|Analytics]] — saved_view_shares

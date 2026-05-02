@@ -18,7 +18,7 @@
 - [ ] Redis connection
 - [ ] Docker Compose (Postgres + Redis) for local dev
 - [ ] Swagger / OpenAPI + Health check endpoints
-- [ ] Multi-tenant provisioning (signup → seed → activate) with industry profile
+- [ ] Multi-tenant provisioning (operator-creates → seed → activate) with industry profile
 - [ ] Auth: Argon2id password hashing, JWT, MFA, password reset, session management
 - [ ] RBAC foundation (roles, permissions, permission keys)
 - [ ] Org Structure: Departments, Teams, Jobs, Job Families, Locations

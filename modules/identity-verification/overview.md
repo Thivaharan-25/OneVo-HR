@@ -119,7 +119,7 @@ Fingerprint terminals (moved from old Attendance module).
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
 | `device_name` | `varchar(100)` | Human-readable name |
-| `location_id` | `uuid` | FK → departments or custom location |
+| `office_location_id` | `uuid` | FK -> office_locations |
 | `api_key_encrypted` | `bytea` | HMAC-SHA256 key (encrypted at rest via `IEncryptionService`) |
 | `model` | `varchar(100)` | Device model |
 | `is_active` | `boolean` | |
@@ -298,3 +298,4 @@ Phase 1 uses a simple photo comparison service (basic pixel/hash comparison with
 
 ### Liveness Detection
 Phase 2 will add liveness detection to prevent employees from holding up a photo of themselves to the camera. Requires depth sensing or challenge-response (blink detection, head turn).
+

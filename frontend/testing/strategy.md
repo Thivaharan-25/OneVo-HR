@@ -150,6 +150,46 @@ export const monitoringDisabledHandler = http.get(
 );
 ```
 
+
+## Responsive QA
+
+Responsive behavior is mandatory for Phase 1 and must be verified before a page is considered complete.
+
+### Required Viewports
+
+| Viewport | Width |
+|:---------|:------|
+| Small mobile | `375px` |
+| Large mobile | `430px` |
+| Tablet | `768px` |
+| Laptop | `1024px` |
+| Desktop | `1280px` |
+| Wide desktop | `1440px` |
+
+### Checks
+
+- No horizontal page overflow.
+- Topbar actions remain reachable.
+- Navigation is usable through drawer, rail, or full panel depending on viewport.
+- Tables switch to reduced-column or card/list layouts where needed.
+- Forms remain readable, touch-safe, and completable.
+- Filters, row actions, bulk actions, and primary actions remain available.
+- Modals, drawers, popovers, and menus fit within the viewport and trap focus correctly.
+
+### Playwright Pattern
+
+```tsx
+for (const width of [375, 430, 768, 1024, 1280, 1440]) {
+  test(`dashboard is usable at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    await expect(page.locator('body')).toBeVisible();
+    await expect(page.locator('[data-testid="app-shell"]')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+}
+```
+
 ## E2E Tests (Playwright)
 
 Critical user flows only — not exhaustive coverage.

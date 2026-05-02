@@ -306,16 +306,24 @@ function RailItem({ pillar, isActive, onClick }: RailItemProps) {
 
 ---
 
-## Responsive States
+## Responsive Navigation
 
-| State | Rail | Panel | Trigger | Persistence |
-|:------|:-----|:------|:--------|:------------|
-| Full | 64px | 220px (pinned) | Default ≥1280px | Zustand + localStorage |
-| Rail only | 64px | Flyout on hover | Default ≥1024px or user unpins | Zustand + localStorage |
-| Hidden | 0px | 0px | ≤768px | Responsive only |
-| Overlay | 64px + 220px | Hamburger ≤768px | Temporary | Session only |
+Navigation is responsive from Phase 1 and must preserve the same route, badge, active-state, and permission behavior at every breakpoint.
 
----
+| Viewport | Navigation model | Behavior |
+|:---------|:-----------------|:---------|
+| Mobile `<640px` | Hamburger + `MobileNavDrawer` | Drawer contains entity context, search entry, all visible pillars, sub-items, badges, and profile/settings access. It closes after navigation. |
+| Tablet `640-1023px` | Hamburger + drawer | Same route map as desktop. Drawer may use two-level accordion groups for pillar items. |
+| Laptop `1024-1279px` | Rail + flyout/collapsed panel | Rail remains visible. Expansion panel is collapsed by default and opens as flyout or temporary panel. |
+| Desktop `>=1280px` | Rail + expansion panel | Full rail and pinnable expansion panel. |
+
+State rules:
+
+- The active route must highlight the same pillar/item in rail, panel, and drawer.
+- Badges, unread counts, and permission filters must be computed once from the shared pillar config.
+- The drawer is temporary UI state and should not persist across sessions.
+- Pinned desktop panel state may persist in Zustand/localStorage, but must not force a panel on tablet or mobile.
+- Keyboard navigation and focus trapping are required inside the mobile/tablet drawer.
 
 ## Topbar
 
@@ -323,7 +331,7 @@ Height: **48px**, glass surface (`bg-white/5 backdrop-blur border-b border-white
 
 | Element | Position | Behavior |
 |:--------|:---------|:---------|
-| Hamburger | Left (mobile ≤768px only) | Opens sidebar overlay |
+| Hamburger | Left on mobile/tablet | Opens responsive navigation drawer |
 | Breadcrumbs | Left (after hamburger) | Outfit 400, 13px, zinc-500 — auto-generated from route |
 | Quick Search pill | Center | Opens Quick Search modal (`⌘K` / `Ctrl+K`) |
 | Theme Toggle | Right (before divider) | Sun/Moon/Monitor — cycles system→light→dark, persists to localStorage |
