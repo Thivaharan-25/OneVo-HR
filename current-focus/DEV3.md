@@ -17,6 +17,8 @@ When Dev 3 asks to continue, start with the first unchecked item in **Current Un
 
 **Goal:** create workspace, membership, role, and project foundation for WorkSync.
 
+**Requires:** DEV1 Tasks 1-3 complete
+
 ### Acceptance Criteria
 
 - [ ] Workspaces table and APIs exist.
@@ -35,11 +37,11 @@ When Dev 3 asks to continue, start with the first unchecked item in **Current Un
 
 ### References
 
-- [[modules/work-management/foundation/overview|Work Management Foundation]]
-- [[modules/work-management/projects/overview|Projects]]
-- [[modules/work-management/resources/overview|Resources]]
-- [[Userflow/Work-Management/wm-overview|Work Management Overview]]
-- [[database/schemas/wms-project-management|WMS Project Management Schema]]
+- [[modules/work-management/foundation/overview|Work Management Foundation]] (modules/work-management/foundation/overview.md)
+- [[modules/work-management/projects/overview|Projects]] (modules/work-management/projects/overview.md)
+- [[modules/work-management/resources/overview|Resources]] (modules/work-management/resources/overview.md)
+- [[Userflow/Work-Management/wm-overview|Work Management Overview]] (Userflow/Work-Management/wm-overview.md)
+- [[database/schemas/wms-project-management|WMS Project Management Schema]] (database/schemas/wms-project-management.md)
 
 ### Verification
 
@@ -49,9 +51,14 @@ dotnet test ONEVO.sln --filter WorkSync
 
 ---
 
+> **Parallel group** — Tasks 2, 3, and 5 all depend only on Task 1 and are independent of each other. Task 4 depends on Tasks 1–3. After Task 1 is done, Tasks 2, 3, and 5 can start simultaneously.
+
 ## Task 2: Tasks + Boards + Planning + OKR + Time
 
 **Goal:** implement task, board, sprint, and roadmap APIs consumed by web app and IDE extension.
+
+**Requires:** DEV3 Task 1 complete  
+**Live integration:** DEV2 Task 3 for leave-aware assignment warnings (use MSW stub returning `availability_status: null` until ready)
 
 ### Acceptance Criteria
 
@@ -73,13 +80,13 @@ dotnet test ONEVO.sln --filter WorkSync
 
 ### References
 
-- [[modules/work-management/tasks/overview|Tasks]]
-- [[modules/work-management/planning/overview|Planning]]
-- [[modules/work-management/okr/overview|OKR]]
-- [[modules/work-management/time/overview|Time]]
-- [[Userflow/Work-Management/task-flow|Task Flow]]
-- [[Userflow/Work-Management/planning-flow|Planning Flow]]
-- [[database/cross-module-relationships|Cross-Module Relationships]]
+- [[modules/work-management/tasks/overview|Tasks]] (modules/work-management/tasks/overview.md)
+- [[modules/work-management/planning/overview|Planning]] (modules/work-management/planning/overview.md)
+- [[modules/work-management/okr/overview|OKR]] (modules/work-management/okr/overview.md)
+- [[modules/work-management/time/overview|Time]] (modules/work-management/time/overview.md)
+- [[Userflow/Work-Management/task-flow|Task Flow]] (Userflow/Work-Management/task-flow.md)
+- [[Userflow/Work-Management/planning-flow|Planning Flow]] (Userflow/Work-Management/planning-flow.md)
+- [[database/cross-module-relationships|Cross-Module Relationships]] (database/cross-module-relationships.md)
 
 ### Verification
 
@@ -96,6 +103,8 @@ dotnet test ONEVO.sln --filter Time
 
 **Goal:** implement WorkSync chat and action suggestion pipeline used by web and IDE.
 
+**Requires:** DEV3 Task 1 complete
+
 ### Acceptance Criteria
 
 - [ ] Channels, channel members, messages, reactions, and attachments exist.
@@ -109,9 +118,9 @@ dotnet test ONEVO.sln --filter Time
 
 ### References
 
-- [[modules/work-management/chat/overview|Chat]]
-- [[modules/work-management/chat-ai/overview|Chat AI]]
-- [[Userflow/Chat/chat-overview|Chat Overview]]
+- [[modules/work-management/chat/overview|Chat]] (modules/work-management/chat/overview.md)
+- [[modules/work-management/chat-ai/overview|Chat AI]] (modules/work-management/chat-ai/overview.md)
+- [[Userflow/Chat/chat-overview|Chat Overview]] (Userflow/Chat/chat-overview.md)
 
 ### Verification
 
@@ -125,6 +134,9 @@ dotnet test ONEVO.sln --filter AiAction
 ## Task 4: IDE Backend APIs + Tag Execution
 
 **Goal:** provide backend source of truth for the VS Code extension.
+
+**Requires:** DEV3 Tasks 1-3 complete  
+**Contract:** `current-focus/contracts/ide-entitlements.md` (see IAgentEntitlementProvider note - ship with no-op stub; DEV4 Task 7 registers the real implementation)
 
 ### Acceptance Criteria
 
@@ -141,9 +153,9 @@ dotnet test ONEVO.sln --filter AiAction
 
 ### References
 
-- [[modules/ide-extension/overview|IDE Extension Spec]]
-- [[database/schemas/ide-extension|IDE Extension Schema]]
-- [[backend/real-time|Real-Time Architecture]]
+- [[modules/ide-extension/overview|IDE Extension Spec]] (modules/ide-extension/overview.md)
+- [[database/schemas/ide-extension|IDE Extension Schema]] (database/schemas/ide-extension.md)
+- [[backend/real-time|Real-Time Architecture]] (backend/real-time.md)
 
 ### Verification
 
@@ -156,6 +168,9 @@ dotnet test ONEVO.sln --filter IDE
 ## Task 5: WorkSync Collaboration + Integrations + Analytics
 
 **Goal:** build documents/wiki, Git/code integration, automation, and WorkSync analytics APIs.
+
+**Requires:** DEV3 Tasks 1-3 complete  
+**Live integration:** DEV1 Task 5 for document approval workflow (use no-op stub until ready)
 
 ### Acceptance Criteria
 
@@ -172,14 +187,14 @@ dotnet test ONEVO.sln --filter IDE
 
 ### References
 
-- [[modules/work-management/collaboration/overview|Collaboration]]
-- [[modules/work-management/integrations/overview|Integrations]]
-- [[modules/work-management/analytics/overview|Analytics]]
-- [[Userflow/Documents/document-versioning|Document Versioning]]
-- [[Userflow/Documents/document-upload|Document Upload]]
-- [[database/schemas/wms-collaboration|WMS Collaboration Schema]]
-- [[database/schemas/wms-integrations|WMS Integrations Schema]]
-- [[database/schemas/wms-analytics|WMS Analytics Schema]]
+- [[modules/work-management/collaboration/overview|Collaboration]] (modules/work-management/collaboration/overview.md)
+- [[modules/work-management/integrations/overview|Integrations]] (modules/work-management/integrations/overview.md)
+- [[modules/work-management/analytics/overview|Analytics]] (modules/work-management/analytics/overview.md)
+- [[Userflow/Documents/document-versioning|Document Versioning]] (Userflow/Documents/document-versioning.md)
+- [[Userflow/Documents/document-upload|Document Upload]] (Userflow/Documents/document-upload.md)
+- [[database/schemas/wms-collaboration|WMS Collaboration Schema]] (database/schemas/wms-collaboration.md)
+- [[database/schemas/wms-integrations|WMS Integrations Schema]] (database/schemas/wms-integrations.md)
+- [[database/schemas/wms-analytics|WMS Analytics Schema]] (database/schemas/wms-analytics.md)
 
 ### Verification
 
@@ -193,5 +208,30 @@ dotnet test ONEVO.sln --filter WorkSyncAnalytics
 
 ## Open Frontend Contracts
 
-- [ ] Confirm exact shape of `IDEEntitlementsDto` with DEV8.
-- [ ] Confirm `tag:executed` SignalR payload with DEV8.
+- [x] `IDEEntitlementsDto` shape -> `current-focus/contracts/ide-entitlements.md`
+- [x] `tag:executed` SignalR payload -> `current-focus/contracts/signalr-events.md`
+- [x] WorkSync project and task DTOs -> `current-focus/contracts/worksync-core.md`
+- [x] Chat message and SignalR events -> `current-focus/contracts/signalr-events.md`
+
+---
+
+## Early Pickup: DEV1 Task 7 — Developer Platform Admin API Foundation
+
+**Execute this during the wait window before DEV3 Task 1.**
+
+Dev 3 cannot start DEV3 Task 1 until DEV1 Tasks 1, 2, and 3 are all complete — the longest backend wait window. DEV1 Task 7 (Dev Platform Admin API Foundation) only requires DEV1 Tasks 1, 2, and 4. Since Dev 4 is building Task 4 in parallel with Task 2, Task 7 unlocks for Dev 3 as soon as Task 2 lands.
+
+Dev 3 building Task 7 frees Dev 1 to run the critical chain T1 → T2 → T3 → T5 → T6 without detours.
+
+**Acceptance criteria and verification:** see `current-focus/DEV1.md` Task 7.
+
+---
+
+## Overflow Assignment: DEV1 Task 9
+
+After DEV3 Tasks 1–5 are complete, Dev 3 picks up **DEV1 Task 9 — Developer Platform Operations Backend**.
+
+**Requires:** DEV1 Tasks 4, 5, and 7 complete before starting (T4 by Dev 4, T5 by Dev 1, T7 already built by Dev 3 earlier).  
+**Acceptance criteria and verification:** see `current-focus/DEV1.md` Task 9.
+
+

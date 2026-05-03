@@ -70,7 +70,7 @@
 
 #### Step B1: Navigate to Employee Profile
 - **UI:** Employees > search for employee > click profile > Security tab. Shows: Assigned Role (from job family or manual assignment), Effective Permissions list (universal auto-grants + role permissions + overrides), "Override Permissions" button
-- **API:** `GET /api/v1/employees/{employeeId}/permissions`
+- **API:** `GET /api/v1/users/{id}/permissions`
 - **Backend:** `PermissionService.GetEffectivePermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
   - Computes: Universal auto-grants + role permissions + added overrides - removed overrides = effective permissions
 - **Validation:** Permission check for `roles:manage` AND (`users:manage` OR `employees:write`)
@@ -93,7 +93,7 @@
 
 #### Step B3: Save Employee Overrides
 - **UI:** Click "Save Overrides". Summary shown: "Adding 2 permissions, removing 1 permission for Jane Doe"
-- **API:** `PUT /api/v1/employees/{employeeId}/permission-overrides`
+- **API:** `PUT /api/v1/users/{id}/permission-overrides`
   ```json
   {
     "addedPermissionIds": ["uuid1", "uuid2"],

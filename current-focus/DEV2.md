@@ -17,6 +17,8 @@ When Dev 2 asks to continue, start with the first unchecked item in **Current Un
 
 **Goal:** implement employee and org data needed by HR, workforce, and WorkSync users.
 
+**Requires:** DEV1 Task 1 complete
+
 ### Acceptance Criteria
 
 - [ ] Legal entities, departments, teams, job families, jobs, locations, cost centers, and reporting lines exist.
@@ -34,13 +36,13 @@ When Dev 2 asks to continue, start with the first unchecked item in **Current Un
 
 ### References
 
-- [[modules/core-hr/overview|Core HR]]
-- [[modules/org-structure/overview|Org Structure]]
-- [[Userflow/Employee-Management/profile-management|Profile Management]]
-- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
-- [[Userflow/Org-Structure/team-creation|Team Creation]]
-- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
-- [[database/schemas/core-hr|Core HR Schema]]
+- [[modules/core-hr/overview|Core HR]] (modules/core-hr/overview.md)
+- [[modules/org-structure/overview|Org Structure]] (modules/org-structure/overview.md)
+- [[Userflow/Employee-Management/profile-management|Profile Management]] (Userflow/Employee-Management/profile-management.md)
+- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]] (Userflow/Org-Structure/department-hierarchy.md)
+- [[Userflow/Org-Structure/team-creation|Team Creation]] (Userflow/Org-Structure/team-creation.md)
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] (Userflow/Employee-Management/employee-onboarding.md)
+- [[database/schemas/core-hr|Core HR Schema]] (database/schemas/core-hr.md)
 
 ### Verification
 
@@ -51,9 +53,13 @@ dotnet test ONEVO.sln --filter OrgStructure
 
 ---
 
+> **Parallel group** — Tasks 2, 3, 4, and 5 all depend only on Task 1 and are independent of each other. Once Task 1 is complete, all four can start simultaneously.
+
 ## Task 2: Employee Lifecycle + HR Import + Skills Core
 
 **Goal:** build employee lifecycle transitions, bulk import onboarding, and the core skills model.
+
+**Requires:** DEV2 Task 1 complete
 
 ### Acceptance Criteria
 
@@ -67,14 +73,14 @@ dotnet test ONEVO.sln --filter OrgStructure
 
 ### References
 
-- [[modules/core-hr/overview|Core HR]]
-- [[modules/data-import/overview|Data Import]]
-- [[modules/skills/overview|Skills]]
-- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
-- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]]
-- [[Userflow/Employee-Management/employee-transfer|Employee Transfer]]
-- [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]]
-- [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]]
+- [[modules/core-hr/overview|Core HR]] (modules/core-hr/overview.md)
+- [[modules/data-import/overview|Data Import]] (modules/data-import/overview.md)
+- [[modules/skills/overview|Skills]] (modules/skills/overview.md)
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] (Userflow/Employee-Management/employee-onboarding.md)
+- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]] (Userflow/Employee-Management/employee-offboarding.md)
+- [[Userflow/Employee-Management/employee-transfer|Employee Transfer]] (Userflow/Employee-Management/employee-transfer.md)
+- [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]] (Userflow/Skills-Learning/skill-taxonomy-setup.md)
+- [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]] (Userflow/Skills-Learning/employee-skill-declaration.md)
 
 ### Verification
 
@@ -89,6 +95,8 @@ dotnet test ONEVO.sln --filter Skills
 ## Task 3: Leave + Calendar
 
 **Goal:** build leave and calendar APIs consumed by web UI and IDE extension HR tags.
+
+**Requires:** DEV2 Task 1 complete - DEV1 Task 5 complete
 
 ### Acceptance Criteria
 
@@ -105,13 +113,13 @@ dotnet test ONEVO.sln --filter Skills
 
 ### References
 
-- [[modules/leave/overview|Leave]]
-- [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
-- [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]]
-- [[Userflow/Calendar/calendar-integrations|Calendar Integrations]]
-- [[modules/calendar/calendar-events/end-to-end-logic|Calendar Events Logic]]
-- [[database/schemas/calendar|Calendar Schema]]
-- [[database/schemas/leave|Leave Schema]]
+- [[modules/leave/overview|Leave]] (modules/leave/overview.md)
+- [[Userflow/Leave/leave-request-submission|Leave Request Submission]] (Userflow/Leave/leave-request-submission.md)
+- [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]] (Userflow/Calendar/calendar-event-creation.md)
+- [[Userflow/Calendar/calendar-integrations|Calendar Integrations]] (Userflow/Calendar/calendar-integrations.md)
+- [[modules/calendar/calendar-events/end-to-end-logic|Calendar Events Logic]] (modules/calendar/calendar-events/end-to-end-logic.md)
+- [[database/schemas/calendar|Calendar Schema]] (database/schemas/calendar.md)
+- [[database/schemas/leave|Leave Schema]] (database/schemas/leave.md)
 
 ### Verification
 
@@ -126,6 +134,8 @@ dotnet test ONEVO.sln --filter Calendar
 
 **Goal:** implement presence sessions, breaks, overtime, and schedule-backed work state.
 
+**Requires:** DEV2 Task 1 complete
+
 ### Acceptance Criteria
 
 - [ ] Presence session start/end APIs exist.
@@ -138,9 +148,9 @@ dotnet test ONEVO.sln --filter Calendar
 
 ### References
 
-- [[modules/workforce-presence/overview|Workforce Presence]]
-- [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
-- [[Userflow/Workforce-Presence/overtime-management|Overtime Management]]
+- [[modules/workforce-presence/overview|Workforce Presence]] (modules/workforce-presence/overview.md)
+- [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]] (Userflow/Workforce-Presence/presence-session-view.md)
+- [[Userflow/Workforce-Presence/overtime-management|Overtime Management]] (Userflow/Workforce-Presence/overtime-management.md)
 
 ### Verification
 
@@ -154,6 +164,8 @@ dotnet test ONEVO.sln --filter WorkforcePresence
 
 **Goal:** provide in-app, email, and SignalR notifications for HR, WorkSync, IDE, and agent events.
 
+**Requires:** DEV2 Task 1 complete - DEV1 Task 5 complete
+
 ### Acceptance Criteria
 
 - [ ] Notification entity supports tenant, recipient, channel, title, body, read state, and metadata.
@@ -165,9 +177,9 @@ dotnet test ONEVO.sln --filter WorkforcePresence
 
 ### References
 
-- [[backend/notification-system|Notification System]]
-- [[Userflow/Notifications/inbox|Inbox]]
-- [[Userflow/Notifications/notification-preference-setup|Notification Preference Setup]]
+- [[backend/notification-system|Notification System]] (backend/notification-system.md)
+- [[Userflow/Notifications/inbox|Inbox]] (Userflow/Notifications/inbox.md)
+- [[Userflow/Notifications/notification-preference-setup|Notification Preference Setup]] (Userflow/Notifications/notification-preference-setup.md)
 
 ### Verification
 
@@ -180,4 +192,17 @@ dotnet test ONEVO.sln --filter Notifications
 ## Open Backend Contracts
 
 - [ ] Confirm exact auth user ID and tenant context interfaces from DEV1.
-- [ ] Confirm shared encryption abstraction from DEV1 for Google/Outlook calendar token storage.
+- [ ] Confirm shared encryption abstraction from DEV1 for Google/Outlook calendar token storage (DEV1 Task 6).
+- [x] HR employee and leave DTO shapes documented -> `current-focus/contracts/hr-employee.md`
+- [x] Workforce presence DTO shapes documented -> `current-focus/contracts/workforce-presence.md`
+
+---
+
+## Overflow Assignment: DEV1 Task 8
+
+After DEV2 Tasks 1–5 are complete, Dev 2 picks up **DEV1 Task 8 — Developer Platform Tenant Console Backend**.
+
+**Requires:** DEV1 Tasks 3, 5, and 7 complete before starting (Dev 1 will have T3/T5 done; Dev 3 will have T7 done).  
+**Acceptance criteria and verification:** see `current-focus/DEV1.md` Task 8.
+
+

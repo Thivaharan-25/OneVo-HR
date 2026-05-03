@@ -1,4 +1,4 @@
-# DEV5: Frontend App Foundation + Developer Platform Console
+﻿# DEV5: Frontend App Foundation + Developer Platform Console
 
 **Track:** Frontend
 **Primary ownership:** main Vite app foundation, auth UI, shared frontend architecture, standalone Developer Platform console
@@ -28,10 +28,10 @@ When Dev 5 asks to continue, start with the first unchecked item in **Current Un
 
 ### References
 
-- [[frontend/architecture/app-structure|Frontend App Structure]]
-- [[frontend/architecture/routing|Routing]]
-- [[frontend/design-system/components/shell-layout|Shell Layout]]
-- [[frontend/design-system/README|Design System]]
+- [[frontend/architecture/app-structure|Frontend App Structure]] (frontend/architecture/app-structure.md)
+- [[frontend/architecture/routing|Routing]] (frontend/architecture/routing.md)
+- [[frontend/design-system/components/shell-layout|Shell Layout]] (frontend/design-system/components/shell-layout.md)
+- [[frontend/design-system/README|Design System]] (frontend/design-system/README.md)
 
 ### Verification
 
@@ -47,6 +47,8 @@ npm run build
 
 **Goal:** implement reusable API and state patterns for all main app frontend members.
 
+**Requires:** DEV5 Task 1 complete
+
 ### Acceptance Criteria
 
 - [ ] API client attaches access token, tenant header, and correlation ID.
@@ -59,9 +61,9 @@ npm run build
 
 ### References
 
-- [[frontend/data-layer/api-integration|API Integration]]
-- [[frontend/data-layer/state-management|State Management]]
-- [[frontend/data-layer/caching-strategy|Caching Strategy]]
+- [[frontend/data-layer/api-integration|API Integration]] (frontend/data-layer/api-integration.md)
+- [[frontend/data-layer/state-management|State Management]] (frontend/data-layer/state-management.md)
+- [[frontend/data-layer/caching-strategy|Caching Strategy]] (frontend/data-layer/caching-strategy.md)
 
 ### Verification
 
@@ -72,9 +74,13 @@ npm run build
 
 ---
 
+> **Parallel group** — Tasks 3 and 4 both require Tasks 1 and 2 and are independent of each other. Run them simultaneously.
+
 ## Task 3: Main App Auth Screens
 
 **Goal:** provide the customer-facing user login and session UI.
+
+**Requires:** DEV5 Tasks 1-2 complete - Contract: `current-focus/contracts/auth-session.md`
 
 ### Acceptance Criteria
 
@@ -88,10 +94,10 @@ npm run build
 
 ### References
 
-- [[Userflow/Auth-Access/login-flow|Login Flow]]
-- [[Userflow/Auth-Access/mfa-setup|MFA Setup]]
-- [[Userflow/Auth-Access/password-reset|Password Reset]]
-- [[frontend/cross-cutting/authentication|Frontend Authentication]]
+- [[Userflow/Auth-Access/login-flow|Login Flow]] (Userflow/Auth-Access/login-flow.md)
+- [[Userflow/Auth-Access/mfa-setup|MFA Setup]] (Userflow/Auth-Access/mfa-setup.md)
+- [[Userflow/Auth-Access/password-reset|Password Reset]] (Userflow/Auth-Access/password-reset.md)
+- [[frontend/cross-cutting/authentication|Frontend Authentication]] (frontend/cross-cutting/authentication.md)
 
 ### Verification
 
@@ -106,6 +112,8 @@ npm run build
 
 **Goal:** provide stable components used by Dev 6 and Dev 7 feature screens.
 
+**Requires:** DEV5 Tasks 1-2 complete
+
 ### Acceptance Criteria
 
 - [ ] Data table wrapper supports loading, empty, sorting, filtering, and cursor paging.
@@ -117,10 +125,10 @@ npm run build
 
 ### References
 
-- [[frontend/design-system/components/component-catalog|Component Catalog]]
-- [[frontend/design-system/patterns/table-patterns|Table Patterns]]
-- [[frontend/design-system/patterns/form-patterns|Form Patterns]]
-- [[frontend/cross-cutting/authorization|Authorization]]
+- [[frontend/design-system/components/component-catalog|Component Catalog]] (frontend/design-system/components/component-catalog.md)
+- [[frontend/design-system/patterns/table-patterns|Table Patterns]] (frontend/design-system/patterns/table-patterns.md)
+- [[frontend/design-system/patterns/form-patterns|Form Patterns]] (frontend/design-system/patterns/form-patterns.md)
+- [[frontend/cross-cutting/authorization|Authorization]] (frontend/cross-cutting/authorization.md)
 
 ### Verification
 
@@ -135,6 +143,8 @@ npm run build
 
 **Goal:** build the standalone internal Developer Platform frontend foundation at `console.onevo.io`.
 
+**Requires:** DEV5 Task 1 complete - Contract: `current-focus/contracts/admin-api.md`
+
 ### Frontend App Location
 
 - App type: separate Next.js 15 App Router application
@@ -146,7 +156,7 @@ npm run build
 ### Acceptance Criteria
 
 - [ ] Standalone Next.js console app exists separately from the main Vite app.
-- [ ] Directory structure follows [[developer-platform/frontend/app-structure|Developer Platform App Structure]].
+- [ ] Directory structure follows [[developer-platform/frontend/app-structure|Developer Platform App Structure]] (developer-platform/frontend/app-structure.md).
 - [ ] Login page starts Google OAuth flow.
 - [ ] OAuth callback exchanges Google identity for platform-admin session through `/admin/v1/auth/google-callback`.
 - [ ] Auth middleware protects all console routes except login/callback.
@@ -159,13 +169,13 @@ npm run build
 
 ### References
 
-- [[developer-platform/overview|Developer Platform Overview]]
-- [[developer-platform/frontend/overview|Developer Platform Frontend Overview]]
-- [[developer-platform/frontend/app-structure|Developer Platform App Structure]]
-- [[developer-platform/auth|Developer Platform Auth]]
-- [[developer-platform/system-design|Developer Platform System Design]]
-- [[developer-platform/backend/api-contracts|Admin API Contracts]]
-- [[developer-platform/userflow/overview|Developer Platform Userflows]]
+- [[developer-platform/overview|Developer Platform Overview]] (developer-platform/overview.md)
+- [[developer-platform/frontend/overview|Developer Platform Frontend Overview]] (developer-platform/frontend/overview.md)
+- [[developer-platform/frontend/app-structure|Developer Platform App Structure]] (developer-platform/frontend/app-structure.md)
+- [[developer-platform/auth|Developer Platform Auth]] (developer-platform/auth.md)
+- [[developer-platform/system-design|Developer Platform System Design]] (developer-platform/system-design.md)
+- [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
+- [[developer-platform/userflow/overview|Developer Platform Userflows]] (developer-platform/userflow/overview.md)
 
 ### Verification
 
@@ -177,9 +187,14 @@ npm run build
 
 ---
 
+> **Parallel group** — Tasks 6 and 7 both require Task 5 and are independent of each other. Run them simultaneously.
+
 ## Task 6: Developer Platform Tenant Console UI
 
 **Goal:** build tenant lifecycle and provisioning workflows for internal operators.
+
+**Requires:** DEV5 Task 5 complete  
+**Live integration:** DEV1 Tasks 7-8 (use MSW until ready)
 
 ### Acceptance Criteria
 
@@ -198,10 +213,10 @@ npm run build
 
 ### References
 
-- [[developer-platform/modules/tenant-console/overview|Tenant Console]]
-- [[developer-platform/userflow/tenant-management|Tenant Management Flows]]
-- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]]
-- [[developer-platform/backend/api-contracts|Admin API Contracts]]
+- [[developer-platform/modules/tenant-console/overview|Tenant Console]] (developer-platform/modules/tenant-console/overview.md)
+- [[developer-platform/userflow/tenant-management|Tenant Management Flows]] (developer-platform/userflow/tenant-management.md)
+- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
+- [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
 
 ### Verification
 
@@ -216,6 +231,9 @@ npm run build
 ## Task 7: Developer Platform Operations UI
 
 **Goal:** build feature flags, agent versions/rings, audit, system config, and app catalog screens.
+
+**Requires:** DEV5 Task 5 complete  
+**Live integration:** DEV1 Task 9, DEV4 Task 8 (use MSW until ready)
 
 ### Acceptance Criteria
 
@@ -234,13 +252,13 @@ npm run build
 
 ### References
 
-- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]]
-- [[developer-platform/userflow/feature-flags|Feature Flag Flows]]
-- [[developer-platform/modules/agent-version-manager/overview|Agent Version Manager]]
-- [[developer-platform/userflow/agent-versions|Agent Version and Ring Management Flows]]
-- [[developer-platform/modules/audit-console/overview|Audit Console]]
-- [[developer-platform/modules/system-config/overview|System Config]]
-- [[developer-platform/modules/app-catalog-manager/overview|App Catalog Manager]]
+- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md)
+- [[developer-platform/userflow/feature-flags|Feature Flag Flows]] (developer-platform/userflow/feature-flags.md)
+- [[developer-platform/modules/agent-version-manager/overview|Agent Version Manager]] (developer-platform/modules/agent-version-manager/overview.md)
+- [[developer-platform/userflow/agent-versions|Agent Version and Ring Management Flows]] (developer-platform/userflow/agent-versions.md)
+- [[developer-platform/modules/audit-console/overview|Audit Console]] (developer-platform/modules/audit-console/overview.md)
+- [[developer-platform/modules/system-config/overview|System Config]] (developer-platform/modules/system-config/overview.md)
+- [[developer-platform/modules/app-catalog-manager/overview|App Catalog Manager]] (developer-platform/modules/app-catalog-manager/overview.md)
 
 ### Verification
 
@@ -257,7 +275,9 @@ npm run build
 
 ## Open Backend Contracts
 
-- [ ] Auth response shape from DEV1.
-- [ ] Permission payload shape from DEV1.
-- [ ] Platform-admin JWT exchange response from DEV1.
-- [ ] `/admin/v1/*` DTOs from DEV1 and DEV4.
+- [x] Auth response shape -> `current-focus/contracts/auth-session.md`
+- [x] Permission payload shape -> `current-focus/contracts/auth-session.md`
+- [x] Platform-admin JWT exchange response -> `current-focus/contracts/admin-api.md`
+- [x] `/admin/v1/*` DTOs from DEV1 and DEV4 -> `current-focus/contracts/admin-api.md`
+
+

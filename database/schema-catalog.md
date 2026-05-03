@@ -64,6 +64,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `permissions` | 4 | — |
 | `role_permissions` | 2 | — |
 | `roles` | 6 | tenant_id→tenants |
+| `job_levels` | 6 | tenant_id→tenants, default_role_id→roles |
 | `sessions` | 9 | user_id→users, tenant_id→tenants |
 | `user_permission_overrides` | 8 | tenant_id→tenants, user_id→users, granted_by→users |
 | `user_roles` | 4 | user_id→users, assigned_by→users |

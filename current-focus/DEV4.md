@@ -1,4 +1,4 @@
-# DEV4: Backend Monitoring Agent + Agent Gateway
+﻿# DEV4: Backend Monitoring Agent + Agent Gateway
 
 **Track:** Backend
 **Primary ownership:** Windows monitoring agent, Agent Gateway, activity monitoring, identity verification, exception engine, discrepancy engine, productivity analytics, IDE install jobs, agent version rollout
@@ -13,9 +13,23 @@ When Dev 4 asks to continue, start with the first unchecked item in **Current Un
 
 ---
 
+## Early Pickup: DEV1 Task 4 — Audit Foundation
+
+**Execute this while waiting for DEV1 Task 2 to complete.**
+
+Dev 4 cannot start DEV4 Task 1 until DEV1 Tasks 1 and 2 are both done. DEV1 Task 4 (Audit Foundation) only requires DEV1 Task 1 — the same gate that unblocks Dev 2. Dev 4 uses this window to remove Audit Foundation from Dev 1's critical chain entirely.
+
+Once Task 2 lands and this early pickup is done, DEV4 Task 1 starts immediately.
+
+**Acceptance criteria and verification:** see `current-focus/DEV1.md` Task 4.
+
+---
+
 ## Task 1: Agent Gateway Enrollment
 
 **Goal:** implement login-based Windows agent enrollment and device credential issuance.
+
+**Requires:** DEV1 Tasks 1-2 complete
 
 ### Acceptance Criteria
 
@@ -31,11 +45,11 @@ When Dev 4 asks to continue, start with the first unchecked item in **Current Un
 
 ### References
 
-- [[modules/agent-gateway/overview|Agent Gateway]]
-- [[modules/agent-gateway/agent-registration/overview|Agent Registration]]
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]]
-- [[modules/agent-gateway/tray-app-ui|Tray App UI]]
-- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]]
+- [[modules/agent-gateway/overview|Agent Gateway]] (modules/agent-gateway/overview.md)
+- [[modules/agent-gateway/agent-registration/overview|Agent Registration]] (modules/agent-gateway/agent-registration/overview.md)
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] (modules/agent-gateway/agent-server-protocol.md)
+- [[modules/agent-gateway/tray-app-ui|Tray App UI]] (modules/agent-gateway/tray-app-ui.md)
+- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] (modules/agent-gateway/monitoring-lifecycle/overview.md)
 
 ### Verification
 
@@ -48,6 +62,8 @@ dotnet test ONEVO.sln --filter AgentGateway
 ## Task 2: Monitoring Agent Client
 
 **Goal:** build the Windows monitoring agent, TrayApp login, policy handling, and collector lifecycle.
+
+**Requires:** DEV4 Task 1 complete
 
 ### Acceptance Criteria
 
@@ -63,10 +79,10 @@ dotnet test ONEVO.sln --filter AgentGateway
 
 ### References
 
-- [[backend/agent/windows-agent|Windows Agent]]
-- [[modules/agent-gateway/agent-installer|Agent Installer]]
-- [[modules/agent-gateway/sqlite-buffer|SQLite Buffer]]
-- [[modules/agent-gateway/data-collection|Data Collection]]
+- [[backend/agent/windows-agent|Windows Agent]] (backend/agent/windows-agent.md)
+- [[modules/agent-gateway/agent-installer|Agent Installer]] (modules/agent-gateway/agent-installer.md)
+- [[modules/agent-gateway/sqlite-buffer|SQLite Buffer]] (modules/agent-gateway/sqlite-buffer.md)
+- [[modules/agent-gateway/data-collection|Data Collection]] (modules/agent-gateway/data-collection.md)
 
 ### Verification
 
@@ -79,6 +95,8 @@ dotnet test ONEVO.sln --filter Agent
 ## Task 3: Activity Monitoring + Ingestion + Health
 
 **Goal:** receive agent telemetry, heartbeat, health, screenshots, process/window/idle data, and activity events for analytics and admin UI.
+
+**Requires:** DEV4 Tasks 1-2 complete
 
 ### Acceptance Criteria
 
@@ -96,10 +114,10 @@ dotnet test ONEVO.sln --filter Agent
 
 ### References
 
-- [[backend/monitoring-data-flow|Monitoring Data Flow]]
-- [[modules/activity-monitoring/overview|Activity Monitoring]]
-- [[modules/activity-monitoring/raw-data-processing/overview|Raw Data Processing]]
-- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]]
+- [[backend/monitoring-data-flow|Monitoring Data Flow]] (backend/monitoring-data-flow.md)
+- [[modules/activity-monitoring/overview|Activity Monitoring]] (modules/activity-monitoring/overview.md)
+- [[modules/activity-monitoring/raw-data-processing/overview|Raw Data Processing]] (modules/activity-monitoring/raw-data-processing/overview.md)
+- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]] (modules/agent-gateway/heartbeat-monitoring/overview.md)
 
 ### Verification
 
@@ -110,9 +128,13 @@ dotnet test ONEVO.sln --filter Heartbeat
 
 ---
 
+> **Parallel group** — Tasks 4 and 5 both require Tasks 1 and 3 and are independent of each other. Run them simultaneously.
+
 ## Task 4: Identity Verification + Biometric Backend
 
 **Goal:** build identity verification policies, verification records, biometric device handling, and on-demand capture processing.
+
+**Requires:** DEV4 Tasks 1 and 3 complete - DEV1 Task 6 complete
 
 ### Acceptance Criteria
 
@@ -128,12 +150,12 @@ dotnet test ONEVO.sln --filter Heartbeat
 
 ### References
 
-- [[modules/identity-verification/overview|Identity Verification]]
-- [[modules/identity-verification/verification-policies/overview|Verification Policies]]
-- [[modules/identity-verification/photo-verification/overview|Photo Verification]]
-- [[modules/identity-verification/biometric-devices/overview|Biometric Devices]]
-- [[Userflow/Workforce-Intelligence/identity-verification-setup|Identity Verification Setup]]
-- [[Userflow/Workforce-Intelligence/identity-verification-review|Identity Verification Review]]
+- [[modules/identity-verification/overview|Identity Verification]] (modules/identity-verification/overview.md)
+- [[modules/identity-verification/verification-policies/overview|Verification Policies]] (modules/identity-verification/verification-policies/overview.md)
+- [[modules/identity-verification/photo-verification/overview|Photo Verification]] (modules/identity-verification/photo-verification/overview.md)
+- [[modules/identity-verification/biometric-devices/overview|Biometric Devices]] (modules/identity-verification/biometric-devices/overview.md)
+- [[Userflow/Workforce-Intelligence/identity-verification-setup|Identity Verification Setup]] (Userflow/Workforce-Intelligence/identity-verification-setup.md)
+- [[Userflow/Workforce-Intelligence/identity-verification-review|Identity Verification Review]] (Userflow/Workforce-Intelligence/identity-verification-review.md)
 
 ### Verification
 
@@ -147,6 +169,8 @@ dotnet test ONEVO.sln --filter Biometric
 ## Task 5: Exception Engine
 
 **Goal:** build configurable anomaly detection, alert generation, escalation chains, and remote capture actions.
+
+**Requires:** DEV4 Tasks 1 and 3 complete
 
 ### Acceptance Criteria
 
@@ -163,11 +187,11 @@ dotnet test ONEVO.sln --filter Biometric
 
 ### References
 
-- [[modules/exception-engine/overview|Exception Engine]]
-- [[modules/exception-engine/exception-rules/overview|Exception Rules]]
-- [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]]
-- [[modules/exception-engine/alert-generation/overview|Alert Generation]]
-- [[modules/exception-engine/escalation-chains/overview|Escalation Chains]]
+- [[modules/exception-engine/overview|Exception Engine]] (modules/exception-engine/overview.md)
+- [[modules/exception-engine/exception-rules/overview|Exception Rules]] (modules/exception-engine/exception-rules/overview.md)
+- [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]] (modules/exception-engine/evaluation-engine/overview.md)
+- [[modules/exception-engine/alert-generation/overview|Alert Generation]] (modules/exception-engine/alert-generation/overview.md)
+- [[modules/exception-engine/escalation-chains/overview|Escalation Chains]] (modules/exception-engine/escalation-chains/overview.md)
 
 ### Verification
 
@@ -180,6 +204,9 @@ dotnet test ONEVO.sln --filter ExceptionEngine
 ## Task 6: Discrepancy Engine + Productivity Analytics
 
 **Goal:** build daily discrepancy detection and aggregated productivity reporting.
+
+**Requires:** DEV4 Tasks 3 and 5 complete  
+**Live integration:** DEV3 Task 2 for WorkSync daily time logs (use MSW until ready)
 
 ### Acceptance Criteria
 
@@ -197,13 +224,13 @@ dotnet test ONEVO.sln --filter ExceptionEngine
 
 ### References
 
-- [[modules/discrepancy-engine/overview|Discrepancy Engine]]
-- [[modules/discrepancy-engine/statistical-baselines/overview|Discrepancy Statistical Baselines]]
-- [[modules/productivity-analytics/overview|Productivity Analytics]]
-- [[modules/productivity-analytics/daily-reports/overview|Daily Reports]]
-- [[modules/productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]]
-- [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
-- [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]]
+- [[modules/discrepancy-engine/overview|Discrepancy Engine]] (modules/discrepancy-engine/overview.md)
+- [[modules/discrepancy-engine/statistical-baselines/overview|Discrepancy Statistical Baselines]] (modules/discrepancy-engine/statistical-baselines/overview.md)
+- [[modules/productivity-analytics/overview|Productivity Analytics]] (modules/productivity-analytics/overview.md)
+- [[modules/productivity-analytics/daily-reports/overview|Daily Reports]] (modules/productivity-analytics/daily-reports/overview.md)
+- [[modules/productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]] (modules/productivity-analytics/workforce-snapshots/overview.md)
+- [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]] (Userflow/Workforce-Intelligence/activity-snapshot-view.md)
+- [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]] (Userflow/Analytics-Reporting/productivity-dashboard.md)
 
 ### Verification
 
@@ -217,6 +244,9 @@ dotnet test ONEVO.sln --filter ProductivityAnalytics
 ## Task 7: IDE Agent Install Jobs
 
 **Goal:** provide server-side entitlement and install job APIs used by the IDE extension.
+
+**Requires:** DEV4 Task 1 complete - DEV3 Task 4 complete  
+**Contract:** `current-focus/contracts/ide-entitlements.md` (DEV3 T4 ships with no-op stub; this task registers the real `IAgentEntitlementProvider` implementation)
 
 ### Acceptance Criteria
 
@@ -232,9 +262,9 @@ dotnet test ONEVO.sln --filter ProductivityAnalytics
 
 ### References
 
-- [[modules/ide-extension/overview|IDE Extension Spec]]
-- [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
-- [[database/schemas/agent-gateway|Agent Gateway Schema]]
+- [[modules/ide-extension/overview|IDE Extension Spec]] (modules/ide-extension/overview.md)
+- [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]] (Userflow/Workforce-Intelligence/agent-deployment.md)
+- [[database/schemas/agent-gateway|Agent Gateway Schema]] (database/schemas/agent-gateway.md)
 
 ### Verification
 
@@ -247,6 +277,8 @@ dotnet test ONEVO.sln --filter AgentInstall
 ## Task 8: Agent Version Manager Backend for Developer Platform
 
 **Goal:** expose the monitoring-agent version catalog, deployment rings, force-update, and rollback capabilities consumed by the Developer Platform console.
+
+**Requires:** DEV4 Task 1 complete - DEV1 Task 7 complete
 
 ### Backend Module Location
 
@@ -275,12 +307,12 @@ dotnet test ONEVO.sln --filter AgentInstall
 
 ### References
 
-- [[modules/dev-platform/overview|Dev Platform Feature]]
-- [[developer-platform/modules/agent-version-manager/overview|Agent Version Manager]]
-- [[developer-platform/userflow/agent-versions|Agent Version and Ring Management Flows]]
-- [[developer-platform/backend/api-contracts|Admin API Contracts]]
-- [[modules/agent-gateway/overview|Agent Gateway]]
-- [[modules/agent-gateway/remote-commands/overview|Agent Remote Commands]]
+- [[modules/dev-platform/overview|Dev Platform Feature]] (modules/dev-platform/overview.md)
+- [[developer-platform/modules/agent-version-manager/overview|Agent Version Manager]] (developer-platform/modules/agent-version-manager/overview.md)
+- [[developer-platform/userflow/agent-versions|Agent Version and Ring Management Flows]] (developer-platform/userflow/agent-versions.md)
+- [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
+- [[modules/agent-gateway/overview|Agent Gateway]] (modules/agent-gateway/overview.md)
+- [[modules/agent-gateway/remote-commands/overview|Agent Remote Commands]] (modules/agent-gateway/remote-commands/overview.md)
 
 ### Verification
 
@@ -294,6 +326,8 @@ dotnet test ONEVO.sln --filter AgentGateway
 
 ## Open Frontend Contracts
 
-- [ ] Confirm install prompt payload with DEV8.
-- [ ] Confirm agent health DTO with DEV6.
-- [ ] Confirm agent version DTOs with DEV5 Developer Platform console.
+- [x] Agent install job and status DTOs -> `current-focus/contracts/agent-gateway.md`
+- [x] Agent fleet health DTOs -> `current-focus/contracts/agent-gateway.md`
+- [x] Agent version and ring DTOs -> `current-focus/contracts/admin-api.md`
+
+

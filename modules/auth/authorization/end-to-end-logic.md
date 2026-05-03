@@ -148,7 +148,7 @@ Created atomically when roles:manage is granted (Path A or Path B in permission 
 POST /api/v1/feature-access
   -> FeatureAccessController.Grant(GrantFeatureAccessCommand)
     -> [RequirePermission("roles:manage")]
-    -> Caller must be Super Admin (enforced in service layer)
+    -> Caller must be Super Admin OR hold roles:manage with a permission_delegation_scopes record covering the target module (enforced in service layer)
     -> FeatureAccessService.GrantAsync(command, ct)
       -> 1. Validate grantee exists (role or employee depending on grantee_type)
       -> 2. Validate module code is valid
@@ -171,7 +171,7 @@ POST /api/v1/feature-access
 POST /api/v1/users/{id}/permission-overrides
   -> PermissionOverrideController.Set(SetPermissionOverrideCommand)
     -> [RequirePermission("roles:manage")]
-    -> Caller must be Super Admin (enforced in service layer)
+    -> Caller must be Super Admin OR hold roles:manage with a permission_delegation_scopes record covering the target permission's module (enforced in service layer)
     -> PermissionOverrideService.SetAsync(userId, command, ct)
       -> 1. Validate employee exists and belongs to same tenant
       -> 2. Validate permission_id exists
@@ -218,6 +218,31 @@ POST /api/v1/roles
       -> 5. Log to audit_logs
       -> Return Result.Success(roleDto)
 ```
+
+## Auto Role Assignment on Promotion
+
+### Flow
+
+```
+EmployeePromoted domain event fires
+  -> PromotionRoleAssignmentHandler.Handle(EmployeePromoted, ct)
+    -> 1. Load new job_title_id from event payload
+    -> 2. Query: SELECT jl.default_role_id
+               FROM job_titles jt
+               JOIN job_levels jl ON jl.id = jt.job_level_id
+               WHERE jt.id = @newJobTitleId
+    -> 3. If default_role_id IS NULL -> skip (admin assigns manually)
+    -> 4. If default_role_id IS NOT NULL:
+         -> Check if user already has this role in user_roles
+         -> If not: INSERT into user_roles (user_id, role_id, assigned_at, assigned_by = SYSTEM)
+         -> Invalidate user's permission cache
+         -> Force token refresh on next request
+         -> Log to audit_logs: action = "role.auto_assigned", reason = "promotion"
+    -> 5. Invalidate Redis hierarchy cache: hierarchy:{tenantId}:{userId}
+```
+
+NOTE: The old role is NOT automatically removed. If the previous job level's default role
+should be revoked on promotion, Super Admin must do so explicitly. Auto-assign is additive only.
 
 ## Cache Invalidation Rules
 

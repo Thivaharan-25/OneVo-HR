@@ -10,7 +10,11 @@ Translates workforce-presence events (clock-in, clock-out, break start, break en
 ## Flow
 
 ```
-Employee clocks in (manual/biometric/auto-detect)
+Employee clocks in via tray (remote/hybrid) or biometric (onsite)
+  → If tray clock-in (remote): tray app triggers photo capture FIRST
+      → Employee takes photo via webcam
+      → Photo sent to Identity Verification for face match
+      → Clock-in proceeds only after photo is accepted (or auto-skip timeout)
   → workforce-presence publishes PresenceSessionStarted
   → AgentGateway.PresenceToAgentCommandHandler
   → Finds agent by employee_id
@@ -29,7 +33,11 @@ Employee ends break
   → AgentGateway sends ResumeMonitoring
   → Agent resumes all collectors
 
-Employee clocks out (manual/biometric)
+Employee clocks out via tray (remote/hybrid) or biometric (onsite)
+  → If tray clock-out (remote): tray app triggers photo capture FIRST
+      → Employee takes photo via webcam
+      → Photo sent to Identity Verification for face match
+      → Clock-out proceeds after photo accepted (or auto-skip timeout)
   → workforce-presence publishes PresenceSessionEnded
   → AgentGateway sends StopMonitoring
   → Agent stops collectors, flushes remaining buffer to server
@@ -43,6 +51,8 @@ Employee clocks out (manual/biometric)
 3. **Clock-out = flush + stop.** Agent must flush any buffered data BEFORE stopping, then stop completely.
 4. **Orphan protection:** If agent never receives `StopMonitoring` (server crash, network issue), agent auto-stops at midnight local time. Hangfire job `ReconcileOrphanSessionsJob` detects agents still reporting as "active" past their shift end time and sends `StopMonitoring`.
 5. **Multiple devices:** If employee has multiple registered agents (e.g., desktop + laptop), `StartMonitoring` is sent to ALL agents. Only one will be actively used, but both must be ready.
+6. **Photo on every tray clock-in and clock-out (remote/hybrid).** Photo capture is required each time a remote or hybrid employee clocks in or out via the tray app. This is not a one-time setup — it verifies presence at the start and end of every shift. Biometric terminal clock-in/out (onsite) does not require a webcam photo — the terminal handles identity verification itself.
+7. **Device enrollment is one-time.** Employees sign in once to link their device. After that, the device credential is stored securely (DPAPI) and auto-renewed. Employees do NOT need to log in again each shift — the tray app is always connected under their enrolled identity.
 
 ## Activity-Monitoring Integration
 
