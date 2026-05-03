@@ -2,7 +2,7 @@
 
 **Track:** Backend
 **Primary ownership:** platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API
-**Current Unfinished Task:** Task 1 - Backend foundation
+**Current Unfinished Task:** Task 2 - Tenant Auth + RBAC
 **Blocked By:** none
 
 ---
@@ -19,13 +19,13 @@ When Dev 1 asks to continue, start with the first unchecked item in **Current Un
 
 ### Acceptance Criteria
 
-- [ ] Solution structure exists for API, application, domain, infrastructure, tests, and admin API host.
-- [ ] Shared kernel includes base entity, auditable entity, result type, domain event base, tenant context abstraction, and time provider abstraction.
-- [ ] API project exposes health checks and OpenAPI.
-- [ ] Database context is configured for PostgreSQL and snake_case naming.
-- [ ] Migrations can be created and applied locally.
-- [ ] Request pipeline includes correlation ID, exception mapping, tenant resolution, and structured logging.
-- [ ] Baseline test project validates API boot, admin API boot, and database context boot.
+- [x] Solution structure exists for API, application, domain, infrastructure, tests, and admin API host.
+- [x] Shared kernel includes base entity, auditable entity, result type, domain event base, tenant context abstraction, and time provider abstraction.
+- [x] API project exposes health checks and OpenAPI.
+- [x] Database context is configured for PostgreSQL and snake_case naming.
+- [x] Migrations can be created and applied locally.
+- [x] Request pipeline includes correlation ID, exception mapping, tenant resolution, and structured logging.
+- [x] Baseline test project validates API boot, admin API boot, and database context boot.
 
 ### References
 
