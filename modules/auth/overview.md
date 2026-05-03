@@ -4,7 +4,7 @@
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 2 (Week 1)
-**Tables:** 11
+**Tables:** 10
 **Task File:** [[current-focus/DEV2-auth-security|DEV2: Auth Security]]
 
 ---

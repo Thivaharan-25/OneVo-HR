@@ -1,4 +1,4 @@
-# DEV8: Frontend VS Code IDE Extension
+﻿# DEV8: Frontend VS Code IDE Extension
 
 **Track:** Frontend
 **Primary ownership:** VS Code IDE extension
@@ -17,6 +17,8 @@ When Dev 8 asks to continue, start with the first unchecked item in **Current Un
 
 **Goal:** scaffold the VS Code extension and connect it to OneVo auth and IDE session APIs.
 
+**Contract:** `current-focus/contracts/auth-session.md` - `current-focus/contracts/ide-entitlements.md` (use MSW stubs; no structural prerequisite for scaffolding)
+
 ### Acceptance Criteria
 
 - [ ] Extension project exists with TypeScript, webpack, lint, compile, test, and package scripts.
@@ -30,9 +32,9 @@ When Dev 8 asks to continue, start with the first unchecked item in **Current Un
 
 ### References
 
-- [[modules/ide-extension/overview|IDE Extension Spec]]
-- [[Userflow/IDE-Extension/ide-install-flow|IDE Install Flow]]
-- [[frontend/data-layer/api-integration|API Integration]]
+- [[modules/ide-extension/overview|IDE Extension Spec]] (modules/ide-extension/overview.md)
+- [[Userflow/IDE-Extension/ide-install-flow|IDE Install Flow]] (Userflow/IDE-Extension/ide-install-flow.md)
+- [[frontend/data-layer/api-integration|API Integration]] (frontend/data-layer/api-integration.md)
 
 ### Verification
 
@@ -44,9 +46,14 @@ npm test
 
 ---
 
+> **Parallel group** — Tasks 2, 3, 4, and 5 all require only Task 1 and are independent of each other. Run all four simultaneously.
+
 ## Task 2: Chat, Tasks, and Notifications Panels
 
 **Goal:** provide the main IDE sidebar surfaces.
+
+**Requires:** DEV8 Task 1 complete  
+**Live integration:** DEV3 Tasks 3-4 (use MSW until ready) - Contract: `current-focus/contracts/signalr-events.md`
 
 ### Acceptance Criteria
 
@@ -61,9 +68,9 @@ npm test
 
 ### References
 
-- [[Userflow/IDE-Extension/context-detection-flow|Context Detection Flow]]
-- [[Userflow/Chat/chat-overview|Chat Overview]]
-- [[backend/real-time|Real-Time Architecture]]
+- [[Userflow/IDE-Extension/context-detection-flow|Context Detection Flow]] (Userflow/IDE-Extension/context-detection-flow.md)
+- [[Userflow/Chat/chat-overview|Chat Overview]] (Userflow/Chat/chat-overview.md)
+- [[backend/real-time|Real-Time Architecture]] (backend/real-time.md)
 
 ### Verification
 
@@ -77,6 +84,9 @@ npm run compile
 ## Task 3: Tag Engine + Picker
 
 **Goal:** build the permission-filtered `@entity:action` launcher.
+
+**Requires:** DEV8 Task 1 complete  
+**Live integration:** DEV3 Task 4 (use MSW until ready) - Contract: `current-focus/contracts/ide-entitlements.md`
 
 ### Acceptance Criteria
 
@@ -93,8 +103,8 @@ npm run compile
 
 ### References
 
-- [[Userflow/IDE-Extension/tag-engine-flow|Tag Engine Flow]]
-- [[modules/ide-extension/overview|IDE Extension Spec]]
+- [[Userflow/IDE-Extension/tag-engine-flow|Tag Engine Flow]] (Userflow/IDE-Extension/tag-engine-flow.md)
+- [[modules/ide-extension/overview|IDE Extension Spec]] (modules/ide-extension/overview.md)
 
 ### Verification
 
@@ -110,6 +120,9 @@ npm run test:vscode
 
 **Goal:** connect branch/file context to tasks and time tracking.
 
+**Requires:** DEV8 Task 1 complete  
+**Live integration:** DEV3 Task 4 (use MSW until ready)
+
 ### Acceptance Criteria
 
 - [ ] Branch detector uses VS Code Git API to read repo URL and branch.
@@ -122,8 +135,8 @@ npm run test:vscode
 
 ### References
 
-- [[Userflow/IDE-Extension/context-detection-flow|Context Detection Flow]]
-- [[modules/ide-extension/overview|IDE Extension Spec]]
+- [[Userflow/IDE-Extension/context-detection-flow|Context Detection Flow]] (Userflow/IDE-Extension/context-detection-flow.md)
+- [[modules/ide-extension/overview|IDE Extension Spec]] (modules/ide-extension/overview.md)
 
 ### Verification
 
@@ -138,6 +151,9 @@ npm run compile
 ## Task 5: Agent Install Prompt
 
 **Goal:** trigger the monitoring agent install flow only after backend entitlement and explicit user consent.
+
+**Requires:** DEV8 Task 1 complete  
+**Live integration:** DEV4 Task 7 (use MSW until ready) - Contract: `current-focus/contracts/agent-gateway.md`
 
 ### Acceptance Criteria
 
@@ -154,9 +170,9 @@ npm run compile
 
 ### References
 
-- [[Userflow/IDE-Extension/agent-install-flow|IDE Agent Install Flow]]
-- [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
-- [[modules/agent-gateway/agent-installer|Agent Installer]]
+- [[Userflow/IDE-Extension/agent-install-flow|IDE Agent Install Flow]] (Userflow/IDE-Extension/agent-install-flow.md)
+- [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]] (Userflow/Workforce-Intelligence/agent-deployment.md)
+- [[modules/agent-gateway/agent-installer|Agent Installer]] (modules/agent-gateway/agent-installer.md)
 
 ### Verification
 
@@ -199,6 +215,9 @@ vsce package
 
 ## Open Backend Contracts
 
-- [ ] `IDEEntitlementsDto` exact response shape from DEV3.
-- [ ] `tag:executed` SignalR payload from DEV3.
-- [ ] Agent install job response and status DTO from DEV4.
+- [x] `IDEEntitlementsDto` shape -> `current-focus/contracts/ide-entitlements.md`
+- [x] `tag:executed` SignalR payload -> `current-focus/contracts/signalr-events.md`
+- [x] Agent install job and status DTOs -> `current-focus/contracts/agent-gateway.md`
+- [x] Auth session and token shapes -> `current-focus/contracts/auth-session.md`
+
+

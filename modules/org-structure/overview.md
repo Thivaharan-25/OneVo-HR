@@ -77,6 +77,7 @@ API endpoints:
 | `country_id` | `uuid` | FK → countries |
 | `address_json` | `jsonb` | |
 | `is_active` | `boolean` | |
+| `agent_clock_in_enabled` | `boolean` | Default `false`. When `true`, all employees in this legal entity can clock in/out via web or tray app regardless of `work_type` |
 | `created_at` | `timestamptz` | |
 
 ### `departments`
@@ -115,6 +116,7 @@ Self-referencing hierarchy via `parent_department_id`.
 | `tenant_id` | `uuid` | FK → tenants |
 | `name` | `varchar(50)` | e.g., "Junior", "Senior", "Lead", "Director" |
 | `rank` | `int` | Numeric ordering |
+| `default_role_id` | `uuid` | FK → roles (nullable) — auto-assigned on promotion; NULL = admin assigns manually |
 | `created_at` | `timestamptz` | |
 
 ### `job_titles`

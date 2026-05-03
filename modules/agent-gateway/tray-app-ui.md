@@ -89,10 +89,15 @@ Right-clicking the tray icon shows:
 | Menu Item | Action | Visibility |
 |:----------|:-------|:-----------|
 | **Status** | Opens status popup | Always |
-| **Login** | Opens login window | When no employee logged in |
-| **Logout** | Sends logout IPC message | When employee logged in |
+| **Sign in** | Opens enrollment flow (browser SSO) | Only when device is not yet enrolled (first-time setup) |
+| **Clock In** | Triggers photo capture → then clock-in | When clocked out AND (`work_type = remote/hybrid` OR `policy.agent_clock_in_enabled = true`) |
+| **Clock Out** | Triggers photo capture → then clock-out | When clocked in AND (`work_type = remote/hybrid` OR `policy.agent_clock_in_enabled = true`) |
+| **Start Break** | Starts break, pauses monitoring | When clocked in and not on break |
+| **End Break** | Ends break, resumes monitoring | When on break |
 | **Remote Work Location** | Opens remote location setup/change request | When employee is remote/hybrid and policy allows |
 | **About** | Shows version info | Always |
+
+**Login is one-time.** After the employee signs in once and the device is enrolled, the tray app stays connected under their identity permanently. The device credential is stored via DPAPI and auto-renewed on heartbeat. There is no "sign in every shift" flow.
 
 There is no "Exit" or "Quit" option. The agent is managed by IT — employees cannot stop it. The service continues running regardless of whether the TrayApp is open.
 

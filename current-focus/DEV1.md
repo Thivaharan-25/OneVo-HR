@@ -29,11 +29,11 @@ When Dev 1 asks to continue, start with the first unchecked item in **Current Un
 
 ### References
 
-- [[backend/clean-architecture-overview|Clean Architecture Overview]]
-- [[backend/shared-kernel|Shared Kernel]]
-- [[backend/api-conventions|API Conventions]]
-- [[database/migration-patterns|Migration Patterns]]
-- [[backend/module-catalog|Backend Module Catalog]]
+- [[backend/clean-architecture-overview|Clean Architecture Overview]] (backend/clean-architecture-overview.md)
+- [[backend/shared-kernel|Shared Kernel]] (backend/shared-kernel.md)
+- [[backend/api-conventions|API Conventions]] (backend/api-conventions.md)
+- [[database/migration-patterns|Migration Patterns]] (database/migration-patterns.md)
+- [[backend/module-catalog|Backend Module Catalog]] (backend/module-catalog.md)
 
 ### Verification
 
@@ -47,6 +47,8 @@ dotnet test ONEVO.sln
 ## Task 2: Tenant Auth + RBAC
 
 **Goal:** implement secure tenant-facing user authentication and permission checks for protected `/api/v1/*` APIs.
+
+**Requires:** DEV1 Task 1 complete
 
 ### Acceptance Criteria
 
@@ -62,10 +64,10 @@ dotnet test ONEVO.sln
 
 ### References
 
-- [[modules/auth/overview|Auth]]
-- [[security/auth-architecture|Auth Architecture]]
-- [[security/auth-flow|Auth Flow]]
-- [[Userflow/Auth-Access/permissions-reference|Permissions Reference]]
+- [[modules/auth/overview|Auth]] (modules/auth/overview.md)
+- [[security/auth-architecture|Auth Architecture]] (security/auth-architecture.md)
+- [[security/auth-flow|Auth Flow]] (security/auth-flow.md)
+- [[Userflow/Auth-Access/permissions-reference|Permissions Reference]] (Userflow/Auth-Access/permissions-reference.md)
 
 ### Verification
 
@@ -79,6 +81,8 @@ dotnet test ONEVO.sln --filter Auth
 
 **Goal:** provide server-side module gates used by web app, IDE extension, and Developer Platform provisioning.
 
+**Requires:** DEV1 Task 2 complete
+
 ### Acceptance Criteria
 
 - [ ] Tenant provisioning creates baseline tenant, legal entity, admin user, and subscription record.
@@ -90,11 +94,11 @@ dotnet test ONEVO.sln --filter Auth
 
 ### References
 
-- [[modules/infrastructure/overview|Infrastructure]]
-- [[infrastructure/multi-tenancy|Multi Tenancy]]
-- [[modules/shared-platform/overview|Shared Platform]]
-- [[database/schemas/shared-platform|Shared Platform Schema]]
-- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]]
+- [[modules/infrastructure/overview|Infrastructure]] (modules/infrastructure/overview.md)
+- [[infrastructure/multi-tenancy|Multi Tenancy]] (infrastructure/multi-tenancy.md)
+- [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
+- [[database/schemas/shared-platform|Shared Platform Schema]] (database/schemas/shared-platform.md)
+- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md)
 
 ### Verification
 
@@ -108,6 +112,10 @@ dotnet test ONEVO.sln --filter Entitlement
 
 **Goal:** create a shared audit service used by auth, Developer Platform, agent, and IDE tag flows.
 
+**Requires:** DEV1 Task 1 complete
+
+> **Pickup assigned to Dev 4** — Dev 4 is blocked waiting for Task 2 (Auth); Task 4 only needs Task 1. Dev 4 executes this in that idle window. Dev 1 proceeds T1 → T2 → T3 → T5 → T6 without stopping for T4. See DEV4.md early-pickup section.
+
 ### Acceptance Criteria
 
 - [ ] Audit log entity supports tenant, actor, action, resource type, resource ID, IP, user agent, and metadata.
@@ -120,9 +128,9 @@ dotnet test ONEVO.sln --filter Entitlement
 
 ### References
 
-- [[security/compliance|Compliance]]
-- [[security/data-classification|Data Classification]]
-- [[developer-platform/modules/audit-console/overview|Audit Console]]
+- [[security/compliance|Compliance]] (security/compliance.md)
+- [[security/data-classification|Data Classification]] (security/data-classification.md)
+- [[developer-platform/modules/audit-console/overview|Audit Console]] (developer-platform/modules/audit-console/overview.md)
 
 ### Verification
 
@@ -135,6 +143,8 @@ dotnet test ONEVO.sln --filter Audit
 ## Task 5: Shared Platform Core + Workflow Engine
 
 **Goal:** build the cross-cutting platform services that other modules depend on, including the workflow/approval engine.
+
+**Requires:** DEV1 Task 3 complete
 
 ### Backend Module Location
 
@@ -162,13 +172,13 @@ dotnet test ONEVO.sln --filter Audit
 
 ### References
 
-- [[modules/shared-platform/overview|Shared Platform]]
-- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
-- [[modules/shared-platform/sso-authentication/overview|SSO Authentication]]
-- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
-- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
-- [[modules/shared-platform/compliance-governance/overview|Compliance Governance]]
-- [[backend/domain-events|Domain Events]]
+- [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] (modules/shared-platform/workflow-engine/overview.md)
+- [[modules/shared-platform/sso-authentication/overview|SSO Authentication]] (modules/shared-platform/sso-authentication/overview.md)
+- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] (modules/shared-platform/subscriptions-billing/overview.md)
+- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]] (modules/shared-platform/notification-infrastructure/overview.md)
+- [[modules/shared-platform/compliance-governance/overview|Compliance Governance]] (modules/shared-platform/compliance-governance/overview.md)
+- [[backend/domain-events|Domain Events]] (backend/domain-events.md)
 
 ### Verification
 
@@ -182,6 +192,8 @@ dotnet test ONEVO.sln --filter Workflow
 ## Task 6: Configuration + Monitoring Policy Foundation
 
 **Goal:** build tenant settings, monitoring toggles, employee overrides, retention, integrations, and app allowlist policy source of truth.
+
+**Requires:** DEV1 Tasks 3 and 5 complete
 
 ### Backend Module Location
 
@@ -207,13 +219,13 @@ dotnet test ONEVO.sln --filter Workflow
 
 ### References
 
-- [[modules/configuration/overview|Configuration]]
-- [[modules/configuration/app-allowlist/overview|App Allowlist]]
-- [[modules/configuration/employee-overrides/overview|Employee Overrides]]
-- [[modules/configuration/integrations/overview|Integrations]]
-- [[modules/configuration/retention-policies/overview|Retention Policies]]
-- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]]
-- [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]]
+- [[modules/configuration/overview|Configuration]] (modules/configuration/overview.md)
+- [[modules/configuration/app-allowlist/overview|App Allowlist]] (modules/configuration/app-allowlist/overview.md)
+- [[modules/configuration/employee-overrides/overview|Employee Overrides]] (modules/configuration/employee-overrides/overview.md)
+- [[modules/configuration/integrations/overview|Integrations]] (modules/configuration/integrations/overview.md)
+- [[modules/configuration/retention-policies/overview|Retention Policies]] (modules/configuration/retention-policies/overview.md)
+- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]] (Userflow/Configuration/monitoring-toggles.md)
+- [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] (Userflow/Configuration/app-allowlist-setup.md)
 
 ### Verification
 
@@ -227,6 +239,10 @@ dotnet test ONEVO.sln --filter AppAllowlist
 ## Task 7: Developer Platform Admin API Foundation
 
 **Goal:** implement the platform-admin backend boundary used by the internal Developer Platform console.
+
+**Requires:** DEV1 Tasks 1, 2, and 4 complete
+
+> **Pickup assigned to Dev 3** — Dev 3 is blocked the longest (needs Tasks 1–3 before DEV3.T1 starts). Task 7 only needs Tasks 1, 2, and 4, so Dev 3 can build it during that wait. Dev 1 is free to run the critical chain T3 → T5 → T6 without interruption. See DEV3.md early-pickup section.
 
 ### Backend Module Location
 
@@ -259,14 +275,14 @@ dotnet test ONEVO.sln --filter AppAllowlist
 
 ### References
 
-- [[modules/dev-platform/overview|Dev Platform Feature]]
-- [[developer-platform/overview|Developer Platform Overview]]
-- [[developer-platform/auth|Developer Platform Auth]]
-- [[developer-platform/system-design|Developer Platform System Design]]
-- [[developer-platform/backend/admin-api-layer|Admin API Layer]]
-- [[developer-platform/backend/api-contracts|Admin API Contracts]]
-- [[developer-platform/database/schema|Developer Platform Schema]]
-- [[backend/module-catalog|Backend Module Catalog]]
+- [[modules/dev-platform/overview|Dev Platform Feature]] (modules/dev-platform/overview.md)
+- [[developer-platform/overview|Developer Platform Overview]] (developer-platform/overview.md)
+- [[developer-platform/auth|Developer Platform Auth]] (developer-platform/auth.md)
+- [[developer-platform/system-design|Developer Platform System Design]] (developer-platform/system-design.md)
+- [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md)
+- [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
+- [[developer-platform/database/schema|Developer Platform Schema]] (developer-platform/database/schema.md)
+- [[backend/module-catalog|Backend Module Catalog]] (backend/module-catalog.md)
 
 ### Verification
 
@@ -280,6 +296,11 @@ dotnet test ONEVO.sln --filter AdminApi
 ## Task 8: Developer Platform Tenant Console Backend
 
 **Goal:** implement the admin tenant lifecycle APIs used by `console.onevo.io`.
+
+**Requires:** DEV1 Tasks 3, 5, and 7 complete
+
+> **Parallel with Task 9** — both unlock when Task 7 is done. Run them simultaneously.
+> **Overflow to Dev 2** — Dev 2 picks this up after completing DEV2 Tasks 1–5. Dev 2 owns org structure and employee lifecycle data that Task 8 reads through module interfaces, making this a natural fit.
 
 ### Backend Module References
 
@@ -305,13 +326,13 @@ dotnet test ONEVO.sln --filter AdminApi
 
 ### References
 
-- [[developer-platform/modules/tenant-console/overview|Tenant Console]]
-- [[developer-platform/userflow/tenant-management|Tenant Management Flows]]
-- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]]
-- [[developer-platform/backend/api-contracts|Admin API Contracts]]
-- [[modules/shared-platform/overview|Shared Platform]]
-- [[modules/infrastructure/overview|Infrastructure]]
-- [[modules/auth/overview|Auth]]
+- [[developer-platform/modules/tenant-console/overview|Tenant Console]] (developer-platform/modules/tenant-console/overview.md)
+- [[developer-platform/userflow/tenant-management|Tenant Management Flows]] (developer-platform/userflow/tenant-management.md)
+- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
+- [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
+- [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
+- [[modules/infrastructure/overview|Infrastructure]] (modules/infrastructure/overview.md)
+- [[modules/auth/overview|Auth]] (modules/auth/overview.md)
 
 ### Verification
 
@@ -326,6 +347,11 @@ dotnet test ONEVO.sln --filter Impersonation
 ## Task 9: Developer Platform Operations Backend
 
 **Goal:** implement feature flag, audit, system config, and app catalog admin APIs.
+
+**Requires:** DEV1 Tasks 4, 5, and 7 complete
+
+> **Parallel with Task 8** — both unlock when Task 7 is done. Run them simultaneously.
+> **Overflow to Dev 3** — Dev 3 picks this up after completing DEV3 Tasks 1–5 (and after having already built Task 7 earlier).
 
 ### Backend Module References
 
@@ -353,14 +379,14 @@ dotnet test ONEVO.sln --filter Impersonation
 
 ### References
 
-- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]]
-- [[developer-platform/userflow/feature-flags|Feature Flag Flows]]
-- [[developer-platform/modules/audit-console/overview|Audit Console]]
-- [[developer-platform/modules/system-config/overview|System Config]]
-- [[developer-platform/modules/app-catalog-manager/overview|App Catalog Manager]]
-- [[modules/shared-platform/overview|Shared Platform]]
-- [[modules/configuration/overview|Configuration]]
-- [[security/compliance|Compliance]]
+- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md)
+- [[developer-platform/userflow/feature-flags|Feature Flag Flows]] (developer-platform/userflow/feature-flags.md)
+- [[developer-platform/modules/audit-console/overview|Audit Console]] (developer-platform/modules/audit-console/overview.md)
+- [[developer-platform/modules/system-config/overview|System Config]] (developer-platform/modules/system-config/overview.md)
+- [[developer-platform/modules/app-catalog-manager/overview|App Catalog Manager]] (developer-platform/modules/app-catalog-manager/overview.md)
+- [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
+- [[modules/configuration/overview|Configuration]] (modules/configuration/overview.md)
+- [[security/compliance|Compliance]] (security/compliance.md)
 
 ### Verification
 
@@ -370,3 +396,5 @@ dotnet test ONEVO.sln --filter Audit
 dotnet test ONEVO.sln --filter SystemConfig
 dotnet test ONEVO.sln --filter AppCatalog
 ```
+
+

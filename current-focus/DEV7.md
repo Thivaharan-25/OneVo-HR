@@ -1,4 +1,4 @@
-# DEV7: Frontend WorkSync Web UI
+﻿# DEV7: Frontend WorkSync Web UI
 
 **Track:** Frontend
 **Primary ownership:** WorkSync web UI, projects, tasks, boards, docs, time
@@ -17,6 +17,9 @@ When Dev 7 asks to continue, start with the first unchecked item in **Current Un
 
 **Goal:** build the workspace and project experience for WorkSync.
 
+**Requires:** DEV5 Tasks 1-4 complete  
+**Live integration:** DEV3 Task 1 (use MSW until ready) - Contract: `current-focus/contracts/worksync-core.md`
+
 ### Acceptance Criteria
 
 - [ ] Workspace switcher shows current workspace and available workspaces.
@@ -28,9 +31,9 @@ When Dev 7 asks to continue, start with the first unchecked item in **Current Un
 
 ### References
 
-- [[Userflow/Work-Management/wm-overview|Work Management Overview]]
-- [[Userflow/Work-Management/project-flow|Project Flow]]
-- [[frontend/architecture/sidebar-nav|Sidebar Nav]]
+- [[Userflow/Work-Management/wm-overview|Work Management Overview]] (Userflow/Work-Management/wm-overview.md)
+- [[Userflow/Work-Management/project-flow|Project Flow]] (Userflow/Work-Management/project-flow.md)
+- [[frontend/architecture/sidebar-nav|Sidebar Nav]] (frontend/architecture/sidebar-nav.md)
 
 ### Verification
 
@@ -41,9 +44,14 @@ npm run build
 
 ---
 
+> **Parallel group** — Tasks 2, 3, and 4 all require DEV5 Tasks 1–4 and DEV7 Task 1, but are independent of each other. Run all three simultaneously.
+
 ## Task 2: Tasks + Boards + Planning UI
 
 **Goal:** build task, kanban, backlog, sprint, and roadmap screens.
+
+**Requires:** DEV5 Tasks 1-4 and DEV7 Task 1 complete  
+**Live integration:** DEV3 Task 2 (use MSW until ready) - Contract: `current-focus/contracts/worksync-core.md`
 
 ### Acceptance Criteria
 
@@ -56,9 +64,9 @@ npm run build
 
 ### References
 
-- [[Userflow/Work-Management/task-flow|Task Flow]]
-- [[Userflow/Work-Management/planning-flow|Planning Flow]]
-- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]]
+- [[Userflow/Work-Management/task-flow|Task Flow]] (Userflow/Work-Management/task-flow.md)
+- [[Userflow/Work-Management/planning-flow|Planning Flow]] (Userflow/Work-Management/planning-flow.md)
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] (frontend/design-system/patterns/layout-patterns.md)
 
 ### Verification
 
@@ -74,6 +82,9 @@ npm run build
 
 **Goal:** build WorkSync chat, time tracking, timesheets, and analytics views.
 
+**Requires:** DEV5 Tasks 1-4 and DEV7 Task 1 complete  
+**Live integration:** DEV3 Tasks 2-3 (use MSW until ready) - Contract: `current-focus/contracts/signalr-events.md`
+
 ### Acceptance Criteria
 
 - [ ] Chat screen lists channels and messages.
@@ -85,9 +96,9 @@ npm run build
 
 ### References
 
-- [[Userflow/Chat/chat-overview|Chat Overview]]
-- [[Userflow/Work-Management/time-tracking-flow|Time Tracking Flow]]
-- [[modules/work-management/analytics/overview|Work Management Analytics]]
+- [[Userflow/Chat/chat-overview|Chat Overview]] (Userflow/Chat/chat-overview.md)
+- [[Userflow/Work-Management/time-tracking-flow|Time Tracking Flow]] (Userflow/Work-Management/time-tracking-flow.md)
+- [[modules/work-management/analytics/overview|Work Management Analytics]] (modules/work-management/analytics/overview.md)
 
 ### Verification
 
@@ -103,6 +114,9 @@ npm run build
 
 **Goal:** build document/wiki and code activity surfaces used by web and IDE users.
 
+**Requires:** DEV5 Tasks 1-4 and DEV7 Task 1 complete  
+**Live integration:** DEV3 Task 5 (use MSW until ready)
+
 ### Acceptance Criteria
 
 - [ ] Docs list supports workspace/project filters and document status.
@@ -114,9 +128,9 @@ npm run build
 
 ### References
 
-- [[Userflow/Documents/document-upload|Document Upload]]
-- [[Userflow/Documents/document-versioning|Document Versioning]]
-- [[database/schemas/wms-integrations|WMS Integrations Schema]]
+- [[Userflow/Documents/document-upload|Document Upload]] (Userflow/Documents/document-upload.md)
+- [[Userflow/Documents/document-versioning|Document Versioning]] (Userflow/Documents/document-versioning.md)
+- [[database/schemas/wms-integrations|WMS Integrations Schema]] (database/schemas/wms-integrations.md)
 
 ### Verification
 
@@ -130,6 +144,8 @@ npm run build
 
 ## Open Backend Contracts
 
-- [ ] Project/task DTOs from DEV3.
-- [ ] Chat message DTO and SignalR event shape from DEV3.
-- [ ] Code activity DTO from DEV3.
+- [x] Project and task DTOs -> `current-focus/contracts/worksync-core.md`
+- [x] Chat message DTO and SignalR events -> `current-focus/contracts/signalr-events.md`
+- [ ] Code activity DTO from DEV3 (pending).
+
+

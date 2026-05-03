@@ -94,18 +94,18 @@ Phase 2 modules (Payroll, Performance, HR Documents, Governance, Skill & Talent 
 
 | # | Feature | Feature Folder | Tables | Phase |
 |:--|:--------|:---------------|:-------|:------|
-| W1 | Foundation | `Features/WorkManagement/Foundation` | 5 | Phase 1/2 |
-| W2 | Projects | `Features/WorkManagement/Projects` | 7 | Phase 1 |
-| W3 | Tasks | `Features/WorkManagement/Tasks` | 13 | Phase 1 |
-| W4 | Planning | `Features/WorkManagement/Planning` | 7 | Phase 1 |
-| W5 | OKR & Goals | `Features/WorkManagement/OKR` | ~5 | Phase 1 |
-| W6 | Time | `Features/WorkManagement/Time` | ~4 | Phase 1 |
-| W7 | Resources | `Features/WorkManagement/Resources` | ~3 | Phase 1 |
-| W8 | Chat & Messaging | `Features/WorkManagement/Chat` | 8 | Phase 1/2 |
-| W9 | Chat AI | `Features/WorkManagement/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 — **standalone add-on, not bundled in WorkSync Pack** |
-| W10 | Collaboration | `Features/WorkManagement/Collaboration` | 4 new + extends documents | Phase 1 |
-| W11 | Analytics & Insights | `Features/WorkManagement/Analytics` | 7 | Phase 1 |
-| W12 | Integrations | `Features/WorkManagement/Integrations` | 7 | Phase 1 |
+| W1 | Foundation | `Features/WMFoundation` | 5 | Phase 1/2 |
+| W2 | Projects | `Features/Projects` | 7 | Phase 1 |
+| W3 | Tasks | `Features/Tasks` | 13 | Phase 1 |
+| W4 | Planning | `Features/Planning` | 7 | Phase 1 |
+| W5 | OKR & Goals | `Features/OKR` | ~5 | Phase 1 |
+| W6 | Time | `Features/Time` | ~4 | Phase 1 |
+| W7 | Resources | `Features/Resources` | ~3 | Phase 1 |
+| W8 | Chat & Messaging | `Features/Chat` | 8 | Phase 1/2 |
+| W9 | Chat AI | `Features/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 — **standalone add-on, not bundled in WorkSync Pack** |
+| W10 | Collaboration | `Features/Collaboration` | 4 new + extends documents | Phase 1 |
+| W11 | Analytics & Insights | `Features/WorkSyncAnalytics` | 7 | Phase 1 |
+| W12 | Integrations | `Features/WorkSyncIntegrations` | 7 | Phase 1 |
 
 Schema files: [[database/schemas/wms-project-management|Project Management]], [[database/schemas/wms-task-management|Task Management]], [[database/schemas/wms-planning|Sprint Planning]], [[database/schemas/wms-chat|Chat + Chat AI]], [[database/schemas/wms-collaboration|Collaboration]], [[database/schemas/wms-analytics|Analytics]], [[database/schemas/wms-integrations|Integrations]]
 
@@ -170,7 +170,7 @@ ONEVO.Infrastructure/Persistence/Configurations/{Feature}/
 └── {Entity}Configuration.cs    IEntityTypeConfiguration<T>
 ```
 
-Work Management features live under `Features/WorkManagement/{SubFeature}/` following the same layout.
+Work Management features are flat — no `WorkManagement/` parent folder. Each WorkSync feature lives directly under `Features/{Feature}/` following the same layout as all other features.
 
 ---
 

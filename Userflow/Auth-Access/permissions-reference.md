@@ -1,7 +1,15 @@
 # Permissions Reference
 
-**Total explicitly grantable:** 106 permissions across 28 modules  
+**Total explicitly grantable:** 107 permissions across 28 modules  
 **Related flows:** [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] · [[Userflow/Auth-Access/role-creation|Role Creation]]
+
+---
+
+## System Permission (internal — seeded at provisioning; never shown in UI pickers)
+
+| Permission | What it gives |
+|:-----------|:--------------|
+| `*` | Super Admin bypass — grants access to all endpoints regardless of permission checks; assigned only to the Super Admin role during tenant provisioning; must not appear in the role creation browser, per-employee override lists, or any assignable permission payload |
 
 ---
 
@@ -16,6 +24,7 @@ These are given to every active employee automatically when they enter the syste
 | `employees:read-own` | View own employee profile |
 | `leave:read-own` | View own leave balance and history |
 | `attendance:read-own` | View own attendance and presence history |
+| `attendance:write-own` | Submit own attendance corrections (e.g., missing punch, correction requests) |
 | `payroll:read-own` | View own payslips and payroll history |
 | `performance:read-own` | View own performance records and review tasks |
 | `documents:read-own` | View documents assigned to self |
@@ -59,7 +68,7 @@ Universal permissions must not appear in the role creation permission browser, r
 | 12 | `attendance:read` | View attendance records for all employees in scope |
 | 13 | `attendance:read-team` | View attendance records for direct reports only |
 | 14 | `attendance:approve` | Approve overtime and attendance corrections |
-| 15 | `attendance:write` | Correct attendance records |
+| 15 | `attendance:write` | Correct attendance records for employees in scope |
 
 ### Payroll
 | # | Permission | Description |

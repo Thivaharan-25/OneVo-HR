@@ -190,7 +190,10 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 3. **Break detection:** If agent reports idle > configurable threshold (default 15 min), auto-create a `break_record` with `auto_detected = true`.
 4. **Overtime:** Must be pre-approved via workflow or auto-flagged when `total_present_minutes > scheduled_minutes`.
 5. **Data flow:** Biometric and policy-gated clock events write to `attendance_records`. Agent data arrives via [[modules/agent-gateway/overview|Agent Gateway]] -> `device_sessions`. A Hangfire job reconciles both into `presence_sessions` every 5 minutes during work hours.
-6. **Clock-in source policy:** Office employees normally clock in through biometric terminals only. Remote employees may clock in through approved web/tray flows with identity and work-location evidence. Hybrid employees use biometric when onsite and web/tray when remote. Field employees follow tenant policy. Onsite web/tray clock-in requires an active biometric outage override scoped to the affected legal entity, location, or device.
+6. **Clock-in source policy:** Office employees clock in through biometric terminals only, unless their legal entity has `agent_clock_in_enabled = true` (which allows all employees in that entity to clock in/out via web or tray app). Remote employees always clock in/out via the tray app. Hybrid employees use biometric when onsite and tray when remote. Field employees follow their legal entity's policy. Onsite tray clock-in (non-remote) is only available when the employee's legal entity has `agent_clock_in_enabled = true` or an active biometric outage override exists.
+   - **The tray app / web Clock In / Clock Out option is hidden** unless the employee's `work_type` is `remote` or `hybrid`, OR the employee's legal entity (`department.legal_entity_id → legal_entities.agent_clock_in_enabled`) is `true`.
+   - Scope of this flag: a Super Admin can set `agent_clock_in_enabled` on any legal entity within the tenant; a non-Super Admin with `attendance:manage` can only set it on the legal entity their own department belongs to.
+   - **Remote tray clock-in and clock-out each require a webcam photo** (identity verification). Photo is captured every time — not just on first setup.
 7. **IDE extension boundary:** WorkSync and IDE time logging can create `time_logs`, but they must never create Workforce Presence clock-in/out records.
 
 ---

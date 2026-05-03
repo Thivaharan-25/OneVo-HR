@@ -2,7 +2,7 @@
 
 **Module:** [[modules/auth/overview|Auth & Security]]
 **Phase:** Phase 1
-**Tables:** 9
+**Tables:** 10
 
 ---
 
@@ -33,16 +33,17 @@
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
 | `grantee_type` | `varchar(10)` | `role` or `employee` |
-| `grantee_id` | `uuid` | FK → roles.id OR employees.id (polymorphic, depends on grantee_type) |
+| `grantee_id` | `uuid` | FK → roles.id OR users.id (polymorphic, depends on grantee_type) |
 | `module` | `varchar(50)` | Module code: `leave`, `payroll`, `performance`, etc. |
 | `is_enabled` | `boolean` |  |
 | `granted_by` | `uuid` | FK → users |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
+| UNIQUE: `(tenant_id, grantee_type, grantee_id, module)` | | |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `granted_by` → [[database/schemas/infrastructure#`users`|users]]
 
-> **Polymorphic FK — enforced at application layer:** when `grantee_type = 'role'`, `grantee_id` references [[#`roles`|roles]]; when `grantee_type = 'employee'`, `grantee_id` references [[database/schemas/core-hr#`employees`|employees]]. No DB-level FK constraint on `grantee_id`.
+> **Polymorphic FK — enforced at application layer:** when `grantee_type = 'role'`, `grantee_id` references [[#`roles`|roles]]; when `grantee_type = 'employee'`, `grantee_id` references [[database/schemas/infrastructure#`users`|users]]. No DB-level FK constraint on `grantee_id`.
 
 ---
 
@@ -79,6 +80,7 @@
 |:-------|:-----|:------|
 | `role_id` | `uuid` | FK → roles |
 | `permission_id` | `uuid` | FK → permissions |
+| PK: `(role_id, permission_id)` | | |
 
 **Foreign Keys:** `role_id` → [[#`roles`|roles]], `permission_id` → [[#`permissions`|permissions]]
 
@@ -129,6 +131,7 @@
 | `reason` | `varchar(255)` | Why this override exists |
 | `granted_by` | `uuid` | FK → users (Super Admin who set this) |
 | `created_at` | `timestamptz` |  |
+| UNIQUE: `(tenant_id, user_id, permission_id)` | | |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` → [[database/schemas/infrastructure#`users`|users]], `permission_id` → [[#`permissions`|permissions]], `granted_by` → [[database/schemas/infrastructure#`users`|users]]
 
@@ -142,8 +145,25 @@
 | `role_id` | `uuid` | FK → roles |
 | `assigned_at` | `timestamptz` |  |
 | `assigned_by` | `uuid` | FK → users (who granted this) |
+| PK: `(user_id, role_id)` | | |
 
 **Foreign Keys:** `user_id` → [[database/schemas/infrastructure#`users`|users]], `role_id` → [[#`roles`|roles]], `assigned_by` → [[database/schemas/infrastructure#`users`|users]]
+
+---
+
+## `refresh_tokens`
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `user_id` | `uuid` | FK → users |
+| `token_hash` | `varchar(128)` | SHA-256 hash of token — never store raw |
+| `expires_at` | `timestamptz` | 7 days from creation |
+| `replaced_by_id` | `uuid` | Self-referencing FK — token rotation chain |
+| `revoked_at` | `timestamptz` | Nullable — set when token is revoked |
+| `created_at` | `timestamptz` | |
+
+**Foreign Keys:** `user_id` → [[database/schemas/infrastructure#`users`|users]], `replaced_by_id` → [[#`refresh_tokens`|refresh_tokens]]
 
 ---
 
