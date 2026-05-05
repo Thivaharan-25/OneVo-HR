@@ -52,15 +52,15 @@ dotnet test ONEVO.sln
 
 ### Acceptance Criteria
 
-- [ ] User login issues short-lived tenant access token and backend-managed refresh token.
-- [ ] Refresh token rotation persists replaced-by chain.
-- [ ] MFA setup and verification endpoints exist.
-- [ ] Password reset flow exists.
-- [ ] Forced password change flow exists using `must_change_password`, `password_set_by_admin`, and `temporary_password_expires_at`.
-- [ ] Permission keys are seeded.
-- [ ] API authorization supports tenant-level roles and explicit permissions.
-- [ ] Tenant JWT issuer is rejected by `/admin/v1/*`.
-- [ ] Integration tests cover login, refresh, forced password change, forbidden access, and admin issuer rejection.
+- [x] User login issues short-lived tenant access token and backend-managed refresh token.
+- [x] Refresh token rotation persists replaced-by chain.
+- [x] MFA setup and verification endpoints exist.
+- [x] Password reset flow exists.
+- [x] Forced password change flow exists using `must_change_password`, `password_set_by_admin`, and `temporary_password_expires_at`.
+- [x] Permission keys are seeded.
+- [x] API authorization supports tenant-level roles and explicit permissions.
+- [x] Tenant JWT issuer is rejected by `/admin/v1/*`.
+- [x] Integration tests cover login, refresh, forced password change, forbidden access, and admin issuer rejection.
 
 ### References
 

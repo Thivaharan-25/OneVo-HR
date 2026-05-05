@@ -235,7 +235,7 @@ public interface IPermissionVersionService
 
 | Policy | Value |
 |:-------|:------|
-| Hashing | Argon2id (memory: 64MB, iterations: 3, parallelism: 1) |
+| Hashing | Argon2id (memory: 64MB, iterations: 3, parallelism: 1) — stored as `argon2id:{m}:{t}:{p}:{base64(salt)}:{base64(hash)}` |
 | Min length | 12 characters |
 | Complexity | 1 uppercase, 1 lowercase, 1 digit, 1 special character |
 | Rate limiting | 5 attempts/minute per IP |
@@ -245,11 +245,11 @@ public interface IPermissionVersionService
 
 ## MFA Support
 
-Multiple methods per user via `user_mfa` table:
+Multiple methods per user via `user_mfa` table (one row per method) and `mfa_recovery_codes` table (8 hashed codes per user):
 
-- **TOTP** (Google Authenticator, Authy)
-- **Email OTP** (6-digit code via Resend)
-- **Recovery codes** (one-time use backup codes)
+- **TOTP** (Google Authenticator, Authy) — RFC 6238, SHA-1 HMAC, 6-digit, 30s step, ±1 window for clock drift
+- **Email OTP** (6-digit code via Resend) — stub in Phase 1; Resend integration in Phase 2
+- **Recovery codes** — 8 one-time use codes per setup, stored as SHA-256 hashes in `mfa_recovery_codes`
 
 ## Session Security
 

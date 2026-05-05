@@ -4,7 +4,7 @@
 **Phase:** 1 — Build
 **Pillar:** 1 — HR Management
 **Owner:** Dev 2 (Week 1)
-**Tables:** 10
+**Tables:** 12
 **Task File:** [[current-focus/DEV2-auth-security|DEV2: Auth Security]]
 
 ---
@@ -270,14 +270,18 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 
 ## Key Business Rules
 
-1. **JWT RS256** — access tokens (15 min), refresh tokens (7 days) with rotation.
-2. **Hybrid permission control** — roles are templates; effective permissions = universal auto-grants + role permissions + individual overrides; filtered by feature grants; scoped by org hierarchy.
-3. **Hierarchy scoping** — users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Super Admin bypasses hierarchy.
-4. **Never hardcode role names** — roles are custom, created by Super Admin. Always check permissions, never role names.
-5. **Device JWT** for agents — contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
-6. **Refresh token rotation** — each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, revoke the entire chain (token theft detection).
-7. **GDPR consent for monitoring** — `consent_type: "monitoring"` must be recorded before monitoring features activate for an employee.
-8. **Audit logs are append-only** — partitioned by month, never deleted (compliance requirement).
+1. **JWT RS256** — access tokens (15 min), refresh tokens (7 days) with rotation. JWT includes `perm_ver` claim for real-time permission staleness checks.
+2. **Password hashing** — Argon2id (64 MB memory, 3 iterations, parallelism 1). Not bcrypt.
+3. **Hybrid permission control** — roles are templates; effective permissions = universal auto-grants + role permissions + individual overrides; filtered by feature grants; scoped by org hierarchy.
+4. **Permission version counter** — Redis key `perm_version:{user_id}` (integer, 24h TTL). Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 → frontend silently refreshes. Fails open if Redis unavailable.
+5. **Hierarchy scoping** — users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Super Admin bypasses hierarchy.
+6. **Never hardcode role names** — roles are custom, created by Super Admin. Always check permissions, never role names.
+7. **Device JWT** for agents — contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
+8. **Refresh token rotation** — each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, the entire replacement chain is revoked (token theft detection).
+9. **MFA** — TOTP (RFC 6238, SHA-1 HMAC, 6-digit, 30s window). Tables: `user_mfa` (per-method secret), `mfa_recovery_codes` (hashed one-time codes). Login flow: 202 with `mfa_pending` scoped JWT → POST `/auth/mfa/verify`.
+10. **Forced password change** — Dev Platform admin sets `must_change_password = true` on `users`. On login the server issues a 10-min `change_password` scoped JWT instead of a full access token. The client must call POST `/auth/change-password` before getting a regular session.
+11. **GDPR consent for monitoring** — `consent_type: "monitoring"` must be recorded before monitoring features activate for an employee.
+12. **Audit logs are append-only** — partitioned by month, never deleted (compliance requirement).
 
 ---
 
