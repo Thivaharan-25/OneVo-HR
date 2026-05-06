@@ -2,7 +2,7 @@
 
 **Track:** Backend
 **Primary ownership:** platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API
-**Current Unfinished Task:** Task 2 - Tenant Auth + RBAC
+**Current Unfinished Task:** Task 5 - Shared Platform Core + Workflow Engine
 **Blocked By:** none
 
 ---
@@ -56,6 +56,7 @@ dotnet test ONEVO.sln
 - [x] Refresh token rotation persists replaced-by chain.
 - [x] MFA setup and verification endpoints exist.
 - [x] Password reset flow exists.
+- [x] Password reset email can use a temporary logger-only stub during DEV1 Task 2; Phase 1 release requires DEV2 Task 5 to route password reset and account setup emails through the Resend-backed notification/email dispatcher.
 - [x] Forced password change flow exists using `must_change_password`, `password_set_by_admin`, and `temporary_password_expires_at`.
 - [x] Permission keys are seeded.
 - [x] API authorization supports tenant-level roles and explicit permissions.
@@ -85,12 +86,12 @@ dotnet test ONEVO.sln --filter Auth
 
 ### Acceptance Criteria
 
-- [ ] Tenant provisioning creates baseline tenant, legal entity, admin user, and subscription record.
-- [ ] Module entitlement service resolves active modules from subscription, feature grants, and module registry.
-- [ ] Permissions service can return effective permissions for a user and tenant.
-- [ ] Entitlement DTO supports web and IDE consumers.
-- [ ] Developer Platform provisioning can set tenant modules through the same entitlement/module registry.
-- [ ] Tests cover active module resolution, permission inheritance, and module assignment.
+- [x] Tenant provisioning creates baseline tenant, legal entity, admin user, and subscription record.
+- [x] Module entitlement service resolves active modules from subscription, feature grants, and module registry.
+- [x] Permissions service can return effective permissions for a user and tenant.
+- [x] Entitlement DTO supports web and IDE consumers.
+- [x] Developer Platform provisioning can set tenant modules through the same entitlement/module registry.
+- [x] Tests cover active module resolution, permission inheritance, and module assignment.
 
 ### References
 
@@ -396,5 +397,4 @@ dotnet test ONEVO.sln --filter Audit
 dotnet test ONEVO.sln --filter SystemConfig
 dotnet test ONEVO.sln --filter AppCatalog
 ```
-
 
