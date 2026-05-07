@@ -178,7 +178,7 @@ Work Management features are flat — no `WorkManagement/` parent folder. Each W
 
 | Need | Mechanism |
 |------|-----------|
-| Read data from another feature | Inject `IApplicationDbContext` or `IRepository<T>` — query directly |
+| Read data from another feature | Inject the owning feature's repository/reader interface; never query another feature's DbSet directly |
 | Trigger side effect in another feature | Entity raises `IDomainEvent`; `DomainEventDispatchInterceptor` dispatches after save |
 | React to another feature's event | `INotificationHandler<TEvent>` in `EventHandlers/` |
 | Background processing | `IBackgroundJobService` (Hangfire) injected in handler |
@@ -190,10 +190,10 @@ No RabbitMQ. No IEventBus. No MassTransit. All communication between HR, Workfor
 
 ## Developer Platform — Admin API
 
-`ONEVO.Admin.Api` is a separate host inside `ONEVO.sln`. It is not a feature — it has no DbContext. All data access goes through `IApplicationDbContext` via the Application layer exactly like `ONEVO.Api`.
+Developer Console endpoints live under `/admin/v1/*` inside the single `ONEVO.Api` host. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed. All data access goes through Application-owned repository/service interfaces exactly like customer APIs. Platform-level cross-tenant reads/writes must be explicit in those interface names and implementations.
 
 | Aspect | Detail |
 |:-------|:-------|
-| Host project | `ONEVO.Admin.Api` — separate `Program.cs` |
+| Host project | `ONEVO.Api` — `Controllers/Admin/` |
 | JWT Issuer | `onevo-platform-admin` — never valid at `/api/v1/*` |
 | Feature data | `Features/DevPlatform` — no TenantId on these entities |

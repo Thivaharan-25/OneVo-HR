@@ -15,8 +15,11 @@ GenerateWeeklyReportsJob (Hangfire, Monday 1:00 AM)
     -> 1. Get all active employees
     -> 2. For each employee:
        -> Aggregate daily_employee_report rows for Mon-Fri
-       -> Calculate: total_hours, active_hours, idle_hours, meeting_hours
+       -> Calculate: total_hours, active_hours, idle_hours, meeting_hours,
+          productive_app_hours, focus_hours
        -> Calculate intensity_avg
+       -> Calculate activity_score_avg, work_output_score_avg, productivity_score,
+          productivity_score_basis, data_coverage_percentage
        -> Get exception count for the week
        -> Compare with previous week: trend_vs_previous_week_json
        -> UPSERT into weekly_employee_report
@@ -26,7 +29,8 @@ GenerateWeeklyReportsJob (Hangfire, Monday 1:00 AM)
 ### Key Rules
 
 - **Weekly reports aggregate from daily reports** — never from raw data.
-- **Trend comparison** shows week-over-week changes in active percentage and hours.
+- **Trend comparison** shows week-over-week changes in activity rate, hours, productive app time, score basis, data coverage, and productivity score where comparable.
+- **Do not compare mixed bases.** Weekly rankings and trends must not directly compare `activity_only` scores with `composite` scores.
 
 ## Related
 

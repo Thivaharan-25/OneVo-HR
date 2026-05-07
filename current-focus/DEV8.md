@@ -1,4 +1,4 @@
-﻿# DEV8: Frontend VS Code IDE Extension
+# DEV8: Frontend VS Code IDE Extension
 
 **Track:** Frontend
 **Primary ownership:** VS Code IDE extension

@@ -21,19 +21,19 @@
 
 ### Step 2: View Activity Timeline
 - **UI:** Horizontal timeline showing:
-  - Application usage blocks (color-coded: productive=green, neutral=grey, unproductive=red)
+  - Application usage blocks (color-coded: work=green, communication/meeting=blue, unknown=grey, personal/non-allowed=red)
   - Idle periods
   - Meeting blocks (auto-detected from calendar + app activity)
-  - Screenshots (thumbnails at intervals, click to enlarge)
+  - Screenshots (manual/on-demand thumbnails only, click to enlarge when permitted)
   - Break periods
 
 ### Step 3: View Daily Summary
-- **UI:** Summary card: total productive hours, total idle time, top 5 apps by duration, productivity score (%), meeting time, first/last activity
+- **UI:** Summary card: activity rate, work-classified app time, total idle time, top 5 apps by duration, activity-derived score, score basis, data coverage, meeting time, first/last activity
 - **API:** `GET /api/v1/activity/daily-summary?employee_id={id}&date={date}`
 - **Backend:** DailySummaryService → [[modules/activity-monitoring/daily-aggregation/overview|Daily Aggregation]]
 
 ### Step 4: App Usage Breakdown
-- **UI:** Bar chart or table: each app with total time, category (productive/neutral/unproductive), percentage of day
+- **UI:** Bar chart or table: each app with total time, category (work/communication/meeting/personal/unknown), percentage of monitored day
 
 ## Variations
 

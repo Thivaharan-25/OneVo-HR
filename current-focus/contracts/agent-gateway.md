@@ -1,4 +1,4 @@
-﻿# Contract: Agent Gateway (Fleet Health + Install + Version)
+# Contract: Agent Gateway (Fleet Health + Install + Version)
 
 **Backend owner:** DEV4 Tasks 1, 3, 7, 8  
 **Consumers:** DEV6 Task 4 (fleet health), DEV8 Task 5 (install flow), DEV5 Tasks 6-7 (version manager via admin-api.md)  
@@ -63,5 +63,5 @@ interface AgentInstallStatusDto {
 - Device credential (`type: "agent"` JWT claim) is completely separate from user JWT - never reuse
 - `sha256_hash` must be verified by the extension client before running the downloaded installer
 - Agent fleet API is scoped to the requesting user's tenant; cross-tenant fleet view is admin-only via `/admin/v1/*`
-- Agent version release and ring management DTOs live in `admin-api.md` (served by `ONEVO.Admin.Api`)
+- Agent version release and ring management DTOs live in `admin-api.md` (served by `ONEVO.Api` `/admin/v1/*`)
 

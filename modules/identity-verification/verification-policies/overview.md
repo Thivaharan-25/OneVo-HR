@@ -9,10 +9,12 @@
 
 Per-tenant verification rules controlling when and how identity verification is triggered.
 
+Verification policy also controls reference-photo enrollment behavior for employees who sign in to the TrayApp without an approved reference photo. The default is manual HR/manager review. A tenant may enable SSO/MFA-backed auto-approval only as an explicit policy choice.
+
 ## Database Tables
 
 ### `verification_policies`
-Fields: `verify_on_login`, `verify_on_logout`, `interval_minutes` (0 = disabled), `match_threshold` (default 80.0), `is_active`.
+Fields: `verify_on_login`, `verify_on_logout`, `interval_minutes` (0 = disabled), `match_threshold` (default 80.0), `is_active`, `reference_enrollment_mode` (`manual_review`, `trusted_sso_auto_approve`), `block_monitoring_until_reference_approved`.
 
 ## API Endpoints
 

@@ -93,10 +93,6 @@
 - Employee receives in-app notification: "Your manager [Name] has added [Skill] to your profile at [Level]"
 - **DB:** `employee_skills`, `audit_logs`
 
-### When skill is linked to a completed course *(Phase 2)*
-- If employee completes a course that maps to a skill, system auto-suggests declaring that skill
-- Pre-fills proficiency based on course level
-
 ## Error Scenarios
 
 | Scenario | What happens | User sees |

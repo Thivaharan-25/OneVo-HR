@@ -58,14 +58,14 @@ public interface IFileService
 | `id` | `uuid` | PK |
 | `name` | `varchar(200)` | Company name |
 | `slug` | `varchar(100)` | URL-safe identifier, UNIQUE |
-| `industry_profile` | `varchar(30)` | `office_it`, `manufacturing`, `retail`, `healthcare`, `custom` — **sets monitoring defaults at signup** |
+| `industry_profile` | `varchar(30)` | `office_it`, `manufacturing`, `retail`, `healthcare`, `custom` — **sets monitoring defaults during operator provisioning** |
 | `status` | `varchar(20)` | `trial`, `active`, `suspended`, `cancelled` |
 | `subscription_plan_id` | `uuid` | FK → subscription_plans |
 | `settings_json` | `jsonb` | Tenant-level settings |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Note:** `industry_profile` is new — used by [[modules/configuration/overview|Configuration]] to set default monitoring feature toggles when a tenant signs up.
+**Note:** `industry_profile` is new — used by [[modules/configuration/overview|Configuration]] to set default monitoring feature toggles during operator provisioning.
 
 ### `users`
 
@@ -164,7 +164,7 @@ API endpoints:
 
 ## Key Business Rules
 
-1. **Tenant provisioning flow:** Signup → seed default data (roles, permissions, monitoring toggles based on `industry_profile`) → activate.
+1. **Tenant provisioning flow:** Operator creates provisioning draft -> assign plan/modules/settings/role templates -> invite owner -> activate.
 2. **Users ≠ Employees.** `users` is the login identity. `employees` is the HR identity in [[modules/core-hr/overview|Core Hr]]. They are 1:1 linked via `user_id` on the employees table. When working with HR features, always query through `employees`.
 3. **Files are stored in blob storage** (Railway/S3). Only metadata lives in `file_records`.
 4. **Countries table has no `tenant_id`** — it's global reference data.
@@ -175,7 +175,7 @@ API endpoints:
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| POST | `/api/v1/tenants` | Public (signup) | Provision new tenant |
+| POST | `/admin/v1/tenants` | Platform admin | Create draft tenant through Developer Platform; tenant creation is not exposed on customer API |
 | GET | `/api/v1/tenants/current` | Authenticated | Get current tenant |
 | PUT | `/api/v1/tenants/current` | `settings:admin` | Update tenant settings |
 | GET | `/api/v1/users` | `users:read` | List users |

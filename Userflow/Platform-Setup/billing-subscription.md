@@ -9,8 +9,35 @@
 
 ## Billing Model
 
-ONEVO uses **active-user-based billing**. There is no self-service signup or checkout on the ONEVO website. Tenants are acquired via a sales conversation and provisioned by an ONEVO operator. Once active, tenant admins can add new packs or the Chat AI add-on directly from the billing section.
+ONEVO uses **active-user-based billing**. There is no self-service signup or checkout on the ONEVO website. Tenants are acquired via a sales conversation and provisioned by an ONEVO operator. Once active, tenant admins can request or add new packs/add-ons according to their commercial model and contract rules. Subscription tenants can use self-service upgrades only when payment policy allows it; full-license tenants route module purchases or maintenance-included upgrades through ONEVO sales/operator approval.
 
+
+### Commercial Models
+
+ONEVO supports both commercial models:
+
+| Model | Meaning | Access Rule |
+|------|---------|-------------|
+| `subscription` | Tenant pays recurring SaaS fees for selected plans/modules. Billing can be monthly or annual. | Enabled modules come from plan-included modules plus paid add-ons and trial modules, minus disabled modules. |
+| `full_license_maintenance` | Tenant buys an agreed license up front, then pays recurring maintenance/support. | Enabled modules come from owned license modules plus maintenance-included modules, purchased add-ons, and trial modules, minus disabled modules. |
+
+For full-license tenants, expired maintenance may block support, updates, or new module access according to the contract. It should not automatically disable already-owned core access unless the signed agreement explicitly says so.
+
+### Pricing Configuration
+
+Pricing is configurable in Developer Platform and must not be hardcoded. Operators can maintain:
+
+| Pricing Area | Example |
+|--------------|---------|
+| Plan base price | Professional = 300/month |
+| Module add-on price | Payroll = 80/month |
+| Per employee/device price | 3/employee/month or 2/device/month |
+| Full license purchase price | Full HR Suite = 10,000 one-time |
+| Maintenance price | 18% of license value yearly |
+| Trial terms | Free for 30 days |
+| Custom enterprise price | Manually entered contract amount |
+
+Module entitlement and pricing decide what the tenant has access to. RBAC decides which users inside the tenant can use those capabilities. These concerns must remain separate.
 ### Pricing Packs
 
 | Pack | Modules Included | Pricing Unit |
@@ -85,7 +112,7 @@ Tenant admins can add packs and the Chat AI add-on directly — no sales call ne
 - **Backend:**
   1. Validates Stripe payment method is on file
   2. Charges proration via Stripe
-  3. Updates `module_registry` for the tenant
+  3. Updates the tenant module entitlement registry through module interfaces
   4. Publishes `SubscriptionChangedEvent` → feature flag service activates new modules immediately
   5. Writes audit log entry
 - **DB:** `tenant_feature_flags`, `tenant_subscriptions`

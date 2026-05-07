@@ -16,11 +16,14 @@ GenerateMonthlyReportsJob (Hangfire, 1st of month 2:00 AM)
     -> 2. For each employee:
        -> Aggregate daily_employee_report rows for the month
        -> Calculate all summary metrics
+       -> Calculate activity_score_avg, work_output_score_avg, productivity_score,
+          productivity_score_basis, and data_coverage_percentage
        -> Analyze performance_pattern_json:
-          -> Which weekdays are most productive
+          -> Which weekdays have strongest activity/output patterns
           -> Peak hours analysis
        -> Calculate comparative_rank_in_department:
-          -> Rank by active_percentage within department
+          -> Rank by productivity_score only among employees with the same
+             productivity_score_basis and acceptable data coverage
        -> UPSERT into monthly_employee_report
     -> 3. Publish MonthlyReportReady event
 ```
@@ -28,7 +31,8 @@ GenerateMonthlyReportsJob (Hangfire, 1st of month 2:00 AM)
 ### Key Rules
 
 - **Department ranking is only visible to managers** with `analytics:view` permission, never to the employee.
-- **Monthly reports include pattern analysis** — weekday and hourly productivity patterns.
+- **Department rank is not based on raw active percentage.** Use `productivity_score` only when score basis and coverage are comparable.
+- **Monthly reports include pattern analysis** — weekday and hourly activity/output patterns.
 
 ## Related
 

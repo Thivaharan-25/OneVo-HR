@@ -54,7 +54,7 @@ tokenValidationParameters = new TokenValidationParameters
 | Token type | Issuer | Valid at |
 |---|---|---|
 | Customer | `onevo-customer` | `ONEVO.Api` only |
-| Platform admin | `onevo-platform-admin` | `ONEVO.Admin.Api` only |
+| Platform admin | `onevo-platform-admin` | `/admin/v1/*` inside `ONEVO.Api` only |
 | Agent machine | `onevo-agent` | `AgentGateway` endpoints only |
 
 Tokens from one issuer are **rejected** at endpoints requiring another.

@@ -18,7 +18,14 @@
 | `active_hours` | `decimal(5,2)` | From activity summaries |
 | `idle_hours` | `decimal(5,2)` |  |
 | `meeting_hours` | `decimal(5,2)` |  |
-| `active_percentage` | `decimal(5,2)` |  |
+| `active_percentage` | `decimal(5,2)` | Activity rate, not final productivity |
+| `productive_app_hours` | `decimal(5,2)` | Work-classified app/domain time |
+| `focus_hours` | `decimal(5,2)` | Deep-focus time |
+| `activity_score` | `decimal(5,2)` | Monitoring-derived score, 0-100 |
+| `work_output_score` | `decimal(5,2)` | Nullable WorkSync output score |
+| `productivity_score` | `decimal(5,2)` | Final score for reporting/reviews |
+| `productivity_score_basis` | `varchar(30)` | `composite`, `activity_only`, `worksync_only`, `insufficient_data` |
+| `data_coverage_percentage` | `decimal(5,2)` | Evidence completeness/confidence |
 | `top_apps_json` | `jsonb` | Top 5 apps with time |
 | `intensity_score` | `decimal(5,2)` | Average intensity for the day |
 | `device_split_json` | `jsonb` | `{"laptop": 85, "mobile_estimate": 15}` |
@@ -43,7 +50,14 @@
 | `active_hours` | `decimal(7,2)` |  |
 | `idle_hours` | `decimal(7,2)` |  |
 | `meeting_hours` | `decimal(7,2)` |  |
-| `active_percentage` | `decimal(5,2)` |  |
+| `active_percentage` | `decimal(5,2)` | Activity rate |
+| `productive_app_hours` | `decimal(7,2)` |  |
+| `focus_hours` | `decimal(7,2)` |  |
+| `activity_score_avg` | `decimal(5,2)` |  |
+| `work_output_score_avg` | `decimal(5,2)` | Nullable |
+| `productivity_score` | `decimal(5,2)` |  |
+| `productivity_score_basis` | `varchar(30)` | `composite`, `activity_only`, `worksync_only`, `insufficient_data` |
+| `data_coverage_percentage` | `decimal(5,2)` |  |
 | `intensity_avg` | `decimal(5,2)` |  |
 | `exceptions_count` | `int` |  |
 | `performance_pattern_json` | `jsonb` | Weekday patterns, peak hours |
@@ -66,7 +80,14 @@
 | `active_hours` | `decimal(6,2)` |  |
 | `idle_hours` | `decimal(6,2)` |  |
 | `meeting_hours` | `decimal(6,2)` |  |
-| `active_percentage` | `decimal(5,2)` |  |
+| `active_percentage` | `decimal(5,2)` | Activity rate |
+| `productive_app_hours` | `decimal(6,2)` |  |
+| `focus_hours` | `decimal(6,2)` |  |
+| `activity_score_avg` | `decimal(5,2)` |  |
+| `work_output_score_avg` | `decimal(5,2)` | Nullable |
+| `productivity_score` | `decimal(5,2)` |  |
+| `productivity_score_basis` | `varchar(30)` | `composite`, `activity_only`, `worksync_only`, `insufficient_data` |
+| `data_coverage_percentage` | `decimal(5,2)` |  |
 | `intensity_avg` | `decimal(5,2)` |  |
 | `exceptions_count` | `int` |  |
 | `trend_vs_previous_week_json` | `jsonb` | `{"active_pct_change": +5.2, "hours_change": -0.5}` |
@@ -85,7 +106,11 @@
 | `date` | `date` |  |
 | `total_employees` | `int` | Active employees count |
 | `active_count` | `int` | Employees with activity this day |
-| `avg_active_percentage` | `decimal(5,2)` | Tenant-wide average |
+| `avg_active_percentage` | `decimal(5,2)` | Tenant-wide activity-rate average |
+| `avg_activity_score` | `decimal(5,2)` |  |
+| `avg_work_output_score` | `decimal(5,2)` | Nullable |
+| `avg_productivity_score` | `decimal(5,2)` |  |
+| `avg_data_coverage_percentage` | `decimal(5,2)` |  |
 | `avg_meeting_percentage` | `decimal(5,2)` |  |
 | `total_exceptions` | `int` | Total alerts generated |
 | `top_exception_types_json` | `jsonb` | Most common exception types |
@@ -96,7 +121,7 @@
 
 ---
 
-## `work_management_productivity_snapshots`
+## `wms_productivity_snapshots`
 
 Work Management-derived task productivity metrics per employee per period. Populated internally from Work Management task, sprint, time, and delivery records when Work Management is enabled. Phase 2 Performance can read from this table alongside agent-based scores.
 
@@ -111,7 +136,8 @@ Work Management-derived task productivity metrics per employee per period. Popul
 | `tasks_completed` | `int` | |
 | `tasks_on_time` | `int` | |
 | `on_time_delivery_rate` | `decimal(5,2)` | 0–100 percentage |
-| `productivity_score` | `decimal(5,2)` | Work Management-calculated composite score (0–100) |
+| `work_output_score` | `decimal(5,2)` | Work Management-calculated output score (0-100) |
+| `productivity_score` | `decimal(5,2)` | Deprecated alias for `work_output_score` during migration; do not use for new code |
 | `active_projects_count` | `int` | |
 | `velocity_story_points` | `int` | Nullable — only for agile teams |
 | `submitted_at` | `timestamptz` | When Work Management submitted this snapshot |

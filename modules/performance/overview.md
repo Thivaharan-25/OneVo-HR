@@ -92,6 +92,8 @@ API endpoints:
 | `review_type` | `varchar(20)` | `self`, `manager`, `peer`, `360` |
 | `overall_rating` | `decimal(3,1)` | 1.0–5.0 |
 | `productivity_score` | `decimal(5,2)` | **NEW** — from Productivity Analytics (nullable) |
+| `productivity_score_basis` | `varchar(30)` | Nullable; `composite`, `activity_only`, `worksync_only`, `insufficient_data` |
+| `productivity_data_coverage_percentage` | `decimal(5,2)` | Nullable; evidence completeness at score generation time |
 | `comments` | `text` | |
 | `status` | `varchar(20)` | `draft`, `submitted`, `finalized` |
 | `submitted_at` | `timestamptz` | |
@@ -204,7 +206,7 @@ OKR-style goals with parent-child hierarchy.
 
 ## Key Business Rules
 
-1. **Productivity score integration is optional** — controlled by `include_productivity_data` on review cycles. When enabled, `IProductivityAnalyticsService.GetProductivityScoreAsync()` is called during review creation. This score is a composite: agent-based activity data from `daily_employee_report` / `monthly_employee_report` + WMS task metrics from `wms_productivity_snapshots` (when the tenant has WMS integration). If no WMS data exists, the score uses agent data only — no config change needed.
+1. **Productivity score integration is optional** — controlled by `include_productivity_data` on review cycles. When enabled, `IProductivityAnalyticsService.GetProductivityScoreAsync()` is called during review creation. Store the returned `productivity_score_basis` and `productivity_data_coverage_percentage`. Composite scores combine agent-based activity data with WorkSync output metrics from `wms_productivity_snapshots`; if no WorkSync data exists, the score is `activity_only` and must be labelled as activity-derived evidence.
 2. **Goals are hierarchical** — parent_goal_id forms cascading OKRs (company → team → individual).
 3. **`tenant_id`** is used consistently on all tables — no column mapping workarounds needed.
 

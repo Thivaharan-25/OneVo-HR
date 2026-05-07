@@ -1,4 +1,4 @@
-﻿# DEV6: Frontend HR + Workforce UI
+# DEV6: Frontend HR + Workforce UI
 
 **Track:** Frontend
 **Primary ownership:** HR screens, leave, calendar, presence, agent management UI

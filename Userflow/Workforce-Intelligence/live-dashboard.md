@@ -36,18 +36,22 @@
   - Status: Active (green), Idle (yellow), Away (orange), Offline (grey)
   - Current app/window title
   - Session duration today
-  - Productive hours today
+  - Work-classified app time today
+  - Activity rate and data coverage today
 - Updates every few seconds via SignalR
 
 ### Step 3: Filter & Sort
-- **UI:** Filter by: department, team, status → sort by: name, productive hours, idle time → search by employee name
+- **UI rule:** Use activity rate, work-classified app time, idle time, and data coverage for sorting. Do not label raw active time as productivity.
+- **UI:** Filter by: department, team, status → sort by: name, activity rate, work-classified app time, idle time, data coverage → search by employee name
 
 ### Step 4: Drill Down
+- **UI rule:** Show activity-derived score, score basis, data coverage, and attendance status. Only show final productivity score when Productivity Analytics provides a comparable score basis.
 - **UI:** Click employee → detail panel: full timeline (apps, breaks, screenshots if enabled), productivity score, attendance status
 - Links: [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
 
 ### Step 5: Summary Stats
-- **UI:** Top bar: total active now, total idle, total offline, avg productive hours, top productive department
+- **UI rule:** Use average activity rate, average work-classified app time, and data coverage. Avoid "top productive department" unless the metric is a composite productivity score with comparable basis.
+- **UI:** Top bar: total active now, total idle, total offline, avg activity rate, avg work-classified app time, avg data coverage
 
 ## Variations
 

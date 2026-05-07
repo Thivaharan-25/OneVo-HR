@@ -21,18 +21,21 @@
 
 ### Step 2: View Org-Wide Metrics
 - **UI:** Dashboard cards:
-  - Avg productive hours per employee
-  - Org productivity score (%)
+  - Avg work-classified app time per employee
+  - Org productivity score (%) with score basis
+  - Avg data coverage
   - Total meeting hours
   - Total idle hours
   - Trend comparison (this period vs previous)
 
 ### Step 3: Department Breakdown
+- **UI rule:** Rank departments by comparable productivity score only when score basis and data coverage are comparable. Otherwise show separate activity-derived and composite groups.
 - **UI:** Bar chart → departments ranked by avg productivity → click department → see team-level breakdown → click team → see individual employees
 - **API:** `GET /api/v1/analytics/productivity?group_by=department`
 
 ### Step 4: App Usage Analysis
-- **UI:** Top productive apps, top unproductive apps, app category distribution → [[modules/activity-monitoring/application-tracking/overview|Application Tracking]]
+- **UI rule:** Label app data as work-classified, communication, meeting, personal/non-allowed, or unknown. Do not use app time alone as the final productivity score.
+- **UI:** Top work-classified apps, top personal/non-allowed apps, unknown app review queue, app category distribution → [[modules/activity-monitoring/application-tracking/overview|Application Tracking]]
 
 ### Step 5: Export
 - **UI:** Export → CSV/Excel/PDF with current filters and period

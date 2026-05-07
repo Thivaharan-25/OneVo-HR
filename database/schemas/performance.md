@@ -114,6 +114,8 @@
 | `review_type` | `varchar(20)` | `self`, `manager`, `peer`, `360` |
 | `overall_rating` | `decimal(3,1)` | 1.0–5.0 |
 | `productivity_score` | `decimal(5,2)` | **NEW** — from Productivity Analytics (nullable) |
+| `productivity_score_basis` | `varchar(30)` | Nullable; `composite`, `activity_only`, `worksync_only`, `insufficient_data` |
+| `productivity_data_coverage_percentage` | `decimal(5,2)` | Nullable; evidence completeness at score generation time |
 | `comments` | `text` |  |
 | `status` | `varchar(20)` | `draft`, `submitted`, `finalized` |
 | `submitted_at` | `timestamptz` |  |

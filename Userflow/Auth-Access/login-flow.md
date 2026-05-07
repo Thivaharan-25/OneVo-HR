@@ -50,7 +50,7 @@
 - **DB:** `users`, `login_attempts`
 
 ### Step 4: MFA Verification (if enabled)
-- **UI:** MFA challenge screen appears: "Enter the 6-digit code from your authenticator app". Input field for TOTP code (6 digits, auto-tab between digits). "Use backup code" link. 30-second countdown timer showing code validity window
+- **UI:** MFA challenge screen appears: "Enter the 6-digit code we sent to your email". Input field for email OTP code (6 digits, auto-tab between digits). "Resend code" action appears after the resend cooldown. The screen shows the masked destination email and 5-minute expiry.
 - **API:** `POST /api/v1/auth/mfa/verify`
   ```json
   {
@@ -60,12 +60,13 @@
   ```
 - **Backend:** `MfaService.VerifyAsync()` → [[modules/auth/mfa/overview|MFA]]
   1. Validate temporary MFA token (valid for 5 minutes)
-  2. Verify TOTP code against user's MFA secret (using TOTP algorithm with 30-second window, allowing 1 step drift)
-  3. If backup code used: mark code as consumed
-  4. If valid: proceed to Step 5
-  5. If invalid: increment MFA attempt counter (3 max attempts per MFA token)
-- **Validation:** MFA token must be valid. Code must match. Max 3 attempts
-- **DB:** `user_mfa_settings`, `mfa_backup_codes` (if backup code used)
+  2. Load active email OTP challenge for the user
+  3. Reject if challenge is expired, consumed, or locked
+  4. Hash submitted code and compare with stored hash
+  5. If valid: mark challenge consumed and proceed to Step 5
+  6. If invalid: increment MFA attempt counter (3 max attempts per challenge)
+- **Validation:** MFA token must be valid. Code must match. Max 3 attempts. OTP expires after 5 minutes.
+- **DB:** `user_mfa`, `mfa_otp_challenges`
 
 ### Step 5: Token Issuance
 - **UI:** N/A (backend processing)
@@ -172,7 +173,7 @@
 - [[frontend/cross-cutting/authentication|Authentication]] — login logic, JWT RS256 token issuance
 - [[frontend/cross-cutting/authorization|Authorization]] — effective permission computation for JWT claims
 - [[modules/auth/session-management/overview|Session Management]] — session creation and tracking
-- [[modules/auth/mfa/overview|MFA]] — TOTP verification
+- [[modules/auth/mfa/overview|MFA]] — email OTP verification
 - [[security/auth-architecture|Auth Architecture]] — overall auth design
 - [[security/auth-flow|Auth Flow]] — authentication flow diagrams
 - [[modules/infrastructure/overview|Infrastructure]] — tenant resolution, multi-tenancy

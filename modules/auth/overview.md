@@ -11,9 +11,11 @@
 
 ## Purpose
 
-Handles authentication (JWT RS256), authorization (**hybrid permission control** with 106 explicitly grantable permissions plus universal auto-grants, per-employee overrides, hierarchy-scoped access), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
+Handles authentication (JWT RS256), authorization (**hybrid permission control** with 106 explicitly grantable permissions plus universal auto-grants, role templates, per-employee overrides, hierarchy-scoped access), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
 
-**Authorization model:** NOT role-based. Roles are convenience templates. Super Admin grants feature/module access to any role or individual employee. Universal permissions are auto-granted to every active employee and cannot be revoked. Per-employee permission overrides (grant/revoke) always win over role defaults for explicitly grantable permissions. All data access is scoped to the user's position in the org hierarchy (they only see employees below them).
+**Authorization model:** NOT simple RBAC. Roles are tenant-scoped permission bundles created from templates. Developer Platform can create starter role templates during provisioning, but the materialized tenant roles still live in the Auth module. Universal permissions are auto-granted to every active employee and cannot be revoked. Per-employee permission overrides (grant/revoke) always win over role defaults for explicitly grantable permissions. All data access is scoped to the user's position in the org hierarchy (they only see employees below them).
+
+**Module entitlement boundary:** role templates, tenant roles, and permission override screens must only expose permissions from modules enabled for the tenant, plus universal permissions. If a tenant has only Employee Management and Leave enabled, Payroll, WorkSync, Workforce Intelligence, Agent Gateway, and other disabled-module permissions cannot be shown or assigned.
 
 ---
 
@@ -35,7 +37,8 @@ public interface IAuthService
     Task<Result<TokenPairDto>> LoginAsync(LoginCommand command, CancellationToken ct);
     Task<Result<TokenPairDto>> RefreshTokenAsync(string refreshToken, CancellationToken ct);
     Task<Result> LogoutAsync(CancellationToken ct);
-    Task<Result> EnableMfaAsync(Guid userId, CancellationToken ct);
+    Task<Result> EnableEmailOtpMfaAsync(Guid userId, CancellationToken ct);
+    Task<Result> SendMfaOtpAsync(Guid userId, CancellationToken ct);
     Task<Result<TokenPairDto>> VerifyMfaAsync(Guid userId, string code, CancellationToken ct);
 }
 
@@ -50,6 +53,14 @@ public interface IRoleService
 {
     Task<Result<RoleDto>> CreateRoleAsync(CreateRoleCommand command, CancellationToken ct);
     Task<Result> AssignRoleAsync(Guid userId, Guid roleId, CancellationToken ct);
+    Task<Result> SetPermissionsAsync(Guid roleId, IReadOnlyCollection<string> permissionCodes, CancellationToken ct);
+}
+
+public interface IRoleTemplateService
+{
+    Task<IReadOnlyList<RoleTemplateDto>> ListAsync(CancellationToken ct);
+    Task<Result<RoleTemplateDto>> CreateAsync(CreateRoleTemplateCommand command, CancellationToken ct);
+    Task<Result<RoleDto>> ApplyToTenantAsync(Guid tenantId, Guid templateId, CancellationToken ct);
 }
 
 public interface IPermissionResolver
@@ -108,7 +119,7 @@ API endpoints:
 
 ---
 
-## Database Tables (10)
+## Database Tables (13)
 
 ### `roles`
 
@@ -119,6 +130,22 @@ API endpoints:
 | `name` | `varchar(50)` | e.g., "HR Manager", "CEO", "Employee" |
 | `description` | `varchar(255)` | |
 | `is_system` | `boolean` | System roles can't be deleted |
+| `created_at` | `timestamptz` | |
+
+### `role_templates`
+
+Operator-managed starter role definitions used by the Developer Platform provisioning wizard. Templates are not runtime grants until applied to a tenant.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `name` | `varchar(100)` | e.g., "HR Admin", "Leave Manager" |
+| `description` | `varchar(255)` | |
+| `module_keys_json` | `jsonb` | Modules covered by this template |
+| `permission_codes_json` | `jsonb` | Permission codes included in the template |
+| `is_system` | `boolean` | ONEVO default template; clone before tenant-specific changes |
+| `version` | `integer` | Incremented when template changes |
+| `is_active` | `boolean` | |
 | `created_at` | `timestamptz` | |
 
 ### `permissions`
@@ -272,16 +299,17 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 
 1. **JWT RS256** — access tokens (15 min), refresh tokens (7 days) with rotation. JWT includes `perm_ver` claim for real-time permission staleness checks.
 2. **Password hashing** — Argon2id (64 MB memory, 3 iterations, parallelism 1). Not bcrypt.
-3. **Hybrid permission control** — roles are templates; effective permissions = universal auto-grants + role permissions + individual overrides; filtered by feature grants; scoped by org hierarchy.
+3. **Hybrid permission control** — effective permissions = universal auto-grants + role permissions + individual overrides; filtered by module entitlements/feature grants; scoped by org hierarchy.
 4. **Permission version counter** — Redis key `perm_version:{user_id}` (integer, 24h TTL). Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 → frontend silently refreshes. Fails open if Redis unavailable.
 5. **Hierarchy scoping** — users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Super Admin bypasses hierarchy.
 6. **Never hardcode role names** — roles are custom, created by Super Admin. Always check permissions, never role names.
-7. **Device JWT** for agents — contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
-8. **Refresh token rotation** — each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, the entire replacement chain is revoked (token theft detection).
-9. **MFA** — TOTP (RFC 6238, SHA-1 HMAC, 6-digit, 30s window). Tables: `user_mfa` (per-method secret), `mfa_recovery_codes` (hashed one-time codes). Login flow: 202 with `mfa_pending` scoped JWT → POST `/auth/mfa/verify`.
-10. **Forced password change** — Dev Platform admin sets `must_change_password = true` on `users`. On login the server issues a 10-min `change_password` scoped JWT instead of a full access token. The client must call POST `/auth/change-password` before getting a regular session.
-11. **GDPR consent for monitoring** — `consent_type: "monitoring"` must be recorded before monitoring features activate for an employee.
-12. **Audit logs are append-only** — partitioned by month, never deleted (compliance requirement).
+7. **Role templates are provisioning blueprints** — Developer Platform templates can seed tenant roles, but tenant owners can later edit/create roles using only permissions exposed by their enabled modules.
+8. **Device JWT** for agents — contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
+9. **Refresh token rotation** — each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, the entire replacement chain is revoked (token theft detection).
+10. **MFA** — Phase 1 primary MFA is email OTP. Login with MFA enabled returns a 202 `mfa_pending` scoped token and sends a 6-digit OTP to the user's verified email. OTPs are hashed at rest, expire after 5 minutes, are single-use, and lock after 3 failed attempts. Authenticator-app TOTP is deferred/optional and must not be the default Phase 1 flow.
+11. **Forced password change** — Dev Platform admin sets `must_change_password = true` on `users`. On login the server issues a 10-min `change_password` scoped JWT instead of a full access token. The client must call POST `/auth/change-password` before getting a regular session.
+12. **GDPR consent for monitoring** — `consent_type: "monitoring"` must be recorded before monitoring features activate for an employee.
+13. **Audit logs are append-only** — partitioned by month, never deleted (compliance requirement).
 
 ---
 
@@ -292,12 +320,14 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 | POST | `/api/v1/auth/login` | Public | Login |
 | POST | `/api/v1/auth/refresh` | Public | Refresh access token |
 | POST | `/api/v1/auth/logout` | Authenticated | Logout |
-| POST | `/api/v1/auth/mfa/enable` | Authenticated | Enable MFA |
+| POST | `/api/v1/auth/mfa/enable` | Authenticated | Enable email OTP MFA |
+| POST | `/api/v1/auth/mfa/send` | Authenticated or `mfa_pending` | Send/resend email OTP challenge |
 | POST | `/api/v1/auth/mfa/verify` | Authenticated | Verify MFA code |
 | GET | `/api/v1/roles` | `roles:read` | List roles |
 | POST | `/api/v1/roles` | `roles:manage` | Create role |
 | PUT | `/api/v1/roles/{id}` | `roles:manage` | Update role |
 | POST | `/api/v1/roles/{id}/permissions` | `roles:manage` | Set role permissions |
+| GET | `/api/v1/permissions/catalog` | `roles:manage` | List assignable permissions filtered by enabled tenant modules |
 | POST | `/api/v1/users/{id}/roles` | `roles:manage` | Assign role to employee |
 | GET | `/api/v1/users/{id}/permissions` | `roles:manage` | Get effective permissions |
 | POST | `/api/v1/users/{id}/permission-overrides` | `roles:manage` | Grant/revoke permission override |
@@ -312,7 +342,7 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 - [[frontend/cross-cutting/authentication|Authentication]] — JWT RS256 login, token issuance, refresh token rotation
 - [[frontend/cross-cutting/authorization|Authorization]] — Hybrid permission control: roles + per-employee overrides + feature grants + hierarchy scoping
 - [[modules/auth/session-management/overview|Session Management]] — Session tracking, revocation, expiry
-- [[modules/auth/mfa/overview|MFA]] — Multi-factor authentication (TOTP)
+- [[modules/auth/mfa/overview|MFA]] — Multi-factor authentication (email OTP in Phase 1)
 - [[modules/auth/audit-logging/overview|Audit Logging]] — Append-only audit trail, partitioned by month
 - [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] — Consent tracking for data processing and monitoring
 
@@ -321,6 +351,7 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 ## Related
 
 - [[security/auth-architecture|Auth Architecture]] — Full JWT RS256 design, device JWT, token rotation
+- [[developer-platform/modules/role-template-manager|Role Template Manager]] — Developer Platform starter role templates
 - [[infrastructure/multi-tenancy|Multi Tenancy]] — All roles and sessions are tenant-scoped
 - [[security/compliance|Compliance]] — Audit logs are never deleted; GDPR consent records
 - [[security/data-classification|Data Classification]] — Refresh tokens hashed (SHA-256), never stored raw

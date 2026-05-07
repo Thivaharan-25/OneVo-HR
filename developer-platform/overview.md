@@ -54,6 +54,7 @@ The dev console talks to the **same OneVo backend** via a dedicated `/admin/v1/*
 | Module | Purpose |
 |:---|:---|
 | Tenant Console | Manage tenants, subscriptions, impersonation, provisioning wizard |
+| Role Template Manager | Build and apply module-filtered role templates during tenant provisioning |
 | Feature Flag Manager | Global flags, per-tenant overrides, module enable/disable |
 | Desktop Agent Version Manager | Version catalog, deployment rings, force-update |
 | Audit Console | Cross-tenant read-only audit log viewer |

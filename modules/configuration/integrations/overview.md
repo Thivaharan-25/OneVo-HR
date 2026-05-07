@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Manages external integration connections (Stripe, Resend, Google Calendar, Slack, LMS).
+Manages external integration connections (PeopleHR, Stripe, Resend, Google Calendar, Slack, LMS).
 
 ## Database Tables
 
@@ -17,11 +17,13 @@ Manages external integration connections (Stripe, Resend, Google Calendar, Slack
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `integration_type` | `varchar(50)` | `stripe`, `resend`, `google_calendar`, `slack`, `lms` |
+| `integration_type` | `varchar(50)` | `peoplehr`, `stripe`, `resend`, `google_calendar`, `slack`, `lms` |
 | `config_json` | `jsonb` | |
 | `credentials_encrypted` | `bytea` | Encrypted |
 | `status` | `varchar(20)` | `active`, `inactive`, `error` |
 | `last_sync_at` | `timestamptz` | |
+
+**PeopleHR:** `peoplehr` connections are used by [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]]. The connection card must support masked API key entry, permission preflight, last migration status, and audit links.
 
 ## API Endpoints
 
@@ -33,6 +35,7 @@ Manages external integration connections (Stripe, Resend, Google Calendar, Slack
 ## Related
 
 - [[modules/configuration/overview|Configuration Module]]
+- [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]]
 - [[frontend/architecture/overview|Tenant Settings]]
 - [[frontend/architecture/overview|Monitoring Toggles]]
 - [[frontend/architecture/overview|Employee Overrides]]

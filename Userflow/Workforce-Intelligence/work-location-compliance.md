@@ -118,7 +118,7 @@ If an employee needs to change their remote workplace:
 1. Employee opens **Employee Settings -> Remote Work Location**.
 2. Employee clicks **Request Location Change**.
 3. Employee enters a reason, such as `Moved house`.
-4. Request is routed to the reporting manager.
+4. Request is routed to the reporting manager's Inbox.
 5. Manager approves or rejects.
 6. If approved, the next remote clock-in becomes a re-capture session.
 7. Employee takes a photo and the agent captures the new network profile.

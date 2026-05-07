@@ -17,7 +17,7 @@ The provisioning wizard is the **only way** a tenant is created in ONEVO. There 
 
 1. Navigate to `/tenants`
 2. Click **Provision New Customer** (top-right button)
-3. The 6-step wizard opens
+3. The 7-step wizard opens
 
 ---
 
@@ -28,7 +28,7 @@ After Step 1 completes, the tenant exists in `tenants.status = 'provisioning'`. 
 The wizard can be **closed at any point after Step 1** and resumed later:
 - The tenant appears in the Tenants list with a yellow **"In Progress"** badge
 - Click the row to reopen the wizard at the last completed step
-- Any step can be edited before the final confirm in Step 6
+- Any step can be edited before the final confirm in Step 7
 
 ---
 
@@ -56,14 +56,17 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **What you fill in:**
 - Subscription plan (dropdown of all plans from `subscription_plans`)
+- Commercial model: `subscription` or `full_license_maintenance`
 - Billing start date
 - Whether Stripe billing is active for this tenant or manually managed
+- Maintenance renewal date and status when the commercial model is `full_license_maintenance`
+- Custom contract value, maintenance rate, and pricing overrides when the sales agreement is manually negotiated
 
 **Action:** Click **Save & Continue**
 
 **API call:** `PATCH /admin/v1/tenants/{id}/subscription`
 
-**State written:** `subscription_plans` association updated; `stripe_managed` flag set on the tenant.
+**State written:** `subscription_plans` association updated; commercial model, billing cycle/currency, contract dates, maintenance status/renewal date, custom contract value, and `stripe_managed` flag set for the tenant.
 
 ---
 
@@ -72,16 +75,41 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 **What you fill in:**
 - Checklist of all available OneVo modules, each labelled with its phase (Phase 1, Phase 2, etc.)
 - Toggle which modules are active for this tenant
+- For each module, mark the sales state as `available`, `trial`, `quoted`, `purchased`, `maintenance_included`, `subscription_included`, or `disabled`
+- Optional module-specific pricing override, currency, start date, and end/trial expiry date
 
 **Action:** Click **Save & Continue**
 
 **API call:** `PUT /admin/v1/tenants/{id}/modules`
 
-**State written:** `module_registry` rows for this tenant — one row per active module.
+**Sales rule:** Future modules must start disabled or available; they are enabled only after sales, trial approval, purchase, or maintenance entitlement is recorded.
+
+**Commercial entitlement rule:** Pricing and module entitlement decide what the tenant has access to. RBAC decides which users inside the tenant can use it. The permission catalog in Step 4 is filtered only after the active module entitlement set is resolved.
+
+**State written:** tenant module entitlement records through the module entitlement registry. This module set becomes the permission boundary for role templates and tenant role management.
 
 ---
 
-## Step 4 — Initial Configuration
+## Step 4 - Role Template Setup
+
+**What you fill in:**
+- Pick ONEVO starter templates, such as Tenant Owner, HR Admin, Leave Manager, and Employee.
+- Create or edit tenant-specific role templates from the filtered permission catalog.
+- Confirm which templates should be materialized into tenant roles at activation.
+
+**API calls:**
+- `GET /admin/v1/tenants/{id}/permissions/catalog`
+- `GET /admin/v1/role-templates`
+- `POST /admin/v1/role-templates`
+- `POST /admin/v1/tenants/{id}/role-templates/{templateId}/apply`
+
+**Permission boundary:** the catalog only includes universal permissions and permissions from modules enabled in Step 3. If the tenant bought only Employee Management and Leave, Payroll, Workforce Intelligence, WorkSync, Agent Gateway, and Identity Verification permissions are not shown and cannot be assigned.
+
+**State written:** tenant-scoped `roles` and `role_permissions` through Auth interfaces, plus audit records for every template applied or changed.
+
+---
+
+## Step 5 — Initial Configuration
 
 **What you fill in:**
 - Monitoring transparency mode (select: `transparent` | `private` | `disclosed`)
@@ -97,7 +125,7 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 ---
 
-## Step 5 — Invite Admin
+## Step 6 — Invite Admin
 
 **What you fill in:**
 - Customer's super-admin email address
@@ -113,12 +141,13 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 ---
 
-## Step 6 — Review & Confirm
+## Step 7 — Review & Confirm
 
-**What you see:** A summary screen showing all choices from Steps 1–5:
+**What you see:** A summary screen showing all choices from Steps 1–6:
 - Company details and slug
 - Plan and billing configuration
 - Active modules list
+- Role templates and materialized starter roles
 - Key settings values
 - Invited admin email
 
@@ -135,3 +164,17 @@ When satisfied, click **Activate Tenant**.
 - The invited admin can log in once they complete set-password
 - The yellow "In Progress" badge is replaced with a green "Active" badge in the Tenants list
 - The provisioning event is audit-logged with the developer account and timestamp
+
+## Related
+
+- [[developer-platform/modules/tenant-console/overview|Tenant Console]]
+- [[developer-platform/modules/role-template-manager|Role Template Manager]]
+- [[modules/auth/overview|Auth & Security]]
+- [[Userflow/Auth-Access/role-creation|Role Creation]]
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]]
+- [[modules/data-import/overview|Data Import]]
+- [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[modules/configuration/app-allowlist/overview|App Allowlist]]
+- [[modules/configuration/integrations/overview|Integrations]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]

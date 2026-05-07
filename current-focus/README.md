@@ -73,9 +73,10 @@ The Developer Platform is a standalone internal control plane. It is not part of
 
 | Layer | Owner | Scope | Required Wiki References |
 |---|---|---|---|
-| Admin API host | Dev 1 | `ONEVO.Admin.Api`, `/admin/v1/*`, platform-admin auth, issuer isolation | [[developer-platform/system-design|Developer Platform System Design]] (developer-platform/system-design.md), [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md) |
+| Admin API surface | Dev 1 | `ONEVO.Api` `/admin/v1/*`, platform-admin auth, issuer isolation | [[developer-platform/system-design|Developer Platform System Design]] (developer-platform/system-design.md), [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md) |
 | DevPlatform backend feature | Dev 1 | `dev_platform_accounts`, `dev_platform_sessions`, admin auth/session CQRS | [[modules/dev-platform/overview|Dev Platform Feature]] (modules/dev-platform/overview.md), [[developer-platform/database/schema|Developer Platform Schema]] (developer-platform/database/schema.md) |
 | Tenant Console backend | Dev 1 | tenant list/detail/status/provisioning/subscription/impersonation APIs | [[developer-platform/modules/tenant-console/overview|Tenant Console]] (developer-platform/modules/tenant-console/overview.md), [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md) |
+| Role Template backend | Dev 1 | module-filtered permission catalog, operator-managed role templates, tenant role materialization | [[developer-platform/modules/role-template-manager|Role Template Manager]] (developer-platform/modules/role-template-manager.md), [[modules/auth/overview|Auth]] (modules/auth/overview.md), [[Userflow/Auth-Access/role-creation|Role Creation]] (Userflow/Auth-Access/role-creation.md) |
 | Feature Flag backend | Dev 1 | global flags, per-tenant overrides, module toggles | [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md), [[developer-platform/userflow/feature-flags|Feature Flag Flows]] (developer-platform/userflow/feature-flags.md) |
 | Audit/System/App Catalog backend | Dev 1 | cross-tenant audit query, global config, catalog management contracts | [[developer-platform/modules/audit-console/overview|Audit Console]] (developer-platform/modules/audit-console/overview.md), [[developer-platform/modules/system-config/overview|System Config]] (developer-platform/modules/system-config/overview.md), [[developer-platform/modules/app-catalog-manager/overview|App Catalog Manager]] (developer-platform/modules/app-catalog-manager/overview.md) |
 | Agent release backend | Dev 4 | agent versions, deployment rings, tenant ring assignments, force-update dispatch via Agent Gateway | [[developer-platform/modules/agent-version-manager/overview|Agent Version Manager]] (developer-platform/modules/agent-version-manager/overview.md), [[developer-platform/userflow/agent-versions|Agent Version Flows]] (developer-platform/userflow/agent-versions.md) |
@@ -83,7 +84,7 @@ The Developer Platform is a standalone internal control plane. It is not part of
 
 Required boundary:
 
-- `ONEVO.Admin.Api` is a separate host inside `ONEVO.sln`, not a separate microservice.
+- `ONEVO.Api` is the only backend host deployed in Phase 1. `/admin/v1/*` is a logically separated admin API surface inside that host, not a second deployment.
 - Admin data access goes through module interfaces. Admin controllers must not bypass feature modules.
 - Platform-admin JWTs are rejected at `/api/v1/*`.
 - Tenant JWTs are rejected at `/admin/v1/*`.
@@ -100,6 +101,7 @@ Required boundary:
 | Developer Platform Admin API `/admin/v1/*` | Dev 1 | Dev 5 | `contracts/admin-api.md` |
 | Platform-admin JWT exchange | Dev 1 | Dev 5 | `contracts/admin-api.md` |
 | Tenant provisioning/admin DTOs | Dev 1 | Dev 5 | `contracts/admin-api.md` |
+| Role template/admin permission catalog DTOs | Dev 1 | Dev 5 | `contracts/admin-api.md` |
 | Feature flag/admin config DTOs | Dev 1 | Dev 5 | `contracts/admin-api.md` |
 | App catalog admin DTOs | Dev 1 | Dev 5 | `contracts/admin-api.md` |
 | HR employee/leave/calendar APIs | Dev 2 | Dev 6, Dev 8 | `contracts/hr-employee.md` |
@@ -188,7 +190,7 @@ Use these module folders when implementing backend tasks:
 | IDE Extension | `Features/IDEExtension` | [[modules/ide-extension/overview|IDE Extension]] (modules/ide-extension/overview.md) |
 | Agent Gateway | `Features/AgentGateway` | [[modules/agent-gateway/overview|Agent Gateway]] (modules/agent-gateway/overview.md) |
 | Activity Monitoring | `Features/ActivityMonitoring` | [[modules/activity-monitoring/overview|Activity Monitoring]] (modules/activity-monitoring/overview.md) |
-| Dev Platform | `Features/DevPlatform` served by `ONEVO.Admin.Api` | [[modules/dev-platform/overview|Dev Platform]] (modules/dev-platform/overview.md), [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md) |
+| Dev Platform | `Features/DevPlatform` served by `ONEVO.Api` `/admin/v1/*` | [[modules/dev-platform/overview|Dev Platform]] (modules/dev-platform/overview.md), [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md) |
 
 ---
 

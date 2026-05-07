@@ -73,6 +73,6 @@ The platform-admin JWT includes the `role` claim. All `/admin/v1/*` endpoints en
 | File | Covers |
 |---|---|
 | `tenant-management.md` | Tenant list, tenant detail, suspend/unsuspend, impersonation, subscription override |
-| `provisioning-flow.md` | 6-step manual provisioning wizard |
+| `provisioning-flow.md` | 7-step manual provisioning wizard |
 | `feature-flags.md` | Global flag list, toggle global default, per-tenant override |
 | `agent-versions.md` | Version catalog, publish, force-update ring, ring assignment, rollback |

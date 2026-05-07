@@ -21,10 +21,17 @@ Manages tenant lifecycle: creation, status, subscription, module assignment, pro
 | `GET` | `/admin/v1/tenants/{id}` | Get tenant detail |
 | `PATCH` | `/admin/v1/tenants/{id}/status` | Suspend, unsuspend, or activate a tenant |
 | `POST` | `/admin/v1/tenants/{id}/impersonate` | Issue an impersonation token (15 min TTL, `impersonation: true`) |
-| `PATCH` | `/admin/v1/tenants/{id}/subscription` | Override subscription tier (exception tool) |
-| `PUT` | `/admin/v1/tenants/{id}/modules` | Set active modules for tenant (provisioning step 3) |
-| `PATCH` | `/admin/v1/tenants/{id}/provision/confirm` | Finalise provisioning draft → set status active |
-| `POST` | `/admin/v1/tenants/{id}/invite-admin` | Create first super-admin and send invite email (provisioning step 5) |
+| `PATCH` | `/admin/v1/tenants/{id}/subscription` | Assign or override subscription/commercial terms (provisioning step 2; exception tool after activation) |
+| `PUT` | `/admin/v1/tenants/{id}/modules` | Set tenant module entitlements and sales state (provisioning step 3) |
+| `PATCH` | `/admin/v1/tenants/{id}/provision/confirm` | Finalise provisioning draft -> set status active |
+| `GET` | `/admin/v1/tenants/{id}/permissions/catalog` | Return universal permissions plus permissions exposed by enabled tenant modules (provisioning step 4) |
+| `GET` | `/admin/v1/role-templates` | List global/default role templates (provisioning step 4) |
+| `POST` | `/admin/v1/role-templates` | Create operator-managed role template from a module-filtered permission set (provisioning step 4) |
+| `POST` | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Materialize a role template into tenant-scoped roles (provisioning step 4) |
+| `PUT` | `/admin/v1/tenants/{id}/roles/{roleId}/permissions` | Adjust a tenant role using only permissions in the tenant catalog |
+| `POST` | `/admin/v1/tenants/{id}/invite-admin` | Create first super-admin and send invite email (provisioning step 6) |
+
+Commercial terms track the tenant's commercial model (`subscription` or `full_license_maintenance`), billing cycle/currency, contract dates, Stripe/manual billing state, maintenance status/renewal date, and any custom contract value. Module entitlements are resolved from the active subscription/commercial plan, plan allowed modules, tenant module grants, and tenant feature grants; RBAC permissions are filtered after entitlement resolution.
 
 ---
 

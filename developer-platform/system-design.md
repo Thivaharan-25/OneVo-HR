@@ -2,6 +2,8 @@
 
 ## Architecture Decisions
 
+> Phase 1 deployment rule: the Developer Console uses `/admin/v1/*` inside the single `ONEVO.Api` backend deployment. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed as a second backend unit.
+
 ### Decision 1: Admin API Layer, Not a New Service
 
 The dev console does **not** get its own microservice. It talks to the existing OneVo backend via a dedicated `/admin/v1/*` controller namespace. This keeps the platform simple — the existing modules already own all the data. The admin layer is purely an access/authorization boundary, not a new data boundary.
@@ -35,28 +37,24 @@ There is no `tenant_id` column. These accounts are platform-level.
 
 ---
 
-## Backend Namespace: `ONEVO.Admin.Api/`
+## Backend Namespace: `ONEVO.Api/Controllers/Admin/`
 
-`ONEVO.Admin.Api` is a **separate host project** inside `ONEVO.sln` — it is a composition root, not a module. It owns no DbContext and contains no business logic. All data access goes through module interfaces injected via DI.
+`ONEVO.Api/Controllers/Admin/` is the Developer Console controller namespace inside the single `ONEVO.Api` host. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed. Admin controllers own no DbContext and contain no business logic. All data access goes through module interfaces injected via DI.
 
 ```
 ONEVO.sln
-├── ONEVO.Api/                          ← customer-facing host (/api/v1/*)
-├── ONEVO.Admin.Api/                    ← developer console host (/admin/v1/*)
+├── ONEVO.Api/                          ← single host (/api/v1/* + /admin/v1/*)
 │   ├── Controllers/
-│   │   ├── TenantsController.cs        ← calls ITenantManagementService (SharedPlatform)
-│   │   ├── FeatureFlagsController.cs   ← calls IFeatureFlagService (Configuration)
-│   │   ├── AgentVersionsController.cs  ← calls IAgentVersionService (DevPlatform)
-│   │   ├── AuditController.cs          ← calls IAuditLogReader (Auth)
-│   │   ├── SystemConfigController.cs   ← calls IGlobalConfigService (Configuration)
-│   │   ├── AppCatalogController.cs     ← calls IGlobalAppCatalogService (SharedPlatform)
-│   │   └── ApiKeysController.cs        ← Phase 2
-│   ├── Middleware/
-│   │   └── PlatformAdminAuthMiddleware.cs
-│   ├── Policies/
-│   │   ├── PlatformAdminPolicy.cs
-│   │   └── ImpersonationOnlyPolicy.cs
-│   └── Program.cs                      ← composition root: registers DevPlatform + shared modules
+│   │   └── Admin/
+│   │       ├── TenantsController.cs        ← calls ITenantManagementService (SharedPlatform)
+│   │       ├── FeatureFlagsController.cs   ← calls IFeatureFlagService (Configuration)
+│   │       ├── AgentVersionsController.cs  ← calls IAgentVersionService (DevPlatform)
+│   │       ├── AuditController.cs          ← calls IAuditLogReader (Auth)
+│   │       ├── SystemConfigController.cs   ← calls IGlobalConfigService (Configuration)
+│   │       ├── AppCatalogController.cs     ← calls IGlobalAppCatalogService (SharedPlatform)
+│   │       └── ApiKeysController.cs        ← Phase 2
+│   └── Program.cs                      ← composition root: registers app, infra, tenant JWT, admin JWT, policies
+├── ONEVO.Admin.Api/                    ← deprecated scaffold only; do not deploy or add controllers
 │
 ├── Application/Features/DevPlatform/    ← NEW feature — owns all dev_platform_* + agent_* tables
 │   ├── Dto/
@@ -69,7 +67,7 @@ ONEVO.sln
 └── Application/Features/*/              ← all 23 existing feature modules (unchanged)
 ```
 
-All controllers in `ONEVO.Admin.Api/` are decorated with:
+All controllers under `ONEVO.Api/Controllers/Admin/` are decorated with:
 
 ```csharp
 [Authorize(Policy = "PlatformAdmin")]
@@ -161,7 +159,7 @@ The dev console is a **completely separate Next.js project** from the main `app.
                     ┌──────────────▼───────────────┐
                     │     OneVo Backend             │
                     │  /admin/v1/* namespace        │
-                    │  ONEVO.Admin.Api controllers  │
+                    │  ONEVO.Api /admin/v1 namespace │
                     └──────────────┬───────────────┘
                                    │ DI / module interfaces
                     ┌──────────────▼───────────────┐

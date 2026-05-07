@@ -1,4 +1,4 @@
-﻿# DEV4: Backend Monitoring Agent + Agent Gateway
+# DEV4: Backend Monitoring Agent + Agent Gateway
 
 **Track:** Backend
 **Primary ownership:** Windows monitoring agent, Agent Gateway, activity monitoring, identity verification, exception engine, discrepancy engine, productivity analytics, IDE install jobs, agent version rollout
@@ -284,7 +284,7 @@ dotnet test ONEVO.sln --filter AgentInstall
 
 - Agent runtime feature: `Features/AgentGateway`
 - Developer Platform release metadata: `Features/DevPlatform`
-- Admin host: `ONEVO.Admin.Api`
+- Admin host: `ONEVO.Api` `/admin/v1/*`
 
 ### Acceptance Criteria
 

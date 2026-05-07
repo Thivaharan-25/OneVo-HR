@@ -56,21 +56,20 @@ public void Approve()
 // LeaveApprovedEventHandler.cs
 public class LeaveApprovedEventHandler : INotificationHandler<LeaveApprovedEvent>
 {
-    private readonly IApplicationDbContext _db;
+    private readonly IPresenceRecordRepository _presenceRecords;
     private readonly IUnitOfWork _uow;
 
-    public LeaveApprovedEventHandler(IApplicationDbContext db, IUnitOfWork uow)
+    public LeaveApprovedEventHandler(IPresenceRecordRepository presenceRecords, IUnitOfWork uow)
     {
-        _db = db;
+        _presenceRecords = presenceRecords;
         _uow = uow;
     }
 
     public async Task Handle(LeaveApprovedEvent notification, CancellationToken ct)
     {
         // Mark the employee's shift as absent during leave period
-        var shifts = await _db.PresenceRecords
-            .Where(p => p.EmployeeId == notification.EmployeeId)
-            .ToListAsync(ct);
+        var shifts = await _presenceRecords
+            .ListForEmployeeAsync(notification.EmployeeId, ct);
 
         foreach (var shift in shifts)
             shift.MarkAbsent();

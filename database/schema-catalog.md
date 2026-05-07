@@ -54,7 +54,7 @@ These tables are referenced by many others — design changes here have wide imp
 
 > `users` gains 3 temporary-password fields: `must_change_password boolean`, `password_set_by_admin boolean`, `temporary_password_expires_at timestamptz`. Backend returns `403 MUST_CHANGE_PASSWORD` on login when `must_change_password = true`.
 
-### [[database/schemas/auth|Auth & Security]] (9 tables)
+### [[database/schemas/auth|Auth & Security]] (10 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -63,6 +63,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `gdpr_consent_records` | 7 | tenant_id→tenants, user_id→users |
 | `permissions` | 4 | — |
 | `role_permissions` | 2 | — |
+| `role_templates` | 10 | global/operator-managed template; materializes into tenant roles |
 | `roles` | 6 | tenant_id→tenants |
 | `job_levels` | 6 | tenant_id→tenants, default_role_id→roles |
 | `sessions` | 9 | user_id→users, tenant_id→tenants |
@@ -393,11 +394,13 @@ Phase 2 Microsoft Teams integration additions (optional integration, not SSO):
 | `signalr_connections` | 9 | user_id→users, tenant_id→tenants |
 | `sso_providers` | 12 | tenant_id→tenants; Phase 1 provider_type = google only |
 | `subscription_invoices` | 10 | tenant_id→tenants |
+| `module_catalog` | 11 | global commercial module catalog and default pricing |
 | `subscription_plans` | 11 | — |
 | `system_settings` | 6 | updated_by_id→users |
 | `tenant_branding` | 9 | tenant_id→tenants, logo_file_id→file_records, updated_by_id→users |
 | `tenant_feature_flags` | 6 | tenant_id→tenants, overridden_by_id→users |
-| `tenant_subscriptions` | 11 | tenant_id→tenants, created_by_id->users |
+| `tenant_module_entitlements` | 12 | tenant_id→tenants; module-wise sales state, pricing, trial, maintenance, and add-on entitlement |
+| `tenant_subscriptions` | 22 | tenant_id→tenants, plan_id→subscription_plans, created_by_id->users; includes commercial model, maintenance, and custom contract fields |
 | `user_preferences` | 6 | user_id→users, tenant_id→tenants |
 | `webhook_deliveries` | 9 | tenant_id→tenants |
 | `webhook_endpoints` | 8 | tenant_id→tenants, created_by_id->users |

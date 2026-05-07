@@ -1,8 +1,8 @@
-﻿# Contract: Developer Platform Admin API
+# Contract: Developer Platform Admin API
 
 **Backend owner:** DEV1 Tasks 7-9, DEV4 Task 8  
 **Consumers:** DEV5 Tasks 5-7  
-**Canonical source:** `ONEVO.Admin.Api` (authoritative once built)
+**Canonical source:** `ONEVO.Api` admin surface (`/admin/v1/*`). Phase 1 has one backend deployment; `ONEVO.Admin.Api` must not be deployed.
 
 ---
 
@@ -68,9 +68,112 @@ interface TenantDetailDto {
 ```ts
 interface SubscriptionOverrideDto {
   plan_tier: string
+  commercial_model: "subscription" | "full_license_maintenance"
+  billing_cycle: "monthly" | "annual" | "manual"
+  billing_currency: string
   billing_start_date: string  // ISO date
+  contract_start_date?: string
+  contract_end_date?: string | null
+  maintenance_status?: "active" | "due" | "expired" | "waived"
+  maintenance_renewal_date?: string | null
+  maintenance_rate?: number | null
+  custom_contract_value?: number | null
   reason: string              // required; written to audit log
 }
+```
+
+## PUT `/admin/v1/tenants/{id}/modules`
+
+```ts
+interface TenantModuleSelectionDto {
+  modules: Array<{
+    module_key: string
+    enabled: boolean
+    sales_state: "available" | "trial" | "quoted" | "purchased" | "maintenance_included" | "subscription_included" | "disabled"
+    pricing_model?: "subscription" | "full_license" | "maintenance" | "trial" | "custom"
+    price?: number | null
+    currency?: string | null
+    starts_at?: string | null
+    ends_at?: string | null
+  }>
+}
+// response: 204 No Content
+```
+
+## GET `/admin/v1/tenants/{id}/permissions/catalog`
+
+```ts
+interface TenantPermissionCatalogDto {
+  tenant_id: string
+  enabled_modules: string[]
+  modules: Array<{
+    module_key: string
+    display_name: string
+    permissions: Array<{
+      id: string
+      code: string
+      description: string
+      is_universal: boolean
+    }>
+  }>
+}
+```
+
+Only permissions from enabled tenant modules plus universal permissions are returned.
+
+## Role Template APIs
+
+```ts
+interface RoleTemplateDto {
+  id: string
+  name: string
+  description: string | null
+  module_keys: string[]
+  permission_codes: string[]
+  is_system: boolean
+  version: number
+  is_active: boolean
+}
+
+interface CreateRoleTemplateDto {
+  name: string
+  description?: string
+  module_keys: string[]
+  permission_codes: string[]
+}
+```
+
+Routes:
+
+```http
+GET /admin/v1/role-templates
+POST /admin/v1/role-templates
+POST /admin/v1/tenants/{id}/role-templates/{templateId}/apply
+PUT /admin/v1/tenants/{id}/roles/{roleId}/permissions
+```
+
+Applying or editing a role template must validate the permission list against `GET /admin/v1/tenants/{id}/permissions/catalog`.
+
+## POST `/admin/v1/tenants/{id}/invite-admin`
+
+```ts
+interface TenantOwnerInviteDto {
+  email: string
+  first_name: string
+  last_name: string
+}
+// response
+{ user_id: string; invite_expires_at: string }
+```
+
+This sends a set-password link. It must not require the operator to choose the tenant owner's final password.
+
+## PATCH `/admin/v1/tenants/{id}/provision/confirm`
+
+Activation is allowed only after tenant details, subscription/commercial terms, module selection, role templates, required settings, and owner invite are complete.
+
+```ts
+// response: 204 No Content
 ```
 
 ## POST `/admin/v1/tenants/{id}/impersonate`

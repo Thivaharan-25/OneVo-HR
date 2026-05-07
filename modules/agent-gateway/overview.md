@@ -160,7 +160,7 @@ Policy pushed to each agent — defines what features are enabled for the linked
 // ONLY triggered via remote command (manual/on_demand). Never scheduled or automated.
 ```
 
-Policy is computed by merging three tiers: `monitoring_feature_toggles` (tenant default) → `role_app_policies` (role override) → `employee_monitoring_overrides` (employee override). Most specific wins. See [[modules/configuration/employee-overrides/overview|App Allowlist Configuration]].
+Policy is resolved by the Configuration module before Agent Gateway stores or sends it. The monitoring feature part resolves `monitoring_feature_toggles` (tenant default) -> `monitoring_policy_overrides` (role/job-family/department/team scope overrides) -> `employee_monitoring_overrides` (employee override). The app allowlist part resolves `app_allowlists` tenant -> role -> employee. Consent/disclosure and Workforce Presence lifecycle gates are applied before collectors can run. Most specific non-null value wins. See [[modules/configuration/overview|Configuration]] and [[modules/configuration/app-allowlist/overview|App Allowlist Configuration]].
 
 ### `agent_health_logs`
 
@@ -264,10 +264,16 @@ Pending and completed commands sent from server to agent.
 4. **Policy merge pattern:**
    ```csharp
    var tenantPolicy = await _configService.GetMonitoringTogglesAsync(tenantId, ct);
+   var scopePolicy = await _configService.GetMonitoringPolicyForScopesAsync(employeeId, ct);
    var employeeOverride = await _configService.GetEmployeeOverrideAsync(employeeId, ct);
-   var effectivePolicy = tenantPolicy.MergeWith(employeeOverride); // Override wins
+   var effectivePolicy = tenantPolicy
+       .MergeWith(scopePolicy)
+       .MergeWith(employeeOverride)
+       .ApplyConsentGate(employeeConsent)
+       .ApplyLifecycleState(presenceState);
    ```
-5. **Heartbeat monitoring:** Agents send heartbeat every 60 seconds. If no heartbeat for 5 minutes, fire `AgentHeartbeatLost` event.
+5. **Consent first:** If the employee has not completed the required monitoring disclosure/consent flow, Agent Gateway returns a policy with desktop collectors disabled and the TrayApp shows "Consent required / policy blocked."
+6. **Heartbeat monitoring:** Agents send heartbeat every 60 seconds. If no heartbeat for 5 minutes, fire `AgentHeartbeatLost` event.
 
 ---
 

@@ -15,9 +15,13 @@ interface AuthResponseDto {
   expires_in: number          // seconds
   token_type: "Bearer"
   must_change_password: boolean
-  mfa_required: boolean       // true -> client must complete MFA before access_token is usable
+  mfa_required: boolean       // true -> client must complete email OTP MFA before access_token is usable
 }
 ```
+
+## POST `/api/v1/auth/mfa/send`
+
+Sends or resends the 6-digit email OTP for an `mfa_pending` token. Local development may log the OTP; customer release requires Resend-backed delivery.
 
 ## POST `/api/v1/auth/mfa/verify` -> `AuthResponseDto` (same shape, `mfa_required: false`)
 

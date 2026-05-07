@@ -4,7 +4,7 @@
 **Phase:** 1 — Build
 **Pillar:** 2 — Workforce Intelligence
 **Owner:** Dev 4 (Week 3)
-**Tables:** 6
+**Tables:** 7
 **Task File:** [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]
 
 ---
@@ -13,6 +13,8 @@
 
 Verifies employee identity via photo capture and biometric fingerprint matching. Configurable verification policies allow tenants to require identity checks at login, logout, and/or at timed intervals. Manages biometric terminal hardware (fingerprint readers).
 
+Photo verification uses a trusted **verification reference photo**, not a casual avatar/profile image. If no reference photo exists, the TrayApp can collect one during first agent sign-in after employee authentication and consent. That first capture is an enrollment photo, not a verification result. It becomes trusted only after HR/manager approval or an explicit tenant policy that allows SSO/MFA-backed auto-approval.
+
 ---
 
 ## Dependencies
@@ -20,7 +22,7 @@ Verifies employee identity via photo capture and biometric fingerprint matching.
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext`, `IFileService` | Multi-tenancy, photo storage |
-| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee profile photos for matching |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee identity and employment context |
 | **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Verification policy settings |
 | **Consumed by** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IIdentityVerificationService` | Confirm identity for presence records |
 | **Consumed by** | [[modules/exception-engine/overview\|Exception Engine]] | — (via `VerificationFailed` event) | Alert on failed verifications |
@@ -34,6 +36,10 @@ Verifies employee identity via photo capture and biometric fingerprint matching.
 // ONEVO.Application.Features.IdentityVerification/Public/IIdentityVerificationService.cs
 public interface IIdentityVerificationService
 {
+    Task<Result<VerificationReferencePhotoDto>> StartReferencePhotoEnrollmentAsync(Guid employeeId, Guid photoFileId, Guid deviceId, CancellationToken ct);
+    Task<Result<VerificationReferencePhotoDto>> ApproveReferencePhotoAsync(Guid referencePhotoId, Guid approvedById, CancellationToken ct);
+    Task<Result> RejectReferencePhotoAsync(Guid referencePhotoId, Guid reviewedById, string reason, CancellationToken ct);
+    Task<Result<VerificationReferencePhotoDto?>> GetActiveReferencePhotoAsync(Guid employeeId, CancellationToken ct);
     Task<Result<VerificationRecordDto>> VerifyPhotoAsync(Guid employeeId, Guid photoFileId, Guid deviceId, CancellationToken ct);
     Task<Result<VerificationPolicyDto>> GetPolicyAsync(Guid tenantId, CancellationToken ct);
     Task<Result<List<VerificationRecordDto>>> GetVerificationHistoryAsync(Guid employeeId, DateOnly from, DateOnly to, CancellationToken ct);
@@ -68,7 +74,7 @@ API endpoints:
 
 ---
 
-## Database Tables (6)
+## Database Tables (7)
 
 ### `verification_policies`
 
@@ -82,6 +88,8 @@ Per-tenant verification rules.
 | `verify_on_logout` | `boolean` | Require photo at logout |
 | `interval_minutes` | `int` | Periodic verification (0 = disabled) |
 | `match_threshold` | `decimal(5,2)` | Minimum confidence score to pass (default 80.0) |
+| `reference_enrollment_mode` | `varchar(30)` | `manual_review` or `trusted_sso_auto_approve` |
+| `block_monitoring_until_reference_approved` | `boolean` | If true, agent collection waits for approved reference |
 | `is_active` | `boolean` | Master toggle |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
@@ -109,6 +117,29 @@ Each verification event.
 | `created_at` | `timestamptz` | |
 
 **Indexes:** `(tenant_id, employee_id, verified_at)`, `(tenant_id, status)`
+
+### `verification_reference_photos`
+
+Trusted employee reference images used for future photo comparisons. Reference photos are captured at first agent sign-in or supplied from a trusted HR/admin source.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `photo_file_id` | `uuid` | FK -> file_records |
+| `source` | `varchar(30)` | `agent_first_sign_in`, `hr_verified_profile`, `admin_upload` |
+| `status` | `varchar(20)` | `pending_review`, `approved`, `rejected`, `replaced`, `revoked` |
+| `captured_device_id` | `uuid` | Nullable FK -> registered_agents |
+| `captured_at` | `timestamptz` | When the reference candidate was captured |
+| `reviewed_by_id` | `uuid` | Nullable FK -> users |
+| `reviewed_at` | `timestamptz` | Nullable |
+| `review_comment` | `varchar(255)` | Nullable |
+| `consent_record_id` | `uuid` | FK -> consent_records or equivalent consent audit row |
+| `is_active` | `boolean` | Only one approved active reference per employee |
+| `created_at` | `timestamptz` | |
+
+**Unique constraint:** `(tenant_id, employee_id) WHERE is_active = true`
 
 ### `biometric_devices`
 
@@ -204,13 +235,19 @@ Tamper detection and device health.
 
 ## Key Business Rules
 
-1. **Verification photos are temporary** — retained for configurable period (default 30 days) then auto-deleted by `PurgeExpiredVerificationPhotosJob`. They are NOT employee profile photos.
+1. **Verification photos are temporary** — retained for configurable period (default 30 days) then auto-deleted by `PurgeExpiredVerificationPhotosJob`. They are NOT approved reference photos.
 2. **Photos are RESTRICTED data** — stored in blob storage via `file_records`, never in the database.
 3. **Biometric consent is mandatory** — `consent_given` must be `true` before enrollment. This is a GDPR/PDPA requirement.
 4. **Fingerprint templates are NEVER stored in ONEVO** — only `template_hash` (a reference to the biometric device's local storage). The actual template stays on the hardware.
 5. **Verification policy respects monitoring overrides** — if an employee has `identity_verification = false` in `employee_monitoring_overrides`, skip verification even if tenant policy is active.
 
 ---
+
+Additional photo reference rules:
+
+6. **First agent photo can enroll the reference** - when no approved reference exists, the first TrayApp capture after sign-in creates a `verification_reference_photos` row with `pending_review`. It does not create a failed verification alert.
+7. **No reference means no match** - scheduled/login/interval verification is recorded as `skipped` with `failure_reason = 'No approved verification reference photo'` until a reference is approved.
+8. **Reference approval is audited** - default flow requires HR/manager approval. Auto-approval is allowed only when tenant policy explicitly enables it and the employee authenticated with a trusted SSO/MFA flow.
 
 ## API Endpoints
 
@@ -220,6 +257,9 @@ Tamper detection and device health.
 | PUT | `/api/v1/verification/policy` | `verification:configure` | Update verification policy |
 | GET | `/api/v1/verification/records/{employeeId}` | `verification:view` | Verification history |
 | POST | `/api/v1/verification/verify` | Internal (agent) | Submit verification photo |
+| POST | `/api/v1/verification/reference-photo` | Internal (agent) | Submit first-sign-in reference photo candidate |
+| POST | `/api/v1/verification/reference-photo/{id}/approve` | `verification:configure` | Approve pending reference photo |
+| POST | `/api/v1/verification/reference-photo/{id}/reject` | `verification:configure` | Reject pending reference photo |
 | GET | `/api/v1/workforce/devices` | `verification:view` | List biometric devices |
 | POST | `/api/v1/workforce/devices` | `verification:configure` | Register device |
 | PUT | `/api/v1/workforce/devices/{id}` | `verification:configure` | Update device |
@@ -258,7 +298,7 @@ Manager sees exception alert → clicks "Request Screenshot" or "Request Photo"
     → Links to alert_id and requested_by_id
     → Publishes OnDemandCaptureReceived event
   → Manager receives notification: "Capture result available"
-  → Manager views result in alert detail page (side-by-side with employee profile photo)
+  → Manager views result in alert detail page (side-by-side with approved reference photo)
 ```
 
 **Employee notification is mandatory (GDPR).** The agent MUST show a notification before capturing. 3-second delay for screenshots. Camera window for photos (employee sees themselves).

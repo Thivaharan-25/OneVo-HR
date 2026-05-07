@@ -17,7 +17,13 @@
 | `total_active_minutes` | `int` |  |
 | `total_idle_minutes` | `int` |  |
 | `total_meeting_minutes` | `int` |  |
-| `active_percentage` | `decimal(5,2)` |  |
+| `active_percentage` | `decimal(5,2)` | Activity rate; not final productivity |
+| `productive_app_minutes` | `int` | Active time in work-classified apps/domains |
+| `personal_app_minutes` | `int` | Active time in personal-classified apps/domains |
+| `unknown_app_minutes` | `int` | Active time where app/domain classification is unknown |
+| `focus_minutes` | `int` | Time in 30+ minute uninterrupted productive sessions |
+| `activity_score` | `decimal(5,2)` | Monitoring-derived score, 0-100 |
+| `data_coverage_percentage` | `decimal(5,2)` | How complete agent/presence data is for the day |
 | `top_apps_json` | `jsonb` | Top 5 apps with time |
 | `intensity_avg` | `decimal(5,2)` | Average intensity score |
 | `keyboard_total` | `int` | Total keyboard events |
