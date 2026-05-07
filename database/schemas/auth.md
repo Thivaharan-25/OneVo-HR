@@ -2,7 +2,7 @@
 
 **Module:** [[modules/auth/overview|Auth & Security]]
 **Phase:** Phase 1
-**Tables:** 10
+**Tables:** 12
 
 ---
 
@@ -145,6 +145,7 @@
 | `role_id` | `uuid` | FK → roles |
 | `assigned_at` | `timestamptz` |  |
 | `assigned_by` | `uuid` | FK → users (who granted this) |
+| `expires_at` | `timestamptz` | Nullable — set for time-bound role grants |
 | PK: `(user_id, role_id)` | | |
 
 **Foreign Keys:** `user_id` → [[database/schemas/infrastructure#`users`|users]], `role_id` → [[#`roles`|roles]], `assigned_by` → [[database/schemas/infrastructure#`users`|users]]
@@ -164,6 +165,43 @@
 | `created_at` | `timestamptz` | |
 
 **Foreign Keys:** `user_id` → [[database/schemas/infrastructure#`users`|users]], `replaced_by_id` → [[#`refresh_tokens`|refresh_tokens]]
+
+---
+
+## `user_mfa`
+
+Multi-factor authentication method registrations per user. Each row is one verified MFA method (e.g. `totp`). Unverified setups are stored temporarily until `is_verified = true`.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `user_id` | `uuid` | FK → users |
+| `tenant_id` | `uuid` | FK → tenants |
+| `method` | `varchar(20)` | `totp` or `email_otp` |
+| `secret_encrypted` | `varchar(500)` | Encrypted TOTP secret (base32) or email address |
+| `is_verified` | `boolean` | User has confirmed setup with a valid code |
+| `last_used_at` | `timestamptz` | Nullable |
+| `created_at` | `timestamptz` |  |
+| `updated_at` | `timestamptz` | Nullable |
+| UNIQUE: `(user_id, method)` | | One row per method per user |
+
+**Foreign Keys:** `user_id` → [[database/schemas/infrastructure#`users`|users]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+
+---
+
+## `mfa_recovery_codes`
+
+One-time-use backup codes generated when MFA is first enabled. Stored as SHA-256 hashes, never plaintext. Each code is consumed on use.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `user_id` | `uuid` | FK → users |
+| `code_hash` | `varchar(128)` | SHA-256 hex hash of the recovery code |
+| `used_at` | `timestamptz` | Nullable — set when the code is consumed |
+| `created_at` | `timestamptz` |  |
+
+**Foreign Keys:** `user_id` → [[database/schemas/infrastructure#`users`|users]]
 
 ---
 

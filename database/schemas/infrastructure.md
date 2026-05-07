@@ -60,12 +60,21 @@
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
 | `email` | `varchar(255)` | UNIQUE per tenant |
-| `password_hash` | `varchar(255)` | bcrypt |
+| `password_hash` | `varchar(255)` | Argon2id (64 MB memory, 3 iterations, parallelism 1). Format: `argon2id:{m}:{t}:{p}:{base64(salt)}:{base64(hash)}` |
+| `first_name` | `varchar(100)` |  |
+| `last_name` | `varchar(100)` |  |
 | `is_active` | `boolean` |  |
 | `email_verified` | `boolean` |  |
-| `last_login_at` | `timestamptz` |  |
+| `last_login_at` | `timestamptz` | Nullable |
+| `must_change_password` | `boolean` | Set by Dev Platform admin when assigning a temporary password |
+| `password_set_by_admin` | `boolean` | True when password was set via Dev Platform override |
+| `temporary_password_expires_at` | `timestamptz` | Nullable — if set and in the past, login is blocked until admin resets |
+| `password_reset_token_hash` | `varchar(128)` | Nullable — SHA-256 hex hash of the forgot-password reset token |
+| `password_reset_token_expires_at` | `timestamptz` | Nullable — 1-hour expiry for password reset tokens |
 | `created_at` | `timestamptz` |  |
-| `updated_at` | `timestamptz` |  |
+| `updated_at` | `timestamptz` | Nullable |
+| `is_deleted` | `boolean` | Soft delete |
+| `created_by_id` | `uuid` | FK → users (who created this record) |
 
 **Foreign Keys:** `tenant_id` → [[#`tenants`|tenants]]
 

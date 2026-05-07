@@ -2,7 +2,7 @@
 
 **Track:** Backend
 **Primary ownership:** platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API
-**Current Unfinished Task:** Task 1 - Backend foundation
+**Current Unfinished Task:** Task 5 - Shared Platform Core + Workflow Engine
 **Blocked By:** none
 
 ---
@@ -19,13 +19,13 @@ When Dev 1 asks to continue, start with the first unchecked item in **Current Un
 
 ### Acceptance Criteria
 
-- [ ] Solution structure exists for API, application, domain, infrastructure, tests, and admin API host.
-- [ ] Shared kernel includes base entity, auditable entity, result type, domain event base, tenant context abstraction, and time provider abstraction.
-- [ ] API project exposes health checks and OpenAPI.
-- [ ] Database context is configured for PostgreSQL and snake_case naming.
-- [ ] Migrations can be created and applied locally.
-- [ ] Request pipeline includes correlation ID, exception mapping, tenant resolution, and structured logging.
-- [ ] Baseline test project validates API boot, admin API boot, and database context boot.
+- [x] Solution structure exists for API, application, domain, infrastructure, tests, and admin API host.
+- [x] Shared kernel includes base entity, auditable entity, result type, domain event base, tenant context abstraction, and time provider abstraction.
+- [x] API project exposes health checks and OpenAPI.
+- [x] Database context is configured for PostgreSQL and snake_case naming.
+- [x] Migrations can be created and applied locally.
+- [x] Request pipeline includes correlation ID, exception mapping, tenant resolution, and structured logging.
+- [x] Baseline test project validates API boot, admin API boot, and database context boot.
 
 ### References
 
@@ -52,15 +52,16 @@ dotnet test ONEVO.sln
 
 ### Acceptance Criteria
 
-- [ ] User login issues short-lived tenant access token and backend-managed refresh token.
-- [ ] Refresh token rotation persists replaced-by chain.
-- [ ] MFA setup and verification endpoints exist.
-- [ ] Password reset flow exists.
-- [ ] Forced password change flow exists using `must_change_password`, `password_set_by_admin`, and `temporary_password_expires_at`.
-- [ ] Permission keys are seeded.
-- [ ] API authorization supports tenant-level roles and explicit permissions.
-- [ ] Tenant JWT issuer is rejected by `/admin/v1/*`.
-- [ ] Integration tests cover login, refresh, forced password change, forbidden access, and admin issuer rejection.
+- [x] User login issues short-lived tenant access token and backend-managed refresh token.
+- [x] Refresh token rotation persists replaced-by chain.
+- [x] MFA setup and verification endpoints exist.
+- [x] Password reset flow exists.
+- [x] Password reset email can use a temporary logger-only stub during DEV1 Task 2; Phase 1 release requires DEV2 Task 5 to route password reset and account setup emails through the Resend-backed notification/email dispatcher.
+- [x] Forced password change flow exists using `must_change_password`, `password_set_by_admin`, and `temporary_password_expires_at`.
+- [x] Permission keys are seeded.
+- [x] API authorization supports tenant-level roles and explicit permissions.
+- [x] Tenant JWT issuer is rejected by `/admin/v1/*`.
+- [x] Integration tests cover login, refresh, forced password change, forbidden access, and admin issuer rejection.
 
 ### References
 
@@ -85,12 +86,12 @@ dotnet test ONEVO.sln --filter Auth
 
 ### Acceptance Criteria
 
-- [ ] Tenant provisioning creates baseline tenant, legal entity, admin user, and subscription record.
-- [ ] Module entitlement service resolves active modules from subscription, feature grants, and module registry.
-- [ ] Permissions service can return effective permissions for a user and tenant.
-- [ ] Entitlement DTO supports web and IDE consumers.
-- [ ] Developer Platform provisioning can set tenant modules through the same entitlement/module registry.
-- [ ] Tests cover active module resolution, permission inheritance, and module assignment.
+- [x] Tenant provisioning creates baseline tenant, legal entity, admin user, and subscription record.
+- [x] Module entitlement service resolves active modules from subscription, feature grants, and module registry.
+- [x] Permissions service can return effective permissions for a user and tenant.
+- [x] Entitlement DTO supports web and IDE consumers.
+- [x] Developer Platform provisioning can set tenant modules through the same entitlement/module registry.
+- [x] Tests cover active module resolution, permission inheritance, and module assignment.
 
 ### References
 
@@ -396,5 +397,4 @@ dotnet test ONEVO.sln --filter Audit
 dotnet test ONEVO.sln --filter SystemConfig
 dotnet test ONEVO.sln --filter AppCatalog
 ```
-
 

@@ -25,6 +25,7 @@
 - **Respect layer dependencies:** Domain has no external dependencies; Application depends on Domain; Infrastructure implements Application interfaces; API calls Application via MediatR.
 - **Use MediatR** for command/query dispatch and in-process domain events.
 - **Use domain events** for cross-feature side effects.
+- **Use repositories for persistence:** Command/query/event handlers, application services, domain services, permission resolvers, tenant provisioning services, and module services must not inject EF Core, `ApplicationDbContext`, or `DbSet<T>`. Application must not expose an `IApplicationDbContext` abstraction. Database access belongs behind Application-owned repository/reader interfaces implemented in Infrastructure under `Persistence/Repositories/`. See [[backend/repository-persistence-boundary|Repository Persistence Boundary]].
 
 ### Naming Conventions
 
@@ -86,6 +87,9 @@ using ONEVO.Infrastructure.Persistence.Repositories; // BAD inside Domain/Applic
 
 // NEVER: Skip tenant_id filtering
 var employees = _dbContext.Employees.ToListAsync(); // BAD
+
+// NEVER: Query DbContext from an Application handler
+private readonly IApplicationDbContext _db; // BAD in handlers; use repositories/readers
 
 // NEVER: Hardcode secrets
 var conn = "Host=localhost;Database=onevo"; // BAD

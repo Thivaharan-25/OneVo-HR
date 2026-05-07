@@ -1,72 +1,49 @@
 # Clean Architecture Overview: ONEVO
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-06
 
-## What is Clean Architecture
+Clean Architecture organises code into layers. The core rule is: dependencies point inward. Domain knows nothing about frameworks, databases, or the web.
 
-Clean Architecture organises code into concentric layers. The core rule: **dependencies point inward**. The innermost layer (Domain) knows nothing about frameworks, databases, or the web.
-
-```
-┌─────────────────────────────────────┐
-│  ONEVO.Api / ONEVO.Admin.Api        │  HTTP, SignalR, JWT middleware
-│  ┌───────────────────────────────┐  │
-│  │  ONEVO.Infrastructure         │  │  EF Core, Redis, Hangfire, SMTP
-│  │  ┌─────────────────────────┐  │  │
-│  │  │  ONEVO.Application       │  │  │  CQRS handlers, interfaces, DTOs
-│  │  │  ┌───────────────────┐  │  │  │
-│  │  │  │  ONEVO.Domain      │  │  │  │  Entities, events, value objects
-│  │  │  └───────────────────┘  │  │  │
-│  │  └─────────────────────────┘  │  │
-│  └───────────────────────────────┘  │
-└─────────────────────────────────────┘
+```text
+ONEVO.Api                       HTTP, SignalR, JWT middleware
+  -> ONEVO.Infrastructure        EF Core, Redis, Hangfire, SMTP
+      -> ONEVO.Application       CQRS handlers, interfaces, DTOs
+          -> ONEVO.Domain        Entities, events, value objects
 ```
 
 ## Layer Responsibilities
 
 | Layer | Responsible for | Depends on |
-|-------|----------------|-----------|
+|---|---|---|
 | Domain | Business entities, domain events, value objects, business rules | Nothing |
 | Application | CQRS handlers, interface definitions, DTOs, validation | Domain |
 | Infrastructure | EF Core, JWT, BCrypt, Redis, Hangfire, SMTP, SignalR | Application + Domain |
-| Api/Admin.Api | HTTP routing, middleware, SignalR hubs | Application + Infrastructure (DI only) |
+| Api | HTTP routing, middleware, SignalR hubs | Application + Infrastructure (DI only) |
 
 ## Request Lifecycle
 
-```
+```text
 HTTP POST /api/v1/leave/requests
-    ↓
-TenantResolutionMiddleware (sets ICurrentUser from JWT)
-    ↓
-Controller.CreateLeaveRequest(dto)
-    ↓
-_mediator.Send(new CreateLeaveRequestCommand(...))
-    ↓
-[1] ValidationBehavior         — FluentValidation
-[2] LoggingBehavior            — request name + user + tenant
-[3] PerformanceBehavior        — warns if > 500ms
-[4] UnhandledExceptionBehavior — safety net
-    ↓
-CreateLeaveRequestHandler.Handle(command, ct)
-    ├── queries IApplicationDbContext for employee
-    ├── calls LeaveRequest.Create(...)  — entity raises LeaveRequestSubmittedEvent
-    └── await _uow.SaveChangesAsync(ct)
-            ↓
-        AuditableEntityInterceptor  — sets CreatedAt, UpdatedAt, CreatedById
-        SoftDeleteInterceptor       — converts Delete → IsDeleted=true
-        DomainEventDispatchInterceptor → IPublisher.Publish(LeaveRequestSubmittedEvent)
-            ↓
-        NotificationsHandler reacts — sends email notification in-process
-    ↓
-Result<LeaveRequestDto>.Success(dto)
-    ↓
-HTTP 201 Created
+  -> TenantResolutionMiddleware sets current user/tenant
+  -> Controller maps HTTP request to command/query
+  -> MediatR pipeline runs validation, logging, performance, error safety
+  -> Handler uses repository/service interfaces to load required data
+  -> Domain entity method applies business rules and may raise domain events
+  -> IUnitOfWork.SaveChangesAsync commits changes
+  -> Infrastructure interceptors set audit fields, soft delete, dispatch domain events
+  -> EventHandlers react through their own repository/service interfaces
+  -> Controller maps Result<T> to HTTP response
 ```
 
 ## Key Principles
 
 **Framework independence:** Domain entities are plain C# classes. EF mapping is in Infrastructure.
 
-**Testability:** Handlers take interface parameters. Tests mock `IApplicationDbContext`, `IUnitOfWork`, etc. No HTTP, no DB needed for unit tests.
+**Persistence boundary:** Handlers and services do not inject EF Core or `ApplicationDbContext` directly. Repositories own database access, tenant filtering, projections, locking, and any explicit platform-admin cross-tenant access.
+
+**Testability:** Handlers take repository/service interfaces and `IUnitOfWork`. Tests mock those interfaces. No HTTP, no DB needed for unit tests.
+
+See [[backend/repository-persistence-boundary|Repository Persistence Boundary]] for the non-negotiable persistence rule and repository placement.
 
 **Single responsibility:** One Command = one use case. One Query = one read operation.
 
@@ -74,7 +51,7 @@ HTTP 201 Created
 
 ## Related Docs
 
-- [[backend/folder-structure|Folder Structure]] — full solution tree
+- [[backend/folder-structure|Folder Structure]]
 - [[backend/layer-guide/domain-layer|Domain Layer Guide]]
 - [[backend/layer-guide/application-layer|Application Layer Guide]]
 - [[backend/layer-guide/infrastructure-layer|Infrastructure Layer Guide]]
