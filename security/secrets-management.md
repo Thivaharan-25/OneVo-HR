@@ -19,8 +19,7 @@
 | Email sender address | `EMAIL_FROM` | Verified email address/domain | Transactional and notification emails |
 | App base URL | `APP_BASE_URL` | Absolute URL | Invite, password reset, and account setup links |
 | Stripe secret key | `STRIPE_SECRET_KEY` | `sk_live_...` / `sk_test_...` | Billing |
-| Argon2id pepper | `PASSWORD_PEPPER` | Base64-encoded 32 bytes | Added to password before hashing (defence-in-depth) |
-| Bridge client secrets | Hashed in DB | Argon2id hash | Service-to-service auth — plaintext only at issuance, never stored |
+| Bridge client secrets | Hashed in DB | BCrypt hash | Service-to-service auth - plaintext only at issuance, never stored |
 
 ---
 
@@ -104,7 +103,7 @@ Do not store `JWT_PRIVATE_KEY` or `JWT_SCOPED_TOKEN_SECRET` inside token service
 
 ### Bridge Client Secrets
 
-- Stored as Argon2id hash in `bridge_clients.client_secret_hash`
+- Stored as BCrypt hash in `bridge_clients.client_secret_hash`
 - Plaintext secret is returned ONCE at creation and never stored again
 - Admins see `key_prefix` (first 8 chars) for identification only
 - Treat like a password — if lost, regenerate
@@ -149,7 +148,6 @@ A `scripts/generate-dev-secrets.sh` script generates consistent dev secrets and 
 |:-------|:-------------------|:-------|
 | RSA key pair | Every 90 days | Dual-key window (zero downtime) |
 | AES-256 encryption key | When compromised | Data migration required — plan carefully |
-| Argon2id pepper | Never (rotation requires re-hashing all passwords) | Regenerate only after compromise + force password reset |
 | Bridge client secrets | Per client request or on compromise | Regenerate via admin panel |
 | API keys (Resend, Stripe) | Per vendor recommendation | Update Railway env var |
 

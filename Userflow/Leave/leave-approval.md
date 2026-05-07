@@ -1,129 +1,136 @@
 # Leave Approval
 
 **Area:** Leave Management  
-**Trigger:** Approver receives notification or opens approval queue (reaction — triggered by leave request)
+**Trigger:** Approver receives workflow action card after leave request submission  
 **Required Permission(s):** `leave:approve`  
-**Related Permissions:** `leave:read` (to view team leave details), `calendar:read` (to check calendar impact)
+**Related Permissions:** `leave:read`, `calendar:read`, `automation:read`
 
 ---
 
 ## Preconditions
 
 - A leave request has been submitted with status `pending`: [[Userflow/Leave/leave-request-submission|Leave Request Submission Flow]]
-- Approver is in the employee's reporting line (direct manager or delegated approver)
-- Approver has `leave:approve` permission assigned via their Job Family role
-- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+- The tenant has an active Automation Center workflow for leave requests or a default approval workflow.
+- Approver assignment is resolved dynamically, such as employee's reporting manager, users with selected permission, department owner, team lead, specific employee, or configured escalation owner.
+- Approver has `leave:approve` permission through the tenant's dynamic permission model.
+
+---
 
 ## Flow Steps
 
-### Step 1: Receive Approval Notification
-- **UI:** Approver receives notification via: in-app notification bell (badge count incremented), email notification with request summary, optional push notification (mobile). Notification includes: employee name, leave type, dates, total days
-- **API:** N/A (notification received)
-- **Backend:** `NotificationService.SendAsync()` → [[backend/notification-system|Notification System]] (triggered by `LeaveRequestCreatedEvent`)
-- **Validation:** N/A
-- **DB:** `notifications`
+### Step 1: Receive Approval Action Card
 
-### Step 2: Navigate to Pending Approvals
-- **UI:** Click notification → navigates to Leave → Pending Approvals. Or manually navigate to Leave → Pending Approvals. Table shows all pending requests with columns: Employee, Leave Type, Start Date, End Date, Total Days, Submitted On, Actions
+- **UI:** Approver receives an action card through the delivery router. If WorkSync Chat is enabled, ONEVO creates or reuses a leave request case conversation and posts the card there. If Chat is not enabled, the card appears in Inbox. Email or push can still notify the approver that action is waiting.
+- **API:** N/A
+- **Backend:** Automation workflow starts from `LeaveRequestCreatedEvent`, resolves approver dynamically, creates a case conversation when configured, and routes the action card through Chat or Inbox.
+- **Validation:** N/A
+- **DB:** `workflow_instances`, `workflow_step_instances`, `approval_actions`, `notifications`; case conversation tables when Chat is enabled
+
+### Step 2: Open Approval Context
+
+- **UI:** Click action card -> opens the leave request case conversation or Inbox detail panel. Users can also open Leave -> Pending Approvals. The request shows employee, leave type, dates, total days, submitted time, current approver state, and available actions.
 - **API:** `GET /api/v1/leave/requests?status=pending&approverId=me`
-- **Backend:** `LeaveRequestService.GetPendingForApproverAsync()` → [[modules/leave/overview|Leave]]
-- **Validation:** Checks `leave:approve` permission. Only shows requests where current user is the designated approver
-- **DB:** `leave_requests`, `workflow_instances`
+- **Backend:** `LeaveRequestService.GetPendingForApproverAsync()` loads requests where the workflow has assigned the current user.
+- **Validation:** Checks `leave:approve` permission and verifies the current user is an active assignee from the workflow resolver.
+- **DB:** `leave_requests`, `workflow_instances`, `workflow_step_instances`
 
 ### Step 3: Review Request Details
-- **UI:** Click on a request → detail view showing:
-  - **Employee Info:** Name, department, position, tenure
-  - **Request Details:** Leave type, start date, end date, total days, reason, supporting documents (downloadable)
-  - **Balance Impact:** Current balance → balance after approval (visual bar chart)
-  - **Calendar Conflicts:** Other team members on leave during same period (list with names and dates)
-  - **Leave History:** Employee's recent leave requests (last 6 months)
-  - **Team Coverage:** Team size, number already on leave, coverage percentage
+
+- **UI:** Detail view shows employee info, leave type, dates, total days, reason, supporting documents, balance impact, calendar conflicts, leave history, and team coverage.
 - **API:** `GET /api/v1/leave/requests/{requestId}/review-context`
-- **Backend:** `LeaveRequestService.GetReviewContextAsync()` → [[modules/leave/overview|Leave]]
-- **Validation:** N/A (read-only)
-- **DB:** `leave_requests`, `leave_entitlements`, `employees`, `leave_requests` (team overlap query)
+- **Backend:** `LeaveRequestService.GetReviewContextAsync()` loads leave, calendar, employee, and team context.
+- **Validation:** Read-only access is scoped to the workflow assignment and `leave:read`.
+- **DB:** `leave_requests`, `leave_entitlements`, `employees`, calendar and team overlap data
 
 ### Step 4a: Approve Request
-- **UI:** Click "Approve" button → optional comment field → confirm. Success toast: "Leave request approved"
+
+- **UI:** Click Approve -> optional comment -> confirm.
 - **API:** `POST /api/v1/leave/requests/{requestId}/approve`
-- **Backend:** `LeaveApprovalService.ApproveAsync()` → [[modules/leave/overview|Leave]]
-  1. Updates `leave_requests` status to `approved`
-  2. Deducts days from `leave_entitlements` (increments `used_days`)
-  3. Creates calendar event for the leave period via [[modules/calendar/calendar-events/overview|Calendar Events]]
-  4. Completes workflow instance
-  5. Sends notification to employee: "Your [Leave Type] request for [Dates] has been approved"
-  6. If leave is unpaid, flags for payroll deduction via [[modules/payroll/payroll-execution/overview|Payroll Execution]]
-  7. Publishes `LeaveRequestApprovedEvent`
-  8. Creates audit log entry
-- **Validation:** Request must still be in `pending` status (prevents double-approval). Approver cannot approve own request
-- **DB:** `leave_requests`, `leave_entitlements`, `calendar_events`, `workflow_instances`, `notifications`, `audit_logs`
+- **Backend:** Workflow records the approval action. If the approval step is complete, Leave updates status, deducts balance, creates calendar event, notifies employee, handles payroll flagging for unpaid leave, publishes `LeaveRequestApprovedEvent`, and writes audit logs.
+- **Validation:** Request must still be pending and caller must be an active assignee. Approver cannot approve their own request unless a specific policy allows it.
+- **DB:** `leave_requests`, `leave_entitlements`, `calendar_events`, `workflow_instances`, `approval_actions`, `notifications`, `audit_logs`
 
 ### Step 4b: Reject Request
-- **UI:** Click "Reject" button → rejection reason field (required) → confirm. Success toast: "Leave request rejected"
-- **API:** `POST /api/v1/leave/requests/{requestId}/reject`
-- **Backend:** `LeaveApprovalService.RejectAsync()` → [[modules/leave/overview|Leave]]
-  1. Updates `leave_requests` status to `rejected`
-  2. Balance remains unchanged (no deduction)
-  3. Stores rejection reason
-  4. Completes workflow instance
-  5. Sends notification to employee: "Your [Leave Type] request for [Dates] has been rejected. Reason: [reason]"
-  6. Publishes `LeaveRequestRejectedEvent`
-  7. Creates audit log entry
-- **Validation:** Rejection reason is mandatory. Request must still be in `pending` status
-- **DB:** `leave_requests`, `workflow_instances`, `notifications`, `audit_logs`
 
-### Step 5: Bulk Actions (Optional)
-- **UI:** From Pending Approvals list → select multiple requests via checkboxes → "Bulk Approve" or "Bulk Reject" button. For bulk reject, single reason applied to all
+- **UI:** Click Reject -> required reason -> confirm.
+- **API:** `POST /api/v1/leave/requests/{requestId}/reject`
+- **Backend:** Workflow records rejection, Leave updates status to `rejected`, stores reason, notifies employee, publishes `LeaveRequestRejectedEvent`, and writes audit logs.
+- **Validation:** Rejection reason is mandatory. Request must still be pending and caller must be an active assignee.
+- **DB:** `leave_requests`, `workflow_instances`, `approval_actions`, `notifications`, `audit_logs`
+
+### Step 4c: Request More Information
+
+- **UI:** Click Request information -> add question/comment -> submit. The employee or original requester is added to the case conversation if the automation allows it.
+- **API:** `POST /api/v1/workflows/{instanceId}/request-info`
+- **Backend:** Workflow records the action, posts the request into the case conversation or Inbox detail panel, and pauses or changes the step state according to the automation timing rule.
+- **Validation:** Caller must be an active assignee for the workflow step.
+- **DB:** `approval_actions`, `workflow_step_instances`, case conversation messages or Inbox comments, `audit_logs`
+
+### Step 5: Bulk Actions
+
+- **UI:** Pending Approvals can support bulk approve/reject for similar requests when policy allows it.
 - **API:** `POST /api/v1/leave/requests/bulk-approve` or `POST /api/v1/leave/requests/bulk-reject`
-- **Backend:** `LeaveApprovalService.BulkApproveAsync()` → [[modules/leave/overview|Leave]] — iterates through each request, applies same logic as individual approval
-- **Validation:** Each request validated individually. Partial success possible (some approved, some failed)
+- **Backend:** Applies the same workflow validation per request. Partial success is possible.
+- **Validation:** Each request validates current workflow assignment and state independently.
 - **DB:** Same as individual approve/reject, per request
+
+---
 
 ## Variations
 
-### When request requires multi-level approval
-- After first approver approves, request moves to next approver in chain (e.g., HR Head for leaves > 5 days)
-- Status changes to `pending_l2_approval`
-- Original approver sees status: "Approved by you. Pending [Next Approver] approval"
+### When Multiple Approvers Are Assigned
 
-### When approver delegates approval authority
-- Approver can set a delegate for a date range (e.g., during own leave)
-- Delegate sees pending requests in their approval queue
-- Audit trail shows both delegate and original approver
+The workflow step must specify an approval mode:
 
-### When approver also has `leave:manage` (HR Admin)
-- Can approve any employee's request regardless of reporting line
-- Additional filter: "All Pending Requests" (not just direct reports)
-- Can override policy warnings (e.g., approve despite blackout period)
+- **Only one approval is required:** both managers receive it; Manager A approves; the request is approved; Manager B sees it as completed.
+- **All assigned approvers must approve:** Manager A approves; status becomes "Waiting for Manager B"; leave is approved only after Manager B approves.
+- **Approve in order:** Manager A receives and approves first; Manager B receives it after Manager A approves.
+
+### When Request Requires Multi-Level Approval
+
+After one approval step completes, the workflow advances to the next resolver. Example: employee's reporting manager first, then department owner for long leave. The status should name the pending resolver outcome, not a fixed role name.
+
+### When Approver Delegates Approval Authority
+
+Approver can set a delegate for a date range. The workflow resolver treats the delegate as the active assignee and audit trail shows both delegate and original approver context.
+
+### When Administrative Intervention Is Allowed
+
+Users with broader leave permissions can intervene only when the workflow, permission, or override policy permits it. ONEVO must not assume a fixed HR role name.
+
+---
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| Request already processed | `409 Conflict` | "This request has already been [approved/rejected]" |
-| Approver tries to approve own request | `403 Forbidden` | "You cannot approve your own leave request" |
+| Request already processed | `409 Conflict` | "This request has already been approved or rejected" |
+| Caller is not an active workflow assignee | `403 Forbidden` | "This request is not assigned to you" |
+| Approver tries to approve own request | `403 Forbidden` unless policy allows | "You cannot approve your own leave request" |
 | Employee balance changed since submission | Warning shown | "Employee's balance has changed since submission. Current balance: N days" |
 | Employee terminated since submission | `422 Unprocessable` | "This employee is no longer active. Request cannot be processed" |
 | Missing rejection reason | Validation fails | "A reason is required when rejecting a leave request" |
 
 ## Events Triggered
 
-- `LeaveRequestApprovedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by calendar service, payroll module (if unpaid), notification service
-- `LeaveRequestRejectedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by notification service
-- `CalendarEventCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — team calendar updated (on approval)
-- `AuditLogEntry` (action: `leave_request.approved` or `leave_request.rejected`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `LeaveRequestApprovedEvent`
+- `LeaveRequestRejectedEvent`
+- `WorkflowApprovalActionRecorded`
+- `WorkflowCompleted`
+- `CalendarEventCreatedEvent`
+- `AuditLogEntry`
 
 ## Related Flows
 
-- [[Userflow/Leave/leave-request-submission|Leave Request Submission]] — the request being approved
-- [[Userflow/Leave/leave-cancellation|Leave Cancellation]] — cancel an approved request
-- [[Userflow/Leave/leave-balance-view|Leave Balance View]] — check balances affected by approval
+- [[Userflow/Automation/automation-center|Automation Center]]
+- [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
+- [[Userflow/Leave/leave-cancellation|Leave Cancellation]]
+- [[Userflow/Notifications/inbox|Inbox]]
+- [[Userflow/Chat/chat-overview|Chat Overview]]
 
 ## Module References
 
-- [[modules/leave/overview|Leave]] — leave module overview and architecture
-- [[modules/leave/leave-requests/overview|Leave Requests]] — request data model and lifecycle
-- [[modules/leave/leave-entitlements/overview|Leave Entitlements]] — balance deduction on approval
-- [[modules/calendar/calendar-events/overview|Calendar Events]] — calendar event creation on approval
-- [[backend/notification-system|Notification System]] — approval/rejection notification dispatch
-- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] — approval workflow orchestration
+- [[modules/leave/overview|Leave]]
+- [[modules/calendar/calendar-events/overview|Calendar Events]]
+- [[backend/notification-system|Notification System]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]

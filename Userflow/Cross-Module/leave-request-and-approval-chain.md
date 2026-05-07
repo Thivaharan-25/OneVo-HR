@@ -1,21 +1,22 @@
-# Leave Request & Approval — Cross-Module Chain
+# Leave Request & Approval - Cross-Module Chain
 
 **Area:** Cross-Module Scenario  
-**Trigger:** Employee submits leave request (user action)  
-**Required Permission(s):** `leave:create` (employee), `leave:approve` (manager), `payroll:read` (payroll impact)  
-**Modules Involved:** Leave, Calendar, Workforce-Presence, Payroll, Notifications, Workflow Engine
+**Trigger:** Employee submits leave request  
+**Required Permission(s):** `leave:create`, `leave:approve`, `automation:read`  
+**Modules Involved:** Leave, Calendar, Workforce Presence, Payroll, Notifications, Workflow Engine, Automation Center, Chat or Inbox
 
 ---
 
 ## Context
 
-A leave request isn't just a Leave module action. It touches the calendar (team overlap, holidays), attendance (shift coverage), payroll (unpaid leave deduction), and notifications (approval routing). This doc maps the full chain reaction from submission to payroll impact.
+A leave request touches the calendar, attendance, payroll, notifications, workflow automation, and sometimes WorkSync Chat or Microsoft Teams. Approval routing is owned by Automation Center and the workflow engine, using dynamic resolvers instead of fixed role names.
 
 ## Preconditions
 
-- Employee has active leave entitlements → [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment]]
-- Approval workflow configured (reporting line exists) → [[Userflow/Auth-Access/permission-assignment|Permission Assignment]]
-- Leave policies active for employee's entity/country → [[Userflow/Leave/leave-policy-setup|Leave Policy Setup]]
+- Employee has active leave entitlements: [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment]]
+- Approval automation is configured in [[Userflow/Automation/automation-center|Automation Center]]
+- Resolver source exists, such as reporting line, team lead, department owner, selected permission, selected employee, or configured escalation owner
+- Leave policies are active for the employee's entity/country: [[Userflow/Leave/leave-policy-setup|Leave Policy Setup]]
 
 ---
 
@@ -24,30 +25,42 @@ A leave request isn't just a Leave module action. It touches the calendar (team 
 | Order | Module | What Happens | Triggered By | Event Published |
 |:------|:-------|:-------------|:-------------|:----------------|
 | 1 | **Leave** | Leave request created with status `pending`. Days calculated excluding weekends/holidays | Employee submits form | `LeaveRequestCreated` |
-| 2 | **Calendar** | Team calendar updated with tentative leave block (shown as pending). Conflict check: team absence threshold evaluated | `LeaveRequestCreated` | `CalendarEntryCreated` (tentative) |
-| 3 | **Notifications** | Approval notification sent to manager via configured channels (in-app, email, push) | `LeaveRequestCreated` | `NotificationSent` |
-| 4 | **Workflow Engine** | Approval workflow instance created. Multi-level approval triggered if policy requires | `LeaveRequestCreated` | `WorkflowInstanceCreated` |
-| 5 | **Leave** | Manager approves → status changes to `approved`. Leave balance deducted | Manager approves | `LeaveRequestApproved` |
+| 2 | **Calendar** | Team calendar updated with tentative leave block. Conflict check evaluates team absence threshold | `LeaveRequestCreated` | `CalendarEntryCreated` |
+| 3 | **Workflow Engine / Automation Center** | Workflow instance created. Resolver finds approver or approvers. Approval mode determines whether any one, all, or sequential approvals are required | `LeaveRequestCreated` | `WorkflowInstanceCreated` |
+| 4 | **Chat or Inbox** | Delivery router creates a case conversation and action card in Chat, or an Inbox detail item if Chat is not enabled | `WorkflowStepAssigned` | `CaseConversationCreated` / `NotificationSent` |
+| 5 | **Leave** | Assigned approver approves according to workflow mode. When required approval is complete, status changes to `approved` and leave balance is deducted | Workflow approval action | `LeaveRequestApproved` |
 | 6 | **Calendar** | Tentative block changed to confirmed. Team calendar updated | `LeaveRequestApproved` | `CalendarEntryConfirmed` |
-| 7 | **Workforce-Presence** | Employee's shift marked as "On Leave" for the approved dates. No attendance expected | `LeaveRequestApproved` | `ShiftOverrideCreated` |
+| 7 | **Workforce Presence** | Employee's shift marked as "On Leave" for the approved dates | `LeaveRequestApproved` | `ShiftOverrideCreated` |
 | 8 | **Payroll** | If leave is unpaid or partially unpaid, deduction record created for next payroll run | `LeaveRequestApproved` + leave type config | `PayrollDeductionCreated` |
 | 9 | **Notifications** | Employee notified of approval. Team notified if configured in policy | `LeaveRequestApproved` | `NotificationSent` |
 
 ---
 
+## Approval Modes
+
+When a resolver returns two reporting managers or multiple approvers, the workflow step defines the mode:
+
+| Mode | Result |
+|:-----|:-------|
+| Only one approval is required | Both managers receive it. First approval completes the leave request. |
+| All assigned approvers must approve | Request stays pending until every assigned approver approves. |
+| Approve in order | Approver A receives it first; Approver B receives it only after Approver A approves. |
+
+---
+
 ## Dependency Chain
 
-```
-Leave Request Created (Step 1)
-├── Calendar tentative entry (Step 2) — independent
-├── Manager notification (Step 3) — independent
-├── Approval workflow (Step 4) — independent
+```text
+Leave Request Created
+├── Calendar tentative entry
+├── Automation resolver evaluation
+├── Chat case conversation or Inbox action card
 │
-Manager Approves (Step 5)
-├── Calendar confirmed (Step 6) — independent
-├── Attendance override (Step 7) — independent
-├── Payroll deduction (Step 8) — needs leave type info from Step 5
-└── Approval notification (Step 9) — independent
+Workflow approval completed
+├── Calendar confirmed
+├── Attendance override
+├── Payroll deduction if unpaid
+└── Approval notification
 ```
 
 ---
@@ -57,9 +70,10 @@ Manager Approves (Step 5)
 | Failed Step | Impact | Recovery |
 |:------------|:-------|:---------|
 | Calendar update fails | Team calendar shows stale data, but leave is valid | Auto-retry; admin can manually sync via Calendar |
-| Manager notification fails | Manager unaware of pending request | Retry via notification service; employee can verbally notify |
-| Attendance override fails | Employee marked absent on leave days | HR corrects via [[Userflow/Workforce-Presence/attendance-correction\|Attendance Correction]] |
-| Payroll deduction not created | Employee overpaid for unpaid leave period | HR adds manual adjustment via [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] |
+| Resolver returns no approver | Workflow is blocked | Notify automation owner or configured escalation owner to fix routing |
+| Action-card delivery fails | Approver may not see pending request | Retry via delivery router; unresolved workflow can escalate |
+| Attendance override fails | Employee marked absent on leave days | Authorized attendance user corrects via [[Userflow/Workforce-Presence/attendance-correction\|Attendance Correction]] |
+| Payroll deduction not created | Employee overpaid for unpaid leave period | Payroll user adds manual adjustment via [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] |
 
 ---
 
@@ -67,20 +81,20 @@ Manager Approves (Step 5)
 
 | Order | Module | What Happens |
 |:------|:-------|:-------------|
-| 5a | **Leave** | Manager rejects → status changes to `rejected` with reason |
+| 5a | **Workflow / Leave** | Assigned approver rejects with reason. Workflow completes rejected and leave status changes to `rejected` |
 | 6a | **Calendar** | Tentative block removed from team calendar |
-| 7a | **Notifications** | Employee notified of rejection with manager's reason |
+| 7a | **Notifications** | Employee notified of rejection with approver's reason |
 
 ---
 
 ## Related Individual Flows
 
-- [[Userflow/Leave/leave-request-submission|Leave Request Submission]] — detailed submission flow
-- [[Userflow/Leave/leave-approval|Leave Approval]] — detailed approval flow
-- [[Userflow/Leave/leave-cancellation|Leave Cancellation]] — cancellation after approval
-- [[Userflow/Leave/leave-balance-view|Leave Balance View]] — balance checking
-- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]] — shift override context
-- [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]] — manual correction flow
+- [[Userflow/Automation/automation-center|Automation Center]]
+- [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
+- [[Userflow/Leave/leave-approval|Leave Approval]]
+- [[Userflow/Leave/leave-cancellation|Leave Cancellation]]
+- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
+- [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]]
 
 ## Module References
 
@@ -88,4 +102,3 @@ Manager Approves (Step 5)
 - [[modules/calendar/overview|Calendar]]
 - [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
 - [[backend/notification-system|Notification System]]
-- [[backend/messaging/event-catalog|Event Catalog]]

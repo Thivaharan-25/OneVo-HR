@@ -9,7 +9,7 @@
 
 ## Phase 1 Rule
 
-MFA uses email OTP in Phase 1. Authenticator-app TOTP is deferred/optional and must not be the default flow.
+MFA uses email OTP sent to the user's verified email address.
 
 ## Preconditions
 
@@ -33,10 +33,11 @@ MFA uses email OTP in Phase 1. Authenticator-app TOTP is deferred/optional and m
 
 ### Step 3: Confirm With OTP
 - **UI:** System sends a 6-digit code and asks the user to enter it. The page shows masked email, expiry, and resend cooldown.
-- **API:** `POST /api/v1/auth/mfa/send`, then `POST /api/v1/auth/mfa/verify`
-- **Backend:** Creates `mfa_otp_challenges`, sends code, verifies hash, marks challenge consumed.
-- **Validation:** Code expires after 5 minutes and locks after 3 failed attempts.
-- **DB:** `mfa_otp_challenges`
+- **API:** `POST /api/v1/auth/mfa/confirm`
+- **Backend:** Sends code, verifies hash, then clears the stored OTP hash.
+- **Validation:** Code expires after 5 minutes.
+- **DB:** `user_mfa`
+- **Resend:** User can request a new code through `POST /api/v1/auth/mfa/send`; the previous stored OTP hash is replaced.
 
 ### Step 4: MFA Enabled
 - **UI:** Success message: "Two-factor authentication has been enabled." Security Settings now shows email OTP enabled.
@@ -46,7 +47,7 @@ MFA uses email OTP in Phase 1. Authenticator-app TOTP is deferred/optional and m
 
 - Admin can require MFA for all users through tenant security settings.
 - Admin can reset a user's MFA via `DELETE /api/v1/users/{userId}/mfa` with `users:manage`.
-- Reset deletes active `user_mfa` method rows and unconsumed OTP challenges for that user.
+- Reset deletes active `user_mfa` method rows for that user.
 
 ## Error Scenarios
 
@@ -54,9 +55,8 @@ MFA uses email OTP in Phase 1. Authenticator-app TOTP is deferred/optional and m
 |:---|:---|
 | Email not verified | Block setup and require email verification |
 | Resend/notification unavailable | Local dev logs code; production returns delivery failure |
-| Invalid OTP | Increment attempt counter |
+| Invalid OTP | Return validation error |
 | OTP expired | User must resend code |
-| Too many attempts | Challenge locks |
 
 ## Related
 
