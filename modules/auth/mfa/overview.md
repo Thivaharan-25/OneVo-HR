@@ -7,14 +7,14 @@
 
 ## Purpose
 
-Optional MFA support for enhanced security. Phase 1 uses email OTP as the primary MFA method. Authenticator-app TOTP is deferred/optional and must not be the default flow.
+Optional MFA support for enhanced security. MFA uses email OTP sent to the user's verified email address.
 
 ## API Endpoints
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
 | POST | `/api/v1/auth/mfa/enable` | Authenticated | Enable email OTP MFA |
-| POST | `/api/v1/auth/mfa/send` | Authenticated or `mfa_pending` | Send/resend 6-digit email OTP |
+| POST | `/api/v1/auth/mfa/send` | `mfa_pending` | Send/resend 6-digit email OTP |
 | POST | `/api/v1/auth/mfa/verify` | `mfa_pending` | Verify email OTP code |
 
 ## Rules
@@ -22,10 +22,9 @@ Optional MFA support for enhanced security. Phase 1 uses email OTP as the primar
 - OTP is 6 digits.
 - OTP is sent to the user's verified email through the notification/email boundary.
 - Local development may log the OTP, but Phase 1 customer release requires Resend-backed delivery.
-- Raw OTP is never stored; only a hash is stored in `mfa_otp_challenges`.
+- Raw OTP is never stored; only a hash is stored temporarily for verification.
 - OTP expires after 5 minutes.
 - OTP is single-use.
-- Challenge locks after 3 failed attempts.
 - Resend is rate-limited to prevent mailbox flooding.
 
 ## Related

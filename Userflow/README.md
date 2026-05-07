@@ -22,6 +22,7 @@ All user-facing labels use simple, everyday language. When writing userflows, us
 | Verification | ID Checks |
 | Productivity Dashboard | Work Insights |
 | Approvals | Inbox |
+| Workflow Automation | Automation Center |
 | Command Palette | Quick Search |
 
 ---
@@ -251,6 +252,12 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Notifications/notification-preference-setup\|Notification Preference Setup]] | User configures notification channels | Documented | SHOULD |
 | [[Userflow/Notifications/inbox\|Inbox]] | Unified approval, alert, and notification queue | Documented | MUST |
 | [[Userflow/Notifications/notification-view\|Notification View]] | View/dismiss notifications | Documented | MUST |
+
+### Automation Center — `automation:read/manage`
+
+| Flow | Description | Status | Priority |
+|:-----|:------------|:-------|:---------|
+| [[Userflow/Automation/automation-center\|Automation Center]] | Builder, templates, resolvers, case conversations, delivery routing, and escalation | Documented | MUST |
 
 ### Cross-Module Scenarios
 

@@ -7,7 +7,7 @@
 
 ## Phase 1 Method
 
-Phase 1 MFA uses email OTP. Authenticator-app TOTP is deferred/optional and must not be the default flow.
+MFA uses email OTP sent to the user's verified email address.
 
 ## Enable Email OTP MFA
 
@@ -28,7 +28,7 @@ POST /api/v1/auth/login
   -> LoginCommandHandler validates password
   -> If email OTP MFA is enabled:
       -> Generate 6-digit OTP
-      -> Store hashed OTP in mfa_otp_challenges
+      -> Store hashed OTP on the verified email_otp MFA method
       -> Expire challenge in 5 minutes
       -> Send OTP via email/notification service
       -> Return 202 with mfa_required = true and mfa_pending_token
@@ -39,8 +39,8 @@ POST /api/v1/auth/login
 ```
 POST /api/v1/auth/mfa/send
   -> Validate mfa_pending token
-  -> Rate-limit resend
-  -> Create a new OTP challenge and invalidate previous active challenge
+  -> Generate a new 6-digit OTP
+  -> Replace the stored OTP hash on the verified email_otp MFA method
   -> Send OTP via email/notification service
 ```
 
@@ -49,16 +49,14 @@ POST /api/v1/auth/mfa/send
 ```
 POST /api/v1/auth/mfa/verify
   -> Validate mfa_pending token
-  -> Load active mfa_otp_challenges row
-  -> Reject if expired, consumed, or locked
-  -> Hash submitted code and compare
+  -> Load verified email_otp MFA method
+  -> Reject if expired or already consumed
+  -> Compare submitted code against the stored hash
   -> If valid:
-      -> Mark challenge consumed
+      -> Clear stored OTP hash
       -> Generate access token + refresh token
       -> Return AuthResponseDto
   -> If invalid:
-      -> Increment failed_attempts
-      -> Lock after 3 failed attempts
       -> Return failure("Invalid MFA code")
 ```
 

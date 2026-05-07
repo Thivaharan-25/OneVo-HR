@@ -1,6 +1,6 @@
 # Inbox
 
-The personal action center - everything waiting for YOUR decision in Phase 1, in one place.
+The personal action center - everything waiting for YOUR decision in one place. Inbox is also the fallback delivery surface for workflow action cards when WorkSync Chat is not enabled.
 
 ## Preconditions
 
@@ -15,15 +15,18 @@ The personal action center - everything waiting for YOUR decision in Phase 1, in
 
 ### Step 2: Review Items
 - **UI:** Each item shows: icon, title, source (who submitted), timestamp, action buttons
-- **Phase 1 item types:**
+- **Item types:**
   - Leave requests -> Approve / Reject
   - Expense claims -> Approve / Reject / Request Info
   - Skill validation requests -> Validate / Adjust & Validate / Reject
   - Attendance correction requests -> Approve / Reject
   - Overtime requests -> Approve / Reject
   - Remote location change requests -> Approve / Reject
+  - Exception alert cases -> Acknowledge / Dismiss / Escalate / Resolve
+  - Identity verification cases -> Confirm / Request follow-up photo / Escalate
   - Assigned tasks -> View / Complete
   - Mentions -> View context
+  - Automation follow-ups -> Review / Resolve / Escalate
 
 ### Step 2a: Skill Validation Request
 - **Trigger:** Employee declares a skill from My Profile -> Skills.
@@ -39,6 +42,7 @@ The personal action center - everything waiting for YOUR decision in Phase 1, in
 
 ### Step 3: Take Action
 - **UI:** Click action button -> inline confirmation or slide-over detail panel
+- If the item came from Automation Center, the detail panel shows the case conversation comments and the audited decision actions configured by the automation.
 - Bulk approve/reject available for similar items (e.g., 5 leave requests)
 - Completed items move to "Done" section (collapsible, below active items)
 
@@ -49,6 +53,9 @@ The personal action center - everything waiting for YOUR decision in Phase 1, in
 
 - **Inbox** = actionable (needs your decision)
 - **Bell** = informational (FYI updates, no action needed)
+- **Chat case conversation** = preferred discussion surface when WorkSync Chat is enabled
+
+If WorkSync Chat is enabled, workflow action cards should normally appear in Chat case conversations. If Chat is not enabled, the same action card appears in Inbox and comments remain in the Inbox detail panel.
 
 ## Related Flows
 
@@ -56,6 +63,7 @@ The personal action center - everything waiting for YOUR decision in Phase 1, in
 - [[Userflow/Expense/expense-approval|Expense Approval]]
 - [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]]
 - [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]]
+- [[Userflow/Automation/automation-center|Automation Center]]
 - [[Userflow/Notifications/notification-view|Notification View]]
 
 ## Module References

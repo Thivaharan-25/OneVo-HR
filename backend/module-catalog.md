@@ -123,7 +123,7 @@ Tag engine, context engine, agent entitlement, and SignalR IDEHub spec: [[module
 
 | # | Feature | Feature Folder | Tables | Phase |
 |:--|:--------|:---------------|:-------|:------|
-| 15 | Shared Platform | `Features/SharedPlatform` | 35 | Phase 1/2 |
+| 15 | Shared Platform | `Features/SharedPlatform` | 35 | Phase 1/2; includes Automation Center workflow builder/API |
 | 16 | Notifications | `Features/Notifications` | 0 own tables | — |
 | 17 | Configuration | `Features/Configuration` | 6 | Phase 1 |
 | 18 | Calendar | `Features/Calendar` | 1 | Phase 1 |

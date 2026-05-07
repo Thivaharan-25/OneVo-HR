@@ -60,13 +60,14 @@
   ```
 - **Backend:** `MfaService.VerifyAsync()` → [[modules/auth/mfa/overview|MFA]]
   1. Validate temporary MFA token (valid for 5 minutes)
-  2. Load active email OTP challenge for the user
-  3. Reject if challenge is expired, consumed, or locked
-  4. Hash submitted code and compare with stored hash
-  5. If valid: mark challenge consumed and proceed to Step 5
-  6. If invalid: increment MFA attempt counter (3 max attempts per challenge)
-- **Validation:** MFA token must be valid. Code must match. Max 3 attempts. OTP expires after 5 minutes.
-- **DB:** `user_mfa`, `mfa_otp_challenges`
+  2. Load verified `email_otp` MFA method for the user
+  3. Reject if OTP is expired or already consumed
+  4. Compare submitted code with stored hash
+  5. If valid: clear stored OTP hash and proceed to Step 5
+  6. If invalid: return invalid MFA code
+- **Validation:** MFA token must be valid. Code must match. OTP expires after 5 minutes.
+- **DB:** `user_mfa`
+- **Resend:** User can request a new code through `POST /api/v1/auth/mfa/send`; the previous stored OTP hash is replaced.
 
 ### Step 5: Token Issuance
 - **UI:** N/A (backend processing)

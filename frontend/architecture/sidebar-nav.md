@@ -6,7 +6,8 @@ Canonical reference for the ONEVO shell navigation. Navigation components, permi
 
 - **Business language labels** — "Activity Trail" not "Audit Logs". "People Access" not "Users".
 - **No role name checks** — all visibility is permission-key driven, never role-name driven.
-- **Panels only where needed** — Home, Chat, and Inbox have no expansion panels.
+- **Panels only where needed** — Home, Inbox, Automation Center, and Chat have no expansion panels.
+- **Automation is first-class** — Automation Center is not hidden inside Settings because customers use it to run approvals, alerts, requests, escalations, and follow-ups.
 - **WMS lives in Workforce** — all Work Management System screens route under `/workforce/`.
 - **Scheduling lives in Calendar** — Schedules, Attendance, and Overtime belong in Calendar, not Workforce.
 
@@ -40,9 +41,9 @@ Rules:
 - Permission filtering, badges, active states, labels, and routes must come from the same pillar config.
 - Drawer navigation must include search access, entity context, profile/settings access, and close-on-navigation behavior.
 
-## Icon Rail — 9 Pillars
+## Icon Rail — 10 Pillars
 
-Display order (top to bottom). A separator line appears between Chat (7) and Admin (8).
+Display order (top to bottom). A separator line appears between Chat (8) and Admin (9).
 
 | Position | Pillar | Lucide Icon | Has Panel | Default Route | Visible When |
 |---|---|---|---|---|---|
@@ -52,10 +53,11 @@ Display order (top to bottom). A separator line appears between Chat (7) and Adm
 | 4 | Workforce | `LayoutDashboard` | Yes | `/workforce` | `workforce:view` |
 | 5 | Org | `Network` | Yes | `/org` | `org:read` |
 | 6 | Calendar | `Calendar` | Yes | `/calendar` | `calendar:read` |
-| 7 | Chat | `MessageCircle` | No | `/chat` | `chat:read` |
+| 7 | Automation Center | `Workflow` | No | `/automation` | `automation:read` |
+| 8 | Chat | `MessageCircle` | No | `/chat` | `chat:read` |
 | — | *separator* | — | — | — | — |
-| 8 | Admin | `Shield` | Yes | `/admin/users` | `users:read` |
-| 9 | Settings | `Settings` | Yes | `/settings/general` | `settings:read` |
+| 9 | Admin | `Shield` | Yes | `/admin/users` | `users:read` |
+| 10 | Settings | `Settings` | Yes | `/settings/general` | `settings:read` |
 
 See [[frontend/design-system/components/nav-rail|Nav Rail]] for exact dimensions, colors, and Tailwind implementation.
 
@@ -104,6 +106,11 @@ See [[frontend/design-system/components/nav-rail|Nav Rail]] for exact dimensions
 
 Direct navigation to `/chat`. Full chat UI renders in the content area.  
 Permission key: `chat:read`
+
+### Automation Center (no panel)
+
+Direct navigation to `/automation`. The page normally opens into the automation builder or the customer's existing automations. Templates appear only after the user clicks Templates.  
+Permission key: `automation:read`; create/edit actions require `automation:manage`.
 
 ### Inbox (no panel)
 

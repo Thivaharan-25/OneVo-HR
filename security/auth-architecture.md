@@ -235,7 +235,7 @@ public interface IPermissionVersionService
 
 | Policy | Value |
 |:-------|:------|
-| Hashing | Argon2id (memory: 64MB, iterations: 3, parallelism: 1) — stored as `argon2id:{m}:{t}:{p}:{base64(salt)}:{base64(hash)}` |
+| Hashing | BCrypt with work factor 12, stored in the standard BCrypt hash format |
 | Min length | 12 characters |
 | Complexity | 1 uppercase, 1 lowercase, 1 digit, 1 special character |
 | Rate limiting | 5 attempts/minute per IP |
@@ -248,8 +248,7 @@ public interface IPermissionVersionService
 Multiple methods per user via `user_mfa` table (one row per method) and `mfa_recovery_codes` table (8 hashed codes per user):
 
 - **Email OTP** (6-digit code via Resend) - primary Phase 1 MFA method. Local development may log OTPs before the notification dispatcher is available; Phase 1 customer release requires Resend-backed email delivery through the notification service.
-- **TOTP** (Google Authenticator, Authy) - deferred/optional. It must not be the default Phase 1 MFA flow.
-- **Recovery codes** — 8 one-time use codes per setup, stored as SHA-256 hashes in `mfa_recovery_codes`
+- **Recovery codes** - 8 one-time use codes per setup, stored as BCrypt hashes in `mfa_recovery_codes`
 
 ## Session Security
 

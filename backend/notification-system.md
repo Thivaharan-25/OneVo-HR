@@ -2,7 +2,7 @@
 
 ## Overview
 
-6-step notification pipeline supporting 30+ events across 3 channels (in-app, email, push).
+6-step notification pipeline supporting events across in-app, email, push, Chat, and Inbox delivery surfaces. Workflow action cards are routed by the Automation Center delivery router before notification dispatch.
 
 ```
 Event Trigger → Preferences Check → Deduplication → Template Rendering → Channel Routing → Dispatch → Track
@@ -26,6 +26,8 @@ Event Trigger → Preferences Check → Deduplication → Template Rendering →
 | In-app | Database + SignalR | Insert `notifications` row, push via SignalR | Phase 1 |
 | Email | Resend | Template-based via `notification_templates`; required for Phase 1 customer release | Phase 1 |
 | Push | FCM (Firebase) | Mobile push notifications | Phase 2 (with mobile app) |
+| Chat action card | WorkSync Chat | Case conversation action card when Chat is enabled | Phase 1 when WorkSync is enabled |
+| Inbox action card | Inbox | Detail panel action card when Chat is not enabled | Phase 1 |
 
 ### Phase 1 Email Requirement
 
@@ -87,11 +89,13 @@ Configured in `escalation_rules` table:
 
 ```
 If leave_request status = "pending" for > 48 hours:
-  → Send reminder notification to manager
-  → If still pending after 72 hours: escalate to HR Admin
+  -> Send reminder to assigned approver resolver
+  -> If still pending after 72 hours: escalate to configured escalation owner
 ```
 
 Checked by a Hangfire recurring job (every hour).
+
+Escalation rules and workflow notifications must not target fixed role names. They should target resolver outputs such as employee's reporting manager, users with selected permission, users in selected department/team/job level, specific employee, previous workflow approver, case conversation participants, or configured escalation owner.
 
 ## Related
 

@@ -80,7 +80,7 @@
   ```
 - **Backend:** `UserInvitationService.AcceptInvitationAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
   1. Validate invitation token (not expired, not already used)
-  2. Hash password with Argon2id (memory: 64MB, iterations: 3, parallelism: 1)
+  2. Hash password with BCrypt (work factor 12)
   3. Update user status from `invited` to `active`
   4. Mark invitation token as used
   5. Issue JWT access token + refresh token

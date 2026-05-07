@@ -59,9 +59,19 @@ public class WorkflowServiceTests
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| Create instance resolves first approver | Unit | Step instance created |
-| Approve advances to next step | Unit | Next approver notified |
+| Create instance resolves first approver through resolver | Unit | Step instance created without role-name checks |
+| Resolver returns users with selected permission | Unit | All eligible users are candidates |
+| Resolver returns no candidate | Unit | Step is blocked and automation owner/escalation owner is notified |
+| Only one approval is required | Unit | First approver completes the step; other assignees see completed state |
+| All assigned approvers must approve | Unit | Step remains pending until every assignee approves |
+| Approve in order | Unit | Next approver receives the request only after previous approval |
+| Create case conversation | Integration | Private case conversation is linked to workflow item |
+| Delivery router with Chat enabled | Integration | Action card appears in ONEVO Chat case conversation |
+| Delivery router without Chat | Integration | Action card appears in Inbox detail panel |
+| Teams mirror enabled | Integration | Discussion is mirrored, but official action remains a ONEVO link |
+| Approve advances to next step | Unit | Next resolver is evaluated and next assignee notified |
 | Final approval completes workflow | Unit | WorkflowCompleted event |
+| Unresolved delay escalates dynamically | Unit | Escalation resolver receives action card and audit entry is written |
 
 ## Related
 
