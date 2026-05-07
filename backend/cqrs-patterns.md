@@ -22,20 +22,19 @@ public record ApproveLeaveRequestCommand(
 public class ApproveLeaveRequestCommandHandler
     : IRequestHandler<ApproveLeaveRequestCommand, Result<LeaveRequestDto>>
 {
-    private readonly IApplicationDbContext _db;
+    private readonly ILeaveRequestRepository _leaveRequests;
     private readonly IUnitOfWork _uow;
 
-    public ApproveLeaveRequestCommandHandler(IApplicationDbContext db, IUnitOfWork uow)
+    public ApproveLeaveRequestCommandHandler(ILeaveRequestRepository leaveRequests, IUnitOfWork uow)
     {
-        _db = db;
+        _leaveRequests = leaveRequests;
         _uow = uow;
     }
 
     public async Task<Result<LeaveRequestDto>> Handle(
         ApproveLeaveRequestCommand cmd, CancellationToken ct)
     {
-        var request = await _db.LeaveRequests
-            .FirstOrDefaultAsync(r => r.Id == cmd.LeaveRequestId, ct);
+        var request = await _leaveRequests.GetByIdAsync(cmd.LeaveRequestId, ct);
 
         if (request is null)
             return Result<LeaveRequestDto>.Failure("Leave request not found");
@@ -67,17 +66,14 @@ public record GetLeaveBalanceQuery(
 public class GetLeaveBalanceQueryHandler
     : IRequestHandler<GetLeaveBalanceQuery, Result<LeaveBalanceDto>>
 {
-    private readonly IApplicationDbContext _db;
+    private readonly ILeaveBalanceReader _leaveBalances;
 
-    public GetLeaveBalanceQueryHandler(IApplicationDbContext db) => _db = db;
+    public GetLeaveBalanceQueryHandler(ILeaveBalanceReader leaveBalances) => _leaveBalances = leaveBalances;
 
     public async Task<Result<LeaveBalanceDto>> Handle(
         GetLeaveBalanceQuery query, CancellationToken ct)
     {
-        var balance = await _db.LeaveEntitlements
-            .Where(e => e.EmployeeId == query.EmployeeId && e.Year == query.Year)
-            .Select(e => new LeaveBalanceDto { ... })
-            .FirstOrDefaultAsync(ct);
+        var balance = await _leaveBalances.GetBalanceAsync(query.EmployeeId, query.Year, ct);
 
         if (balance is null)
             return Result<LeaveBalanceDto>.Failure("No entitlement found");
@@ -101,6 +97,8 @@ Application/Features/Leave/DTOs/
 ```
 
 Handlers **never return Domain entities** — always response DTOs.
+
+Handlers also do not use EF Core or `ApplicationDbContext` directly. Commands use repositories/domain services to load and persist aggregates. Queries use repository or reader interfaces that return DTO/read models. Infrastructure implements those interfaces with EF Core.
 
 ---
 

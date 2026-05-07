@@ -14,6 +14,7 @@ https://api.onevo.com/api/v{version}/{resource}
 - Header: `Api-Version: 1` (optional override)
 - Deprecation: `Sunset` header with date when endpoint will be removed
 
+
 ### Authentication
 
 All endpoints require JWT Bearer token (except `/api/v1/auth/login`, `/api/v1/auth/refresh`):
@@ -29,6 +30,7 @@ HR Management, Workforce Intelligence, and Work Management all live in the same 
 - Web and IDE clients use the normal user JWT audience (`onevo-api`).
 - Desktop agents use device JWTs on `/api/v1/agent/*`; device JWTs cannot access HR or Work Management user APIs.
 - Cross-pillar data flow uses direct foreign keys, application services, and in-process domain events.
+
 
 ### Authorization (Hybrid Permission Control)
 
@@ -146,15 +148,24 @@ GET /api/v1/leave-requests?status=pending&startDateFrom=2026-04-01&startDateTo=2
 ### Infrastructure
 
 ```
-POST   /api/v1/tenants                    # Create tenant
-GET    /api/v1/tenants/{id}               # Get tenant
-PUT    /api/v1/tenants/{id}               # Update tenant
+POST   /admin/v1/tenants                  # Create tenant (operator-controlled Developer Console only)
+GET    /admin/v1/tenants/{id}             # Get tenant (operator-controlled Developer Console only)
+PATCH  /admin/v1/tenants/{id}/subscription # Assign subscription/commercial terms
+PUT    /admin/v1/tenants/{id}/modules      # Assign module entitlements and sales states
+PATCH  /admin/v1/tenants/{id}/settings     # Assign required tenant settings
+GET    /admin/v1/tenants/{id}/permissions/catalog # Module-filtered permission catalog
+POST   /admin/v1/tenants/{id}/role-templates/{templateId}/apply # Apply starter roles
+POST   /admin/v1/tenants/{id}/invite-admin # Send tenant-owner set-password invite
+PATCH  /admin/v1/tenants/{id}/provision/confirm # Activate completed provisioning draft
 POST   /api/v1/users                      # Create user
 GET    /api/v1/users/{id}                 # Get user
 POST   /api/v1/files/upload               # Upload file
 GET    /api/v1/files/{id}                 # Get file metadata
 GET    /api/v1/countries                   # List countries
 ```
+
+Tenant provisioning config is intentionally split across specific Developer Platform admin endpoints: `/subscription`, `/modules`, `/settings`, `/permissions/catalog`, `/role-templates`, `/invite-admin`, and `/provision/confirm`. Do not model full tenant provisioning as one generic tenant update endpoint; each owning module validates and persists its part of the draft.
+
 
 ### Auth
 

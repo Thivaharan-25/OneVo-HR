@@ -18,7 +18,7 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 ### General / Backend
 
-- **[[infrastructure/multi-tenancy|Multi-Tenancy]] Everywhere:** Every single query MUST be tenant-scoped. The `BaseRepository<T>` handles this via `ITenantContext` (see [[backend/shared-kernel|Shared Kernel]]), but if you write raw SQL or use `DbContext` directly, you MUST include `WHERE tenant_id = @tenantId`. PostgreSQL RLS is a safety net, not a replacement for application-level filtering.
+- **[[infrastructure/multi-tenancy|Multi-Tenancy]] Everywhere:** Every single query MUST be tenant-scoped. Application handlers and services must not use EF Core, `DbContext`, `ApplicationDbContext`, or `DbSet<T>` directly; create repository/reader interfaces instead. Raw SQL or direct DbContext access is only for reviewed Infrastructure repository implementations, and tenant-scoped data must include `WHERE tenant_id = @tenantId`. PostgreSQL RLS is a safety net, not a replacement for application-level filtering.
 
 - **RLS Interceptor — Guid-only string interpolation:** The `TenantRlsInterceptor` uses `$"SET LOCAL app.current_tenant_id = '{_tenantContext.TenantId}'"`. This is safe **only** because `TenantId` is a `Guid` (hex + hyphens — cannot contain SQL injection characters). **Never copy this pattern for string values.** For any non-`Guid` SET LOCAL, use `SELECT set_config('app.current_tenant_id', $1, true)` with a parameterized `NpgsqlParameter`. See [[infrastructure/multi-tenancy|Multi-Tenancy]] for the safe parameterized alternative.
 
@@ -151,13 +151,13 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 | Area | Description | Impact | Planned Fix |
 |:-----|:------------|:-------|:------------|
-| - | No technical debt yet (greenfield project) | - | - |
+| Application persistence access | Resolved in active backend code: handlers and services now use repository/reader interfaces, and Application no longer exposes `IApplicationDbContext`. | Future drift would spread tenant filtering and cross-tenant exceptions across handlers/services. | Keep DB access inside `ONEVO.Infrastructure/Persistence/Repositories/**`. All new or touched handlers/services must follow the repository rule. |
 
 ---
 
 ## Deprecated Patterns
 
-- **Don't use:** Direct `DbContext.Set<T>()` calls without `BaseRepository<T>` — bypasses tenant filtering
+- **Don't use:** Direct `DbContext.Set<T>()`, `ApplicationDbContext`, `DbSet<T>`, or EF Core queries in handlers/services — use repository/reader interfaces so tenant filtering is centralized
 - **Don't use:** `throw new Exception()` for business logic — use `Result<T>` pattern
 - **Don't use:** Synchronous database calls — always `async/await` with `CancellationToken`
 - **Don't use:** `string` for IDs — always `Guid` (mapped to `uuid` in PostgreSQL)

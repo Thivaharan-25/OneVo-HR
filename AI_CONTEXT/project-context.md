@@ -1,5 +1,7 @@
 # Project Context: ONEVO
 
+> Phase 1 backend deployment rule: ONEVO has exactly one backend deployment unit, `src/ONEVO.Api/ONEVO.Api.csproj`. Customer APIs live under `/api/v1/*`; Developer Console admin APIs live under `/admin/v1/*` in the same ASP.NET Core host. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed as a second backend service.
+
 ## 1. Platform Overview
 
 - **Project Name:** ONEVO
@@ -11,7 +13,7 @@
 
 ## 1a. Developer Platform (Internal)
 
-A second standalone frontend app (`dev-console` at `console.onevo.io`) exists for internal platform administration. It is **not** a customer-facing product — only ONEVO team accounts can access it. It is backed by a separate API host (`ONEVO.Admin.Api`) with its own JWT issuer (`onevo-platform-admin`). See `developer-platform/overview.md` for the full specification.
+A second standalone frontend app (`dev-console` at `console.onevo.io`) exists for internal platform administration. It is **not** a customer-facing product — only ONEVO team accounts can access it. It is backed by `/admin/v1/*` endpoints inside the single `ONEVO.Api` backend host, using the platform-admin JWT issuer (`onevo-platform-admin`). See `developer-platform/overview.md` for the full specification.
 
 ---
 
@@ -22,11 +24,15 @@ A second standalone frontend app (`dev-console` at `console.onevo.io`) exists fo
 **ONEVO is NOT a self-service SaaS in Phase 1.** Customers cannot sign up themselves.
 
 - **How tenants are acquired:** Customers contact ONEVO directly. A sales conversation happens first — this is intentional, especially because the platform includes employee activity monitoring which requires explicit company buy-in before deployment.
-- **How tenants are provisioned:** After a sale is agreed, an ONEVO operator creates the tenant via the **developer console** (`console.onevo.io` → `ONEVO.Admin.Api`). There is no public signup page or public tenant creation endpoint.
+- **How tenants are provisioned:** After a sale is agreed, an ONEVO operator creates the tenant via the **developer console** (`console.onevo.io` -> `ONEVO.Api` `/admin/v1/*`). There is no public signup page or public tenant creation endpoint.
 - **Module gating:** Each tenant is provisioned with a specific set of pillars/modules enabled. If ONEVO introduces a new module in the future, existing tenants remain on their current set unless they upgrade (pay for the new module) — then an operator enables it for them via the developer console.
+- **Commercial model:** Each tenant is provisioned with an explicit commercial relationship:
+  - **Subscription** - recurring SaaS payment for the selected plan/modules.
+  - **Full license + maintenance** - customer has bought the agreed suite/license, but still pays recurring maintenance/support. New modules are not automatically included unless the contract says so.
+- **Future module sales rule:** New modules must be represented in the module catalog and surfaced in the Developer Console as `available`, `trial`, `quoted`, `purchased`, `maintenance_included`, or `disabled` for each tenant. Do not infer access from tenant age or plan name alone.
 - **Phase 2 (future, not yet designed):** ONEVO may introduce a self-service SaaS model. Until that is explicitly specced, assume all tenant lifecycle operations are operator-driven.
 
-**ADE rule:** Never build a public tenant signup flow, public registration page, or expose `POST /api/v1/tenants` on the customer-facing API. Tenant creation is always via `ONEVO.Admin.Api`.
+**ADE rule:** Never build a public tenant signup flow, public registration page, or expose `POST /api/v1/tenants` on the customer-facing API. Tenant creation is always via `/admin/v1/*` inside the single `ONEVO.Api` backend deployment.
 
 ---
 
@@ -96,8 +102,8 @@ ONEVO follows **Clean Architecture + CQRS** (.NET 9). See [[backend/folder-struc
 - `ONEVO.Domain` — entities, domain events, value objects (zero external dependencies)
 - `ONEVO.Application` — CQRS handlers (MediatR), interfaces, DTOs, validators
 - `ONEVO.Infrastructure` — EF Core (single ApplicationDbContext, ~300 tables), JWT, BCrypt, Redis, Hangfire, SignalR
-- `ONEVO.Api` — customer-facing ASP.NET Core host (/api/v1/*)
-- `ONEVO.Admin.Api` — developer console host (/admin/v1/*)
+- `ONEVO.Api` — single ASP.NET Core host for customer APIs (`/api/v1/*`) and Developer Console admin APIs (`/admin/v1/*`)
+- `ONEVO.Admin.Api` — deprecated scaffold only; must not be deployed as a second backend service
 
 ## 4. Key Stats
 
@@ -153,9 +159,11 @@ ONEVO follows **Clean Architecture + CQRS** (.NET 9). See [[backend/folder-struc
 
 ## 6. Monitoring Configuration Model
 
+Definitive policy hierarchy: tenant defaults -> scope overrides (`role`, `department`, `team`, `job_family`) -> employee override -> consent/disclosure gate -> Workforce Presence lifecycle gate -> resolved app allowlist -> privacy/transparency mode. The agent receives only the final resolved policy for the signed-in employee/device. Missing required consent disables desktop collection even when admin settings are enabled.
+
 ```
 Tenant Level (Company Settings)
-├── Industry Profile (selected at signup)
+├── Industry Profile (selected during operator provisioning)
 │   ├── Office/IT → all monitoring ON by default
 │   ├── Manufacturing → biometric/presence ON, screen/keyboard OFF
 │   ├── Retail → biometric ON, device monitoring OFF
@@ -348,8 +356,9 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 - **WorkSync is internal:** No bridge APIs. WorkSync features live in `Features/WorkSync/*` same as HR features
 - **IDE Extension tag security:** All `@entity:action` permission checks happen server-side. Never trust client-side validation
 - **Monitoring Privacy:** Always check monitoring configuration before processing activity data
-- **No public signup:** Tenant provisioning is operator-only via `ONEVO.Admin.Api`. Never build a public signup/registration flow. See Section 2 (Sales Model) above.
-- **Module gating:** Every pillar-gated feature must check the tenant's `enabled_pillars` before serving data or rendering UI. A tenant without Workforce Intelligence enabled must never see `/workforce/*` routes or receive monitoring data.
+- **No public signup:** Tenant provisioning is operator-only via `/admin/v1/*` inside `ONEVO.Api`. Never build a public signup/registration flow. See Section 2 (Sales Model) above.
+- **Module gating:** Every pillar-gated feature must check the tenant entitlement source: active subscription/commercial plan plus tenant module grants/feature grants. A tenant without Workforce Intelligence entitlement must never see `/workforce/*` routes or receive monitoring data.
+- **Sales entitlement separation:** Billing/maintenance status decides what the tenant has commercially bought; RBAC decides what a user can do inside that tenant. Keep these concepts separate and combine them only in entitlement/authorization checks.
 
 ## Related
 
