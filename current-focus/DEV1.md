@@ -2,7 +2,7 @@
 
 **Track:** Backend
 **Primary ownership:** platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API
-**Current Unfinished Task:** Task 5 - Shared Platform Core + Workflow Engine
+**Current Unfinished Task:** Task 2 - Tenant Auth + RBAC gaps
 **Blocked By:** none
 
 ---
@@ -54,14 +54,25 @@ dotnet test ONEVO.sln
 
 - [x] User login issues short-lived tenant access token and backend-managed refresh token.
 - [x] Refresh token rotation persists replaced-by chain.
-- [x] MFA setup and verification endpoints exist.
+- [x] MFA setup and verification endpoint skeletons exist.
+- [ ] MFA primary method is email OTP, not TOTP: login generates a short-lived 6-digit OTP challenge and sends it to the user's verified email.
+- [ ] MFA email delivery goes through the Auth email/notification boundary; local development may log OTPs, but Phase 1 customer release requires Resend-backed delivery.
+- [ ] MFA OTP challenges are hashed at rest, expire after 5 minutes, are single-use, and lock after 3 failed attempts.
+- [ ] Authenticator-app TOTP support is deferred/optional and must not be the default Phase 1 MFA flow.
 - [x] Password reset flow exists.
 - [x] Password reset email can use a temporary logger-only stub during DEV1 Task 2; Phase 1 release requires DEV2 Task 5 to route password reset and account setup emails through the Resend-backed notification/email dispatcher.
 - [x] Forced password change flow exists using `must_change_password`, `password_set_by_admin`, and `temporary_password_expires_at`.
 - [x] Permission keys are seeded.
-- [x] API authorization supports tenant-level roles and explicit permissions.
+- [x] API authorization can enforce explicit permission claims on protected endpoints.
 - [x] Tenant JWT issuer is rejected by `/admin/v1/*`.
-- [x] Integration tests cover login, refresh, forced password change, forbidden access, and admin issuer rejection.
+- [x] Focused integration tests cover login and admin issuer rejection paths.
+- [ ] Tenant role CRUD APIs exist: list, create, update, archive/delete system-safe roles.
+- [ ] Role permission assignment API exists and only accepts permissions available to the tenant's enabled modules.
+- [ ] User role assignment API exists and increments the permission version counter.
+- [ ] User permission override APIs exist for grant/revoke/remove and increment the permission version counter.
+- [ ] Effective permission query returns universal grants, role grants, module filtering, hierarchy scope, and user overrides.
+- [ ] Role template support exists for provisioning: templates can be created from module-filtered permissions and materialized into tenant roles.
+- [ ] Tests cover email OTP generation, delivery boundary call, verify success, verify expired, verify wrong code, attempt lockout, role CRUD, role permission assignment, user role assignment, permission overrides, module-filtered permission visibility, and permission version refresh.
 
 ### References
 
@@ -69,6 +80,9 @@ dotnet test ONEVO.sln
 - [[security/auth-architecture|Auth Architecture]] (security/auth-architecture.md)
 - [[security/auth-flow|Auth Flow]] (security/auth-flow.md)
 - [[Userflow/Auth-Access/permissions-reference|Permissions Reference]] (Userflow/Auth-Access/permissions-reference.md)
+- [[Userflow/Auth-Access/role-creation|Role Creation]] (Userflow/Auth-Access/role-creation.md)
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] (Userflow/Auth-Access/permission-assignment.md)
+- [[developer-platform/modules/role-template-manager|Role Template Manager]] (developer-platform/modules/role-template-manager.md)
 
 ### Verification
 
@@ -90,8 +104,15 @@ dotnet test ONEVO.sln --filter Auth
 - [x] Module entitlement service resolves active modules from subscription, feature grants, and module registry.
 - [x] Permissions service can return effective permissions for a user and tenant.
 - [x] Entitlement DTO supports web and IDE consumers.
-- [x] Developer Platform provisioning can set tenant modules through the same entitlement/module registry.
-- [x] Tests cover active module resolution, permission inheritance, and module assignment.
+- [x] Tests cover active module resolution and focused entitlement reads.
+- [ ] Developer Platform provisioning can create a draft tenant in `provisioning` status before activation.
+- [ ] Developer Platform provisioning can set commercial terms via `/admin/v1/tenants/{id}/subscription`, including `subscription` vs `full_license_maintenance`, billing cycle/currency, manual sales state, maintenance status, renewal date, and custom contract values.
+- [ ] Developer Platform provisioning can set tenant modules through the same entitlement/module registry via `/admin/v1/tenants/{id}/modules`, including module sales states: `purchased`, `trial`, `quoted`, `maintenance_included`, `subscription_included`, and `disabled`.
+- [ ] Permission catalog endpoint returns only permissions for enabled tenant modules plus universal permissions.
+- [ ] Provisioning can attach role templates to the tenant and materialize them into tenant-scoped roles.
+- [ ] Tenant owner invite creates a user without requiring an operator-entered final password and sends a set-password link.
+- [ ] Activation is blocked until required provisioning steps are complete: tenant details, subscription/commercial terms, module selection/pricing, role template application, first owner invite, and required initial settings.
+- [ ] Tests cover draft provisioning, module assignment, permission catalog filtering, role-template materialization, owner invite, and activation guard.
 
 ### References
 
@@ -100,6 +121,8 @@ dotnet test ONEVO.sln --filter Auth
 - [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
 - [[database/schemas/shared-platform|Shared Platform Schema]] (database/schemas/shared-platform.md)
 - [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md)
+- [[developer-platform/modules/role-template-manager|Role Template Manager]] (developer-platform/modules/role-template-manager.md)
+- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
 
 ### Verification
 
@@ -248,16 +271,17 @@ dotnet test ONEVO.sln --filter AppAllowlist
 ### Backend Module Location
 
 - Feature: `Features/DevPlatform`
-- Host: `ONEVO.Admin.Api`
+- Host: `ONEVO.Api` only; `/admin/v1/*` is a logical admin namespace inside the single Phase 1 backend host
 - Endpoint prefix: `/admin/v1/*`
 - Auth boundary: platform-admin JWT issuer only; tenant JWTs must be rejected
 - DbContext: unified `ApplicationDbContext`; DevPlatform entities have no `TenantId` and must be excluded from tenant query filters
 
 ### Acceptance Criteria
 
-- [ ] `ONEVO.Admin.Api` host exists inside `ONEVO.sln`.
-- [ ] `ONEVO.Admin.Api` has its own `Program.cs`, controller namespace, auth policy registration, OpenAPI group, health check, and environment config.
-- [ ] Admin controllers are routed under `/admin/v1/*`.
+- [ ] `ONEVO.Api` hosts both tenant `/api/v1/*` and admin `/admin/v1/*` endpoints in one deployment.
+- [ ] `ONEVO.Admin.Api` remains deprecated scaffold only; no new admin controllers are added there.
+- [ ] Admin controllers live under `ONEVO.Api/Controllers/Admin` and are routed under `/admin/v1/*`.
+- [ ] Admin API has OpenAPI grouping, health coverage, environment config, and explicit `PlatformAdmin` policy registration inside `ONEVO.Api`.
 - [ ] Admin controllers are thin and call application/module interfaces through DI.
 - [ ] Platform admin auth validates Google OAuth login through `POST /admin/v1/auth/google-callback`.
 - [ ] Google token validation enforces `@onevo.io` email domain.
@@ -305,7 +329,7 @@ dotnet test ONEVO.sln --filter AdminApi
 
 ### Backend Module References
 
-- Admin host: `ONEVO.Admin.Api`
+- Admin host: `ONEVO.Api` `/admin/v1/*`
 - Tenant data: `Features/SharedPlatform`, `Features/InfrastructureModule`, `Features/Auth`
 - DevPlatform auth/session: `Features/DevPlatform`
 
@@ -316,14 +340,20 @@ dotnet test ONEVO.sln --filter AdminApi
 - [ ] `POST /admin/v1/tenants` creates a draft tenant in `provisioning` status from account setup data.
 - [ ] `GET /admin/v1/tenants/{id}` returns overview, plan, billing dates, status, users summary, agent summary, flags summary, settings summary, and audit summary links.
 - [ ] `PATCH /admin/v1/tenants/{id}/status` supports suspend, unsuspend, and activate with role checks.
-- [ ] `PATCH /admin/v1/tenants/{id}/subscription` supports exception subscription override with required reason and audit log.
-- [ ] `PUT /admin/v1/tenants/{id}/modules` sets active module grants for provisioning and post-provisioning changes.
+- [ ] `PATCH /admin/v1/tenants/{id}/subscription` supports provisioning commercial terms and post-activation exception subscription override with required reason and audit log.
+- [ ] `PUT /admin/v1/tenants/{id}/modules` sets active module grants, module sales state, and module-level pricing override metadata for provisioning and post-provisioning changes.
+- [ ] `GET /admin/v1/tenants/{id}/permissions/catalog` returns only permissions exposed by the tenant's active modules plus universal permissions.
+- [ ] `GET /admin/v1/role-templates` lists global/default role templates with module and permission coverage.
+- [ ] `POST /admin/v1/role-templates` creates an operator-managed role template from a module-filtered permission set.
+- [ ] `POST /admin/v1/tenants/{id}/role-templates/{templateId}/apply` materializes a role template into tenant-scoped roles.
+- [ ] `PUT /admin/v1/tenants/{id}/roles/{roleId}/permissions` lets Developer Platform adjust a provisioned role using only permissions available to that tenant.
+- [ ] Tenant owner can later create/edit tenant roles inside `/api/v1/roles`, still limited by enabled modules.
 - [ ] `PATCH /admin/v1/tenants/{id}/settings` writes tenant setting overrides through the Configuration module interface.
 - [ ] `POST /admin/v1/tenants/{id}/invite-admin` creates the first tenant super-admin invite.
 - [ ] `PATCH /admin/v1/tenants/{id}/provision/confirm` activates a provisioning tenant only after required steps are complete.
 - [ ] `POST /admin/v1/tenants/{id}/impersonate` is `super_admin` only, creates a 15-minute non-renewable impersonation token, and always writes an audit log.
 - [ ] Provisioning tenants are invisible to tenant-facing `/api/v1/*` queries.
-- [ ] Tests cover tenant draft creation, provisioning resume data, activation guard, suspend/unsuspend, subscription override audit, module assignment, invite admin, and impersonation role enforcement.
+- [ ] Tests cover tenant draft creation, provisioning resume data, activation guard, suspend/unsuspend, subscription/commercial terms override audit, module assignment and pricing state, invite admin, and impersonation role enforcement.
 
 ### References
 
@@ -334,6 +364,9 @@ dotnet test ONEVO.sln --filter AdminApi
 - [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
 - [[modules/infrastructure/overview|Infrastructure]] (modules/infrastructure/overview.md)
 - [[modules/auth/overview|Auth]] (modules/auth/overview.md)
+- [[developer-platform/modules/role-template-manager|Role Template Manager]] (developer-platform/modules/role-template-manager.md)
+- [[Userflow/Auth-Access/role-creation|Role Creation]] (Userflow/Auth-Access/role-creation.md)
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] (Userflow/Auth-Access/permission-assignment.md)
 
 ### Verification
 
@@ -359,7 +392,7 @@ dotnet test ONEVO.sln --filter Impersonation
 - Feature flags/module grants: `Features/SharedPlatform` and `Features/Configuration`
 - Audit reader: shared audit foundation from Task 4
 - App catalog: SharedPlatform public catalog interface plus Configuration observed-app reader
-- Admin host: `ONEVO.Admin.Api`
+- Admin host: `ONEVO.Api` `/admin/v1/*`
 
 ### Acceptance Criteria
 
@@ -397,4 +430,3 @@ dotnet test ONEVO.sln --filter Audit
 dotnet test ONEVO.sln --filter SystemConfig
 dotnet test ONEVO.sln --filter AppCatalog
 ```
-

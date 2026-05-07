@@ -247,8 +247,8 @@ public interface IPermissionVersionService
 
 Multiple methods per user via `user_mfa` table (one row per method) and `mfa_recovery_codes` table (8 hashed codes per user):
 
-- **TOTP** (Google Authenticator, Authy) — RFC 6238, SHA-1 HMAC, 6-digit, 30s step, ±1 window for clock drift
-- **Email OTP** (6-digit code via Resend) — stub in Phase 1; Resend integration in Phase 2
+- **Email OTP** (6-digit code via Resend) - primary Phase 1 MFA method. Local development may log OTPs before the notification dispatcher is available; Phase 1 customer release requires Resend-backed email delivery through the notification service.
+- **TOTP** (Google Authenticator, Authy) - deferred/optional. It must not be the default Phase 1 MFA flow.
 - **Recovery codes** — 8 one-time use codes per setup, stored as SHA-256 hashes in `mfa_recovery_codes`
 
 ## Session Security

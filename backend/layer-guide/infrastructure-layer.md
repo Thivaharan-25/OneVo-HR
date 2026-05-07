@@ -6,9 +6,9 @@ Implements all interfaces defined in Application. Never referenced directly by A
 
 | File | Implements | Notes |
 |------|-----------|-------|
-| `Persistence/ApplicationDbContext.cs` | `IApplicationDbContext` | 176 tables, global filters |
+| `Persistence/ApplicationDbContext.cs` | `IUnitOfWork` | Single EF Core context, global filters; used by repositories, EF tooling, and DI |
 | `Persistence/UnitOfWork.cs` | `IUnitOfWork` | Wraps SaveChangesAsync |
-| `Persistence/Repositories/GenericRepository.cs` | `IRepository<T>` | Tenant-filtered |
+| `Persistence/Repositories/GenericRepository.cs` | `IRepository<T>` | Tenant-filtered persistence boundary |
 | `Identity/JwtTokenService.cs` | `ITokenService` | ValidateLifetime=true, ClockSkew=Zero |
 | `Identity/PasswordHasher.cs` | `IPasswordHasher` | BCrypt WorkFactor=12 |
 | `Identity/CurrentUserService.cs` | `ICurrentUser` | Reads from HttpContext JWT |
@@ -40,10 +40,10 @@ public static IServiceCollection AddInfrastructure(
                 new SoftDeleteInterceptor(),
                 new DomainEventDispatchInterceptor()));
 
-    services.AddScoped<IApplicationDbContext>(p =>
+    services.AddScoped<IUnitOfWork>(p =>
         p.GetRequiredService<ApplicationDbContext>());
-    services.AddScoped<IUnitOfWork, UnitOfWork>();
-    services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+    services.AddScoped<IAuthRepository, AuthRepository>();
+    services.AddScoped<IPermissionRepository, PermissionRepository>();
     services.AddScoped<ICurrentUser, CurrentUserService>();
     services.AddScoped<ITokenService, JwtTokenService>();
     services.AddScoped<IPasswordHasher, PasswordHasher>();

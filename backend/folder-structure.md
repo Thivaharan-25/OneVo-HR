@@ -8,20 +8,20 @@ The canonical reference for ONEVO backend organisation. All other docs defer to 
 
 ## Architecture
 
-ONEVO follows **Clean Architecture + CQRS** (.NET 9). The solution is divided into four layer projects and two host projects. Modules from the planning docs become **feature folders** within each layer — there are no separate module `.csproj` files.
+ONEVO follows **Clean Architecture + CQRS** (.NET 9). The solution is divided into four layer projects and one active host project. Modules from the planning docs become **feature folders** within each layer — there are no separate module `.csproj` files.
 
 ## Deployment Boundary (Definitive)
 
 | Unit | Solution | Deployment artifact |
 |:-----|:---------|:-------------------|
-| HR + Work Management web backend | `ONEVO.sln` | Single ASP.NET Core host |
-| Developer admin console API | `ONEVO.sln` | Second host in same solution |
+| HR + Work Management web backend | `ONEVO.sln` | Single ASP.NET Core host, `ONEVO.Api` |
+| Developer admin console API | `ONEVO.sln` | `/admin/v1/*` namespace inside `ONEVO.Api` |
 | Desktop monitoring agent | `ONEVO.Agent.sln` | **Separate solution, separate MSIX release cycle** |
 | VS Code IDE extension | Published to VS Code Marketplace separately | TypeScript VSIX |
 
 `ONEVO.Agent.sln` is intentionally separate — it has its own release cadence (MSIX package signed and distributed via MDM/GPO), its own test suite, and does not share the web solution's CI pipeline. The agent communicates with `ONEVO.Api` at runtime via HTTP only.
 
-The developer console frontend (`console.onevo.io`) is a separate SPA backed by `ONEVO.Admin.Api`, which lives **inside** `ONEVO.sln`.
+The developer console frontend (`console.onevo.io`) is a separate SPA backed by `/admin/v1/*` endpoints inside `ONEVO.Api`. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed as a second backend service.
 
 ---
 
@@ -100,7 +100,6 @@ ONEVO.sln
 │   │   │   │   ├── PerformanceBehavior.cs
 │   │   │   │   └── UnhandledExceptionBehavior.cs
 │   │   │   ├── Interfaces/
-│   │   │   │   ├── IApplicationDbContext.cs
 │   │   │   │   ├── IRepository.cs             # IRepository<T> generic
 │   │   │   │   ├── IUnitOfWork.cs
 │   │   │   │   ├── ICurrentUser.cs
@@ -171,8 +170,10 @@ ONEVO.sln
 │   │
 │   │  ── LAYER 4: HOSTS ──
 │   │
-│   ├── ONEVO.Api/                             # Customer-facing host (/api/v1/*)
-│   │   ├── Controllers/                       # One per feature, all thin
+│   ├── ONEVO.Api/                             # Single backend host (/api/v1/* + /admin/v1/*)
+│   │   ├── Controllers/                       # Thin controllers only
+│   │   │   ├── Admin/                         # Developer Console controllers (/admin/v1/*)
+│   │   │   └── {Feature}/                     # Customer/API controllers (/api/v1/*)
 │   │   ├── Hubs/
 │   │   │   ├── WorkforceLiveHub.cs
 │   │   │   ├── ExceptionAlertsHub.cs
@@ -185,10 +186,8 @@ ONEVO.sln
 │   │   ├── Filters/RequirePermissionAttribute.cs
 │   │   └── Program.cs
 │   │
-│   └── ONEVO.Admin.Api/                       # Developer console host (/admin/v1/*)
-│       ├── Controllers/
-│       ├── Middleware/PlatformAdminAuthMiddleware.cs
-│       ├── Policies/
+│   └── ONEVO.Admin.Api/                       # Deprecated scaffold only; do not deploy or add controllers
+│       ├── README.md
 │       └── Program.cs
 │
 ├── tests/
@@ -224,7 +223,7 @@ ONEVO.Agent.sln
 ## Layer Dependency Rule
 
 ```
-ONEVO.Api / ONEVO.Admin.Api
+ONEVO.Api
         ↓
 ONEVO.Application  ←  ONEVO.Infrastructure
         ↓
@@ -241,18 +240,31 @@ Enforced by ArchUnitNET tests in `ONEVO.Tests.Architecture`.
 
 ## Host Project Rules
 
-Both host projects are **composition roots only** — no business logic, no DbContext.
+The active host project is a **composition root only** — no business logic, no DbContext. `ONEVO.Admin.Api` is deprecated scaffold only.
 
 | What | Correct Location |
 |---|---|
 | MediatR handler | `ONEVO.Application/Features/{Feature}/Commands/` or `Queries/` |
 | Interface definition | `ONEVO.Application/Common/Interfaces/` |
 | Interface implementation | `ONEVO.Infrastructure/` |
+| Repository/service interface | `ONEVO.Application/Features/{Feature}/Interfaces/` or `ONEVO.Application/Common/Interfaces/` |
+| Repository/service implementation | `ONEVO.Infrastructure/` |
 | Entity | `ONEVO.Domain/Features/{Feature}/Entities/` |
 | EF configuration | `ONEVO.Infrastructure/Persistence/Configurations/{Feature}/` |
 | Migration | `ONEVO.Infrastructure/Persistence/Migrations/` |
-| Controller | `ONEVO.Api/Controllers/{Feature}/` — thin only |
+| Customer API controller | `ONEVO.Api/Controllers/{Feature}/` — thin only, `/api/v1/*` |
+| Developer Console controller | `ONEVO.Api/Controllers/Admin/` — thin only, `/admin/v1/*`, `[Authorize(Policy = "PlatformAdmin")]` |
 | DbContext | `ONEVO.Infrastructure/Persistence/ApplicationDbContext.cs` only |
+
+---
+
+## Persistence Access Rule
+
+Handlers, services, resolvers, and module orchestration classes must not use EF Core or `ApplicationDbContext` directly. Command handlers, query handlers, event handlers, and services use repository/reader interfaces owned by the Application layer. Infrastructure implements those interfaces with EF Core under `Persistence/Repositories/{Feature}/`.
+
+Use the generic `IRepository<T>` for simple aggregate access. Add feature-specific repositories/readers for joins, projections, cross-feature reads, or platform-admin flows. Any operation that needs cross-tenant data or `IgnoreQueryFilters()` must be hidden behind an explicitly named platform/admin repository or service method.
+
+Application does not expose `IApplicationDbContext` or `DbSet<T>` abstractions. `ApplicationDbContext` is an Infrastructure detail used by repositories, EF migrations/configuration, and `IUnitOfWork`. See [[backend/repository-persistence-boundary|Repository Persistence Boundary]].
 
 ---
 

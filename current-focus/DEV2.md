@@ -170,10 +170,12 @@ dotnet test ONEVO.sln --filter WorkforcePresence
 
 - [ ] Notification entity supports tenant, recipient, channel, title, body, read state, and metadata.
 - [ ] Notification preferences exist per user.
+- [ ] Email provider dispatch uses Resend in Phase 1 with `RESEND_API_KEY`, configured sender, and environment-specific app base URL.
 - [ ] In-app notification APIs support list, unread count, mark read, and mark all read.
 - [ ] SignalR event is sent when a new notification is created.
 - [ ] Notification templates can be resolved by event type.
-- [ ] Tests cover creation, unread count, and SignalR dispatch contract.
+- [ ] Auth password reset, employee invite/account setup, and temporary-password emails use the same notification/email dispatch path instead of a logger-only stub before Phase 1 release.
+- [ ] Tests cover creation, unread count, SignalR dispatch contract, channel preference routing, and email dispatch invocation when email is enabled.
 
 ### References
 
@@ -204,5 +206,4 @@ After DEV2 Tasks 1–5 are complete, Dev 2 picks up **DEV1 Task 8 — Developer 
 
 **Requires:** DEV1 Tasks 3, 5, and 7 complete before starting (Dev 1 will have T3/T5 done; Dev 3 will have T7 done).  
 **Acceptance criteria and verification:** see `current-focus/DEV1.md` Task 8.
-
 

@@ -237,6 +237,62 @@ Global catalog of known applications managed by the OneVo dev team via the devel
 
 ---
 
+## `module_catalog`
+
+Global commercial catalog for modules and add-ons. This supports both subscription sales and full-license plus maintenance sales. No tenant access should be inferred from this table alone; it provides default pricing and catalog metadata.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `module_key` | `varchar(100)` | PK; e.g., `core_hr`, `leave`, `payroll`, `workforce_intelligence` |
+| `name` | `varchar(150)` | Display name |
+| `pillar` | `varchar(50)` | `hr`, `workforce_intelligence`, `worksync`, `shared` |
+| `default_price_monthly` | `decimal(10,2)` | Nullable default subscription add-on price |
+| `default_price_annual` | `decimal(10,2)` | Nullable default annual subscription add-on price |
+| `full_license_price` | `decimal(12,2)` | Nullable one-time purchase price |
+| `default_maintenance_rate` | `decimal(5,2)` | Nullable yearly percentage for maintenance, e.g., 18.00 |
+| `pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
+| `is_active` | `boolean` | Whether the module can be sold/provisioned |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+---
+
+## `tenant_module_entitlements`
+
+Tenant-level module/commercial entitlement records. Use this table for module-wise sales, trials, quoted modules, maintenance-included modules, and manual add-ons. It complements `tenant_subscriptions` and `subscription_plans`; it does not replace RBAC.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `module_key` | `varchar(100)` | FK -> module_catalog.module_key |
+| `sales_state` | `varchar(30)` | `purchased`, `trial`, `quoted`, `maintenance_included`, `subscription_included`, `disabled` |
+| `pricing_model` | `varchar(30)` | `subscription`, `full_license`, `maintenance`, `trial`, `custom` |
+| `price` | `decimal(12,2)` | Nullable override price |
+| `currency` | `varchar(3)` | ISO 4217 |
+| `starts_at` | `date` | Nullable entitlement start |
+| `ends_at` | `date` | Nullable entitlement end/trial expiry |
+| `created_by_id` | `uuid` | FK -> users or dev platform account boundary, depending on implementation |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Entitlement rule:** For subscription tenants, enabled modules = plan included modules + paid add-ons + trial modules - disabled modules. For full-license tenants, enabled modules = owned license modules + maintenance-included modules + purchased add-ons + trial modules - disabled modules. Permission catalogs are filtered after this module entitlement resolution.
+
+---
+
+## Commercial Entitlement Notes
+
+The schema supports the commercial model requested by product:
+
+- `tenant_subscriptions.commercial_model` records `subscription` vs `full_license_maintenance`.
+- `tenant_subscriptions.maintenance_status` and `maintenance_renewal_date` track maintenance state for full-license tenants.
+- `tenant_module_entitlements.sales_state` records manual sales state per module: `purchased`, `trial`, `quoted`, `maintenance_included`, `subscription_included`, or `disabled`.
+- Pricing defaults live on `subscription_plans` and `module_catalog`; tenant-specific negotiated pricing lives on `tenant_subscriptions` and `tenant_module_entitlements`.
+
+Pricing and module entitlement decide what the tenant has access to. RBAC permissions decide which users inside that tenant can use the entitled capabilities.
+
+---
+
 ## `rate_limit_rules`
 
 | Column | Type | Notes |
@@ -480,6 +536,8 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `code` | `varchar(20)` | `starter`, `professional`, `enterprise` |
 | `tier` | `varchar(20)` | Ordering tier |
 | `feature_limits` | `jsonb` | e.g., `{"max_employees": 50, "modules": ["core_hr","leave"]}` |
+| `included_modules` | `jsonb` | Plan-allowed/included module keys used by entitlement resolution |
+| `pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
 | `monthly_price` | `decimal(10,2)` |  |
 | `annual_price` | `decimal(10,2)` |  |
 | `currency` | `varchar(3)` | ISO 4217 |
@@ -548,7 +606,15 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `status` | `varchar(20)` | `active`, `past_due`, `cancelled`, `trialing` |
 | `current_period_start` | `date` |  |
 | `current_period_end` | `date` |  |
-| `payment_provider_ref` | `varchar(100)` | Stripe subscription ID |
+| `payment_provider_ref` | `varchar(100)` | Stripe subscription ID, nullable for manual sales contracts |
+| `commercial_model` | `varchar(30)` | `subscription` or `full_license_maintenance` |
+| `billing_currency` | `varchar(3)` | ISO 4217; overrides plan currency for custom contracts |
+| `contract_start_date` | `date` | Commercial agreement start date |
+| `contract_end_date` | `date` | Nullable; required if agreement is fixed-term |
+| `maintenance_status` | `varchar(20)` | `active`, `due`, `expired`, `waived`; used for full-license tenants |
+| `maintenance_renewal_date` | `date` | Nullable; next maintenance renewal date |
+| `maintenance_rate` | `decimal(5,2)` | Nullable percentage of license value, e.g., 18.00 |
+| `custom_contract_value` | `decimal(12,2)` | Nullable manually-entered enterprise contract amount |
 | `created_by_id` | `uuid` | FK → users |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |

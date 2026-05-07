@@ -24,8 +24,19 @@ Event Trigger → Preferences Check → Deduplication → Template Rendering →
 | Channel | Provider | Implementation | Phase |
 |:--------|:---------|:---------------|:------|
 | In-app | Database + SignalR | Insert `notifications` row, push via SignalR | Phase 1 |
-| Email | Resend | Template-based via `notification_templates` | Phase 1 |
+| Email | Resend | Template-based via `notification_templates`; required for Phase 1 customer release | Phase 1 |
 | Push | FCM (Firebase) | Mobile push notifications | Phase 2 (with mobile app) |
+
+### Phase 1 Email Requirement
+
+Phase 1 allows logger-only email stubs for local development before the notification module is implemented, but it must not ship to customers with the stub. Customer onboarding, employee invites/account setup, password reset links, temporary-password flows, and any user-enabled email notification channel must dispatch through the Resend-backed email provider before Phase 1 release.
+
+Required configuration:
+
+- `RESEND_API_KEY`
+- Verified sender address/domain
+- Environment-specific app base URL for generated links
+- Template records for every email notification type shipped in Phase 1
 
 ### Tables
 

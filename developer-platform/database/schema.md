@@ -177,6 +177,21 @@ Provisioning tenants are only visible to developer platform super_admin and admi
 
 ---
 
+## Provisioning Activation Guard
+
+`PATCH /admin/v1/tenants/{id}/provision/confirm` may activate a tenant only after the provisioning draft is complete. The guard requires:
+
+- Completed tenant details: company name, slug, country, timezone, currency, legal entity, and industry profile.
+- Completed subscription/commercial terms: commercial model, plan or custom contract, billing cycle/currency, contract dates, Stripe/manual billing mode, and maintenance status/renewal date when applicable.
+- Completed module selection: active modules and each module's sales state are recorded through the entitlement registry.
+- Completed role template application: at least the tenant owner/admin starter role is materialized from the module-filtered permission catalog. Role template completion is part of provisioning state, not optional decoration.
+- Completed required settings: monitoring defaults, privacy/transparency mode, leave defaults, and any module-required settings.
+- Completed owner invite: first tenant owner exists in invited state and has a set-password invite token/email record.
+
+Activation fails with `422 Unprocessable Entity` and a checklist of missing steps when any required item is incomplete. Provisioning tenants remain invisible to tenant-facing `/api/v1/*` APIs until activation succeeds.
+
+---
+
 ## Security & Access Control
 
 - **OAuth Integration**: dev_platform_accounts authenticate via Google OAuth; tokens are hashed in dev_platform_sessions

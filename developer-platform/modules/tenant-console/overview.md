@@ -12,7 +12,8 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 | `users` | Read — per-tenant user list, last login |
 | `tenant_settings` | Write — initial and override configuration |
 | `subscription_plans` | Read + write — plan assignment |
-| `module_registry` | Write — which modules are active per tenant |
+| module entitlement registry | Write through module interfaces - which modules are active per tenant |
+| role templates / tenant roles | Read + write through Auth interfaces - starter role configuration |
 | Stripe | Read (normal path); bypassed on subscription override |
 | Auth service (JWT) | Write — impersonation token issuance |
 
@@ -24,6 +25,8 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 
 ### Per-Tenant Detail View
 - Current subscription plan and billing dates
+- Commercial model: subscription or full license + maintenance
+- Maintenance status and renewal date for full-license tenants
 - Feature access grants (per-tenant flag overrides)
 - Last login timestamp (any user in the tenant)
 - Total agent count (desktop agents registered)
@@ -35,7 +38,7 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 ### Subscription Override *(exception tool)*
 Manually sets or changes a tenant's subscription plan, bypassing Stripe.
 
-> **Important:** This is an exception path only. The normal, primary flow is: customer self-signup → Stripe checkout → plan auto-assigned. Use subscription override only for:
+> **Important:** This is an exception path only. The normal, primary flow is: sales agreement -> operator creates provisioning draft -> operator assigns commercial terms/modules/role templates/settings -> invite tenant owner -> activate. Use subscription override only for:
 > - Enterprise deals closed by sales (no Stripe checkout)
 > - Trial extensions
 > - Internal test accounts
@@ -43,20 +46,44 @@ Manually sets or changes a tenant's subscription plan, bypassing Stripe.
 
 All overrides are audit-logged with the developer account and reason.
 
+### Commercial Model Management
+ONEVO supports two sales models in Phase 1:
+
+- **Subscription** - the tenant pays recurring SaaS fees for the selected plan/modules.
+- **Full license + maintenance** - the tenant has purchased the agreed suite/license, but continues paying recurring maintenance/support. New modules are sold as add-ons, trials, or maintenance-included upgrades depending on the contract.
+
+The console must keep commercial entitlements separate from RBAC permissions. Commercial state decides whether a tenant has bought or trialed a capability; RBAC decides which users inside that tenant can use it.
+
+Pricing is configurable, not hardcoded. Operators can configure plan base prices, module add-on prices, per-employee/device rates, one-time full-license prices, annual maintenance rates, trial terms, and custom enterprise contract values. Module access is resolved from the active subscription/commercial terms, plan allowed modules, tenant module grants, and tenant feature grants.
+
+For subscription tenants, enabled modules are plan-included modules plus paid add-ons and trial modules, minus disabled modules. For full-license tenants, enabled modules are owned license modules plus maintenance-included modules, purchased add-ons, and trial modules, minus disabled modules. Expired maintenance may block support, updates, or new modules according to contract policy, but it should not automatically remove already-owned core modules unless the signed agreement says so.
+
 ### Manual Customer Provisioning Wizard
-A 6-step, draft-safe wizard for onboarding tenants outside the self-signup flow. A tenant in `provisioning` status is invisible to the main OneVo app until the wizard is confirmed.
+A 7-step, draft-safe wizard for onboarding tenants through the internal operator-only flow. A tenant in `provisioning` status is invisible to the main OneVo app until the wizard is confirmed.
 
 | Step | What Happens |
 |---|---|
 | 1. Account Setup | Company name, slug, country, industry, legal entity name, timezone |
-| 2. Plan Assignment | Pick subscription plan + set billing start date |
-| 3. Module Selection | Toggle which modules are active (writes `module_registry`) |
-| 4. Initial Configuration | Set key `tenant_settings`: monitoring mode, leave policy defaults, transparency mode |
-| 5. Admin User Invite | Create first super-admin user and send invite email |
-| 6. Review & Confirm | Summary view — one-click confirm sets `tenants.status` to `active` |
+| 2. Plan Assignment | Pick subscription plan, commercial model, billing start date, and maintenance status |
+| 3. Module Selection | Toggle active modules and sales state for add-ons/future modules |
+| 4. Role Template Setup | Apply ONEVO defaults or create tenant-specific role templates from the module-filtered permission catalog |
+| 5. Initial Configuration | Set key `tenant_settings`: monitoring mode, leave policy defaults, transparency mode |
+| 6. Admin User Invite | Create first tenant owner/super-admin user and send set-password invite email |
+| 7. Review & Confirm | Summary view — one-click confirm sets `tenants.status` to `active` |
 
 The wizard is **draft-safe**: partially completed tenants remain in `provisioning` status and can be resumed before confirmation.
 
 ## Notes
 
 - Subscription overrides must not be used as a routine billing management tool — direct tenants to Stripe for normal plan changes.
+- Role templates are starter configuration. After activation, the tenant owner can create and edit roles inside the tenant app, but only using permissions exposed by enabled modules.
+
+## Related
+
+- [[developer-platform/modules/role-template-manager|Role Template Manager]]
+- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]]
+- [[modules/auth/overview|Auth & Security]]
+- [[modules/configuration/app-allowlist/overview|App Allowlist]]
+- [[modules/data-import/overview|Data Import]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]

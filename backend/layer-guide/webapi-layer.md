@@ -1,6 +1,6 @@
 # WebApi Layer Guide
 
-Two host projects. Both are composition roots only — no business logic.
+One active host project. `ONEVO.Api` is the composition root for both customer APIs and Developer Console admin APIs; no business logic lives in host code.
 
 ## ONEVO.Api (customer-facing)
 
@@ -56,10 +56,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opts => { /* see security.md */ });
 ```
 
-## ONEVO.Admin.Api (developer console)
+## ONEVO.Api (developer console)
 
 **Base URL:** `/admin/v1/`
 **JWT issuer expected:** `onevo-platform-admin`
-**Same DI pattern** — calls `AddApplication()` + `AddInfrastructure(config)`
+**Controller location:** `ONEVO.Api/Controllers/Admin/`
+**Same DI pattern** — uses the same `AddApplication()` + `AddInfrastructure(config)` registrations as `/api/v1/*`
 
-DevPlatform entities have no `TenantId` — `PlatformAdminAuthMiddleware` validates admin JWT before any endpoint runs.
+DevPlatform entities have no `TenantId`. Admin controllers are protected with `[Authorize(Policy = "PlatformAdmin")]`, backed by the `AdminBearer` platform-admin JWT scheme.

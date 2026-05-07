@@ -306,7 +306,7 @@ These flows track chain reactions across multiple modules — when one action tr
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[developer-platform/userflow/overview\|Developer Platform Overview]] | Internal operator console navigation and access levels | Documented | MUST |
-| [[developer-platform/userflow/provisioning-flow\|Manual Customer Provisioning]] | Internal 6-step tenant provisioning wizard | Documented | SHOULD |
+| [[developer-platform/userflow/provisioning-flow\|Manual Customer Provisioning]] | Internal 7-step tenant provisioning wizard | Documented | SHOULD |
 | [[developer-platform/userflow/tenant-management\|Tenant Management]] | Manage tenant status, details, and operational actions | Documented | SHOULD |
 | [[developer-platform/userflow/feature-flags\|Feature Flags]] | Manage global and tenant-level feature flags | Documented | SHOULD |
 | [[developer-platform/userflow/agent-versions\|Agent Versions]] | Manage desktop agent rollout rings and versions | Documented | SHOULD |

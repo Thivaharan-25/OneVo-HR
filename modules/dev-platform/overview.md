@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-04-27
 
-The `DevPlatform` feature provides the developer console backend. It is served by `ONEVO.Admin.Api` (not `ONEVO.Api`).
+The `DevPlatform` feature provides the developer console backend. In Phase 1 it is served by `/admin/v1/*` inside the single `ONEVO.Api` backend deployment. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed as a second backend unit.
 
 ## Key entities
 
@@ -38,7 +38,7 @@ Infrastructure:
   ONEVO.Infrastructure/Persistence/Configurations/DevPlatform/
 
 API endpoints:
-  ONEVO.Admin.Api/Controllers/DevPlatform/  ← Admin API, not customer API
+  ONEVO.Api/Controllers/Admin/              ← Admin API namespace, not customer API
 
 ## Related
 

@@ -5,9 +5,11 @@
 
 ## Purpose
 
-Daily, weekly, and monthly productivity reports with trend analysis and CSV/Excel export.
+Daily, weekly, and monthly workforce reports with activity rate, productivity score basis, data coverage, trend analysis, and CSV/Excel export.
 
 ## Layout
+
+> UI labels should use "Activity rate" for active percentage and show `productivity_score_basis` beside any productivity score. Do not label active percentage as productivity.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -18,7 +20,7 @@ Daily, weekly, and monthly productivity reports with trend analysis and CSV/Exce
 │ Avg Act% │ Avg Mtg% │ Total    │ Exceptions│ Emp Count     │
 │ 72.5%    │ 18.3%    │ 3,847h   │ 47        │ 487           │
 ├──────────┴──────────┴──────────┴──────────┴────────────────┤
-│ Trend Chart (active % over time)                            │
+│ Trend Chart (activity rate and score basis over time)        │
 │ ─ This period  ─── Previous period                          │
 ├─────────────────────────────────────────────────────────────┤
 │ Employee Table                                              │

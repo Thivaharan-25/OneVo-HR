@@ -1,4 +1,4 @@
-﻿# DEV5: Frontend App Foundation + Developer Platform Console
+# DEV5: Frontend App Foundation + Developer Platform Console
 
 **Track:** Frontend
 **Primary ownership:** main Vite app foundation, auth UI, shared frontend architecture, standalone Developer Platform console
@@ -205,10 +205,11 @@ npm run build
 - [ ] Unsuspend flow requires `super_admin`, confirm dialog, API call, toast, and status update.
 - [ ] Subscription override flow requires `super_admin`, new plan, billing start date, reason, and visible manual override state.
 - [ ] Impersonation flow requires `super_admin`, warning confirmation, opens main app in a new tab, and surfaces token expiry.
-- [ ] `/tenants/new` implements six-step provisioning wizard: account setup, plan assignment, module selection, initial configuration, admin invite, review/confirm.
+- [ ] `/tenants/new` implements seven-step provisioning wizard: account setup, plan assignment, module selection, role template setup, initial configuration, admin invite, review/confirm.
 - [ ] Provisioning wizard is draft-safe after Step 1 and can resume from a `provisioning` tenant.
 - [ ] Step 3 module selection writes the same module grants consumed by main app and IDE extension.
-- [ ] Step 6 activation flips tenant from provisioning to active and updates the tenant list badge.
+- [ ] Step 4 role template setup uses the tenant's module-filtered permission catalog and applies/materializes selected templates.
+- [ ] Step 7 activation flips tenant from provisioning to active and updates the tenant list badge.
 - [ ] Tests cover tenant list filters, tenant detail tabs, suspend role gate, subscription override validation, impersonation role gate, provisioning draft resume, and activation.
 
 ### References
@@ -216,6 +217,7 @@ npm run build
 - [[developer-platform/modules/tenant-console/overview|Tenant Console]] (developer-platform/modules/tenant-console/overview.md)
 - [[developer-platform/userflow/tenant-management|Tenant Management Flows]] (developer-platform/userflow/tenant-management.md)
 - [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
+- [[developer-platform/modules/role-template-manager|Role Template Manager]] (developer-platform/modules/role-template-manager.md)
 - [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
 
 ### Verification

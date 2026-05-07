@@ -11,10 +11,13 @@
 |:-------|:--------|:-------|:---------|
 | JWT RSA private key | `JWT_PRIVATE_KEY` | PEM, base64-encoded | RS256 JWT signing |
 | JWT RSA public key | `JWT_PUBLIC_KEY` | PEM, base64-encoded | RS256 JWT verification |
+| JWT scoped token secret | `JWT_SCOPED_TOKEN_SECRET` | Base64-encoded 32 bytes minimum | Password-change and MFA pending token signing |
 | AES-256 encryption key | `ENCRYPTION_KEY` | Base64-encoded 32 bytes | `bytea` encrypted columns (bank details, SSO creds, API keys) |
 | PostgreSQL connection | `DATABASE_URL` | Railway auto-injects | EF Core data source |
 | Redis connection | `REDIS_URL` | Railway auto-injects | Permission versioning, rate limiting, caching |
 | Resend API key | `RESEND_API_KEY` | Opaque string | Email delivery |
+| Email sender address | `EMAIL_FROM` | Verified email address/domain | Transactional and notification emails |
+| App base URL | `APP_BASE_URL` | Absolute URL | Invite, password reset, and account setup links |
 | Stripe secret key | `STRIPE_SECRET_KEY` | `sk_live_...` / `sk_test_...` | Billing |
 | Argon2id pepper | `PASSWORD_PEPPER` | Base64-encoded 32 bytes | Added to password before hashing (defence-in-depth) |
 | Bridge client secrets | Hashed in DB | Argon2id hash | Service-to-service auth — plaintext only at issuance, never stored |
@@ -27,9 +30,14 @@ All secrets are set in Railway's **Environment Variables** panel per service per
 
 **Never put secrets in:**
 - Source code or config files
+- Application services/classes (services must read secrets through configuration/environment only)
 - Docker Compose (dev Compose uses dummy values only — `dev_password`, `admin`)
 - `.env` files committed to git
 - Application logs
+
+**Local development:** real local secret values may be stored only in git-ignored env files such as `OneVo-backend/.env`, generated from templates/scripts. Template files such as `.env.example` may contain variable names and placeholders only, never real keys.
+
+**Environment promotion rule:** switching from Development to Staging/Production must not silently generate fallback keys. The app must fail fast during startup if required secret env vars are missing or invalid. This prevents tokens from being signed with throwaway in-memory keys after deployment.
 
 ---
 
@@ -42,6 +50,30 @@ All secrets are set in Railway's **Environment Variables** panel per service per
 - Public key stored as `JWT_PUBLIC_KEY` for verification
 - **Rotation:** 24-hour dual-key window — generate new pair, sign new tokens with new key, verify with both keys, retire old key after 24 hours. Users do not need to re-login.
 - **Key ID (`kid`):** Embed in JWT header so the verifier knows which key to use during rotation
+
+### JWT Runtime Environment
+
+Tenant API issuer and audience are non-secret labels:
+
+```text
+JWT_ISSUER=onevo
+JWT_AUDIENCE=onevo-api
+```
+
+Tenant access tokens are signed with `JWT_PRIVATE_KEY`. Internal scoped tokens for password-change and MFA-pending flows are signed with `JWT_SCOPED_TOKEN_SECRET`.
+
+Required tenant auth environment block:
+
+```text
+JWT_PRIVATE_KEY=<base64 PEM private key>
+JWT_SCOPED_TOKEN_SECRET=<base64 32+ random bytes>
+JWT_ISSUER=onevo
+JWT_AUDIENCE=onevo-api
+```
+
+`JWT_SCOPED_TOKEN_SECRET` must decode to at least 32 random bytes and is required before staging or production startup.
+
+Do not store `JWT_PRIVATE_KEY` or `JWT_SCOPED_TOKEN_SECRET` inside token services, source files, committed appsettings files, or database seed data. Token services must only consume these values from the runtime configuration provider. Development may load them from a git-ignored `.env`; staging and production must load them from Railway environment variables.
 
 ### AES-256 Encryption Key
 
@@ -62,6 +94,13 @@ All secrets are set in Railway's **Environment Variables** panel per service per
 - Railway injects `REDIS_URL` automatically for linked Redis services
 - Internal Railway networking — Redis port NOT exposed externally
 - Used for: permission version counters, rate limiting token buckets, policy caching
+
+### Resend Email Delivery
+
+- `RESEND_API_KEY` is required before Phase 1 customer release for all email notification channels and auth-related transactional emails.
+- `EMAIL_FROM` must use a Resend-verified sender domain/address.
+- `APP_BASE_URL` must be environment-specific so password reset, invite, and account setup links point to the correct web app.
+- Logger-only email stubs are acceptable only for local development and automated tests.
 
 ### Bridge Client Secrets
 

@@ -13,7 +13,7 @@ AI agents: these rules override convenience. Never generate code that violates l
 Dependencies point inward only. Outer layers know about inner layers — never the reverse.
 
 ```
-ONEVO.Api / ONEVO.Admin.Api  (outermost)
+ONEVO.Api  (outermost)
         ↓
 ONEVO.Application  ←  ONEVO.Infrastructure
         ↓
@@ -27,7 +27,7 @@ ONEVO.Domain  (innermost — zero external dependencies)
 | `ONEVO.Domain` | Nothing |
 | `ONEVO.Application` | `ONEVO.Domain` only |
 | `ONEVO.Infrastructure` | `ONEVO.Application` + `ONEVO.Domain` |
-| `ONEVO.Api` / `ONEVO.Admin.Api` | `ONEVO.Application` + `ONEVO.Infrastructure` (DI wiring only) |
+| `ONEVO.Api` | `ONEVO.Application` + `ONEVO.Infrastructure` (DI wiring only) |
 
 ---
 
@@ -96,27 +96,33 @@ if (employee is null)
 
 ---
 
-## Rule 4: Cross-feature reads go through IApplicationDbContext
+## Rule 4: Persistence access goes through repositories
 
-Features do not have isolated DbContexts. A handler may query any DbSet it needs.
+Features do not have isolated DbContexts, but handlers still do not query EF Core directly. Command handlers, query handlers, event handlers, application services, domain services, permission resolvers, tenant provisioning services, and module services use repository/reader interfaces defined in Application and implemented in Infrastructure.
+
+Simple aggregate access can use `IRepository<T>`. More complex reads use feature-owned reader interfaces. Cross-feature reads compose multiple reader interfaces rather than reaching into another feature's DbSet. Platform/admin flows that need cross-tenant access must use explicitly named platform/admin repository or service methods.
 
 ```csharp
-// CORRECT: Leave handler reading employee data
+// CORRECT: Leave handler reading employee data through an Application-owned reader
 public class CreateLeaveRequestHandler : IRequestHandler<...>
 {
-    private readonly IApplicationDbContext _db;
+    private readonly IEmployeeReader _employees;
 
     public async Task<Result<LeaveRequestDto>> Handle(CreateLeaveRequestCommand cmd, CancellationToken ct)
     {
-        var employee = await _db.Employees
-            .FirstOrDefaultAsync(e => e.Id == cmd.EmployeeId, ct);
+        var employee = await _employees.GetByIdAsync(cmd.EmployeeId, ct);
         // ...
     }
 }
 
+// FORBIDDEN: EF access in handler, even through the abstraction
+private readonly IApplicationDbContext _db;
+
 // FORBIDDEN: direct DbContext in handler
 private readonly ApplicationDbContext _db; // ← concrete, not interface
 ```
+
+Repository implementations live in `ONEVO.Infrastructure/Persistence/Repositories/{Feature}/` and are the normal place for EF Core, `IgnoreQueryFilters()`, raw SQL, tenant predicates, projections, and locking. See [[backend/repository-persistence-boundary|Repository Persistence Boundary]].
 
 ---
 
@@ -157,12 +163,12 @@ Every handler, repository call, and external HTTP call receives `CancellationTok
 // CORRECT
 public async Task<Result<T>> Handle(TCommand cmd, CancellationToken ct)
 {
-    var entity = await _db.Set<T>().FirstOrDefaultAsync(x => x.Id == cmd.Id, ct);
+    var entity = await _repository.GetByIdAsync(cmd.Id, ct);
     await _uow.SaveChangesAsync(ct);
 }
 
 // FORBIDDEN
-await _db.Set<T>().FirstOrDefaultAsync(x => x.Id == cmd.Id); // ← no ct
+await _repository.GetByIdAsync(cmd.Id, CancellationToken.None); // ← do not drop request ct
 ```
 
 ---
@@ -201,6 +207,15 @@ public void Handlers_Should_Not_Use_Concrete_DbContext()
     Types().That().HaveNameEndingWith("Handler")
         .Should().NotDependOnAnyTypesThat()
         .HaveExactlyName("ApplicationDbContext")
+        .Check(Architecture);
+}
+
+[Fact]
+public void Handlers_Should_Not_Depend_On_IApplicationDbContext()
+{
+    Types().That().HaveNameEndingWith("Handler")
+        .Should().NotDependOnAnyTypesThat()
+        .HaveExactlyName("IApplicationDbContext")
         .Check(Architecture);
 }
 ```

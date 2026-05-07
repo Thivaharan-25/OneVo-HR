@@ -152,7 +152,7 @@ Detected meeting time.
 
 ### `screenshots`
 
-Optional periodic screenshots. **RESTRICTED data classification.**
+Optional manual/on-demand screenshots. **RESTRICTED data classification.** Scheduled or random screenshots are not supported in Phase 1.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -180,7 +180,13 @@ Pre-aggregated daily rollup. **This is the primary table for reporting.**
 | `total_active_minutes` | `int` | |
 | `total_idle_minutes` | `int` | |
 | `total_meeting_minutes` | `int` | |
-| `active_percentage` | `decimal(5,2)` | |
+| `active_percentage` | `decimal(5,2)` | Activity rate; not final productivity |
+| `productive_app_minutes` | `int` | Active time in work-classified apps/domains |
+| `personal_app_minutes` | `int` | Active time in personal-classified apps/domains |
+| `unknown_app_minutes` | `int` | Active time where app/domain classification is unknown |
+| `focus_minutes` | `int` | Time in 30+ minute uninterrupted productive sessions |
+| `activity_score` | `decimal(5,2)` | Monitoring-derived score, 0-100 |
+| `data_coverage_percentage` | `decimal(5,2)` | How complete agent/presence data is for the day |
 | `top_apps_json` | `jsonb` | Top 5 apps with time |
 | `intensity_avg` | `decimal(5,2)` | Average intensity score |
 | `keyboard_total` | `int` | Total keyboard events |
@@ -251,12 +257,14 @@ Device interaction tracking per day.
 
 1. **Activity data is append-only.** Never UPDATE rows in `activity_snapshots`, `application_usage`, or `activity_raw_buffer`.
 2. **Window titles are hashed** (SHA-256) before storage. Never store raw window titles — they may contain sensitive business data.
-3. **Never log activity content** — log activity COUNTS (keyboard_events_count, mouse_events_count) but NEVER window titles, application names, or screenshot contents.
+3. **Never log activity content** — log activity COUNTS (keyboard_events_count, mouse_events_count), application/process names needed for categorization, and hashed window titles only. Never store keystroke content, raw window titles, full URLs, page content, search queries, or screenshot contents in logs.
 4. **Feature toggle check:** Before processing any data, verify the feature is enabled for this employee via `IConfigurationService`. The desktop agent checks policy on login, but the **server must double-validate**.
 5. **Intensity score formula:** `(keyboard_events_count + mouse_events_count) / max_expected_events * 100`, capped at 100.
 6. **Presence-window validation:** Only process activity snapshots that fall within an active presence session. Snapshots outside clock-in/clock-out or during breaks are discarded with a warning log. See [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]].
 7. **App allowlist check:** During `ProcessRawBufferJob`, each `app_usage` record is checked against the employee's resolved allowlist (via `IConfigurationService.GetResolvedAppAllowlistAsync`). The `is_allowed` flag is set on `application_usage`. If cumulative non-allowed usage exceeds the tenant's `violation_threshold_minutes`, publish `AppAllowlistViolationDetected` event.
 8. **Break time exclusion:** Activity data received during break periods is discarded. The `total_active_minutes` and `total_idle_minutes` in `activity_daily_summary` only count time within active presence windows (excluding breaks).
+9. **Activity score is not productivity.** Activity Monitoring produces `activity_score` and supporting context only. Final `productivity_score` is owned by Productivity Analytics and may combine this data with WorkSync output evidence.
+10. **Meeting handling:** Valid meeting minutes inside presence windows count as work context and reduce idle penalties. Low input activity during a detected meeting is not automatically low productivity.
 
 ---
 
@@ -322,7 +330,7 @@ Agent → Agent Gateway (202 Accepted)
 
 ## Features
 
-- [[modules/activity-monitoring/screenshots/overview|Screenshots]] — Optional periodic screenshot capture (RESTRICTED data)
+- [[modules/activity-monitoring/screenshots/overview|Screenshots]] — Optional manual/on-demand screenshot capture (RESTRICTED data)
 - [[modules/activity-monitoring/meeting-detection/overview|Meeting Detection]] — Meeting time tracking via process name matching
 - [[modules/activity-monitoring/application-tracking/overview|Application Tracking]] — Application usage categorization and time tracking
 - [[modules/activity-monitoring/raw-data-processing/overview|Raw Data Processing]] — Buffer ingestion and snapshot parsing pipeline

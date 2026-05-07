@@ -1,4 +1,4 @@
-﻿# DEV7: Frontend WorkSync Web UI
+# DEV7: Frontend WorkSync Web UI
 
 **Track:** Frontend
 **Primary ownership:** WorkSync web UI, projects, tasks, boards, docs, time

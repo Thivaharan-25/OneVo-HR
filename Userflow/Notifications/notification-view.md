@@ -1,7 +1,7 @@
 # Notification View
 
 **Area:** Notifications  
-**Trigger:** User opens notification panel (user action — view only)
+**Trigger:** User opens notification panel (user action - view only)
 **Required Permission(s):** Any authenticated user  
 **Related Permissions:** `notifications:manage` (manage org notifications)
 
@@ -11,8 +11,8 @@
 
 | Channel | Purpose | Content |
 |:--------|:--------|:--------|
-| **Notification Bell** (topbar) | FYI updates — no action needed | "John was promoted", "Policy updated", system announcements |
-| **Inbox** (sidebar) | Actionable items — needs your decision | Leave approvals, expense reviews, onboarding sign-offs, assigned tasks |
+| **Notification Bell** (topbar) | FYI updates - no action needed | "John was promoted", "Policy updated", system announcements |
+| **Inbox** (sidebar) | Phase 1 actionable items - needs your decision | Leave approvals, expense reviews, skill validations, attendance corrections, overtime approvals, remote location change requests |
 
 Users should never have to check two places for the same thing. Each notification routes to exactly one channel based on whether it requires action.
 
@@ -24,25 +24,26 @@ Users should never have to check two places for the same thing. Each notificatio
 ## Flow Steps
 
 ### Step 1: View Notifications
-- **UI:** Click bell icon in top navigation bar → dropdown shows unread notifications (most recent first)
-- **Real-time:** New notifications appear instantly via SignalR on `notifications-{userId}` channel → [[backend/real-time|Real-Time Architecture]]
+- **UI:** Click bell icon in top navigation bar -> dropdown shows unread FYI notifications (most recent first)
+- **Real-time:** New notifications appear instantly via SignalR on `notifications-{userId}` channel -> [[backend/real-time|Real-Time Architecture]]
 - **API:** `GET /api/v1/notifications?unread=true`
 
 ### Step 2: Read & Navigate
-- **UI:** Click notification → navigates to related item (e.g., leave request, performance review, alert) → notification marked as read
+- **UI:** Click notification -> navigates to related item and marks notification as read
 - **API:** `PUT /api/v1/notifications/{id}/read`
-- **DB:** `notifications` — `read_at` set
+- **DB:** `notifications` - `read_at` set
 
 ### Step 3: Manage Notifications
-- **UI:** "Mark All as Read" → view full notification history → filter by category → search
+- **UI:** "Mark All as Read" -> view full notification history -> filter by category -> search
 
 ### Step 4: Notification Center
-- **UI:** Click "View All" → full notification center page → pagination → filter by type, date, read/unread
+- **UI:** Click "View All" -> full notification center page -> pagination -> filter by type, date, read/unread
 
 ## Variations
 
 ### Unread badge count
-- Bell icon shows unread count (max "99+") → updates real-time
+- Bell icon shows unread FYI count (max "99+") -> updates real-time
+- Inbox badge shows unresolved actionable count and is handled by [[Userflow/Notifications/inbox|Inbox]]
 
 ## Error Scenarios
 
@@ -58,6 +59,7 @@ Users should never have to check two places for the same thing. Each notificatio
 ## Related Flows
 
 - [[Userflow/Notifications/notification-preference-setup|Notification Preference Setup]]
+- [[Userflow/Notifications/inbox|Inbox]]
 - All flows that trigger notifications
 
 ## Module References

@@ -18,12 +18,22 @@ ONEVO.Application/Features/{Feature}/
 └── EventHandlers/               INotificationHandler<IDomainEvent>
 ```
 
+## Persistence Access Rule
+
+Handlers and services do not use EF Core or `ApplicationDbContext` directly. All database reads and writes go through Application-owned repository/reader interfaces, implemented in Infrastructure.
+
+Use `IRepository<T>` for simple aggregate CRUD. Create feature-specific repository or reader interfaces when a use case needs joins, projections, cross-feature reads, explicit platform-admin access, or any query that would otherwise require `IgnoreQueryFilters()`.
+
+Application does not expose `IApplicationDbContext` or `DbSet<T>`. Repository interfaces are the persistence boundary; Infrastructure repositories own EF Core queries, tenant predicates, projections, and locking.
+
+This is the ONEVO security default because repository boundaries centralize tenant filtering, soft-delete behavior, cancellation, and the rare places where platform-level cross-tenant access is allowed.
+
 ## Interfaces (all defined here, implemented in Infrastructure)
 
 | Interface | Purpose |
 |---|---|
-| `IApplicationDbContext` | DbSet properties — handlers query via this |
-| `IRepository<T>` | Generic CRUD — GetByIdAsync, AddAsync, Update, Delete |
+| Repository/reader interfaces | Persistence contracts for handlers and services; implemented in Infrastructure repositories |
+| `IRepository<T>` | Generic tenant-safe CRUD, when present; GetByIdAsync, AddAsync, Update, Delete |
 | `IUnitOfWork` | SaveChangesAsync — atomic save + domain event dispatch |
 | `ICurrentUser` | UserId, TenantId, Permissions[] from JWT |
 | `ICacheService` | Get/Set/Remove — L1+L2 abstraction |

@@ -40,31 +40,37 @@
 - **Validation:** Timezone must be a valid IANA timezone identifier. Currency must be a valid ISO 4217 code
 - **DB:** None
 
-### Step 4: Submit and Provision Tenant
-- **UI:** Click "Provision Tenant" button. Loading spinner with progress steps shown: "Creating schema...", "Seeding defaults...", "Creating admin user..."
-- **API:** `POST /api/v1/admin/tenants`
+### Step 4: Create Draft Tenant
+- **UI:** Click "Create Tenant". The tenant enters the provisioning wizard and remains invisible to customer-facing APIs until activation.
+- **API:** `POST /admin/v1/tenants`
 - **Backend:** `TenantProvisioningService.ProvisionAsync()` → [[modules/infrastructure/overview|Infrastructure]]
   1. Creates a new row in `tenants` table with status `provisioning`
-  2. Executes database schema provisioning (applies all migrations for the new tenant schema using row-level security with `tenant_id`)
-  3. Seeds default data: system roles (Super Admin, Employee), default permissions (all 90+), default leave types, default notification templates
-  4. Sets tenant configuration (timezone, currency, fiscal year)
+  2. Uses the shared application schema with tenant-scoped rows; no per-tenant database or schema is created
+  3. Stores initial configuration values captured so far
 - **Validation:** Company name must be unique. Registration number validated against country format. Email domain not already registered to another tenant
-- **DB:** `tenants`, `tenant_settings`, `roles` (system defaults), `role_permissions` (default mappings), `permissions` (references)
+- **DB:** `tenants`, `tenant_settings`
 
-### Step 5: Create First Admin User
-- **UI:** Form: Admin Email, Admin First Name, Admin Last Name. System auto-generates a temporary password
-- **API:** `POST /api/v1/admin/tenants/{tenantId}/first-admin`
+### Step 5: Configure Plan, Modules, Role Templates, and Initial Settings
+- **UI:** Operator selects plan/commercial model, pricing terms, enabled modules, module sales states, starter role templates, settings defaults, integration prerequisites, workflow defaults, and optional data-import setup.
+- **API:** `PATCH /admin/v1/tenants/{tenantId}/subscription`, `PUT /admin/v1/tenants/{tenantId}/modules`, `GET /admin/v1/tenants/{tenantId}/permissions/catalog`, `POST /admin/v1/tenants/{tenantId}/role-templates/{templateId}/apply`, `PATCH /admin/v1/tenants/{tenantId}/settings`
+- **Backend:** Module services validate commercial plan/module choices, pricing terms, module sales states, expose the module-filtered permission catalog, materialize selected role templates, and write initial settings/workflow/configuration records through their owning modules.
+- **Validation:** Role-template permissions must belong to enabled modules. Disabled/unpurchased module permissions cannot be assigned.
+- **DB:** `tenant_subscriptions`, module entitlement/pricing records, `roles`, `role_permissions`, `tenant_settings`, workflow/configuration tables as selected.
+
+### Step 6: Invite Tenant Owner
+- **UI:** Form: Admin Email, Admin First Name, Admin Last Name. System sends a set-password link.
+- **API:** `POST /admin/v1/tenants/{tenantId}/invite-admin`
 - **Backend:** `UserService.CreateAdminAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
   1. Creates user record in `users` table
-  2. Assigns the system "Super Admin" role (all permissions)
+  2. Assigns the configured tenant owner role created from the selected role template
   3. Creates employee stub record linked to the user
-  4. Sends invitation email with temporary password and login link
+  4. Sends set-password invitation email with login link
 - **Validation:** Email must be unique across the platform. Email domain should match company domain (warning if not, but allowed)
 - **DB:** `users`, `user_roles`, `employees`
 
-### Step 6: Provisioning Complete
+### Step 7: Provisioning Complete
 - **UI:** Success screen showing: Tenant ID, Login URL, Admin email. "Go to Tenant Dashboard" button
-- **API:** `PATCH /api/v1/admin/tenants/{tenantId}/status` (sets status to `active`)
+- **API:** `PATCH /admin/v1/tenants/{tenantId}/provision/confirm` (sets status to `active`)
 - **Backend:** `TenantProvisioningService.ActivateAsync()` updates tenant status. Publishes `TenantProvisionedEvent`
 - **Validation:** All provisioning steps must have completed successfully
 - **DB:** `tenants` (status → `active`)
@@ -78,10 +84,17 @@
 - Failed provisioning attempt logged in `audit_logs`
 
 ### Module entitlement selection (always required)
-- During provisioning, the operator selects which pillars are enabled for this tenant based on what was purchased: HR Management, Workforce Intelligence, WorkSync, or any combination
+- During provisioning, the operator selects which modules are enabled for this tenant based on the commercial agreement: HR Management modules, Workforce Intelligence modules, WorkSync modules, or any combination
 - Only selected pillars' seed data and feature flags are provisioned — e.g., a tenant without Workforce Intelligence gets no monitoring tables seeded and no `/workforce/*` routes visible
-- Module entitlement is stored on the `tenants` record (`enabled_pillars`) and checked server-side on every API request and client-side for route visibility
+- Module entitlement is resolved from `tenant_subscriptions`, plan allowed modules, and tenant-level module/feature grants, then checked server-side on every API request and client-side for route visibility
 - When ONEVO releases a new module in the future, an operator manually enables it for tenants that have paid for the upgrade — no automatic upgrade
+
+### Role template and permission catalog selection (always required)
+- After module selection, Developer Platform loads a tenant permission catalog from `/admin/v1/tenants/{tenantId}/permissions/catalog`.
+- The catalog includes only universal permissions and permissions from modules enabled for that tenant.
+- The operator applies ONEVO starter role templates or creates tenant-specific role templates from that filtered catalog.
+- Applied templates create normal tenant-scoped `roles` and `role_permissions`; they are starter configuration, not a separate runtime authorization model.
+- Tenant owners can later create or edit roles in the tenant app, but they are still limited to permissions exposed by enabled modules.
 
 ### When Workforce Intelligence (monitoring) is enabled
 Recommended setup sequence after provisioning completes:
@@ -106,7 +119,7 @@ See [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] for the f
 | Invalid registration number | Validation fails | "Registration number format is invalid for the selected country" |
 | Email domain already registered | `409 Conflict` returned | "This email domain is already associated with another tenant" |
 | Database provisioning timeout | Transaction rolled back, status set to `failed` | "Provisioning timed out. Please try again or contact support" |
-| Email delivery fails | Tenant created but admin not notified | Warning: "Tenant created but invitation email failed. Copy the temporary credentials manually" |
+| Email delivery fails | Tenant owner invite remains unsent or failed | Warning: "Tenant created but invitation email failed. Fix email delivery and resend the set-password invite." |
 
 ## Events Triggered
 
@@ -123,6 +136,13 @@ See [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] for the f
 - [[Userflow/Auth-Access/user-invitation|User Invitation]] — invite additional users
 - [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]] — configure monitoring + allowlist mode after provisioning
 - [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] — build app allowlist before enabling enforcement
+- [[developer-platform/modules/role-template-manager|Role Template Manager]] — create and apply role templates during provisioning
+- [[Userflow/Auth-Access/role-creation|Role Creation]] — tenant owner role management after activation
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — permission override and effective permission behavior
+- [[modules/data-import/overview|Data Import]] — CSV/Excel/PeopleHR migration path
+- [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]] — raw-first PeopleHR migration
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] — approval workflow defaults
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — job families and default role mapping
 
 ## Module References
 

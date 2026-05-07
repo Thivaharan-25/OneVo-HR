@@ -21,8 +21,8 @@
 
 ### Step 2: Configure What's Tracked
 - **UI:** Toggle each feature:
-  - Activity tracking (app usage, window titles) -> ON/OFF
-  - Screenshot capture -> ON/OFF -> set interval (5/10/15/30 min)
+  - Activity tracking (app usage, hashed window titles) -> ON/OFF
+  - Screenshot capture -> ON/OFF for manual/on-demand manager commands only (no scheduled interval in Phase 1)
   - Meeting detection -> ON/OFF
   - Idle detection -> ON/OFF -> set idle threshold (5/10/15 min)
   - Identity verification -> ON/OFF -> set capture interval

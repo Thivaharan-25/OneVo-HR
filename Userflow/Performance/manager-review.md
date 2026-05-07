@@ -27,7 +27,7 @@
 - **Backend:** ReviewService.SubmitManagerReviewAsync() → [[modules/performance/reviews/overview|Reviews]]
 
 ### Step 4: Include Productivity Data (if `workforce:view`)
-- **UI:** Toggle "Include Productivity Metrics" → system pulls: avg daily productive hours, top apps, attendance pattern, exception count
+- **UI:** Toggle "Include Productivity Metrics" → system pulls: productivity score, score basis, data coverage, activity rate, work-classified app time, top apps, attendance pattern, WorkSync output signals when available, exception count
 - Links: [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]], [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
 
 ### Step 5: Submit

@@ -10,7 +10,7 @@ The Feature Flag Manager controls which features and modules are enabled globall
 |---|---|
 | `feature_flags` | Read + write — global flag definitions and default values |
 | `feature_access_grants` | Read + write — per-tenant flag overrides |
-| `module_registry` | Read + write — which modules are active per tenant |
+| module entitlement registry | Read + write through module interfaces - which modules are active per tenant |
 
 All of these tables live in the **SharedPlatform** layer and affect all OneVo tenants.
 
@@ -31,7 +31,7 @@ All of these tables live in the **SharedPlatform** layer and affect all OneVo te
 
 ### Module Enable / Disable
 - Turn specific OneVo modules on or off for individual tenants
-- Writes directly to `module_registry`
+- Writes through the module entitlement service/repository boundary
 - Reflects in what the tenant's users see in their OneVo navigation
 
 ### Audit Trail

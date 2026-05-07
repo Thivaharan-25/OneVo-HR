@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Tenant provisioning and management. `industry_profile` sets monitoring defaults at signup.
+Operator-only tenant lifecycle management through Developer Platform. `industry_profile` sets monitoring defaults during operator provisioning.
 
 ## Database Tables
 
@@ -16,15 +16,15 @@ Key columns: `name`, `slug` (UNIQUE), `industry_profile` (`office_it`, `manufact
 
 ## Key Business Rules
 
-1. Provisioning flow: Signup → seed default data (roles, permissions, monitoring toggles) → activate.
+1. Provisioning flow: Operator creates provisioning draft -> assign plan/modules/settings/role templates -> invite owner -> activate.
 
 ## API Endpoints
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| POST | `/api/v1/tenants` | Public (signup) | Provision new tenant |
+| POST | `/admin/v1/tenants` | Platform admin | Create draft tenant through Developer Platform |
 | GET | `/api/v1/tenants/current` | Authenticated | Get current tenant |
-| PUT | `/api/v1/tenants/current` | `settings:admin` | Update tenant |
+| PUT | `/api/v1/tenants/current` | `settings:admin` | Update tenant-facing profile/settings only; full provisioning config is split across admin endpoints |
 
 ## Related
 

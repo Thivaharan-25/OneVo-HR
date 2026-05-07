@@ -1,149 +1,69 @@
 # MFA Setup
 
 **Area:** Auth & Access
-**Trigger:** Employee navigates to security settings (user action — self-service)
+**Trigger:** Employee navigates to security settings (user action - self-service)
 **Required Permission(s):** None (any authenticated user can enable MFA on their own account)
 **Related Permissions:** `users:manage` (admin can enforce MFA for all users or reset MFA for a user)
 
 ---
 
+## Phase 1 Rule
+
+MFA uses email OTP in Phase 1. Authenticator-app TOTP is deferred/optional and must not be the default flow.
+
 ## Preconditions
 
-- User is authenticated and has an active session
-- User has a TOTP-compatible authenticator app installed (Google Authenticator, Authy, Microsoft Authenticator, etc.)
+- User is authenticated and has an active session.
+- User has a verified email address.
+- Email delivery is configured through the notification/email boundary. Local development may log OTPs; Phase 1 customer release requires Resend-backed delivery.
 
 ## Flow Steps
 
 ### Step 1: Navigate to Security Settings
-- **UI:** Click user avatar (top-right) > "Security Settings" or navigate to Profile > Security tab. Page shows: Password section (last changed date, "Change Password" button), MFA section (status: Enabled/Disabled), Active Sessions list
+- **UI:** Click user avatar > Security Settings or Profile > Security tab. Page shows password status, MFA status, verified email, and active sessions.
 - **API:** `GET /api/v1/users/me/security`
-- **Backend:** `UserSecurityService.GetSecuritySettingsAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
-- **Validation:** Authenticated user only (JWT required)
-- **DB:** `users`, `user_mfa_settings`, `sessions`
+- **DB:** `users`, `user_mfa`, `sessions`
 
-### Step 2: Click Enable MFA
-- **UI:** In the MFA section, click "Enable Two-Factor Authentication" button. Information panel explains: "Two-factor authentication adds an extra layer of security. You'll need to enter a code from your authenticator app each time you sign in"
+### Step 2: Enable Email OTP MFA
+- **UI:** User clicks "Enable two-factor authentication". Copy explains that sign-in will require a 6-digit code sent to the verified email address.
 - **API:** `POST /api/v1/auth/mfa/enable`
-- **Backend:** `MfaService.InitiateSetupAsync()` → [[modules/auth/mfa/overview|MFA]]
-  1. Generate a random TOTP secret (Base32 encoded, 160 bits)
-  2. Store secret temporarily (not yet confirmed) with status `pending_verification`
-  3. Generate QR code data URL from the OTP Auth URI: `otpauth://totp/ONEVO:{email}?secret={secret}&issuer=ONEVO&algorithm=SHA1&digits=6&period=30`
-  4. Generate 10 backup codes (8-character alphanumeric, cryptographically random)
-  5. Return QR code and backup codes to client
-- **Validation:** MFA must not already be enabled for this user
-- **DB:** `user_mfa_settings` (status: `pending_verification`, secret stored encrypted)
+- **Backend:** `MfaService.EnableEmailOtpAsync()` creates or verifies `user_mfa.method = email_otp`.
+- **Validation:** Email must be verified. MFA must not already be enabled.
+- **DB:** `user_mfa`
 
-### Step 3: Scan QR Code
-- **UI:** Modal displays:
-  1. QR code image (scannable by authenticator app)
-  2. Manual entry key (text format of the secret, for manual entry if QR scanning fails)
-  3. "I've scanned the QR code" button to proceed
-  4. Instructions: "Open your authenticator app, tap + to add account, scan this QR code"
-- **API:** N/A (client-side display)
-- **Backend:** N/A
-- **Validation:** N/A
-- **DB:** None
+### Step 3: Confirm With OTP
+- **UI:** System sends a 6-digit code and asks the user to enter it. The page shows masked email, expiry, and resend cooldown.
+- **API:** `POST /api/v1/auth/mfa/send`, then `POST /api/v1/auth/mfa/verify`
+- **Backend:** Creates `mfa_otp_challenges`, sends code, verifies hash, marks challenge consumed.
+- **Validation:** Code expires after 5 minutes and locks after 3 failed attempts.
+- **DB:** `mfa_otp_challenges`
 
-### Step 4: Verify Setup Code
-- **UI:** Input field: "Enter the 6-digit code displayed in your authenticator app to verify setup". Submit button. This ensures the user has correctly scanned the QR code
-- **API:** `POST /api/v1/auth/mfa/verify-setup`
-  ```json
-  {
-    "code": "123456"
-  }
-  ```
-- **Backend:** `MfaService.ConfirmSetupAsync()` → [[modules/auth/mfa/overview|MFA]]
-  1. Retrieve pending MFA secret for the user
-  2. Validate TOTP code against the secret (30-second window, 1 step drift allowed)
-  3. If valid: update `user_mfa_settings` status to `active`
-  4. Hash and store backup codes in `mfa_backup_codes`
-  5. Publish `MfaEnabledEvent`
-- **Validation:** Code must match the TOTP algorithm output. Code must not be reused (replay protection via last-used timestamp)
-- **DB:** `user_mfa_settings` (status → `active`), `mfa_backup_codes` (10 codes stored as bcrypt hashes)
+### Step 4: MFA Enabled
+- **UI:** Success message: "Two-factor authentication has been enabled." Security Settings now shows email OTP enabled.
+- **Events:** `MfaEnabledEvent`, audit log `mfa.enabled`.
 
-### Step 5: Display Backup Codes
-- **UI:** Backup codes displayed in a grid (10 codes):
-  ```
-  A7K2-M3NP    B8L4-Q5RS    C9M6-T7UV
-  D1N8-W9XY    E2P0-Z1AB    F3Q2-C4DE
-  G4R5-F6GH    H5S7-J8KL    I6T9-M0NP
-  J7U1-Q2RS
-  ```
-  "Download as text file" button, "Copy to clipboard" button, "Print" button.
-  Warning: "Save these backup codes in a safe place. Each code can only be used once. If you lose access to your authenticator app, you can use a backup code to sign in"
-  
-  Checkbox: "I have saved my backup codes" (must be checked to proceed)
-- **API:** N/A (codes were returned in Step 2 response, displayed here)
-- **Backend:** N/A
-- **Validation:** User must acknowledge saving backup codes
-- **DB:** None
+## Admin Operations
 
-### Step 6: MFA Enabled
-- **UI:** Success message: "Two-factor authentication has been enabled". Security Settings page updates to show MFA status: Enabled, with options: "View Backup Codes" (requires password re-entry), "Regenerate Backup Codes", "Disable MFA"
-- **API:** N/A
-- **Backend:** N/A
-- **Validation:** N/A
-- **DB:** None
-
-## Variations
-
-### When admin enforces MFA for all users
-- Admin navigates to Settings > Security > MFA Policy
-- Toggle "Require MFA for all users"
-- `PUT /api/v1/settings/security/mfa-policy` → sets `mfa_required: true` in `tenant_settings`
-- On next login, users without MFA see a mandatory setup flow (cannot skip)
-- Users receive notification: "Your organization now requires two-factor authentication"
-
-### When admin resets a user's MFA
-- Admin navigates to user profile > Security > click "Reset MFA"
-- `DELETE /api/v1/users/{userId}/mfa` (requires `users:manage`)
-- User's MFA secret and backup codes are deleted
-- User must set up MFA again on next login (if MFA is enforced by policy)
-- User receives email notification: "Your two-factor authentication has been reset"
-
-### When user disables their own MFA
-- From Security Settings, click "Disable MFA"
-- Must enter current password to confirm
-- If tenant policy requires MFA: disable is blocked with message "Your organization requires two-factor authentication"
-- If allowed: MFA secret and backup codes deleted, status set to `disabled`
-
-### When regenerating backup codes
-- From Security Settings, click "Regenerate Backup Codes"
-- Must enter current password to confirm
-- Old backup codes invalidated, 10 new codes generated
-- New codes displayed for download/saving
-
-### When using a backup code during login
-- During [[Userflow/Auth-Access/login-flow|login]], on MFA screen, click "Use backup code"
-- Enter 8-character backup code instead of TOTP code
-- Code validated against stored hashes, marked as used
-- Warning shown: "You have X backup codes remaining. Consider regenerating if running low"
+- Admin can require MFA for all users through tenant security settings.
+- Admin can reset a user's MFA via `DELETE /api/v1/users/{userId}/mfa` with `users:manage`.
+- Reset deletes active `user_mfa` method rows and unconsumed OTP challenges for that user.
 
 ## Error Scenarios
 
-| Scenario | What happens | User sees |
-|:---------|:-------------|:----------|
-| MFA already enabled | `409 Conflict` returned | "Two-factor authentication is already enabled on your account" |
-| Invalid verification code | `400 Bad Request` returned | "Invalid verification code. Please check your authenticator app and try again" |
-| QR code scanned incorrectly | Code verification fails | "The code doesn't match. Please scan the QR code again or enter the key manually" |
-| All backup codes used | No backup codes remaining | "All backup codes have been used. Please generate new backup codes from Security Settings" |
-| MFA disable blocked by policy | `403 Forbidden` returned | "Your organization requires two-factor authentication. MFA cannot be disabled" |
+| Scenario | Handling |
+|:---|:---|
+| Email not verified | Block setup and require email verification |
+| Resend/notification unavailable | Local dev logs code; production returns delivery failure |
+| Invalid OTP | Increment attempt counter |
+| OTP expired | User must resend code |
+| Too many attempts | Challenge locks |
 
-## Events Triggered
+## Related
 
-- `MfaEnabledEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging and notification module
-- `MfaDisabledEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging and security alerting
-- `AuditLogEntry` (action: `mfa.enabled`, `mfa.disabled`, `mfa.reset`) → [[modules/auth/audit-logging/overview|Audit Logging]]
-
-## Related Flows
-
-- [[Userflow/Auth-Access/login-flow|Login Flow]] — MFA verification during login
-- [[Userflow/Auth-Access/password-reset|Password Reset]] — password reset does not disable MFA
-- [[Userflow/Auth-Access/user-invitation|User Invitation]] — MFA can be enforced from first login
-
-## Module References
-
-- [[modules/auth/mfa/overview|MFA]] — TOTP implementation, backup codes
-- [[frontend/cross-cutting/authentication|Authentication]] — integration with login flow
-- [[modules/auth/session-management/overview|Session Management]] — session handling after MFA verification
-- [[modules/configuration/overview|Configuration]] — tenant-level MFA policy
+- [[Userflow/Auth-Access/login-flow|Login Flow]]
+- [[Userflow/Auth-Access/password-reset|Password Reset]]
+- [[Userflow/Auth-Access/user-invitation|User Invitation]]
+- [[modules/auth/mfa/overview|MFA]]
+- [[modules/notifications/overview|Notifications]]
+- [[modules/auth/session-management/overview|Session Management]]
+- [[modules/configuration/overview|Configuration]]

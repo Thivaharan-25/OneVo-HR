@@ -23,7 +23,7 @@
 ### Step 2: Define Condition
 - **UI:** Build condition:
   - **Attendance:** "Late arrival > 15 min for 3+ days in a week" / "Absent without leave" / "Early departure"
-  - **Productivity:** "Productive hours < 4h/day for 3+ days" / "Unproductive app > 2h/day" / "Idle time > 3h/day"
+  - **Activity/Productivity:** "Work-classified app time < 4h/day for 3+ days" / "Personal or non-allowed app > 2h/day" / "Idle time > 3h/day" / "Composite productivity score below threshold when score basis is comparable"
   - **App Allowlist:** "Non-allowed app used for more than X minutes" (`non_allowed_app` rule type)
     - Requires `allowlist_mode = allowlist` and allowlist configured → [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]]
     - Set `violation_threshold_minutes` in `threshold_json` to avoid alerting on accidental brief opens

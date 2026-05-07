@@ -44,8 +44,27 @@ interface ActivityDailySummary {
   totalIdleMinutes: number;
   totalMeetingMinutes: number;
   activePercentage: number;
+  productiveAppMinutes: number;
+  personalAppMinutes: number;
+  unknownAppMinutes: number;
+  focusMinutes: number;
+  activityScore: number;
+  dataCoveragePercentage: number;
   topApps: AppUsage[];
   intensityAvg: number;
+}
+
+interface DailyEmployeeReport {
+  employeeId: string;
+  date: string;
+  activePercentage: number;
+  productiveAppHours: number;
+  focusHours: number;
+  activityScore: number;
+  workOutputScore?: number;
+  productivityScore?: number;
+  productivityScoreBasis: 'composite' | 'activity_only' | 'worksync_only' | 'insufficient_data';
+  dataCoveragePercentage: number;
 }
 
 interface ExceptionAlert {

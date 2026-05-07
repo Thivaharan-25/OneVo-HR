@@ -2,7 +2,7 @@
 
 **Module:** [[modules/identity-verification/overview|Identity Verification]]
 **Phase:** Phase 1
-**Tables:** 6
+**Tables:** 7
 
 ---
 
@@ -84,6 +84,8 @@
 | `verify_on_logout` | `boolean` | Require photo at logout |
 | `interval_minutes` | `int` | Periodic verification (0 = disabled) |
 | `match_threshold` | `decimal(5,2)` | Minimum confidence score to pass (default 80.0) |
+| `reference_enrollment_mode` | `varchar(30)` | `manual_review` or `trusted_sso_auto_approve` |
+| `block_monitoring_until_reference_approved` | `boolean` | If true, agent collection waits for approved reference |
 | `is_active` | `boolean` | Master toggle |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
@@ -113,6 +115,35 @@
 | `created_at` | `timestamptz` |  |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]], `photo_file_id` → [[database/schemas/infrastructure#`file_records`|file_records]], `device_id` → [[database/schemas/agent-gateway#`registered_agents`|registered_agents]], `requested_by_id` → [[database/schemas/infrastructure#`users`|users]], `alert_id` → [[database/schemas/exception-engine#`exception_alerts`|exception_alerts]]
+
+---
+
+## `verification_reference_photos`
+
+Trusted employee reference images used for future photo comparisons. The preferred Phase 1 source is the employee's first TrayApp sign-in enrollment capture.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `photo_file_id` | `uuid` | FK -> file_records |
+| `source` | `varchar(30)` | `agent_first_sign_in`, `hr_verified_profile`, `admin_upload` |
+| `status` | `varchar(20)` | `pending_review`, `approved`, `rejected`, `replaced`, `revoked` |
+| `captured_device_id` | `uuid` | Nullable FK -> registered_agents |
+| `captured_at` | `timestamptz` | When the reference candidate was captured |
+| `reviewed_by_id` | `uuid` | Nullable FK -> users |
+| `reviewed_at` | `timestamptz` | Nullable |
+| `review_comment` | `varchar(255)` | Nullable |
+| `consent_record_id` | `uuid` | FK -> consent_records or equivalent consent audit row |
+| `is_active` | `boolean` | Only one approved active reference per employee |
+| `created_at` | `timestamptz` |  |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` -> [[database/schemas/core-hr#`employees`|employees]], `photo_file_id` -> [[database/schemas/infrastructure#`file_records`|file_records]], `captured_device_id` -> [[database/schemas/agent-gateway#`registered_agents`|registered_agents]], `reviewed_by_id` -> [[database/schemas/infrastructure#`users`|users]]
+
+**Unique constraint:** `(tenant_id, employee_id) WHERE is_active = true`
+
+**Rule:** A pending reference photo is not used for verification comparison. Verification stays `skipped`/`reference_pending` until the reference is approved or auto-approved by explicit tenant policy.
 
 ---
 

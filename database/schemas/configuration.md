@@ -2,7 +2,7 @@
 
 **Module:** [[modules/configuration/overview|Configuration]]
 **Phase:** Phase 1
-**Tables:** 10
+**Tables:** 11
 
 ---
 
@@ -83,9 +83,12 @@ Auto-populated by the ingest processor whenever an app is seen on an employee de
 | `employee_id` | `uuid` | FK → employees |
 | `activity_monitoring` | `boolean` | Nullable — null means inherit from tenant |
 | `application_tracking` | `boolean` | Nullable |
+| `document_tracking` | `boolean` | Nullable |
+| `communication_tracking` | `boolean` | Nullable |
 | `screenshot_capture` | `boolean` | Nullable |
 | `meeting_detection` | `boolean` | Nullable |
 | `device_tracking` | `boolean` | Nullable |
+| `work_location_verification` | `boolean` | Nullable |
 | `identity_verification` | `boolean` | Nullable |
 | `biometric` | `boolean` | Nullable |
 | `override_reason` | `varchar(255)` | Why this employee is different |
@@ -94,6 +97,39 @@ Auto-populated by the ingest processor whenever an app is seen on an employee de
 | `updated_at` | `timestamptz` |  |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]], `set_by_id` → [[database/schemas/infrastructure#`users`|users]]
+
+---
+
+## `monitoring_policy_overrides`
+
+Scope-level monitoring feature overrides for role, department, team, and job-family policies. This table fills the gap between tenant-wide defaults and per-employee exceptions.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `scope_type` | `varchar(30)` | `role`, `department`, `team`, `job_family` |
+| `scope_id` | `uuid` | FK to the corresponding scope table; validated by application logic |
+| `activity_monitoring` | `boolean` | Nullable - null means inherit |
+| `application_tracking` | `boolean` | Nullable |
+| `document_tracking` | `boolean` | Nullable |
+| `communication_tracking` | `boolean` | Nullable |
+| `screenshot_capture` | `boolean` | Nullable; command eligibility only, never scheduled capture |
+| `meeting_detection` | `boolean` | Nullable |
+| `device_tracking` | `boolean` | Nullable |
+| `work_location_verification` | `boolean` | Nullable |
+| `identity_verification` | `boolean` | Nullable |
+| `biometric` | `boolean` | Nullable |
+| `override_reason` | `varchar(255)` | Why this scope differs from tenant default |
+| `set_by_id` | `uuid` | FK -> users |
+| `created_at` | `timestamptz` |  |
+| `updated_at` | `timestamptz` |  |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `set_by_id` -> [[database/schemas/infrastructure#`users`|users]]
+
+**Unique constraint:** `(tenant_id, scope_type, scope_id)` - one override row per scope.
+
+**Resolution:** tenant defaults -> role -> job_family -> department -> team -> employee override. Only non-null fields override inherited values. Consent and Workforce Presence lifecycle gates are applied after this table is merged.
 
 ---
 
@@ -196,11 +232,13 @@ Employee requests to replace a locked remote workplace profile.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `integration_type` | `varchar(50)` | `stripe`, `resend`, `google_calendar`, `slack`, `lms` |
+| `integration_type` | `varchar(50)` | `peoplehr`, `stripe`, `resend`, `google_calendar`, `slack`, `lms` |
 | `config_json` | `jsonb` |  |
 | `credentials_encrypted` | `bytea` | Encrypted |
 | `status` | `varchar(20)` | `active`, `inactive`, `error` |
 | `last_sync_at` | `timestamptz` |  |
+
+**PeopleHR note:** `peoplehr` credentials are used by the DataImport PeopleHR migration flow. The API key must be encrypted at rest, masked in UI, and validated through API permission preflight before any migration run. Full raw staging and audit tables are defined in [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]].
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
 
@@ -214,7 +252,9 @@ Employee requests to replace a locked remote workplace profile.
 | `tenant_id` | `uuid` | FK → tenants, UNIQUE |
 | `activity_monitoring` | `boolean` | Keyboard/mouse event counting |
 | `application_tracking` | `boolean` | App usage tracking |
-| `screenshot_capture` | `boolean` | Periodic screenshots |
+| `document_tracking` | `boolean` | Document tool time tracking |
+| `communication_tracking` | `boolean` | Communication tool active time and send counts |
+| `screenshot_capture` | `boolean` | Screenshot command eligibility; never scheduled in Phase 1 |
 | `meeting_detection` | `boolean` | Meeting time tracking |
 | `device_tracking` | `boolean` | Device usage tracking |
 | `work_location_verification` | `boolean` | Network-based work-location compliance |

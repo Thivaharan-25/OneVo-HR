@@ -121,6 +121,18 @@ For remote or hybrid employees, the first approved remote clock-in may also requ
 
 The email/password form below is a fallback UI pattern only. It must not ask for API keys, tenant keys, tenant IDs, or server URLs.
 
+### First Reference Photo Enrollment
+
+After sign-in and policy fetch, if identity verification is enabled and the employee has no approved verification reference photo, the TrayApp starts **Reference Enrollment** before normal photo verification.
+
+1. TrayApp shows the required monitoring/biometric disclosure if not already completed.
+2. TrayApp opens the same camera window in reference-enrollment mode.
+3. The captured image is uploaded as a `verification_reference_photos` candidate with `status = pending_review`.
+4. The agent displays "Reference photo pending review" until HR/manager approval or tenant-approved trusted SSO/MFA auto-approval.
+5. Future verification prompts compare against the approved reference photo.
+
+The first reference capture is not a verification failure or success. It must not trigger `VerificationFailed`.
+
 ### Layout
 
 ```
@@ -402,7 +414,7 @@ Opened when the Service sends a `capture_photo` IPC message. See [[modules/ident
 │  └──────────┘    └──────────┘          │
 │                                        │
 │  ⚠ Photo will be compared with        │
-│    your profile photo                  │
+│    your approved reference photo       │
 │                                        │
 │  Auto-skip in: 1:45                    │
 │                                        │
@@ -521,7 +533,7 @@ The monitoring policy includes a transparency level that affects what the user s
 
 | Mode | Status Popup Shows | Photo Capture Shows | Login Shows |
 |:-----|:-------------------|:-------------------|:------------|
-| `full_transparency` | Full collector list, what is monitored, sync status | "Photo will be compared with your profile photo" | "This device will monitor your activity" |
+| `full_transparency` | Full collector list, what is monitored, sync status | "Photo will be compared with your approved reference photo" | "This device will monitor your activity" |
 | `partial` | "Monitoring active" (no details) | "Identity verification required" | "Connect to your device" |
 | `covert` | N/A — not applicable to desktop agent (always visible in tray) | N/A — verification always requires interaction | Standard login |
 

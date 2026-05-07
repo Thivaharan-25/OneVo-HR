@@ -19,7 +19,7 @@ dev-console/
 │       ├── tenants/
 │       │   ├── page.tsx               # Tenant list: search, filter by plan/status
 │       │   ├── new/
-│       │   │   └── page.tsx           # Manual provisioning wizard (6-step, saveable draft)
+│       │   │   └── page.tsx           # Manual provisioning wizard (7-step, saveable draft)
 │       │   └── [tenantId]/
 │       │       ├── page.tsx           # Tenant detail: overview + quick actions
 │       │       ├── provision/page.tsx # Resume/complete a provisioning draft
@@ -56,7 +56,7 @@ dev-console/
 │   │   ├── TenantTable.tsx
 │   │   ├── TenantDetailCard.tsx
 │   │   ├── ImpersonateButton.tsx
-│   │   └── ProvisioningWizard.tsx     # 6-step stepper, draft-safe, each step is own component
+│   │   └── ProvisioningWizard.tsx     # 7-step stepper, draft-safe, each step is own component
 │   ├── feature-flags/
 │   │   ├── FlagTable.tsx
 │   │   └── TenantOverrideMatrix.tsx

@@ -24,8 +24,16 @@ AggregateDailySummaryJob (Hangfire, every 30 min during work hours + EOD)
           -> SUM duration_minutes -> total_meeting_minutes
        -> c. Query application_usage for the day
           -> TOP 5 by total_seconds -> top_apps_json
+          -> SUM work-classified app/domain time -> productive_app_minutes
+          -> SUM personal-classified app/domain time -> personal_app_minutes
+          -> SUM unknown app/domain time -> unknown_app_minutes
        -> d. Compute active_percentage = active / (active + idle) * 100
-       -> e. UPSERT into activity_daily_summary
+       -> e. Compute focus_minutes from uninterrupted 30+ minute productive app/domain blocks
+       -> f. Compute activity_score from activity rate, productive context, meeting context, and data coverage
+          -> activity_score is monitoring evidence only; it is not the final productivity score
+          -> suggested weights: activity rate 40%, work-classified context 30%,
+             meeting context 15%, data coverage 15%; clamp 0-100
+       -> g. UPSERT into activity_daily_summary
           -> INSERT ... ON CONFLICT (tenant_id, employee_id, date) DO UPDATE
     -> 3. Publish DailySummaryAggregated event
 ```

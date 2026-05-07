@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Admin API Layer is a new controller namespace (`ONEVO.Admin.Api/`) added to the **existing OneVo backend**. It exposes platform-level operations under the `/admin/v1/*` path prefix, used exclusively by the Developer Console (`console.onevo.io`).
+> Phase 1 deployment rule: this layer lives under `/admin/v1/*` inside the single `ONEVO.Api` backend host. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed as a second backend unit.
+
+The Admin API Layer is a controller namespace inside `ONEVO.Api` added to the **existing OneVo backend**. It exposes platform-level operations under the `/admin/v1/*` path prefix, used exclusively by the Developer Console (`console.onevo.io`).
 
 This is **not a new microservice**. No new service process, no new deployment unit — only a new namespace within the same backend process.
 
@@ -24,14 +26,16 @@ This is **not a new microservice**. No new service process, no new deployment un
 ## Namespace Structure
 
 ```
-ONEVO.Admin.Api/
+ONEVO.Api/
   Controllers/
-    TenantsController.cs
-    FeatureFlagsController.cs
-    AgentVersionsController.cs
-    AuditController.cs
-    ConfigController.cs
-    ApiKeysController.cs       ← Phase 2
+    Admin/
+      TenantsController.cs
+      RoleTemplatesController.cs
+      FeatureFlagsController.cs
+      AgentVersionsController.cs
+      AuditController.cs
+      ConfigController.cs
+      ApiKeysController.cs       ← Phase 2
 ```
 
 Controllers in this namespace are thin. They do not contain business logic — they resolve existing module interfaces via DI and delegate all work to them.
@@ -47,27 +51,30 @@ public class TenantsController : ControllerBase
 {
     private readonly ITenantService _tenantService;
     private readonly IModuleProvisioningService _provisioning;
+    private readonly IRoleTemplateService _roleTemplates;
     private readonly IImpersonationService _impersonation;
 
     public TenantsController(
         ITenantService tenantService,
         IModuleProvisioningService provisioning,
+        IRoleTemplateService roleTemplates,
         IImpersonationService impersonation)
     {
         _tenantService = tenantService;
         _provisioning = provisioning;
+        _roleTemplates = roleTemplates;
         _impersonation = impersonation;
     }
 }
 ```
 
-No new service registrations are required for existing modules. Only Admin API-specific services (e.g., `IImpersonationService`) are new registrations.
+No new service registrations are required for existing modules. Only Admin API-specific services (e.g., `IImpersonationService`) are new registrations. Role-template operations still go through Auth/Application interfaces and must validate permissions against the tenant's active module entitlements.
 
 ---
 
 ## Authorization Policy: `PlatformAdmin`
 
-All controllers and actions in `ONEVO.Admin.Api/` are decorated with:
+All controllers and actions under `ONEVO.Api/Controllers/Admin/` are decorated with:
 
 ```csharp
 [Authorize(Policy = "PlatformAdmin")]

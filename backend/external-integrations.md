@@ -17,6 +17,25 @@ services.AddHttpClient<IBiometricClient>("BiometricApi")
 
 ## Phase 1 Integrations
 
+### 0. PeopleHR (Onboarding Migration)
+
+| Property | Value |
+|:---------|:------|
+| **Module** | DataImport |
+| **Auth** | API Key, stored encrypted, optional IP restrictions configured in PeopleHR |
+| **Purpose** | Initial tenant migration from PeopleHR into ONEVO canonical HR modules |
+| **Tables** | `migration_runs`, `peoplehr_migration_runs`, `peoplehr_raw_records`, `peoplehr_mapping_profiles`, `peoplehr_mapping_results`, `peoplehr_external_id_links`, `peoplehr_validation_errors`, `peoplehr_reconciliation_items` |
+
+**Key Flows:**
+- API permission preflight before fetch.
+- Raw PeopleHR payload staging before transformation.
+- Source-to-canonical mapping across employees, org structure, salary, leave/absence, timesheets, documents, training, benefits, appraisals, work patterns, and custom fields.
+- Dry-run reconciliation before commit.
+- Raw archive for unsupported fields so no source data is silently lost.
+- Final audit report with imported, skipped, failed, needs-review, and raw-archived counts.
+
+See [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]].
+
 ### 1. Stripe (Billing & Subscriptions)
 
 | Property | Value |

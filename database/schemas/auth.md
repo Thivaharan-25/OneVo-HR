@@ -2,7 +2,7 @@
 
 **Module:** [[modules/auth/overview|Auth & Security]]
 **Phase:** Phase 1
-**Tables:** 12
+**Tables:** 13
 
 ---
 
@@ -101,6 +101,27 @@
 
 ---
 
+## `role_templates`
+
+Developer Platform starter role definitions. Templates are global/operator-managed and are materialized into tenant-scoped `roles` only after validation against the tenant's enabled modules.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `name` | `varchar(100)` | e.g., `Tenant Owner`, `HR Admin`, `Leave Manager` |
+| `description` | `varchar(255)` | Nullable |
+| `module_keys_json` | `jsonb` | Modules this template is intended for |
+| `permission_codes_json` | `jsonb` | Permission codes included in the template |
+| `is_system` | `boolean` | ONEVO default template |
+| `version` | `integer` | Template version |
+| `is_active` | `boolean` | |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | Nullable |
+
+**Rule:** applying a template to a tenant must filter/validate permissions through the tenant module entitlement catalog. Permissions for disabled/unpurchased modules must not be granted.
+
+---
+
 ## `sessions`
 
 | Column | Type | Notes |
@@ -170,15 +191,15 @@
 
 ## `user_mfa`
 
-Multi-factor authentication method registrations per user. Each row is one verified MFA method (e.g. `totp`). Unverified setups are stored temporarily until `is_verified = true`.
+Multi-factor authentication method registrations per user. Phase 1 primary method is `email_otp`; authenticator-app `totp` is optional/deferred and must not be the default login MFA flow.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `user_id` | `uuid` | FK → users |
 | `tenant_id` | `uuid` | FK → tenants |
-| `method` | `varchar(20)` | `totp` or `email_otp` |
-| `secret_encrypted` | `varchar(500)` | Encrypted TOTP secret (base32) or email address |
+| `method` | `varchar(20)` | `email_otp`; `totp` is optional/deferred |
+| `secret_encrypted` | `varchar(500)` | Null/email binding for email OTP; encrypted TOTP secret only if TOTP is later enabled |
 | `is_verified` | `boolean` | User has confirmed setup with a valid code |
 | `last_used_at` | `timestamptz` | Nullable |
 | `created_at` | `timestamptz` |  |
@@ -186,6 +207,28 @@ Multi-factor authentication method registrations per user. Each row is one verif
 | UNIQUE: `(user_id, method)` | | One row per method per user |
 
 **Foreign Keys:** `user_id` → [[database/schemas/infrastructure#`users`|users]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+
+---
+
+## `mfa_otp_challenges`
+
+Short-lived email OTP challenges generated during login or resend. The raw OTP is never stored.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `user_id` | `uuid` | FK -> users |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `code_hash` | `varchar(128)` | SHA-256/HMAC hash of the 6-digit OTP |
+| `delivery_channel` | `varchar(20)` | `email` in Phase 1 |
+| `sent_to` | `varchar(255)` | Mask in UI/logs |
+| `expires_at` | `timestamptz` | 5 minutes after issue |
+| `consumed_at` | `timestamptz` | Nullable; set after successful verification |
+| `failed_attempts` | `integer` | Lock after 3 |
+| `locked_until` | `timestamptz` | Nullable |
+| `created_at` | `timestamptz` | |
+
+**Foreign Keys:** `user_id` -> [[database/schemas/infrastructure#`users`|users]], `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
 
 ---
 
