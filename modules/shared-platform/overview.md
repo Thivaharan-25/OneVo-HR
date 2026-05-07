@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Cross-cutting platform services: SSO provider management, subscription/billing (Stripe), feature flags, and the generic workflow/approval engine used by leave, overtime, expense, document approvals, etc.
+Cross-cutting platform services: SSO provider management, subscription/billing (Stripe), feature flags, and the generic workflow/automation engine used by leave, overtime, attendance corrections, expense claims, document approvals, exception alerts, requests, escalations, and follow-ups.
 
 ---
 
@@ -19,7 +19,7 @@ Cross-cutting platform services: SSO provider management, subscription/billing (
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Consumed by** | [[modules/leave/overview\|Leave]], [[modules/core-hr/overview\|Core Hr]], [[modules/expense/overview\|Expense]] | Workflow engine | Approval routing |
+| **Consumed by** | [[modules/leave/overview\|Leave]], [[modules/core-hr/overview\|Core Hr]], [[modules/expense/overview\|Expense]], [[modules/exception-engine/overview\|Exception Engine]], [[modules/work-management/chat/overview\|Chat]] | Workflow engine | Resolver-based approval, alert, case, and escalation routing |
 | **Consumed by** | All modules | Feature flags | Feature toggle checks |
 
 ---
@@ -287,13 +287,15 @@ SLA-based escalation triggers. Checked by Hangfire recurring job (hourly).
 | `created_by_id` | `uuid` | FK → users |
 | `created_at` | `timestamptz` | |
 
-### Sub-System 6: Workflow Engine (Generic)
+### Sub-System 6: Workflow Engine And Automation Center
 
-The workflow engine is **resource-type agnostic** — it works via `resource_type` + `resource_id` polymorphic references. Same engine handles leave, overtime, document, expense approvals.
+The workflow engine is **resource-type agnostic**. It works via `resource_type` + `resource_id` polymorphic references and is configured through Automation Center. Same engine handles approvals, alerts, requests, escalations, follow-ups, and case conversations.
+
+> **Automation Center schema note:** The field lists below reflect the current/legacy workflow schema. Automation Center requires an approved database migration plan before these tables are changed. New implementation must use dynamic resolvers instead of fixed role names and must support case conversations, delivery routing, templates, and multiple approver modes.
 
 **How it works:**
 1. Module creates a workflow instance: `resource_type = "LeaveRequest"`, `resource_id = {leaveRequestId}`
-2. Engine resolves approvers based on step definition (reporting manager, department head, etc.)
+2. Engine resolves assignees or approvers using tenant-scoped resolvers, such as reporting manager, team lead, department owner, selected permission, selected department/team/job level, specific employee, previous approver, case participants, or configured escalation owner.
 3. Approver takes action → engine advances to next step or completes
 4. Module receives `WorkflowCompleted` event with outcome
 
@@ -325,8 +327,8 @@ Steps within a workflow definition.
 | `workflow_definition_id` | `uuid` | FK → workflow_definitions |
 | `step_order` | `integer` | Execution order |
 | `step_type` | `varchar(30)` | `approval`, `notification`, `condition` |
-| `approver_type` | `varchar(30)` | `reporting_manager`, `department_head`, `role`, `specific_user` |
-| `approver_role_id` | `uuid` | FK → roles (nullable — only for role-based steps) |
+| `approver_type` | `varchar(30)` | Legacy field; replace with resolver type after approved migration |
+| `approver_role_id` | `uuid` | Legacy field; replace with resolver configuration after approved migration |
 | `conditions` | `jsonb` | Step conditions (e.g., skip if amount < threshold) |
 | `sla_hours` | `integer` | Hours before timeout action |
 | `on_timeout_action` | `varchar(30)` | `escalate`, `auto_approve`, `auto_reject` |
@@ -357,7 +359,7 @@ Current step state for an active workflow instance. Not in HTML ERD — to be ad
 | `id` | `uuid` | PK |
 | `workflow_instance_id` | `uuid` | FK → workflow_instances |
 | `workflow_step_id` | `uuid` | FK → workflow_steps |
-| `assigned_to_id` | `uuid` | FK → employees (resolved approver) |
+| `assigned_to_id` | `uuid` | Legacy single-assignee field; multiple approvers require a child assignment table after approved migration |
 | `status` | `varchar(20)` | `pending`, `approved`, `rejected`, `skipped` |
 | `started_at` | `timestamptz` | |
 | `completed_at` | `timestamptz` | Nullable |
@@ -612,7 +614,7 @@ Hangfire job metadata for visibility/management. Not in HTML ERD — to be added
 - [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] — Stripe-backed subscription plans, invoices, and payment methods
 - [[frontend/cross-cutting/feature-flags|Feature Flags]] — Per-tenant feature flag definitions with targeting conditions
 - [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — Custom domain, logo, and brand colors per tenant
-- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] — Generic approval engine for leave, expense, overtime, document workflows
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] — Automation Center engine for approvals, alerts, requests, case conversations, delivery routing, and escalation
 - [[modules/shared-platform/compliance-governance/overview|Compliance Governance]] — Legal holds, retention policies, GDPR subject access exports
 - [[modules/shared-platform/hardware-terminals/overview|Hardware Terminals]] — Physical biometric/RFID/kiosk terminal management
 - [[modules/shared-platform/real-time-integrations/overview|Real Time Integrations]] — SignalR connections, API keys, webhooks, rate limits

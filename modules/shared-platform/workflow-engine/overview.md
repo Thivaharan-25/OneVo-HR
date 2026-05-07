@@ -1,54 +1,120 @@
-# Workflow Engine
+# Workflow Engine And Automation Center
 
 **Module:** Shared Platform  
-**Feature:** Workflow Engine (Generic)
+**Feature:** Workflow Engine and Automation Center  
 
 ---
 
 ## Purpose
 
-Resource-type agnostic approval engine. Same engine handles leave, overtime, document, expense approvals via `resource_type` + `resource_id` polymorphic references.
+Resource-type agnostic automation and approval engine. The same engine handles leave, overtime, attendance corrections, document approvals, expense claims, skill validations, identity verification reviews, exception alerts, requests, escalations, and follow-ups.
 
-## How It Works
+Automation Center is the customer-facing screen for creating and editing workflow automations. It is a first-class route, not a technical settings page. The screen normally opens into the automation builder or existing automations; templates appear only when the customer clicks Templates.
 
-1. Module creates a workflow instance: `resource_type = "LeaveRequest"`, `resource_id = {id}`
-2. Engine resolves approvers based on step definition
-3. Approver takes action → engine advances to next step or completes
-4. Module receives `WorkflowCompleted` event with outcome
+## Core Principle: Dynamic Resolvers
+
+ONEVO must not route actions to fixed role names such as HR or CEO. Customers can create their own roles, job families, job levels, departments, teams, and permission structures, so workflow steps route through resolvers.
+
+A resolver finds the right person dynamically based on the employee, department, team, permission, or selected rule owner.
+
+Supported resolver types:
+
+- Employee's reporting manager
+- Employee's team lead
+- Employee's department owner
+- Users with selected permission
+- Users in selected department
+- Users in selected team
+- Users in selected job level
+- Specific employee
+- Configured escalation owner
+- Previous workflow approver
+- Current case conversation participants
+
+Examples:
+
+- Send to users with permission `exceptions:manage`.
+- Assign to employee's reporting manager.
+- Escalate to the configured escalation owner.
+
+## Builder Model
+
+The builder uses a simple step-by-step shape:
+
+| Section | Meaning |
+|:--------|:--------|
+| When | Trigger |
+| If | Conditions |
+| Who | Resolver for assignee or approver |
+| Then | Actions |
+| Wait / Delay | Optional timing rule |
+| If still unresolved | Escalation action and resolver |
+
+Supported triggers include leave request submitted, overtime request submitted, attendance correction submitted, exception alert created, identity verification failed, agent heartbeat lost, low activity detected, excess idle detected, presence/activity mismatch detected, approval unresolved, case unresolved, and message posted in a case conversation.
+
+Supported actions include create case conversation, send to Chat, send to Inbox, mirror to Teams if connected, notify assignee, notify employee, assign to resolver, request more information, escalate, create workflow task, add participant to case conversation, send daily summary, and mark for manager review.
+
+## Multiple Approver Modes
+
+When a resolver returns more than one approver, the approval step must specify an approval mode:
+
+| Mode | Behavior | Example Use |
+|:-----|:---------|:------------|
+| Only one approval is required | First approval completes the step; other approvers see it as completed | Either manager has authority |
+| All assigned approvers must approve | Step completes only after every assigned approver approves | Dual approval is required |
+| Approve in order | Approvers receive the request sequentially | Reporting manager, then department owner |
+
+## Case Conversations
+
+Approval requests and alerts should not be handled inside normal one-to-one private chat. ONEVO creates a case conversation: a private, system-created conversation linked to one approval, alert, request, or workflow item.
+
+A case conversation can start with:
+
+- Assigned resolver only
+- Assigned resolver plus employee
+- Assigned resolver plus original requester
+
+Participants can discuss evidence, invite another employee, approve or reject, acknowledge or dismiss, request more information, escalate, and resolve the case. Every action is audited.
+
+## Delivery Router
+
+The workflow engine publishes an action card and asks the delivery router where it should appear.
+
+| Capability | Delivery |
+|:-----------|:---------|
+| WorkSync Chat enabled | Send action card to ONEVO Chat and create or reuse a case conversation |
+| WorkSync Chat not enabled | Send action card to Inbox and use the Inbox detail panel for comments and decisions |
+| Microsoft Teams sync enabled | Mirror the case conversation into the linked Teams conversation |
+
+Teams is for discussion only. ONEVO remains the source of truth for permissions, workflow state, decisions, and audit trail. Official actions happen in ONEVO through a secure link.
 
 ## Database Tables
 
-### `workflow_definitions`
-Templates: `name`, `code`, `resource_type`, `version`.
+The current schema documents still model the older workflow shape with `approver_type`, `approver_role_id`, and one `assigned_to_id` per step instance. That is not enough for dynamic resolvers, case conversations, template-backed automations, delivery routing, or multiple approver modes.
 
-### `workflow_steps`
-Steps within definition: `step_order`, `step_type` (`approval`, `notification`, `condition`), `approver_type` (`reporting_manager`, `department_head`, `role`, `specific_user`), `sla_hours`, `on_timeout_action`.
-
-### `workflow_instances`
-Active instances: `workflow_definition_id`, `resource_type`, `resource_id`, `current_step_order`, `status`.
-
-### `workflow_step_instances`
-Current step state: `assigned_to_id`, `status`, `sla_deadline_at`.
-
-### `approval_actions`
-Action records: `actor_id`, `action` (`approve`, `reject`, `delegate`, `request_info`), `comment`, `delegated_to_id`.
+Do not implement database changes until the Automation Center database plan is approved. The likely migration area is Shared Platform workflow tables plus WorkSync Chat case conversation metadata.
 
 ## API Endpoints
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/workflows/{resourceType}/{resourceId}` | Authenticated | Status |
-| POST | `/api/v1/workflows/{instanceId}/approve` | Authenticated | Approve |
-| POST | `/api/v1/workflows/{instanceId}/reject` | Authenticated | Reject |
+| GET | `/api/v1/automations` | `automation:read` | List automation definitions |
+| POST | `/api/v1/automations` | `automation:manage` | Create automation from builder |
+| PATCH | `/api/v1/automations/{id}` | `automation:manage` | Edit, enable, disable, or archive automation |
+| GET | `/api/v1/automation-templates` | `automation:read` | List practical starter templates |
+| POST | `/api/v1/automation-templates/{id}/apply` | `automation:manage` | Create editable automation from template |
+| GET | `/api/v1/workflows/{resourceType}/{resourceId}` | Authenticated | Workflow or case status |
+| POST | `/api/v1/workflows/{instanceId}/approve` | Authenticated | Approve current assigned step |
+| POST | `/api/v1/workflows/{instanceId}/reject` | Authenticated | Reject current assigned step |
+| POST | `/api/v1/workflows/{instanceId}/request-info` | Authenticated | Request more information |
+| POST | `/api/v1/cases/{caseId}/resolve` | Authenticated | Resolve a case conversation |
 
 ## Related
 
-- [[modules/shared-platform/overview|Shared Platform Module]]
+- [[Userflow/Automation/automation-center|Automation Center]]
 - [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
+- [[modules/work-management/chat/overview|Chat & Messaging]]
+- [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync]]
 - [[modules/shared-platform/compliance-governance/overview|Compliance Governance]]
-- [[frontend/cross-cutting/feature-flags|Feature Flags]]
-- [[backend/messaging/event-catalog|Event Catalog]]
-- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[frontend/architecture/sidebar-nav|Sidebar Navigation]]
 - [[frontend/cross-cutting/authorization|Authorization]]
-- [[backend/messaging/error-handling|Error Handling]]
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

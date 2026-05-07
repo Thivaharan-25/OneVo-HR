@@ -7,25 +7,56 @@
 
 ## Purpose
 
-Time-based notification routing by severity. If alert is not acknowledged within delay, auto-escalate to next step.
+Time-based alert escalation for unresolved exception alerts and review cases. Escalation chains must use dynamic resolvers, not fixed role names.
+
+Exception Engine may keep alert-specific severity and delay rules, but the person or group receiving an escalation is resolved through the same resolver model used by Automation Center.
+
+## Resolver-Based Routing
+
+Supported escalation targets:
+
+- Employee's reporting manager
+- Employee's team lead
+- Employee's department owner
+- Users with selected permission, such as `exceptions:manage`
+- Users in selected department
+- Users in selected team
+- Users in selected job level
+- Specific employee
+- Configured escalation owner
+- Previous workflow approver
+- Case conversation participants
+
+Do not use fixed escalation labels like HR or CEO. If a customer wants an HR-like escalation, they should select a permission, department, team, specific employee, or configured escalation owner.
 
 ## Database Tables
 
 ### `escalation_chains`
-Key columns: `severity`, `step_order`, `notify_role` (`reporting_manager`, `department_head`, `hr`, `ceo`, `custom`), `notify_user_id`, `delay_minutes`.
 
-Example for `critical`: 1. reporting_manager (0 min) → 2. hr (30 min) → 3. ceo (60 min).
+Key columns should describe severity, step order, resolver type, resolver configuration, delay, and action. Existing schema references such as `notify_role = hr` or `ceo` should be replaced during the approved database migration.
+
+Example for `critical`:
+
+```text
+1. employee's reporting manager immediately
+2. users with permission exceptions:manage after 30 minutes
+3. configured escalation owner after 60 minutes
+```
 
 ## Domain Events
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AlertEscalated` | Unacknowledged alert escalated | [[modules/notifications/overview\|Notifications]] |
+| `AlertEscalated` | Unacknowledged alert escalated | [[modules/notifications/overview\|Notifications]], Workflow Engine |
+| `CaseConversationCreated` | Alert automation opens a private case | Chat, Inbox, Audit |
 
 ## Key Business Rules
 
-1. Escalation chains are per-severity, not per-rule.
-2. Escalation is time-based via Hangfire delayed jobs.
+1. Escalation recipients are resolver outputs, not hard-coded role names.
+2. Escalation can create or update a case conversation.
+3. Escalation is time-based via delayed jobs.
+4. If WorkSync Chat is enabled, escalation action cards appear in the case conversation; otherwise they appear in Inbox.
+5. Microsoft Teams can mirror discussion only. Official actions remain in ONEVO.
 
 ## API Endpoints
 
@@ -37,11 +68,6 @@ Example for `critical`: 1. reporting_manager (0 min) → 2. hr (30 min) → 3. c
 ## Related
 
 - [[modules/exception-engine/overview|Exception Engine Module]]
-- [[frontend/architecture/overview|Alert Generation]]
-- [[frontend/architecture/overview|Evaluation Engine]]
-- [[frontend/architecture/overview|Exception Rules]]
-- [[infrastructure/multi-tenancy|Multi Tenancy]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine and Automation Center]]
+- [[Userflow/Automation/automation-center|Automation Center]]
 - [[security/auth-architecture|Auth Architecture]]
-- [[backend/messaging/event-catalog|Event Catalog]]
-- [[backend/shared-kernel|Shared Kernel]]
-- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]

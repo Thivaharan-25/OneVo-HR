@@ -7,7 +7,9 @@
 
 ## Purpose
 
-Defines how WorkSync Chat mirrors messages with Microsoft Teams after a workspace/channel has been linked to a Teams Team/channel or Teams chat.
+Defines how WorkSync Chat mirrors messages with Microsoft Teams after a workspace/channel or workflow case conversation has been linked to a Teams Team/channel or Teams chat.
+
+For Automation Center case conversations, Teams is discussion-only. ONEVO sends a summary and secure ONEVO link for official actions. Teams replies can sync back into the ONEVO case conversation, but Teams-native approval buttons, bots, and text command parsing must not change workflow state.
 
 ---
 
@@ -49,6 +51,30 @@ Graph change notification
               sync_status = "synced"
          d. Store attachments via file pipeline if allowed
          e. Push SignalR `message:created`
+```
+
+## Mirror Case Conversation To Teams
+
+```text
+Workflow delivery router creates or updates case conversation
+  -> If Teams sync enabled for the tenant and conversation can be linked:
+       1. Create or reuse linked Teams conversation per tenant policy
+       2. Send summary message with request/alert details
+       3. Include secure ONEVO link for approve/reject/resolve actions
+       4. Sync Teams replies back as case conversation messages
+       5. Keep workflow state changes in ONEVO only
+```
+
+Example Teams message:
+
+```text
+Leave request from Nimal Perera
+Dates: May 10-12
+Status: Waiting for approval
+
+Reply here to discuss.
+Open ONEVO to approve or reject:
+[Open Request]
 ```
 
 ## Edit Sync
@@ -114,6 +140,7 @@ Outbound sync must also record the local `message_id` before retrying so a Graph
 | Inbound sender not mapped | Import as external participant or skip per tenant policy |
 | Attachment too large | Import message, mark attachment sync failed |
 | Message already imported | No-op idempotent success |
+| Teams user attempts approval by reply text | Import as discussion only; workflow state remains unchanged |
 
 ---
 

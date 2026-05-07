@@ -191,15 +191,15 @@ Developer Platform starter role definitions. Templates are global/operator-manag
 
 ## `user_mfa`
 
-Multi-factor authentication method registrations per user. Phase 1 primary method is `email_otp`; authenticator-app `totp` is optional/deferred and must not be the default login MFA flow.
+Multi-factor authentication method registrations per user. MFA uses `email_otp`.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `user_id` | `uuid` | FK → users |
 | `tenant_id` | `uuid` | FK → tenants |
-| `method` | `varchar(20)` | `email_otp`; `totp` is optional/deferred |
-| `secret_encrypted` | `varchar(500)` | Null/email binding for email OTP; encrypted TOTP secret only if TOTP is later enabled |
+| `method` | `varchar(20)` | `email_otp` |
+| `secret_encrypted` | `varchar(500)` | Temporary hashed email OTP while setup or login verification is pending; cleared after successful verification |
 | `is_verified` | `boolean` | User has confirmed setup with a valid code |
 | `last_used_at` | `timestamptz` | Nullable |
 | `created_at` | `timestamptz` |  |
@@ -210,37 +210,15 @@ Multi-factor authentication method registrations per user. Phase 1 primary metho
 
 ---
 
-## `mfa_otp_challenges`
-
-Short-lived email OTP challenges generated during login or resend. The raw OTP is never stored.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `user_id` | `uuid` | FK -> users |
-| `tenant_id` | `uuid` | FK -> tenants |
-| `code_hash` | `varchar(128)` | SHA-256/HMAC hash of the 6-digit OTP |
-| `delivery_channel` | `varchar(20)` | `email` in Phase 1 |
-| `sent_to` | `varchar(255)` | Mask in UI/logs |
-| `expires_at` | `timestamptz` | 5 minutes after issue |
-| `consumed_at` | `timestamptz` | Nullable; set after successful verification |
-| `failed_attempts` | `integer` | Lock after 3 |
-| `locked_until` | `timestamptz` | Nullable |
-| `created_at` | `timestamptz` | |
-
-**Foreign Keys:** `user_id` -> [[database/schemas/infrastructure#`users`|users]], `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
-
----
-
 ## `mfa_recovery_codes`
 
-One-time-use backup codes generated when MFA is first enabled. Stored as SHA-256 hashes, never plaintext. Each code is consumed on use.
+One-time-use backup codes generated when MFA is first enabled. Stored as BCrypt hashes, never plaintext. Each code is consumed on use.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `user_id` | `uuid` | FK → users |
-| `code_hash` | `varchar(128)` | SHA-256 hex hash of the recovery code |
+| `code_hash` | `varchar(255)` | BCrypt hash of the recovery code |
 | `used_at` | `timestamptz` | Nullable — set when the code is consumed |
 | `created_at` | `timestamptz` |  |
 

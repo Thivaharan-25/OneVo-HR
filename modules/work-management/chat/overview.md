@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Real-time messaging within workspaces. Supports public channels, private channels, and direct messages. Messages are delivered via SignalR `IChannelHub` with polling fallback for the VS Code IDE sidebar.
+Real-time messaging within workspaces. Supports public channels, private channels, direct messages, and system-created case conversations. Messages are delivered via SignalR `IChannelHub` with polling fallback for the VS Code IDE sidebar.
 
 When a workspace/channel is linked to Microsoft Teams, this module can mirror messages with Teams through the [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]]. Teams sync is optional per tenant and per workspace/channel.
 
@@ -24,6 +24,8 @@ Key columns: `workspace_id`, `tenant_id`, `name`, `description`, `channel_type` 
 Teams-linked channels use `channel_teams_links`; do not store Graph IDs directly on `channels`.
 
 DM channels: `channel_type = direct` with exactly 2 members — enforced at application layer.
+
+Case conversations use a private channel-like conversation linked to one workflow item, approval, alert, request, or case. They are not normal DMs because the assigned person can invite other employees and every decision action must be audited by the source workflow.
 
 ### `channel_members`
 Key columns: `channel_id`, `user_id`, `role` (`owner`, `member`), `joined_at`, `last_read_at` (drives unread count), `notification_preference` (`all`, `mentions`, `none`).
@@ -55,6 +57,8 @@ Key columns: `channel_id`, `message_id`, `pinned_by_id`, `pinned_at`.
 7. Microsoft Teams sync is optional. If a channel is not linked, messages remain ONEVO-only.
 8. Teams inbound messages must be idempotent by external message id. Duplicate Graph webhook deliveries must not create duplicate ONEVO messages.
 9. Teams outbound messages require the sender to have a linked Teams account and ONEVO `chat:write`.
+10. Case conversations are private, system-created conversations for workflow items. Official actions such as approve, reject, acknowledge, dismiss, escalate, request information, and resolve are delegated to the workflow/case APIs and audited there.
+11. Microsoft Teams mirrors case conversation discussion only. Teams messages must not change workflow state through buttons, bot commands, or text parsing.
 
 ---
 
@@ -65,6 +69,7 @@ Key columns: `channel_id`, `message_id`, `pinned_by_id`, `pinned_at`.
 | `MessageSentEvent` | Message created | SignalR push, Chat AI detection (if premium) |
 | `DirectMessageReceivedEvent` | DM received | Push notification to recipient |
 | `ChannelMentionEvent` | `@username` in message | Push notification to mentioned user |
+| `CaseConversationMessageSentEvent` | Message posted in case conversation | Workflow automation trigger, SignalR push |
 
 ---
 
@@ -90,6 +95,7 @@ Key columns: `channel_id`, `message_id`, `pinned_by_id`, `pinned_at`.
 ## Related
 
 - [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync]] - Two-way Teams message sync
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine and Automation Center]] - Case conversations and action cards
 - [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]] - Graph account linking, webhooks, and delta sync
 
 - [[modules/work-management/chat-ai/overview|Chat AI]] — AI intent detection on messages

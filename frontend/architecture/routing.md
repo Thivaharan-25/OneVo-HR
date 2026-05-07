@@ -42,6 +42,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: '/inbox', element: <InboxPage /> },
+      { path: '/automation', element: <ProtectedRoute permission="automation:read"><AutomationCenterPage /></ProtectedRoute> },
 
       // People
       { path: '/people/employees',     element: <ProtectedRoute permission="employees:read"><EmployeesPage /></ProtectedRoute> },
@@ -219,7 +220,7 @@ import { useLocation } from 'react-router-dom';
 
 const ROUTE_LABELS: Record<string, string> = {
   people: 'People', employees: 'Employees', leave: 'Leave',
-  workforce: 'Workforce', org: 'Organization', calendar: 'Calendar',
+  workforce: 'Workforce', automation: 'Automation Center', org: 'Organization', calendar: 'Calendar',
   admin: 'Admin', settings: 'Settings', 'alert-rules': 'Alert Rules',
 };
 

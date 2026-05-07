@@ -60,7 +60,7 @@
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
 | `email` | `varchar(255)` | UNIQUE per tenant |
-| `password_hash` | `varchar(255)` | Argon2id (64 MB memory, 3 iterations, parallelism 1). Format: `argon2id:{m}:{t}:{p}:{base64(salt)}:{base64(hash)}` |
+| `password_hash` | `varchar(255)` | BCrypt hash, work factor 12 |
 | `first_name` | `varchar(100)` |  |
 | `last_name` | `varchar(100)` |  |
 | `is_active` | `boolean` |  |

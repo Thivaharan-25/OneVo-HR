@@ -7,12 +7,14 @@
 
 ## Purpose
 
-Generates alerts when rule thresholds are breached. One alert per rule per employee per evaluation window (dedup). Data snapshot captured as evidence.
+Generates alerts when rule thresholds are breached. One alert per rule per employee per evaluation window (dedup). Data snapshot captured as evidence. Alert delivery and escalation can be handled by Automation Center, including case conversation creation and resolver-based assignment.
 
 ## Database Tables
 
 ### `exception_alerts`
 Key columns: `employee_id`, `rule_id`, `triggered_at`, `severity`, `summary`, `data_snapshot_json` (evidence), `status` (`new`, `acknowledged`, `dismissed`, `escalated`).
+
+Alerts that require human review should link to a workflow case conversation rather than a normal direct message. The case can include the assigned resolver, employee, original requester, or invited participants according to the automation rule.
 
 ### `alert_acknowledgements`
 Audit trail: `alert_id`, `acknowledged_by_id`, `action` (`acknowledged`, `dismissed`, `escalated`, `noted`), `comment`.
@@ -22,6 +24,7 @@ Audit trail: `alert_id`, `acknowledged_by_id`, `action` (`acknowledged`, `dismis
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
 | `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview\|Notifications]] |
+| `ExceptionAlertCreated` | Rule threshold breached | [[modules/shared-platform/workflow-engine/overview\|Workflow Engine and Automation Center]] |
 | `AlertAcknowledged` | Manager acknowledges/dismisses | Audit trail |
 
 ## SignalR Integration
