@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "developer-platform/frontend/app-structure.md",
+                "file": "current-focus/DEV1.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "app-structure"
+              "title": "DEV1"
             }
           }
         ]
@@ -185,6 +185,8 @@
   },
   "active": "d9e9837060ca6b3d",
   "lastOpenFiles": [
+    "AI_CONTEXT/changelog/2026-05-08-cqrs-folder-structure-cleanup.md",
+    "developer-platform/frontend/app-structure.md",
     "current-focus/contracts/admin-api.md",
     "developer-platform/backend/admin-api-layer.md",
     "backend/local-run-and-tenant-provisioning.md",
@@ -215,9 +217,7 @@
     "current-focus/contracts/agent-gateway.md",
     "current-focus/contracts/ide-entitlements.md",
     "current-focus/contracts/signalr-events.md",
-    "current-focus/contracts/worksync-core.md",
     "current-focus/contracts/worksync-core.md.tmp.55212.1777787938931",
-    "current-focus/contracts/workforce-presence.md",
     "current-focus/README.md.tmp.55212.1777787379569",
     "current-focus/DEV5.md.tmp.55212.1777787299881",
     "current-focus/DEV1.md.tmp.55212.1777787252276",

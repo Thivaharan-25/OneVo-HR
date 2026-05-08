@@ -121,7 +121,8 @@ Tasks do not flow in a single line across all 8 developers. Use this schedule to
 
 | Window | Dev | Task | Note |
 |---|---|---|---|
-| **Day 0** | Dev 1 | DEV1.T1 — Backend Foundation | Critical path start; no deps |
+| **Day 0** | Dev 1 | DEV1.T0 — Backend CQRS Folder Structure Cleanup | First Dev 1 task; must run before all other backend foundation/Auth work |
+| **After DEV1.T0** | Dev 1 | DEV1.T1 — Backend Foundation | Critical path start after structure cleanup |
 | **Day 0** | Dev 5 | DEV5.T1 — Vite App Foundation | No backend dependency |
 | **Day 0** | Dev 8 | DEV8.T1 — Extension Foundation | MSW stubs; no backend dependency |
 | **After DEV1.T1** | Dev 1 | DEV1.T2 — Auth + RBAC | Sequential on T1 |
@@ -146,7 +147,7 @@ Tasks do not flow in a single line across all 8 developers. Use this schedule to
 | **After DEV1.T3+T5+T7** | Dev 2 (overflow) | DEV1.T8 — Tenant Console Backend | Dev 2 picks up after their track is done |
 | **After DEV1.T4+T5+T7** | Dev 3 (overflow) | DEV1.T9 — Dev Platform Operations Backend | Dev 3 picks up after their track is done |
 
-**Dev 1 critical chain (irreducible):** T1 → T2 → T3 → T5 → T6. Everything else flows around it.
+**Dev 1 critical chain (irreducible):** T0 → T1 → T2 → T3 → T5 → T6. Everything else flows around it.
 
 ---
 

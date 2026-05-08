@@ -26,7 +26,7 @@ ONEVO PLATFORM
                             PostgreSQL (single database)
 ```
 
-Work Management is **Pillar 3** - it is internal to ONEVO. All three pillars share the same database, the same ApplicationDbContext, and the same domain event bus.
+Work Management is **Pillar 3** - it is internal to ONEVO. All three pillars share the same database and the same ApplicationDbContext. Domain events are optional and are used only for justified post-save side effects.
 
 ---
 
@@ -143,48 +143,54 @@ Tag engine, context engine, agent entitlement, and SignalR IDEHub spec: [[module
 
 ## Feature Folder Structure
 
-Every feature follows this exact layout within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`:
+Every feature follows the canonical layout in [[backend/folder-structure|Folder Structure]]. The normal Application shape is:
 
-```
-# Domain layer
-ONEVO.Domain/Features/{Feature}/
-├── Entities/       EF Core entities (no attributes — configured via Fluent API)
-└── Events/         IDomainEvent implementations
-
-# Application layer
+```text
 ONEVO.Application/Features/{Feature}/
-├── Commands/{UseCase}/
-│   ├── {UseCase}Command.cs      record : IRequest<Result<ResponseDto>>
-│   └── {UseCase}Handler.cs      IRequestHandler<Command, Result<ResponseDto>>
-├── Queries/{UseCase}/
-│   ├── {UseCase}Query.cs
-│   └── {UseCase}Handler.cs
-├── DTOs/
-│   ├── Requests/                HTTP request body models
-│   └── Responses/               handler return types
-├── Validators/                  AbstractValidator<{UseCase}Command>
-└── EventHandlers/               INotificationHandler<IDomainEvent>
-
-# Infrastructure layer
-ONEVO.Infrastructure/Persistence/Configurations/{Feature}/
-└── {Entity}Configuration.cs    IEntityTypeConfiguration<T>
+|-- Commands/
+|   `-- {UseCase}/
+|       |-- {UseCase}Command.cs
+|       |-- {UseCase}Handler.cs
+|       `-- {UseCase}Validator.cs
+|-- Queries/
+|   `-- {UseCase}/
+|       |-- {UseCase}Query.cs
+|       `-- {UseCase}Handler.cs
+|-- DTOs/
+|   |-- Requests/
+|   `-- Responses/
+`-- Interfaces/
 ```
 
-Work Management features are flat — no `WorkManagement/` parent folder. Each WorkSync feature lives directly under `Features/{Feature}/` following the same layout as all other features.
+The normal Domain shape is:
+
+```text
+ONEVO.Domain/Features/{Feature}/
+`-- Entities/
+```
+
+Optional event folders are created only when a use case has justified post-save side effects:
+
+```text
+ONEVO.Domain/Features/{Feature}/Events/
+ONEVO.Application/Features/{Feature}/EventHandlers/
+```
+
+Work Management features are flat - no `WorkManagement/` parent folder. Each WorkSync feature lives directly under `Features/{Feature}/` following the same layout as all other features.
 
 ---
-
 ## Cross-Feature Communication
 
 | Need | Mechanism |
 |------|-----------|
 | Read data from another feature | Inject the owning feature's repository/reader interface; never query another feature's DbSet directly |
-| Trigger side effect in another feature | Entity raises `IDomainEvent`; `DomainEventDispatchInterceptor` dispatches after save |
-| React to another feature's event | `INotificationHandler<TEvent>` in `EventHandlers/` |
+| Do work in the same use case | Keep it in the command handler or an Application service |
+| Trigger decoupled post-save side effect | Optional domain event; `DomainEventDispatchInterceptor` dispatches after save |
+| React to a justified event | `INotificationHandler<TEvent>` in optional `EventHandlers/` |
 | Background processing | `IBackgroundJobService` (Hangfire) injected in handler |
-| Real-time push to IDE | `IIDEHubService` → SignalR IDEHub (task:updated, chat:message, tag:executed, ai:action_pending) |
+| Real-time push to IDE | `IIDEHubService` -> SignalR IDEHub (task:updated, chat:message, tag:executed, ai:action_pending) |
 
-No RabbitMQ. No IEventBus. No MassTransit. All communication between HR, Workforce Intelligence, and Work Management is in-process.
+No RabbitMQ. No IEventBus. No MassTransit. Most feature communication is direct through Application-owned interfaces; domain events are available by exception for decoupled post-save side effects.
 
 ---
 

@@ -1,29 +1,28 @@
-# ONEVO.Domain — Layer Guide
+# Shared Kernel: ONEVO
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-08
 
-The innermost layer. Contains pure business entities and rules. **Zero external dependencies** — no EF Core, no MediatR attributes, no framework code.
+`ONEVO.SharedKernel` is not a separate project. Shared primitives live in:
 
-> This file replaces the former SharedKernel documentation. The `ONEVO.SharedKernel` project no longer exists. Its contents have been redistributed into `ONEVO.Domain` (entities, value objects, enums, errors) and `ONEVO.Application/Common/` (interfaces, models).
+- `ONEVO.Domain/Common/` for entities, value objects, errors, and optional domain-event marker types.
+- `ONEVO.Application/Common/` for interfaces, models, and pipeline behaviors.
 
----
+## Domain Common
 
-## What lives in ONEVO.Domain
-
-### Common/BaseEntity.cs
+### BaseEntity
 
 ```csharp
 public abstract class BaseEntity
 {
     public Guid Id { get; set; }
     public Guid TenantId { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
     public Guid CreatedById { get; set; }
-    public bool IsDeleted { get; set; } = false;
+    public bool IsDeleted { get; set; }
 
     private readonly List<IDomainEvent> _domainEvents = new();
-    public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     protected void AddDomainEvent(IDomainEvent domainEvent)
         => _domainEvents.Add(domainEvent);
@@ -33,110 +32,88 @@ public abstract class BaseEntity
 }
 ```
 
-### Common/IDomainEvent.cs
+Domain-event support exists for optional post-save side effects. It does not mean every entity should raise events.
+
+### IDomainEvent
 
 ```csharp
-public interface IDomainEvent : INotification { } // INotification from MediatR
+public interface IDomainEvent : INotification
+{
+}
 ```
 
-This is the **only** MediatR reference in Domain — and only because MediatR's `INotification` is a marker interface with no implementation. Domain events replace `IEventBus` + RabbitMQ entirely.
+`IDomainEvent` is optional. It is not an `IEventBus`, not an integration event, and not a RabbitMQ contract.
 
-### Common/ValueObject.cs
+### ValueObject
 
 ```csharp
 public abstract class ValueObject
 {
-    protected abstract IEnumerable<object> GetEqualityComponents();
-
-    public override bool Equals(object? obj) { ... }
-    public override int GetHashCode() { ... }
+    protected abstract IEnumerable<object?> GetEqualityComponents();
 }
 ```
 
-### Enums/
+Use value objects for immutable concepts such as `Email`, `Money`, `PhoneNumber`, and `Address`.
 
-All shared enums used across features:
-- `EmploymentType` (FullTime, PartTime, Contract, Intern)
-- `EmploymentStatus` (Active, OnLeave, Suspended, Terminated)
-- `ApprovalStatus` (Pending, Approved, Rejected, Cancelled)
-- `Severity` (Low, Medium, High, Critical)
-- `WorkMode` (OnSite, Remote, Hybrid)
+## Application Common
 
-### Errors/
-
-- `DomainException` — business rule violation, maps to HTTP 422
-- `NotFoundException` — entity not found, maps to HTTP 404
-- `ForbiddenException` — permission denied, maps to HTTP 403
-
-### ValueObjects/
-
-Immutable types validated on construction:
-- `Email` — validates format, normalises to lowercase
-- `Money` — amount + currency code
-- `PhoneNumber` — E.164 format
-- `Address` — street, city, country, postal code
-
-### Features/
-
-24 feature sub-folders. Each contains:
-
-```
-Features/{Feature}/
-├── Entities/     Business entities — POCOs, no EF attributes
-└── Events/       IDomainEvent implementations
-```
-
----
-
-## What does NOT live in ONEVO.Domain
-
-| Item | Where it lives |
-|------|---------------|
-| Repository interfaces | `ONEVO.Application/Common/Interfaces/` |
-| MediatR handlers | `ONEVO.Application/Features/` |
-| EF Core configurations | `ONEVO.Infrastructure/Persistence/Configurations/` |
-| DTOs | `ONEVO.Application/Features/{Feature}/DTOs/` |
-| Validation | `ONEVO.Application/Features/{Feature}/Validators/` |
-
----
-
-## Feature entity example
+### Result<T>
 
 ```csharp
-// ONEVO.Domain/Features/Leave/Entities/LeaveRequest.cs
-public class LeaveRequest : BaseEntity
+public class Result<T>
 {
-    public Guid EmployeeId { get; private set; }
-    public Guid LeaveTypeId { get; private set; }
-    public DateTime StartDate { get; private set; }
-    public DateTime EndDate { get; private set; }
-    public ApprovalStatus Status { get; private set; }
+    public bool IsSuccess { get; }
+    public T? Value { get; }
+    public string? Error { get; }
 
-    private LeaveRequest() { } // EF constructor
-
-    public static LeaveRequest Create(Guid employeeId, Guid leaveTypeId,
-        DateTime start, DateTime end, Guid tenantId)
-    {
-        var request = new LeaveRequest
-        {
-            Id = Guid.NewGuid(),
-            EmployeeId = employeeId,
-            LeaveTypeId = leaveTypeId,
-            StartDate = start,
-            EndDate = end,
-            Status = ApprovalStatus.Pending,
-            TenantId = tenantId
-        };
-        request.AddDomainEvent(new LeaveRequestSubmittedEvent(request.Id, employeeId));
-        return request;
-    }
-
-    public void Approve()
-    {
-        if (Status != ApprovalStatus.Pending)
-            throw new DomainException("Only pending requests can be approved.");
-        Status = ApprovalStatus.Approved;
-        AddDomainEvent(new LeaveApprovedEvent(Id, EmployeeId));
-    }
+    public static Result<T> Success(T value) => new(true, value, null);
+    public static Result<T> Failure(string error) => new(false, default, error);
 }
 ```
+
+Handlers return `Result<T>` for expected business outcomes. Exceptions are for infrastructure failures and unexpected states.
+
+### Interfaces
+
+Application defines interfaces. Infrastructure implements them.
+
+Common examples:
+
+- `IUnitOfWork`
+- `ICurrentUser`
+- `ICacheService`
+- `IEncryptionService`
+- `IEmailService`
+- `IStorageService`
+- `IDateTimeProvider`
+- `IBackgroundJobService`
+- `INotificationDispatcher`
+- `ITokenService`
+- `IPasswordHasher`
+
+Feature-specific repositories and readers live under:
+
+```text
+ONEVO.Application/Features/{Feature}/Interfaces/
+```
+
+## Validation Location
+
+Command validators live beside the command:
+
+```text
+ONEVO.Application/Features/{Feature}/Commands/{UseCase}/{UseCase}Validator.cs
+```
+
+Do not use a feature-level `Validators/` folder.
+
+## Optional Event Location
+
+Only create event folders when a use case has a justified post-save side effect:
+
+```text
+ONEVO.Domain/Features/{Feature}/Events/
+ONEVO.Application/Features/{Feature}/EventHandlers/
+```
+
+See [[backend/domain-events|Domain Events]] for the decision rule.

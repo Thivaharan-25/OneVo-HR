@@ -51,14 +51,28 @@ npm run preview   # Preview production build
 - **4-layer multi-tenancy**: JWT claim → `BaseRepository<T>` auto-filter → PostgreSQL RLS → ArchUnit boundary tests
 - **Single `ApplicationDbContext`** — WorkSync tables live alongside HR tables, no bridge APIs
 - **`Result<T>`** for all business logic returns — never throw exceptions for domain failures
-- **Domain events** via in-process MediatR notifications — no RabbitMQ/MassTransit in Phase 1
+- **Domain events are optional** via in-process MediatR notifications; no RabbitMQ/MassTransit in Phase 1
 
 Feature folder layout:
-```
-ONEVO.Domain/Features/{Feature}/Entities/  +  Events/
-ONEVO.Application/Features/{Feature}/Commands/{UseCase}/  Queries/  DTOs/  Validators/  EventHandlers/
+```text
+ONEVO.Domain/Features/{Feature}/Entities/
+ONEVO.Domain/Features/{Feature}/Events/                 # optional only when justified
+
+ONEVO.Application/Features/{Feature}/Commands/{UseCase}/
+  {UseCase}Command.cs
+  {UseCase}Handler.cs
+  {UseCase}Validator.cs
+ONEVO.Application/Features/{Feature}/Queries/{UseCase}/
+  {UseCase}Query.cs
+  {UseCase}Handler.cs
+ONEVO.Application/Features/{Feature}/DTOs/{Requests,Responses}/
+ONEVO.Application/Features/{Feature}/Interfaces/
+ONEVO.Application/Features/{Feature}/EventHandlers/      # optional only when justified
+
 ONEVO.Infrastructure/Persistence/Configurations/{Feature}/{Entity}Configuration.cs
 ```
+
+Default request flow: `Controller -> Command/Query -> Validator -> Handler -> Repository/Domain -> UnitOfWork -> Response`. Events are by exception, not a default template.
 
 ### Frontend (`OneVo/`)
 

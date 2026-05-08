@@ -1,110 +1,134 @@
 # Domain Events: ONEVO
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-08
 
-Domain events replace RabbitMQ, MassTransit, IEventBus, and the transactional outbox entirely. All cross-feature communication is **in-process via MediatR**.
+Domain events are **optional** in ONEVO. They are not required by Clean Architecture, CQRS, MediatR, or the normal feature folder structure.
 
----
+Use them only when a completed use case needs decoupled post-save side effects. Most commands should not raise an event.
 
-## How it works
+## Default Rule
 
-1. Entity method raises a business action (e.g. `LeaveRequest.Approve()`)
-2. The method calls `AddDomainEvent(new LeaveApprovedEvent(...))` — stored in `BaseEntity.DomainEvents`
-3. Handler calls `_uow.SaveChangesAsync(ct)` — persists DB changes
-4. `DomainEventDispatchInterceptor` runs after the DB write succeeds:
-   - Collects all `DomainEvents` from EF Core tracked entities
-   - Calls `entity.ClearDomainEvents()`
-   - Publishes each via `IPublisher.Publish(domainEvent, ct)` (MediatR)
-5. Any `INotificationHandler<TEvent>` registered in DI reacts in-process
+Start with the normal CQRS flow:
 
-**Atomicity:** If `SaveChangesAsync` throws, the interceptor never runs — no events fire. No partial state.
-
----
-
-## Defining a domain event
-
-```csharp
-// ONEVO.Domain/Features/Leave/Events/LeaveApprovedEvent.cs
-public record LeaveApprovedEvent(
-    Guid LeaveRequestId,
-    Guid EmployeeId
-) : IDomainEvent; // IDomainEvent : INotification (MediatR)
+```text
+Controller -> Command/Query -> Validator -> Handler -> Repository/Domain -> UnitOfWork -> Response
 ```
 
----
+Only add the event branch when there is a real reason:
 
-## Raising a domain event (on entity)
+```text
+UnitOfWork save succeeds -> DomainEventDispatchInterceptor -> EventHandler(s)
+```
+
+## When To Use A Domain Event
+
+Use a domain event when all of these are true:
+
+- The main command has already completed its own business responsibility.
+- One or more secondary reactions should happen after the save succeeds.
+- The original command should not need to know every downstream reaction.
+- The side effect can be tested and reasoned about independently.
+
+Examples:
+
+- `EmployeeTerminatedEvent` triggers access revocation, workspace cleanup, and notifications.
+- `IdentityVerifiedEvent` triggers onboarding progress.
+- `AnomalyDetectedEvent` triggers notification enrichment.
+
+## When Not To Use A Domain Event
+
+Do not create events for:
+
+- Basic CRUD operations.
+- Simple logic that belongs directly in the command handler.
+- Same-transaction decisions that must succeed or fail with the command.
+- Architecture ceremony.
+- "Because CQRS needs events." It does not.
+
+## Folder Placement
+
+Only create these folders when an event is justified:
+
+```text
+ONEVO.Domain/Features/{Feature}/Events/
+ONEVO.Application/Features/{Feature}/EventHandlers/
+```
+
+The default feature structure does not include either folder.
+
+## Defining A Domain Event
 
 ```csharp
-// ONEVO.Domain/Features/Leave/Entities/LeaveRequest.cs
-public void Approve()
-{
-    if (Status != ApprovalStatus.Pending)
-        throw new DomainException("Only pending requests can be approved.");
+// ONEVO.Domain/Features/CoreHR/Events/EmployeeTerminatedEvent.cs
+public record EmployeeTerminatedEvent(
+    Guid EmployeeId,
+    Guid TenantId,
+    DateTimeOffset OccurredAt
+) : IDomainEvent;
+```
 
-    Status = ApprovalStatus.Approved;
-    AddDomainEvent(new LeaveApprovedEvent(Id, EmployeeId)); // ← collected, not dispatched yet
+`IDomainEvent` is a marker for in-process MediatR notifications. It is not an external message contract.
+
+## Raising A Domain Event
+
+Only raise an event from a domain method when the event represents something meaningful that already happened.
+
+```csharp
+public void Terminate(DateOnly effectiveDate, string reason)
+{
+    if (Status == EmploymentStatus.Terminated)
+        throw new DomainException("Employee is already terminated.");
+
+    Status = EmploymentStatus.Terminated;
+    TerminationDate = effectiveDate;
+    TerminationReason = reason;
+
+    AddDomainEvent(new EmployeeTerminatedEvent(Id, TenantId, DateTimeOffset.UtcNow));
 }
 ```
 
----
-
-## Handling a domain event (cross-feature)
+## Handling A Domain Event
 
 ```csharp
-// ONEVO.Application/Features/WorkforcePresence/EventHandlers/
-// LeaveApprovedEventHandler.cs
-public class LeaveApprovedEventHandler : INotificationHandler<LeaveApprovedEvent>
+// ONEVO.Application/Features/Auth/EventHandlers/RevokeAccessOnEmployeeTerminatedHandler.cs
+public class RevokeAccessOnEmployeeTerminatedHandler
+    : INotificationHandler<EmployeeTerminatedEvent>
 {
-    private readonly IPresenceRecordRepository _presenceRecords;
+    private readonly IUserAccessRepository _userAccess;
     private readonly IUnitOfWork _uow;
 
-    public LeaveApprovedEventHandler(IPresenceRecordRepository presenceRecords, IUnitOfWork uow)
+    public RevokeAccessOnEmployeeTerminatedHandler(
+        IUserAccessRepository userAccess,
+        IUnitOfWork uow)
     {
-        _presenceRecords = presenceRecords;
+        _userAccess = userAccess;
         _uow = uow;
     }
 
-    public async Task Handle(LeaveApprovedEvent notification, CancellationToken ct)
+    public async Task Handle(EmployeeTerminatedEvent notification, CancellationToken ct)
     {
-        // Mark the employee's shift as absent during leave period
-        var shifts = await _presenceRecords
-            .ListForEmployeeAsync(notification.EmployeeId, ct);
-
-        foreach (var shift in shifts)
-            shift.MarkAbsent();
-
+        await _userAccess.RevokeForEmployeeAsync(notification.EmployeeId, ct);
         await _uow.SaveChangesAsync(ct);
     }
 }
 ```
 
----
+Event handlers follow the same Application-layer persistence rule as command/query handlers: no EF Core and no `ApplicationDbContext` directly.
 
-## Integration registry (cross-feature auto-wiring)
+## Dispatch Timing
 
-| Event | Published by | Handled by | Effect |
-|-------|-------------|-----------|--------|
-| `LeaveApprovedEvent` | Leave | WorkforcePresence | Mark shift absent |
-| `LeaveApprovedEvent` | Leave | Payroll | Create deduction entry |
-| `EmployeeCreatedEvent` | CoreHR | Auth | Create user account |
-| `EmployeeTerminatedEvent` | CoreHR | Auth | Deactivate user |
-| `EmployeeTerminatedEvent` | CoreHR | Work Management access handler | Revoke Work Management workspace access |
-| `SnapshotCapturedEvent` | ActivityMonitoring | ExceptionEngine | Evaluate anomaly rules |
-| `PresenceRecordedEvent` | WorkforcePresence | ActivityMonitoring | Correlate agent snapshots |
-| `AnomalyDetectedEvent` | ExceptionEngine | Notifications | Send alert |
+Events are dispatched after `SaveChangesAsync` succeeds. If the database write fails, event handlers do not run.
 
----
+This keeps events from firing for state that was never committed.
 
-## What is gone
+## What Is Not In Phase 1
 
-| Old | New |
-|-----|-----|
-| `IEventBus` | `IDomainEvent` + `IPublisher` (MediatR) |
-| `IntegrationEvent` base class | `IDomainEvent` interface |
-| `MassTransit` NuGet | removed |
-| `RabbitMQ` | removed |
-| `IConsumer<T>` | `INotificationHandler<T>` |
-| Per-module `OutboxMessage.cs` | removed |
-| Per-module `OutboxProcessor.cs` | removed |
-| `backend/messaging/` folder | deleted |
+| Not used | Reason |
+|---|---|
+| `IEventBus` | No external broker abstraction in Phase 1 |
+| `IntegrationEvent` | No cross-service event contracts in Phase 1 |
+| MassTransit | No message broker dependency |
+| RabbitMQ | No broker infrastructure |
+| Outbox tables | No external async message publishing |
+
+ONEVO Phase 1 is a single deployable backend. In-process domain events are available by exception, not as a default module pattern.

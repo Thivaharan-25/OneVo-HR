@@ -154,7 +154,7 @@ Desktop agents use a separate device-level JWT. This is not the same as customer
 
 | Policy | Value |
 |:-------|:------|
-| Hashing | Argon2id preferred for new backend work |
+| Hashing | BCrypt with work factor 12 for backend password hashes |
 | Min length | 12 characters |
 | Complexity | 1 uppercase, 1 lowercase, 1 digit, 1 special character |
 | Rate limiting | 5 attempts/minute per IP |

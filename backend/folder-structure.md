@@ -1,272 +1,200 @@
 # Solution Folder Structure: ONEVO
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-08
 
 The canonical reference for ONEVO backend organisation. All other docs defer to this file for structure questions.
 
----
-
 ## Architecture
 
-ONEVO follows **Clean Architecture + CQRS** (.NET 9). The solution is divided into four layer projects and one active host project. Modules from the planning docs become **feature folders** within each layer — there are no separate module `.csproj` files.
+ONEVO follows **Clean Architecture + CQRS** on .NET 9. The solution is divided into layer projects and one active host project. Planning modules become feature folders inside each layer; there are no separate module `.csproj` files.
 
-## Deployment Boundary (Definitive)
+Clean Architecture and CQRS do **not** require events. Domain events are optional and should appear only when a completed use case needs decoupled post-save side effects.
+
+## Deployment Boundary
 
 | Unit | Solution | Deployment artifact |
-|:-----|:---------|:-------------------|
+|:-----|:---------|:--------------------|
 | HR + Work Management web backend | `ONEVO.sln` | Single ASP.NET Core host, `ONEVO.Api` |
 | Developer admin console API | `ONEVO.sln` | `/admin/v1/*` namespace inside `ONEVO.Api` |
-| Desktop monitoring agent | `ONEVO.Agent.sln` | **Separate solution, separate MSIX release cycle** |
+| Desktop monitoring agent | `ONEVO.Agent.sln` | Separate solution, separate MSIX release cycle |
 | VS Code IDE extension | Published to VS Code Marketplace separately | TypeScript VSIX |
 
-`ONEVO.Agent.sln` is intentionally separate — it has its own release cadence (MSIX package signed and distributed via MDM/GPO), its own test suite, and does not share the web solution's CI pipeline. The agent communicates with `ONEVO.Api` at runtime via HTTP only.
+`ONEVO.Agent.sln` is intentionally separate. It has its own release cadence, test suite, and deployment path. The agent communicates with `ONEVO.Api` at runtime via HTTP only.
 
 The developer console frontend (`console.onevo.io`) is a separate SPA backed by `/admin/v1/*` endpoints inside `ONEVO.Api`. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed as a second backend service.
 
----
+## ONEVO.sln Structure
 
-## ONEVO.sln — Complete Structure
-
-```
+```text
 ONEVO.sln
-├── src/
-│   │
-│   │  ── LAYER 1: DOMAIN ──
-│   ├── ONEVO.Domain/
-│   │   ├── Common/
-│   │   │   ├── BaseEntity.cs              # Id (UUID v7), TenantId, CreatedAt, UpdatedAt,
-│   │   │   │                              #   CreatedById, IsDeleted, List<IDomainEvent>
-│   │   │   ├── IDomainEvent.cs            # : INotification (MediatR) — replaces IEventBus
-│   │   │   └── ValueObject.cs             # Immutable value type base class
-│   │   ├── Enums/                         # EmploymentType, ApprovalStatus, Severity, WorkMode…
-│   │   ├── Errors/
-│   │   │   ├── DomainException.cs
-│   │   │   ├── NotFoundException.cs
-│   │   │   └── ForbiddenException.cs
-│   │   ├── ValueObjects/
-│   │   │   ├── Email.cs
-│   │   │   ├── Money.cs
-│   │   │   ├── PhoneNumber.cs
-│   │   │   └── Address.cs
-│   │   └── Features/                      # 24 feature folders — entities + domain events
-│   │       ├── Auth/Entities/ + Events/
-│   │       ├── InfrastructureModule/      # ← named InfrastructureModule to avoid collision
-│   │       │   Entities/ + Events/        #   with ONEVO.Infrastructure layer project
-│   │       ├── OrgStructure/Entities/ + Events/
-│   │       ├── CoreHR/Entities/ + Events/
-│   │       ├── Leave/Entities/ + Events/
-│   │       ├── Payroll/Entities/ + Events/
-│   │       ├── Performance/Entities/ + Events/
-│   │       ├── Skills/Entities/ + Events/
-│   │       ├── Documents/Entities/ + Events/
-│   │       ├── WorkforcePresence/Entities/ + Events/
-│   │       ├── ActivityMonitoring/Entities/ + Events/
-│   │       ├── IdentityVerification/Entities/ + Events/
-│   │       ├── ExceptionEngine/Entities/ + Events/
-│   │       ├── DiscrepancyEngine/Entities/ + Events/
-│   │       ├── ProductivityAnalytics/Entities/ + Events/
-│   │       ├── SharedPlatform/Entities/ + Events/
-│   │       ├── Notifications/Entities/ + Events/
-│   │       ├── Configuration/Entities/ + Events/
-│   │       ├── Calendar/Entities/ + Events/
-│   │       ├── ReportingEngine/Entities/ + Events/
-│   │       ├── Grievance/Entities/ + Events/
-│   │       ├── Expense/Entities/ + Events/
-│   │       ├── AgentGateway/Entities/ + Events/
-│   │       └── DevPlatform/Entities/ + Events/
-│   │       │
-│   │       │  ── WORK MANAGEMENT (Pillar 3) feature folders ──
-│   │       ├── WorkManagement/Foundation/Entities/ + Events/
-│   │       ├── WorkManagement/Projects/Entities/ + Events/
-│   │       ├── WorkManagement/Tasks/Entities/ + Events/
-│   │       ├── WorkManagement/Planning/Entities/ + Events/
-│   │       ├── WorkManagement/OKR/Entities/ + Events/
-│   │       ├── WorkManagement/Time/Entities/ + Events/
-│   │       ├── WorkManagement/Resources/Entities/ + Events/
-│   │       ├── WorkManagement/Chat/Entities/ + Events/
-│   │       ├── WorkManagement/ChatAI/Entities/ + Events/
-│   │       ├── WorkManagement/Collaboration/Entities/ + Events/
-│   │       ├── WorkManagement/Analytics/Entities/ + Events/
-│   │       ├── WorkManagement/Integrations/Entities/ + Events/
-│   │       ├── Integrations/MicrosoftTeams/Entities/ + Events/
-│   │       └── IDEExtension/Entities/ + Events/
-│   │
-│   │  ── LAYER 2: APPLICATION ──
-│   ├── ONEVO.Application/
-│   │   ├── Common/
-│   │   │   ├── Behaviors/
-│   │   │   │   ├── ValidationBehavior.cs
-│   │   │   │   ├── LoggingBehavior.cs
-│   │   │   │   ├── PerformanceBehavior.cs
-│   │   │   │   └── UnhandledExceptionBehavior.cs
-│   │   │   ├── Interfaces/
-│   │   │   │   ├── IRepository.cs             # IRepository<T> generic
-│   │   │   │   ├── IUnitOfWork.cs
-│   │   │   │   ├── ICurrentUser.cs
-│   │   │   │   ├── ICacheService.cs
-│   │   │   │   ├── IEncryptionService.cs
-│   │   │   │   ├── IEmailService.cs
-│   │   │   │   ├── IStorageService.cs
-│   │   │   │   ├── IDateTimeProvider.cs
-│   │   │   │   ├── IBackgroundJobService.cs
-│   │   │   │   ├── INotificationDispatcher.cs
-│   │   │   │   ├── ITokenService.cs
-│   │   │   │   ├── IPasswordHasher.cs
-│   │   │   │   └── IIDEHubService.cs          # SignalR push to IDE: tag:executed, ai:action_pending, context:detected
-│   │   │   └── Models/
-│   │   │       ├── Result.cs
-│   │   │       ├── PagedRequest.cs
-│   │   │       └── PagedResult.cs
-│   │   ├── Features/                          # ~38 feature folders (HR + WFI + Work Management + IDE)
-│   │   │   └── {Feature}/
-│   │   │       ├── Commands/{UseCase}/
-│   │   │       │   ├── {UseCase}Command.cs    # record : IRequest<Result<ResponseDto>>
-│   │   │       │   └── {UseCase}Handler.cs
-│   │   │       ├── Queries/{UseCase}/
-│   │   │       │   ├── {UseCase}Query.cs
-│   │   │       │   └── {UseCase}Handler.cs
-│   │   │       ├── DTOs/
-│   │   │       │   ├── Requests/              # HTTP request body models
-│   │   │       │   └── Responses/             # handler return types
-│   │   │       ├── Validators/
-│   │   │       └── EventHandlers/             # INotificationHandler<IDomainEvent>
-│   │   └── DependencyInjection.cs
-│   │
-│   │  ── LAYER 3: INFRASTRUCTURE ──
-│   ├── ONEVO.Infrastructure/
-│   │   ├── Persistence/
-│   │   │   ├── ApplicationDbContext.cs        # ALL 252 cataloged tables (HR + Work Management + IDE), global tenant + workspace + soft-delete filters
-│   │   │   ├── ApplicationDbContextFactory.cs
-│   │   │   ├── Migrations/                    # ONE migration set
-│   │   │   ├── Interceptors/
-│   │   │   │   ├── AuditableEntityInterceptor.cs
-│   │   │   │   ├── SoftDeleteInterceptor.cs
-│   │   │   │   └── DomainEventDispatchInterceptor.cs
-│   │   │   ├── Configurations/                # IEntityTypeConfiguration<T> per entity
-│   │   │   │   └── {Feature}/                 # ~38 feature folders (mirrors Domain/Features/ layout)
-│   │   │   ├── Repositories/
-│   │   │   │   └── GenericRepository.cs
-│   │   │   └── UnitOfWork.cs
-│   │   ├── Identity/
-│   │   │   ├── JwtTokenService.cs
-│   │   │   ├── CurrentUserService.cs
-│   │   │   ├── PasswordHasher.cs              # BCrypt WorkFactor=12
-│   │   │   └── PermissionService.cs
-│   │   ├── Caching/
-│   │   │   ├── RedisCacheService.cs
-│   │   │   └── CacheKeys.cs
-│   │   ├── BackgroundJobs/
-│   │   │   ├── HangfireConfiguration.cs
-│   │   │   ├── Queues.cs
-│   │   │   └── BackgroundJobService.cs
-│   │   ├── Email/SmtpEmailService.cs
-│   │   ├── Storage/BlobStorageService.cs
-│   │   ├── Security/AesEncryptionService.cs
-│   │   ├── RealTime/
-│   │   │   ├── SignalRNotificationDispatcher.cs
-│   │   │   ├── IDEHubService.cs               # IIDEHubService impl — pushes to IDEHub
-│   │   │   └── HubRegistration.cs
-│   │   └── DependencyInjection.cs
-│   │
-│   │  ── LAYER 4: HOSTS ──
-│   │
-│   ├── ONEVO.Api/                             # Single backend host (/api/v1/* + /admin/v1/*)
-│   │   ├── Controllers/                       # Thin controllers only
-│   │   │   ├── Admin/                         # Developer Console controllers (/admin/v1/*)
-│   │   │   └── {Feature}/                     # Customer/API controllers (/api/v1/*)
-│   │   ├── Hubs/
-│   │   │   ├── WorkforceLiveHub.cs
-│   │   │   ├── ExceptionAlertsHub.cs
-│   │   │   ├── NotificationsHub.cs
-│   │   │   └── AgentStatusHub.cs
-│   │   ├── Middleware/
-│   │   │   ├── TenantResolutionMiddleware.cs
-│   │   │   ├── PermissionMiddleware.cs
-│   │   │   └── ExceptionHandlerMiddleware.cs  # RFC 7807
-│   │   ├── Filters/RequirePermissionAttribute.cs
-│   │   └── Program.cs
-│   │
-│   └── ONEVO.Admin.Api/                       # Deprecated scaffold only; do not deploy or add controllers
-│       ├── README.md
-│       └── Program.cs
-│
-├── tests/
-│   ├── ONEVO.Tests.Unit/
-│   │   └── Features/                          # Per-feature handler tests
-│   ├── ONEVO.Tests.Integration/
-│   │   └── Features/                          # Real DB via Testcontainers
-│   └── ONEVO.Tests.Architecture/
-│       └── LayerDependencyTests.cs            # ArchUnitNET — enforces dependency rule
-│
-└── tools/
-    └── ONEVO.DbMigrator/                      # CLI — runs ApplicationDbContext migrations
+|-- src/
+|   |-- ONEVO.Domain/
+|   |   |-- Common/
+|   |   |   |-- BaseEntity.cs
+|   |   |   |-- ValueObject.cs
+|   |   |   `-- IDomainEvent.cs                  # optional post-save event marker
+|   |   |-- Enums/
+|   |   |-- Errors/
+|   |   |-- ValueObjects/
+|   |   `-- Features/
+|   |       `-- {Feature}/
+|   |           |-- Entities/
+|   |           `-- Events/                       # optional; create only when justified
+|   |
+|   |-- ONEVO.Application/
+|   |   |-- Common/
+|   |   |   |-- Behaviors/
+|   |   |   |   |-- ValidationBehavior.cs
+|   |   |   |   |-- LoggingBehavior.cs
+|   |   |   |   |-- PerformanceBehavior.cs
+|   |   |   |   `-- UnhandledExceptionBehavior.cs
+|   |   |   |-- Interfaces/
+|   |   |   `-- Models/
+|   |   |       |-- Result.cs
+|   |   |       |-- PagedRequest.cs
+|   |   |       `-- PagedResult.cs
+|   |   `-- Features/
+|   |       `-- {Feature}/
+|   |           |-- Commands/
+|   |           |   `-- {UseCase}/
+|   |           |       |-- {UseCase}Command.cs
+|   |           |       |-- {UseCase}Handler.cs
+|   |           |       `-- {UseCase}Validator.cs
+|   |           |-- Queries/
+|   |           |   `-- {UseCase}/
+|   |           |       |-- {UseCase}Query.cs
+|   |           |       `-- {UseCase}Handler.cs
+|   |           |-- DTOs/
+|   |           |   |-- Requests/
+|   |           |   `-- Responses/
+|   |           |-- Interfaces/
+|   |           `-- EventHandlers/                 # optional; only for justified events
+|   |
+|   |-- ONEVO.Infrastructure/
+|   |   |-- Persistence/
+|   |   |   |-- ApplicationDbContext.cs
+|   |   |   |-- ApplicationDbContextFactory.cs
+|   |   |   |-- Migrations/
+|   |   |   |-- Interceptors/
+|   |   |   |   |-- AuditableEntityInterceptor.cs
+|   |   |   |   |-- SoftDeleteInterceptor.cs
+|   |   |   |   `-- DomainEventDispatchInterceptor.cs # optional event dispatch
+|   |   |   |-- Configurations/{Feature}/
+|   |   |   |-- Repositories/{Feature}/
+|   |   |   `-- UnitOfWork.cs
+|   |   |-- Identity/
+|   |   |-- Caching/
+|   |   |-- BackgroundJobs/
+|   |   |-- Email/
+|   |   |-- Storage/
+|   |   |-- Security/
+|   |   |-- RealTime/
+|   |   `-- DependencyInjection.cs
+|   |
+|   |-- ONEVO.Api/
+|   |   |-- Controllers/
+|   |   |   |-- Admin/
+|   |   |   `-- {Feature}/
+|   |   |-- Hubs/
+|   |   |-- Middleware/
+|   |   |-- Filters/
+|   |   `-- Program.cs
+|   |
+|   `-- ONEVO.Admin.Api/                           # deprecated scaffold only
+|
+|-- tests/
+|   |-- ONEVO.Tests.Unit/
+|   |-- ONEVO.Tests.Integration/
+|   `-- ONEVO.Tests.Architecture/
+|
+`-- tools/
+    `-- ONEVO.DbMigrator/
 ```
 
----
+## Application Feature Rule
 
-## ONEVO.Agent.sln — Separate Solution
+Use-case files stay together:
 
-See `backend/agent/overview.md` for full detail.
-
+```text
+ONEVO.Application/Features/{Feature}/
+|-- Commands/
+|   `-- {UseCase}/
+|       |-- {UseCase}Command.cs
+|       |-- {UseCase}Handler.cs
+|       `-- {UseCase}Validator.cs
+|-- Queries/
+|   `-- {UseCase}/
+|       |-- {UseCase}Query.cs
+|       `-- {UseCase}Handler.cs
+|-- DTOs/
+|   |-- Requests/
+|   `-- Responses/
+`-- Interfaces/
 ```
-ONEVO.Agent.sln
-├── src/
-│   ├── ONEVO.Agent.Core/          # Pure logic — no OS deps
-│   ├── ONEVO.Agent.Windows/       # Windows tray app + capture (Phase 1)
-│   └── ONEVO.Agent.Infrastructure/ # HTTP client to ONEVO.Api
-└── tests/
-    └── ONEVO.Agent.Tests.Unit/
+
+Do not create feature-level `Validators/` folders. A validator belongs to the command it validates. Queries may have validators only when they accept meaningful user input such as filters, date ranges, pagination, or identifiers that need format checks.
+
+Do not create `EventHandlers/` by default. Add it only when the feature handles a real domain event.
+
+## Request Lifecycle
+
+```text
+Controller -> Command/Query -> Validator -> Handler -> Repository/Domain -> UnitOfWork -> Response
 ```
 
----
+Optional event branch:
+
+```text
+UnitOfWork save succeeds -> DomainEventDispatchInterceptor -> EventHandler(s)
+```
+
+That branch exists only for justified post-save side effects. It is not part of the normal use-case template.
 
 ## Layer Dependency Rule
 
-```
+```text
 ONEVO.Api
-        ↓
-ONEVO.Application  ←  ONEVO.Infrastructure
-        ↓
-ONEVO.Domain
-
-FORBIDDEN:
-  Application → Infrastructure
-  Domain → anything
+    -> ONEVO.Application <- ONEVO.Infrastructure
+           -> ONEVO.Domain
 ```
 
-Enforced by ArchUnitNET tests in `ONEVO.Tests.Architecture`.
+Forbidden dependencies:
 
----
+```text
+Application -> Infrastructure
+Domain -> Application
+Domain -> Infrastructure
+Domain -> Api
+```
 
 ## Host Project Rules
 
-The active host project is a **composition root only** — no business logic, no DbContext. `ONEVO.Admin.Api` is deprecated scaffold only.
+The active host project is a composition root only: no business logic, no `DbContext`. `ONEVO.Admin.Api` is deprecated scaffold only.
 
 | What | Correct Location |
 |---|---|
-| MediatR handler | `ONEVO.Application/Features/{Feature}/Commands/` or `Queries/` |
-| Interface definition | `ONEVO.Application/Common/Interfaces/` |
+| Command handler | `ONEVO.Application/Features/{Feature}/Commands/{UseCase}/` |
+| Query handler | `ONEVO.Application/Features/{Feature}/Queries/{UseCase}/` |
+| Command validator | `ONEVO.Application/Features/{Feature}/Commands/{UseCase}/` |
+| Interface definition | `ONEVO.Application/Common/Interfaces/` or `ONEVO.Application/Features/{Feature}/Interfaces/` |
 | Interface implementation | `ONEVO.Infrastructure/` |
-| Repository/service interface | `ONEVO.Application/Features/{Feature}/Interfaces/` or `ONEVO.Application/Common/Interfaces/` |
-| Repository/service implementation | `ONEVO.Infrastructure/` |
 | Entity | `ONEVO.Domain/Features/{Feature}/Entities/` |
+| Optional domain event | `ONEVO.Domain/Features/{Feature}/Events/` |
+| Optional event handler | `ONEVO.Application/Features/{Feature}/EventHandlers/` |
 | EF configuration | `ONEVO.Infrastructure/Persistence/Configurations/{Feature}/` |
+| Repository implementation | `ONEVO.Infrastructure/Persistence/Repositories/{Feature}/` |
 | Migration | `ONEVO.Infrastructure/Persistence/Migrations/` |
-| Customer API controller | `ONEVO.Api/Controllers/{Feature}/` — thin only, `/api/v1/*` |
-| Developer Console controller | `ONEVO.Api/Controllers/Admin/` — thin only, `/admin/v1/*`, `[Authorize(Policy = "PlatformAdmin")]` |
+| Customer API controller | `ONEVO.Api/Controllers/{Feature}/` |
+| Developer Console controller | `ONEVO.Api/Controllers/Admin/` |
 | DbContext | `ONEVO.Infrastructure/Persistence/ApplicationDbContext.cs` only |
-
----
 
 ## Persistence Access Rule
 
-Handlers, services, resolvers, and module orchestration classes must not use EF Core or `ApplicationDbContext` directly. Command handlers, query handlers, event handlers, and services use repository/reader interfaces owned by the Application layer. Infrastructure implements those interfaces with EF Core under `Persistence/Repositories/{Feature}/`.
+Handlers, services, resolvers, optional event handlers, and module orchestration classes must not use EF Core or `ApplicationDbContext` directly. Database reads and writes go through Application-owned repository/reader interfaces implemented in Infrastructure.
 
-Use the generic `IRepository<T>` for simple aggregate access. Add feature-specific repositories/readers for joins, projections, cross-feature reads, or platform-admin flows. Any operation that needs cross-tenant data or `IgnoreQueryFilters()` must be hidden behind an explicitly named platform/admin repository or service method.
+Use the generic `IRepository<T>` for simple aggregate access. Add feature-specific repositories/readers for joins, projections, cross-feature reads, platform-admin flows, or any operation that would otherwise require `IgnoreQueryFilters()`.
 
-Application does not expose `IApplicationDbContext` or `DbSet<T>` abstractions. `ApplicationDbContext` is an Infrastructure detail used by repositories, EF migrations/configuration, and `IUnitOfWork`. See [[backend/repository-persistence-boundary|Repository Persistence Boundary]].
-
----
+Application does not expose `IApplicationDbContext` or `DbSet<T>` abstractions. `ApplicationDbContext` is an Infrastructure detail used by repositories, EF migrations/configuration, and `IUnitOfWork`.
 
 ## Related
 
@@ -275,7 +203,7 @@ Application does not expose `IApplicationDbContext` or `DbSet<T>` abstractions. 
 - [[backend/layer-guide/application-layer|Application Layer Guide]]
 - [[backend/layer-guide/infrastructure-layer|Infrastructure Layer Guide]]
 - [[backend/layer-guide/webapi-layer|WebApi Layer Guide]]
-- [[backend/module-catalog|Module Catalog]] — feature registry
+- [[backend/module-catalog|Module Catalog]]
 - [[backend/security|Security Implementation]]
 - [[backend/cqrs-patterns|CQRS Patterns]]
 - [[backend/domain-events|Domain Events]]

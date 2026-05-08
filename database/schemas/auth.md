@@ -2,7 +2,7 @@
 
 **Module:** [[modules/auth/overview|Auth & Security]]
 **Phase:** Phase 1
-**Tables:** 13
+**Tables:** 16
 
 ---
 
@@ -71,6 +71,76 @@
 | `code` | `varchar(50)` | e.g., `employees:read`, `workforce:view`, `exceptions:manage` |
 | `description` | `varchar(255)` |  |
 | `module` | `varchar(50)` | Which module this permission belongs to |
+
+---
+
+## `invitation_tokens`
+
+Secure one-time invitation records for tenant owner/admin invites and normal user invites. Raw invite tokens are never stored; only a SHA-256 hash is persisted.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `user_id` | `uuid` | FK -> users; pending invited account |
+| `invited_email` | `varchar(255)` | Original email address the invite was sent to |
+| `token_hash` | `varchar(128)` | SHA-256 hash of invite token; never store raw token |
+| `status` | `varchar(20)` | `pending`, `accepted`, `expired`, `revoked` |
+| `completion_methods_json` | `jsonb` | Allowed methods: `password`, `google` |
+| `completed_with` | `varchar(20)` | Nullable; `password` or `google` |
+| `allow_google_email_mismatch` | `boolean` | Whether Google email may differ from invited email |
+| `allowed_email_domains_json` | `jsonb` | Allowed domains for Google email mismatch |
+| `expires_at` | `timestamptz` | Usually 72 hours after creation |
+| `used_at` | `timestamptz` | Nullable; set when invite is completed |
+| `revoked_at` | `timestamptz` | Nullable |
+| `revoked_by_id` | `uuid` | Nullable FK -> users or dev platform account boundary |
+| `created_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `created_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` -> [[database/schemas/infrastructure#`users`|users]]
+
+**Rules:** completing with password uses `invited_email`. Completing with Google may use a different verified Google email only when `allow_google_email_mismatch = true` and the domain is allowed. Mismatches are audit-logged and the original `invited_email` remains on this record.
+
+---
+
+## `tenant_auth_policies`
+
+Tenant-level defaults for login and invitation completion methods.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `tenant_id` | `uuid` | PK, FK -> tenants |
+| `password_login_enabled` | `boolean` | Whether password login is allowed |
+| `google_login_enabled` | `boolean` | Whether Google login/invite completion is allowed |
+| `invite_google_email_mismatch_allowed` | `boolean` | Default mismatch rule for invitations |
+| `allowed_login_domains_json` | `jsonb` | Allowed email domains for SSO/Google mismatch |
+| `mfa_required` | `boolean` | Tenant-wide MFA requirement |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | Nullable |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
+
+---
+
+## `user_external_identities`
+
+External identity links for tenant users. Use this instead of overloading `users.email` for provider identity details.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `user_id` | `uuid` | FK -> users |
+| `provider` | `varchar(30)` | `google`; future providers may include SAML/OIDC |
+| `provider_subject` | `varchar(255)` | Stable provider subject, e.g., Google `sub` |
+| `provider_email` | `varchar(255)` | Verified email returned by provider |
+| `email_verified` | `boolean` | Provider email verification state |
+| `linked_at` | `timestamptz` | |
+| `last_used_at` | `timestamptz` | Nullable |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` -> [[database/schemas/infrastructure#`users`|users]]
+
+**Unique:** `(tenant_id, provider, provider_subject)`, `(tenant_id, provider, user_id)`
 
 ---
 

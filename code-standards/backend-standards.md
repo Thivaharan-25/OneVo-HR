@@ -1,102 +1,62 @@
 # Coding Standards: ONEVO (.NET 9 / C#)
 
-## 1. General Principles
+**Last Updated:** 2026-05-08
 
-- **Readability over cleverness** — code is read far more than written
-- **Consistency** — follow existing patterns in the codebase (see [[backend/module-boundaries|Module Boundaries]])
-- **Explicit over implicit** — prefer `Result<T>` (see [[backend/shared-kernel|Shared Kernel]]) over exceptions, `async/await` over callbacks
-- **Fail fast** — validate inputs at the boundary, use `FluentValidation`
+## General Principles
 
-## 2. Naming Conventions
+- Readability over cleverness.
+- Follow [[backend/folder-structure|Folder Structure]] and [[backend/module-boundaries|Module Boundaries]].
+- Use `Result<T>` for expected business outcomes.
+- Use `async/await` with `CancellationToken` on async paths.
+- Validate command input with FluentValidation.
+
+## Naming Conventions
 
 | Element | Convention | Example |
-|:--------|:-----------|:--------|
-| Namespaces | `PascalCase` | `ONEVO.Modules.CoreHR.Internal.Services` |
-| Classes/Records | `PascalCase` | `EmployeeService`, `CreateEmployeeCommand` |
+|---|---|---|
+| Namespaces | `PascalCase` | `ONEVO.Application.Features.CoreHR` |
+| Classes/Records | `PascalCase` | `CreateEmployeeCommand` |
 | Interfaces | `IPascalCase` | `IEmployeeRepository` |
-| Methods | `PascalCase` + Async suffix | `GetEmployeeByIdAsync()` |
-| Properties | `PascalCase` | `FirstName`, `TenantId` |
+| Methods | `PascalCase` + `Async` suffix | `GetEmployeeByIdAsync()` |
+| Properties | `PascalCase` | `FirstName` |
 | Private fields | `_camelCase` | `_employeeRepository` |
-| Local variables | `camelCase` | `employeeId`, `leaveRequest` |
-| Constants | `PascalCase` | `MaxPageSize`, `DefaultCurrency` |
-| Enums | `PascalCase` (singular) | `EmploymentType.FullTime` |
-| DTOs | `{Entity}{Action}Dto` | `EmployeeListDto`, `CreateEmployeeDto` |
-| Commands | `{Action}{Entity}Command` | `CreateEmployeeCommand`, `ApproveLeaveRequestCommand` |
-| Queries | `Get{Entity}Query` | `GetEmployeeByIdQuery`, `GetEmployeesQuery` |
-| Validators | `{Command}Validator` | `CreateEmployeeCommandValidator` |
-| Handlers | `{Command/Query}Handler` | `CreateEmployeeCommandHandler` |
-| Events | `{Entity}{Action}Event` | `EmployeeHiredEvent`, `LeaveApprovedEvent` |
+| Local variables | `camelCase` | `employeeId` |
+| DTOs | `{Entity}{Purpose}Dto` | `EmployeeListDto` |
+| Commands | `{Action}{Entity}Command` | `CreateEmployeeCommand` |
+| Queries | `Get{Entity}Query` or `List{Entities}Query` | `GetEmployeeByIdQuery` |
+| Validators | `{UseCase}Validator` | `CreateEmployeeValidator` |
+| Handlers | `{UseCase}Handler` | `CreateEmployeeHandler` |
+| Optional events | `{Entity}{Action}Event` | `EmployeeTerminatedEvent` |
 
-## 3. File Organization Per Module
+## Feature File Organization
 
-```
-ONEVO.Modules.{Name}/
-├── Public/                     # Exported interfaces + DTOs
-│   ├── I{Name}Service.cs
-│   ├── Dtos/
-│   │   ├── {Entity}Dto.cs
-│   │   ├── {Entity}ListDto.cs
-│   │   ├── Create{Entity}Dto.cs
-│   │   └── Update{Entity}Dto.cs
-│   └── Events/
-│       └── {Entity}{Action}Event.cs
-├── Internal/
-│   ├── Entities/
-│   │   └── {Entity}.cs          # EF Core entity
-│   ├── Configuration/
-│   │   └── {Entity}Configuration.cs  # EF Core Fluent API config
-│   ├── Repositories/
-│   │   ├── I{Entity}Repository.cs
-│   │   └── {Entity}Repository.cs
-│   ├── Services/
-│   │   └── {Name}Service.cs     # Implements I{Name}Service
-│   ├── Commands/
-│   │   ├── Create{Entity}/
-│   │   │   ├── Create{Entity}Command.cs
-│   │   │   ├── Create{Entity}CommandHandler.cs
-│   │   │   └── Create{Entity}CommandValidator.cs
-│   │   └── Update{Entity}/
-│   │       └── ...
-│   ├── Queries/
-│   │   ├── Get{Entity}ById/
-│   │   │   ├── Get{Entity}ByIdQuery.cs
-│   │   │   └── Get{Entity}ByIdQueryHandler.cs
-│   │   └── Get{Entities}/
-│   │       └── ...
-│   ├── EventHandlers/           # Handles events from OTHER modules
-│   │   └── Handle{Event}.cs
-│   └── Mappings/
-│       └── {Entity}Mappings.cs  # Entity ↔ DTO mapping
-├── Endpoints/
-│   └── {Entity}Endpoints.cs     # Minimal API endpoint definitions
-└── {Name}Module.cs              # DI registration
+```text
+ONEVO.Application/Features/{Feature}/
+|-- Commands/
+|   `-- {UseCase}/
+|       |-- {UseCase}Command.cs
+|       |-- {UseCase}Handler.cs
+|       `-- {UseCase}Validator.cs
+|-- Queries/
+|   `-- {UseCase}/
+|       |-- {UseCase}Query.cs
+|       `-- {UseCase}Handler.cs
+|-- DTOs/
+|   |-- Requests/
+|   `-- Responses/
+`-- Interfaces/
 ```
 
-## 4. Code Patterns
+Command validators are colocated with the command. Do not create feature-level `Validators/` folders.
 
-### Entity Definition
+Optional only when justified:
 
-```csharp
-public class Employee : BaseEntity
-{
-    public Guid UserId { get; set; }
-    public Guid DepartmentId { get; set; }
-    public Guid? ManagerId { get; set; }
-    public string EmployeeNo { get; set; } = string.Empty;
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public EmploymentType EmploymentType { get; set; }
-    public EmploymentStatus EmploymentStatus { get; set; }
-    public DateOnly HireDate { get; set; }
-    
-    // Navigation properties
-    public Department Department { get; set; } = null!;
-    public Employee? Manager { get; set; }
-    public ICollection<Employee> DirectReports { get; set; } = new List<Employee>();
-}
+```text
+ONEVO.Domain/Features/{Feature}/Events/
+ONEVO.Application/Features/{Feature}/EventHandlers/
 ```
 
-### Command + Handler (MediatR)
+## Command Pattern
 
 ```csharp
 public record CreateEmployeeCommand(
@@ -104,128 +64,82 @@ public record CreateEmployeeCommand(
     string LastName,
     string Email,
     Guid DepartmentId,
-    Guid JobFamilyId,
     EmploymentType EmploymentType,
     DateOnly HireDate
 ) : IRequest<Result<EmployeeDto>>;
 
-public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeCommand, Result<EmployeeDto>>
+public class CreateEmployeeHandler
+    : IRequestHandler<CreateEmployeeCommand, Result<EmployeeDto>>
 {
-    private readonly IEmployeeRepository _repository;
-    private readonly ITenantContext _tenantContext;
+    private readonly IEmployeeRepository _employees;
     private readonly IUnitOfWork _unitOfWork;
 
-    public async Task<Result<EmployeeDto>> Handle(CreateEmployeeCommand cmd, CancellationToken ct)
+    public async Task<Result<EmployeeDto>> Handle(CreateEmployeeCommand command, CancellationToken ct)
     {
-        var employee = new Employee
-        {
-            TenantId = _tenantContext.TenantId,
-            FirstName = cmd.FirstName,
-            LastName = cmd.LastName,
-            DepartmentId = cmd.DepartmentId,
-            EmploymentType = cmd.EmploymentType,
-            HireDate = cmd.HireDate,
-            EmploymentStatus = EmploymentStatus.Active
-        };
-        
-        employee.AddDomainEvent(new EmployeeHiredEvent(employee.Id, employee.TenantId, employee.DepartmentId));
-        
-        await _repository.AddAsync(employee, ct);
+        var employee = Employee.Create(
+            command.FirstName,
+            command.LastName,
+            command.Email,
+            command.DepartmentId,
+            command.EmploymentType,
+            command.HireDate);
+
+        await _employees.AddAsync(employee, ct);
         await _unitOfWork.SaveChangesAsync(ct);
-        
+
         return Result<EmployeeDto>.Success(employee.ToDto());
     }
 }
 ```
 
-### Minimal API Endpoints
+Do not add a domain event unless the use case needs a decoupled post-save side effect.
+
+## Error Handling
 
 ```csharp
-public static class EmployeeEndpoints
+public async Task<Result<LeaveRequestDto>> ApproveLeaveRequest(
+    ApproveLeaveRequestCommand command,
+    CancellationToken ct)
 {
-    public static void MapEmployeeEndpoints(this IEndpointRouteBuilder app)
-    {
-        var group = app.MapGroup("/api/v1/employees").RequireAuthorization();
-        
-        group.MapGet("/", GetEmployees).RequirePermission("employees:read");
-        group.MapGet("/{id:guid}", GetEmployeeById).RequirePermission("employees:read");
-        group.MapPost("/", CreateEmployee).RequirePermission("employees:write");
-        group.MapPut("/{id:guid}", UpdateEmployee).RequirePermission("employees:write");
-        group.MapDelete("/{id:guid}", DeleteEmployee).RequirePermission("employees:delete");
-    }
-    
-    private static async Task<IResult> GetEmployees(
-        [AsParameters] PagedRequest request,
-        ISender sender,
-        CancellationToken ct)
-    {
-        var result = await sender.Send(new GetEmployeesQuery(request), ct);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error!.ToProblemDetails());
-    }
-}
-```
+    var request = await _leaveRequests.GetByIdAsync(command.LeaveRequestId, ct);
 
-## 5. Error Handling
-
-```csharp
-// Use Result<T> for business logic — never throw exceptions for expected cases
-public async Task<Result<LeaveRequestDto>> ApproveLeaveRequest(Guid requestId, CancellationToken ct)
-{
-    var request = await _repository.GetByIdAsync(requestId, ct);
     if (request is null)
         return Result<LeaveRequestDto>.Failure("Leave request not found");
-    
-    if (request.Status != ApprovalStatus.Pending)
+
+    if (!request.CanBeApproved)
         return Result<LeaveRequestDto>.Failure("Only pending requests can be approved");
-    
-    request.Status = ApprovalStatus.Approved;
-    request.AddDomainEvent(new LeaveApprovedEvent(request.Id, request.EmployeeId));
-    
+
+    request.Approve(command.ApproverId);
+
     await _unitOfWork.SaveChangesAsync(ct);
+
     return Result<LeaveRequestDto>.Success(request.ToDto());
 }
-
-// Exceptions are for truly exceptional cases (infrastructure failures)
-// Global exception handler converts them to RFC 7807 Problem Details
 ```
 
-## 6. Code Formatting
+## Database
 
-- **Indentation:** 4 spaces (C# standard)
-- **Braces:** Allman style (new line) — follows .NET convention
-- **Line length:** 120 characters max
-- **Usings:** Implicit usings enabled, file-scoped namespaces
-- **Nullable:** Nullable reference types enabled project-wide
-- **EditorConfig:** Enforce via `.editorconfig` in solution root
+- EF Core snake_case convention handles database naming.
+- Use `Guid` for primary keys.
+- Use `DateTimeOffset` for timestamps and `DateOnly` for dates.
+- Encrypt sensitive fields through `IEncryptionService`.
+- Do not bypass repositories/readers from handlers.
+
+## Do Not
+
+- Do not use synchronous I/O.
+- Do not throw exceptions for expected business failures.
+- Do not inject `ApplicationDbContext` into handlers.
+- Do not introduce `IApplicationDbContext`.
+- Do not create `Events/` or `EventHandlers/` as default folders.
+- Do not log PII.
+- Do not hardcode secrets.
 
 ## Related
 
-- [[AI_CONTEXT/rules|Rules]] — AI agent code generation rules
-- [[backend/module-boundaries|Module Boundaries]] — module structure and boundary enforcement
-- [[backend/shared-kernel|Shared Kernel]] — base classes and utilities
-- [[code-standards/git-workflow|Git Workflow]] — commit message format and branching
-- [[code-standards/logging-standards|Logging Standards]] — Serilog patterns
-
-## 7. Git Commit Messages
-
-```
-type(scope): subject
-
-Types: feat, fix, refactor, test, docs, chore, perf
-Scope: module name (core-hr, leave, attendance, auth, etc.)
-
-Examples:
-feat(core-hr): add employee CRUD endpoints
-fix(leave): correct entitlement calculation for part-time employees
-refactor(auth): extract permission checking to middleware
-test(attendance): add integration tests for biometric webhook
-docs(architecture): update module dependency map
-chore(ci): add code coverage threshold check
-perf(payroll): optimize payroll run query with batch processing
-```
-
-## Related
-
-- [[AI_CONTEXT/rules|Rules]]
-- [[backend/shared-kernel|Shared Kernel]]
+- [[backend/folder-structure|Folder Structure]]
+- [[backend/cqrs-patterns|CQRS Patterns]]
 - [[backend/module-boundaries|Module Boundaries]]
+- [[backend/domain-events|Domain Events]]
+- [[code-standards/git-workflow|Git Workflow]]
+- [[code-standards/logging-standards|Logging Standards]]

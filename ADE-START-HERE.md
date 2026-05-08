@@ -31,7 +31,7 @@ Plus an **IDE Extension** — a full chat sidebar and tag-based automation surfa
 | **Frontend** | Vite + React 19, TypeScript, React Router v7, shadcn/ui, TanStack Query |
 | **Real-time** | SignalR — agent↔server bidirectional; server→browser for WorkSync live updates and IDE extension |
 | **Background Jobs** | Hangfire |
-| **Messaging** | MediatR (in-process domain events) |
+| **Messaging** | MediatR for command/query dispatch; optional in-process domain events by exception |
 | **Caching** | Redis |
 | **File Storage** | Azure Blob Storage |
 | **Email** | Resend |
@@ -275,7 +275,7 @@ Every module overview (`modules/*/overview.md`) follows the same structure:
 3. **Dependencies** — What it depends on and what consumes it
 4. **Public Interface** — The C# interface other modules call
 5. **Database Tables** — Full schema with columns, types, indexes
-6. **Domain Events** — Events published and their consumers
+6. **Optional Domain Events** - only events with justified post-save consumers; omit when none exist
 7. **Key Business Rules** — Critical logic constraints
 8. **API Endpoints** — REST routes with permissions
 9. **Hangfire Jobs** — Background jobs with schedules
@@ -298,7 +298,7 @@ Every module overview (`modules/*/overview.md`) follows the same structure:
 | **IDE Extension Spec** | Full IDE extension build plan | [[modules/ide-extension/overview\|IDE Extension]] |
 | **Shared Kernel** | Cross-cutting code (Result, AuditableEntity) | [[backend/shared-kernel\|Shared Kernel]] |
 | **API Conventions** | REST patterns, pagination, error format | [[backend/api-conventions\|API Conventions]] |
-| **Event Catalog** | All domain events across modules | [[backend/messaging/event-catalog\|Event Catalog]] |
+| **Domain Events** | Optional event rules and examples | [[backend/domain-events\|Domain Events]] |
 | **Multi-Tenancy** | Tenant isolation patterns | [[infrastructure/multi-tenancy\|Multi-Tenancy]] |
 | **Known Issues** | Gotchas and deprecated patterns | [[AI_CONTEXT/known-issues\|Known Issues]] |
 
@@ -325,9 +325,9 @@ Every module overview (`modules/*/overview.md`) follows the same structure:
 1. **Do not build Phase 2 modules** — check `**Phase:**` marker in each module overview
 2. **Do not implement bridge API contracts** — `backend/bridge-api-contracts.md` is **DEPRECATED**. WorkSync is internal.
 3. **Do not create a separate WMS backend or WMS database** — single `ApplicationDbContext` for everything
-4. **Do not introduce RabbitMQ/MassTransit/IEventBus** — Phase 1 uses in-process MediatR events only
+4. **Do not introduce RabbitMQ/MassTransit/IEventBus** - Phase 1 uses MediatR for CQRS; domain events are optional and in-process only
 5. **Do not use Meilisearch** — PostgreSQL FTS is sufficient for Phase 1
-6. **Do not import one module's internals into another** — use public interfaces and domain events only
+6. **Optional Domain Events** - only events with justified post-save consumers; omit when none exist
 7. **Do not capture agent data outside monitoring lifecycle** — no data before clock-in, during breaks, or after clock-out
 8. **Do not install the desktop monitoring agent via the IDE extension without entitlement check** — always validate `agent_install_entitlements` server-side; never silently install
 9. **Do not validate permissions in the IDE extension client** — the extension sends actions to the backend; the backend validates and rejects if unauthorized
