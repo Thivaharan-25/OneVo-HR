@@ -344,7 +344,7 @@ dotnet test ONEVO.sln --filter Audit
 
 - [ ] SSO provider configuration exists for Google only in Phase 1, with encrypted client credentials.
 - [ ] Subscription plan catalog exists with plan features and tenant subscription state.
-- [ ] Stripe-facing subscription and invoice records are represented behind module interfaces.
+- [ ] Stripe/PayHere-facing subscription, maintenance, and invoice records are represented behind module interfaces.
 - [ ] Feature flag service resolves tenant flags and module gates.
 - [ ] Tenant branding records exist for custom domain, logo, and colors.
 - [ ] Notification templates and notification channel configuration exist.

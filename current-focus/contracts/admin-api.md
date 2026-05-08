@@ -184,6 +184,73 @@ interface UpdateModuleCatalogItemDto {
 // response: ModuleCatalogItemDto
 ```
 
+## GET `/admin/v1/payment-gateways`
+
+Lists safe gateway metadata for Stripe and PayHere. Secrets are never returned.
+
+```ts
+interface PaymentGatewayConfigDto {
+  id: string
+  tenant_id: string | null
+  provider: "stripe" | "payhere"
+  mode: "test" | "live"
+  display_name: string
+  public_key?: string | null
+  merchant_id?: string | null
+  webhook_url: string
+  is_default: boolean
+  is_active: boolean
+  created_at: string
+  updated_at: string | null
+}
+
+interface PaymentGatewayConfigListResponseDto {
+  items: PaymentGatewayConfigDto[]
+}
+```
+
+## POST `/admin/v1/payment-gateways`
+
+Creates a Stripe or PayHere gateway config. Secret fields are encrypted and are never returned.
+
+```ts
+interface CreatePaymentGatewayConfigDto {
+  tenant_id?: string | null
+  provider: "stripe" | "payhere"
+  mode: "test" | "live"
+  display_name: string
+  public_key?: string | null          // Stripe publishable key when applicable
+  merchant_id?: string | null         // PayHere merchant ID when applicable
+  secret: string                      // Stripe secret key or PayHere merchant secret
+  webhook_secret?: string | null      // Stripe webhook secret or PayHere notify/hash secret when separate
+  webhook_url: string
+  is_default?: boolean
+  is_active?: boolean
+}
+
+// response: PaymentGatewayConfigDto
+```
+
+## PATCH `/admin/v1/payment-gateways/{id}`
+
+Updates safe metadata and optionally rotates gateway secrets.
+
+```ts
+interface UpdatePaymentGatewayConfigDto {
+  display_name?: string
+  public_key?: string | null
+  merchant_id?: string | null
+  secret?: string
+  webhook_secret?: string | null
+  webhook_url?: string
+  is_default?: boolean
+  is_active?: boolean
+  reason: string
+}
+
+// response: PaymentGatewayConfigDto
+```
+
 ## GET `/admin/v1/tenants/validate`
 
 Used by the wizard before or during draft creation. Country-specific registration validation may return warnings until product defines strict per-country rules.

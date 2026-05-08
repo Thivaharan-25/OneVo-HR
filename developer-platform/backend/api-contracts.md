@@ -22,6 +22,9 @@ Manages tenant lifecycle: creation, status, subscription, module assignment, pro
 | `GET` | `/admin/v1/modules/catalog` | List reusable module catalog, sellable state, and default pricing |
 | `POST` | `/admin/v1/modules/catalog` | Create a reusable module catalog item with default prices |
 | `PATCH` | `/admin/v1/modules/catalog/{moduleKey}` | Update reusable module metadata, sellable state, and default prices |
+| `GET` | `/admin/v1/payment-gateways` | List safe Stripe/PayHere gateway config metadata |
+| `POST` | `/admin/v1/payment-gateways` | Create Stripe or PayHere gateway config with encrypted secrets |
+| `PATCH` | `/admin/v1/payment-gateways/{id}` | Update gateway metadata or rotate encrypted secrets |
 | `GET` | `/admin/v1/tenants/validate` | Validate tenant slug, company, domain, and registration fields |
 | `GET` | `/admin/v1/tenants` | List all tenants |
 | `POST` | `/admin/v1/tenants` | Create tenant (manual provisioning — step 1) |
@@ -51,6 +54,7 @@ Payment collection rules:
 - Full-license tenants may record the one-time license sale manually (`license_payment_mode = manual`) with license amount, paid date, and reference.
 - Full-license maintenance/support is separate from the one-time license and normally uses gateway collection (`maintenance_collection_mode = gateway`) for recurring maintenance fees.
 - Manual collection modes require an audit reason and should be treated as exceptions.
+- The primary Phase 1 gateway providers are `stripe` and `payhere`. Gateway secrets are stored in encrypted gateway config records or environment variables and are never returned by admin APIs.
 
 Reusable plan and module default prices are managed through the plan/module catalog endpoints above. Tenant-specific negotiated pricing is managed through `/admin/v1/tenants/{id}/subscription` and `/admin/v1/tenants/{id}/modules`. Updating a catalog base price must not silently rewrite existing tenant commercial records.
 

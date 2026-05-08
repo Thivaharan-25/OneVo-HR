@@ -206,7 +206,7 @@ effectivePolicy.ActivityMonitoring =
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `integration_type` | `varchar(50)` | `stripe`, `resend`, `google_calendar`, `slack`, `lms` |
+| `integration_type` | `varchar(50)` | `stripe`, `payhere`, `resend`, `google_calendar`, `slack`, `lms` |
 | `config_json` | `jsonb` | |
 | `credentials_encrypted` | `bytea` | Encrypted |
 | `status` | `varchar(20)` | `active`, `inactive`, `error` |

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-All day-to-day tenant operations: finding tenants, inspecting their state, suspending them, impersonating their admin for support, and overriding their subscription when the normal Stripe path cannot be used.
+All day-to-day tenant operations: finding tenants, inspecting their state, suspending them, impersonating their admin for support, and overriding their subscription/commercial terms when the normal payment gateway path cannot be used.
 
 ---
 
@@ -103,22 +103,23 @@ When the 15-minute token expires the new tab is logged out automatically. The de
 
 **Minimum role:** super_admin
 
-> **Warning — exception tool only.** The normal, primary path for plan changes is: customer → Stripe checkout → plan auto-assigned. Use this tool only when that path cannot be used:
-> - Enterprise deals closed by sales (no Stripe checkout involved)
-> - Trial extensions approved outside Stripe
+> **Warning - exception tool only.** The normal, primary path for standard subscription collection is through the configured payment gateway (`stripe` or `payhere`). Use this tool only when that path cannot be used or when the tenant has negotiated commercial terms:
+> - Enterprise deals closed by sales
+> - Full-license tenants with manually recorded one-time license payment
+> - Trial extensions approved outside the gateway
 > - Internal test accounts
-> - Fixing a confirmed Stripe sync error
+> - Fixing a confirmed gateway sync error
 >
-> Do not use subscription override as a routine billing management tool. Direct tenants to Stripe for standard plan changes.
+> Do not use subscription override as a routine billing management tool. Direct standard subscription changes through the configured Stripe/PayHere flow.
 
 **Steps:**
 
 1. Open the tenant detail page (`/tenants/{id}`) → **Overview** tab
 2. Click **Override Subscription**
-3. A form appears: select new plan from dropdown, set billing start date, enter reason (required free-text field)
+3. A form appears: select new plan from dropdown, choose commercial model, set billing dates, select collection mode and gateway provider when applicable, enter reason (required free-text field)
 4. Click **Apply Override**
-5. API call: `PATCH /admin/v1/tenants/{id}/subscription` with body `{ "plan_id": "<id>", "billing_start": "<date>", "reason": "<text>", "stripe_managed": false }`
+5. API call: `PATCH /admin/v1/tenants/{id}/subscription` with body including `plan_code`, `commercial_model`, collection modes, optional `gateway_provider` (`stripe` or `payhere`), and `reason`
 6. Toast: "Subscription updated"
-7. Overview tab reflects the new plan; a "Manually managed" label appears next to billing dates
+7. Overview tab reflects the new plan; gateway-managed, manually managed, or full-license maintenance labels appear next to billing dates
 
 All overrides are audit-logged with the developer account, the previous plan, the new plan, and the reason provided.

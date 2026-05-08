@@ -216,10 +216,36 @@ Global catalog of known applications managed by the OneVo dev team via the devel
 | `expiry_month` | `integer` |  |
 | `expiry_year` | `integer` |  |
 | `is_default` | `boolean` |  |
-| `payment_provider_ref` | `varchar(100)` | Stripe payment method ID |
+| `payment_provider_ref` | `varchar(100)` | Gateway payment method ID from Stripe or PayHere |
 | `created_at` | `timestamptz` |  |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+
+---
+
+## `payment_gateway_configs`
+
+Gateway configuration for Stripe and PayHere. Supports global platform defaults and optional tenant-specific gateway configuration. Secrets are encrypted through `IEncryptionService`; admin APIs return safe metadata only.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | Nullable; null means platform/global default gateway config |
+| `provider` | `varchar(30)` | `stripe`, `payhere` |
+| `mode` | `varchar(20)` | `test`, `live` |
+| `display_name` | `varchar(100)` | Friendly operator label |
+| `public_key` | `varchar(255)` | Nullable; Stripe publishable key or equivalent public identifier |
+| `merchant_id` | `varchar(100)` | Nullable; PayHere merchant ID |
+| `secret_encrypted` | `bytea` | Encrypted Stripe secret key or PayHere merchant secret |
+| `webhook_secret_encrypted` | `bytea` | Encrypted Stripe webhook secret or PayHere notify/hash secret when separate |
+| `webhook_url` | `varchar(500)` | Gateway callback/notify URL |
+| `is_default` | `boolean` | Default gateway for tenant/platform |
+| `is_active` | `boolean` | Whether this config can be used for payment collection |
+| `created_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Rule:** Subscription collection and full-license maintenance collection must reference a configured gateway provider (`stripe` or `payhere`) when `*_collection_mode = gateway`.
 
 ---
 

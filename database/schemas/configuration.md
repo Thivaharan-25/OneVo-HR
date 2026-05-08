@@ -232,13 +232,15 @@ Employee requests to replace a locked remote workplace profile.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `integration_type` | `varchar(50)` | `peoplehr`, `stripe`, `resend`, `google_calendar`, `slack`, `lms` |
+| `integration_type` | `varchar(50)` | `peoplehr`, `stripe`, `payhere`, `resend`, `google_calendar`, `slack`, `lms` |
 | `config_json` | `jsonb` |  |
 | `credentials_encrypted` | `bytea` | Encrypted |
 | `status` | `varchar(20)` | `active`, `inactive`, `error` |
 | `last_sync_at` | `timestamptz` |  |
 
 **PeopleHR note:** `peoplehr` credentials are used by the DataImport PeopleHR migration flow. The API key must be encrypted at rest, masked in UI, and validated through API permission preflight before any migration run. Full raw staging and audit tables are defined in [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]].
+
+**Payment gateway note:** Stripe and PayHere are the Phase 1 payment gateways. Their billing API keys, merchant secrets, and webhook secrets should use `payment_gateway_configs` in the Shared Platform schema when used for subscription, full-license maintenance, or invoice collection.
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
 

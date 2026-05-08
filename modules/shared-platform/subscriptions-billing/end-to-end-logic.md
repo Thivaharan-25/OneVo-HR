@@ -1,7 +1,7 @@
 # Subscriptions & Billing — End-to-End Logic
 
 **Module:** Shared Platform
-**Feature:** Subscriptions & Billing (Stripe)
+**Feature:** Subscriptions & Billing (Stripe + PayHere)
 
 ---
 
@@ -30,12 +30,30 @@ POST /api/v1/subscriptions/upgrade
     -> SubscriptionService.UpgradeAsync(command, ct)
       -> 1. Load current subscription
       -> 2. Validate new plan exists and is higher tier
-      -> 3. Call Stripe API to update subscription
-      -> 4. UPDATE tenant_subscriptions with new plan
-      -> 5. Update feature_limits based on new plan
+      -> 3. Resolve gateway_provider (stripe or payhere) and gateway config
+      -> 4. Call selected gateway API to update subscription
+      -> 5. UPDATE tenant_subscriptions with new plan and gateway refs
+      -> 6. Update feature_limits based on new plan
       -> Return Result.Success(updatedDto)
 
 ```
+
+## Payment Gateway Configuration
+
+```
+GET /admin/v1/payment-gateways
+POST /admin/v1/payment-gateways
+PATCH /admin/v1/payment-gateways/{id}
+  -> Supports provider = "stripe" or "payhere"
+  -> Stores API keys, merchant secrets, and webhook secrets encrypted
+  -> Returns masked/public configuration only
+```
+
+## Commercial Rules
+
+- Subscription tenants normally collect recurring payments through Stripe or PayHere.
+- Full-license tenants may record the one-time license payment manually.
+- Full-license maintenance fees are separate from the license sale and should be collected through Stripe or PayHere when gateway collection is enabled.
 
 ## Related
 

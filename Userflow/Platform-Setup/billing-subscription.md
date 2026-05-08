@@ -100,7 +100,7 @@ Future modules (Governance, Skill & Talent Development, Payroll, Performance, et
 
 ### Step 4: Add a New Pack or Add-on (Self-Service Upgrade)
 
-Tenant admins can add packs and the Chat AI add-on directly — no sales call needed for upgrades.
+Tenant admins can add packs and the Chat AI add-on directly when their commercial model and payment policy allow self-service upgrades. Subscription tenants use the configured payment gateway (`stripe` or `payhere`). Full-license tenants route new purchases through ONEVO sales/operator approval unless the contract explicitly allows gateway-collected add-ons.
 
 - **UI:** "Available Add-ons" section shows all packs and add-ons the tenant has not purchased. Each card shows:
   - Pack / add-on name and modules included
@@ -110,8 +110,8 @@ Tenant admins can add packs and the Chat AI add-on directly — no sales call ne
   - **"Add [Pack Name]"** button
 - **API:** `POST /api/v1/billing/modules/{moduleId}/add`
 - **Backend:**
-  1. Validates Stripe payment method is on file
-  2. Charges proration via Stripe
+  1. Validates a payment method is on file for the configured gateway (`stripe` or `payhere`)
+  2. Charges proration through the selected gateway
   3. Updates the tenant module entitlement registry through module interfaces
   4. Publishes `SubscriptionChangedEvent` → feature flag service activates new modules immediately
   5. Writes audit log entry
@@ -132,8 +132,8 @@ Locked features across the app surface an upgrade prompt to guide tenant admins 
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| Stripe payment method missing | Add pack blocked | "Please add a payment method before adding new modules." |
-| Stripe charge fails | Module not activated | "Payment failed. Please check your payment method and try again." |
+| Gateway payment method missing | Add pack blocked | "Please add a payment method before adding new modules." |
+| Gateway charge fails | Module not activated | "Payment failed. Please check your payment method and try again." |
 | Active user count API unavailable | Cached snapshot used | Count shown with "(estimate)" label |
 | Invoice PDF unavailable | Retry link shown | "Invoice PDF is being generated. Try again shortly." |
 

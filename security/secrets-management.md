@@ -18,7 +18,10 @@
 | Resend API key | `RESEND_API_KEY` | Opaque string | Email delivery |
 | Email sender address | `EMAIL_FROM` | Verified email address/domain | Transactional and notification emails |
 | App base URL | `APP_BASE_URL` | Absolute URL | Invite, password reset, and account setup links |
-| Stripe secret key | `STRIPE_SECRET_KEY` | `sk_live_...` / `sk_test_...` | Billing |
+| Stripe secret key | `STRIPE_SECRET_KEY` | `sk_live_...` / `sk_test_...` | Stripe billing gateway |
+| Stripe webhook secret | `STRIPE_WEBHOOK_SECRET` | `whsec_...` | Stripe webhook signature verification |
+| PayHere merchant ID | `PAYHERE_MERCHANT_ID` | Merchant identifier | PayHere billing gateway |
+| PayHere merchant secret | `PAYHERE_MERCHANT_SECRET` | Opaque secret | PayHere signature/hash verification |
 | Bridge client secrets | Hashed in DB | BCrypt hash | Service-to-service auth - plaintext only at issuance, never stored |
 
 ---
@@ -101,6 +104,21 @@ Do not store `JWT_PRIVATE_KEY` or `JWT_SCOPED_TOKEN_SECRET` inside token service
 - `APP_BASE_URL` must be environment-specific so password reset, invite, and account setup links point to the correct web app.
 - Logger-only email stubs are acceptable only for local development and automated tests.
 
+### Payment Gateway Secrets
+
+ONEVO Phase 1 primarily supports Stripe and PayHere. Production gateway secrets are provided through environment variables or encrypted gateway configuration records; never hardcode them in source code or committed appsettings files.
+
+Global/default gateway env vars:
+
+```text
+STRIPE_SECRET_KEY=<sk_live or sk_test>
+STRIPE_WEBHOOK_SECRET=<whsec>
+PAYHERE_MERCHANT_ID=<merchant id>
+PAYHERE_MERCHANT_SECRET=<merchant secret>
+```
+
+When tenant-specific gateway configuration is needed, store credentials encrypted with `IEncryptionService` and expose only safe metadata such as provider, mode, public key/merchant ID, and active state.
+
 ### Bridge Client Secrets
 
 - Stored as BCrypt hash in `bridge_clients.client_secret_hash`
@@ -149,7 +167,7 @@ A `scripts/generate-dev-secrets.sh` script generates consistent dev secrets and 
 | RSA key pair | Every 90 days | Dual-key window (zero downtime) |
 | AES-256 encryption key | When compromised | Data migration required — plan carefully |
 | Bridge client secrets | Per client request or on compromise | Regenerate via admin panel |
-| API keys (Resend, Stripe) | Per vendor recommendation | Update Railway env var |
+| API keys (Resend, Stripe, PayHere) | Per vendor recommendation | Update Railway env var or encrypted gateway config |
 
 ---
 
