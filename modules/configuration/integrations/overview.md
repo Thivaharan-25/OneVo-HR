@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Manages external integration connections (PeopleHR, Stripe, Resend, Google Calendar, Slack, LMS).
+Manages external integration connections (PeopleHR, Stripe, PayHere, Resend, Google Calendar, Slack, LMS).
 
 ## Database Tables
 
@@ -17,13 +17,15 @@ Manages external integration connections (PeopleHR, Stripe, Resend, Google Calen
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `integration_type` | `varchar(50)` | `peoplehr`, `stripe`, `resend`, `google_calendar`, `slack`, `lms` |
+| `integration_type` | `varchar(50)` | `peoplehr`, `stripe`, `payhere`, `resend`, `google_calendar`, `slack`, `lms` |
 | `config_json` | `jsonb` | |
 | `credentials_encrypted` | `bytea` | Encrypted |
 | `status` | `varchar(20)` | `active`, `inactive`, `error` |
 | `last_sync_at` | `timestamptz` | |
 
 **PeopleHR:** `peoplehr` connections are used by [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]]. The connection card must support masked API key entry, permission preflight, last migration status, and audit links.
+
+**Payment gateways:** Stripe and PayHere billing credentials are managed through Shared Platform `payment_gateway_configs` when they are used for subscription collection, full-license maintenance collection, invoices, or payment methods. Configuration integration cards may link to that gateway setup, but must not duplicate raw payment secrets.
 
 ## API Endpoints
 

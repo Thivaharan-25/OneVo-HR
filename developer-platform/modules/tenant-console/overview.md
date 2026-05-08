@@ -14,6 +14,7 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 | `subscription_plans` | Read reusable global plan catalog; assign selected plan to tenant |
 | `tenant_subscriptions` | Write tenant-specific commercial terms, billing dates, payment collection modes, gateway refs, full-license payment evidence, custom contract value, and maintenance state |
 | `module_catalog` | Read reusable global module catalog and default pricing |
+| `payment_gateway_configs` | Read/write safe Stripe/PayHere gateway config metadata and encrypted secrets |
 | module entitlement registry | Write through module interfaces - which modules are active per tenant |
 | role templates / tenant roles | Read + write through Auth interfaces - starter role configuration |
 | Payment gateway | Used for normal subscription collection and full-license maintenance collection; one-time full-license sales can be recorded manually |
@@ -60,6 +61,7 @@ Payment collection rules:
 - Full-license customers may pay the one-time license manually/offline. The operator records the license amount, paid date, and invoice/reference number.
 - Maintenance for full-license customers is a separate recurring commercial item and is normally collected through the system payment gateway.
 - Manual subscription or manual maintenance collection is allowed only as a reviewed exception with an audit reason.
+- The primary Phase 1 payment gateways are Stripe and PayHere. Operators configure gateway metadata/secrets through Developer Platform gateway config APIs; secrets are encrypted and never shown after save.
 
 The console must keep commercial entitlements separate from RBAC permissions. Commercial state decides whether a tenant has bought or trialed a capability; RBAC decides which users inside that tenant can use it.
 
@@ -110,7 +112,7 @@ The wizard is **draft-safe**: partially completed tenants remain in `provisionin
 
 ## Notes
 
-- Subscription overrides must not be used as a routine billing management tool — direct tenants to Stripe for normal plan changes.
+- Subscription overrides must not be used as a routine billing management tool. Direct standard subscription changes through the configured Stripe/PayHere gateway flow.
 - Role templates are starter configuration. After activation, the tenant owner can create and edit roles inside the tenant app, but only using permissions exposed by enabled modules.
 
 ## Related

@@ -58,7 +58,9 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 - Subscription plan (dropdown of reusable plans from `subscription_plans`; operators do not create a new plan for every tenant)
 - Commercial model: `subscription` or `full_license_maintenance`
 - Billing start date
-- Whether Stripe billing is active for this tenant or manually managed
+- Payment collection mode and gateway provider (`stripe` or `payhere`) for subscription billing
+- Full-license payment mode (`manual` or `gateway`) when the commercial model is `full_license_maintenance`
+- Maintenance collection mode (`gateway`, `manual`, or `waived`) and gateway provider when maintenance is collected through the system
 - Maintenance renewal date and status when the commercial model is `full_license_maintenance`
 - Custom contract value, maintenance rate, and pricing overrides when the sales agreement is manually negotiated
 
@@ -66,9 +68,11 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **API call:** `PATCH /admin/v1/tenants/{id}/subscription`
 
-**State written:** `subscription_plans` association updated; commercial model, billing cycle/currency, contract dates, maintenance status/renewal date, custom contract value, and `stripe_managed` flag set for the tenant.
+**State written:** `subscription_plans` association updated; commercial model, billing cycle/currency, contract dates, subscription collection mode, gateway provider, gateway references, license payment fields, maintenance collection mode/status/renewal date, custom contract value, and pricing overrides set for the tenant.
 
 **Plan rule:** plans are global commercial catalog records. A tenant receives one selected plan plus tenant-specific commercial terms. Custom pricing, discounts, contract value, maintenance rate, billing dates, and manual billing state belong on the tenant subscription/commercial record, not on a new one-off plan unless product intentionally adds a reusable custom plan.
+
+**Gateway rule:** Stripe and PayHere are the primary Phase 1 payment gateways. Subscription tenants normally use gateway collection. Full-license tenants may record the one-time license payment manually, but recurring maintenance fees should use Stripe or PayHere when gateway collection is enabled. Gateway API keys, merchant secrets, and webhook secrets are managed through encrypted payment gateway configuration, not returned from APIs.
 
 **Cost rule:** plan pricing and module pricing are commercial inputs. They decide what the tenant has bought, trialed, or been granted. They do not grant user permissions directly. RBAC is applied only after the tenant's entitled modules are resolved.
 
@@ -191,6 +195,7 @@ The complete Phase 1 provisioning surface requires these admin endpoints:
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/admin/v1/subscription-plans` | Load reusable plans for Step 2 |
+| `GET` | `/admin/v1/payment-gateways` | Load configured Stripe/PayHere gateway options for Step 2 |
 | `GET` | `/admin/v1/modules/catalog` | Load reusable module catalog and default pricing for Step 3 |
 | `GET` | `/admin/v1/tenants/validate` | Validate slug/company/domain before or during draft creation |
 | `POST` | `/admin/v1/tenants` | Create provisioning draft |

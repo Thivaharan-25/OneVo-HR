@@ -228,7 +228,8 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 
 | Service | Purpose | Auth Method | Priority |
 |:--------|:--------|:------------|:---------|
-| Stripe | Billing & subscriptions | API Key + Webhooks | Phase 1 |
+| Stripe | International billing, subscriptions, cards | API Key + Webhooks | Phase 1 |
+| PayHere | Sri Lanka/local billing, subscriptions, cards/bank methods | Merchant ID + Merchant Secret + Webhooks | Phase 1 |
 | Resend | Transactional email | API Key | Phase 1 |
 | Biometric Terminals | Attendance capture | HMAC-SHA256 webhooks | Phase 1 |
 | Google Calendar | Leave event sync | OAuth 2.0 | Phase 2 |

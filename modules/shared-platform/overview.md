@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Cross-cutting platform services: SSO provider management, subscription/billing (Stripe), feature flags, and the generic workflow/automation engine used by leave, overtime, attendance corrections, expense claims, document approvals, exception alerts, requests, escalations, and follow-ups.
+Cross-cutting platform services: SSO provider management, subscription/billing through Stripe and PayHere, feature flags, and the generic workflow/automation engine used by leave, overtime, attendance corrections, expense claims, document approvals, exception alerts, requests, escalations, and follow-ups.
 
 ---
 
@@ -85,7 +85,9 @@ JWT refresh token tracking with rotation.
 | `is_revoked` | `boolean` | |
 | `replaced_by_id` | `uuid` | FK → refresh_tokens (rotation chain) |
 
-### Sub-System 2: Subscriptions & Billing (Stripe)
+### Sub-System 2: Subscriptions & Billing (Stripe + PayHere)
+
+ONEVO Phase 1 supports Stripe and PayHere as the primary payment gateways. Use `gateway_provider = "stripe"` for international/card-first billing and `gateway_provider = "payhere"` for Sri Lanka/local gateway collection. Gateway credentials are stored through payment gateway configuration and must never be returned by API responses.
 
 #### `subscription_plans`
 
@@ -130,7 +132,7 @@ Active subscription per tenant.
 | `status` | `varchar(20)` | `active`, `past_due`, `cancelled`, `trialing` |
 | `current_period_start` | `date` | |
 | `current_period_end` | `date` | |
-| `payment_provider_ref` | `varchar(100)` | Stripe subscription ID |
+| `payment_provider_ref` | `varchar(100)` | Legacy gateway subscription ID; prefer explicit gateway refs in the shared schema |
 | `created_by_id` | `uuid` | FK → users |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
@@ -148,7 +150,7 @@ Invoice records synced from Stripe. Not in HTML ERD — to be added.
 | `amount` | `decimal(10,2)` | |
 | `currency` | `varchar(3)` | |
 | `status` | `varchar(20)` | `draft`, `open`, `paid`, `void` |
-| `payment_provider_ref` | `varchar(100)` | Stripe invoice ID |
+| `payment_provider_ref` | `varchar(100)` | Stripe/PayHere invoice or payment reference |
 | `issued_at` | `timestamptz` | |
 | `paid_at` | `timestamptz` | Nullable |
 
@@ -166,7 +168,7 @@ Stored payment methods for a tenant. Not in HTML ERD — to be added.
 | `expiry_month` | `integer` | |
 | `expiry_year` | `integer` | |
 | `is_default` | `boolean` | |
-| `payment_provider_ref` | `varchar(100)` | Stripe payment method ID |
+| `payment_provider_ref` | `varchar(100)` | Stripe/PayHere payment method reference |
 | `created_at` | `timestamptz` | |
 
 ### Sub-System 3: Feature Flags
@@ -611,7 +613,7 @@ Hangfire job metadata for visibility/management. Not in HTML ERD — to be added
 ## Features
 
 - [[modules/shared-platform/sso-authentication/overview|Sso Authentication]] — SSO provider configuration (Google, Microsoft, SAML, OIDC) with auto-provisioning
-- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] — Stripe-backed subscription plans, invoices, and payment methods
+- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] — Stripe/PayHere-backed subscription plans, invoices, and payment methods
 - [[frontend/cross-cutting/feature-flags|Feature Flags]] — Per-tenant feature flag definitions with targeting conditions
 - [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — Custom domain, logo, and brand colors per tenant
 - [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] — Automation Center engine for approvals, alerts, requests, case conversations, delivery routing, and escalation

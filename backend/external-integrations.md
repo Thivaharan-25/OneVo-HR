@@ -36,20 +36,56 @@ services.AddHttpClient<IBiometricClient>("BiometricApi")
 
 See [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]].
 
-### 1. Stripe (Billing & Subscriptions)
+### 1. Payment Gateways (Billing & Subscriptions)
+
+ONEVO Phase 1 primarily supports **Stripe** and **PayHere** for payment collection.
+
+Use `gateway_provider = "stripe"` for Stripe-backed recurring subscriptions, invoices, and payment methods. Use `gateway_provider = "payhere"` for PayHere-backed recurring subscriptions, local Sri Lankan payment collection, and gateway callbacks.
+
+Full-license customers may pay the one-time license manually/offline, but recurring maintenance/support fees should still use one of the configured payment gateways when possible.
+
+#### Stripe
 
 | Property | Value |
 |:---------|:------|
 | **Module** | SharedPlatform |
 | **Auth** | API Key (server-side) + Webhooks (signature verification) |
 | **Purpose** | Subscription management, payment processing, invoicing |
-| **Tables** | `subscription_plans`, `tenant_subscriptions` |
+| **Tables** | `subscription_plans`, `tenant_subscriptions`, `payment_gateway_configs`, `subscription_invoices`, `payment_methods` |
 
 **Key Flows:**
 - Trial-to-paid conversion (14-day trial)
 - Mid-cycle upgrade/downgrade
 - Webhook events: `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`
 - Dunning: 4 retries + grace period
+
+#### PayHere
+
+| Property | Value |
+|:---------|:------|
+| **Module** | SharedPlatform |
+| **Auth** | Merchant ID + Merchant Secret (server-side, encrypted) + Webhooks/notify URL signature verification |
+| **Purpose** | Sri Lanka/local payment collection, recurring subscriptions where supported, maintenance fee collection |
+| **Tables** | `payment_gateway_configs`, `tenant_subscriptions`, `subscription_invoices`, `payment_methods` |
+
+**Key Flows:**
+- Tenant subscription checkout through PayHere when selected by operator or tenant billing flow
+- Full-license maintenance collection through PayHere recurring/payment flow
+- Webhook/notify callbacks update invoice and subscription state
+- Gateway references stored in `gateway_customer_ref`, `gateway_subscription_ref`, and invoice/payment provider refs
+
+#### Gateway Configuration
+
+Payment gateway credentials must not be hardcoded. Store gateway configuration in encrypted form and expose only safe metadata to admin APIs.
+
+Required config concepts:
+
+- `provider`: `stripe` or `payhere`
+- `mode`: `test` or `live`
+- encrypted credentials: Stripe secret/webhook secret; PayHere merchant secret
+- public identifiers: Stripe publishable key or PayHere merchant ID
+- webhook/notify URL and active state
+- environment-specific separation between staging and production
 
 ### 2. Resend (Transactional Email)
 
