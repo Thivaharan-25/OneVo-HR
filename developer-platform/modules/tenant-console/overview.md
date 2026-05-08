@@ -12,11 +12,11 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 | `users` | Read — per-tenant user list, last login |
 | `tenant_settings` | Write — initial and override configuration |
 | `subscription_plans` | Read reusable global plan catalog; assign selected plan to tenant |
-| `tenant_subscriptions` | Write tenant-specific commercial terms, billing dates, custom contract value, maintenance state, and manual billing flags |
+| `tenant_subscriptions` | Write tenant-specific commercial terms, billing dates, payment collection modes, gateway refs, full-license payment evidence, custom contract value, and maintenance state |
 | `module_catalog` | Read reusable global module catalog and default pricing |
 | module entitlement registry | Write through module interfaces - which modules are active per tenant |
 | role templates / tenant roles | Read + write through Auth interfaces - starter role configuration |
-| Stripe | Read (normal path); bypassed on subscription override |
+| Payment gateway | Used for normal subscription collection and full-license maintenance collection; one-time full-license sales can be recorded manually |
 | Auth service (JWT) | Write — impersonation token issuance |
 
 ## Capabilities
@@ -37,14 +37,14 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 - **Suspend / Unsuspend** — toggles `tenants.status`; suspended tenants cannot log in to OneVo
 - **Impersonation** — generates a short-lived JWT scoped to the tenant's super-admin role, for support debugging without requiring the customer's credentials. All impersonation events are audit-logged.
 
-### Subscription Override *(exception tool)*
-Manually sets or changes a tenant's subscription plan, bypassing Stripe.
+### Subscription / Commercial Terms
+Sets or changes a tenant's plan and commercial terms. This is used during provisioning and as a reviewed post-activation exception tool.
 
-> **Important:** This is an exception path only. The normal, primary flow is: sales agreement -> operator creates provisioning draft -> operator assigns commercial terms/modules/role templates/settings -> invite tenant owner -> activate. Use subscription override only for:
-> - Enterprise deals closed by sales (no Stripe checkout)
+> **Important:** Post-activation override is an exception path. The normal, primary flow is: sales agreement -> operator creates provisioning draft -> operator assigns commercial terms/modules/role templates/settings -> invite tenant owner -> activate. Use post-activation subscription override only for:
+> - Enterprise deals closed by sales or manually adjusted by finance
 > - Trial extensions
 > - Internal test accounts
-> - Fixing a confirmed Stripe sync error
+> - Fixing a confirmed payment-gateway sync error
 
 All overrides are audit-logged with the developer account and reason.
 
@@ -53,6 +53,13 @@ ONEVO supports two sales models in Phase 1:
 
 - **Subscription** - the tenant pays recurring SaaS fees for the selected plan/modules.
 - **Full license + maintenance** - the tenant has purchased the agreed suite/license, but continues paying recurring maintenance/support. New modules are sold as add-ons, trials, or maintenance-included upgrades depending on the contract.
+
+Payment collection rules:
+
+- Subscription customers normally pay recurring plan/module fees through the system payment gateway.
+- Full-license customers may pay the one-time license manually/offline. The operator records the license amount, paid date, and invoice/reference number.
+- Maintenance for full-license customers is a separate recurring commercial item and is normally collected through the system payment gateway.
+- Manual subscription or manual maintenance collection is allowed only as a reviewed exception with an audit reason.
 
 The console must keep commercial entitlements separate from RBAC permissions. Commercial state decides whether a tenant has bought or trialed a capability; RBAC decides which users inside that tenant can use it.
 
@@ -75,7 +82,7 @@ A 7-step, draft-safe wizard for onboarding tenants through the internal operator
 | Step | What Happens |
 |---|---|
 | 1. Account Setup | Company name, slug, country, industry, legal entity name, timezone |
-| 2. Plan Assignment | Pick reusable subscription plan, commercial model, billing start date, contract value, discounts, Stripe/manual billing, and maintenance status |
+| 2. Plan Assignment | Pick reusable subscription plan, commercial model, payment collection mode, billing start date, contract value, discounts, full-license payment evidence, and maintenance billing terms |
 | 3. Module Selection | Toggle active modules, sales state, trial dates, and module-level pricing overrides for add-ons/future modules |
 | 4. Role Template Setup | Apply reusable ONEVO defaults, create reusable operator templates, or create tenant-specific roles from the module-filtered permission catalog |
 | 5. Initial Configuration | Set key `tenant_settings`: monitoring mode, leave policy defaults, transparency mode |

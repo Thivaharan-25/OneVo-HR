@@ -43,7 +43,14 @@ Manages tenant lifecycle: creation, status, subscription, module assignment, pro
 | `POST` | `/admin/v1/tenants/{id}/invite-admin` | Create first super-admin and send invite email (provisioning step 6) |
 | `GET` | `/admin/v1/tenants/{id}/provisioning-summary` | Return review data, missing steps, warnings, and activation blockers |
 
-Commercial terms track the tenant's commercial model (`subscription` or `full_license_maintenance`), billing cycle/currency, contract dates, Stripe/manual billing state, maintenance status/renewal date, discount, and any custom contract value. Plans are reusable catalog records; operators do not create a new plan per tenant unless product intentionally creates a reusable custom plan. Module entitlements are resolved from the active subscription/commercial plan, plan allowed modules, tenant module grants, and tenant feature grants; RBAC permissions are filtered after entitlement resolution.
+Commercial terms track the tenant's commercial model (`subscription` or `full_license_maintenance`), billing cycle/currency, contract dates, payment collection mode, gateway references, full-license payment evidence, maintenance status/renewal date, discount, and any custom contract value. Plans are reusable catalog records; operators do not create a new plan per tenant unless product intentionally creates a reusable custom plan. Module entitlements are resolved from the active subscription/commercial plan, plan allowed modules, tenant module grants, and tenant feature grants; RBAC permissions are filtered after entitlement resolution.
+
+Payment collection rules:
+
+- Normal subscription tenants use gateway collection for recurring SaaS fees (`subscription_collection_mode = gateway`), unless a reviewed manual exception is recorded.
+- Full-license tenants may record the one-time license sale manually (`license_payment_mode = manual`) with license amount, paid date, and reference.
+- Full-license maintenance/support is separate from the one-time license and normally uses gateway collection (`maintenance_collection_mode = gateway`) for recurring maintenance fees.
+- Manual collection modes require an audit reason and should be treated as exceptions.
 
 Reusable plan and module default prices are managed through the plan/module catalog endpoints above. Tenant-specific negotiated pricing is managed through `/admin/v1/tenants/{id}/subscription` and `/admin/v1/tenants/{id}/modules`. Updating a catalog base price must not silently rewrite existing tenant commercial records.
 

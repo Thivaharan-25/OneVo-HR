@@ -60,7 +60,7 @@ interface TenantListResponseDto {
 
 ## GET `/admin/v1/subscription-plans`
 
-Plans are reusable catalog records. Operators select one plan for a tenant; tenant-specific pricing, discounts, contract value, maintenance terms, and manual billing state are stored on the tenant subscription/commercial record.
+Plans are reusable catalog records. Operators select one plan for a tenant; tenant-specific pricing, discounts, contract value, payment collection mode, full-license payment evidence, and maintenance terms are stored on the tenant subscription/commercial record.
 
 ```ts
 interface SubscriptionPlanDto {
@@ -249,6 +249,10 @@ interface TenantDetailDto {
   status: "provisioning" | "active" | "suspended"
   billing_start_date: string | null
   subscription_override: boolean
+  commercial_model: "subscription" | "full_license_maintenance" | null
+  subscription_collection_mode: "gateway" | "manual" | null
+  license_payment_mode: "manual" | "gateway" | null
+  maintenance_collection_mode: "gateway" | "manual" | "waived" | null
   users_summary: { total: number; admins: number }
   agents_summary: { total: number; online: number }
   flags_summary: { overrides: number }
@@ -291,21 +295,46 @@ interface TenantStatusUpdateDto {
 interface SubscriptionOverrideDto {
   plan_code: string
   commercial_model: "subscription" | "full_license_maintenance"
-  billing_cycle: "monthly" | "annual" | "manual"
   billing_currency: string
-  billing_start_date: string  // ISO date
   contract_start_date?: string
   contract_end_date?: string | null
-  stripe_managed?: boolean
+
+  // Required for commercial_model = "subscription".
+  billing_cycle?: "monthly" | "annual"
+  billing_start_date?: string  // ISO date
+  subscription_collection_mode?: "gateway" | "manual"
+  gateway_provider?: "stripe" | "payhere" | "manual_gateway" | string
+  gateway_customer_ref?: string | null
+  gateway_subscription_ref?: string | null
+
+  // Required for commercial_model = "full_license_maintenance".
+  license_payment_mode?: "manual" | "gateway"
+  full_license_amount?: number | null
+  license_paid_at?: string | null
+  license_reference?: string | null
+
+  // Maintenance may still be collected through the payment gateway even when the full license was paid manually.
+  maintenance_collection_mode?: "gateway" | "manual" | "waived"
+  maintenance_billing_cycle?: "monthly" | "annual" | null
   maintenance_status?: "active" | "due" | "expired" | "waived"
+  maintenance_start_date?: string | null
   maintenance_renewal_date?: string | null
   maintenance_rate?: number | null
-  custom_contract_value?: number | null
+  maintenance_amount?: number | null
+
+  custom_contract_value?: number | null  // total negotiated contract value when different from plan/module defaults
   discount_percent?: number | null
   reason: string              // required; written to audit log
 }
 // response: 204 No Content
 ```
+
+Rules:
+
+- Subscription tenants normally use `subscription_collection_mode = "gateway"` and `gateway_provider` so recurring plan/module fees are charged by the payment gateway.
+- Full-license tenants can use `license_payment_mode = "manual"` for the one-time license sale. The operator records `full_license_amount`, `license_paid_at`, and `license_reference`.
+- Full-license maintenance is separate from the one-time license. It normally uses `maintenance_collection_mode = "gateway"` so recurring maintenance/support fees are collected by the system payment gateway.
+- `manual` collection modes are exception paths and require `reason`.
 
 ## PUT `/admin/v1/tenants/{id}/modules`
 

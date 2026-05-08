@@ -378,7 +378,10 @@ Latest activation blockers and warnings returned by `/admin/v1/tenants/{id}/prov
 The schema supports the commercial model requested by product:
 
 - `tenant_subscriptions.commercial_model` records `subscription` vs `full_license_maintenance`.
-- `tenant_subscriptions.maintenance_status` and `maintenance_renewal_date` track maintenance state for full-license tenants.
+- Subscription tenants normally use `tenant_subscriptions.subscription_collection_mode = gateway` with `gateway_provider` and gateway refs so recurring SaaS fees are collected through the payment gateway.
+- Full-license tenants can use `tenant_subscriptions.license_payment_mode = manual` for the one-time license sale; `full_license_amount`, `license_paid_at`, and `license_reference` record the manual/offline purchase.
+- `tenant_subscriptions.maintenance_collection_mode = gateway` means full-license maintenance/support is collected through the system payment gateway even when the one-time license was manually paid.
+- `tenant_subscriptions.maintenance_status`, `maintenance_start_date`, `maintenance_renewal_date`, `maintenance_rate`, and `maintenance_amount` track maintenance state and recurring fee calculation for full-license tenants.
 - `tenant_module_entitlements.sales_state` records manual sales state per module: `available`, `purchased`, `trial`, `quoted`, `maintenance_included`, `subscription_included`, or `disabled`.
 - Pricing defaults live on `subscription_plans` and `module_catalog`; tenant-specific negotiated pricing lives on `tenant_subscriptions` and `tenant_module_entitlements`.
 
@@ -701,15 +704,26 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `status` | `varchar(20)` | `active`, `past_due`, `cancelled`, `trialing` |
 | `current_period_start` | `date` |  |
 | `current_period_end` | `date` |  |
-| `payment_provider_ref` | `varchar(100)` | Stripe subscription ID, nullable for manual sales contracts |
+| `payment_provider_ref` | `varchar(100)` | Legacy provider ref; prefer explicit gateway refs below |
 | `commercial_model` | `varchar(30)` | `subscription` or `full_license_maintenance` |
 | `billing_currency` | `varchar(3)` | ISO 4217; overrides plan currency for custom contracts |
-| `stripe_managed` | `boolean` | False when billing is manually managed by sales/finance |
+| `subscription_collection_mode` | `varchar(20)` | `gateway` or `manual`; subscriptions normally use `gateway` |
+| `gateway_provider` | `varchar(50)` | `stripe`, `payhere`, or configured payment provider |
+| `gateway_customer_ref` | `varchar(100)` | Nullable payment gateway customer ID |
+| `gateway_subscription_ref` | `varchar(100)` | Nullable payment gateway recurring subscription ID |
+| `license_payment_mode` | `varchar(20)` | `manual` or `gateway`; full-license one-time sale can be manual |
+| `full_license_amount` | `decimal(12,2)` | Nullable one-time full-license amount |
+| `license_paid_at` | `date` | Nullable date the full license was paid/recorded |
+| `license_reference` | `varchar(100)` | Nullable invoice/reference number for manual full-license sale |
+| `maintenance_collection_mode` | `varchar(20)` | `gateway`, `manual`, or `waived`; maintenance normally uses gateway |
+| `maintenance_billing_cycle` | `varchar(20)` | `monthly` or `annual`, nullable when waived |
 | `contract_start_date` | `date` | Commercial agreement start date |
 | `contract_end_date` | `date` | Nullable; required if agreement is fixed-term |
 | `maintenance_status` | `varchar(20)` | `active`, `due`, `expired`, `waived`; used for full-license tenants |
+| `maintenance_start_date` | `date` | Nullable; first maintenance billing period start |
 | `maintenance_renewal_date` | `date` | Nullable; next maintenance renewal date |
 | `maintenance_rate` | `decimal(5,2)` | Nullable percentage of license value, e.g., 18.00 |
+| `maintenance_amount` | `decimal(12,2)` | Nullable explicit recurring maintenance amount when not rate-derived |
 | `custom_contract_value` | `decimal(12,2)` | Nullable manually-entered enterprise contract amount |
 | `discount_percent` | `decimal(5,2)` | Nullable negotiated discount applied to the tenant commercial record |
 | `created_by_id` | `uuid` | FK → users |
