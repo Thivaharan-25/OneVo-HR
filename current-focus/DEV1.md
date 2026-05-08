@@ -2,8 +2,8 @@
 
 **Track:** Backend
 **Primary ownership:** platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API
-**Current Unfinished Task:** Task 0 - Backend CQRS Folder Structure Cleanup, then Task 2A - Repository Boundary Repair, then Task 2 - Tenant Auth + RBAC gaps
-**Blocked By:** none
+**Current Unfinished Task:** Task 2 - Tenant Auth + RBAC gaps (Slice A: Role CRUD + Role-Permission Assignment **done 2026-05-08**; next slice = User-role assignment + perm_ver bump). Task 2A final integration tests still blocked by Docker.
+**Blocked By:** none for in-process work (Task 2A integration test verification blocked by Docker/Testcontainers availability)
 
 ---
 
@@ -53,15 +53,15 @@ Do not create `Events/`, `EventHandlers/`, or feature-level `Validators/` folder
 
 ### Acceptance Criteria
 
-- [ ] Audit `C:\Onevo\Onevo_Backend` for feature-level `Validators/`, default `Events/`, and default `EventHandlers/` folders.
-- [ ] Move every command validator beside the command it validates: `Commands/{UseCase}/{UseCase}Validator.cs`.
-- [ ] Update namespaces/usings after validator moves.
-- [ ] Remove empty feature-level `Validators/` folders after validators are moved.
-- [ ] Remove empty/default `Events/` and `EventHandlers/` folders that do not contain justified domain events or handlers.
-- [ ] Keep real event folders only when there is a documented post-save side effect.
-- [ ] Update or add architecture tests that reject feature-level `Validators/` as the default pattern and keep handlers free of EF Core/DbContext dependencies.
-- [ ] Verify FluentValidation assembly scanning still finds colocated validators.
-- [ ] Update this DEV1 file with the cleanup result before continuing to Task 2A.
+- [x] Audit `C:\Onevo\Onevo_Backend` for feature-level `Validators/`, default `Events/`, and default `EventHandlers/` folders.
+- [x] Move every command validator beside the command it validates: `Commands/{UseCase}/{UseCase}Validator.cs`.
+- [x] Update namespaces/usings after validator moves.
+- [x] Remove empty feature-level `Validators/` folders after validators are moved.
+- [x] Remove empty/default `Events/` and `EventHandlers/` folders that do not contain justified domain events or handlers.
+- [x] Keep real event folders only when there is a documented post-save side effect.
+- [x] Update or add architecture tests that reject feature-level `Validators/` as the default pattern and keep handlers free of EF Core/DbContext dependencies.
+- [x] Verify FluentValidation assembly scanning still finds colocated validators.
+- [x] Update this DEV1 file with the cleanup result before continuing to Task 2A.
 
 ### References
 
@@ -77,6 +77,44 @@ Do not create `Events/`, `EventHandlers/`, or feature-level `Validators/` folder
 dotnet build ONEVO.sln
 dotnet test ONEVO.sln --filter "LayerDependency|Architecture|Auth"
 ```
+
+### Task 0 Progress - 2026-05-08
+
+**Backend location correction:** the actual backend lives at `c:\Users\User\Desktop\dev\Onevo\Onevo_Backend` (not `C:\Onevo\Onevo_Backend` as previously written). All paths below reference the actual location.
+
+**Audit findings (already mostly clean):**
+
+- Feature-level `Validators/` folders: **0 found** - codebase already follows the colocated pattern.
+- Feature-level `EventHandlers/` folders: **0 found**.
+- `Events/` folders: **1 found** at `src/ONEVO.Domain/Features/Auth/Events/` containing 4 scaffold-only records (`PermissionChanged`, `RoleAssigned`, `UserLoggedIn`, `UserLoggedOut`). Repo-wide grep confirmed none were raised by any `BaseEntity.AddDomainEvent(...)` call and none had a corresponding `INotificationHandler<T>`. Per the Task 0 rule "remove empty/default Events folders that do not contain justified domain events", they were deleted.
+- `Application/Features/Auth/Commands/` already follows `Commands/{UseCase}/{UseCase}{Command|Handler|Validator}.cs` pattern. Only `Login/LoginCommandValidator.cs` exists today and is already colocated correctly.
+
+**Changes applied:**
+
+- Deleted `src/ONEVO.Domain/Features/Auth/Events/PermissionChanged.cs`.
+- Deleted `src/ONEVO.Domain/Features/Auth/Events/RoleAssigned.cs`.
+- Deleted `src/ONEVO.Domain/Features/Auth/Events/UserLoggedIn.cs`.
+- Deleted `src/ONEVO.Domain/Features/Auth/Events/UserLoggedOut.cs`.
+- Removed the now-empty `src/ONEVO.Domain/Features/Auth/Events/` folder.
+- Added two new architecture tests in `tests/ONEVO.Tests.Architecture/LayerDependencyTests.cs`:
+  - `ApplicationFeatures_ShouldNotUse_FeatureLevelValidatorsFolder` — fails if any type lives under `ONEVO.Application.Features.*.Validators` namespace, enforcing the colocated-validator rule.
+  - `ApplicationFeatures_ShouldNotUse_FeatureLevelEventsFolder` — fails if any type lives under `ONEVO.Application.Features.*.Events` namespace, enforcing that domain events live in the Domain layer.
+
+**FluentValidation scanning:** already configured via `services.AddValidatorsFromAssembly(assembly)` in `ONEVO.Application/DependencyInjection.cs`, which discovers validators anywhere in the Application assembly. Colocated `LoginCommandValidator` continues to be picked up automatically; no DI changes needed.
+
+**Verification:**
+
+- `dotnet build ONEVO.sln --verbosity minimal -m:1 -p:UseSharedCompilation=false` -> `Build succeeded. 0 Warning(s) 0 Error(s)`.
+- `dotnet test tests/ONEVO.Tests.Architecture/ONEVO.Tests.Architecture.csproj --no-build` -> **7 passed, 0 failed** (5 existing layer-dependency/EFCore tests + 2 new folder-shape tests).
+- `dotnet test tests/ONEVO.Tests.Unit/ONEVO.Tests.Unit.csproj --no-build` -> **4 passed, 0 failed**.
+- `dotnet test ONEVO.sln --filter "FullyQualifiedName~LayerDependency|FullyQualifiedName~Architecture|FullyQualifiedName~Auth" --no-build` -> Architecture project all 7 pass; Auth integration suite (12 tests) fails to construct fixtures because Docker/Testcontainers is unavailable on this host. This is the same pre-existing blocker recorded under Task 2A on 2026-05-08; not caused by Task 0 changes.
+
+**Stylistic deviations flagged (not in Task 0 scope, no changes made):**
+
+- Application Auth feature uses `Repositories/` folder name; the canonical rule shape lists `Interfaces/`. The team has standardized on `Repositories/` via Task 2A's repository boundary work, so leaving as-is.
+- Command handler files use `{UseCase}CommandHandler.cs` (e.g., `LoginCommandHandler.cs`) instead of strict `{UseCase}Handler.cs`. Both readings are valid against the rule and the codebase is internally consistent; no rename done.
+
+**Outcome:** Task 0 complete. Backend structure now matches the cleaned KB architecture and is enforced by automated tests. Dev 1 may proceed to finish the remaining 2 items in Task 2A and then start Task 2.
 
 ---
 
@@ -223,8 +261,8 @@ dotnet test ONEVO.sln --filter "Auth|LayerDependency"
 - [x] API authorization can enforce explicit permission claims on protected endpoints.
 - [x] Tenant JWT issuer is rejected by `/admin/v1/*`.
 - [x] Focused integration tests cover login and admin issuer rejection paths.
-- [ ] Tenant role CRUD APIs exist: list, create, update, archive/delete system-safe roles.
-- [ ] Role permission assignment API exists and only accepts permissions available to the tenant's enabled modules.
+- [x] Tenant role CRUD APIs exist: list, create, update, archive/delete system-safe roles.
+- [~] Role permission assignment API exists and only accepts permissions available to the tenant's enabled modules. *(Permission-exists validation shipped; tenant-module-filtering deferred until T3 ships `IModuleEntitlementService`.)*
 - [ ] User role assignment API exists and increments the permission version counter.
 - [ ] User permission override APIs exist for grant/revoke/remove and increment the permission version counter.
 - [ ] Effective permission query returns universal grants, role grants, module filtering, hierarchy scope, and user overrides.
@@ -246,6 +284,67 @@ dotnet test ONEVO.sln --filter "Auth|LayerDependency"
 ```bash
 dotnet test ONEVO.sln --filter Auth
 ```
+
+### Task 2 Progress - 2026-05-08 (Slice A: Role CRUD + Role-Permission Assignment)
+
+Delivered the foundational RBAC slice that the Tenant Creation API (and every other admin-side write) needs to gate access to.
+
+**Endpoints shipped under `/api/v1/roles` (gated by `[Authorize(Policy = "TenantPolicy")]`):**
+
+- `GET /api/v1/roles` — list tenant roles (`roles:read`).
+- `GET /api/v1/roles/{id}` — get one role with its permissions (`roles:read`).
+- `POST /api/v1/roles` — create a tenant-scoped role with optional initial permissions (`roles:manage`).
+- `PATCH /api/v1/roles/{id}` — rename / re-describe a non-system role (`roles:manage`).
+- `DELETE /api/v1/roles/{id}` — soft-archive a non-system role via `SoftDeleteInterceptor` (`roles:manage`).
+- `PUT /api/v1/roles/{id}/permissions` — atomically replace a role's permission set (`roles:manage`).
+
+**Application layer (under `Features/Auth`):**
+
+- Commands: `CreateRole`, `UpdateRole`, `ArchiveRole`, `AssignRolePermissions` — each with `Command`, `Handler`, and (where input has user data) a colocated `Validator`.
+- Queries: `ListRoles`, `GetRoleById`.
+- DTOs: `Requests/{CreateRole,UpdateRole,AssignRolePermissions}Request.cs`, `Responses/{RoleSummary,RoleDetail}Dto.cs`.
+- Repository interfaces extended in `AuthRepositoryInterfaces.cs`:
+  - `IRoleRepository` gained `GetByIdForTenantAsync`, `GetByNameForTenantAsync`, `ListByTenantAsync`, `AddAsync`, `Remove`.
+  - New `IRolePermissionRepository`: `ListByRoleAsync`, `AddRangeAsync`, `RemoveRange`.
+  - `IPermissionRepository` gained `GetByIdsAsync` for batch validation.
+
+**Infrastructure layer:**
+
+- `EfAuthRepository` implements the new interfaces against `ApplicationDbContext`.
+- `Infrastructure.DependencyInjection` registers `IRolePermissionRepository`.
+- Soft delete uses the existing `SoftDeleteInterceptor` (no DB schema changes needed).
+
+**Behavioural rules enforced:**
+
+- All operations are tenant-scoped; cross-tenant access is impossible because every repository call carries `tenantId` from `ICurrentUser` and the DB index `(tenant_id, name)` is unique.
+- System roles (`IsSystem = true`) are protected from update, archive, and permission reassignment — handler returns 403.
+- Role name uniqueness is enforced per tenant in the create + rename paths; conflict returns 409.
+- Permission ids are validated against the seeded `permissions` catalog before any DB write; unknown ids return 400 without persisting.
+- TODO marker placed in `CreateRoleCommandHandler` and `AssignRolePermissionsCommandHandler` for module-filtered permission validation, to be wired once T3 ships `IModuleEntitlementService`.
+
+**Tests:**
+
+- 19 new unit tests in `tests/ONEVO.Tests.Unit/Features/Auth/Roles/` covering: success paths, system-role protection, name conflict, unknown permission id, empty-list (clear all), unauthenticated/no-tenant, persistence side-effects.
+- Added `Moq 4.20.72` to `ONEVO.Tests.Unit.csproj` (consistent with the Moq convention in user rules).
+- ArchUnit suite still passes 7/7 — repository boundary is preserved (handlers depend only on Application interfaces, no EF Core types).
+
+**Verification:**
+
+- `dotnet build ONEVO.sln` -> `Build succeeded. 0 Warning(s) 0 Error(s)`.
+- `dotnet test tests/ONEVO.Tests.Unit/ONEVO.Tests.Unit.csproj --no-build` -> **23 passed, 0 failed** (4 existing + 19 new role-handler tests).
+- `dotnet test tests/ONEVO.Tests.Architecture/ONEVO.Tests.Architecture.csproj --no-build` -> **7 passed, 0 failed**.
+- Auth integration tests still blocked by Docker/Testcontainers (recorded under T2A on 2026-05-08); no new integration coverage in this slice.
+
+**Outstanding T2 work after Slice A:**
+
+- User role assignment API + `perm_ver` increment.
+- User permission override APIs (grant/revoke/remove).
+- Effective permission query (universal + role + module filter + hierarchy + overrides).
+- Role template support (operator-managed, materialisable).
+- MFA TOTP authenticator-app flow + replay protection.
+- MFA email fallback OTP (hashed, 5-min expiry, single-use, lock after 3).
+- Module-filtered permission validation in `CreateRole` and `AssignRolePermissions` once T3 entitlement service exists.
+- Integration tests for the Role CRUD endpoints once Docker/Testcontainers is back.
 
 ---
 
