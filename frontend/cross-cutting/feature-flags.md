@@ -1,4 +1,4 @@
-# Feature Flags
+﻿# Feature Flags
 
 ## Two Types of Flags
 
@@ -19,7 +19,7 @@ interface FeatureState {
   setFeatures: (features: string[]) => void;
 }
 
-// Loaded from JWT claims on login
+// Loaded from backend session metadata on login
 const tenantFeatures = decodedToken.features; // ['workforceIntelligence', 'payroll', 'advancedReporting']
 ```
 
@@ -92,7 +92,7 @@ function EmployeeList() {
 2. Enable for internal team (10%)
 3. Enable for beta tenants (25%)
 4. Enable for all (100%)
-5. Remove flag and dead code — flag cleanup PR
+5. Remove flag and dead code â€” flag cleanup PR
 ```
 
 ### Stale Flag Detection
@@ -119,6 +119,7 @@ export const FEATURE_FLAGS = {
 
 ## Related
 
-- [[backend/module-boundaries|Module Boundaries]] — feature-gated modules
-- [[frontend/cross-cutting/authorization|Authorization]] — permission vs feature distinction
-- [[frontend/cross-cutting/analytics|Analytics]] — A/B test measurement
+- [[backend/module-boundaries|Module Boundaries]] â€” feature-gated modules
+- [[frontend/cross-cutting/authorization|Authorization]] â€” permission vs feature distinction
+- [[frontend/cross-cutting/analytics|Analytics]] â€” A/B test measurement
+

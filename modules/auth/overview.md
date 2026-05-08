@@ -1,8 +1,8 @@
-# Module: Auth & Security
+﻿# Module: Auth & Security
 
 **Feature Folder:** `Application/Features/Auth`
-**Phase:** 1 — Build
-**Pillar:** 1 — HR Management
+**Phase:** 1 â€” Build
+**Pillar:** 1 â€” HR Management
 **Owner:** Dev 2 (Week 1)
 **Tables:** 12
 **Task File:** [[current-focus/DEV2-auth-security|DEV2: Auth Security]]
@@ -11,7 +11,7 @@
 
 ## Purpose
 
-Handles authentication (JWT RS256), authorization (**hybrid permission control** with 106 explicitly grantable permissions plus universal auto-grants, role templates, per-employee overrides, hierarchy-scoped access), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
+Handles customer web authentication through BFF-style HttpOnly cookie sessions, backend-held tenant auth state/JWTs, authorization (**hybrid permission control** with 106 explicitly grantable permissions plus universal auto-grants, role templates, per-employee overrides, hierarchy-scoped access), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
 
 **Authorization model:** NOT simple RBAC. Roles are tenant-scoped permission bundles created from templates. Developer Platform can create starter role templates during provisioning, but the materialized tenant roles still live in the Auth module. Universal permissions are auto-granted to every active employee and cannot be revoked. Per-employee permission overrides (grant/revoke) always win over role defaults for explicitly grantable permissions. All data access is scoped to the user's position in the org hierarchy (they only see employees below them).
 
@@ -34,17 +34,17 @@ Handles authentication (JWT RS256), authorization (**hybrid permission control**
 ```csharp
 public interface IAuthService
 {
-    Task<Result<TokenPairDto>> LoginAsync(LoginCommand command, CancellationToken ct);
-    Task<Result<TokenPairDto>> RefreshTokenAsync(string refreshToken, CancellationToken ct);
+    Task<Result<AuthSessionDto>> LoginAsync(LoginCommand command, CancellationToken ct);
+    Task<Result<AuthSessionDto>> RefreshSessionAsync(string sessionCookie, CancellationToken ct);
     Task<Result> LogoutAsync(CancellationToken ct);
-    Task<Result> EnableEmailOtpMfaAsync(Guid userId, CancellationToken ct);
-    Task<Result> SendMfaOtpAsync(Guid userId, CancellationToken ct);
-    Task<Result<TokenPairDto>> VerifyMfaAsync(Guid userId, string code, CancellationToken ct);
+    Task<Result> BeginTotpMfaSetupAsync(Guid userId, CancellationToken ct);
+    Task<Result> SendMfaFallbackOtpAsync(Guid userId, CancellationToken ct);
+    Task<Result<AuthSessionDto>> VerifyMfaAsync(Guid userId, string code, CancellationToken ct);
 }
 
 public interface ITokenService
 {
-    Task<string> GenerateAccessTokenAsync(Guid userId, Guid tenantId, List<string> permissions, CancellationToken ct);
+    Task<string> GenerateInternalAccessTokenAsync(Guid userId, Guid tenantId, List<string> permissions, CancellationToken ct);
     Task<string> GenerateDeviceTokenAsync(Guid deviceId, Guid tenantId, CancellationToken ct); // For agent gateway
     Task<string> GenerateRefreshTokenAsync(Guid userId, CancellationToken ct);
 }
@@ -72,10 +72,10 @@ public interface IPermissionResolver
 public interface IHierarchyScopeService
 {
     /// Returns a HierarchyFilter value object for the current user.
-    /// Super Admin → HierarchyFilter.All (no restriction, no CTE)
-    /// Manager (employees:read-team) → HierarchyFilter.SubordinatesOf(managerId)
-    /// Employee → HierarchyFilter.OwnOnly(employeeId)
-    /// Pass the filter into repository methods — never materialize a list of IDs.
+    /// Super Admin â†’ HierarchyFilter.All (no restriction, no CTE)
+    /// Manager (employees:read-team) â†’ HierarchyFilter.SubordinatesOf(managerId)
+    /// Employee â†’ HierarchyFilter.OwnOnly(employeeId)
+    /// Pass the filter into repository methods â€” never materialize a list of IDs.
     Task<HierarchyFilter> GetFilterAsync(CancellationToken ct);
 }
 
@@ -126,7 +126,7 @@ API endpoints:
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK â†’ tenants |
 | `name` | `varchar(50)` | e.g., "HR Manager", "CEO", "Employee" |
 | `description` | `varchar(255)` | |
 | `is_system` | `boolean` | System roles can't be deleted |
@@ -150,7 +150,7 @@ Operator-managed starter role definitions used by the Developer Platform provisi
 
 ### `permissions`
 
-Global permission definitions — NOT tenant-scoped.
+Global permission definitions â€” NOT tenant-scoped.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -165,18 +165,18 @@ Global permission definitions — NOT tenant-scoped.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
-| `role_id` | `uuid` | FK → roles |
-| `permission_id` | `uuid` | FK → permissions |
+| `role_id` | `uuid` | FK â†’ roles |
+| `permission_id` | `uuid` | FK â†’ permissions |
 | PK: `(role_id, permission_id)` | | |
 
 ### `user_roles`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
-| `user_id` | `uuid` | FK → users |
-| `role_id` | `uuid` | FK → roles |
+| `user_id` | `uuid` | FK â†’ users |
+| `role_id` | `uuid` | FK â†’ roles |
 | `assigned_at` | `timestamptz` | |
-| `assigned_by` | `uuid` | FK → users (who granted this) |
+| `assigned_by` | `uuid` | FK â†’ users (who granted this) |
 | PK: `(user_id, role_id)` | | |
 
 ### `user_permission_overrides`
@@ -186,12 +186,12 @@ Per-employee permission overrides. Super Admin can grant or revoke individual pe
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `user_id` | `uuid` | FK → users |
-| `permission_id` | `uuid` | FK → permissions |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `user_id` | `uuid` | FK â†’ users |
+| `permission_id` | `uuid` | FK â†’ permissions |
 | `grant_type` | `varchar(10)` | `grant` or `revoke` |
 | `reason` | `varchar(255)` | Why this override exists |
-| `granted_by` | `uuid` | FK → users (Super Admin who set this) |
+| `granted_by` | `uuid` | FK â†’ users (Super Admin who set this) |
 | `created_at` | `timestamptz` | |
 | UNIQUE: `(tenant_id, user_id, permission_id)` | | |
 
@@ -202,12 +202,12 @@ Module-level access grants. Super Admin toggles entire feature modules for a rol
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK â†’ tenants |
 | `grantee_type` | `varchar(10)` | `role` or `employee` |
-| `grantee_id` | `uuid` | FK → roles.id OR users.id |
+| `grantee_id` | `uuid` | FK â†’ roles.id OR users.id |
 | `module` | `varchar(50)` | Module code: `leave`, `payroll`, `performance`, etc. |
 | `is_enabled` | `boolean` | |
-| `granted_by` | `uuid` | FK → users |
+| `granted_by` | `uuid` | FK â†’ users |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 | UNIQUE: `(tenant_id, grantee_type, grantee_id, module)` | | |
@@ -217,8 +217,8 @@ Module-level access grants. Super Admin toggles entire feature modules for a rol
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `user_id` | `uuid` | FK → users |
-| `tenant_id` | `uuid` | FK → tenants |
+| `user_id` | `uuid` | FK â†’ users |
+| `tenant_id` | `uuid` | FK â†’ tenants |
 | `ip_address` | `varchar(45)` | |
 | `user_agent` | `varchar(500)` | |
 | `started_at` | `timestamptz` | |
@@ -231,10 +231,10 @@ Module-level access grants. Super Admin toggles entire feature modules for a rol
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `user_id` | `uuid` | FK → users |
+| `user_id` | `uuid` | FK â†’ users |
 | `token_hash` | `varchar(128)` | SHA-256 hash of token |
 | `expires_at` | `timestamptz` | 7 days from creation |
-| `replaced_by_id` | `uuid` | Self-referencing — token rotation |
+| `replaced_by_id` | `uuid` | Self-referencing â€” token rotation |
 | `revoked_at` | `timestamptz` | Nullable |
 | `created_at` | `timestamptz` | |
 
@@ -245,8 +245,8 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `user_id` | `uuid` | FK → users (nullable for system actions) |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `user_id` | `uuid` | FK â†’ users (nullable for system actions) |
 | `action` | `varchar(100)` | e.g., `employee.created`, `leave.approved` |
 | `resource_type` | `varchar(50)` | e.g., `Employee`, `LeaveRequest` |
 | `resource_id` | `uuid` | |
@@ -261,22 +261,22 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `user_id` | `uuid` | FK → users |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `user_id` | `uuid` | FK â†’ users |
 | `consent_type` | `varchar(50)` | `data_processing`, `biometric`, `monitoring`, `marketing` |
 | `consented` | `boolean` | |
 | `consented_at` | `timestamptz` | |
 | `ip_address` | `varchar(45)` | |
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module â€” MediatR)
 
 > These events are published and consumed within this module only. They never leave the module.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | â€” | â€” |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module â€” MediatR INotification)
 
 ### Publishes
 
@@ -297,19 +297,19 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 
 ## Key Business Rules
 
-1. **JWT RS256** — access tokens (15 min), refresh tokens (7 days) with rotation. JWT includes `perm_ver` claim for real-time permission staleness checks.
+1. **Customer web BFF sessions** â€” HttpOnly session cookies with backend-held tenant auth state/JWT and `perm_ver` for real-time permission staleness checks.
 2. **Password hashing** - BCrypt with work factor 12. Do not use Argon2id or SHA-256 for user passwords.
-3. **Hybrid permission control** — effective permissions = universal auto-grants + role permissions + individual overrides; filtered by module entitlements/feature grants; scoped by org hierarchy.
-4. **Permission version counter** — Redis key `perm_version:{user_id}` (integer, 24h TTL). Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 → frontend silently refreshes. Fails open if Redis unavailable.
-5. **Hierarchy scoping** — users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Super Admin bypasses hierarchy.
-6. **Never hardcode role names** — roles are custom, created by Super Admin. Always check permissions, never role names.
-7. **Role templates are provisioning blueprints** — Developer Platform templates can seed tenant roles, but tenant owners can later edit/create roles using only permissions exposed by their enabled modules.
-8. **Device JWT** for agents — contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
-9. **Refresh token rotation** — each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, the entire replacement chain is revoked (token theft detection).
-10. **MFA** - MFA uses email OTP. Login with MFA enabled returns an `mfa_pending` scoped token and sends a 6-digit OTP to the user's verified email. OTPs are hashed at rest, expire after 5 minutes, and are single-use.
-11. **Forced password change** — Dev Platform admin sets `must_change_password = true` on `users`. On login the server issues a 10-min `change_password` scoped JWT instead of a full access token. The client must call POST `/auth/change-password` before getting a regular session.
-12. **GDPR consent for monitoring** — `consent_type: "monitoring"` must be recorded before monitoring features activate for an employee.
-13. **Audit logs are append-only** — partitioned by month, never deleted (compliance requirement).
+3. **Hybrid permission control** â€” effective permissions = universal auto-grants + role permissions + individual overrides; filtered by module entitlements/feature grants; scoped by org hierarchy.
+4. **Permission version counter** â€” Redis key `perm_version:{user_id}` (integer, 24h TTL). Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 â†’ frontend silently refreshes. Fails open if Redis unavailable.
+5. **Hierarchy scoping** â€” users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Super Admin bypasses hierarchy.
+6. **Never hardcode role names** â€” roles are custom, created by Super Admin. Always check permissions, never role names.
+7. **Role templates are provisioning blueprints** â€” Developer Platform templates can seed tenant roles, but tenant owners can later edit/create roles using only permissions exposed by their enabled modules.
+8. **Device JWT** for agents â€” contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
+9. **Refresh token rotation** â€” each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, the entire replacement chain is revoked (token theft detection).
+10. **MFA** - MFA uses authenticator-app TOTP as the primary method. Login with MFA enabled returns an `mfa_pending` scoped token and verifies a 6-digit authenticator code. Email OTP is fallback/recovery only; fallback OTPs are hashed at rest, expire after 5 minutes, and are single-use.
+11. **Forced password change** â€” Dev Platform admin sets `must_change_password = true` on `users`. On login the server issues a 10-min `change_password` scoped JWT instead of a full web session. The client must call POST `/auth/change-password` before getting a regular session.
+12. **GDPR consent for monitoring** â€” `consent_type: "monitoring"` must be recorded before monitoring features activate for an employee.
+13. **Audit logs are append-only** â€” partitioned by month, never deleted (compliance requirement).
 
 ---
 
@@ -318,12 +318,12 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
 | POST | `/api/v1/auth/login` | Public | Login |
-| POST | `/api/v1/auth/refresh` | Public | Refresh access token |
+| POST | `/api/v1/auth/refresh` | Public | Refresh cookie-backed session |
 | POST | `/api/v1/auth/logout` | Authenticated | Logout |
-| POST | `/api/v1/auth/mfa/enable` | Authenticated | Enable email OTP MFA |
-| POST | `/api/v1/auth/mfa/confirm` | Authenticated | Confirm email OTP MFA setup |
-| POST | `/api/v1/auth/mfa/send` | `mfa_pending` | Send/resend email OTP challenge |
-| POST | `/api/v1/auth/mfa/verify` | `mfa_pending` | Verify email OTP code |
+| POST | `/api/v1/auth/mfa/enable` | Authenticated | Begin TOTP MFA setup |
+| POST | `/api/v1/auth/mfa/confirm` | Authenticated | Confirm TOTP MFA setup |
+| POST | `/api/v1/auth/mfa/send` | `mfa_pending` | Send/resend email OTP fallback challenge |
+| POST | `/api/v1/auth/mfa/verify` | `mfa_pending` | Verify TOTP or allowed fallback code |
 | GET | `/api/v1/roles` | `roles:read` | List roles |
 | POST | `/api/v1/roles` | `roles:manage` | Create role |
 | PUT | `/api/v1/roles/{id}` | `roles:manage` | Update role |
@@ -340,24 +340,31 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 
 ## Features
 
-- [[frontend/cross-cutting/authentication|Authentication]] — JWT RS256 login, token issuance, refresh token rotation
-- [[frontend/cross-cutting/authorization|Authorization]] — Hybrid permission control: roles + per-employee overrides + feature grants + hierarchy scoping
-- [[modules/auth/session-management/overview|Session Management]] — Session tracking, revocation, expiry
-- [[modules/auth/mfa/overview|MFA]] — Multi-factor authentication (email OTP in Phase 1)
-- [[modules/auth/audit-logging/overview|Audit Logging]] — Append-only audit trail, partitioned by month
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] — Consent tracking for data processing and monitoring
+- [[frontend/cross-cutting/authentication|Authentication]] â€” BFF web sessions, backend-held auth state, refresh/session rotation
+- [[frontend/cross-cutting/authorization|Authorization]] â€” Hybrid permission control: roles + per-employee overrides + feature grants + hierarchy scoping
+- [[modules/auth/session-management/overview|Session Management]] â€” Session tracking, revocation, expiry
+- [[modules/auth/mfa/overview|MFA]] â€” Multi-factor authentication (TOTP primary, email OTP fallback)
+- [[modules/auth/audit-logging/overview|Audit Logging]] â€” Append-only audit trail, partitioned by month
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] â€” Consent tracking for data processing and monitoring
 
 ---
 
 ## Related
 
-- [[security/auth-architecture|Auth Architecture]] — Full JWT RS256 design, device JWT, token rotation
-- [[developer-platform/modules/role-template-manager|Role Template Manager]] — Developer Platform starter role templates
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — All roles and sessions are tenant-scoped
-- [[security/compliance|Compliance]] — Audit logs are never deleted; GDPR consent records
-- [[security/data-classification|Data Classification]] — Refresh tokens hashed (SHA-256), never stored raw
-- [[backend/shared-kernel|Shared Kernel]] — `ICurrentUser`, `RequirePermissionAttribute` used by all modules
-- [[code-standards/logging-standards|Logging Standards]] — Correlation IDs in audit logs
-- [[current-focus/DEV2-auth-security|DEV2: Auth Security]] — Implementation task file
+- [[security/auth-architecture|Auth Architecture]] â€” BFF web session design, backend-held tenant JWT, device JWT, token rotation
+- [[developer-platform/modules/role-template-manager|Role Template Manager]] â€” Developer Platform starter role templates
+- [[infrastructure/multi-tenancy|Multi Tenancy]] â€” All roles and sessions are tenant-scoped
+- [[security/compliance|Compliance]] â€” Audit logs are never deleted; GDPR consent records
+- [[security/data-classification|Data Classification]] â€” Refresh tokens hashed (SHA-256), never stored raw
+- [[backend/shared-kernel|Shared Kernel]] â€” `ICurrentUser`, `RequirePermissionAttribute` used by all modules
+- [[code-standards/logging-standards|Logging Standards]] â€” Correlation IDs in audit logs
+- [[current-focus/DEV2-auth-security|DEV2: Auth Security]] â€” Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/infrastructure/overview|Infrastructure]], [[security/auth-architecture|Auth Architecture]], [[security/compliance|Compliance]]
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-# Expense Categories — End-to-End Logic
+﻿# Expense Categories â€” End-to-End Logic
 
 **Module:** Expense
 **Feature:** Expense Categories
@@ -17,7 +17,7 @@ Expense categories are tenant-scoped lookup entities that define what types of e
 
 ```
 POST /api/v1/expenses/categories
-Authorization: Bearer {token}  (requires expense:manage)
+Cookie-backed web session (requires expense:manage)
 ```
 
 1. **Controller** receives `CreateExpenseCategoryRequest { Name, MaxAmount?, RequiresReceipt }`.
@@ -35,7 +35,7 @@ Authorization: Bearer {token}  (requires expense:manage)
 
 ```
 GET /api/v1/expenses/categories?isActive=true
-Authorization: Bearer {token}  (requires expense:read)
+Cookie-backed web session (requires expense:read)
 ```
 
 1. **Controller** receives optional `isActive` filter.
@@ -47,7 +47,7 @@ Authorization: Bearer {token}  (requires expense:read)
 
 ```
 PUT /api/v1/expenses/categories/{id}
-Authorization: Bearer {token}  (requires expense:manage)
+Cookie-backed web session (requires expense:manage)
 ```
 
 1. **Controller** receives `UpdateExpenseCategoryRequest { Name, MaxAmount?, RequiresReceipt, IsActive }`.
@@ -63,7 +63,7 @@ Authorization: Bearer {token}  (requires expense:manage)
 
 ```
 DELETE /api/v1/expenses/categories/{id}
-Authorization: Bearer {token}  (requires expense:manage)
+Cookie-backed web session (requires expense:manage)
 ```
 
 1. Sets `is_active = false` (soft delete).
@@ -109,21 +109,22 @@ sequenceDiagram
 | Validation | Empty name or negative max_amount | 400 | FluentValidation returns field-level errors |
 | Duplicate check | Category name already exists for tenant | 409 | `ConflictException` with message |
 | Update/Delete | Category not found or wrong tenant | 404 | `NotFoundException` |
-| Deactivate | Category has open claims | 422 | `BusinessRuleException` — cannot deactivate while claims in progress |
+| Deactivate | Category has open claims | 422 | `BusinessRuleException` â€” cannot deactivate while claims in progress |
 | Auth | Missing permission `expense:manage` | 403 | Authorization middleware rejects |
 
 ---
 
 ## Edge Cases
 
-1. **Max amount set to null**: Category has no spending ceiling — unlimited per item.
+1. **Max amount set to null**: Category has no spending ceiling â€” unlimited per item.
 2. **Changing max_amount on active category**: Does not retroactively affect already-submitted claims. Only new expense items validate against the updated limit.
 3. **Reactivating a category**: Setting `is_active = true` on a previously deactivated category makes it available for new claims again.
 4. **Tenant isolation**: All queries include `tenant_id` filter. A category from tenant A is never visible to tenant B.
 
 ## Related
 
-- [[modules/expense/expense-categories/overview|Expense Categories]] — feature overview
-- [[modules/expense/expense-claims/overview|Expense Claims]] — claims that consume categories in line items
-- [[backend/messaging/event-catalog|Event Catalog]] — events produced during category lifecycle
-- [[backend/messaging/error-handling|Error Handling]] — ConflictException, BusinessRuleException patterns
+- [[modules/expense/expense-categories/overview|Expense Categories]] â€” feature overview
+- [[modules/expense/expense-claims/overview|Expense Claims]] â€” claims that consume categories in line items
+- [[backend/messaging/event-catalog|Event Catalog]] â€” events produced during category lifecycle
+- [[backend/messaging/error-handling|Error Handling]] â€” ConflictException, BusinessRuleException patterns
+

@@ -1,4 +1,4 @@
-# Authorization — End-to-End Logic
+﻿# Authorization â€” End-to-End Logic
 
 **Module:** Auth
 **Feature:** Authorization (Hybrid Permission Control)
@@ -33,7 +33,7 @@ Any protected API endpoint
 
 ```
 User logs in or refreshes token
-  -> TokenService.GenerateAccessTokenAsync(userId, tenantId, ct)
+    -> AuthSessionService.RefreshPermissionSnapshotAsync(userId, tenantId, ct)
     -> PermissionResolver.ResolveAsync(userId, tenantId, ct)
       -> 1. Get user's assigned roles from user_roles
       -> 2. Collect all permission codes from role_permissions for those roles
@@ -44,8 +44,8 @@ User logs in or refreshes token
          -> Build set of granted modules
       -> 5. Filter permissions: only keep permissions whose module is in granted modules
       -> 6. Return final List<string> of permission codes
-    -> Embed permissions in JWT claims
-    -> Return access token
+    -> Store permissions in backend-held auth state and return permission metadata to the web frontend
+    -> Refresh backend-held permission snapshot and return session metadata
 ```
 
 ## Hierarchy Scoping (Data Filtering)
@@ -83,7 +83,7 @@ Any endpoint returning employee-related data
              AND granted_to_employee_id = @currentUserId
              AND applies_to IS NULL
              AND (expires_at IS NULL OR expires_at > NOW())
-         NOTE: applies_to = NULL comparison is always false in SQL —
+         NOTE: applies_to = NULL comparison is always false in SQL â€”
                the two branches MUST remain separate.
       -> 5. For each exception record, expand scope_id into employee IDs:
            - scope_type = 'department': SELECT id FROM employees WHERE department_id = scope_id
@@ -105,7 +105,7 @@ Any endpoint returning employee-related data
 POST /api/v1/employees/{employeeId}/bypass-grants
   -> Requires roles:manage
   -> BypassGrantService.CreateAsync(grantorId, targetEmployeeId, dto)
-    -> 1. Validate dto.scopeId is not null/empty — return 422 if missing
+    -> 1. Validate dto.scopeId is not null/empty â€” return 422 if missing
     -> 2. Validate dto.scopeId references an existing entity matching dto.scopeType:
            - scope_type = 'department': SELECT 1 FROM departments WHERE id = dto.scopeId
            - scope_type = 'people':     SELECT 1 FROM employees WHERE id = dto.scopeId
@@ -125,7 +125,7 @@ POST /api/v1/employees/{employeeId}/bypass-grants
 
 NOTE: For 'people' scope, the accessible pool uses featureContext = null (broad bypasses only).
 A granter who has calendar-scoped access to an employee cannot re-delegate that access
-as a bypass grant — they can only grant from their own null-context or subordinate scope.
+as a bypass grant â€” they can only grant from their own null-context or subordinate scope.
 ```
 
 ### Permission Delegation Scope
@@ -278,5 +278,7 @@ Any change to roles, overrides, or feature grants must invalidate affected cache
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[backend/shared-kernel|Shared Kernel]]
-- [[frontend/architecture/overview|Teams]] — team membership for scoping
-- [[frontend/architecture/overview|Departments]] — department hierarchy for scoping
+- [[frontend/architecture/overview|Teams]] â€” team membership for scoping
+- [[frontend/architecture/overview|Departments]] â€” department hierarchy for scoping
+
+

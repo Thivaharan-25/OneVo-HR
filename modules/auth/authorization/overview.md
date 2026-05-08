@@ -126,7 +126,7 @@ EffectivePermissions(userId) =
 Every data query is scoped to the employee's position in the org hierarchy:
 
 - An employee with `leave:approve` can only approve leave for **employees reporting to them** (direct or indirect via the reporting chain in `employees.reports_to_id`)
-- A department head can see all employees in their department and sub-departments
+- A department owner can see all employees in their department and sub-departments when their permissions grant that scope
 - **Super Admin** bypasses hierarchy scoping entirely
 - The hierarchy is resolved from `employees.reports_to_id` — a recursive CTE walks the tree
 

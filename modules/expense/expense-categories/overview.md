@@ -1,4 +1,4 @@
-# Expense Categories
+﻿# Expense Categories
 
 **Module:** Expense  
 **Feature:** Expense Categories
@@ -22,9 +22,10 @@ Fields: `name`, `max_amount` (nullable), `requires_receipt`, `is_active`.
 
 ## Related
 
-- [[modules/expense/overview|Expense Module]] — parent module
-- [[modules/expense/expense-claims/overview|Expense Claims]] — claims that reference categories
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped category isolation
-- [[security/auth-architecture|Auth Architecture]] — permission: `expense:manage`
-- [[backend/messaging/event-catalog|Event Catalog]] — events emitted on category changes
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task
+- [[modules/expense/overview|Expense Module]] â€” parent module
+- [[modules/expense/expense-claims/overview|Expense Claims]] â€” claims that reference categories
+- [[infrastructure/multi-tenancy|Multi Tenancy]] â€” tenant-scoped category isolation
+- [[security/auth-architecture|Auth Architecture]] â€” permission: `expense:manage`
+- [[backend/messaging/event-catalog|Event Catalog]] â€” events emitted on category changes
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] â€” implementation task
+

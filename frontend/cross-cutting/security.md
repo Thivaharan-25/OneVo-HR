@@ -4,11 +4,11 @@
 
 | Threat | Risk in ONEVO | Mitigation |
 |:-------|:-------------|:-----------|
-| XSS (Cross-Site Scripting) | High — HR data, salary info | CSP, React auto-escaping, DOMPurify for rich content |
-| CSRF (Cross-Site Request Forgery) | Medium | SameSite cookies, CSRF token on mutations |
-| Token theft | High — access to all HR data | In-memory tokens, HttpOnly refresh, short TTL |
+| XSS | High - HR data, salary info | CSP, React auto-escaping, DOMPurify for rich content |
+| CSRF | Medium - cookie-authenticated writes | SameSite cookies, CSRF token on mutations |
+| Session theft | High - access to HR data | HttpOnly Secure cookies, rotation, short idle timeout |
 | Clickjacking | Medium | X-Frame-Options, CSP frame-ancestors |
-| Data exposure in client | High — sensitive employee data | Never cache to localStorage, clear on logout |
+| Data exposure in client | High - sensitive employee data | Never cache sensitive data to localStorage, clear on logout |
 | Open redirect | Low | Whitelist redirect targets |
 | Dependency supply chain | Medium | Lock files, audit, Snyk/Dependabot |
 
@@ -16,17 +16,18 @@
 
 | File | Responsibility |
 |------|---------------|
-| `token-manager.ts` | Stores access token in memory only (never localStorage). Exposes `getToken()`, `setToken()`, `clearToken()`, `isExpiringSoon()`. |
-| `idle-timeout.ts` | Listens to `mousemove`/`keydown`. Clears token and redirects to `/login` after configurable inactivity window. |
-| `sanitizer.ts` | DOMPurify wrapper. All user-generated HTML (doc content, comments, chat) must pass through `sanitize(html)` before rendering. |
-| `permission-guard.tsx` | `<ProtectedRoute permission="key">` — checks `hasPermission()` and redirects to `/403` if denied. Wraps individual routes in `router.tsx`. |
+| `csrf.ts` | Reads the CSRF nonce cookie and provides the `X-CSRF-Token` header value for mutations. |
+| `idle-timeout.ts` | Listens to user activity and logs out after configurable inactivity. |
+| `sanitizer.ts` | DOMPurify wrapper. All user-generated HTML must pass through `sanitize(html)` before rendering. |
+| `permission-guard.tsx` | `<ProtectedRoute permission="key">` checks permission metadata and redirects to `/403` if denied. |
+
+Do not add a browser `token-manager.ts` for customer web auth. Browser JavaScript must not receive or store tenant JWTs.
 
 ## Content Security Policy (CSP)
 
-Security headers are set in two places: `vite.config.ts` for local dev, and the web server / CDN config (nginx/Azure CDN) for production.
+Security headers are set in the dev server and production edge/CDN config.
 
 ```typescript
-// vite.config.ts — dev server headers
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -54,25 +55,19 @@ export default defineConfig({
 });
 ```
 
-> **Production:** Set the same headers in your nginx config or Azure CDN rules. The CSP `connect-src` value must reference your production API domain.
-
 ## XSS Prevention
 
-### React Auto-Escaping
-
-React escapes all JSX expressions by default. Never bypass this:
+React escapes JSX expressions by default. Never bypass this for untrusted content.
 
 ```tsx
-// ✅ Safe — React auto-escapes
+// Safe
 <p>{employee.name}</p>
 
-// ❌ NEVER DO THIS
+// Unsafe unless sanitized first
 <div dangerouslySetInnerHTML={{ __html: userInput }} />
 ```
 
-### Rich Content Sanitization
-
-If rich HTML must be rendered (e.g., formatted notes from a WYSIWYG editor):
+If rich HTML must be rendered:
 
 ```tsx
 import DOMPurify from 'dompurify';
@@ -87,114 +82,67 @@ function SafeHTML({ html }: { html: string }) {
 }
 ```
 
-### URL Validation
-
-```tsx
-// Sanitize URLs before rendering as links
-function isValidUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return ['http:', 'https:'].includes(parsed.protocol);
-  } catch {
-    return false;
-  }
-}
-```
-
 ## CSRF Protection
 
-- **Refresh token** is `SameSite=Strict`, `HttpOnly`, `Secure` — immune to CSRF
-- **State-changing requests** (POST, PUT, DELETE) include `X-CSRF-Token` header
-- The CSRF token is obtained from a cookie set by the API and included in request headers
+Because customer web auth uses cookies, state-changing requests must include a CSRF header.
+
+- Session cookie is `HttpOnly`, `Secure`, and `SameSite`.
+- CSRF nonce is sent in a separate readable cookie.
+- Mutations include `X-CSRF-Token`.
 
 ```tsx
-// ApiClient includes CSRF token on mutations
 async fetch<T>(path: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${getAccessToken()}`,
     'X-Correlation-Id': crypto.randomUUID(),
   };
 
-  if (options?.method && options.method !== 'GET') {
-    headers['X-CSRF-Token'] = getCsrfToken(); // Read from cookie
+  if (options?.method && !['GET', 'HEAD'].includes(options.method)) {
+    headers['X-CSRF-Token'] = getCsrfToken();
   }
 
-  // ...
+  return fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+    credentials: 'include',
+  });
 }
 ```
-
-### Correlation Tracking
-
-Every outbound request gets a unique `X-Correlation-Id` header (via `correlation.interceptor.ts`) to enable end-to-end request tracing across backend services.
 
 ## Sensitive Data Handling
 
-### Never Persist to Client Storage
-
 ```tsx
-// ❌ NEVER store sensitive data in localStorage/sessionStorage
+// Never store sensitive data in localStorage/sessionStorage
 localStorage.setItem('employees', JSON.stringify(employeeData));
 
-// ✅ Keep in TanStack Query memory cache only
+// Keep server data in TanStack Query memory cache only
 // Cache is cleared on logout and page refresh
 ```
 
-### Clear on Logout
+## Clear On Logout
 
 ```tsx
 function logout() {
-  // Clear ALL client-side data
-  accessToken = null;
   useAuthStore.getState().clear();
-  queryClient.clear();          // Wipe query cache
+  queryClient.clear();
   signalRConnection?.stop();
-  window.location.href = '/login'; // Full navigation clears JS memory
-}
-```
-
-### Mask Sensitive Fields
-
-```tsx
-// SSN, salary, etc. are masked by default
-function MaskedField({ value, permission }: { value: string; permission: string }) {
-  const [revealed, setRevealed] = useState(false);
-  const canView = useHasPermission(permission);
-
-  if (!canView) return <span className="text-muted-foreground">***</span>;
-
-  return (
-    <div className="flex items-center gap-1">
-      <span className="font-mono">{revealed ? value : '••••••'}</span>
-      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRevealed(!revealed)}>
-        {revealed ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-      </Button>
-    </div>
-  );
+  window.location.href = '/login';
 }
 ```
 
 ## Open Redirect Prevention
 
 ```tsx
-// Only allow redirect to internal paths
 function getSafeRedirect(redirect: string | null): string {
   if (!redirect) return '/overview';
   if (redirect.startsWith('/') && !redirect.startsWith('//')) return redirect;
-  return '/overview'; // Reject external URLs
+  return '/overview';
 }
 ```
 
-## Dependency Security
-
-- `npm audit` runs in CI on every PR
-- Dependabot / Snyk for automated vulnerability alerts
-- `package-lock.json` committed and reviewed
-- No `*` version ranges in `package.json`
-
 ## Related
 
-- [[frontend/cross-cutting/authentication|Authentication]] — token management, session security
-- [[frontend/cross-cutting/authorization|Authorization]] — RBAC enforcement
-- [[frontend/data-layer/file-handling|File Handling]] — file upload security
-- [[backend/messaging/error-handling|Error Handling]] — auth error flows
+- [[frontend/cross-cutting/authentication|Authentication]] - session handling
+- [[frontend/cross-cutting/authorization|Authorization]] - RBAC enforcement
+- [[frontend/data-layer/file-handling|File Handling]] - file upload security
+- [[backend/messaging/error-handling|Error Handling]] - auth error flows

@@ -1,4 +1,4 @@
-# MFA - End-to-End Logic
+﻿# MFA - End-to-End Logic
 
 **Module:** Auth
 **Feature:** Multi-Factor Authentication
@@ -7,18 +7,30 @@
 
 ## Phase 1 Method
 
-MFA uses email OTP sent to the user's verified email address.
+MFA uses authenticator-app TOTP as the primary method. Email OTP is fallback/recovery only when policy permits it.
 
-## Enable Email OTP MFA
+## Enable TOTP MFA
 
 ```
 POST /api/v1/auth/mfa/enable
   -> AuthController.EnableMfa()
     -> [Authenticated]
-    -> MfaService.EnableEmailOtpAsync(userId, ct)
-      -> 1. Confirm user has a verified email address
-      -> 2. Store user_mfa row with method = email_otp and is_verified = true
-      -> 3. Return success
+    -> MfaService.BeginTotpSetupAsync(userId, ct)
+      -> 1. Generate TOTP secret
+      -> 2. Store user_mfa row with method = totp, encrypted secret, and is_verified = false
+      -> 3. Return QR-code URI and manual setup key
+```
+
+## Confirm TOTP Setup
+
+```
+POST /api/v1/auth/mfa/confirm
+  -> Validate authenticated user
+  -> Load pending totp method
+  -> Verify submitted authenticator code
+  -> Mark method is_verified = true
+  -> Generate recovery codes
+  -> Return success
 ```
 
 ## Login MFA Challenge
@@ -26,35 +38,34 @@ POST /api/v1/auth/mfa/enable
 ```
 POST /api/v1/auth/login
   -> LoginCommandHandler validates password
-  -> If email OTP MFA is enabled:
-      -> Generate 6-digit OTP
-      -> Store hashed OTP on the verified email_otp MFA method
-      -> Expire challenge in 5 minutes
-      -> Send OTP via email/notification service
+  -> If TOTP MFA is enabled:
       -> Return 202 with mfa_required = true and mfa_pending_token
 ```
 
-## Resend OTP
+## Email OTP Fallback
 
 ```
 POST /api/v1/auth/mfa/send
   -> Validate mfa_pending token
+  -> Confirm fallback is allowed by tenant/user policy
   -> Generate a new 6-digit OTP
-  -> Replace the stored OTP hash on the verified email_otp MFA method
+  -> Store fallback OTP hash with 5-minute expiry
   -> Send OTP via email/notification service
 ```
 
-## Verify OTP
+## Verify MFA
 
 ```
 POST /api/v1/auth/mfa/verify
   -> Validate mfa_pending token
-  -> Load verified email_otp MFA method
-  -> Reject if expired or already consumed
-  -> Compare submitted code against the stored hash
+  -> Load verified totp MFA method
+  -> Verify submitted code against encrypted TOTP secret
+  -> Reject reused TOTP code inside accepted window
+  -> If fallback challenge is being used:
+      -> Compare submitted code against fallback OTP hash
+      -> Reject if expired or already consumed
   -> If valid:
-      -> Clear stored OTP hash
-      -> Generate access token + refresh token
+      -> Create or upgrade HttpOnly cookie-backed web session
       -> Return AuthResponseDto
   -> If invalid:
       -> Return failure("Invalid MFA code")
@@ -64,11 +75,11 @@ POST /api/v1/auth/mfa/verify
 
 | Error | Handling |
 |:------|:---------|
-| Email not verified | Return 400 and require email verification before MFA enable |
-| OTP delivery unavailable | Return 503 in production; local development may log OTP |
-| Invalid OTP code | Return 401 and increment attempt counter |
-| OTP expired | Return 401; user must resend or restart login |
-| OTP already consumed | Return 401 |
+| TOTP setup not confirmed | Return 400 and require setup confirmation |
+| Email fallback delivery unavailable | Return 503 in production for fallback only; local development may log fallback OTP |
+| Invalid TOTP code | Return 401 and increment attempt counter |
+| Fallback OTP expired | Return 401; user must resend or restart login |
+| TOTP code replayed or fallback OTP already consumed | Return 401 |
 | MFA challenge locked | Return 423 |
 | MFA not enabled for user | Return 400 |
 
@@ -81,3 +92,4 @@ POST /api/v1/auth/mfa/verify
 - [[modules/notifications/overview|Notifications]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
+

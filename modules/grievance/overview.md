@@ -99,7 +99,7 @@ API endpoints:
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `GrievanceFiled` | Employee files a grievance | [[modules/notifications/overview\|Notifications]] (notify HR Admin) |
+| `GrievanceFiled` | Employee files a grievance | [[modules/notifications/overview\|Notifications]] and Automation Center delivery router notify the configured grievance resolver |
 | `DisciplinaryActionIssued` | Disciplinary action issued against employee | [[modules/notifications/overview\|Notifications]] (notify employee and manager) |
 | `GrievanceResolved` | Grievance case resolved or closed | [[modules/notifications/overview\|Notifications]] (notify filer) |
 

@@ -23,7 +23,7 @@ Configurable anomaly detection engine that evaluates rules against activity and 
 | **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Presence/idle data for detection |
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee/department context, manager hierarchy |
 | **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Monitoring toggles |
-| **Consumed by** | [[modules/notifications/overview\|Notifications]] | — (via `ExceptionAlertCreated` event) | Send alerts |
+| **Consumed by** | [[modules/notifications/overview\|Notifications]] | — (via `ExceptionAlertCreated` event) | Route alert action cards through Chat or Inbox |
 | **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | — (via direct query) | Exception counts for reports |
 | **Publishes to** | [[modules/agent-gateway/overview\|Agent Gateway]] | `RemoteCaptureRequested` event | Triggers on-demand screenshot/photo capture via agent |
 
@@ -146,15 +146,17 @@ Notification routing by severity.
 | `tenant_id` | `uuid` | FK → tenants |
 | `severity` | `varchar(20)` | Which severity triggers this chain |
 | `step_order` | `int` | 1, 2, 3… |
-| `notify_role` | `varchar(30)` | `reporting_manager`, `department_head`, `hr`, `ceo`, `custom` |
-| `notify_user_id` | `uuid` | Nullable — for `custom` role |
+| `resolver_type` | `varchar(50)` | `reporting_manager`, `team_lead`, `department_owner`, `permission`, `department`, `team`, `job_level`, `specific_employee`, `configured_escalation_owner`, `previous_approver`, `case_participants` |
+| `resolver_config` | `jsonb` | Resolver-specific configuration such as permission key, department/team/job level id, or selected employee id |
 | `delay_minutes` | `int` | Wait N minutes before escalating to next step |
 | `created_at` | `timestamptz` | |
 
 **Example chain for `critical` severity:**
-1. `reporting_manager` — delay 0 min (immediate)
-2. `hr` — delay 30 min (if not acknowledged)
-3. `ceo` — delay 60 min (if still not acknowledged)
+1. Employee's reporting manager — delay 0 min (immediate)
+2. Users with permission `exceptions:manage` — delay 30 min (if not acknowledged)
+3. Configured escalation owner — delay 60 min (if still not acknowledged)
+
+> Database note: the canonical schema still needs the approved Automation Center database migration before these resolver columns replace older fixed-role columns.
 
 ### `alert_acknowledgements`
 
@@ -219,7 +221,7 @@ When the engine runs checks.
 
 1. **Engine only evaluates during configured work hours** (`exception_schedules`). Off-hours activity data is still collected by [[modules/activity-monitoring/overview|Activity Monitoring]] but does NOT trigger alerts.
 2. **One alert per rule per employee per evaluation window.** Don't generate duplicate alerts for the same ongoing condition — check if an active (non-acknowledged) alert already exists.
-3. **Escalation is time-based.** If alert is not acknowledged within `delay_minutes`, auto-escalate to next step in the chain. Implemented via Hangfire delayed jobs.
+3. **Escalation is time-based and resolver-based.** If alert is not acknowledged within `delay_minutes`, auto-escalate to the next resolver in the chain. Implemented via Hangfire delayed jobs.
 4. **Data snapshot is evidence.** When an alert fires, capture the relevant data (activity snapshots, presence data) into `data_snapshot_json` so the alert is self-contained for review.
 5. **Threshold JSON must be validated** against the known schema for each `rule_type` before evaluation. Invalid JSON = skip rule + log warning.
 
@@ -364,8 +366,8 @@ Manager views alert detail → clicks "Request Screenshot" or "Request Photo"
 
 - **This module does NOT collect data.** It only evaluates data collected by [[modules/activity-monitoring/overview|Activity Monitoring]] and [[modules/workforce-presence/overview|Workforce Presence]].
 - **Off-hours activity does NOT trigger alerts.** Always check `exception_schedules` first.
-- **Escalation chains are per-severity, not per-rule.** All `critical` alerts follow the same escalation chain.
-- **Remote capture requires `agent:command` permission.** Only reporting managers and above can trigger captures.
+- **Escalation chains are per-severity, not per-rule.** All `critical` alerts follow the same escalation chain unless an Automation Center rule overrides routing.
+- **Remote capture requires `agent:command` permission.** Eligibility is permission-based and can also be constrained by workflow assignment.
 - **Capture results are attached to the originating alert** via `data_snapshot_json` update.
 
 ## Features

@@ -65,13 +65,29 @@ Target draft-creation body:
 
 The target flow is:
 
-1. `POST /admin/v1/tenants` creates a draft tenant in `provisioning` status.
-2. `PATCH /admin/v1/tenants/{id}/subscription` assigns subscription/commercial terms.
-3. `PUT /admin/v1/tenants/{id}/modules` records module entitlements and sales state.
-4. `POST /admin/v1/tenants/{id}/role-templates/{templateId}/apply` applies starter roles.
-5. `PATCH /admin/v1/tenants/{id}/settings` writes required settings.
-6. `POST /admin/v1/tenants/{id}/invite-admin` sends the tenant owner set-password invite.
-7. `PATCH /admin/v1/tenants/{id}/provision/confirm` activates the tenant after all guards pass.
+1. `GET /admin/v1/subscription-plans` loads reusable plan catalog records.
+2. `GET /admin/v1/modules/catalog` loads reusable module catalog and default pricing.
+3. `GET /admin/v1/tenants/validate` validates slug/company/domain/registration details when needed.
+4. `POST /admin/v1/tenants` creates a draft tenant in `provisioning` status.
+5. `PATCH /admin/v1/tenants/{id}/subscription` assigns one reusable plan plus tenant-specific commercial terms.
+6. `PUT /admin/v1/tenants/{id}/modules` records module entitlements, sales state, pricing, currency, and trial/expiry dates.
+7. `GET /admin/v1/tenants/{id}/permissions/catalog` returns permissions filtered by enabled modules.
+8. `GET /admin/v1/role-templates` loads reusable global role templates.
+9. `POST /admin/v1/role-templates` optionally creates a reusable operator-managed template.
+10. `POST /admin/v1/tenants/{id}/role-templates/{templateId}/apply` applies starter roles.
+11. `GET /admin/v1/tenants/{id}/roles`, `POST /admin/v1/tenants/{id}/roles`, and `PUT /admin/v1/tenants/{id}/roles/{roleId}/permissions` allow tenant-specific role creation/editing during provisioning.
+12. `PATCH /admin/v1/tenants/{id}/settings` writes required settings.
+13. `POST /admin/v1/tenants/{id}/invite-admin` sends the tenant owner set-password invite and assigns a valid owner/admin role.
+14. `GET /admin/v1/tenants/{id}/provisioning-summary` returns review data and activation blockers.
+15. `PATCH /admin/v1/tenants/{id}/provision/confirm` activates the tenant after all guards pass.
+
+Plan and role rules:
+
+- Operators do not create a new plan for every tenant. Plans are reusable catalog records; tenant-specific price, discount, contract value, billing mode, maintenance state, and module pricing overrides are stored on tenant commercial records.
+- Operators can create reusable role templates and assign them to many tenants.
+- Operators can also create tenant-specific roles during provisioning without saving them as reusable templates.
+- Roles do not require job levels. Job levels and hierarchy only affect scoped access, workflow routing, approvals, and escalation logic.
+- `available` and `quoted` modules do not grant tenant-facing access. `purchased`, `trial`, `subscription_included`, and `maintenance_included` can grant access while valid.
 
 > Implementation gap: the current backend may still support direct `adminPassword` on tenant creation. That is temporary only and must be replaced before production. Operators must not choose or copy the tenant owner's final password; the owner sets it through the invite link.
 

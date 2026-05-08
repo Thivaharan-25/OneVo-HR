@@ -1,4 +1,4 @@
-# Expense Categories — Testing Strategy
+﻿# Expense Categories â€” Testing Strategy
 
 **Module:** Expense
 **Feature:** Expense Categories
@@ -189,12 +189,12 @@ public class ExpenseCategoriesApiTests : IClassFixture<CustomWebApplicationFacto
         // Arrange
         var request = new { Name = "Hotel", MaxAmount = 300.00, RequiresReceipt = true };
 
-        // Act — Create
+        // Act â€” Create
         var createResponse = await _client.PostAsJsonAsync("/api/v1/expenses/categories", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var created = await createResponse.Content.ReadFromJsonAsync<ExpenseCategoryDto>();
 
-        // Act — List
+        // Act â€” List
         var listResponse = await _client.GetAsync("/api/v1/expenses/categories");
         var categories = await listResponse.Content.ReadFromJsonAsync<List<ExpenseCategoryDto>>();
 
@@ -262,5 +262,6 @@ public class ExpenseCategoriesApiTests : IClassFixture<CustomWebApplicationFacto
 
 ## Related
 
-- [[modules/expense/expense-categories/overview|Expense Categories]] — feature overview
-- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions
+- [[modules/expense/expense-categories/overview|Expense Categories]] â€” feature overview
+- [[code-standards/testing-strategy|Testing Standards]] â€” project-wide testing conventions
+

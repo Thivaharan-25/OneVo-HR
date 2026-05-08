@@ -1,4 +1,4 @@
-# Session Management — End-to-End Logic
+﻿# Session Management â€” End-to-End Logic
 
 **Module:** Auth
 **Feature:** Session Management
@@ -29,7 +29,7 @@ POST /api/v1/auth/logout
 ```
 On every authenticated request:
   -> SessionMiddleware
-    -> 1. Extract session_id from JWT claims
+    -> 1. Extract session_id from validated HttpOnly session cookie/backend-held auth state
     -> 2. UPDATE sessions SET last_activity_at = now
        -> (Throttled: only update if > 1 min since last update)
     -> 3. Check session.is_revoked
@@ -44,7 +44,7 @@ On every authenticated request:
 |:------|:---------|
 | Session revoked (admin action) | Next request returns 401, user must re-login |
 | Session expired | Return 401 with "session_expired" code |
-| Concurrent sessions | Allowed — each device gets its own session |
+| Concurrent sessions | Allowed â€” each device gets its own session |
 
 ## Related
 
@@ -54,3 +54,4 @@ On every authenticated request:
 - [[modules/auth/mfa/overview|MFA]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
+

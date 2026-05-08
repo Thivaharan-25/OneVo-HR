@@ -17,17 +17,16 @@ https://api.onevo.com/api/v{version}/{resource}
 
 ### Authentication
 
-All endpoints require JWT Bearer token (except `/api/v1/auth/login`, `/api/v1/auth/refresh`):
+Customer browser calls to `/api/v1/*` use the ONEVO BFF-style HttpOnly cookie session. The frontend sends requests with `credentials: "include"` and does not attach tenant JWTs in an `Authorization` header.
 
-```
-Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
-```
+Non-browser clients may use Bearer tokens only where explicitly documented, such as platform-admin server internals, IDE extension flows, desktop agent device APIs, and service integrations.
 
 #### Internal Module Authentication
 
 HR Management, Workforce Intelligence, and Work Management all live in the same backend and PostgreSQL database. The Vite + React frontend, IDE extension, and desktop agent call first-party ONEVO endpoints only.
 
-- Web and IDE clients use the normal user JWT audience (`onevo-api`).
+- Customer web clients use HttpOnly cookie sessions backed by server-side auth state for the normal user audience (`onevo-api`).
+- IDE clients use the normal user JWT audience (`onevo-api`) through IDE-specific secure storage.
 - Desktop agents use device JWTs on `/api/v1/agent/*`; device JWTs cannot access HR or Work Management user APIs.
 - Cross-pillar data flow uses direct foreign keys, application services, and in-process domain events.
 
@@ -137,7 +136,9 @@ GET /api/v1/leave-requests?status=pending&startDateFrom=2026-04-01&startDateTo=2
 
 | Header | Direction | Purpose |
 |:-------|:----------|:--------|
-| `Authorization` | Request | JWT Bearer token |
+| `Cookie` | Request | Customer web session cookie, sent automatically by browser |
+| `X-CSRF-Token` | Request | Required for cookie-authenticated state-changing requests |
+| `Authorization` | Request | Bearer token only for non-browser clients where explicitly documented |
 | `X-Correlation-Id` | Both | Request tracing (auto-generated if missing) |
 | `X-Tenant-Id` | Request | Explicit tenant (for service-to-service calls) |
 | `X-Rate-Limit-Remaining` | Response | Remaining rate limit quota |
@@ -170,8 +171,8 @@ Tenant provisioning config is intentionally split across specific Developer Plat
 ### Auth
 
 ```
-POST   /api/v1/auth/login                 # Login (returns JWT + refresh token)
-POST   /api/v1/auth/refresh               # Refresh token
+POST   /api/v1/auth/login                 # Login (sets HttpOnly session cookie)
+POST   /api/v1/auth/refresh               # Refresh/rotate cookie-backed session
 POST   /api/v1/auth/logout                # Logout (revoke session)
 GET    /api/v1/auth/me                    # Current user profile
 GET    /api/v1/roles                       # List roles
@@ -298,7 +299,7 @@ CRUD   /api/v1/documents
 CRUD   /api/v1/repositories
 ```
 
-Work Management is an internal ONEVO pillar. It uses the same user JWT and the same tenant/module entitlement checks as HR.
+Work Management is an internal ONEVO pillar. In the customer web app it uses the same cookie-backed user session and the same tenant/module entitlement checks as HR.
 
 ## Rate Limiting
 

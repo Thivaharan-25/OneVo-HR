@@ -11,7 +11,9 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 | `tenants` | Read + write — status, plan, metadata |
 | `users` | Read — per-tenant user list, last login |
 | `tenant_settings` | Write — initial and override configuration |
-| `subscription_plans` | Read + write — plan assignment |
+| `subscription_plans` | Read reusable global plan catalog; assign selected plan to tenant |
+| `tenant_subscriptions` | Write tenant-specific commercial terms, billing dates, custom contract value, maintenance state, and manual billing flags |
+| `module_catalog` | Read reusable global module catalog and default pricing |
 | module entitlement registry | Write through module interfaces - which modules are active per tenant |
 | role templates / tenant roles | Read + write through Auth interfaces - starter role configuration |
 | Stripe | Read (normal path); bypassed on subscription override |
@@ -64,14 +66,31 @@ A 7-step, draft-safe wizard for onboarding tenants through the internal operator
 | Step | What Happens |
 |---|---|
 | 1. Account Setup | Company name, slug, country, industry, legal entity name, timezone |
-| 2. Plan Assignment | Pick subscription plan, commercial model, billing start date, and maintenance status |
-| 3. Module Selection | Toggle active modules and sales state for add-ons/future modules |
-| 4. Role Template Setup | Apply ONEVO defaults or create tenant-specific role templates from the module-filtered permission catalog |
+| 2. Plan Assignment | Pick reusable subscription plan, commercial model, billing start date, contract value, discounts, Stripe/manual billing, and maintenance status |
+| 3. Module Selection | Toggle active modules, sales state, trial dates, and module-level pricing overrides for add-ons/future modules |
+| 4. Role Template Setup | Apply reusable ONEVO defaults, create reusable operator templates, or create tenant-specific roles from the module-filtered permission catalog |
 | 5. Initial Configuration | Set key `tenant_settings`: monitoring mode, leave policy defaults, transparency mode |
-| 6. Admin User Invite | Create first tenant owner/super-admin user and send set-password invite email |
+| 6. Admin User Invite | Create first tenant owner/admin user, assign a valid tenant owner role, and send set-password invite email |
 | 7. Review & Confirm | Summary view — one-click confirm sets `tenants.status` to `active` |
 
 The wizard is **draft-safe**: partially completed tenants remain in `provisioning` status and can be resumed before confirmation.
+
+### Plan, Module, and Cost Rules
+
+- Operators do not create a new plan for every tenant. Plans are reusable catalog entries; tenant-specific pricing lives on `tenant_subscriptions` and module entitlement records.
+- A selected plan can include modules, but the provisioning wizard must still show the effective module set so the operator can confirm, add trials, add purchased modules, or disable exceptions.
+- Module prices can come from `module_catalog`, be included by plan, or be overridden per tenant. Store the pricing model, price, currency, dates, and sales state for audit and billing.
+- `available` and `quoted` module states do not grant tenant-facing access. `purchased`, `trial`, `subscription_included`, and `maintenance_included` can grant access while valid.
+- Commercial entitlement decides what the tenant has bought or trialed. RBAC decides which users inside that tenant can use the entitled modules.
+
+### Role Rules During Provisioning
+
+- Reusable role templates are global operator-managed blueprints.
+- Tenant-specific roles can be created directly during provisioning without becoming global templates.
+- Applying a template materializes normal tenant-scoped Auth roles and permissions.
+- Role creation does not require job levels. Job levels and org hierarchy are only needed for scoped access, approvals, escalation, and workflow routing.
+- The first owner/admin invite must assign a materialized tenant role that satisfies the minimum owner/admin permission set.
+- The operator never sets the tenant owner's final password; the owner sets it through the invite link.
 
 ## Notes
 

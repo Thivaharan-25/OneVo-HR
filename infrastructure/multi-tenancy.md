@@ -1,17 +1,17 @@
-# Multi-Tenancy Architecture: ONEVO
+﻿# Multi-Tenancy Architecture: ONEVO
 
 ## Overview
 
 ONEVO uses a **shared database, shared schema** multi-tenancy model with **4 layers of data isolation**:
 
 ```
-Layer 1: JWT Claims         → tenant_id in access token
-Layer 2: BaseRepository     → automatic WHERE tenant_id = @current filter
-Layer 3: PostgreSQL RLS     → database-level row filtering (safety net)
-Layer 4: ArchUnitNET Tests  → compile-time verification of boundary rules
+Layer 1: Auth Session         â†’ tenant_id in backend-held auth state
+Layer 2: BaseRepository     â†’ automatic WHERE tenant_id = @current filter
+Layer 3: PostgreSQL RLS     â†’ database-level row filtering (safety net)
+Layer 4: ArchUnitNET Tests  â†’ compile-time verification of boundary rules
 ```
 
-## Layer 1: JWT Claims
+## Layer 1: Auth Session
 
 Every authenticated request carries a JWT with `tenant_id`:
 
@@ -88,15 +88,15 @@ public class TenantRlsInterceptor : DbConnectionInterceptor
 }
 ```
 
-> **Safety note — string interpolation in RLS interceptor:**
-> The interpolation above is safe **only** because `TenantId` is a `Guid`. A `Guid` can only contain hex digits and hyphens — it is structurally incapable of containing SQL injection characters (quotes, semicolons, etc.). PostgreSQL will reject any malformed UUID before it reaches the `SET LOCAL` command.
+> **Safety note â€” string interpolation in RLS interceptor:**
+> The interpolation above is safe **only** because `TenantId` is a `Guid`. A `Guid` can only contain hex digits and hyphens â€” it is structurally incapable of containing SQL injection characters (quotes, semicolons, etc.). PostgreSQL will reject any malformed UUID before it reaches the `SET LOCAL` command.
 >
 > **Do NOT copy this pattern for any non-`Guid` value.** If you ever need to set a `SET LOCAL` variable from a string (e.g., a tenant name, a user-supplied label), use a parameterized command:
 > ```csharp
 > cmd.CommandText = "SELECT set_config('app.current_tenant_id', $1, true)";
 > cmd.Parameters.Add(new NpgsqlParameter { Value = tenantId.ToString() });
 > ```
-> The RLS policy itself is a defence-in-depth safety net — the application-level `BaseRepository<T>` filter is the primary enforcement layer.
+> The RLS policy itself is a defence-in-depth safety net â€” the application-level `BaseRepository<T>` filter is the primary enforcement layer.
 
 ## Layer 4: ArchUnitNET Compile-Time Tests
 
@@ -128,10 +128,10 @@ public void No_Repository_Should_Bypass_BaseRepository()
 ## Tenant Provisioning Flow
 
 ```
-1. Operator provisions via Developer Console (`POST /admin/v1/tenants`) → Create tenant record (status: provisioning)
-2. Seed        → Create default roles, permissions, settings, department
-3. Activate    → Set status to active, send welcome email
-4. Configure   → Admin sets up org structure, imports employees
+1. Operator provisions via Developer Console (`POST /admin/v1/tenants`) â†’ Create tenant record (status: provisioning)
+2. Seed        â†’ Create default roles, permissions, settings, department
+3. Activate    â†’ Set status to active, send welcome email
+4. Configure   â†’ Admin sets up org structure, imports employees
 ```
 
 ```csharp
@@ -160,11 +160,11 @@ public async Task<Result<TenantDto>> ProvisionTenantAsync(CreateTenantCommand cm
 ## Tenant Offboarding (GDPR)
 
 ```
-1. Initiate    → Admin requests account deletion
-2. Grace       → 30-day grace period (data preserved but tenant deactivated)
-3. Export      → Generate GDPR compliance export (all tenant data)
-4. Purge       → Permanent deletion of all tenant data
-5. Confirm     → Send confirmation email, audit log entry
+1. Initiate    â†’ Admin requests account deletion
+2. Grace       â†’ 30-day grace period (data preserved but tenant deactivated)
+3. Export      â†’ Generate GDPR compliance export (all tenant data)
+4. Purge       â†’ Permanent deletion of all tenant data
+5. Confirm     â†’ Send confirmation email, audit log entry
 ```
 
 ## Connection String Strategy
@@ -177,14 +177,18 @@ public async Task<Result<TenantDto>> ProvisionTenantAsync(CreateTenantCommand cm
 
 ## Performance Considerations
 
-- **Index on `tenant_id`** on every tenant-scoped table (composite indexes with other frequently queried columns) — see [[database/performance|Performance]]
+- **Index on `tenant_id`** on every tenant-scoped table (composite indexes with other frequently queried columns) â€” see [[database/performance|Performance]]
 - **Partition large tables** by tenant_id (for very large tenants) or by time (for audit_logs, biometric_events)
-- **Redis caching** keyed by `tenant:{tenantId}:{entity}:{id}` — never cache cross-tenant data (see [[database/performance|Performance]])
+- **Redis caching** keyed by `tenant:{tenantId}:{entity}:{id}` â€” never cache cross-tenant data (see [[database/performance|Performance]])
 - **Rate limiting** per tenant via Redis token bucket
 
 ## Related
 
-- [[backend/shared-kernel|Shared Kernel]] — BaseRepository, ITenantContext implementation
-- [[security/auth-architecture|Auth Architecture]] — JWT claims carrying tenant_id
-- [[backend/module-boundaries|Module Boundaries]] — ArchUnitNET tests for tenant isolation enforcement
-- [[security/compliance|Compliance]] — GDPR tenant offboarding and data export
+- [[backend/shared-kernel|Shared Kernel]] â€” BaseRepository, ITenantContext implementation
+- [[security/auth-architecture|Auth Architecture]] â€” backend-held auth/session state carrying tenant_id
+- [[backend/module-boundaries|Module Boundaries]] â€” ArchUnitNET tests for tenant isolation enforcement
+- [[security/compliance|Compliance]] â€” GDPR tenant offboarding and data export
+
+
+
+

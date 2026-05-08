@@ -2,7 +2,7 @@
 
 ## Permission Source
 
-Permissions come from the JWT access token, decoded in AuthProvider:
+Permissions come from backend session endpoints such as `/api/v1/auth/session`, `/api/v1/auth/refresh`, or `/api/v1/auth/me/permissions`. The customer web frontend does not decode JWTs.
 
 ```json
 {
@@ -10,7 +10,7 @@ Permissions come from the JWT access token, decoded in AuthProvider:
 }
 ```
 
-These are cached in AuthProvider state and refreshed every 15 minutes when the access token is refreshed.
+These permissions are cached in AuthProvider state and refreshed when the cookie-backed session is refreshed.
 
 ## PermissionGate Component
 

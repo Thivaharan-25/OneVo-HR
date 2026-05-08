@@ -1,4 +1,4 @@
-# Employee Profiles — Testing Strategy
+﻿# Employee Profiles â€” Testing Strategy
 
 **Module:** Core HR
 **Feature:** Employee Profiles
@@ -313,7 +313,7 @@ public class EmployeesApiTests : IClassFixture<CustomWebApplicationFactory>
 | Update with circular manager | manager_id forms a cycle | 422 Validation error | Unit |
 | Soft delete active employee | Valid employee ID | 204 + is_deleted=true + EmployeeTerminated event | Integration |
 | Soft delete already-deleted | Deleted employee ID | 404 Not Found | Unit |
-| Get own profile | Authenticated user JWT | 200 + own employee data | Integration |
+| Get own profile | Authenticated customer web session | 200 + own employee data | Integration |
 | Get direct reports | Manager ID with 3 active + 1 deleted report | 200 + 3 results (excludes soft-deleted) | Unit |
 | List with pagination | page=2, pageSize=5 | 200 + correct slice of data | Integration |
 | Create missing required fields | Empty first_name | 400 + validation errors | Unit |
@@ -332,3 +332,4 @@ public class EmployeesApiTests : IClassFixture<CustomWebApplicationFactory>
 - [[modules/core-hr/employee-profiles/overview|Employee Profiles Overview]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
+

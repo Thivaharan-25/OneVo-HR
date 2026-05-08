@@ -1,15 +1,15 @@
-# Authorization (Hybrid Permission Control in Frontend)
+﻿# Authorization (Hybrid Permission Control in Frontend)
 
 ## Permission Model
 
-Permissions flow from the backend JWT as **effective permissions** — already resolved from the user's roles + individual overrides + feature grants. The frontend uses them for **UI gating only** — the API enforces authorization and hierarchy scoping server-side. Frontend authorization is a UX concern: don't show things the user can't access.
+Permissions flow from the backend JWT as **effective permissions** â€” already resolved from the user's roles + individual overrides + feature grants. The frontend uses them for **UI gating only** â€” the API enforces authorization and hierarchy scoping server-side. Frontend authorization is a UX concern: don't show things the user can't access.
 
 ### How Effective Permissions Work
 
-The JWT contains the **final resolved permission set** for the user. The frontend does NOT need to know about roles, overrides, or feature grants — it just checks the permission codes in the token.
+The JWT contains the **final resolved permission set** for the user. The frontend does NOT need to know about roles, overrides, or feature grants â€” it just checks the permission codes in the token.
 
 ```
-JWT claims:
+Backend session permission metadata:
 {
   "permissions": ["employees:read", "leave:approve", "leave:read"],
   "granted_modules": ["core-hr", "leave"],
@@ -153,8 +153,8 @@ Sensitive fields masked or hidden:
 ```
 
 Behavior:
-- Not authenticated → redirect to `/login`
-- Authenticated but missing permission → redirect to `/403`
+- Not authenticated â†’ redirect to `/login`
+- Authenticated but missing permission â†’ redirect to `/403`
 
 ## PermissionGate Component
 
@@ -245,7 +245,7 @@ interface AuthState {
 
 ## Important: No Hardcoded Roles
 
-The frontend must NEVER hardcode role names (e.g., "HR Manager", "Team Lead"). Roles are custom — the Super Admin creates them. Always check **permissions** and **module grants**, never role names.
+The frontend must NEVER hardcode role names (e.g., "HR Manager", "Team Lead"). Roles are custom â€” the Super Admin creates them. Always check **permissions** and **module grants**, never role names.
 
 ```tsx
 // WRONG - never do this
@@ -260,7 +260,8 @@ if (isModuleGranted('leave')) { ... }
 
 ## Related
 
-- [[frontend/cross-cutting/authentication|Authentication]] — auth flow, token management
-- [[frontend/architecture/routing|Routing]] — route guards
-- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — sidebar gating
-- [[frontend/design-system/patterns/table-patterns|Table Patterns]] — column-level gating
+- [[frontend/cross-cutting/authentication|Authentication]] â€” auth flow, token management
+- [[frontend/architecture/routing|Routing]] â€” route guards
+- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] â€” sidebar gating
+- [[frontend/design-system/patterns/table-patterns|Table Patterns]] â€” column-level gating
+

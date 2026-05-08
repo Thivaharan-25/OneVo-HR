@@ -2,7 +2,7 @@
 
 **Track:** Backend
 **Primary ownership:** platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API
-**Current Unfinished Task:** Task 2 - Tenant Auth + RBAC gaps
+**Current Unfinished Task:** Task 2A - Repository Boundary Repair, then Task 2 - Tenant Auth + RBAC gaps
 **Blocked By:** none
 
 ---
@@ -13,19 +13,52 @@ When Dev 1 asks to continue, start with the first unchecked item in **Current Un
 
 ---
 
+## Current Backend State Audit - 2026-05-07
+
+Dev 1 was checked against `C:\Onevo\Onevo_Backend` before this focus file was corrected.
+
+### What Exists
+
+- [x] Backend solution exists with `ONEVO.Api`, `ONEVO.Application`, `ONEVO.Domain`, `ONEVO.Infrastructure`, and test projects.
+- [x] Auth command handlers exist for login, logout, refresh token, forced password change, MFA enable/verify, password reset request, and password reset.
+- [x] Domain entities exist for users, roles, permissions, role permissions, user roles, permission overrides, sessions, refresh tokens, password reset tokens, MFA records, audit logs, and consent records.
+- [x] `ApplicationDbContext` maps the current Auth and Infrastructure entities.
+- [x] API has tenant/admin JWT scheme separation, health checks, OpenAPI, exception/correlation/tenant middleware, and a minimal admin-boundary endpoint.
+- [x] Integration tests currently cover login, refresh, forced password change, password reset request, protected endpoint rejection, and tenant token rejection on the admin boundary.
+
+### What Is Not Finished
+
+- [ ] Application handlers still inject `IApplicationDbContext` directly and query EF `DbSet`s.
+- [ ] `IApplicationDbContext` exposes EF Core types from the Application layer; this keeps database access too close to command handlers.
+- [ ] There are no Auth/RBAC repository interfaces in Application and no repository implementations in Infrastructure.
+- [ ] `PermissionResolver` and `AuthTokenIssuer` still read/write persistence directly instead of using repositories.
+- [ ] Role CRUD, role permission assignment, user role assignment, permission overrides, and role template APIs are not implemented.
+- [ ] TOTP exists as command skeletons, but replay protection, fallback OTP challenge storage, delivery boundary tests, and lockout tests are not complete.
+- [ ] The admin API is only a boundary stub; Developer Platform admin account/session entities and controllers are not complete.
+
+### Required Dev 1 Rule Going Forward
+
+- [ ] Controllers remain thin and call MediatR/application services only.
+- [ ] Application command/query handlers do not inject `ApplicationDbContext`, `IApplicationDbContext`, or EF `DbSet`.
+- [ ] Application command/query handlers read and write persistence only through feature repository interfaces plus `IUnitOfWork`.
+- [ ] Infrastructure owns EF Core queries, `ApplicationDbContext`, repository implementations, seeders, and persistence-specific optimizations.
+- [ ] Architecture tests must fail if Application handlers or services use EF Core directly.
+
+---
+
 ## Task 1: Backend Foundation
 
 **Goal:** create the backend baseline every other backend module can depend on.
 
 ### Acceptance Criteria
 
-- [x] Solution structure exists for API, application, domain, infrastructure, tests, and admin API host.
+- [x] Solution structure exists for API, application, domain, infrastructure, tests, and the single API host used for tenant and admin boundaries.
 - [x] Shared kernel includes base entity, auditable entity, result type, domain event base, tenant context abstraction, and time provider abstraction.
 - [x] API project exposes health checks and OpenAPI.
 - [x] Database context is configured for PostgreSQL and snake_case naming.
 - [x] Migrations can be created and applied locally.
 - [x] Request pipeline includes correlation ID, exception mapping, tenant resolution, and structured logging.
-- [x] Baseline test project validates API boot, admin API boot, and database context boot.
+- [x] Baseline test project validates API boot, admin boundary boot, and database context boot.
 
 ### References
 
@@ -44,21 +77,78 @@ dotnet test ONEVO.sln
 
 ---
 
-## Task 2: Tenant Auth + RBAC
+## Task 2A: Repository Boundary Repair
 
-**Goal:** implement secure tenant-facing user authentication and permission checks for protected `/api/v1/*` APIs.
+**Goal:** repair the backend architecture before adding more Auth/RBAC features, so database access is centralized behind repositories instead of scattered through command handlers and services.
 
 **Requires:** DEV1 Task 1 complete
 
 ### Acceptance Criteria
 
-- [x] User login issues short-lived tenant access token and backend-managed refresh token.
+- [x] Add Auth repository interfaces in `ONEVO.Application`, starting with user, refresh token, session, password reset token, MFA, role, permission, user role, permission override, feature access grant, and audit read/write needs.
+- [x] Add Infrastructure repository implementations that use `ApplicationDbContext` internally.
+- [x] Keep `IUnitOfWork` as the commit boundary and remove `SaveChangesAsync` usage from feature handlers except through `IUnitOfWork`.
+- [x] Refactor login, logout, refresh token, forced password change, MFA enable/verify, password reset request, and password reset handlers to use repositories.
+- [x] Refactor `AuthTokenIssuer` to create refresh tokens and sessions through repositories.
+- [x] Refactor `PermissionResolver` behind repository-backed permission reads; it must not depend on `ApplicationDbContext` directly.
+- [x] Refactor customer web auth to BFF-style HttpOnly cookie sessions: browser responses must not include tenant access JWTs, refresh/session cookies are rotated by the backend, and `/api/v1/*` browser calls authenticate from the HttpOnly session cookie.
+- [x] Stop exposing EF `DbSet`s through `IApplicationDbContext`; if the interface remains temporarily, it must be Infrastructure-only and not injected into Application handlers.
+- [x] Add architecture tests that reject `Microsoft.EntityFrameworkCore`, `IApplicationDbContext`, and `ApplicationDbContext` dependencies from `ONEVO.Application.Features.*`.
+- [ ] Add focused tests proving existing auth flows still pass after repository refactor.
+- [ ] Update this DEV1 file after the repair, marking only verified items as complete.
+
+### Middleware Completion Checklist
+
+These items are required to complete the BFF/session middleware behavior referenced by DEV1 Task 2A and Task 2.
+
+- [x] Enforce `X-CSRF-Token` for cookie-authenticated state-changing `/api/v1/*` requests.
+  - References: `security/auth-architecture.md` Session Security, `current-focus/contracts/auth-session.md` Customer Web Session Model, `backend/api-conventions.md` Standard Headers.
+- [x] Reject authenticated tenant API requests that do not carry a valid `tenant_id` claim.
+  - References: `security/auth-architecture.md` Authorization Check, DEV1 primary ownership of tenant context.
+- [x] Reject stale cookie-authenticated tenant sessions when JWT `perm_ver` is behind the current permission version.
+  - References: `security/auth-architecture.md` Permission Revocation, `modules/auth/overview.md` Key Business Rule 4.
+
+### Task 2A Progress - 2026-05-08
+
+- Repository boundary repair was implemented through Auth repository interfaces in Application and EF-backed implementations in Infrastructure.
+- `IApplicationDbContext` was removed from Application; Auth handlers now persist through repositories plus `IUnitOfWork`.
+- BFF-style customer web auth was implemented: login, refresh, MFA verify, and forced password change now return non-token session metadata JSON and set HttpOnly `onevo_session` / `onevo_refresh` cookies plus readable `onevo_csrf`; tenant `/api/v1/*` auth can read the `onevo_session` cookie.
+- Middleware completion added CSRF double-submit validation, tenant claim rejection, and permission-version staleness checks for authenticated tenant API requests.
+- Focused Auth integration tests were updated to assert that access tokens are not returned in JSON, HttpOnly cookies are set/rotated, and protected browser calls authenticate from the session cookie.
+- Verified: `dotnet build ONEVO.sln --no-restore --verbosity minimal -m:1 -p:UseSharedCompilation=false`; `dotnet test tests\ONEVO.Tests.Architecture\ONEVO.Tests.Architecture.csproj --no-build --verbosity minimal -m:1`.
+- Blocked verification: Auth integration tests could not run because Docker/Testcontainers is unavailable (`Docker is either not running or misconfigured`).
+
+### References
+
+- [[backend/clean-architecture-overview|Clean Architecture Overview]] (backend/clean-architecture-overview.md)
+- [[backend/module-catalog|Backend Module Catalog]] (backend/module-catalog.md)
+- [[modules/auth/overview|Auth]] (modules/auth/overview.md)
+- [[security/auth-architecture|Auth Architecture]] (security/auth-architecture.md)
+
+### Verification
+
+```bash
+dotnet build ONEVO.sln
+dotnet test ONEVO.sln --filter "Auth|LayerDependency"
+```
+
+---
+
+## Task 2: Tenant Auth + RBAC
+
+**Goal:** implement secure tenant-facing user authentication and permission checks for protected `/api/v1/*` APIs.
+
+**Requires:** DEV1 Task 1 and Task 2A complete
+
+### Acceptance Criteria
+
+- [ ] Customer web login sets an HttpOnly backend-managed session cookie and does not return the tenant access JWT to browser JavaScript.
 - [x] Refresh token rotation persists replaced-by chain.
 - [x] MFA setup and verification endpoint skeletons exist.
-- [ ] MFA primary method is email OTP, not TOTP: login generates a short-lived 6-digit OTP challenge and sends it to the user's verified email.
-- [ ] MFA email delivery goes through the Auth email/notification boundary; local development may log OTPs, but Phase 1 customer release requires Resend-backed delivery.
-- [ ] MFA OTP challenges are hashed at rest, expire after 5 minutes, are single-use, and lock after 3 failed attempts.
-- [ ] Authenticator-app TOTP support is deferred/optional and must not be the default Phase 1 MFA flow.
+- [ ] MFA primary method is authenticator-app TOTP: setup stores an encrypted TOTP secret, login verifies a current 6-digit authenticator code, and replay inside the accepted window is blocked.
+- [ ] MFA email OTP is fallback/recovery only and goes through the Auth email/notification boundary; local development may log fallback OTPs, but Phase 1 customer release requires Resend-backed delivery.
+- [ ] MFA fallback OTP challenges are hashed at rest, expire after 5 minutes, are single-use, and lock after 3 failed attempts.
+- [ ] Authenticator-app TOTP is the default Phase 1 MFA flow.
 - [x] Password reset flow exists.
 - [x] Password reset email can use a temporary logger-only stub during DEV1 Task 2; Phase 1 release requires DEV2 Task 5 to route password reset and account setup emails through the Resend-backed notification/email dispatcher.
 - [x] Forced password change flow exists using `must_change_password`, `password_set_by_admin`, and `temporary_password_expires_at`.
@@ -72,7 +162,7 @@ dotnet test ONEVO.sln
 - [ ] User permission override APIs exist for grant/revoke/remove and increment the permission version counter.
 - [ ] Effective permission query returns universal grants, role grants, module filtering, hierarchy scope, and user overrides.
 - [ ] Role template support exists for provisioning: templates can be created from module-filtered permissions and materialized into tenant roles.
-- [ ] Tests cover email OTP generation, delivery boundary call, verify success, verify expired, verify wrong code, attempt lockout, role CRUD, role permission assignment, user role assignment, permission overrides, module-filtered permission visibility, and permission version refresh.
+- [ ] Tests cover TOTP setup, TOTP verify success, TOTP wrong code, TOTP replay protection, email fallback generation, fallback delivery boundary call, fallback expired, fallback wrong code, attempt lockout, role CRUD, role permission assignment, user role assignment, permission overrides, module-filtered permission visibility, and permission version refresh.
 
 ### References
 
@@ -186,7 +276,8 @@ dotnet test ONEVO.sln --filter Audit
 - [ ] Notification templates and notification channel configuration exist.
 - [ ] Workflow definitions, workflow steps, workflow instances, workflow step instances, and approval actions are mapped.
 - [ ] Workflow engine can start an instance for any `resource_type` + `resource_id`.
-- [ ] Workflow engine resolves approvers by reporting manager, department head, role, or specific user.
+- [ ] Workflow engine resolves approvers through dynamic resolvers, including reporting manager, team lead, department owner, selected permission, selected department, selected team, selected job level, specific employee, configured escalation owner, previous approver, and case conversation participants.
+- [ ] Workflow approval steps support multiple-approver modes: only one approval is required, all assigned approvers must approve, and approve in order.
 - [ ] Workflow engine supports approve, reject, delegate, request info, condition steps, SLA deadline, and timeout action.
 - [ ] Workflow engine publishes `WorkflowStepCompleted` and `WorkflowCompleted` events.
 - [ ] Leave approval can use the workflow engine rather than a hard-coded approval path.
@@ -337,7 +428,11 @@ dotnet test ONEVO.sln --filter AdminApi
 
 - [ ] `GET /admin/v1/tenants` returns all tenants, including `provisioning` and `suspended` statuses, with search/filter support.
 - [ ] Tenant list includes company name, slug, plan tier, status, employee count, created date, agent count, and last login summary.
+- [ ] `GET /admin/v1/subscription-plans` returns reusable plan catalog records; operators do not create a plan per tenant.
+- [ ] `GET /admin/v1/modules/catalog` returns reusable module catalog records with pillar, phase, sellable state, default pricing, and pricing unit.
+- [ ] `GET /admin/v1/tenants/validate` validates tenant slug, company name, email domain, registration number, and country rules with conflicts and warnings.
 - [ ] `POST /admin/v1/tenants` creates a draft tenant in `provisioning` status from account setup data.
+- [ ] `PATCH /admin/v1/tenants/{id}` edits draft tenant details before activation without bypassing activation guards.
 - [ ] `GET /admin/v1/tenants/{id}` returns overview, plan, billing dates, status, users summary, agent summary, flags summary, settings summary, and audit summary links.
 - [ ] `PATCH /admin/v1/tenants/{id}/status` supports suspend, unsuspend, and activate with role checks.
 - [ ] `PATCH /admin/v1/tenants/{id}/subscription` supports provisioning commercial terms and post-activation exception subscription override with required reason and audit log.
@@ -345,11 +440,15 @@ dotnet test ONEVO.sln --filter AdminApi
 - [ ] `GET /admin/v1/tenants/{id}/permissions/catalog` returns only permissions exposed by the tenant's active modules plus universal permissions.
 - [ ] `GET /admin/v1/role-templates` lists global/default role templates with module and permission coverage.
 - [ ] `POST /admin/v1/role-templates` creates an operator-managed role template from a module-filtered permission set.
+- [ ] `PATCH /admin/v1/role-templates/{id}` edits reusable non-system templates with versioning and audit.
 - [ ] `POST /admin/v1/tenants/{id}/role-templates/{templateId}/apply` materializes a role template into tenant-scoped roles.
+- [ ] `GET /admin/v1/tenants/{id}/roles` lists materialized tenant roles during provisioning.
+- [ ] `POST /admin/v1/tenants/{id}/roles` creates tenant-specific roles during provisioning without requiring job levels.
 - [ ] `PUT /admin/v1/tenants/{id}/roles/{roleId}/permissions` lets Developer Platform adjust a provisioned role using only permissions available to that tenant.
 - [ ] Tenant owner can later create/edit tenant roles inside `/api/v1/roles`, still limited by enabled modules.
 - [ ] `PATCH /admin/v1/tenants/{id}/settings` writes tenant setting overrides through the Configuration module interface.
 - [ ] `POST /admin/v1/tenants/{id}/invite-admin` creates the first tenant super-admin invite.
+- [ ] `GET /admin/v1/tenants/{id}/provisioning-summary` returns review data, section completion, warnings, and activation blockers.
 - [ ] `PATCH /admin/v1/tenants/{id}/provision/confirm` activates a provisioning tenant only after required steps are complete.
 - [ ] `POST /admin/v1/tenants/{id}/impersonate` is `super_admin` only, creates a 15-minute non-renewable impersonation token, and always writes an audit log.
 - [ ] Provisioning tenants are invisible to tenant-facing `/api/v1/*` queries.

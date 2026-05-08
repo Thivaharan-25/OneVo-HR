@@ -1,4 +1,4 @@
-# Permission Assignment
+﻿# Permission Assignment
 
 **Area:** Auth & Access
 **Trigger:** Admin assigns permission to role or employee (user action)
@@ -23,7 +23,7 @@
 #### Step A1: Navigate to Role Detail
 - **UI:** Administration > Roles & Permissions > click on a role name. Role detail page shows: Name, Description, User Count, and a full permission grid
 - **API:** `GET /api/v1/roles/{roleId}`
-- **Backend:** `RoleService.GetRoleWithPermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
+- **Backend:** `RoleService.GetRoleWithPermissionsAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** Permission check for `roles:manage`. System roles can be viewed but not modified
 - **DB:** `roles`, `role_permissions`, `permissions`
 
@@ -49,7 +49,7 @@
     "permissionIds": ["uuid1", "uuid2", "uuid3"]
   }
   ```
-- **Backend:** `RoleService.UpdatePermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
+- **Backend:** `RoleService.UpdatePermissionsAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
   1. Calculate diff: added permissions, removed permissions
   2. Delete removed `role_permissions` records
   3. Insert new `role_permissions` records
@@ -71,7 +71,7 @@
 #### Step B1: Navigate to Employee Profile
 - **UI:** Employees > search for employee > click profile > Security tab. Shows: Assigned Role (from job family or manual assignment), Effective Permissions list (universal auto-grants + role permissions + overrides), "Override Permissions" button
 - **API:** `GET /api/v1/users/{id}/permissions`
-- **Backend:** `PermissionService.GetEffectivePermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
+- **Backend:** `PermissionService.GetEffectivePermissionsAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
   - Computes: Universal auto-grants + role permissions + added overrides - removed overrides = effective permissions
 - **Validation:** Permission check for `roles:manage` AND (`users:manage` OR `employees:write`)
 - **DB:** `user_roles`, `role_permissions`, `user_permission_overrides`, `permissions`
@@ -83,9 +83,9 @@
   3. **Added Overrides:** Extra explicit permissions granted to this specific employee (green highlight)
   4. **Removed Overrides:** Explicit role permissions revoked for this specific employee (red strikethrough)
   
-  To add an override: click "+" next to any unassigned permission → moves to "Added Overrides"
-  To remove a role permission: click "-" next to any role permission → moves to "Removed Overrides"
-  To revert an override: click "x" next to any override → returns to original state
+  To add an override: click "+" next to any unassigned permission â†’ moves to "Added Overrides"
+  To remove a role permission: click "-" next to any role permission â†’ moves to "Removed Overrides"
+  To revert an override: click "x" next to any override â†’ returns to original state
 - **API:** N/A (client-side editing)
 - **Backend:** N/A
 - **Validation:** Cannot override universal permissions such as `employees:read-own`, `leave:read-own`, or `workforce:dashboard`.
@@ -100,7 +100,7 @@
     "removedPermissionIds": ["uuid3"]
   }
   ```
-- **Backend:** `PermissionService.SaveOverridesAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
+- **Backend:** `PermissionService.SaveOverridesAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
   1. Upsert `user_permission_overrides` records (type: `grant` or `revoke`)
   2. Invalidate permission cache for this specific user
   3. Publish `UserPermissionsOverriddenEvent`
@@ -120,23 +120,23 @@
 #### Step C1: Navigate to Employee Security Tab
 - **UI:** Employees > search employee > click profile > Security tab > scroll to **"Bypass Grants"** section (below Override Permissions panel)
 - **API:** `GET /api/v1/employees/{employeeId}/bypass-grants`
-- **Backend:** `BypassGrantService.GetByEmployeeAsync()` → [[modules/auth/authorization/end-to-end-logic|Authorization]]
+- **Backend:** `BypassGrantService.GetByEmployeeAsync()` â†’ [[modules/auth/authorization/end-to-end-logic|Authorization]]
 - **Validation:** Permission check for `roles:manage`. Granter must have an active `permission_delegation_scopes` record or be a root admin.
 - **DB:** `hierarchy_scope_exceptions`, `permission_delegation_scopes`
 
 #### Step C2: Add a Bypass Grant
 - **UI:** Click **"Add Bypass Grant"**. A panel appears with three fields:
-  1. **Scope Type** — dropdown: `Department` / `Person` / `Role`
-  2. **Scope Target** — searchable picker (required — Save is blocked until a target is selected):
+  1. **Scope Type** â€” dropdown: `Department` / `Person` / `Role`
+  2. **Scope Target** â€” searchable picker (required â€” Save is blocked until a target is selected):
      - Department: dept tree filtered to granter's accessible depts
-     - Person: employee search filtered to granter's accessible employee pool — all employees below the granter in the `reports_to_id` chain **plus** employees reachable via the granter's own broad (`applies_to IS NULL`) bypass grants. Feature-scoped bypasses (e.g. `applies_to = 'calendar'`) are excluded from this pool — a granter cannot re-delegate access they only have via a feature-specific bypass.
-     - Role: role list (picker not yet implemented in v1 — the Role option is visible in the Scope Type dropdown but selecting it leaves Scope Target empty, so the Save button remains disabled until a role picker is implemented)
-  3. **Applies To** — dropdown:
+     - Person: employee search filtered to granter's accessible employee pool â€” all employees below the granter in the `reports_to_id` chain **plus** employees reachable via the granter's own broad (`applies_to IS NULL`) bypass grants. Feature-scoped bypasses (e.g. `applies_to = 'calendar'`) are excluded from this pool â€” a granter cannot re-delegate access they only have via a feature-specific bypass.
+     - Role: role list (picker not yet implemented in v1 â€” the Role option is visible in the Scope Type dropdown but selecting it leaves Scope Target empty, so the Save button remains disabled until a role picker is implemented)
+  3. **Applies To** â€” dropdown:
      - Root admin sees: `All Features` + individual feature names (e.g., `Calendar`, `Teams`)
-     - Delegated granter sees: only features within their own `module_scope` — no "All Features" option
-  4. **Expires At** — optional date picker
+     - Delegated granter sees: only features within their own `module_scope` â€” no "All Features" option
+  4. **Expires At** â€” optional date picker
 - **Validation:**
-  - Scope target is required — the Save button is disabled until a valid target is selected for the chosen scope type.
+  - Scope target is required â€” the Save button is disabled until a valid target is selected for the chosen scope type.
   - Scope target must be within the granter's own accessible scope (ceiling rule).
   - Delegated granters cannot set `Applies To = All Features`.
   - For Person scope: selected employee must be in granter's subordinate chain or reachable via a broad (`applies_to IS NULL`) bypass grant. Feature-scoped bypasses do not extend the Person picker pool.
@@ -171,14 +171,14 @@ Triggered automatically when granting `roles:manage` to an employee via role ass
 
 #### Step D1: Module Scope Panel Appears
 - **UI:** After selecting the `roles:manage` permission in the permission browser, a **"Delegation Scope"** panel appears below automatically.
-  - Module checklist is shown — one checkbox per module
+  - Module checklist is shown â€” one checkbox per module
   - Root admin sees all modules
-  - Delegated granter sees only modules within their own `module_scope` (ceiling rule — cannot delegate beyond own scope)
+  - Delegated granter sees only modules within their own `module_scope` (ceiling rule â€” cannot delegate beyond own scope)
 - **Validation:** At least one module must be selected before save is enabled.
 - **DB:** None (client-side)
 
 #### Step D2: Save Delegation
-- **UI:** Included in the existing "Save Changes" or "Save Overrides" action — no separate save step
+- **UI:** Included in the existing "Save Changes" or "Save Overrides" action â€” no separate save step
 - **API:** Existing permission save endpoints (`PUT /api/v1/roles/{roleId}/permissions` or `PUT /api/v1/employees/{employeeId}/permission-overrides`) receive an additional `delegationScope` field:
   ```json
   {
@@ -197,7 +197,7 @@ Triggered automatically when granting `roles:manage` to an employee via role ass
 - The saved `module_scope` automatically governs two things:
   1. Which modules the recipient can manage permissions for
   2. Which `applies_to` values they can use when creating bypass grants (Path C)
-- No separate configuration needed — one setting covers both.
+- No separate configuration needed â€” one setting covers both.
 
 #### Step D4: Confirmation
 - **UI:** Toast: "Permissions updated. [Employee] can now manage permissions for: Calendar, HR."
@@ -214,13 +214,13 @@ The system resolves effective permissions in this order:
 4. **Remove:** Explicit permissions in `user_permission_overrides` with type `revoke`
 5. **Result:** `Universal + (Role Permissions + Grants - Revokes) = Effective Permissions`
 
-This effective permission set is embedded in the JWT access token claims.
+For customer web sessions, this effective permission set is stored in backend-held auth state and returned to the frontend as permission metadata. Browser JavaScript does not receive or decode the tenant JWT.
 
 ## Variations
 
 ### When permissions change via Job Family Level change
 - Employee is promoted/transferred to a new [[Userflow/Org-Structure/job-family-setup|Job Family Level]]
-- New level has a different default role → user's role changes automatically
+- New level has a different default role â†’ user's role changes automatically
 - Existing per-employee overrides are preserved (they layer on top of the new role)
 - Admin is warned: "This employee has 3 permission overrides that will carry over to the new role"
 
@@ -251,27 +251,28 @@ This effective permission set is embedded in the JWT access token claims.
 
 ## Events Triggered
 
-- `RolePermissionsUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by token cache invalidation
-- `UserPermissionsOverriddenEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by token cache invalidation
-- `AuditLogEntry` (action: `role.permissions.updated` or `user.permissions.overridden`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `RolePermissionsUpdatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by token cache invalidation
+- `UserPermissionsOverriddenEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by token cache invalidation
+- `AuditLogEntry` (action: `role.permissions.updated` or `user.permissions.overridden`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
 - SignalR: `permissions-changed` event to affected clients
 - SignalR: `force-token-refresh` event to specific user (for per-employee overrides)
-- `BypassGrantCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]]
-- `PermissionDelegationScopeCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]]
+- `BypassGrantCreatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]]
+- `PermissionDelegationScopeCreatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[Userflow/Auth-Access/role-creation|Role Creation]] — create roles before assigning permissions
-- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] — automatic role assignment via job family levels
-- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — initial permission assignment during onboarding
-- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] — permission changes when promoted to new job family level
-- [[Userflow/Auth-Access/login-flow|Login Flow]] — JWT contains effective permissions
+- [[Userflow/Auth-Access/role-creation|Role Creation]] â€” create roles before assigning permissions
+- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] â€” automatic role assignment via job family levels
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] â€” initial permission assignment during onboarding
+- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] â€” permission changes when promoted to new job family level
+- [[Userflow/Auth-Access/login-flow|Login Flow]] â€” JWT contains effective permissions
 
 ## Module References
 
-- [[frontend/cross-cutting/authorization|Authorization]] — RBAC engine, permission resolution, caching
-- [[security/rbac-frontend|Rbac Frontend]] — permission browser UI components
-- [[frontend/cross-cutting/authentication|Authentication]] — JWT claims with permission set
-- [[modules/auth/session-management/overview|Session Management]] — token refresh for permission propagation
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — job family to role mapping
-- [[modules/auth/audit-logging/overview|Audit Logging]] — permission change audit trail
+- [[frontend/cross-cutting/authorization|Authorization]] â€” RBAC engine, permission resolution, caching
+- [[security/rbac-frontend|Rbac Frontend]] â€” permission browser UI components
+- [[frontend/cross-cutting/authentication|Authentication]] â€” backend session metadata with permission set
+- [[modules/auth/session-management/overview|Session Management]] â€” token refresh for permission propagation
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] â€” job family to role mapping
+- [[modules/auth/audit-logging/overview|Audit Logging]] â€” permission change audit trail
+

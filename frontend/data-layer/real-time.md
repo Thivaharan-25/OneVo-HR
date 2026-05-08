@@ -1,8 +1,8 @@
-# Real-Time Architecture (SignalR)
+﻿# Real-Time Architecture (SignalR)
 
 ## Overview
 
-ONEVO uses **SignalR** (WebSocket with fallbacks) for real-time push from the .NET backend. The frontend treats pushes as **cache invalidation signals** — when a push arrives, TanStack Query refetches the relevant data. The API remains the single source of truth.
+ONEVO uses **SignalR** (WebSocket with fallbacks) for real-time push from the .NET backend. The frontend treats pushes as **cache invalidation signals** â€” when a push arrives, TanStack Query refetches the relevant data. The API remains the single source of truth.
 
 ## SignalR Client (`src/lib/signalr/client.ts`)
 
@@ -13,30 +13,30 @@ Builds and exports a shared `HubConnection` instance using `HubConnectionBuilder
 ## Connection Lifecycle
 
 ```
-App Mount → SignalRProvider initializes
-    │
-    ├── Build connection with auth token
-    ├── Start connection
-    │
-    ├── On connected → subscribe to tenant hub groups
-    │   ├── tenant:{tenantId}              (tenant-wide broadcasts)
-    │   ├── user:{userId}                  (personal notifications)
-    │   └── workforce:{tenantId}           (live workforce data — if feature enabled)
-    │
-    ├── On message → dispatch to registered handlers
-    │   ├── TanStack Query invalidation
-    │   ├── Toast notification
-    │   └── Zustand store update (notification count)
-    │
-    ├── On disconnected → auto-reconnect with exponential backoff
-    │   ├── Attempt 1: immediate
-    │   ├── Attempt 2: 2s
-    │   ├── Attempt 3: 5s
-    │   ├── Attempt 4: 10s
-    │   ├── Attempt 5+: 30s
-    │   └── Show "Reconnecting..." banner after 5s disconnected
-    │
-    └── On auth expired → stop connection, redirect to login
+App Mount â†’ SignalRProvider initializes
+    â”‚
+    â”œâ”€â”€ Build connection with cookie-backed session
+    â”œâ”€â”€ Start connection
+    â”‚
+    â”œâ”€â”€ On connected â†’ subscribe to tenant hub groups
+    â”‚   â”œâ”€â”€ tenant:{tenantId}              (tenant-wide broadcasts)
+    â”‚   â”œâ”€â”€ user:{userId}                  (personal notifications)
+    â”‚   â””â”€â”€ workforce:{tenantId}           (live workforce data â€” if feature enabled)
+    â”‚
+    â”œâ”€â”€ On message â†’ dispatch to registered handlers
+    â”‚   â”œâ”€â”€ TanStack Query invalidation
+    â”‚   â”œâ”€â”€ Toast notification
+    â”‚   â””â”€â”€ Zustand store update (notification count)
+    â”‚
+    â”œâ”€â”€ On disconnected â†’ auto-reconnect with exponential backoff
+    â”‚   â”œâ”€â”€ Attempt 1: immediate
+    â”‚   â”œâ”€â”€ Attempt 2: 2s
+    â”‚   â”œâ”€â”€ Attempt 3: 5s
+    â”‚   â”œâ”€â”€ Attempt 4: 10s
+    â”‚   â”œâ”€â”€ Attempt 5+: 30s
+    â”‚   â””â”€â”€ Show "Reconnecting..." banner after 5s disconnected
+    â”‚
+    â””â”€â”€ On auth expired â†’ stop connection, redirect to login
 ```
 
 ## SignalR Provider
@@ -52,9 +52,7 @@ export function SignalRProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     const connection = new HubConnectionBuilder()
-      .withUrl(`${import.meta.env.VITE_API_URL}/hubs/main`, {
-        accessTokenFactory: () => getAccessToken(),
-      })
+      .withUrl(`${import.meta.env.VITE_API_URL}/hubs/main`, {`r`n        withCredentials: true,`r`n      })
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (retryContext) => {
           const delays = [0, 2000, 5000, 10000, 30000];
@@ -102,7 +100,7 @@ export function SignalRProvider({ children }: { children: React.ReactNode }) {
 | Event | Payload | Action |
 |:------|:--------|:-------|
 | `NotificationReceived` | `{ notification }` | Add to notification store, bump count, toast |
-| `SessionExpired` | — | Redirect to login |
+| `SessionExpired` | â€” | Redirect to login |
 | `PermissionsChanged` | `{ permissions[] }` | Update auth store, may trigger UI re-render |
 
 ### Workforce Hub (`workforce:{tenantId}`)
@@ -117,7 +115,7 @@ export function SignalRProvider({ children }: { children: React.ReactNode }) {
 
 ```tsx
 function registerHandlers(connection: HubConnection, queryClient: QueryClient) {
-  // Pattern: event → invalidate relevant query keys
+  // Pattern: event â†’ invalidate relevant query keys
   connection.on('EmployeeCreated', () => {
     queryClient.invalidateQueries({ queryKey: ['employees'] });
   });
@@ -194,7 +192,8 @@ function ConnectionStatusBanner() {
 
 ## Related
 
-- [[frontend/data-layer/state-management|State Management]] — TanStack Query cache patterns
-- [[frontend/data-layer/api-integration|Api Integration]] — API client
-- [[frontend/data-layer/caching-strategy|Caching Strategy]] — cache invalidation rules
-- [[frontend/architecture/overview|Overview]] — real-time as overlay principle
+- [[frontend/data-layer/state-management|State Management]] â€” TanStack Query cache patterns
+- [[frontend/data-layer/api-integration|Api Integration]] â€” API client
+- [[frontend/data-layer/caching-strategy|Caching Strategy]] â€” cache invalidation rules
+- [[frontend/architecture/overview|Overview]] â€” real-time as overlay principle
+

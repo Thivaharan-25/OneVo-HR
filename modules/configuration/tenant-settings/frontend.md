@@ -40,7 +40,7 @@ Per-employee or bulk (department/team) overrides.
 │ ┌──────────┬──────────┬─────────┬──────────┬──────────┐ │
 │ │ Employee │ Activity │ App     │ Screenshot│ Reason   │ │
 │ │ John D.  │ ✅ ON    │ ✅ ON   │ ❌ OFF    │ IT staff │ │
-│ │ CEO      │ ❌ OFF   │ ❌ OFF  │ ❌ OFF    │ Exempt   │ │
+│ │ Exec A   │ ❌ OFF   │ ❌ OFF  │ ❌ OFF    │ Exempt   │ │
 │ │ WH team  │ ❌ OFF   │ ❌ OFF  │ ❌ OFF    │ Non-desk │ │
 │ └──────────┴──────────┴─────────┴──────────┴──────────┘ │
 │ [+ Add Override]                                         │
@@ -68,13 +68,13 @@ Per-employee or bulk (department/team) overrides.
 ```
 ┌──────────────────────────────────────────────────────────┐
 │ Critical Severity:                                       │
-│   Step 1: Reporting Manager → Immediate                  │
-│   Step 2: HR Admin → After 30 min                        │
-│   Step 3: CEO → After 60 min                             │
+│   Step 1: Employee's reporting manager → Immediate       │
+│   Step 2: Users with exceptions:manage → After 30 min    │
+│   Step 3: Configured escalation owner → After 60 min     │
 │                                                          │
 │ Warning Severity:                                        │
-│   Step 1: Reporting Manager → Immediate                  │
-│   Step 2: HR Admin → After 60 min                        │
+│   Step 1: Employee's reporting manager → Immediate       │
+│   Step 2: Configured escalation owner → After 60 min     │
 └──────────────────────────────────────────────────────────┘
 ```
 

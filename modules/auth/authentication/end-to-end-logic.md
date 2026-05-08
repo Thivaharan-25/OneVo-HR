@@ -26,14 +26,14 @@ POST /api/v1/auth/login
       -> 4. Check if MFA is enabled for user
          -> If yes -> Return Result.Success(new { RequiresMfa = true, MfaToken })
       -> 5. Load user roles and permissions via role_permissions + user_roles
-      -> 6. Generate access token (JWT RS256, 15 min expiry)
-         -> Claims: user_id, tenant_id, permissions[], email
-      -> 7. Generate refresh token (random, SHA-256 hashed, 7 day expiry)
-         -> INSERT into refresh_tokens
-      -> 8. Create session record in sessions table
+      -> 6. Create backend-held auth state or internal tenant token
+         -> Browser JavaScript never receives the tenant JWT
+      -> 7. Generate server-side session/refresh rotation state
+         -> INSERT into refresh_tokens or session rotation records
+      -> 8. Create session record in sessions table and set HttpOnly session cookie
       -> 9. UPDATE users SET last_login_at = now
       -> 10. Log to audit_logs: action = "user.login"
-      -> Return Result.Success(TokenPairDto { AccessToken, RefreshToken })
+      -> Return Result.Success(AuthSessionDto { User, Permissions, ActiveModules })
 ```
 
 ## Refresh Token
@@ -51,9 +51,9 @@ POST /api/v1/auth/refresh
          -> If revoked -> REVOKE ENTIRE CHAIN (token theft detection)
          -> Return failure("Token reuse detected")
       -> 4. Check expiry (7 days)
-      -> 5. Generate new access token + new refresh token
+      -> 5. Rotate backend-held auth state and session/refresh cookie
       -> 6. Mark old refresh token: replaced_by_id = new_token.id
-      -> Return Result.Success(new TokenPairDto)
+      -> Return Result.Success(AuthSessionDto)
 ```
 
 ### Error Scenarios

@@ -1,4 +1,4 @@
-# Expense Claims — Testing
+﻿# Expense Claims â€” Testing
 
 **Module:** Expense
 **Feature:** Expense Claims
@@ -65,5 +65,6 @@ public class ExpenseClaimServiceTests
 
 ## Related
 
-- [[modules/expense/expense-claims/overview|Expense Claims]] — feature overview
-- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions
+- [[modules/expense/expense-claims/overview|Expense Claims]] â€” feature overview
+- [[code-standards/testing-strategy|Testing Standards]] â€” project-wide testing conventions
+

@@ -1,4 +1,4 @@
-# Technology Stack: ONEVO
+﻿# Technology Stack: ONEVO
 
 ## 1. Programming Languages
 
@@ -18,14 +18,14 @@
 | Runtime | .NET | 9.0 | LTS, Clean Architecture + CQRS backend |
 | Web Framework | ASP.NET Core | 9.0 | Minimal APIs + Controllers |
 | ORM | Entity Framework Core | 9.0 | Code-first migrations, `xmin` optimistic concurrency |
-| Authentication | JWT (RS256) | - | Access tokens (15min) + Refresh tokens (7 days) |
+| Authentication | BFF cookie sessions + backend-held JWT | - | Browser uses HttpOnly session cookies; backend owns JWT/refresh state |
 | Authorization | Custom RBAC | - | `RequirePermission` attribute, 90+ permissions |
 | Background Jobs | Hangfire | 1.8.x | 5-queue priority system (Critical/High/Default/Low/Batch) |
 | CQRS / Mediator | MediatR | Latest | In-process command/query dispatch and domain events |
 | Real-time | SignalR | 9.0 | WebSocket connections, presence tracking, live dashboards |
 | API Documentation | Swagger/OpenAPI | 3.0 | Auto-generated, Kiota SDK generation |
 | Validation | FluentValidation | 11.x | Request validation |
-| Mapping | Mapster or AutoMapper | Latest | DTO ↔ Entity mapping |
+| Mapping | Mapster or AutoMapper | Latest | DTO â†” Entity mapping |
 | Logging | Serilog | 3.x | Structured logging with PII scrubbing |
 | HTTP Client | HttpClientFactory | Built-in | For external API calls with Polly resilience |
 | Resilience | Polly | 8.x | Circuit breakers, retries, timeouts |
@@ -84,15 +84,15 @@
 
 ## 4. WorkPulse Agent
 
-The WorkPulse Agent is the ONEVO activity monitoring package distributed as an **MSIX bundle** to employee devices. It covers every employee type — not just developers.
+The WorkPulse Agent is the ONEVO activity monitoring package distributed as an **MSIX bundle** to employee devices. It covers every employee type â€” not just developers.
 
 **Phase 1: Windows only. Phase 2: macOS.** See [[modules/agent-gateway/agent-overview|Agent Overview]] for the macOS Phase 2 architecture.
 
-### Phase 1 — Windows
+### Phase 1 â€” Windows
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
-| Background Service | .NET Windows Service | 9.0 | `Microsoft.Extensions.Hosting.WindowsServices` — always-on data collector |
+| Background Service | .NET Windows Service | 9.0 | `Microsoft.Extensions.Hosting.WindowsServices` â€” always-on data collector |
 | Tray App UI | .NET MAUI | 9.0 | System tray icon, photo capture, employee login, break toggle |
 | Language | C# | 13 | Same as backend |
 | Local Storage | SQLite | via `Microsoft.Data.Sqlite` | Offline buffer for activity data |
@@ -101,11 +101,11 @@ The WorkPulse Agent is the ONEVO activity monitoring package distributed as an *
 | Idle Detection | Win32 APIs | - | `GetLastInputInfo` |
 | Document Tracking | Process name matching | - | `WINWORD.EXE`, `EXCEL.EXE`, `POWERPNT.EXE`, Figma, Photoshop |
 | Communication Tracking | Process name + UIAutomation | - | Outlook, Slack, Teams active time + send event counts (count only) |
-| IPC | Named Pipes | `System.IO.Pipes` | Service ↔ MAUI tray app communication |
+| IPC | Named Pipes | `System.IO.Pipes` | Service â†” MAUI tray app communication |
 | Installer | MSIX bundle | Windows SDK | Silent MDM install (Intune/GPO), built-in auto-update, signed |
 | HTTP Client | HttpClient + Polly | Built-in | Retry + circuit breaker for Agent Gateway |
 
-### Phase 2 — macOS (Do NOT Build in Phase 1)
+### Phase 2 â€” macOS (Do NOT Build in Phase 1)
 
 | Category | Technology | Notes |
 |:---------|:-----------|:------|
@@ -142,52 +142,52 @@ The WorkPulse Agent is the ONEVO activity monitoring package distributed as an *
 
 ```
 ONEVO.Agent/
-├── ONEVO.Agent.Service/           # Windows Service (background collector)
-│   ├── Collectors/
-│   │   ├── ActivityCollector.cs    # Keyboard/mouse event counting
-│   │   ├── AppTracker.cs          # Foreground app detection
-│   │   ├── IdleDetector.cs        # Idle period detection
-│   │   ├── MeetingDetector.cs     # Meeting app process detection
-│   │   ├── DeviceTracker.cs       # Device active/idle cycle tracking
-│   │   ├── DocumentTracker.cs     # Word/Excel/PPT/Figma/Photoshop time tracking
-│   │   └── CommunicationTracker.cs # Outlook/Slack/Teams active time + send counts
-│   ├── Buffer/
-│   │   ├── SqliteBuffer.cs        # Local SQLite storage
-│   │   └── BufferCleanup.cs       # Purge sent data
-│   ├── Sync/
-│   │   ├── DataSyncService.cs     # Batch & send to Agent Gateway
-│   │   ├── HeartbeatService.cs    # 60-second heartbeat
-│   │   └── PolicySyncService.cs   # Fetch monitoring policy
-│   ├── Security/
-│   │   ├── DeviceTokenStore.cs    # Secure Device JWT storage (DPAPI)
-│   │   └── TamperDetector.cs      # Detect service manipulation
-│   ├── IPC/
-│   │   └── NamedPipeServer.cs     # Listen for MAUI app commands
-│   └── Program.cs
-│
-├── ONEVO.Agent.TrayApp/           # MAUI tray app
-│   ├── Views/
-│   │   ├── LoginWindow.xaml
-│   │   ├── StatusPopup.xaml
-│   │   └── PhotoCaptureWindow.xaml
-│   ├── Services/
-│   │   ├── NamedPipeClient.cs
-│   │   ├── CameraService.cs
-│   │   └── TrayIconService.cs
-│   └── App.xaml.cs
-│
-├── ONEVO.Agent.Shared/            # Shared types between Service and TrayApp
-│   ├── Models/
-│   │   ├── ActivitySnapshot.cs
-│   │   ├── AppUsageRecord.cs
-│   │   ├── DeviceSession.cs
-│   │   └── AgentPolicy.cs
-│   ├── IPC/
-│   │   └── IpcMessages.cs
-│   └── Constants.cs
-│
-└── ONEVO.Agent.Installer/         # MSIX packaging
-    └── Package.appxmanifest
+â”œâ”€â”€ ONEVO.Agent.Service/           # Windows Service (background collector)
+â”‚   â”œâ”€â”€ Collectors/
+â”‚   â”‚   â”œâ”€â”€ ActivityCollector.cs    # Keyboard/mouse event counting
+â”‚   â”‚   â”œâ”€â”€ AppTracker.cs          # Foreground app detection
+â”‚   â”‚   â”œâ”€â”€ IdleDetector.cs        # Idle period detection
+â”‚   â”‚   â”œâ”€â”€ MeetingDetector.cs     # Meeting app process detection
+â”‚   â”‚   â”œâ”€â”€ DeviceTracker.cs       # Device active/idle cycle tracking
+â”‚   â”‚   â”œâ”€â”€ DocumentTracker.cs     # Word/Excel/PPT/Figma/Photoshop time tracking
+â”‚   â”‚   â””â”€â”€ CommunicationTracker.cs # Outlook/Slack/Teams active time + send counts
+â”‚   â”œâ”€â”€ Buffer/
+â”‚   â”‚   â”œâ”€â”€ SqliteBuffer.cs        # Local SQLite storage
+â”‚   â”‚   â””â”€â”€ BufferCleanup.cs       # Purge sent data
+â”‚   â”œâ”€â”€ Sync/
+â”‚   â”‚   â”œâ”€â”€ DataSyncService.cs     # Batch & send to Agent Gateway
+â”‚   â”‚   â”œâ”€â”€ HeartbeatService.cs    # 60-second heartbeat
+â”‚   â”‚   â””â”€â”€ PolicySyncService.cs   # Fetch monitoring policy
+â”‚   â”œâ”€â”€ Security/
+â”‚   â”‚   â”œâ”€â”€ DeviceTokenStore.cs    # Secure Device JWT storage (DPAPI)
+â”‚   â”‚   â””â”€â”€ TamperDetector.cs      # Detect service manipulation
+â”‚   â”œâ”€â”€ IPC/
+â”‚   â”‚   â””â”€â”€ NamedPipeServer.cs     # Listen for MAUI app commands
+â”‚   â””â”€â”€ Program.cs
+â”‚
+â”œâ”€â”€ ONEVO.Agent.TrayApp/           # MAUI tray app
+â”‚   â”œâ”€â”€ Views/
+â”‚   â”‚   â”œâ”€â”€ LoginWindow.xaml
+â”‚   â”‚   â”œâ”€â”€ StatusPopup.xaml
+â”‚   â”‚   â””â”€â”€ PhotoCaptureWindow.xaml
+â”‚   â”œâ”€â”€ Services/
+â”‚   â”‚   â”œâ”€â”€ NamedPipeClient.cs
+â”‚   â”‚   â”œâ”€â”€ CameraService.cs
+â”‚   â”‚   â””â”€â”€ TrayIconService.cs
+â”‚   â””â”€â”€ App.xaml.cs
+â”‚
+â”œâ”€â”€ ONEVO.Agent.Shared/            # Shared types between Service and TrayApp
+â”‚   â”œâ”€â”€ Models/
+â”‚   â”‚   â”œâ”€â”€ ActivitySnapshot.cs
+â”‚   â”‚   â”œâ”€â”€ AppUsageRecord.cs
+â”‚   â”‚   â”œâ”€â”€ DeviceSession.cs
+â”‚   â”‚   â””â”€â”€ AgentPolicy.cs
+â”‚   â”œâ”€â”€ IPC/
+â”‚   â”‚   â””â”€â”€ IpcMessages.cs
+â”‚   â””â”€â”€ Constants.cs
+â”‚
+â””â”€â”€ ONEVO.Agent.Installer/         # MSIX packaging
+    â””â”€â”€ Package.appxmanifest
 ```
 
 See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API contract.
@@ -215,7 +215,7 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 | Backend Hosting | Railway | .NET 9 deployment |
 | Frontend Hosting | Static hosting / CDN | Vite build output |
 | CDN/Edge | Cloudflare | WAF, DDoS, geo-routing, rate limiting |
-| Containerization | Docker | Development + deployment — all services in docker-compose.yml |
+| Containerization | Docker | Development + deployment â€” all services in docker-compose.yml |
 | Message Broker | None in Phase 1 | In-process MediatR domain events replace RabbitMQ/MassTransit |
 | CI/CD | GitHub Actions | Build, test, deploy pipeline |
 | Observability | OpenTelemetry + Prometheus + Grafana | Distributed tracing, metrics, dashboards |
@@ -247,15 +247,15 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | Pattern | Where Used |
 |:--------|:-----------|
 | CQRS | Write/read separation through MediatR commands and queries |
-| Event Sourcing | Audit trails (`audit_logs` with JSON diffs) — see [[backend/messaging/event-catalog\|Event Catalog]] |
+| Event Sourcing | Audit trails (`audit_logs` with JSON diffs) â€” see [[backend/messaging/event-catalog\|Event Catalog]] |
 | Domain Events | In-process MediatR notifications for side effects |
-| Repository Pattern | Data access via `BaseRepository<T>` — see [[backend/shared-kernel\|Shared Kernel]] |
+| Repository Pattern | Data access via `BaseRepository<T>` â€” see [[backend/shared-kernel\|Shared Kernel]] |
 | Unit of Work | EF Core `DbContext` per request |
 | Mediator (MediatR) | Command/query handling and domain events in the Application layer |
 | Specification Pattern | Complex query composition |
-| Result Pattern | `Result<T, Error>` for explicit error handling — see [[backend/shared-kernel\|Shared Kernel]] |
-| Time-Series Buffer | Raw activity data → buffer table (partitioned, purged 48h) → aggregated summaries |
-| Tiered Real-Time | Agent→server (2-3 min), exception engine (5 min), dashboard (30s polling / SignalR push) |
+| Result Pattern | `Result<T, Error>` for explicit error handling â€” see [[backend/shared-kernel\|Shared Kernel]] |
+| Time-Series Buffer | Raw activity data â†’ buffer table (partitioned, purged 48h) â†’ aggregated summaries |
+| Tiered Real-Time | Agentâ†’server (2-3 min), exception engine (5 min), dashboard (30s polling / SignalR push) |
 
 ---
 
@@ -270,7 +270,7 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
 | Teams Graph API (deep) | Basic meeting detection via process name sufficient for Phase 1 |
 | Teams chat/group sync | Requires tenant Graph consent, user account linking, webhook/delta sync, and communication-data compliance review. Phase 2. |
-| macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` — a parallel implementation. Phase 2. |
+| macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` â€” a parallel implementation. Phase 2. |
 | Browser Extension | Optional browser domain tracking via Chrome/Edge/Firefox extension. Phase 2. |
 
 ## Related
@@ -283,3 +283,4 @@ See [[backend/external-integrations|External Integrations]] for full integration
 - [[backend/shared-kernel|Shared Kernel]]
 - [[modules/agent-gateway/overview|Agent Gateway]]
 - [[backend/external-integrations|External Integrations]]
+

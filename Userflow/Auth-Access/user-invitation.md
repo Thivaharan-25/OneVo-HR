@@ -1,4 +1,4 @@
-# User Invitation
+﻿# User Invitation
 
 **Area:** Auth & Access
 **Trigger:** Admin clicks Invite User (user action)
@@ -19,7 +19,7 @@
 ### Step 1: Navigate to User Management
 - **UI:** Administration > Users. List view shows all users with columns: Name, Email, Role, Status (Active/Invited/Disabled), Last Login. "Invite User" button in top-right
 - **API:** `GET /api/v1/users?page=1&pageSize=20`
-- **Backend:** `UserService.GetUsersAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
+- **Backend:** `UserService.GetUsersAsync()` â†’ [[frontend/cross-cutting/authentication|Authentication]]
 - **Validation:** Permission check for `users:manage`
 - **DB:** `users`, `user_roles`, `roles`
 
@@ -28,9 +28,9 @@
   - Email Address (required)
   - First Name (required)
   - Last Name (required)
-  - Role (dropdown, required) — lists all tenant roles
-  - Department (dropdown, optional) — if employee profile should be created
-  - Job Family Level (dropdown, optional) — triggers auto-role assignment from [[Userflow/Org-Structure/job-family-setup|Job Family]]
+  - Role (dropdown, required) â€” lists all tenant roles
+  - Department (dropdown, optional) â€” if employee profile should be created
+  - Job Family Level (dropdown, optional) â€” triggers auto-role assignment from [[Userflow/Org-Structure/job-family-setup|Job Family]]
   - Send welcome email (checkbox, default: checked)
 - **API:** N/A (client-side form)
 - **Backend:** N/A
@@ -50,8 +50,8 @@
     "jobFamilyLevelId": "uuid"
   }
   ```
-- **Backend:** `UserInvitationService.InviteAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
-  1. Check if email already exists in tenant → reject if so
+- **Backend:** `UserInvitationService.InviteAsync()` â†’ [[frontend/cross-cutting/authentication|Authentication]]
+  1. Check if email already exists in tenant â†’ reject if so
   2. Create user record with status `invited` and a secure invitation token (SHA-256 hashed, stored in DB)
   3. If department/job family provided: create employee profile stub
   4. If job family level provided: auto-assign the role linked to that job family level (overrides manually selected role)
@@ -64,7 +64,7 @@
 ### Step 4: User Receives Invitation Email
 - **UI:** Email contains: company name and logo (from [[frontend/design-system/theming/tenant-branding|Tenant Branding]]), inviter's name, role being assigned, "Accept Invitation" button/link, expiry notice (72 hours)
 - **API:** N/A (email delivery via [[backend/notification-system|Notification System]])
-- **Backend:** `NotificationService.SendEmailAsync()` — uses tenant-branded email template
+- **Backend:** `NotificationService.SendEmailAsync()` â€” uses tenant-branded email template
 - **Validation:** Email delivery tracked. If bounce detected, admin notified
 - **DB:** `notification_logs`
 
@@ -78,22 +78,22 @@
     "phone": "+94771234567"
   }
   ```
-- **Backend:** `UserInvitationService.AcceptInvitationAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
+- **Backend:** `UserInvitationService.AcceptInvitationAsync()` â†’ [[frontend/cross-cutting/authentication|Authentication]]
   1. Validate invitation token (not expired, not already used)
   2. Hash password with BCrypt (work factor 12)
   3. Update user status from `invited` to `active`
   4. Mark invitation token as used
-  5. Issue JWT access token + refresh token
+  5. Create HttpOnly cookie-backed web session; do not return tenant JWT to browser JavaScript
   6. Create initial session record
   7. Redirect to dashboard
 - **Validation:** Token must be valid and not expired. Password must meet complexity requirements
-- **DB:** `users` (status → `active`, password_hash set), `invitation_tokens` (used_at set), `sessions`, `refresh_tokens`
+- **DB:** `users` (status â†’ `active`, password_hash set), `invitation_tokens` (used_at set), `sessions`, `refresh_tokens`
 
 ### Step 6: Account Active
 - **UI:** User lands on the dashboard. First-time onboarding tour shown (profile completion prompts). If GDPR consent required: [[Userflow/Auth-Access/gdpr-consent|consent dialog]] appears before dashboard access
 - **API:** `GET /api/v1/dashboard`
 - **Backend:** Dashboard loads based on user's role permissions. Only widgets for permitted features are shown
-- **Validation:** Session and JWT valid
+- **Validation:** Cookie-backed session valid
 - **DB:** `sessions` (last_activity_at updated)
 
 ## Variations
@@ -105,17 +105,17 @@
 - Summary report: successful sends, failed (with reasons)
 
 ### When invitation expires
-- User clicks expired link → "This invitation has expired. Please contact your administrator for a new invitation"
-- Admin can resend invitation from the Users list: click user row → "Resend Invitation"
+- User clicks expired link â†’ "This invitation has expired. Please contact your administrator for a new invitation"
+- Admin can resend invitation from the Users list: click user row â†’ "Resend Invitation"
 - New token generated, previous one invalidated
 
 ### When SSO is enabled for the tenant
 - Invitation email still sent, but "Accept Invitation" links to SSO login instead of password creation
-- User authenticates via SSO provider → account auto-activated
+- User authenticates via SSO provider â†’ account auto-activated
 - No password is set (SSO-only authentication)
 
 ### When user already exists in another tenant
-- Each tenant is isolated — same email can exist in multiple tenants
+- Each tenant is isolated â€” same email can exist in multiple tenants
 - User gets a separate account per tenant with independent credentials
 
 ## Error Scenarios
@@ -130,23 +130,24 @@
 
 ## Events Triggered
 
-- `UserInvitedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging and notification module
-- `UserActivatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by onboarding workflow
-- `AuditLogEntry` (action: `user.invited`) → [[modules/auth/audit-logging/overview|Audit Logging]]
-- `AuditLogEntry` (action: `user.activated`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `UserInvitedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by audit logging and notification module
+- `UserActivatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by onboarding workflow
+- `AuditLogEntry` (action: `user.invited`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
+- `AuditLogEntry` (action: `user.activated`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[Userflow/Auth-Access/role-creation|Role Creation]] — create roles before inviting users
-- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — configure role permissions
-- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — full onboarding flow after user accepts invitation
-- [[Userflow/Auth-Access/login-flow|Login Flow]] — user's first login after accepting invitation
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] — consent collection on first login
+- [[Userflow/Auth-Access/role-creation|Role Creation]] â€” create roles before inviting users
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] â€” configure role permissions
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] â€” full onboarding flow after user accepts invitation
+- [[Userflow/Auth-Access/login-flow|Login Flow]] â€” user's first login after accepting invitation
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] â€” consent collection on first login
 
 ## Module References
 
-- [[frontend/cross-cutting/authentication|Authentication]] — user creation, password hashing, token issuance
-- [[frontend/cross-cutting/authorization|Authorization]] — role assignment during invitation
-- [[backend/notification-system|Notification System]] — invitation email delivery
-- [[modules/core-hr/employee-profiles/overview|Employee Profiles]] — employee profile stub creation
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — auto-role assignment from job family level
+- [[frontend/cross-cutting/authentication|Authentication]] â€” user creation, password hashing, token issuance
+- [[frontend/cross-cutting/authorization|Authorization]] â€” role assignment during invitation
+- [[backend/notification-system|Notification System]] â€” invitation email delivery
+- [[modules/core-hr/employee-profiles/overview|Employee Profiles]] â€” employee profile stub creation
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] â€” auto-role assignment from job family level
+

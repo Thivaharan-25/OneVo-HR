@@ -1,61 +1,61 @@
 # Frontend Authentication Flow
 
-## Login Flow
+## Customer Web Login Flow
 
-```
+```text
 User                    Frontend App              Backend API
   |                        |                          |
   |-- Enter credentials -->|                          |
-  |                        |-- POST /auth/login ------>|
-  |                        |                          |-- Verify (Argon2id)
-  |                        |<-- 200: { accessToken } --|
-  |                        |   + Set-Cookie: refresh   |
-  |                        |                          |
-  |                        |-- Store accessToken       |
-  |                        |   in memory (NOT storage) |
-  |                        |                          |
+  |                        |-- POST /auth/login ----->|
+  |                        |   credentials: include   |-- Verify password
+  |                        |                          |-- Run MFA policy
+  |                        |<-- 200/202 --------------|
+  |                        |   Set-Cookie:            |
+  |                        |   onevo_session          |
+  |                        |   Body: session metadata |
   |<-- Redirect to --------|                          |
   |   /overview            |                          |
 ```
 
-## Token Storage
+The customer browser frontend never receives the tenant user JWT. This is a BFF-style session model: backend token/session logic stays on the server, and the browser sends only HttpOnly cookies automatically.
 
-| Token | Where | Why |
-|:------|:------|:----|
-| Access token (JWT) | In-memory variable (AuthProvider state) | Short-lived (15 min), XSS can't exfiltrate from JS memory |
-| Refresh token | HttpOnly Secure SameSite=Strict cookie | Not accessible to JS at all |
+## Session Storage
 
-**NEVER** store the access token in localStorage, sessionStorage, or cookies accessible to JS.
+| Item | Where | Why |
+|:-----|:------|:----|
+| Web session cookie | HttpOnly Secure SameSite cookie | Not accessible to JavaScript |
+| CSRF token | Readable CSRF cookie plus `X-CSRF-Token` header | Protects cookie-authenticated mutations |
+| User and permissions | Frontend memory state | UI metadata only, not an auth credential |
 
-## Token Refresh
+Never store tenant JWTs in `localStorage`, `sessionStorage`, browser-readable cookies, or frontend memory for customer web auth.
 
-```
-1. API call returns 401 (access token expired)
-2. ApiClient interceptor catches 401
-3. POST /auth/refresh (refresh token cookie sent automatically)
-4. Backend validates refresh token, rotates it
-5. New access token returned in body, new refresh cookie set
-6. Retry original request with new access token
-7. If refresh fails (403) → redirect to /login
+## Session Refresh
+
+```text
+1. Frontend calls POST /auth/refresh with credentials: include
+2. Browser sends HttpOnly session cookie automatically
+3. Backend validates and rotates server-side session/token state
+4. Backend returns safe session metadata: user, permissions, active modules
+5. Backend sets or rotates the HttpOnly session cookie
+6. If refresh fails, frontend clears UI state and redirects to /login
 ```
 
 ### Concurrent Request Handling
 
-When multiple requests fail with 401 simultaneously:
-- First failure triggers the refresh
-- Other failures queue and wait for refresh to complete
-- All retry with the new access token
-- Implemented via a shared promise in the ApiClient
+When multiple requests detect an expired session simultaneously:
+
+- First failure triggers refresh.
+- Other failures queue and wait for refresh to complete.
+- If refresh succeeds, requests retry with the same cookie-based session.
+- If refresh fails, all pending requests fail with `AuthError` and the user returns to login.
 
 ```typescript
-// Pattern in api-client.ts
-let refreshPromise: Promise<string> | null = null;
+let refreshPromise: Promise<SessionDto | null> | null = null;
 
-async function refreshAccessToken(): Promise<string> {
+async function refreshSessionOnce(): Promise<SessionDto | null> {
   if (!refreshPromise) {
-    refreshPromise = api.post('/auth/refresh').then(res => {
+    refreshPromise = api.post('/auth/refresh').finally(() => {
       refreshPromise = null;
-      return res.data.accessToken;
     });
   }
   return refreshPromise;
@@ -64,89 +64,68 @@ async function refreshAccessToken(): Promise<string> {
 
 ## MFA Flow
 
-```
+```text
 User                    Frontend                  Backend
   |-- Login ------------>|-- POST /auth/login ---->|
-  |                      |<-- 202: { mfaRequired,  |
-  |                      |    sessionId, methods } -|
+  |                      |<-- 202: { mfa_required }|
   |<-- Show MFA page ----|                          |
-  |-- Enter code ------->|-- POST /auth/mfa/verify >|
-  |                      |<-- 200: { accessToken } -|
+  |-- Enter TOTP code -->|-- POST /auth/mfa/verify>|
+  |                      |<-- 200 + Set-Cookie ----|
   |<-- Redirect ---------|                          |
 ```
+
+Primary MFA uses authenticator-app TOTP. Email OTP is fallback/recovery only when tenant policy allows it.
 
 ## AuthProvider
 
 ```tsx
-// Context provides:
 interface AuthContext {
-  user: User | null;            // Decoded from JWT
+  user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean;           // True during initial token check
-  permissions: string[];        // Flat array from JWT
+  isLoading: boolean;
+  permissions: string[];
+  activeModules: string[];
   hasPermission: (p: string) => boolean;
   hasAnyPermission: (...p: string[]) => boolean;
   login: (credentials: LoginInput) => Promise<void>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 ```
 
 ### Initial Load
 
-On app start (root layout mount):
-1. Try `POST /auth/refresh` (cookie may still be valid)
-2. If success → set access token, decode user, authenticated
-3. If failure → user is not logged in, redirect to `/login` for protected routes
+On app start:
+
+1. Try `GET /auth/session` or `POST /auth/refresh` with `credentials: "include"`.
+2. If success, store user, permissions, and active modules in memory.
+3. If failure, user is not logged in; protected routes redirect to `/login`.
 
 ## Route Protection
 
 ```tsx
-// In (dashboard)/layout.tsx
 export default function DashboardLayout({ children }) {
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   if (isLoading) return <FullPageSpinner />;
   if (!isAuthenticated) redirect('/login');
-  
+
   return <DashboardShell>{children}</DashboardShell>;
-}
-```
-
-### Permission-Based Route Protection
-
-```tsx
-// In a specific page
-export default function MonitoringSettingsPage() {
-  return (
-    <PermissionGate 
-      permission="monitoring:configure" 
-      fallback={<PermissionGate permission="monitoring:view-settings" fallback={<Forbidden />}>
-        <MonitoringSettings readOnly />
-      </PermissionGate>}
-    >
-      <MonitoringSettings />
-    </PermissionGate>
-  );
 }
 ```
 
 ## Logout
 
-```
-1. POST /auth/logout (revokes refresh token server-side)
-2. Clear access token from memory
-3. Clear any Zustand stores
-4. Clear TanStack Query cache
-5. Redirect to /login
+```text
+1. POST /auth/logout with credentials: include
+2. Backend revokes session and clears HttpOnly cookie
+3. Frontend clears Zustand stores and TanStack Query cache
+4. Frontend redirects to /login
 ```
 
-## Session Timeout
+## Non-Browser Clients
 
-- Frontend tracks last user interaction time
-- After 30 minutes idle → show "Session expiring" modal (60s countdown)
-- If no interaction → logout automatically
-- Any API call extends the session server-side
+This flow is only for the customer web frontend. IDE extension auth, desktop agent device auth, platform-admin server internals, and service integrations may still use JWT Bearer tokens where their own contracts require them.
 
 ## Related
 

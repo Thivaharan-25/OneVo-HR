@@ -1,7 +1,7 @@
-# Module: Agent Gateway
+﻿# Module: Agent Gateway
 
 **Feature Folder:** `Application/Features/AgentGateway`
-**Phase:** 1 — Build
+**Phase:** 1 â€” Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4 (Week 1)
 **Tables:** 4
@@ -16,8 +16,8 @@ High-throughput ingestion API and **bidirectional command channel** for the desk
 Agent Gateway uses **device-level JWT authentication**, separate from user JWT. See [[security/auth-architecture|Auth Architecture]] for details.
 
 **Bidirectional communication:**
-- **Agent → Server:** REST API (register, login, heartbeat, ingest, logout)
-- **Server → Agent:** SignalR hub (`/hubs/agent-commands`) for real-time command push (remote capture, monitoring lifecycle, policy refresh)
+- **Agent â†’ Server:** REST API (register, login, heartbeat, ingest, logout)
+- **Server â†’ Agent:** SignalR hub (`/hubs/agent-commands`) for real-time command push (remote capture, monitoring lifecycle, policy refresh)
 
 ---
 
@@ -28,9 +28,9 @@ Agent Gateway uses **device-level JWT authentication**, separate from user JWT. 
 | **Depends on** | [[modules/auth/overview\|Auth]] | `ITokenService` | Issue device JWT at registration |
 | **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Build monitoring policy for agent |
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Link employee to device at login |
-| **Consumed by** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | — (writes to raw buffer) | Raw activity data |
-| **Consumed by** | [[modules/workforce-presence/overview\|Workforce Presence]] | — (writes device sessions) | Device session data |
-| **Consumed by** | [[modules/identity-verification/overview\|Identity Verification]] | — (routes verification photos) | Photo verification requests |
+| **Consumed by** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | â€” (writes to raw buffer) | Raw activity data |
+| **Consumed by** | [[modules/workforce-presence/overview\|Workforce Presence]] | â€” (writes device sessions) | Device session data |
+| **Consumed by** | [[modules/identity-verification/overview\|Identity Verification]] | â€” (routes verification photos) | Photo verification requests |
 | **Listens to** | [[modules/workforce-presence/overview\|Workforce Presence]] | `PresenceSessionStarted/Ended`, `BreakStarted/Ended` | Controls agent monitoring lifecycle |
 | **Listens to** | [[modules/exception-engine/overview\|Exception Engine]] | `RemoteCaptureRequested` | Dispatches capture command to agent |
 
@@ -90,8 +90,8 @@ Desktop agents registered to employees.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees (nullable — set at employee login) |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `employee_id` | `uuid` | FK â†’ employees (nullable â€” set at employee login) |
 | `device_id` | `uuid` | Unique device identifier (generated at install) |
 | `device_name` | `varchar(100)` | Computer hostname |
 | `os_version` | `varchar(50)` | e.g., "Windows 11 23H2" |
@@ -106,13 +106,13 @@ Desktop agents registered to employees.
 
 ### `agent_policies`
 
-Policy pushed to each agent — defines what features are enabled for the linked employee.
+Policy pushed to each agent â€” defines what features are enabled for the linked employee.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `agent_id` | `uuid` | FK → registered_agents |
-| `tenant_id` | `uuid` | FK → tenants |
+| `agent_id` | `uuid` | FK â†’ registered_agents |
+| `tenant_id` | `uuid` | FK â†’ tenants |
 | `policy_json` | `jsonb` | See policy schema below |
 | `last_synced_at` | `timestamptz` | When agent last fetched this policy |
 | `created_at` | `timestamptz` | |
@@ -156,7 +156,7 @@ Policy pushed to each agent — defines what features are enabled for the linked
   }
 }
 
-// Note: screenshot_capture = false by default. No screenshot_interval — screenshots are
+// Note: screenshot_capture = false by default. No screenshot_interval â€” screenshots are
 // ONLY triggered via remote command (manual/on_demand). Never scheduled or automated.
 ```
 
@@ -169,8 +169,8 @@ Agent uptime, errors, tamper detection.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `agent_id` | `uuid` | FK → registered_agents |
-| `tenant_id` | `uuid` | FK → tenants |
+| `agent_id` | `uuid` | FK â†’ registered_agents |
+| `tenant_id` | `uuid` | FK â†’ tenants |
 | `reported_at` | `timestamptz` | |
 | `cpu_usage` | `decimal(5,2)` | Agent process CPU% |
 | `memory_mb` | `int` | Agent process memory |
@@ -208,10 +208,10 @@ Pending and completed commands sent from server to agent.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `agent_id` | `uuid` | FK → registered_agents |
-| `tenant_id` | `uuid` | FK → tenants |
+| `agent_id` | `uuid` | FK â†’ registered_agents |
+| `tenant_id` | `uuid` | FK â†’ tenants |
 | `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `capture_remote_workplace`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
-| `requested_by` | `uuid` | FK → users (manager/CEO who initiated) |
+| `requested_by` | `uuid` | FK â†’ users (manager/CEO who initiated) |
 | `payload_json` | `jsonb` | Command-specific parameters |
 | `status` | `varchar(20)` | `pending`, `delivered`, `completed`, `failed`, `expired` |
 | `created_at` | `timestamptz` | When command was created |
@@ -222,19 +222,19 @@ Pending and completed commands sent from server to agent.
 
 **Indexes:** `(agent_id, status)`, `(tenant_id, command_type, created_at)`
 
-**Expiry:** Hangfire job cleans up `pending` commands older than `expires_at`. If agent was offline when command was sent, it's expired — manager must re-request.
+**Expiry:** Hangfire job cleans up `pending` commands older than `expires_at`. If agent was offline when command was sent, it's expired â€” manager must re-request.
 
 ---
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module â€” MediatR)
 
 > These events are published and consumed within this module only. They never leave the module.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | â€” | â€” |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module â€” MediatR INotification)
 
 ### Publishes
 
@@ -259,7 +259,7 @@ Pending and completed commands sent from server to agent.
    - Batch INSERT via `COPY` or `unnest()` for raw buffer
    - Return **202 Accepted** immediately, process asynchronously
    - Rate limit per device (not per user)
-2. **Device JWT ≠ User JWT.** Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. See [[security/auth-architecture|Auth Architecture]].
+2. **Device JWT â‰  User JWT.** Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. See [[security/auth-architecture|Auth Architecture]].
 3. **Login-based enrollment:** Device enrollment starts from the TrayApp sign-in flow. The backend resolves `tenant_id` and `employee_id` from authenticated user login, creates/updates `registered_agents`, creates the active `agent_sessions` row, and returns an internal device credential. Employees never enter tenant keys or API keys.
 4. **Policy merge pattern:**
    ```csharp
@@ -294,29 +294,29 @@ Pending and completed commands sent from server to agent.
 | POST | `/api/v1/agent/commands/{id}/ack` | Device JWT | Acknowledge command receipt |
 | POST | `/api/v1/agent/commands/{id}/complete` | Device JWT | Report command completion with result |
 
-### Manager-Facing (User JWT auth, requires `agent:command` permission)
+### Manager-Facing (customer web session auth, requires `agent:command` permission)
 
 | Method | Route | Auth | Description |
 |:-------|:------|:-----|:------------|
-| POST | `/api/v1/agents/{agentId}/capture-screenshot` | User JWT | Request remote screenshot from agent |
-| POST | `/api/v1/agents/{agentId}/capture-photo` | User JWT | Request remote photo verification from agent |
+| POST | `/api/v1/agents/{agentId}/capture-screenshot` | Cookie-backed web session | Request remote screenshot from agent |
+| POST | `/api/v1/agents/{agentId}/capture-photo` | Cookie-backed web session | Request remote photo verification from agent |
 
-### SignalR Hub — `/hubs/agent-commands`
+### SignalR Hub â€” `/hubs/agent-commands`
 
 **Connection:** Agent connects after employee login using Device JWT. Maintains persistent connection for real-time command push.
 
-**Server → Agent methods:**
+**Server â†’ Agent methods:**
 
 | Method | Payload | Purpose |
 |:-------|:--------|:--------|
 | `ExecuteCommand` | `{ commandId, type, payload }` | Push any command to agent |
-| `StartMonitoring` | `{ sessionId }` | Employee clocked in — begin data collection |
-| `StopMonitoring` | `{ reason }` | Employee clocked out — stop data collection |
-| `PauseMonitoring` | `{ reason }` | Break started — pause data collection (NO data captured) |
-| `ResumeMonitoring` | `{ sessionId }` | Break ended — resume data collection |
-| `RefreshPolicy` | `{ }` | Policy changed — agent should re-fetch |
+| `StartMonitoring` | `{ sessionId }` | Employee clocked in â€” begin data collection |
+| `StopMonitoring` | `{ reason }` | Employee clocked out â€” stop data collection |
+| `PauseMonitoring` | `{ reason }` | Break started â€” pause data collection (NO data captured) |
+| `ResumeMonitoring` | `{ sessionId }` | Break ended â€” resume data collection |
+| `RefreshPolicy` | `{ }` | Policy changed â€” agent should re-fetch |
 
-**Agent → Server methods:**
+**Agent â†’ Server methods:**
 
 | Method | Payload | Purpose |
 |:-------|:--------|:--------|
@@ -324,7 +324,7 @@ Pending and completed commands sent from server to agent.
 | `CommandCompleted` | `{ commandId, resultJson }` | Agent completed the command (e.g., screenshot URL) |
 | `CommandFailed` | `{ commandId, error }` | Agent failed to execute command |
 
-**Fallback:** If SignalR connection drops, agent polls `GET /api/v1/agent/commands` during each heartbeat cycle. Commands are idempotent — delivering twice is safe.
+**Fallback:** If SignalR connection drops, agent polls `GET /api/v1/agent/commands` during each heartbeat cycle. Commands are idempotent â€” delivering twice is safe.
 
 ### Ingestion Payload Schema
 
@@ -398,43 +398,43 @@ Pending and completed commands sent from server to agent.
 
 - **This is the ONLY ingestion endpoint for agent data.** All agent data flows through `/api/v1/agent/ingest`.
 - **Rate limiting:** Per device, not per user. Default: 30 requests/minute/device.
-- **Data routing:** The ingestion handler routes different `type` values to different modules: `activity_snapshot` → `activity_raw_buffer`, `device_session` → `device_sessions`, `verification_photo` → [[modules/identity-verification/overview|Identity Verification]].
+- **Data routing:** The ingestion handler routes different `type` values to different modules: `activity_snapshot` â†’ `activity_raw_buffer`, `device_session` â†’ `device_sessions`, `verification_photo` â†’ [[modules/identity-verification/overview|Identity Verification]].
 - **Agent does NOT have HR permissions.** It cannot read employee profiles, leave data, or any HR information.
 
 ## Features (Server-Side)
 
-- [[modules/agent-gateway/agent-registration/overview|Agent Registration]] — Device registration and employee linking
-- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]] — Heartbeat tracking and offline agent detection
-- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]] — Monitoring policy computation and push to agents (includes app allowlist)
-- [[modules/agent-gateway/data-ingestion/overview|Data Ingestion]] — High-throughput batch activity data ingestion (202 Accepted)
-- [[modules/agent-gateway/remote-commands/overview|Remote Commands]] — Bidirectional SignalR command channel for server→agent push (capture requests, monitoring lifecycle, policy refresh)
-- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] — Listens to workforce-presence events, sends start/stop/pause/resume commands to agent
+- [[modules/agent-gateway/agent-registration/overview|Agent Registration]] â€” Device registration and employee linking
+- [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]] â€” Heartbeat tracking and offline agent detection
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]] â€” Monitoring policy computation and push to agents (includes app allowlist)
+- [[modules/agent-gateway/data-ingestion/overview|Data Ingestion]] â€” High-throughput batch activity data ingestion (202 Accepted)
+- [[modules/agent-gateway/remote-commands/overview|Remote Commands]] â€” Bidirectional SignalR command channel for serverâ†’agent push (capture requests, monitoring lifecycle, policy refresh)
+- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] â€” Listens to workforce-presence events, sends start/stop/pause/resume commands to agent
 
 ## WorkPulse Agent Docs
 
-- [[modules/agent-gateway/agent-overview|Agent Overview]] — Start here: architecture, data flow, macOS Phase 2 plan
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Full API contract (6 endpoints, payloads, error handling)
-- [[modules/agent-gateway/data-collection|Data Collection]] — 7 collectors with Win32 P/Invoke code samples
-- [[modules/agent-gateway/browser-extension|Browser Extension]] — Optional Chrome/Edge/Firefox extension for domain tracking (Phase 2)
-- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — Named Pipes protocol between Service and TrayApp
-- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] — Local SQLite buffer schema, offline resilience
-- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Detection strategy, service recovery, reporting
-- [[modules/identity-verification/photo-capture|Photo Capture]] — Camera capture flow for identity verification
-- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — MAUI tray app UI states, windows, notifications
-- [[modules/agent-gateway/agent-installer|Agent Installer]] — MSIX packaging (Windows Phase 1), macOS .pkg (Phase 2)
-- [[modules/agent-gateway/mock-mode|Mock Mode]] — Development without backend (MockGatewayClient)
+- [[modules/agent-gateway/agent-overview|Agent Overview]] â€” Start here: architecture, data flow, macOS Phase 2 plan
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] â€” Full API contract (6 endpoints, payloads, error handling)
+- [[modules/agent-gateway/data-collection|Data Collection]] â€” 7 collectors with Win32 P/Invoke code samples
+- [[modules/agent-gateway/browser-extension|Browser Extension]] â€” Optional Chrome/Edge/Firefox extension for domain tracking (Phase 2)
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] â€” Named Pipes protocol between Service and TrayApp
+- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] â€” Local SQLite buffer schema, offline resilience
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] â€” Detection strategy, service recovery, reporting
+- [[modules/identity-verification/photo-capture|Photo Capture]] â€” Camera capture flow for identity verification
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] â€” MAUI tray app UI states, windows, notifications
+- [[modules/agent-gateway/agent-installer|Agent Installer]] â€” MSIX packaging (Windows Phase 1), macOS .pkg (Phase 2)
+- [[modules/agent-gateway/mock-mode|Mock Mode]] â€” Development without backend (MockGatewayClient)
 
 ---
 
 ## Related
 
-- [[security/auth-architecture|Auth Architecture]] — Device JWT (separate from user JWT), `type: "agent"` claim
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — All agents scoped to tenant via `tenant_id`
-- [[backend/messaging/event-catalog|Event Catalog]] — `AgentRegistered`, `AgentHeartbeatLost`, `AgentRevoked`
-- [[backend/messaging/error-handling|Error Handling]] — Rate limiting per device, async ingestion with minimal validation
-- [[security/data-classification|Data Classification]] — RESTRICTED data (screenshots, photos)
-- [[security/compliance|Compliance]] — GDPR monitoring consent, privacy modes
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task file (Agent Gateway section)
+- [[security/auth-architecture|Auth Architecture]] â€” Device JWT (separate from user JWT), `type: "agent"` claim
+- [[infrastructure/multi-tenancy|Multi Tenancy]] â€” All agents scoped to tenant via `tenant_id`
+- [[backend/messaging/event-catalog|Event Catalog]] â€” `AgentRegistered`, `AgentHeartbeatLost`, `AgentRevoked`
+- [[backend/messaging/error-handling|Error Handling]] â€” Rate limiting per device, async ingestion with minimal validation
+- [[security/data-classification|Data Classification]] â€” RESTRICTED data (screenshots, photos)
+- [[security/compliance|Compliance]] â€” GDPR monitoring consent, privacy modes
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] â€” Implementation task file (Agent Gateway section)
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/identity-verification/overview|Identity Verification]], [[modules/auth/overview|Auth]], [[AI_CONTEXT/tech-stack|Tech Stack]]
 
@@ -453,3 +453,4 @@ Phase 1 requires mandatory employee notification before any screenshot or photo 
 
 ### Agent Auto-Update Push
 Phase 1 auto-update is agent-initiated (agent checks for updates on startup/heartbeat). Phase 2 will add server-pushed update commands, forcing agents to update within a specified window. This is needed for critical security patches.
+

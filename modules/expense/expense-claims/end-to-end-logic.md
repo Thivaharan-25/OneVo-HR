@@ -1,4 +1,4 @@
-# Expense Claims — End-to-End Logic
+﻿# Expense Claims â€” End-to-End Logic
 
 **Module:** Expense
 **Feature:** Expense Claims
@@ -17,7 +17,7 @@ Expense claims follow a lifecycle: **draft -> submitted -> approved/rejected -> 
 
 ```
 POST /api/v1/expenses/claims
-Authorization: Bearer {token}  (requires expense:create)
+Cookie-backed web session (requires expense:create)
 ```
 
 1. **Controller** receives `CreateExpenseClaimRequest { Title, CurrencyCode, Items[] }`.
@@ -39,7 +39,7 @@ Authorization: Bearer {token}  (requires expense:create)
 
 ```
 PUT /api/v1/expenses/claims/{id}
-Authorization: Bearer {token}  (requires expense:create)
+Cookie-backed web session (requires expense:create)
 ```
 
 1. Claim must exist, belong to current user, and be in `draft` status.
@@ -51,7 +51,7 @@ Authorization: Bearer {token}  (requires expense:create)
 
 ```
 POST /api/v1/expenses/claims/{id}/submit
-Authorization: Bearer {token}  (requires expense:create)
+Cookie-backed web session (requires expense:create)
 ```
 
 1. Claim must be in `draft` status.
@@ -68,7 +68,7 @@ Authorization: Bearer {token}  (requires expense:create)
 ```
 PUT /api/v1/expenses/claims/{id}/approve
 PUT /api/v1/expenses/claims/{id}/reject
-Authorization: Bearer {token}  (requires expense:approve)
+Cookie-backed web session (requires expense:approve)
 ```
 
 1. Claim must be in `submitted` status.
@@ -86,7 +86,7 @@ Authorization: Bearer {token}  (requires expense:approve)
 
 ```
 PUT /api/v1/expenses/claims/{id}/pay
-Authorization: Bearer {token}  (requires expense:admin)
+Cookie-backed web session (requires expense:admin)
 ```
 
 1. Claim must be in `approved` status.
@@ -97,7 +97,7 @@ Authorization: Bearer {token}  (requires expense:admin)
 
 ```
 GET /api/v1/expenses/claims/me?status=submitted
-Authorization: Bearer {token}  (requires expense:read)
+Cookie-backed web session (requires expense:read)
 ```
 
 1. Returns claims for `employee_id` of current user.
@@ -165,13 +165,14 @@ sequenceDiagram
 1. **Re-submission after rejection**: Status goes `rejected -> draft` (reset), employee edits and re-submits.
 2. **Multi-currency**: `currency_code` is stored per claim. Reporting may need FX conversion, but the claim itself stores the original currency.
 3. **Receipt upload race condition**: Receipt file must exist in `file_records` before claim submission. Orphaned files are cleaned up by a background job.
-4. **Approver on leave**: Workflow engine supports delegation — if primary approver is on leave, claim routes to delegate.
+4. **Approver on leave**: Workflow engine supports delegation â€” if primary approver is on leave, claim routes to delegate.
 5. **Zero-amount claims**: Rejected at validation. At least one item with amount > 0 is required.
 6. **Category deactivated after draft created**: Submit validates all categories are still active at submission time.
 
 ## Related
 
-- [[modules/expense/expense-claims/overview|Expense Claims]] — feature overview
-- [[modules/expense/expense-categories/overview|Expense Categories]] — categories referenced by expense items
-- [[backend/messaging/event-catalog|Event Catalog]] — events produced on claim submission and approval
-- [[backend/messaging/error-handling|Error Handling]] — workflow state transition error patterns
+- [[modules/expense/expense-claims/overview|Expense Claims]] â€” feature overview
+- [[modules/expense/expense-categories/overview|Expense Categories]] â€” categories referenced by expense items
+- [[backend/messaging/event-catalog|Event Catalog]] â€” events produced on claim submission and approval
+- [[backend/messaging/error-handling|Error Handling]] â€” workflow state transition error patterns
+
