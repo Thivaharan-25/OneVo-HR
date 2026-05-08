@@ -2,14 +2,81 @@
 
 **Track:** Backend
 **Primary ownership:** platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API
-**Current Unfinished Task:** Task 2A - Repository Boundary Repair, then Task 2 - Tenant Auth + RBAC gaps
+**Current Unfinished Task:** Task 0 - Backend CQRS Folder Structure Cleanup, then Task 2A - Repository Boundary Repair, then Task 2 - Tenant Auth + RBAC gaps
 **Blocked By:** none
 
 ---
 
 ## ADE Instructions
 
-When Dev 1 asks to continue, start with the first unchecked item in **Current Unfinished Task**. Read references only as needed, implement, test, and update this file.
+When Dev 1 asks to continue, start with **Task 0** before any other backend work. Read references only as needed, implement, test, and update this file.
+
+---
+
+## Task 0: Backend CQRS Folder Structure Cleanup
+
+**Goal:** update the actual backend codebase to match the cleaned KB architecture before Dev 1 continues Auth/RBAC, tenant, or platform foundation work.
+
+**This is Dev 1's first task. Do not start Task 2A, Task 2, or any later Dev 1 task until this cleanup is complete or explicitly blocked.**
+
+**Requires:** none
+
+### Required Rule
+
+The backend must follow this default Application feature shape:
+
+```text
+ONEVO.Application/Features/{Feature}/
+|-- Commands/
+|   `-- {UseCase}/
+|       |-- {UseCase}Command.cs
+|       |-- {UseCase}Handler.cs
+|       `-- {UseCase}Validator.cs
+|-- Queries/
+|   `-- {UseCase}/
+|       |-- {UseCase}Query.cs
+|       `-- {UseCase}Handler.cs
+|-- DTOs/
+|   |-- Requests/
+|   `-- Responses/
+`-- Interfaces/
+```
+
+Events are optional only:
+
+```text
+ONEVO.Domain/Features/{Feature}/Events/
+ONEVO.Application/Features/{Feature}/EventHandlers/
+```
+
+Do not create `Events/`, `EventHandlers/`, or feature-level `Validators/` folders as default scaffolding.
+
+### Acceptance Criteria
+
+- [ ] Audit `C:\Onevo\Onevo_Backend` for feature-level `Validators/`, default `Events/`, and default `EventHandlers/` folders.
+- [ ] Move every command validator beside the command it validates: `Commands/{UseCase}/{UseCase}Validator.cs`.
+- [ ] Update namespaces/usings after validator moves.
+- [ ] Remove empty feature-level `Validators/` folders after validators are moved.
+- [ ] Remove empty/default `Events/` and `EventHandlers/` folders that do not contain justified domain events or handlers.
+- [ ] Keep real event folders only when there is a documented post-save side effect.
+- [ ] Update or add architecture tests that reject feature-level `Validators/` as the default pattern and keep handlers free of EF Core/DbContext dependencies.
+- [ ] Verify FluentValidation assembly scanning still finds colocated validators.
+- [ ] Update this DEV1 file with the cleanup result before continuing to Task 2A.
+
+### References
+
+- [[backend/folder-structure|Folder Structure]] (backend/folder-structure.md)
+- [[backend/cqrs-patterns|CQRS Patterns]] (backend/cqrs-patterns.md)
+- [[backend/module-boundaries|Module Boundaries]] (backend/module-boundaries.md)
+- [[backend/domain-events|Domain Events]] (backend/domain-events.md)
+- [[code-standards/backend-standards|Backend Standards]] (code-standards/backend-standards.md)
+
+### Verification
+
+```bash
+dotnet build ONEVO.sln
+dotnet test ONEVO.sln --filter "LayerDependency|Architecture|Auth"
+```
 
 ---
 
@@ -201,8 +268,15 @@ dotnet test ONEVO.sln --filter Auth
 - [ ] Permission catalog endpoint returns only permissions for enabled tenant modules plus universal permissions.
 - [ ] Provisioning can attach role templates to the tenant and materialize them into tenant-scoped roles.
 - [ ] Tenant owner invite creates a user without requiring an operator-entered final password and sends a set-password link.
+- [ ] Tenant owner invite supports complete-invite-with-password using the invited email and BCrypt password hashing.
+- [ ] Tenant owner invite supports complete-invite-with-Google when allowed by tenant/invitation policy, including audited handling for different Google email vs invited email.
+- [ ] Add Auth backend entities, EF configurations, DbSets, migration, repositories, and tests for `invitation_tokens`: token hash, invited email, expiry, used/accepted timestamp, revoked timestamp, revoked-by actor, completion method, allowed completion methods, Google email mismatch policy, and allowed domains.
+- [ ] Add Auth backend entities, EF configurations, DbSets, migration, repositories, and tests for `user_external_identities`: provider, provider subject, provider email, verification state, linked timestamp, and last-used timestamp without overloading the user email field.
+- [ ] Add Auth backend entities, EF configurations, DbSets, migration, repositories, and tests for `tenant_auth_policies`: password completion allowed, Google completion allowed, Google email mismatch default, allowed login domains, and MFA requirement.
+- [ ] Add SharedPlatform/Provisioning backend entities, EF configurations, DbSets, migration, module interfaces, and tests for `tenant_provisioning_states` and `tenant_provisioning_validation_results`: current step, per-section completion timestamps, validation blockers/warnings, activation readiness, activation timestamp, and last operator update.
+- [ ] Add SharedPlatform catalog backend entities, EF configurations, DbSets, migration, module interfaces, and tests for `subscription_plan_price_history` and `module_catalog_price_history`: old/new price, currency, pricing unit, changed-by actor, reason, timestamp, and rule that catalog price changes do not silently rewrite existing tenant contracts.
 - [ ] Activation is blocked until required provisioning steps are complete: tenant details, subscription/commercial terms, module selection/pricing, role template application, first owner invite, and required initial settings.
-- [ ] Tests cover draft provisioning, module assignment, permission catalog filtering, role-template materialization, owner invite, and activation guard.
+- [ ] Tests cover draft provisioning, module assignment, permission catalog filtering, role-template materialization, owner invite, accept-with-password, accept-with-Google, Google email mismatch rejection/allowed path, and activation guard.
 
 ### References
 
@@ -429,7 +503,9 @@ dotnet test ONEVO.sln --filter AdminApi
 - [ ] `GET /admin/v1/tenants` returns all tenants, including `provisioning` and `suspended` statuses, with search/filter support.
 - [ ] Tenant list includes company name, slug, plan tier, status, employee count, created date, agent count, and last login summary.
 - [ ] `GET /admin/v1/subscription-plans` returns reusable plan catalog records; operators do not create a plan per tenant.
+- [ ] `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plan base prices, included modules, active state, and pricing unit with audit reason.
 - [ ] `GET /admin/v1/modules/catalog` returns reusable module catalog records with pillar, phase, sellable state, default pricing, and pricing unit.
+- [ ] `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module default prices, full-license price, maintenance rate, active state, and pricing unit with audit reason.
 - [ ] `GET /admin/v1/tenants/validate` validates tenant slug, company name, email domain, registration number, and country rules with conflicts and warnings.
 - [ ] `POST /admin/v1/tenants` creates a draft tenant in `provisioning` status from account setup data.
 - [ ] `PATCH /admin/v1/tenants/{id}` edits draft tenant details before activation without bypassing activation guards.

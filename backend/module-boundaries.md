@@ -1,221 +1,159 @@
 # Layer Boundary Rules: ONEVO
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-08
 
-These rules keep the ONEVO Clean Architecture maintainable. **Non-negotiable.**
-
-AI agents: these rules override convenience. Never generate code that violates layer dependencies.
-
----
+These rules keep the ONEVO Clean Architecture maintainable. AI agents must follow these rules over convenience.
 
 ## The Dependency Rule
 
-Dependencies point inward only. Outer layers know about inner layers — never the reverse.
+Dependencies point inward only. Outer layers know about inner layers; inner layers never know about outer layers.
 
+```text
+ONEVO.Api
+    -> ONEVO.Application <- ONEVO.Infrastructure
+           -> ONEVO.Domain
 ```
-ONEVO.Api  (outermost)
-        ↓
-ONEVO.Application  ←  ONEVO.Infrastructure
-        ↓
-ONEVO.Domain  (innermost — zero external dependencies)
-```
-
-### What each layer may reference
 
 | Layer | May reference |
-|-------|--------------|
+|---|---|
 | `ONEVO.Domain` | Nothing |
 | `ONEVO.Application` | `ONEVO.Domain` only |
 | `ONEVO.Infrastructure` | `ONEVO.Application` + `ONEVO.Domain` |
-| `ONEVO.Api` | `ONEVO.Application` + `ONEVO.Infrastructure` (DI wiring only) |
+| `ONEVO.Api` | `ONEVO.Application` + `ONEVO.Infrastructure` for DI |
 
----
-
-## Rule 1: Application defines interfaces — Infrastructure implements them
+## Rule 1: Application Defines Interfaces, Infrastructure Implements Them
 
 ```csharp
-// CORRECT: interface in Application
-// ONEVO.Application/Common/Interfaces/IEmailService.cs
+// Correct: interface in Application
 public interface IEmailService
 {
     Task SendAsync(string to, string subject, string body, CancellationToken ct);
 }
 
-// CORRECT: implementation in Infrastructure
-// ONEVO.Infrastructure/Email/SmtpEmailService.cs
-public class SmtpEmailService : IEmailService { ... }
-
-// FORBIDDEN: implementation reference in Application handler
-using ONEVO.Infrastructure.Email; // ← never
+// Correct: implementation in Infrastructure
+public class SmtpEmailService : IEmailService
+{
+    // ...
+}
 ```
 
----
+Application handlers must not reference Infrastructure implementations directly.
 
-## Rule 2: Domain has zero framework dependencies
+## Rule 2: Domain Has Zero Framework Dependencies
 
-Domain entities have no EF Core attributes. No `[Key]`, no `[Column]`, no `[Required]`.
-All mapping is done via `IEntityTypeConfiguration<T>` in Infrastructure.
+Domain entities have no EF Core attributes and no framework dependencies. All mapping is done through `IEntityTypeConfiguration<T>` in Infrastructure.
 
 ```csharp
-// CORRECT
+// Correct
 public class LeaveRequest : BaseEntity
 {
     public Guid EmployeeId { get; private set; }
-    public DateTime StartDate { get; private set; }
-    // ...
-    public void Approve()
+    public DateOnly StartDate { get; private set; }
+
+    public void Approve(Guid approverId)
     {
         Status = ApprovalStatus.Approved;
-        AddDomainEvent(new LeaveApprovedEvent(Id, EmployeeId));
+        ApprovedById = approverId;
     }
 }
-
-// FORBIDDEN
-[Table("leave_requests")]      // ← EF attribute in Domain
-public class LeaveRequest { }
 ```
 
----
+```csharp
+// Forbidden
+[Table("leave_requests")]
+public class LeaveRequest
+{
+}
+```
 
-## Rule 3: Handlers return Result<T> — never throw for business failures
+## Rule 3: Handlers Return Result<T>
+
+Handlers return `Result<T>` for business failures. Exceptions are for infrastructure failures and truly unexpected states.
 
 ```csharp
-// CORRECT
-public async Task<Result<LeaveRequestDto>> Handle(CreateLeaveRequestCommand cmd, CancellationToken ct)
+public async Task<Result<LeaveRequestDto>> Handle(CreateLeaveRequestCommand command, CancellationToken ct)
 {
+    var employee = await _employees.GetByIdAsync(command.EmployeeId, ct);
+
     if (employee is null)
         return Result<LeaveRequestDto>.Failure("Employee not found");
-    // ...
+
     return Result<LeaveRequestDto>.Success(dto);
 }
-
-// FORBIDDEN
-if (employee is null)
-    throw new Exception("Employee not found"); // ← only for infrastructure failures
 ```
 
----
+## Rule 4: Persistence Access Goes Through Repositories
 
-## Rule 4: Persistence access goes through repositories
-
-Features do not have isolated DbContexts, but handlers still do not query EF Core directly. Command handlers, query handlers, event handlers, application services, domain services, permission resolvers, tenant provisioning services, and module services use repository/reader interfaces defined in Application and implemented in Infrastructure.
-
-Simple aggregate access can use `IRepository<T>`. More complex reads use feature-owned reader interfaces. Cross-feature reads compose multiple reader interfaces rather than reaching into another feature's DbSet. Platform/admin flows that need cross-tenant access must use explicitly named platform/admin repository or service methods.
+Handlers, services, optional event handlers, permission resolvers, tenant provisioning services, and module orchestration classes do not query EF Core directly.
 
 ```csharp
-// CORRECT: Leave handler reading employee data through an Application-owned reader
-public class CreateLeaveRequestHandler : IRequestHandler<...>
+// Correct
+public class CreateLeaveRequestHandler : IRequestHandler<CreateLeaveRequestCommand, Result<LeaveRequestDto>>
 {
     private readonly IEmployeeReader _employees;
-
-    public async Task<Result<LeaveRequestDto>> Handle(CreateLeaveRequestCommand cmd, CancellationToken ct)
-    {
-        var employee = await _employees.GetByIdAsync(cmd.EmployeeId, ct);
-        // ...
-    }
+    private readonly ILeaveRequestRepository _leaveRequests;
 }
-
-// FORBIDDEN: EF access in handler, even through the abstraction
-private readonly IApplicationDbContext _db;
-
-// FORBIDDEN: direct DbContext in handler
-private readonly ApplicationDbContext _db; // ← concrete, not interface
 ```
-
-Repository implementations live in `ONEVO.Infrastructure/Persistence/Repositories/{Feature}/` and are the normal place for EF Core, `IgnoreQueryFilters()`, raw SQL, tenant predicates, projections, and locking. See [[backend/repository-persistence-boundary|Repository Persistence Boundary]].
-
----
-
-## Rule 5: Cross-feature side effects use domain events
-
-When feature A does something that feature B should react to, feature A raises a domain event. Feature B handles it with `INotificationHandler<T>`.
 
 ```csharp
-// Feature A (Leave) — entity raises event
-public void Approve()
-{
-    Status = ApprovalStatus.Approved;
-    AddDomainEvent(new LeaveApprovedEvent(Id, EmployeeId)); // ← raises event
-}
+// Forbidden
+private readonly ApplicationDbContext _db;
 
-// Feature B (WorkforcePresence) — reacts in EventHandlers/
-public class MarkShiftAbsentOnLeaveApprovedHandler
-    : INotificationHandler<LeaveApprovedEvent>
-{
-    public async Task Handle(LeaveApprovedEvent notification, CancellationToken ct)
-    {
-        // mark shift absent
-    }
-}
+// Forbidden
+private readonly IApplicationDbContext _db;
 ```
 
-Events are dispatched **after** `SaveChangesAsync` succeeds via `DomainEventDispatchInterceptor`. If the DB write fails, no events fire.
+Repository implementations live in `ONEVO.Infrastructure/Persistence/Repositories/{Feature}/` and are the normal place for EF Core, `IgnoreQueryFilters()`, raw SQL, tenant predicates, projections, and locking.
 
-**What is gone:** `IEventBus`, `IntegrationEvent`, MassTransit, RabbitMQ, Outbox tables.
+## Rule 5: Events Are Optional, Not Default
 
----
+Clean Architecture and CQRS do not require events or event handlers.
 
-## Rule 6: CancellationToken everywhere
+Use direct command-handler logic, repositories, readers, and Application services for normal use-case work. Use domain events only when a saved business action needs decoupled post-save side effects.
+
+Good event candidates:
+
+- A completed employee termination should trigger multiple independent cleanup reactions.
+- A persisted anomaly should trigger notification enrichment.
+- A successful identity verification should trigger onboarding progress.
+
+Poor event candidates:
+
+- Basic CRUD operations.
+- Logic that belongs to the current command transaction.
+- Side effects added only because every feature template has `Events/`.
+
+If a domain event is justified:
+
+```text
+ONEVO.Domain/Features/{Feature}/Events/{EventName}.cs
+ONEVO.Application/Features/{Feature}/EventHandlers/{EventName}Handler.cs
+```
+
+Events are dispatched only after `SaveChangesAsync` succeeds. If the database write fails, no event handlers run.
+
+RabbitMQ, MassTransit, `IEventBus`, `IntegrationEvent`, and Outbox tables are not part of Phase 1.
+
+## Rule 6: CancellationToken Everywhere
 
 Every handler, repository call, and external HTTP call receives `CancellationToken ct`.
 
 ```csharp
-// CORRECT
-public async Task<Result<T>> Handle(TCommand cmd, CancellationToken ct)
-{
-    var entity = await _repository.GetByIdAsync(cmd.Id, ct);
-    await _uow.SaveChangesAsync(ct);
-}
-
-// FORBIDDEN
-await _repository.GetByIdAsync(cmd.Id, CancellationToken.None); // ← do not drop request ct
+await _repository.GetByIdAsync(command.Id, ct);
+await _uow.SaveChangesAsync(ct);
 ```
 
----
+Do not use `CancellationToken.None` inside request-scoped code.
 
-## Rule 7: DevPlatform entities have no TenantId
+## Rule 7: DevPlatform Entities Have No TenantId
 
-`ApplicationDbContext` applies global tenant filters to all `BaseEntity` instances. `DevPlatformAccount`, `DevPlatformSession`, `AgentVersionRelease`, `AgentDeploymentRing`, `AgentDeploymentRingAssignment` are platform-level entities with no `TenantId` — they use a separate base class and are excluded from tenant filters.
-
----
+`ApplicationDbContext` applies global tenant filters to tenant-owned entities. Platform-level DevPlatform entities use a separate base class and are excluded from tenant filters.
 
 ## ArchUnitNET Enforcement
 
-```csharp
-[Fact]
-public void Domain_Should_Not_Reference_Any_Other_Layer()
-{
-    Types().That().ResideInNamespace("ONEVO.Domain")
-        .Should().NotDependOnAnyTypesThat()
-        .ResideInNamespace("ONEVO.Application")
-        .OrResideInNamespace("ONEVO.Infrastructure")
-        .Check(Architecture);
-}
+Architecture tests enforce at least:
 
-[Fact]
-public void Application_Should_Not_Reference_Infrastructure()
-{
-    Types().That().ResideInNamespace("ONEVO.Application")
-        .Should().NotDependOnAnyTypesThat()
-        .ResideInNamespace("ONEVO.Infrastructure")
-        .Check(Architecture);
-}
-
-[Fact]
-public void Handlers_Should_Not_Use_Concrete_DbContext()
-{
-    Types().That().HaveNameEndingWith("Handler")
-        .Should().NotDependOnAnyTypesThat()
-        .HaveExactlyName("ApplicationDbContext")
-        .Check(Architecture);
-}
-
-[Fact]
-public void Handlers_Should_Not_Depend_On_IApplicationDbContext()
-{
-    Types().That().HaveNameEndingWith("Handler")
-        .Should().NotDependOnAnyTypesThat()
-        .HaveExactlyName("IApplicationDbContext")
-        .Check(Architecture);
-}
-```
+- Domain must not reference Application, Infrastructure, or Api.
+- Application must not reference Infrastructure.
+- Handlers must not depend on `ApplicationDbContext`.
+- Handlers must not depend on `IApplicationDbContext`.

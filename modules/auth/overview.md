@@ -298,7 +298,7 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 ## Key Business Rules
 
 1. **Customer web BFF sessions** â€” HttpOnly session cookies with backend-held tenant auth state/JWT and `perm_ver` for real-time permission staleness checks.
-2. **Password hashing** - BCrypt with work factor 12. Do not use Argon2id or SHA-256 for user passwords.
+2. **Password hashing** - BCrypt with work factor 12. Do not use any other algorithm for user passwords.
 3. **Hybrid permission control** â€” effective permissions = universal auto-grants + role permissions + individual overrides; filtered by module entitlements/feature grants; scoped by org hierarchy.
 4. **Permission version counter** â€” Redis key `perm_version:{user_id}` (integer, 24h TTL). Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 â†’ frontend silently refreshes. Fails open if Redis unavailable.
 5. **Hierarchy scoping** â€” users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Super Admin bypasses hierarchy.

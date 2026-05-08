@@ -17,7 +17,11 @@ Manages tenant lifecycle: creation, status, subscription, module assignment, pro
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/admin/v1/subscription-plans` | List reusable subscription/commercial plans for provisioning |
+| `POST` | `/admin/v1/subscription-plans` | Create a reusable subscription/commercial plan with base prices |
+| `PATCH` | `/admin/v1/subscription-plans/{id}` | Update reusable plan metadata, included modules, active state, and base prices |
 | `GET` | `/admin/v1/modules/catalog` | List reusable module catalog, sellable state, and default pricing |
+| `POST` | `/admin/v1/modules/catalog` | Create a reusable module catalog item with default prices |
+| `PATCH` | `/admin/v1/modules/catalog/{moduleKey}` | Update reusable module metadata, sellable state, and default prices |
 | `GET` | `/admin/v1/tenants/validate` | Validate tenant slug, company, domain, and registration fields |
 | `GET` | `/admin/v1/tenants` | List all tenants |
 | `POST` | `/admin/v1/tenants` | Create tenant (manual provisioning — step 1) |
@@ -40,6 +44,8 @@ Manages tenant lifecycle: creation, status, subscription, module assignment, pro
 | `GET` | `/admin/v1/tenants/{id}/provisioning-summary` | Return review data, missing steps, warnings, and activation blockers |
 
 Commercial terms track the tenant's commercial model (`subscription` or `full_license_maintenance`), billing cycle/currency, contract dates, Stripe/manual billing state, maintenance status/renewal date, discount, and any custom contract value. Plans are reusable catalog records; operators do not create a new plan per tenant unless product intentionally creates a reusable custom plan. Module entitlements are resolved from the active subscription/commercial plan, plan allowed modules, tenant module grants, and tenant feature grants; RBAC permissions are filtered after entitlement resolution.
+
+Reusable plan and module default prices are managed through the plan/module catalog endpoints above. Tenant-specific negotiated pricing is managed through `/admin/v1/tenants/{id}/subscription` and `/admin/v1/tenants/{id}/modules`. Updating a catalog base price must not silently rewrite existing tenant commercial records.
 
 Module sales states are commercial states. `available` and `quoted` do not grant tenant-facing access. `purchased`, `trial`, `subscription_included`, and `maintenance_included` can grant access while the entitlement is valid.
 

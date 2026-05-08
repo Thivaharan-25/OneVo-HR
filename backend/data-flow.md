@@ -1,24 +1,20 @@
 # Data Flow: ONEVO Platform
 
-**Last Updated:** 2026-05-06
+**Last Updated:** 2026-05-08
 
 This file describes the canonical backend request flow for reads, writes, and cross-feature work.
-
----
 
 ## Persistence Boundary
 
 Handlers do not query EF Core or `ApplicationDbContext` directly. Persistence access always goes through repository/service interfaces owned by the Application layer and implemented in Infrastructure.
 
-For reads, query handlers call reader/repository interfaces that return DTOs or read models. For writes, command handlers call repositories to load aggregates, invoke domain methods, and commit through `IUnitOfWork`. Cross-feature reads compose multiple reader interfaces; cross-feature write side effects use domain events.
+For reads, query handlers call reader/repository interfaces that return DTOs or read models. For writes, command handlers call repositories to load aggregates, invoke domain methods, and commit through `IUnitOfWork`.
 
-`ApplicationDbContext` is reserved for Infrastructure persistence implementations, repositories, unit of work, migrations, and reviewed low-level persistence utilities. Application does not expose an `IApplicationDbContext`/`DbSet<T>` abstraction.
+Cross-feature reads compose multiple reader interfaces. Cross-feature writes should stay explicit in the command handler or an Application service when they are part of the same use case. Domain events are optional and reserved for decoupled post-save side effects.
 
----
+`ApplicationDbContext` is reserved for Infrastructure persistence implementations, repositories, unit of work, migrations, and reviewed low-level persistence utilities. Application does not expose an `IApplicationDbContext` or `DbSet<T>` abstraction.
 
 ## Flow 1: Query / Read
-
-User opens a page or a list loads.
 
 ```text
 Browser
@@ -37,11 +33,7 @@ Browser
 
 The reader implementation lives in Infrastructure and applies tenant isolation, soft-delete filtering, cancellation, and projection rules. The handler never returns a Domain entity to the controller.
 
----
-
 ## Flow 2: Command / Write
-
-User clicks "Approve Leave Request".
 
 ```text
 Browser
@@ -50,20 +42,20 @@ Browser
   -> TenantResolutionMiddleware
   -> PermissionMiddleware checks [RequirePermission("leave:approve")]
   -> LeaveController maps body/route to ApproveLeaveRequestCommand
-  -> MediatR pipeline
+  -> ValidationBehavior validates ApproveLeaveRequestValidator
   -> ApproveLeaveRequestHandler
        injects: ILeaveRequestRepository, IUnitOfWork
        loads aggregate: _leaveRequests.GetByIdAsync(id, ct)
-       calls domain method: request.Approve()
+       calls domain method: request.Approve(approverId)
        commits: _uow.SaveChangesAsync(ct)
-  -> EF interceptors run in Infrastructure
-  -> Domain events dispatch after save succeeds
   -> Controller returns updated response DTO
 ```
 
-If `SaveChangesAsync` fails, domain events are not dispatched and side effects do not run.
+Short form:
 
----
+```text
+Controller -> Command/Query -> Validator -> Handler -> Repository/Domain -> UnitOfWork -> Response
+```
 
 ## Flow 3: Cross-Feature Read
 
@@ -83,13 +75,11 @@ GetEmployeeLeaveSummaryQueryHandler
   combines those results into EmployeeLeaveSummaryDto
 ```
 
-The handler composes public reader interfaces from the owning features. It does not query another feature's DbSet directly.
+The handler composes reader interfaces from the owning features. It does not query another feature's `DbSet` directly.
 
----
+## Flow 4: Optional Post-Save Event
 
-## Flow 4: Cross-Feature Write Side Effect
-
-If a write in Feature A needs Feature B to react:
+If a saved write in Feature A needs Feature B to react independently:
 
 ```text
 Feature A entity raises domain event
@@ -100,9 +90,7 @@ Feature A entity raises domain event
   -> Feature B commits through IUnitOfWork when it changes state
 ```
 
-This keeps Feature A from directly calling Feature B's internals.
-
----
+Use this only when decoupling is valuable. Do not create events for routine CRUD or logic that belongs in the original command handler.
 
 ## Summary Table
 
@@ -111,9 +99,7 @@ This keeps Feature A from directly calling Feature B's internals.
 | Read | GET endpoint | Repository/reader interface returns DTO/read model | DTO to JSON |
 | Write | POST/PUT/DELETE endpoint | Repository loads aggregate, domain method changes state, unit of work commits | Response DTO to JSON |
 | Cross-feature read | GET endpoint | Handler composes feature-owned reader interfaces | Combined DTO |
-| Cross-feature write side effect | Domain event after save | Event handler uses its feature's repositories/services | No direct HTTP response |
-
----
+| Optional post-save side effect | Domain event after save | Event handler uses its feature's repositories/services | No direct HTTP response |
 
 ## Related
 

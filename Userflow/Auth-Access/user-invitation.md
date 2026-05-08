@@ -68,28 +68,58 @@
 - **Validation:** Email delivery tracked. If bounce detected, admin notified
 - **DB:** `notification_logs`
 
-### Step 5: User Accepts Invitation
-- **UI:** Clicking the link opens the registration page: pre-filled email (read-only), set password (with strength meter: min 12 chars, uppercase, lowercase, number, special char), confirm password, optional: phone number. "Create Account" button
-- **API:** `POST /api/v1/auth/accept-invitation`
+### Step 5: User Opens Invitation
+- **UI:** Clicking the link opens the accept-invite page. The page shows tenant name, invited email, name, role, expiry, and available acceptance methods.
+- **API:** `GET /api/v1/auth/invitations/{token}`
+- **Backend:** `UserInvitationService.GetInvitationPreviewAsync()` -> [[frontend/cross-cutting/authentication|Authentication]]
+  1. Validate invitation token exists
+  2. Return safe preview data only
+  3. Mark expired tokens as expired in the response
+- **Validation:** Token must exist. Expired or used tokens are shown as not acceptable.
+- **DB:** `invitation_tokens`, `users`, `roles`, `tenants`
+
+### Step 6A: Accept Invite With Password
+- **UI:** If password setup is enabled, the page shows pre-filled invited email (read-only), set password, confirm password, optional phone number, and "Create Account".
+- **API:** `POST /api/v1/auth/invitations/{token}/accept-password`
   ```json
   {
-    "token": "invitation-token",
     "password": "SecurePass123!",
     "phone": "+94771234567"
   }
   ```
-- **Backend:** `UserInvitationService.AcceptInvitationAsync()` â†’ [[frontend/cross-cutting/authentication|Authentication]]
+- **Backend:** `UserInvitationService.AcceptInvitationWithPasswordAsync()` -> [[frontend/cross-cutting/authentication|Authentication]]
   1. Validate invitation token (not expired, not already used)
-  2. Hash password with BCrypt (work factor 12)
-  3. Update user status from `invited` to `active`
-  4. Mark invitation token as used
-  5. Create HttpOnly cookie-backed web session; do not return tenant JWT to browser JavaScript
-  6. Create initial session record
-  7. Redirect to dashboard
-- **Validation:** Token must be valid and not expired. Password must meet complexity requirements
-- **DB:** `users` (status â†’ `active`, password_hash set), `invitation_tokens` (used_at set), `sessions`, `refresh_tokens`
+  2. Use the original invited email as the account email
+  3. Hash password with BCrypt using the configured platform password hasher
+  4. Update user status from `invited` to `active`
+  5. Mark invitation token as used
+  6. Create HttpOnly cookie-backed web session; do not return tenant JWT to browser JavaScript
+  7. Create initial session record
+  8. Redirect to dashboard when tenant is active; if tenant is still provisioning, show "account ready, waiting for activation"
+- **Validation:** Token must be valid and not expired. Password must meet complexity requirements. Accepting with password does not allow changing the invited email.
+- **DB:** `users` (status -> `active`, password_hash set), `invitation_tokens` (used_at set), `sessions`, `refresh_tokens`
 
-### Step 6: Account Active
+### Step 6B: Accept Invite With Google
+- **UI:** If Google sign-in is enabled for invite acceptance, the page shows "Continue with Google". The user may choose the same email as the invitation, or a different Google account only when the invitation or tenant policy allows email mismatch.
+- **API:** `POST /api/v1/auth/invitations/{token}/accept-google`
+  ```json
+  {
+    "google_id_token": "google-id-token"
+  }
+  ```
+- **Backend:** `UserInvitationService.AcceptInvitationWithGoogleAsync()` -> [[frontend/cross-cutting/authentication|Authentication]]
+  1. Validate invitation token (not expired, not already used)
+  2. Validate Google ID token, email verification, and Google subject
+  3. If Google email matches invited email, activate normally
+  4. If Google email differs, allow only when `allow_google_email_mismatch` is true and the Google email domain is permitted
+  5. Store the verified Google identity according to the existing Auth/SSO user model, set the primary login email, and retain the original invited email on the invitation/audit record
+  6. Do not set a password
+  7. Mark invitation token as used
+  8. Create HttpOnly cookie-backed web session when the tenant is active
+- **Validation:** Token must be valid and not expired. Google email must be verified. Mismatched Google email is rejected by default unless explicitly allowed by tenant/invitation policy.
+- **DB:** `users` (status -> `active`, google_sub set, invited_email retained), `invitation_tokens` (used_at set), `sessions`, `refresh_tokens`
+
+### Step 7: Account Active
 - **UI:** User lands on the dashboard. First-time onboarding tour shown (profile completion prompts). If GDPR consent required: [[Userflow/Auth-Access/gdpr-consent|consent dialog]] appears before dashboard access
 - **API:** `GET /api/v1/dashboard`
 - **Backend:** Dashboard loads based on user's role permissions. Only widgets for permitted features are shown
@@ -113,6 +143,12 @@
 - Invitation email still sent, but "Accept Invitation" links to SSO login instead of password creation
 - User authenticates via SSO provider â†’ account auto-activated
 - No password is set (SSO-only authentication)
+
+### When Google email differs from invited email
+- Default behavior: reject with `409 Conflict` and ask the user to sign in with the invited email or contact the administrator.
+- Allowed behavior: if tenant/invitation policy permits mismatch and the Google email domain is allowed, activate the account using the verified Google email as primary login email.
+- The original invited email is retained for audit and support.
+- Every mismatch acceptance writes an audit log with invited email, accepted Google email, tenant, token ID, and acceptance time.
 
 ### When user already exists in another tenant
 - Each tenant is isolated â€” same email can exist in multiple tenants

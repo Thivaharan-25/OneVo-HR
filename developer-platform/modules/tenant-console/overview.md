@@ -58,6 +58,15 @@ The console must keep commercial entitlements separate from RBAC permissions. Co
 
 Pricing is configurable, not hardcoded. Operators can configure plan base prices, module add-on prices, per-employee/device rates, one-time full-license prices, annual maintenance rates, trial terms, and custom enterprise contract values. Module access is resolved from the active subscription/commercial terms, plan allowed modules, tenant module grants, and tenant feature grants.
 
+Plan and module base costs are managed in the reusable catalogs:
+
+- `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plan base prices.
+- `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module default prices.
+- `PATCH /admin/v1/tenants/{id}/subscription` stores tenant-specific commercial terms and negotiated plan pricing.
+- `PUT /admin/v1/tenants/{id}/modules` stores tenant-specific module sales state and price overrides.
+
+Changing a reusable catalog price must not silently rewrite existing tenant contracts. Existing tenants keep their stored commercial terms unless ONEVO explicitly runs a reviewed reprice/migration process.
+
 For subscription tenants, enabled modules are plan-included modules plus paid add-ons and trial modules, minus disabled modules. For full-license tenants, enabled modules are owned license modules plus maintenance-included modules, purchased add-ons, and trial modules, minus disabled modules. Expired maintenance may block support, updates, or new modules according to contract policy, but it should not automatically remove already-owned core modules unless the signed agreement says so.
 
 ### Manual Customer Provisioning Wizard

@@ -1,10 +1,31 @@
 # CQRS Patterns: ONEVO
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-08
 
-ONEVO uses **MediatR** for in-process CQRS. Every write is a `Command`, every read is a `Query`. Both use the same pipeline but follow different conventions.
+ONEVO uses **MediatR** for in-process CQRS. Every write is a `Command`, every read is a `Query`. Commands and queries use the same pipeline behaviors, but they follow different conventions.
 
----
+CQRS does not require domain events. The default use-case shape is command/query, validator, handler, repository/domain, unit of work, response. Events are optional and should be added only for justified post-save side effects.
+
+## Application Feature Structure
+
+```text
+ONEVO.Application/Features/{Feature}/
+|-- Commands/
+|   `-- {UseCase}/
+|       |-- {UseCase}Command.cs
+|       |-- {UseCase}Handler.cs
+|       `-- {UseCase}Validator.cs
+|-- Queries/
+|   `-- {UseCase}/
+|       |-- {UseCase}Query.cs
+|       `-- {UseCase}Handler.cs
+|-- DTOs/
+|   |-- Requests/
+|   `-- Responses/
+`-- Interfaces/
+```
+
+No feature-level `Validators/` folder. A validator belongs beside the command it validates.
 
 ## Command
 
@@ -12,102 +33,49 @@ A Command changes state. It returns `Result<TResponse>`.
 
 ```csharp
 // ONEVO.Application/Features/Leave/Commands/ApproveLeaveRequest/
-// ApproveLeaveRequestCommand.cs
 public record ApproveLeaveRequestCommand(
     Guid LeaveRequestId,
     Guid ApproverId
 ) : IRequest<Result<LeaveRequestDto>>;
 
-// ApproveLeaveRequestCommandHandler.cs
-public class ApproveLeaveRequestCommandHandler
+public class ApproveLeaveRequestHandler
     : IRequestHandler<ApproveLeaveRequestCommand, Result<LeaveRequestDto>>
 {
     private readonly ILeaveRequestRepository _leaveRequests;
     private readonly IUnitOfWork _uow;
 
-    public ApproveLeaveRequestCommandHandler(ILeaveRequestRepository leaveRequests, IUnitOfWork uow)
+    public ApproveLeaveRequestHandler(ILeaveRequestRepository leaveRequests, IUnitOfWork uow)
     {
         _leaveRequests = leaveRequests;
         _uow = uow;
     }
 
     public async Task<Result<LeaveRequestDto>> Handle(
-        ApproveLeaveRequestCommand cmd, CancellationToken ct)
+        ApproveLeaveRequestCommand command,
+        CancellationToken ct)
     {
-        var request = await _leaveRequests.GetByIdAsync(cmd.LeaveRequestId, ct);
+        var request = await _leaveRequests.GetByIdAsync(command.LeaveRequestId, ct);
 
         if (request is null)
             return Result<LeaveRequestDto>.Failure("Leave request not found");
 
-        request.Approve(); // raises LeaveApprovedEvent on the entity
+        request.Approve(command.ApproverId);
 
-        await _uow.SaveChangesAsync(ct); // interceptor dispatches domain events after save
+        await _uow.SaveChangesAsync(ct);
 
         return Result<LeaveRequestDto>.Success(request.ToDto());
     }
 }
 ```
 
----
+The command handler owns the use case. It may call domain methods, repositories, readers, services, and `IUnitOfWork`. It does not use EF Core or `ApplicationDbContext` directly.
 
-## Query
+## Command Validator
 
-A Query reads state. It never modifies data.
-
-```csharp
-// ONEVO.Application/Features/Leave/Queries/GetLeaveBalance/
-// GetLeaveBalanceQuery.cs
-public record GetLeaveBalanceQuery(
-    Guid EmployeeId,
-    int Year
-) : IRequest<Result<LeaveBalanceDto>>;
-
-// GetLeaveBalanceQueryHandler.cs
-public class GetLeaveBalanceQueryHandler
-    : IRequestHandler<GetLeaveBalanceQuery, Result<LeaveBalanceDto>>
-{
-    private readonly ILeaveBalanceReader _leaveBalances;
-
-    public GetLeaveBalanceQueryHandler(ILeaveBalanceReader leaveBalances) => _leaveBalances = leaveBalances;
-
-    public async Task<Result<LeaveBalanceDto>> Handle(
-        GetLeaveBalanceQuery query, CancellationToken ct)
-    {
-        var balance = await _leaveBalances.GetBalanceAsync(query.EmployeeId, query.Year, ct);
-
-        if (balance is null)
-            return Result<LeaveBalanceDto>.Failure("No entitlement found");
-
-        return Result<LeaveBalanceDto>.Success(balance);
-    }
-}
-```
-
----
-
-## DTOs
-
-```
-Application/Features/Leave/DTOs/
-├── Requests/
-│   └── CreateLeaveRequestDto.cs    ← what the HTTP controller receives from the client
-└── Responses/
-    ├── LeaveRequestDto.cs           ← what handlers return to the controller
-    └── LeaveBalanceDto.cs
-```
-
-Handlers **never return Domain entities** — always response DTOs.
-
-Handlers also do not use EF Core or `ApplicationDbContext` directly. Commands use repositories/domain services to load and persist aggregates. Queries use repository or reader interfaces that return DTO/read models. Infrastructure implements those interfaces with EF Core.
-
----
-
-## Validator
-
-Every Command that modifies state has a FluentValidation validator:
+Every command that modifies state has a FluentValidation validator colocated with the command.
 
 ```csharp
-// ONEVO.Application/Features/Leave/Validators/
+// ONEVO.Application/Features/Leave/Commands/ApproveLeaveRequest/
 public class ApproveLeaveRequestValidator
     : AbstractValidator<ApproveLeaveRequestCommand>
 {
@@ -121,18 +89,80 @@ public class ApproveLeaveRequestValidator
 
 `ValidationBehavior` runs before every handler. If validation fails, the handler never executes.
 
----
+## Query
 
-## Pipeline Behaviors (run in order)
+A Query reads state. It never modifies data.
 
+```csharp
+// ONEVO.Application/Features/Leave/Queries/GetLeaveBalance/
+public record GetLeaveBalanceQuery(
+    Guid EmployeeId,
+    int Year
+) : IRequest<Result<LeaveBalanceDto>>;
+
+public class GetLeaveBalanceHandler
+    : IRequestHandler<GetLeaveBalanceQuery, Result<LeaveBalanceDto>>
+{
+    private readonly ILeaveBalanceReader _leaveBalances;
+
+    public GetLeaveBalanceHandler(ILeaveBalanceReader leaveBalances)
+        => _leaveBalances = leaveBalances;
+
+    public async Task<Result<LeaveBalanceDto>> Handle(
+        GetLeaveBalanceQuery query,
+        CancellationToken ct)
+    {
+        var balance = await _leaveBalances.GetBalanceAsync(query.EmployeeId, query.Year, ct);
+
+        if (balance is null)
+            return Result<LeaveBalanceDto>.Failure("No entitlement found");
+
+        return Result<LeaveBalanceDto>.Success(balance);
+    }
+}
 ```
-[1] ValidationBehavior        — FluentValidation. Returns 422 before handler if invalid.
-[2] LoggingBehavior           — logs command/query name, UserId, TenantId.
-[3] PerformanceBehavior       — logs warning if elapsed > 500ms.
-[4] UnhandledExceptionBehavior — catches any unhandled exception, re-throws for middleware.
+
+Queries use repository or reader interfaces that return DTOs/read models. Queries do not mutate entities and do not call `SaveChangesAsync`.
+
+## DTOs
+
+```text
+Application/Features/Leave/DTOs/
+|-- Requests/
+|   `-- CreateLeaveRequestDto.cs
+`-- Responses/
+    |-- LeaveRequestDto.cs
+    `-- LeaveBalanceDto.cs
 ```
 
----
+Handlers never return Domain entities. They return response DTOs or read models wrapped in `Result<T>`.
+
+## Optional Domain Events
+
+Use domain events only when a saved business action needs decoupled side effects that should not be hardcoded into the originating command handler.
+
+Good uses:
+
+- Employee termination should trigger access cleanup, notifications, and workspace revocation.
+- A verified identity result should trigger downstream onboarding steps.
+- A monitoring anomaly should trigger notification enrichment after the anomaly is persisted.
+
+Poor uses:
+
+- Creating an event for every CRUD operation.
+- Moving simple command logic into event handlers.
+- Using events because "CQRS needs them". It does not.
+
+If an event is justified, place it in `ONEVO.Domain/Features/{Feature}/Events/` and place handlers in `ONEVO.Application/Features/{Feature}/EventHandlers/`.
+
+## Pipeline Behaviors
+
+```text
+[1] ValidationBehavior
+[2] LoggingBehavior
+[3] PerformanceBehavior
+[4] UnhandledExceptionBehavior
+```
 
 ## Result<T>
 
@@ -149,13 +179,14 @@ public class Result<T>
 ```
 
 Controllers map `Result<T>` to HTTP responses:
-- `IsSuccess = true` → 200 / 201
-- `IsSuccess = false` with `NotFoundException` message → 404
-- `IsSuccess = false` with business error → 422
 
----
+- `IsSuccess = true` -> 200 / 201
+- `IsSuccess = false` with not-found failure -> 404
+- `IsSuccess = false` with validation or business failure -> 422
 
-## Controller (thin)
+## Controller
+
+Controllers stay thin. They map HTTP input to commands/queries and map `Result<T>` back to HTTP.
 
 ```csharp
 [ApiController]
@@ -163,14 +194,19 @@ Controllers map `Result<T>` to HTTP responses:
 public class LeaveController : ControllerBase
 {
     private readonly ISender _mediator;
+
     public LeaveController(ISender mediator) => _mediator = mediator;
 
     [HttpPost("{id}/approve")]
     [RequirePermission("leave:approve")]
-    public async Task<IActionResult> Approve(Guid id, ApproveLeaveRequestDto dto, CancellationToken ct)
+    public async Task<IActionResult> Approve(
+        Guid id,
+        ApproveLeaveRequestDto dto,
+        CancellationToken ct)
     {
         var result = await _mediator.Send(
-            new ApproveLeaveRequestCommand(id, dto.ApproverId), ct);
+            new ApproveLeaveRequestCommand(id, dto.ApproverId),
+            ct);
 
         return result.IsSuccess
             ? Ok(result.Value)

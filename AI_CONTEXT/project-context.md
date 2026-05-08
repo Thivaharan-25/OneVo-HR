@@ -91,7 +91,7 @@ ONEVO is designed around **three core pillars** sold independently, together, or
 
 - **Clean Architecture + CQRS** — single deployable .NET 9 application with 4-layer structure
 - Strict layer and feature separation enforced via namespaces and dependency rules
-- Inter-module communication: sync (direct service calls) for queries, in-process MediatR domain events for side effects
+- Inter-module communication: Application-owned interfaces/services for normal cross-feature work; optional in-process domain events only for justified post-save side effects
 - See [[backend/folder-structure|Folder Structure]] for complete solution tree
 
 ## Solution Structure
@@ -99,7 +99,7 @@ ONEVO is designed around **three core pillars** sold independently, together, or
 ONEVO follows **Clean Architecture + CQRS** (.NET 9). See [[backend/folder-structure|Folder Structure]] for the complete solution tree.
 
 **Layers:**
-- `ONEVO.Domain` — entities, domain events, value objects (zero external dependencies)
+- `ONEVO.Domain` - entities, value objects, business rules, optional domain events (zero external dependencies)
 - `ONEVO.Application` — CQRS handlers (MediatR), interfaces, DTOs, validators
 - `ONEVO.Infrastructure` — EF Core (single ApplicationDbContext, ~300 tables), JWT, BCrypt, Redis, Hangfire, SignalR
 - `ONEVO.Api` — single ASP.NET Core host for customer APIs (`/api/v1/*`) and Developer Console admin APIs (`/admin/v1/*`)
@@ -177,7 +177,7 @@ Tenant Level (Company Settings)
 
 ## 7. HR ↔ WorkSync Cross-Module Data Flows
 
-WorkSync is Pillar 3 — there are no bridges. Cross-module flows use direct FK relationships and in-process domain events.
+WorkSync is Pillar 3 - there are no bridges. Cross-module flows use direct FK relationships, Application-owned interfaces/services, and optional domain events only when decoupled post-save side effects are justified.
 
 | Flow | Direction | Mechanism |
 |:-----|:----------|:----------|

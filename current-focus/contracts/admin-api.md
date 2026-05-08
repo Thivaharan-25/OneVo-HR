@@ -6,6 +6,10 @@
 
 **Provisioning API count:** Phase 1 tenant provisioning requires 22 admin endpoints: plan catalog, module catalog, tenant validation, tenant list/create/detail/edit/status, subscription, modules, permission catalog, role template list/create/edit/apply, tenant role list/create/permission update, settings, invite admin, provisioning summary, and activation confirm. Tenant-facing role management after activation is separate under `/api/v1/roles`.
 
+**Catalog cost-management APIs:** reusable plan prices and reusable module default prices are managed through additional catalog admin endpoints. Tenant provisioning can override those prices per tenant, but base catalog prices need their own APIs.
+
+**Backend API data rule:** every DTO below is the backend JSON contract between `ONEVO.Api` and the Developer Console. Field names are API response/request fields, not just UI labels. Frontend state may add view-only fields, but it must not rename or invent backend contract fields without updating this file.
+
 ---
 
 ## POST `/admin/v1/auth/google-callback`
@@ -26,6 +30,14 @@ interface AdminAuthResponseDto {
 ## GET `/admin/v1/tenants`
 
 ```ts
+interface TenantListQueryDto {
+  search?: string
+  status?: "provisioning" | "active" | "suspended"
+  plan_code?: string
+  page?: number
+  page_size?: number
+}
+
 interface TenantListItemDto {
   id: string
   company_name: string
@@ -36,6 +48,13 @@ interface TenantListItemDto {
   agent_count: number
   created_at: string
   last_login_at: string | null
+}
+
+interface TenantListResponseDto {
+  items: TenantListItemDto[]
+  total: number
+  page: number
+  page_size: number
 }
 ```
 
@@ -56,6 +75,50 @@ interface SubscriptionPlanDto {
   currency: string
   is_active: boolean
 }
+
+interface SubscriptionPlanListResponseDto {
+  items: SubscriptionPlanDto[]
+}
+```
+
+## POST `/admin/v1/subscription-plans`
+
+Creates a reusable plan catalog record. Operators should use this only when ONEVO wants a plan reusable across tenants, not for one customer deal.
+
+```ts
+interface CreateSubscriptionPlanDto {
+  code: string
+  name: string
+  tier: string
+  included_modules: string[]
+  pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
+  monthly_price?: number | null
+  annual_price?: number | null
+  currency: string
+  is_active?: boolean
+}
+
+// response: SubscriptionPlanDto
+```
+
+## PATCH `/admin/v1/subscription-plans/{id}`
+
+Updates reusable plan metadata, included modules, and base prices. Existing tenant subscriptions keep their stored commercial terms unless product explicitly runs a migration/reprice operation.
+
+```ts
+interface UpdateSubscriptionPlanDto {
+  name?: string
+  tier?: string
+  included_modules?: string[]
+  pricing_unit?: "per_employee" | "per_device" | "flat" | "custom"
+  monthly_price?: number | null
+  annual_price?: number | null
+  currency?: string
+  is_active?: boolean
+  reason: string
+}
+
+// response: SubscriptionPlanDto
 ```
 
 ## GET `/admin/v1/modules/catalog`
@@ -73,6 +136,52 @@ interface ModuleCatalogItemDto {
   default_maintenance_rate: number | null
   is_active: boolean
 }
+
+interface ModuleCatalogResponseDto {
+  items: ModuleCatalogItemDto[]
+}
+```
+
+## POST `/admin/v1/modules/catalog`
+
+Creates a reusable module catalog record. This is for ONEVO product/catalog management, not tenant-specific enablement.
+
+```ts
+interface CreateModuleCatalogItemDto {
+  module_key: string
+  name: string
+  pillar: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
+  phase: "phase_1" | "phase_2" | "future" | string
+  pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
+  default_price_monthly?: number | null
+  default_price_annual?: number | null
+  full_license_price?: number | null
+  default_maintenance_rate?: number | null
+  is_active?: boolean
+}
+
+// response: ModuleCatalogItemDto
+```
+
+## PATCH `/admin/v1/modules/catalog/{moduleKey}`
+
+Updates reusable module metadata and default prices. Existing tenant entitlements keep their stored override prices unless product explicitly runs a migration/reprice operation.
+
+```ts
+interface UpdateModuleCatalogItemDto {
+  name?: string
+  pillar?: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
+  phase?: "phase_1" | "phase_2" | "future" | string
+  pricing_unit?: "per_employee" | "per_device" | "flat" | "custom"
+  default_price_monthly?: number | null
+  default_price_annual?: number | null
+  full_license_price?: number | null
+  default_maintenance_rate?: number | null
+  is_active?: boolean
+  reason: string
+}
+
+// response: ModuleCatalogItemDto
 ```
 
 ## GET `/admin/v1/tenants/validate`
@@ -168,8 +277,11 @@ interface UpdateTenantDraftDto {
 ## PATCH `/admin/v1/tenants/{id}/status`
 
 ```ts
-// body
-{ action: "suspend" | "unsuspend" | "activate"; reason?: string }
+interface TenantStatusUpdateDto {
+  action: "suspend" | "unsuspend" | "activate"
+  reason?: string
+}
+
 // response: 204 No Content
 ```
 
@@ -192,6 +304,7 @@ interface SubscriptionOverrideDto {
   discount_percent?: number | null
   reason: string              // required; written to audit log
 }
+// response: 204 No Content
 ```
 
 ## PUT `/admin/v1/tenants/{id}/modules`
@@ -235,7 +348,7 @@ interface TenantPermissionCatalogDto {
 
 Only permissions from enabled tenant modules plus universal permissions are returned.
 
-## Role Template APIs
+## GET `/admin/v1/role-templates`
 
 ```ts
 interface RoleTemplateDto {
@@ -247,31 +360,72 @@ interface RoleTemplateDto {
   is_system: boolean
   version: number
   is_active: boolean
+  created_at: string
+  updated_at: string | null
 }
 
+interface RoleTemplateListQueryDto {
+  search?: string
+  module_key?: string
+  include_inactive?: boolean
+}
+
+interface RoleTemplateListResponseDto {
+  items: RoleTemplateDto[]
+}
+```
+
+## POST `/admin/v1/role-templates`
+
+```ts
 interface CreateRoleTemplateDto {
   name: string
   description?: string
   module_keys: string[]
   permission_codes: string[]
 }
+
+// response: RoleTemplateDto
 ```
 
-Routes:
+## PATCH `/admin/v1/role-templates/{id}`
 
-```http
-GET /admin/v1/role-templates
-POST /admin/v1/role-templates
-PATCH /admin/v1/role-templates/{id}
-POST /admin/v1/tenants/{id}/role-templates/{templateId}/apply
-GET /admin/v1/tenants/{id}/roles
-POST /admin/v1/tenants/{id}/roles
-PUT /admin/v1/tenants/{id}/roles/{roleId}/permissions
+```ts
+interface UpdateRoleTemplateDto {
+  name?: string
+  description?: string | null
+  module_keys?: string[]
+  permission_codes?: string[]
+  is_active?: boolean
+  reason?: string
+}
+
+// response: RoleTemplateDto
 ```
 
 Applying or editing a role template must validate the permission list against `GET /admin/v1/tenants/{id}/permissions/catalog`.
 
 Operators use global templates for reusable patterns and tenant-specific roles for one-customer needs. Role creation does not require job levels. Job levels only affect scoped permissions, hierarchy, and workflow routing later.
+
+## POST `/admin/v1/tenants/{id}/role-templates/{templateId}/apply`
+
+```ts
+interface ApplyRoleTemplateDto {
+  role_name_override?: string
+  duplicate_name_strategy?: "idempotent" | "fail" | "create_copy"
+}
+
+interface ApplyRoleTemplateResponseDto {
+  role: TenantRoleDto
+  applied_permission_codes: string[]
+  skipped_permission_codes: string[]
+  validation_errors: Array<{ permission_code: string; message: string }>
+}
+```
+
+Applying a template creates or updates a normal tenant-scoped role. Permissions outside the tenant's module entitlement boundary must be rejected or returned as explicit validation errors.
+
+## GET `/admin/v1/tenants/{id}/roles`
 
 ```ts
 interface TenantRoleDto {
@@ -286,20 +440,37 @@ interface TenantRoleDto {
   updated_at: string
 }
 
+interface TenantRoleListResponseDto {
+  items: TenantRoleDto[]
+}
+```
+
+## POST `/admin/v1/tenants/{id}/roles`
+
+```ts
 interface CreateTenantRoleDto {
   name: string
   description?: string
   permission_codes: string[]
 }
 
+// response: TenantRoleDto
+```
+
+Description is optional. The backend must accept a role with `name` and `permission_codes` only.
+
+## PUT `/admin/v1/tenants/{id}/roles/{roleId}/permissions`
+
+```ts
 interface UpdateTenantRolePermissionsDto {
   permission_codes: string[]
   reason?: string
 }
 
-interface ApplyRoleTemplateDto {
-  role_name_override?: string
-  duplicate_name_strategy?: "idempotent" | "fail" | "create_copy"
+interface UpdateTenantRolePermissionsResponseDto {
+  role: TenantRoleDto
+  added_permission_codes: string[]
+  removed_permission_codes: string[]
 }
 ```
 
@@ -334,6 +505,9 @@ interface TenantOwnerInviteDto {
   first_name: string
   last_name: string
   role_id: string
+  completion_methods?: Array<"password" | "google">
+  allow_google_email_mismatch?: boolean
+  allowed_email_domains?: string[]
 }
 // response
 { user_id: string; invite_expires_at: string }
@@ -342,6 +516,14 @@ interface TenantOwnerInviteDto {
 This sends a set-password link. It must not require the operator to choose the tenant owner's final password.
 
 The selected `role_id` must refer to a materialized tenant role that satisfies the minimum owner/admin permission requirement.
+
+The invite email starts the acceptance flow, but account activation happens through tenant-facing Auth APIs:
+
+- `GET /api/v1/auth/invitations/{token}`
+- `POST /api/v1/auth/invitations/{token}/accept-password`
+- `POST /api/v1/auth/invitations/{token}/accept-google`
+
+Completing the invite with password uses the invited email. Completing the invite with Google can use a different verified Google email only when `allow_google_email_mismatch` and `allowed_email_domains` permit it; otherwise it is rejected and audit-logged.
 
 ## GET `/admin/v1/tenants/{id}/provisioning-summary`
 
@@ -374,8 +556,73 @@ interface ProvisioningSectionStatus {
 Activation is allowed only after tenant details, subscription/commercial terms, module selection, role templates, required settings, and owner invite are complete.
 
 ```ts
+interface ProvisionConfirmRequestDto {
+  confirm: true
+}
+
 // success response: 204 No Content
 // incomplete response: 422 with ProvisioningSummaryDto
+```
+
+## Tenant-Facing Role APIs After Activation
+
+These are not Developer Platform provisioning endpoints, but they use the same module-filtered permission boundary. Tenant owners can create and edit only roles inside their own active tenant.
+
+## GET `/api/v1/roles`
+
+```ts
+interface TenantAppRoleDto {
+  id: string
+  name: string
+  description: string | null
+  is_system: boolean
+  permission_codes: string[]
+  created_at: string
+  updated_at: string
+}
+
+interface TenantAppRoleListResponseDto {
+  items: TenantAppRoleDto[]
+}
+```
+
+## POST `/api/v1/roles`
+
+```ts
+interface CreateTenantAppRoleDto {
+  name: string
+  description?: string
+  permission_codes: string[]
+}
+
+// response: TenantAppRoleDto
+```
+
+Description is optional here too. Role creation does not require job levels.
+
+## PUT `/api/v1/roles/{id}`
+
+```ts
+interface UpdateTenantAppRoleDto {
+  name?: string
+  description?: string | null
+}
+
+// response: TenantAppRoleDto
+```
+
+## PUT `/api/v1/roles/{id}/permissions`
+
+```ts
+interface UpdateTenantAppRolePermissionsDto {
+  permission_codes: string[]
+}
+
+interface UpdateTenantAppRolePermissionsResponseDto {
+  role: TenantAppRoleDto
+  added_permission_codes: string[]
+  removed_permission_codes: string[]
+}
 ```
 
 ## POST `/admin/v1/tenants/{id}/impersonate`

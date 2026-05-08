@@ -281,6 +281,98 @@ Tenant-level module/commercial entitlement records. Use this table for module-wi
 
 ---
 
+## `subscription_plan_price_history`
+
+Audit/history for reusable subscription plan catalog price changes. This preserves historical pricing decisions without silently rewriting tenant contracts.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `plan_id` | `uuid` | FK -> subscription_plans |
+| `old_monthly_price` | `decimal(10,2)` | Nullable |
+| `new_monthly_price` | `decimal(10,2)` | Nullable |
+| `old_annual_price` | `decimal(10,2)` | Nullable |
+| `new_annual_price` | `decimal(10,2)` | Nullable |
+| `old_currency` | `varchar(3)` | Nullable |
+| `new_currency` | `varchar(3)` | ISO 4217 |
+| `old_pricing_unit` | `varchar(30)` | Nullable |
+| `new_pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
+| `changed_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `reason` | `text` | Required business reason |
+| `changed_at` | `timestamptz` | |
+
+**Foreign Keys:** `plan_id` -> [[#`subscription_plans`|subscription_plans]]
+
+---
+
+## `module_catalog_price_history`
+
+Audit/history for reusable module catalog price changes.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `module_key` | `varchar(100)` | FK -> module_catalog.module_key |
+| `old_default_price_monthly` | `decimal(10,2)` | Nullable |
+| `new_default_price_monthly` | `decimal(10,2)` | Nullable |
+| `old_default_price_annual` | `decimal(10,2)` | Nullable |
+| `new_default_price_annual` | `decimal(10,2)` | Nullable |
+| `old_full_license_price` | `decimal(12,2)` | Nullable |
+| `new_full_license_price` | `decimal(12,2)` | Nullable |
+| `old_default_maintenance_rate` | `decimal(5,2)` | Nullable |
+| `new_default_maintenance_rate` | `decimal(5,2)` | Nullable |
+| `old_pricing_unit` | `varchar(30)` | Nullable |
+| `new_pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
+| `changed_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `reason` | `text` | Required business reason |
+| `changed_at` | `timestamptz` | |
+
+**Foreign Keys:** `module_key` -> [[#`module_catalog`|module_catalog]]
+
+---
+
+## `tenant_provisioning_states`
+
+Draft-safe provisioning wizard state. This is the source for resume behavior and activation checklist state.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `tenant_id` | `uuid` | PK, FK -> tenants |
+| `current_step` | `varchar(50)` | `tenant_details`, `subscription`, `modules`, `roles`, `settings`, `owner_invite`, `review` |
+| `tenant_details_completed_at` | `timestamptz` | Nullable |
+| `subscription_completed_at` | `timestamptz` | Nullable |
+| `modules_completed_at` | `timestamptz` | Nullable |
+| `roles_completed_at` | `timestamptz` | Nullable |
+| `settings_completed_at` | `timestamptz` | Nullable |
+| `owner_invite_completed_at` | `timestamptz` | Nullable |
+| `activation_ready` | `boolean` | Cached readiness after latest validation |
+| `activated_at` | `timestamptz` | Nullable |
+| `last_updated_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `updated_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
+
+---
+
+## `tenant_provisioning_validation_results`
+
+Latest activation blockers and warnings returned by `/admin/v1/tenants/{id}/provisioning-summary`.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `section` | `varchar(50)` | Provisioning section |
+| `code` | `varchar(100)` | Machine-readable validation code |
+| `message` | `text` | Human-readable message |
+| `severity` | `varchar(20)` | `blocker` or `warning` |
+| `resolved_at` | `timestamptz` | Nullable |
+| `created_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
+
+---
+
 ## Commercial Entitlement Notes
 
 The schema supports the commercial model requested by product:
@@ -291,6 +383,8 @@ The schema supports the commercial model requested by product:
 - Pricing defaults live on `subscription_plans` and `module_catalog`; tenant-specific negotiated pricing lives on `tenant_subscriptions` and `tenant_module_entitlements`.
 
 Pricing and module entitlement decide what the tenant has access to. RBAC permissions decide which users inside that tenant can use the entitled capabilities.
+
+Catalog price changes do not silently update existing tenant commercial records. Existing tenant subscriptions and module entitlements keep their stored negotiated prices unless ONEVO runs an explicit reviewed reprice/migration process.
 
 ---
 
