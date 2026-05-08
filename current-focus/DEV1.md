@@ -263,7 +263,7 @@ dotnet test ONEVO.sln --filter Auth
 - [x] Entitlement DTO supports web and IDE consumers.
 - [x] Tests cover active module resolution and focused entitlement reads.
 - [ ] Developer Platform provisioning can create a draft tenant in `provisioning` status before activation.
-- [ ] Developer Platform provisioning can set commercial terms via `/admin/v1/tenants/{id}/subscription`, including `subscription` vs `full_license_maintenance`, billing cycle/currency, manual sales state, maintenance status, renewal date, and custom contract values.
+- [ ] Developer Platform provisioning can set commercial terms via `/admin/v1/tenants/{id}/subscription`, including `subscription` vs `full_license_maintenance`, subscription gateway collection, manual one-time full-license payment evidence, gateway-collected maintenance, maintenance status, renewal date, and custom contract values.
 - [ ] Developer Platform provisioning can set tenant modules through the same entitlement/module registry via `/admin/v1/tenants/{id}/modules`, including module sales states: `purchased`, `trial`, `quoted`, `maintenance_included`, `subscription_included`, and `disabled`.
 - [ ] Permission catalog endpoint returns only permissions for enabled tenant modules plus universal permissions.
 - [ ] Provisioning can attach role templates to the tenant and materialize them into tenant-scoped roles.
