@@ -16,20 +16,20 @@ public class MfaServiceTests
     private readonly MfaService _sut;
 
     [Fact]
-    public async Task VerifyAsync_ValidCode_ReturnsTokenPair()
+    public async Task VerifyAsync_ValidTotpCode_ReturnsTokenPair()
     {
-        SetupValidEmailOtpChallenge();
+        SetupValidTotpMethod();
 
         var result = await _sut.VerifyAsync(_userId, _validCode, default);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.AccessToken.Should().NotBeEmpty();
+result.Value!.Authenticated.Should().BeTrue();
     }
 
     [Fact]
     public async Task VerifyAsync_InvalidCode_IncrementsAttempts()
     {
-        SetupValidEmailOtpChallenge();
+        SetupValidTotpMethod();
 
         var result = await _sut.VerifyAsync(_userId, "000000", default);
 
@@ -42,9 +42,11 @@ public class MfaServiceTests
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| Valid email OTP code | Unit | Token pair returned |
-| OTP delivery boundary called | Unit | Email/notification service receives send request |
-| Expired OTP | Unit | Failure, requires resend |
+| Valid TOTP code | Unit | Token pair returned |
+| TOTP setup confirmation | Unit | Method marked verified |
+| TOTP replay | Unit | Failure, attempt incremented |
+| Email fallback delivery boundary called | Unit | Email/notification service receives send request |
+| Expired fallback OTP | Unit | Failure, requires resend |
 | Invalid code | Unit | Failure, attempt incremented |
 | MFA locked (3 attempts) | Unit | 423 Locked |
 | MFA not enabled | Unit | 400 Bad Request |

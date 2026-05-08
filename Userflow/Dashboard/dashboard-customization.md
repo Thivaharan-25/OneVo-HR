@@ -1,9 +1,9 @@
-# Dashboard Customization
+﻿# Dashboard Customization
 
 **Area:** Dashboard  
-**Trigger:** User clicks "Customize" button in the dashboard topbar (user action — on demand)  
-**Required Permission(s):** Any authenticated user (customization is within the user's own permission ceiling — they cannot add zones or widgets they don't have access to)  
-**Related Permissions:** `workforce:view`, `employees:read`, `leave:read`, `settings:system`, `grievance:read` — each gates specific widgets in the Widget Library
+**Trigger:** User clicks "Customize" button in the dashboard topbar (user action â€” on demand)  
+**Required Permission(s):** Any authenticated user (customization is within the user's own permission ceiling â€” they cannot add zones or widgets they don't have access to)  
+**Related Permissions:** `workforce:view`, `employees:read`, `leave:read`, `settings:system`, `grievance:read` â€” each gates specific widgets in the Widget Library
 
 ---
 
@@ -19,11 +19,11 @@
 
 ### Step 1: Enter Edit Mode
 
-- **UI:** User clicks "Customize" button (top-right area of topbar, ghost button). The `CustomizeBar` slides in below the topbar with instruction text: "Drag to reorder zones · Click × to hide · Add widgets from the library". Save and Reset to Default buttons appear in the bar (right-aligned). Each rendered zone gains:
-  - A drag handle icon `⠿` in the zone header (cursor: grab)
-  - A × remove button in the zone header
+- **UI:** User clicks "Customize" button (top-right area of topbar, ghost button). The `CustomizeBar` slides in below the topbar with instruction text: "Drag to reorder zones Â· Click Ã— to hide Â· Add widgets from the library". Save and Reset to Default buttons appear in the bar (right-aligned). Each rendered zone gains:
+  - A drag handle icon `â ¿` in the zone header (cursor: grab)
+  - A Ã— remove button in the zone header
   - Dashed zone borders with hover highlight
-  Zone 1 (Exception Alert Strip) shows `📌 pinned` badge instead of drag/remove — it cannot be moved or hidden
+  Zone 1 (Exception Alert Strip) shows `ðŸ“Œ pinned` badge instead of drag/remove â€” it cannot be moved or hidden
 - **API:** N/A (edit mode is purely client-side UI state change)
 - **Backend:** N/A
 - **Validation:** N/A
@@ -31,13 +31,13 @@
 
 ### Step 2: Widget Library Panel Opens
 
-- **UI:** 240px panel slides in from the right edge (`width: 0` → `240px`, `transition: width 200ms ease-out`). Panel header: "Add Widgets". Panel lists only widgets the user's permissions support — no locked/blurred widgets shown. Available widgets shown with icon, name, + button. Already-added widgets shown with checkmark (cannot add twice)
-- **API:** N/A (widget list is computed client-side from current JWT claims)
+- **UI:** 240px panel slides in from the right edge (`width: 0` â†’ `240px`, `transition: width 200ms ease-out`). Panel header: "Add Widgets". Panel lists only widgets the user's permissions support â€” no locked/blurred widgets shown. Available widgets shown with icon, name, + button. Already-added widgets shown with checkmark (cannot add twice)
+- **API:** N/A (widget list is computed client-side from current backend session permissions)
 - **Backend:** N/A
-- **Validation:** Permission check using `useJwtClaims()` — widget only appears in list if user has required permission. `hierarchy_scope` also checked (e.g., "My Team Quick Stats" requires scope ≠ `self`)
+- **Validation:** Permission check using `useAuth() permission metadata` â€” widget only appears in list if user has required permission. `hierarchy_scope` also checked (e.g., "My Team Quick Stats" requires scope â‰  `self`)
 - **DB:** None
 
-**Widget Library — permission-gated list:**
+**Widget Library â€” permission-gated list:**
 
 | Widget | Permission Required | Scope Restriction |
 |:-------|:--------------------|:-----------------|
@@ -47,22 +47,22 @@
 | Recent Audit Log | `settings:system` | None |
 | Grievance Summary | `grievance:read` | None |
 | Contract Renewals (30d) | `employees:read` | None |
-| My Team Quick Stats | `employees:read` | `hierarchy_scope` ≠ `self` |
+| My Team Quick Stats | `employees:read` | `hierarchy_scope` â‰  `self` |
 
 ### Step 3: User Reorders Zones
 
-- **UI:** User drags a zone by its `⠿` handle to a new position. Other zones shift to make room (animated, spring easing via `@dnd-kit/core`). Zone 1 is excluded from the drag context — it stays pinned above all other zones regardless of drag operations. Reorder is reflected immediately in the layout (optimistic UI). Change is NOT saved yet — only saved on "Save" click
+- **UI:** User drags a zone by its `â ¿` handle to a new position. Other zones shift to make room (animated, spring easing via `@dnd-kit/core`). Zone 1 is excluded from the drag context â€” it stays pinned above all other zones regardless of drag operations. Reorder is reflected immediately in the layout (optimistic UI). Change is NOT saved yet â€” only saved on "Save" click
 - **API:** N/A (reorder is local state only until Save)
 - **Backend:** N/A
-- **Validation:** Zone 1 cannot be dragged. Other zones can be promoted or demoted freely — including promoting Zone 5 (Charts) above Zone 2 (KPIs)
+- **Validation:** Zone 1 cannot be dragged. Other zones can be promoted or demoted freely â€” including promoting Zone 5 (Charts) above Zone 2 (KPIs)
 - **DB:** None
 
 ### Step 4: User Hides a Zone
 
-- **UI:** User clicks × on a zone header. Zone animates out (`opacity 0`, `height → 0`, 150ms ease-out). Zone disappears from layout. Zone is added to a hidden zones list (local state). Change is NOT saved yet — visible when user clicks Save
+- **UI:** User clicks Ã— on a zone header. Zone animates out (`opacity 0`, `height â†’ 0`, 150ms ease-out). Zone disappears from layout. Zone is added to a hidden zones list (local state). Change is NOT saved yet â€” visible when user clicks Save
 - **API:** N/A (local state)
 - **Backend:** N/A
-- **Validation:** Zone 1 has no × button — cannot be hidden
+- **Validation:** Zone 1 has no Ã— button â€” cannot be hidden
 - **DB:** None
 
 ### Step 5: User Adds a Widget
@@ -70,7 +70,7 @@
 - **UI:** User clicks + next to a widget in the Widget Library panel. Widget appears at the bottom of the zone list (after all default zones). Widget's + button changes to a checkmark in the panel. Widget can be repositioned using drag handles (same as zones). Change is NOT saved yet
 - **API:** N/A (local state)
 - **Backend:** N/A
-- **Validation:** Widget already in list cannot be added again (+ button disabled). Widget is permission-gated at render time — if permission changes between sessions, widget silently drops from saved prefs on next load
+- **Validation:** Widget already in list cannot be added again (+ button disabled). Widget is permission-gated at render time â€” if permission changes between sessions, widget silently drops from saved prefs on next load
 - **DB:** None
 
 ### Step 6: User Saves
@@ -90,13 +90,13 @@
     "addedWidgets": ["dept-headcount", "leave-calendar-preview"]
   }
   ```
-- **Backend:** `UserDashboardPrefsController.PatchPrefs()` — upserts `user_dashboard_prefs` row. `updated_at` set to `NOW()`. No merge — full replace of `zones_json` and `added_widgets_json`
+- **Backend:** `UserDashboardPrefsController.PatchPrefs()` â€” upserts `user_dashboard_prefs` row. `updated_at` set to `NOW()`. No merge â€” full replace of `zones_json` and `added_widgets_json`
 - **Validation:** `zones` array must only reference valid zone IDs. Zone 1 `visible` field is ignored if `false` (server overrides to `true`). `addedWidgets` IDs validated against the known widget list; unknown IDs silently dropped
 - **DB:** `user_dashboard_prefs` (upsert)
 
 ### Step 7: Prefs Persist Across Devices
 
-- **UI:** When user logs in on a different device, the same layout and widget order loads. Dashboard shell fetches `GET /api/v1/users/me/dashboard-prefs` on mount — preferences are server-side, not localStorage
+- **UI:** When user logs in on a different device, the same layout and widget order loads. Dashboard shell fetches `GET /api/v1/users/me/dashboard-prefs` on mount â€” preferences are server-side, not localStorage
 - **API:** `GET /api/v1/users/me/dashboard-prefs` (called on every dashboard mount)
 - **Backend:** Returns saved `DashboardPreference` or `DashboardPreference.Default()` if none
 - **Validation:** N/A
@@ -110,7 +110,7 @@
 - User clicks "Reset to Default" in CustomizeBar
 - Confirmation dialog: "This will restore the default layout. Your customizations will be lost." with Cancel / Reset buttons
 - On confirm: `PATCH /api/v1/users/me/dashboard-prefs` with `DashboardPreference.Default()` payload
-- Default: all server-enabled zones visible, in spec priority order (1→6), no added widgets
+- Default: all server-enabled zones visible, in spec priority order (1â†’6), no added widgets
 - Edit mode exits after reset completes
 
 ### Cancel Without Saving
@@ -124,7 +124,7 @@
 - Permission is revoked by admin
 - On next dashboard load: `addedWidgets` contains "top-performers" but permission check fails
 - Widget silently dropped from rendered layout (no error shown to user)
-- Saved prefs are NOT modified automatically — widget reappears if permission is restored
+- Saved prefs are NOT modified automatically â€” widget reappears if permission is restored
 
 ---
 
@@ -141,19 +141,20 @@
 
 ## Events Triggered
 
-- `DashboardPrefsUpdatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit log (low-priority, audit action: `dashboard.prefs.updated`)
+- `DashboardPrefsUpdatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by audit log (low-priority, audit action: `dashboard.prefs.updated`)
 
 ---
 
 ## Related Flows
 
-- [[Userflow/Dashboard/dashboard-overview|Dashboard Overview]] — the page this customization applies to
-- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — permissions that gate widget availability
+- [[Userflow/Dashboard/dashboard-overview|Dashboard Overview]] â€” the page this customization applies to
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] â€” permissions that gate widget availability
 
 ---
 
 ## Module References
 
-- [[frontend/cross-cutting/authorization|Authorization]] — `useJwtClaims()` for widget permission gating
-- [[modules/shared-platform/overview|Shared Platform]] — `UserDashboardPrefsRepository`, `DashboardPreference.Default()` (no separate Dashboard module; prefs housed in SharedPlatform)
-- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — drag-and-drop zone reordering via `@dnd-kit/core` sortable context
+- [[frontend/cross-cutting/authorization|Authorization]] â€” `useAuth() permission metadata` for widget permission gating
+- [[modules/shared-platform/overview|Shared Platform]] â€” `UserDashboardPrefsRepository`, `DashboardPreference.Default()` (no separate Dashboard module; prefs housed in SharedPlatform)
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] â€” drag-and-drop zone reordering via `@dnd-kit/core` sortable context
+

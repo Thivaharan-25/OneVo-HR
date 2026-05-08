@@ -1,113 +1,90 @@
 # Authentication (Frontend)
 
+## Browser Session Model
+
+The customer-facing ONEVO web app uses a BFF-style cookie session model.
+
+Browser JavaScript never receives, stores, decodes, or sends the tenant user JWT. The backend owns token creation, refresh, validation, rotation, and revocation. The frontend only receives user/session state and permission metadata.
+
 ## Auth Flow
 
-```
-┌─ Login Page ─────────────────────────────────────────────────┐
-│                                                               │
-│  1. User enters email + password                              │
-│  2. POST /api/v1/auth/login                                   │
-│     Response: { accessToken, user, mfaRequired? }             │
-│                                                               │
-│  ├── mfaRequired = true → redirect to /mfa                   │
-│  │   3. User enters TOTP code                                │
-│  │   4. POST /api/v1/auth/mfa/verify                         │
-│  │      Response: { accessToken, refreshToken (HttpOnly) }   │
-│  │                                                            │
-│  └── mfaRequired = false → tokens returned directly          │
-│                                                               │
-│  5. Store access token in memory (NOT localStorage)           │
-│  6. Refresh token set as HttpOnly cookie by server            │
-│  7. Redirect to /overview (or ?redirect= target)             │
-└───────────────────────────────────────────────────────────────┘
+```text
+User                 Frontend App                  Backend API
+ |                       |                              |
+ |-- credentials ------->|                              |
+ |                       |-- POST /api/v1/auth/login -->|
+ |                       |   credentials: include       |
+ |                       |                              |-- verify password
+ |                       |                              |-- require TOTP if needed
+ |                       |<-- 200/202 ------------------|
+ |                       |   Set-Cookie: onevo_session  |
+ |                       |   Body: user, permissions,   |
+ |                       |         mfa_required flags   |
+ |<-- dashboard ---------|                              |
 ```
 
-## Token Management
+If MFA is required, `/api/v1/auth/login` returns `mfa_required: true` without creating a full application session. After the user verifies the authenticator-app TOTP code, `/api/v1/auth/mfa/verify` creates or upgrades the HttpOnly session cookie and returns the same safe session metadata.
 
-| Token | Storage | Lifetime | Sent As |
-|:------|:--------|:---------|:--------|
-| Access Token | In-memory (Zustand) | 15 min | `Authorization: Bearer {token}` header |
-| Refresh Token | HttpOnly Secure cookie | 7 days | Automatic via `credentials: 'include'` |
+## Cookie And Session Handling
 
-### Why In-Memory for Access Token
+| Item | Storage | Lifetime | Sent As |
+|:-----|:--------|:---------|:--------|
+| Web session | HttpOnly Secure SameSite cookie | Server controlled | Automatic via `credentials: "include"` |
+| CSRF token | Readable CSRF cookie plus `X-CSRF-Token` header | Server controlled | Header on mutations |
+| User/permissions | Zustand memory state | Current page lifecycle | Not an auth credential |
 
-- XSS cannot read in-memory state (unlike localStorage)
-- Token is lost on page refresh → silent refresh via refresh token
-- No `window.accessToken` global — encapsulated in AuthStore
+No access token manager exists for the browser app. Do not add `token-manager.ts` for customer web auth.
 
-### Token Storage (`src/lib/security/token-manager.ts`)
+## Initial Session Check
 
-Access tokens live **in memory only** — never in `localStorage` or `sessionStorage`. `token-manager.ts` exposes:
-- `setToken(token, expiresIn)` — stores token + calculates expiry timestamp
-- `getToken()` — returns current token string or null
-- `clearToken()` — wipes on logout or session expiry
-- `isExpiringSoon()` — returns true if token expires within 60 s (used by `auth.interceptor` to pre-emptively refresh)
-
-### Silent Refresh
-
-On app load and when access token expires:
+On app load, the frontend calls `/api/v1/auth/session` or `/api/v1/auth/refresh` with `credentials: "include"`.
 
 ```tsx
-// lib/auth.ts
-let accessToken: string | null = null;
-
-export function getAccessToken(): string | null {
-  return accessToken;
-}
-
-export async function refreshToken(): Promise<boolean> {
-  try {
-    const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include', // Sends HttpOnly refresh cookie
-    });
-
-    if (!response.ok) return false;
-
-    const data = await response.json();
-    accessToken = data.accessToken;
-    useAuthStore.getState().setUser(data.user, data.permissions);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// Called on app mount
 export async function initializeAuth(): Promise<boolean> {
-  return refreshToken(); // Try to get a new access token from refresh cookie
+  const response = await fetch(`${API_URL}/api/v1/auth/session`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (!response.ok) return false;
+
+  const data = await response.json();
+  useAuthStore.getState().setSession(data.user, data.permissions, data.active_modules);
+  return true;
 }
 ```
 
-### Proactive Refresh
+The browser does not parse JWT claims. Permissions, tenant identity, module entitlements, and display user data come from backend session endpoints.
 
-Refresh before expiry to avoid failed requests:
+## Session Refresh
+
+Session refresh is cookie based:
 
 ```tsx
-// Schedule refresh 1 minute before expiry
-function scheduleRefresh(token: string) {
-  const payload = decodeJwt(token);
-  const expiresAt = payload.exp * 1000;
-  const refreshAt = expiresAt - 60_000; // 1 min before
-  const delay = refreshAt - Date.now();
+export async function refreshSession(): Promise<boolean> {
+  const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'X-CSRF-Token': getCsrfToken(),
+    },
+  });
 
-  if (delay > 0) {
-    setTimeout(() => refreshToken(), delay);
-  }
+  if (!response.ok) return false;
+
+  const data = await response.json();
+  useAuthStore.getState().setSession(data.user, data.permissions, data.active_modules);
+  return true;
 }
 ```
 
-### Idle Timeout (`src/lib/security/idle-timeout.ts`)
-
-Registers `mousemove` and `keydown` listeners. After the configured idle window (default: 30 min), calls `tokenManager.clearToken()` and redirects to `/login`. Activated inside `AuthProvider` on mount.
+The backend may rotate internal JWTs, refresh records, or session records during this call. None of those tokens are exposed to browser JavaScript.
 
 ## Auth Provider
 
 ```tsx
-// components/providers/auth-provider.tsx
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
-  const { user, setUser } = useAuthStore();
 
   useEffect(() => {
     initializeAuth()
@@ -128,93 +105,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 ## Auth Store
 
 ```tsx
-// stores/use-auth-store.ts
 interface AuthState {
   user: User | null;
   permissions: string[];
+  activeModules: string[];
   tenantId: string | null;
   isAuthenticated: boolean;
-  setUser: (user: User, permissions: string[]) => void;
+  setSession: (user: User, permissions: string[], activeModules: string[]) => void;
   clear: () => void;
   hasPermission: (permission: string) => boolean;
   hasAnyPermission: (...permissions: string[]) => boolean;
   hasAllPermissions: (...permissions: string[]) => boolean;
 }
-
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  permissions: [],
-  tenantId: null,
-  isAuthenticated: false,
-
-  setUser: (user, permissions) => set({
-    user,
-    permissions,
-    tenantId: user.tenantId,
-    isAuthenticated: true,
-  }),
-
-  clear: () => set({
-    user: null,
-    permissions: [],
-    tenantId: null,
-    isAuthenticated: false,
-  }),
-
-  hasPermission: (permission) => get().permissions.includes(permission),
-  hasAnyPermission: (...perms) => perms.some(p => get().permissions.includes(p)),
-  hasAllPermissions: (...perms) => perms.every(p => get().permissions.includes(p)),
-}));
 ```
+
+The store contains authorization metadata, not credentials.
 
 ## Logout
 
 ```tsx
 async function logout() {
-  // 1. Call API to invalidate refresh token server-side
   await api.auth.logout();
 
-  // 2. Clear client state
-  accessToken = null;
   useAuthStore.getState().clear();
-  queryClient.clear(); // Wipe all cached data
-
-  // 3. Stop SignalR
+  queryClient.clear();
   signalRConnection?.stop();
 
-  // 4. Redirect to login
   window.location.href = '/login';
 }
 ```
 
+`/api/v1/auth/logout` revokes the server-side session and clears the HttpOnly session cookie.
+
 ## Multi-Tab Session Sync
 
+Use `BroadcastChannel` only to sync state changes such as logout or session refresh completion. Never broadcast JWTs or session cookie values.
+
 ```tsx
-// Broadcast channel to sync auth state across tabs
 const authChannel = new BroadcastChannel('auth');
 
 authChannel.onmessage = (event) => {
   if (event.data.type === 'LOGOUT') {
-    // Another tab logged out — clear this tab too
     useAuthStore.getState().clear();
     window.location.href = '/login';
   }
-  if (event.data.type === 'TOKEN_REFRESHED') {
-    // Another tab refreshed — update this tab's token
-    accessToken = event.data.accessToken;
+  if (event.data.type === 'SESSION_REFRESHED') {
+    initializeAuth();
   }
 };
-
-// On logout, broadcast to other tabs
-function logout() {
-  authChannel.postMessage({ type: 'LOGOUT' });
-  // ... rest of logout
-}
 ```
+
+## Non-Browser Clients
+
+This page describes the customer web frontend only. IDE extensions, desktop agents, platform-admin internals, and service integrations may still use JWT Bearer tokens through their own documented storage and authentication rules.
 
 ## Related
 
-- [[frontend/cross-cutting/authorization|Authorization]] — RBAC permission system
-- [[frontend/cross-cutting/security|Security]] — XSS, CSRF protection
-- [[frontend/data-layer/api-integration|Api Integration]] — API client auth interceptor
-- [[frontend/architecture/routing|Routing]] — route guards
+- [[frontend/cross-cutting/authorization|Authorization]] - RBAC permission system
+- [[frontend/cross-cutting/security|Security]] - XSS, CSRF protection
+- [[frontend/data-layer/api-integration|Api Integration]] - API client auth behavior
+- [[frontend/architecture/routing|Routing]] - route guards

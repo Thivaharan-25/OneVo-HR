@@ -9,13 +9,14 @@
 
 ## Phase 1 Rule
 
-MFA uses email OTP sent to the user's verified email address.
+MFA uses authenticator-app TOTP as the primary method. Email OTP is allowed only as a fallback or recovery method when policy permits it.
 
 ## Preconditions
 
 - User is authenticated and has an active session.
-- User has a verified email address.
-- Email delivery is configured through the notification/email boundary. Local development may log OTPs; Phase 1 customer release requires Resend-backed delivery.
+- User has an authenticator app that supports TOTP, such as Microsoft Authenticator, Google Authenticator, 1Password, or similar.
+- User has a verified email address for recovery and fallback notifications.
+- Email delivery is configured through the notification/email boundary for fallback/recovery only. Phase 1 customer release requires Resend-backed delivery for any email fallback.
 
 ## Flow Steps
 
@@ -24,23 +25,22 @@ MFA uses email OTP sent to the user's verified email address.
 - **API:** `GET /api/v1/users/me/security`
 - **DB:** `users`, `user_mfa`, `sessions`
 
-### Step 2: Enable Email OTP MFA
-- **UI:** User clicks "Enable two-factor authentication". Copy explains that sign-in will require a 6-digit code sent to the verified email address.
+### Step 2: Enable TOTP MFA
+- **UI:** User clicks "Enable two-factor authentication". Page shows a QR code and manual setup key for an authenticator app.
 - **API:** `POST /api/v1/auth/mfa/enable`
-- **Backend:** `MfaService.EnableEmailOtpAsync()` creates or verifies `user_mfa.method = email_otp`.
-- **Validation:** Email must be verified. MFA must not already be enabled.
+- **Backend:** `MfaService.BeginTotpSetupAsync()` creates `user_mfa.method = totp` with an encrypted TOTP secret and marks it unverified until confirmation.
+- **Validation:** MFA must not already be enabled.
 - **DB:** `user_mfa`
 
-### Step 3: Confirm With OTP
-- **UI:** System sends a 6-digit code and asks the user to enter it. The page shows masked email, expiry, and resend cooldown.
+### Step 3: Confirm With TOTP
+- **UI:** User enters the 6-digit code from their authenticator app.
 - **API:** `POST /api/v1/auth/mfa/confirm`
-- **Backend:** Sends code, verifies hash, then clears the stored OTP hash.
-- **Validation:** Code expires after 5 minutes.
+- **Backend:** Verifies the submitted TOTP against the encrypted secret, allowing a small clock-skew window, then marks the method verified.
+- **Validation:** Code must be current and must not be reused inside the accepted window.
 - **DB:** `user_mfa`
-- **Resend:** User can request a new code through `POST /api/v1/auth/mfa/send`; the previous stored OTP hash is replaced.
 
 ### Step 4: MFA Enabled
-- **UI:** Success message: "Two-factor authentication has been enabled." Security Settings now shows email OTP enabled.
+- **UI:** Success message: "Two-factor authentication has been enabled." Security Settings now shows authenticator app enabled.
 - **Events:** `MfaEnabledEvent`, audit log `mfa.enabled`.
 
 ## Admin Operations
@@ -53,10 +53,10 @@ MFA uses email OTP sent to the user's verified email address.
 
 | Scenario | Handling |
 |:---|:---|
-| Email not verified | Block setup and require email verification |
-| Resend/notification unavailable | Local dev logs code; production returns delivery failure |
-| Invalid OTP | Return validation error |
-| OTP expired | User must resend code |
+| Invalid TOTP | Return validation error |
+| TOTP clock drift | Show guidance to sync device time |
+| Recovery email not verified | Allow TOTP setup but require verified email before email fallback can be used |
+| Email fallback unavailable | Production returns delivery failure for fallback/recovery only |
 
 ## Related
 

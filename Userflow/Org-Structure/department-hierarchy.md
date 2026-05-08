@@ -3,7 +3,7 @@
 **Area:** Org Structure  
 **Trigger:** Admin creates or modifies department structure (user action — configuration)
 **Required Permission(s):** `org:manage`  
-**Related Permissions:** `employees:read` (to assign department head)
+**Related Permissions:** `employees:read` (to assign department owner)
 
 ---
 
@@ -26,8 +26,8 @@
 - **UI:** Select parent department (or set as root) → select legal entity → assign cost center (optional)
 - **Backend:** DepartmentService.CreateAsync() → [[modules/org-structure/departments/overview|Departments]]
 
-### Step 4: Assign Department Head
-- **UI:** Search and select employee as department head
+### Step 4: Assign Department Owner
+- **UI:** Search and select employee as department owner
 - **API:** `POST /api/v1/org/departments`
 - **DB:** `departments` — new record with `parent_department_id`, `head_employee_id`
 

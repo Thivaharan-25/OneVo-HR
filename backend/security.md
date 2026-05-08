@@ -23,10 +23,12 @@ public interface IPasswordHasher
 
 ---
 
-## JWT Authentication
+## Authentication Tokens And Sessions
 
 **Interface:** `ITokenService` in `ONEVO.Application/Common/Interfaces/`
 **Implementation:** `ONEVO.Infrastructure/Identity/JwtTokenService.cs`
+
+Customer browser sessions use HttpOnly cookie-backed BFF auth. Tenant JWTs for browser users are backend-held and are not returned to frontend JavaScript. JWT validation still applies to backend-held customer auth state and to non-browser clients.
 
 ### Mandatory validation settings (non-negotiable)
 
@@ -53,7 +55,7 @@ tokenValidationParameters = new TokenValidationParameters
 
 | Token type | Issuer | Valid at |
 |---|---|---|
-| Customer | `onevo-customer` | `ONEVO.Api` only |
+| Customer web internal | `onevo-customer` | Backend-held auth state for `ONEVO.Api`; not exposed to browser JavaScript |
 | Platform admin | `onevo-platform-admin` | `/admin/v1/*` inside `ONEVO.Api` only |
 | Agent machine | `onevo-agent` | `AgentGateway` endpoints only |
 
@@ -89,7 +91,7 @@ Applied via EF Core **value converters** in `IEntityTypeConfiguration<T>` — en
 
 ## Multi-Tenancy
 
-`TenantResolutionMiddleware` reads `tenant_id` claim from JWT and populates `ICurrentUser`.
+`TenantResolutionMiddleware` resolves tenant context from the validated HttpOnly web session or backend-held auth state and populates `ICurrentUser`.
 
 `ApplicationDbContext` applies global query filters:
 
@@ -110,7 +112,7 @@ modelBuilder.Entity<T>().HasQueryFilter(
 [RequirePermission("leave:approve")]
 public async Task<IActionResult> ApproveLeave(...)
 
-// Middleware reads JWT claims
+// Middleware reads backend-held session/auth claims
 // Permission format: "{resource}:{action}"
 // Examples: "leave:approve", "employees:write", "payroll:run"
 ```

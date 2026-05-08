@@ -95,11 +95,14 @@
 | `name` | `varchar(50)` | e.g., "HR Manager", "CEO", "Employee" |
 | `description` | `varchar(255)` |  |
 | `is_system` | `boolean` | System roles can't be deleted |
+| `source_template_id` | `uuid` | Nullable FK -> role_templates when materialized from a reusable template |
 | `created_at` | `timestamptz` |  |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
 
 ---
+
+**Rule:** roles do not require job levels. They are tenant-scoped permission containers. Job levels, reporting lines, and hierarchy are used only by scoped permissions, workflows, escalation, and organisation-aware policies.
 
 ## `role_templates`
 
@@ -118,7 +121,7 @@ Developer Platform starter role definitions. Templates are global/operator-manag
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | Nullable |
 
-**Rule:** applying a template to a tenant must filter/validate permissions through the tenant module entitlement catalog. Permissions for disabled/unpurchased modules must not be granted.
+**Rule:** applying a template to a tenant must filter/validate permissions through the tenant module entitlement catalog. Permissions for disabled, available, quoted, unpurchased, or expired modules must not be granted. Operators may also create tenant-specific roles during provisioning without saving them as reusable templates.
 
 ---
 
@@ -191,15 +194,15 @@ Developer Platform starter role definitions. Templates are global/operator-manag
 
 ## `user_mfa`
 
-Multi-factor authentication method registrations per user. MFA uses `email_otp`.
+Multi-factor authentication method registrations per user. MFA uses `totp` as the primary method. `email_otp_fallback` is fallback/recovery only when policy permits it.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `user_id` | `uuid` | FK → users |
 | `tenant_id` | `uuid` | FK → tenants |
-| `method` | `varchar(20)` | `email_otp` |
-| `secret_encrypted` | `varchar(500)` | Temporary hashed email OTP while setup or login verification is pending; cleared after successful verification |
+| `method` | `varchar(20)` | `totp`, `email_otp_fallback` |
+| `secret_encrypted` | `varchar(500)` | Encrypted TOTP secret for `totp`; temporary hashed fallback OTP only for `email_otp_fallback` challenges |
 | `is_verified` | `boolean` | User has confirmed setup with a valid code |
 | `last_used_at` | `timestamptz` | Nullable |
 | `created_at` | `timestamptz` |  |

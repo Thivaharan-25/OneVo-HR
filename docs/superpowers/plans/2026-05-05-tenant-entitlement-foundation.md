@@ -1,4 +1,4 @@
-# Tenant + Entitlement Foundation Implementation Plan
+﻿# Tenant + Entitlement Foundation Implementation Plan
 
 > **Superseded provisioning note:** This plan contains the older public self-signup and direct `adminPassword` implementation design. Current ONEVO guidance is operator-only tenant provisioning through `/admin/v1/tenants`: create provisioning draft, assign commercial terms/modules/settings/role templates, invite the tenant owner with a set-password link, then activate. Do not use this document as the source of truth for tenant creation flow, password handling, or production provisioning APIs.
 
@@ -6,7 +6,7 @@
 
 **Goal:** Build server-side module gates and tenant provisioning so the web app, IDE extension, and Developer Platform can resolve which modules and permissions a user has.
 
-**Architecture:** A static `ModuleCatalog` defines all known module keys. A minimal `SubscriptionPlan` + `TenantSubscription` model links tenants to their plan's allowed modules. `ModuleEntitlementService` resolves active modules (plan ∩ catalog ± `FeatureAccessGrant` overrides); `IPermissionResolver` (already implemented in Task 2) resolves effective permissions. A single `GET /api/v1/me/entitlements` endpoint returns both for any consumer. `TenantProvisioningService` creates Tenant + LegalEntity + admin User + TenantSubscription in one transaction on public signup.
+**Architecture:** A static `ModuleCatalog` defines all known module keys. A minimal `SubscriptionPlan` + `TenantSubscription` model links tenants to their plan's allowed modules. `ModuleEntitlementService` resolves active modules (plan âˆ© catalog Â± `FeatureAccessGrant` overrides); `IPermissionResolver` (already implemented in Task 2) resolves effective permissions. A single `GET /api/v1/me/entitlements` endpoint returns both for any consumer. `TenantProvisioningService` creates Tenant + LegalEntity + admin User + TenantSubscription in one transaction on public signup.
 
 **Tech Stack:** .NET 9, EF Core 9 (InMemory for tests / Npgsql for prod), MediatR, FluentValidation, xUnit, WebApplicationFactory. Working directory for all `dotnet` commands: `C:\OneVo-HR\OneVo-backend`.
 
@@ -14,11 +14,11 @@
 
 ## Scope boundaries (do NOT build these)
 
-- Full billing / Stripe / `plan_features` table — Task 5 (SharedPlatform)
-- Org structure (departments, teams, employees) — DEV2 Task 1 (LegalEntity here is a minimal stub)
-- Industry-profile monitoring toggle seeding — Task 6 (Configuration)
-- DevPlatform Admin API HTTP controllers — Task 7 (only the service interface is built here)
-- Workflow engine — Task 5
+- Full billing / Stripe / `plan_features` table â€” Task 5 (SharedPlatform)
+- Org structure (departments, teams, employees) â€” DEV2 Task 1 (LegalEntity here is a minimal stub)
+- Industry-profile monitoring toggle seeding â€” Task 6 (Configuration)
+- DevPlatform Admin API HTTP controllers â€” Task 7 (only the service interface is built here)
+- Workflow engine â€” Task 5
 
 ---
 
@@ -62,12 +62,12 @@ tests/ONEVO.Tests.Integration/Entitlement/ModuleAssignmentTests.cs
 
 ### Modify
 ```
-ONEVO.Domain/Features/InfrastructureModule/Entities/Tenant.cs          — add IndustryProfile, MarkProvisioned()
-ONEVO.Application/Common/Interfaces/IApplicationDbContext.cs            — add 3 new DbSets
-ONEVO.Infrastructure/Persistence/ApplicationDbContext.cs                — add 3 new DbSets + query filters
-ONEVO.Infrastructure/Persistence/Configurations/InfrastructureModule/TenantConfiguration.cs  — add industry_profile column
-ONEVO.Infrastructure/DependencyInjection.cs                             — register 2 new services
-current-focus/DEV1.md                                                   — tick Task 3 checkboxes
+ONEVO.Domain/Features/InfrastructureModule/Entities/Tenant.cs          â€” add IndustryProfile, MarkProvisioned()
+ONEVO.Application/Common/Interfaces/IApplicationDbContext.cs            â€” add 3 new DbSets
+ONEVO.Infrastructure/Persistence/ApplicationDbContext.cs                â€” add 3 new DbSets + query filters
+ONEVO.Infrastructure/Persistence/Configurations/InfrastructureModule/TenantConfiguration.cs  â€” add industry_profile column
+ONEVO.Infrastructure/DependencyInjection.cs                             â€” register 2 new services
+current-focus/DEV1.md                                                   â€” tick Task 3 checkboxes
 ```
 
 ---
@@ -124,7 +124,7 @@ public class ModuleCatalogTests
 }
 ```
 
-- [ ] **Step 2: Run — expect compile failure (types don't exist yet)**
+- [ ] **Step 2: Run â€” expect compile failure (types don't exist yet)**
 
 ```
 dotnet test tests/ONEVO.Tests.Unit --filter Entitlement
@@ -189,7 +189,7 @@ public static class ModuleCatalog
 }
 ```
 
-- [ ] **Step 5: Run — expect all 4 tests pass**
+- [ ] **Step 5: Run â€” expect all 4 tests pass**
 
 ```
 dotnet test tests/ONEVO.Tests.Unit --filter Entitlement
@@ -267,7 +267,7 @@ public class TenantProvisioningDomainTests
 }
 ```
 
-- [ ] **Step 2: Run — expect compile failure**
+- [ ] **Step 2: Run â€” expect compile failure**
 
 ```
 dotnet test tests/ONEVO.Tests.Unit --filter Entitlement
@@ -290,7 +290,7 @@ public record TenantProvisioned(
 ) : IDomainEvent;
 ```
 
-- [ ] **Step 4: Update Tenant.cs — add IndustryProfile and MarkProvisioned**
+- [ ] **Step 4: Update Tenant.cs â€” add IndustryProfile and MarkProvisioned**
 
 Replace the full file content:
 
@@ -384,7 +384,7 @@ public class TenantSubscription : BaseEntity
     public DateOnly? PeriodStart { get; private set; }
     public DateOnly? PeriodEnd { get; private set; }
 
-    // EF navigation — loaded via Include()
+    // EF navigation â€” loaded via Include()
     public SubscriptionPlan Plan { get; private set; } = null!;
 
     private TenantSubscription() { }
@@ -434,7 +434,7 @@ public class LegalEntity : BaseEntity
 }
 ```
 
-- [ ] **Step 8: Run unit tests — expect all 7 pass**
+- [ ] **Step 8: Run unit tests â€” expect all 7 pass**
 
 ```
 dotnet test tests/ONEVO.Tests.Unit --filter Entitlement
@@ -496,7 +496,7 @@ public interface IApplicationDbContext
     DbSet<AuditLog> AuditLogs { get; }
     DbSet<GdprConsentRecord> GdprConsentRecords { get; }
 
-    // SharedPlatform (Task 3 — Task 5 adds the rest)
+    // SharedPlatform (Task 3 â€” Task 5 adds the rest)
     DbSet<SubscriptionPlan> SubscriptionPlans { get; }
     DbSet<TenantSubscription> TenantSubscriptions { get; }
 
@@ -550,7 +550,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IUnitOfWor
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<GdprConsentRecord> GdprConsentRecords => Set<GdprConsentRecord>();
 
-    // SharedPlatform (minimal — Task 5 adds the rest)
+    // SharedPlatform (minimal â€” Task 5 adds the rest)
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<TenantSubscription> TenantSubscriptions => Set<TenantSubscription>();
 
@@ -563,7 +563,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IUnitOfWor
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        // ── Existing tenant-scoped query filters ──────────────────────────────
+        // â”€â”€ Existing tenant-scoped query filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         modelBuilder.Entity<User>().HasQueryFilter(
             u => !u.IsDeleted && (CurrentTenantId == null || u.TenantId == CurrentTenantId.GetValueOrDefault()));
         modelBuilder.Entity<FileRecord>().HasQueryFilter(
@@ -581,7 +581,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IUnitOfWor
         modelBuilder.Entity<UserMfa>().HasQueryFilter(
             m => CurrentTenantId == null || m.TenantId == CurrentTenantId.GetValueOrDefault());
 
-        // ── New Task 3 query filters ──────────────────────────────────────────
+        // â”€â”€ New Task 3 query filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // TenantSubscription: tenant-scoped, no soft-delete
         modelBuilder.Entity<TenantSubscription>().HasQueryFilter(
             ts => CurrentTenantId == null || ts.TenantId == CurrentTenantId.GetValueOrDefault());
@@ -698,7 +698,7 @@ public class LegalEntityConfiguration : IEntityTypeConfiguration<LegalEntity>
 
 - [ ] **Step 6: Add industry_profile to TenantConfiguration**
 
-Open `src/ONEVO.Infrastructure/Persistence/Configurations/InfrastructureModule/TenantConfiguration.cs` and add this property mapping inside `Configure()`, after the existing property mappings (before or after `IsActive` — anywhere in the method body):
+Open `src/ONEVO.Infrastructure/Persistence/Configurations/InfrastructureModule/TenantConfiguration.cs` and add this property mapping inside `Configure()`, after the existing property mappings (before or after `IsActive` â€” anywhere in the method body):
 
 ```csharp
 builder.Property(x => x.IndustryProfile)
@@ -952,7 +952,7 @@ public class ModuleEntitlementServiceTests
 }
 ```
 
-- [ ] **Step 2: Run — expect compile failure (interface + service don't exist)**
+- [ ] **Step 2: Run â€” expect compile failure (interface + service don't exist)**
 
 ```
 dotnet test tests/ONEVO.Tests.Unit --filter ModuleEntitlement
@@ -989,7 +989,7 @@ namespace ONEVO.Application.Features.InfrastructureModule.Interfaces;
 
 public interface IModuleEntitlementService
 {
-    /// <summary>Resolves active modules: plan allowedModules ± tenant-level FeatureAccessGrant overrides.</summary>
+    /// <summary>Resolves active modules: plan allowedModules Â± tenant-level FeatureAccessGrant overrides.</summary>
     Task<List<string>> GetActiveModulesAsync(Guid tenantId, CancellationToken ct);
 
     /// <summary>
@@ -1002,7 +1002,7 @@ public interface IModuleEntitlementService
 }
 ```
 
-- [ ] **Step 5: Create ModuleEntitlementService (read path only — write path in Task 8)**
+- [ ] **Step 5: Create ModuleEntitlementService (read path only â€” write path in Task 8)**
 
 ```csharp
 // src/ONEVO.Infrastructure/Services/ModuleEntitlementService.cs
@@ -1066,7 +1066,7 @@ services.AddScoped<IModuleEntitlementService, ModuleEntitlementService>();
 
 Also add the using: `using ONEVO.Application.Features.InfrastructureModule.Interfaces;`
 
-- [ ] **Step 7: Run — expect all 4 unit tests pass**
+- [ ] **Step 7: Run â€” expect all 4 unit tests pass**
 
 ```
 dotnet test tests/ONEVO.Tests.Unit --filter ModuleEntitlement
@@ -1282,7 +1282,7 @@ public class TenantProvisioningTests : IAsyncLifetime
 }
 ```
 
-- [ ] **Step 3: Run — expect compile failure (controller + commands don't exist)**
+- [ ] **Step 3: Run â€” expect compile failure (controller + commands don't exist)**
 
 ```
 dotnet test tests/ONEVO.Tests.Integration --filter Entitlement
@@ -1475,7 +1475,7 @@ public class TenantProvisioningService : ITenantProvisioningService
         var sub = TenantSubscription.Create(tenant.Id, input.PlanId, admin.Id);
         _db.TenantSubscriptions.Add(sub);
 
-        // Finalise — raises TenantProvisioned domain event (dispatched after save)
+        // Finalise â€” raises TenantProvisioned domain event (dispatched after save)
         tenant.MarkProvisioned(input.PlanId);
 
         await _uow.SaveChangesAsync(ct);
@@ -1548,7 +1548,7 @@ In `src/ONEVO.Infrastructure/DependencyInjection.cs`, add inside `AddInfrastruct
 services.AddScoped<ITenantProvisioningService, TenantProvisioningService>();
 ```
 
-- [ ] **Step 11: Run — expect all 4 provisioning tests pass**
+- [ ] **Step 11: Run â€” expect all 4 provisioning tests pass**
 
 ```
 dotnet test tests/ONEVO.Tests.Integration --filter "Entitlement&ProvisionTenant"
@@ -1633,7 +1633,7 @@ public class EntitlementEndpointTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, loginResp.StatusCode);
         var login = await loginResp.Content.ReadFromJsonAsync<LoginResult>();
         _client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", login!.AccessToken);
+            // Browser web auth now uses HttpOnly cookie sessions; do not attach login.AccessToken.
 
         // Get entitlements
         var resp = await _client.GetAsync("/api/v1/me/entitlements");
@@ -1668,7 +1668,7 @@ public class EntitlementEndpointTests : IAsyncLifetime
         });
         var login = await loginResp.Content.ReadFromJsonAsync<LoginResult>();
         _client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", login!.AccessToken);
+            // Browser web auth now uses HttpOnly cookie sessions; do not attach login.AccessToken.
 
         var resp = await _client.GetAsync("/api/v1/me/entitlements");
         var dto = await resp.Content.ReadFromJsonAsync<EntitlementResult>();
@@ -1676,8 +1676,8 @@ public class EntitlementEndpointTests : IAsyncLifetime
         Assert.DoesNotContain("work_sync", dto!.Modules);
     }
 
-    // ── Local DTOs for response deserialization ────────────────────────────
-    private record LoginResult(string? AccessToken, int ExpiresIn, bool MustChangePassword,
+    // â”€â”€ Local DTOs for response deserialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    private record LoginResult(bool Authenticated, bool MustChangePassword,
         string? ChangePasswordToken, bool MfaRequired, string? MfaPendingToken);
 
     private record EntitlementResult(
@@ -1689,7 +1689,7 @@ public class EntitlementEndpointTests : IAsyncLifetime
 }
 ```
 
-- [ ] **Step 2: Run — expect compile failure (controller + query types don't exist)**
+- [ ] **Step 2: Run â€” expect compile failure (controller + query types don't exist)**
 
 ```
 dotnet test tests/ONEVO.Tests.Integration --filter EntitlementEndpoint
@@ -1826,7 +1826,7 @@ public class EntitlementController : ControllerBase
 }
 ```
 
-- [ ] **Step 7: Run — expect all 3 endpoint tests pass**
+- [ ] **Step 7: Run â€” expect all 3 endpoint tests pass**
 
 ```
 dotnet test tests/ONEVO.Tests.Integration --filter EntitlementEndpoint
@@ -1958,7 +1958,7 @@ public class ModuleAssignmentTests : IAsyncLifetime
 }
 ```
 
-- [ ] **Step 2: Run — expect 3 failures (NotImplementedException)**
+- [ ] **Step 2: Run â€” expect 3 failures (NotImplementedException)**
 
 ```
 dotnet test tests/ONEVO.Tests.Integration --filter ModuleAssignment
@@ -2012,7 +2012,7 @@ public async Task SetTenantModulesAsync(
         // If both match, no override grant is needed
     }
 
-    // IApplicationDbContext is also IUnitOfWork — cast to save
+    // IApplicationDbContext is also IUnitOfWork â€” cast to save
     if (_db is IUnitOfWork uow)
         await uow.SaveChangesAsync(ct);
 }
@@ -2038,9 +2038,9 @@ using ONEVO.Application.Common.Interfaces;
 using ONEVO.Domain.Features.Auth.Entities;
 ```
 
-(`FeatureAccessGrant` is in `ONEVO.Domain.Features.Auth.Entities` — already in scope from the read path.)
+(`FeatureAccessGrant` is in `ONEVO.Domain.Features.Auth.Entities` â€” already in scope from the read path.)
 
-- [ ] **Step 4: Run — expect all 3 tests pass**
+- [ ] **Step 4: Run â€” expect all 3 tests pass**
 
 ```
 dotnet test tests/ONEVO.Tests.Integration --filter ModuleAssignment
@@ -2092,7 +2092,7 @@ dotnet build ONEVO.sln -c Release
 
 Expected: `Build succeeded.`
 
-- [ ] **Step 4: Update DEV1.md — tick all Task 3 checkboxes**
+- [ ] **Step 4: Update DEV1.md â€” tick all Task 3 checkboxes**
 
 Open `current-focus/DEV1.md`. In the **Task 3: Tenant + Entitlement Foundation** section, change each `- [ ]` to `- [x]`:
 
@@ -2129,11 +2129,12 @@ git commit -m "docs(dev1): mark Task 3 Tenant + Entitlement Foundation complete"
 | Tests cover active module resolution, permission inheritance, and module assignment | Tasks 5, 7, 8 |
 
 **Type consistency across tasks:**
-- `ModuleKey.*` constants defined in Task 1 — used unchanged in Tasks 5, 6, 7, 8
-- `ProvisionTenantResult` defined in Task 6 `ITenantProvisioningService.cs` — returned by handler and controller
-- `EntitlementDto` / `PlanDto` defined in Task 7 — returned by handler and controller
-- `IModuleEntitlementService.SetTenantModulesAsync` signature defined in Task 5 — implemented in Task 8
-- `FeatureAccessGrant.Create("tenant", ...)` pattern — used identically in Tasks 5 (read path) and 8 (write path)
+- `ModuleKey.*` constants defined in Task 1 â€” used unchanged in Tasks 5, 6, 7, 8
+- `ProvisionTenantResult` defined in Task 6 `ITenantProvisioningService.cs` â€” returned by handler and controller
+- `EntitlementDto` / `PlanDto` defined in Task 7 â€” returned by handler and controller
+- `IModuleEntitlementService.SetTenantModulesAsync` signature defined in Task 5 â€” implemented in Task 8
+- `FeatureAccessGrant.Create("tenant", ...)` pattern â€” used identically in Tasks 5 (read path) and 8 (write path)
 - `IgnoreQueryFilters()` used consistently everywhere tenant-level grants are read cross-tenant
 
-**Placeholder scan:** None found — every step contains complete, compilable code.
+**Placeholder scan:** None found â€” every step contains complete, compilable code.
+

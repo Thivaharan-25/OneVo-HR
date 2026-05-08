@@ -1,4 +1,4 @@
-# Frontend Architecture Overview
+﻿# Frontend Architecture Overview
 
 ## Tech Stack
 
@@ -21,7 +21,7 @@
 ## Architecture Principles
 
 ### 1. Client-Side Rendering (CSR) Throughout
-This is a Vite SPA — there are no Server Components, no SSR, no `'use client'` directives. All rendering happens in the browser. Data fetching is handled by TanStack Query. Loading states use React Suspense boundaries. This is intentional — the app is behind authentication and SEO is not a concern.
+This is a Vite SPA â€” there are no Server Components, no SSR, no `'use client'` directives. All rendering happens in the browser. Data fetching is handled by TanStack Query. Loading states use React Suspense boundaries. This is intentional â€” the app is behind authentication and SEO is not a concern.
 
 ### 2. Module Isolation
 Each product domain (Core HR, Workforce Intelligence, Payroll, etc.) owns its own:
@@ -30,7 +30,7 @@ Each product domain (Core HR, Workforce Intelligence, Payroll, etc.) owns its ow
 - API hooks under `hooks/{module}/`
 - Types under `types/{module}.ts`
 
-Cross-module imports go through `components/shared/` or `hooks/shared/` — never directly between modules.
+Cross-module imports go through `components/shared/` or `hooks/shared/` â€” never directly between modules.
 
 ### 3. Data Ownership Is Clear
 - **Server state** (TanStack Query): anything that came from the API
@@ -39,10 +39,10 @@ Cross-module imports go through `components/shared/` or `hooks/shared/` — neve
 - **Never duplicate** server state into client state
 
 ### 4. Permission-Driven Rendering
-Every route, sidebar section, button, and data column respects RBAC. Permissions flow from JWT claims → AuthStore → `<PermissionGate>` wrappers and `useHasPermission()` hooks. The UI never shows actions the user can't perform.
+Every route, sidebar section, button, and data column respects RBAC. Permissions flow from backend session metadata -> AuthStore -> `<PermissionGate>` wrappers and `useHasPermission()` hooks. The UI never shows actions the user can't perform.
 
 ### 5. Real-Time as an Overlay
-SignalR pushes are **cache invalidation signals**, not primary data sources. When a push arrives, TanStack Query refetches — the API remains the source of truth. This keeps the data layer testable and avoids split-brain state.
+SignalR pushes are **cache invalidation signals**, not primary data sources. When a push arrives, TanStack Query refetches â€” the API remains the source of truth. This keeps the data layer testable and avoids split-brain state.
 
 ### 6. Tenant Isolation at Every Layer
 - API requests include `X-Tenant-Id` header (set by ApiClient from auth context)
@@ -53,35 +53,35 @@ SignalR pushes are **cache invalidation signals**, not primary data sources. Whe
 ## High-Level Data Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  Browser                                                         │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────────────┐ │
-│  │ React Server │   │ Client       │   │ SignalR              │ │
-│  │ Components   │   │ Components   │   │ WebSocket            │ │
-│  │ (SSR data)   │   │ (interactive)│   │ (push notifications) │ │
-│  └──────┬───────┘   └──────┬───────┘   └──────────┬───────────┘ │
-│         │                  │                       │             │
-│         │           ┌──────▼───────┐               │             │
-│         │           │ TanStack     │◄──────────────┘             │
-│         │           │ Query Cache  │  invalidate on push         │
-│         │           └──────┬───────┘                             │
-│         │                  │                                     │
-│         │           ┌──────▼───────┐                             │
-│         │           │ ApiClient    │                             │
-│         │           │ (interceptors│                             │
-│         │           │  auth, retry)│                             │
-│         │           └──────┬───────┘                             │
-│         │                  │                                     │
-└─────────┼──────────────────┼─────────────────────────────────────┘
-          │                  │
-          ▼                  ▼
-┌─────────────────────────────────────────┐
-│  .NET 9 API Gateway (per-tenant)        │
-│  ┌──────────┐ ┌──────────┐ ┌─────────┐ │
-│  │ Core HR  │ │ Workforce│ │ Payroll │ │
-│  │ Service  │ │ Service  │ │ Service │ │
-│  └──────────┘ └──────────┘ └─────────┘ │
-└─────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Browser                                                         â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚ React Server â”‚   â”‚ Client       â”‚   â”‚ SignalR              â”‚ â”‚
+â”‚  â”‚ Components   â”‚   â”‚ Components   â”‚   â”‚ WebSocket            â”‚ â”‚
+â”‚  â”‚ (SSR data)   â”‚   â”‚ (interactive)â”‚   â”‚ (push notifications) â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”‚         â”‚                  â”‚                       â”‚             â”‚
+â”‚         â”‚           â”Œâ”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”               â”‚             â”‚
+â”‚         â”‚           â”‚ TanStack     â”‚â—„â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜             â”‚
+â”‚         â”‚           â”‚ Query Cache  â”‚  invalidate on push         â”‚
+â”‚         â”‚           â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜                             â”‚
+â”‚         â”‚                  â”‚                                     â”‚
+â”‚         â”‚           â”Œâ”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”                             â”‚
+â”‚         â”‚           â”‚ ApiClient    â”‚                             â”‚
+â”‚         â”‚           â”‚ (interceptorsâ”‚                             â”‚
+â”‚         â”‚           â”‚  auth, retry)â”‚                             â”‚
+â”‚         â”‚           â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜                             â”‚
+â”‚         â”‚                  â”‚                                     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+          â”‚                  â”‚
+          â–¼                  â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  .NET 9 API Gateway (per-tenant)        â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚ Core HR  â”‚ â”‚ Workforceâ”‚ â”‚ Payroll â”‚ â”‚
+â”‚  â”‚ Service  â”‚ â”‚ Service  â”‚ â”‚ Service â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ## Deployment Architecture
@@ -90,16 +90,18 @@ SignalR pushes are **cache invalidation signals**, not primary data sources. Whe
 |:--------|:---------|
 | Hosting | Azure Static Web Apps or any static host (Vite outputs `dist/`) |
 | CDN | Azure CDN for static assets |
-| Environment Config | `VITE_*` env vars per environment — accessed via `import.meta.env.VITE_*` |
+| Environment Config | `VITE_*` env vars per environment â€” accessed via `import.meta.env.VITE_*` |
 | Preview Deployments | Per-PR preview URLs via Azure Static Web Apps staging slots |
 | Static Assets | Immutable hashing, `Cache-Control: max-age=31536000, immutable` |
 | API Proxy | Configure nginx or Azure CDN to proxy `/api/v1/**` to backend (avoids CORS) |
-| Security Headers | Set via nginx or CDN rules in production — see `frontend/cross-cutting/security.md` |
+| Security Headers | Set via nginx or CDN rules in production â€” see `frontend/cross-cutting/security.md` |
 
 ## Related
 
-- [[frontend/architecture/app-structure|App Structure]] — route tree and layout hierarchy
-- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — SSR vs CSR decision matrix
-- [[backend/module-boundaries|Module Boundaries]] — code splitting and isolation rules
-- [[frontend/architecture/routing|Routing]] — route guards, middleware, parallel routes
-- [[backend/messaging/error-handling|Error Handling]] — error boundary hierarchy
+- [[frontend/architecture/app-structure|App Structure]] â€” route tree and layout hierarchy
+- [[frontend/architecture/rendering-strategy|Rendering Strategy]] â€” SSR vs CSR decision matrix
+- [[backend/module-boundaries|Module Boundaries]] â€” code splitting and isolation rules
+- [[frontend/architecture/routing|Routing]] â€” route guards, middleware, parallel routes
+- [[backend/messaging/error-handling|Error Handling]] â€” error boundary hierarchy
+
+

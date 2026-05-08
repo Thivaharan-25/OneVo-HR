@@ -54,10 +54,10 @@ When clicking "View Detail":
 │ - Window: Last 60 minutes          │
 │ - Consecutive snapshots: 4          │
 │                                     │
-│ Escalation Chain:                   │
-│ ✅ Step 1: Manager (immediate)     │
-│ ⏳ Step 2: HR (in 28 min)          │
-│ ⬜ Step 3: CEO (in 58 min)         │
+│ Escalation:                         │
+│ ✅ Employee's reporting manager     │
+│ ⏳ Users with exceptions:manage     │
+│ ⬜ Configured escalation owner      │
 │                                     │
 │ [Acknowledge] [Dismiss] [Escalate]  │
 │                                     │
@@ -66,7 +66,7 @@ When clicking "View Detail":
 ├─────────────────────────────────────┤
 │ Action History                      │
 │ - Created: 10:30 AM (system)       │
-│ - Notified: Manager at 10:30 AM    │
+│ - Notified: reporting manager at 10:30 AM │
 └─────────────────────────────────────┘
 ```
 

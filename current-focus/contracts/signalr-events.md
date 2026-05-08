@@ -78,8 +78,8 @@ event "chat:typing" {
 
 ## Notes
 
-- Hub connections require a valid user JWT in the `Authorization` header (`Bearer`)
-- `IDEHub` uses the same tenant JWT as REST; rejected at the admin boundary
+- Customer web hub connections authenticate with the same HttpOnly cookie-backed web session as REST.
+- `IDEHub` may use the IDE-specific tenant JWT flow; that token is stored in IDE secure storage and is rejected at the admin boundary.
 - `exception:alert` also dispatches `notification:created` to the manager's `notifications-{userId}` hub
 - Client subscribes to `notifications-{userId}` using the `user_id` from `GET /api/v1/auth/me/permissions`
 

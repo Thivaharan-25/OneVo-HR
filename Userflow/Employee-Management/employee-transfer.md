@@ -30,7 +30,7 @@
 
 ### Step 4: Approval (if configured)
 - **Backend:** Workflow triggers if approval required → [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
-- Both current and new department heads may need to approve
+- Resolver-selected approvers may need to approve, such as the current department owner, new department owner, reporting manager, team lead, users with a selected permission, or configured escalation owner. Multiple approvers use the workflow approval mode: only one required, all required, or approve in order.
 
 ### Step 5: Effective Date Processing
 - **Backend:** On effective date:

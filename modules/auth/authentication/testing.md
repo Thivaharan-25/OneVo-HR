@@ -22,13 +22,13 @@ public class AuthServiceTests
     {
         var user = CreateActiveUser();
         _userRepoMock.Setup(r => r.GetByEmailAsync(It.IsAny<string>(), It.IsAny<Guid>(), default)).ReturnsAsync(user);
-        _tokenServiceMock.Setup(t => t.GenerateAccessTokenAsync(
+_tokenServiceMock.Setup(t => t.GenerateInternalAccessTokenAsync(
             It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<List<string>>(), default)).ReturnsAsync("access-token");
 
         var result = await _sut.LoginAsync(new LoginCommand { Email = "test@onevo.com", Password = "valid" }, default);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.AccessToken.Should().NotBeEmpty();
+result.Value!.Authenticated.Should().BeTrue();
     }
 
     [Fact]

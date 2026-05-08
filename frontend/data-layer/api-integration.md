@@ -2,13 +2,16 @@
 
 ## API Client
 
-The ApiClient is a thin class that runs every request through an ordered interceptor pipeline. Uses `import.meta.env.VITE_API_URL` — **not** `process.env.NEXT_PUBLIC_API_URL` (that is a Next.js prefix; this project uses Vite).
+The ApiClient is a thin class that runs every request through an ordered interceptor pipeline. It uses `import.meta.env.VITE_API_URL`; this project uses Vite, not Next.js.
+
+Customer web API calls use a BFF-style HttpOnly cookie session. The browser frontend does not attach tenant JWTs to normal `/api/v1/*` requests.
 
 ```typescript
 // lib/api/client.ts
-import { authInterceptor } from './interceptors/auth.interceptor';
+import { sessionInterceptor } from './interceptors/session.interceptor';
 import { tenantInterceptor } from './interceptors/tenant.interceptor';
 import { correlationInterceptor } from './interceptors/correlation.interceptor';
+import { csrfInterceptor } from './interceptors/csrf.interceptor';
 import { errorInterceptor } from './interceptors/error.interceptor';
 
 class ApiClient {
@@ -21,17 +24,16 @@ class ApiClient {
         'Content-Type': 'application/json',
         ...options.headers,
       },
-      credentials: 'include', // httpOnly refresh token cookie
+      credentials: 'include',
     });
 
-    // Request interceptors (order matters)
-    request = await authInterceptor.onRequest(request);
-    request = await tenantInterceptor.onRequest(request);
-    request = await correlationInterceptor.onRequest(request);
+    request = await sessionInterceptor.onRequest(request);
+    request = tenantInterceptor.onRequest(request);
+    request = csrfInterceptor.onRequest(request);
+    request = correlationInterceptor.onRequest(request);
 
     const response = await fetch(request);
 
-    // Response interceptor handles 401/403/429/5xx
     return errorInterceptor.onResponse<T>(response, () => this.fetch(path, options));
   }
 }
@@ -43,23 +45,17 @@ export const apiClient = new ApiClient();
 
 ## Interceptors
 
-Four interceptors, each with a single responsibility. Located in `lib/api/interceptors/`.
+Interceptors are located in `lib/api/interceptors/`.
 
 ```typescript
-// lib/api/interceptors/auth.interceptor.ts
-import { tokenManager } from '@/lib/security/token-manager';
-import { refreshAccessToken } from '@/lib/api/endpoints/auth';
+// lib/api/interceptors/session.interceptor.ts
+import { refreshSessionIfNeeded } from '@/lib/api/endpoints/auth';
 
-export const authInterceptor = {
+export const sessionInterceptor = {
   async onRequest(request: Request): Promise<Request> {
-    // Proactive refresh — don't wait for a 401 failure
-    if (tokenManager.isExpiringSoon()) {
-      await refreshAccessToken();
-    }
-    const token = tokenManager.get();
-    if (token) {
-      request.headers.set('Authorization', `Bearer ${token}`);
-    }
+    // Browser authentication is cookie-based. Do not attach
+    // Authorization: Bearer for customer web calls.
+    await refreshSessionIfNeeded();
     return request;
   },
 };
@@ -81,6 +77,20 @@ export const tenantInterceptor = {
 ```
 
 ```typescript
+// lib/api/interceptors/csrf.interceptor.ts
+import { getCsrfToken } from '@/lib/security/csrf';
+
+export const csrfInterceptor = {
+  onRequest(request: Request): Request {
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      request.headers.set('X-CSRF-Token', getCsrfToken());
+    }
+    return request;
+  },
+};
+```
+
+```typescript
 // lib/api/interceptors/correlation.interceptor.ts
 export const correlationInterceptor = {
   onRequest(request: Request): Request {
@@ -92,7 +102,7 @@ export const correlationInterceptor = {
 
 ```typescript
 // lib/api/interceptors/error.interceptor.ts
-import { tokenManager } from '@/lib/security/token-manager';
+import { useAuthStore } from '@/stores/use-auth-store';
 import { ApiError, AuthError } from '@/lib/api/errors';
 import { toast } from 'sonner';
 
@@ -102,7 +112,7 @@ export const errorInterceptor = {
 
     switch (response.status) {
       case 401:
-        tokenManager.clear();
+        useAuthStore.getState().clear();
         window.location.href = '/login';
         throw new AuthError('Session expired');
 
@@ -128,32 +138,28 @@ export const errorInterceptor = {
 
 ---
 
-## Token Security
+## Session Security
 
-Access tokens are stored **in-memory only** — never in `localStorage` or `sessionStorage`. This prevents XSS from stealing tokens. Refresh tokens live in an `httpOnly` cookie set by the backend — JavaScript cannot read them.
+Customer web sessions are stored only in HttpOnly Secure SameSite cookies set by the backend. Browser JavaScript cannot read those cookies and must not store tenant JWTs in memory, `localStorage`, or `sessionStorage`.
 
 ```typescript
-// lib/security/token-manager.ts
-let _accessToken: string | null = null;
-let _expiresAt: number | null = null;
+// lib/api/endpoints/auth.ts
+export async function refreshSession(): Promise<SessionDto | null> {
+  const response = await apiClient.fetch<SessionDto>('/api/v1/auth/refresh', {
+    method: 'POST',
+  });
 
-export const tokenManager = {
-  set(token: string, expirySeconds: number): void {
-    _accessToken = token;
-    _expiresAt = Date.now() + expirySeconds * 1000;
-  },
-  get(): string | null {
-    return _accessToken;
-  },
-  isExpiringSoon(): boolean {
-    return _expiresAt !== null && Date.now() > _expiresAt - 60_000;
-  },
-  clear(): void {
-    _accessToken = null;
-    _expiresAt = null;
-  },
-};
+  useAuthStore.getState().setSession(
+    response.user,
+    response.permissions,
+    response.active_modules,
+  );
+
+  return response;
+}
 ```
+
+Non-browser clients such as the IDE extension, desktop agent, and platform-admin server internals may still use Bearer tokens where their own contracts say so.
 
 ---
 
@@ -189,57 +195,11 @@ export const employeesApi = {
 };
 ```
 
-```typescript
-// lib/api/index.ts — single composed api object used everywhere
-import { authApi }          from './endpoints/auth';
-import { employeesApi }     from './endpoints/employees';
-import { leaveApi }         from './endpoints/leave';
-import { orgApi }           from './endpoints/org';
-import { workforceApi }     from './endpoints/workforce';
-import { calendarApi }      from './endpoints/calendar';
-import { notificationsApi } from './endpoints/notifications';
-import { settingsApi }      from './endpoints/settings';
-import { adminApi }         from './endpoints/admin';
-import { agentsApi }        from './endpoints/agents';
-import { identityApi }      from './endpoints/identity';
-import { projectsApi }      from './endpoints/wms/projects';
-import { tasksApi }         from './endpoints/wms/tasks';
-import { plannerApi }       from './endpoints/wms/planner';
-import { goalsApi }         from './endpoints/wms/goals';
-import { docsApi }          from './endpoints/wms/docs';
-import { timeApi }          from './endpoints/wms/time';
-import { chatApi }          from './endpoints/wms/chat';
-
-export const api = {
-  auth:          authApi,
-  employees:     employeesApi,
-  leave:         leaveApi,
-  org:           orgApi,
-  workforce:     workforceApi,
-  calendar:      calendarApi,
-  notifications: notificationsApi,
-  settings:      settingsApi,
-  admin:         adminApi,
-  agents:        agentsApi,
-  identity:      identityApi,
-  wms: {
-    projects: projectsApi,
-    tasks:    tasksApi,
-    planner:  plannerApi,
-    goals:    goalsApi,
-    docs:     docsApi,
-    time:     timeApi,
-    chat:     chatApi,
-  },
-};
-```
-
 ---
 
 ## Error Types
 
 ```typescript
-// lib/api/errors.ts
 export interface ProblemDetails {
   type?: string;
   title: string;
@@ -267,7 +227,7 @@ export class AuthError extends Error {}
 
 ## Pagination
 
-Cursor-based only — never offset pagination.
+Cursor-based only; never offset pagination for high-volume tenant data.
 
 ```typescript
 export function useEmployeesInfinite(filters: EmployeeFilters) {
@@ -283,27 +243,9 @@ export function useEmployeesInfinite(filters: EmployeeFilters) {
 
 ---
 
-## Global Query Config
-
-```typescript
-// App.tsx — TanStack Query client config
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount, error) => {
-        if (error instanceof AuthError) return false;
-        return failureCount < 3;
-      },
-    },
-  },
-});
-```
-
----
-
 ## Related
 
-- [[backend/api-conventions|Api Conventions]] — backend API conventions
-- [[frontend/architecture/app-structure|App Structure]] — frontend architecture
-- [[frontend/data-layer/state-management|State Management]] — state management patterns
-- [[frontend/coding-standards|Frontend Coding Standards]] — coding standards
+- [[backend/api-conventions|Api Conventions]] - backend API conventions
+- [[frontend/architecture/app-structure|App Structure]] - frontend architecture
+- [[frontend/data-layer/state-management|State Management]] - state management patterns
+- [[frontend/coding-standards|Frontend Coding Standards]] - coding standards

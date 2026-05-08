@@ -169,7 +169,7 @@ Only non-sensitive, UI-preference data persists to localStorage:
 | Table column preferences | Yes | Zustand + localStorage |
 | Filter preferences | Yes | Zustand + localStorage |
 | TanStack Query cache | No | Memory only (security) |
-| Auth tokens | HttpOnly cookie (refresh) / memory (access) | Cookie + memory |
+| Web auth session | HttpOnly cookie only | Cookie |
 
 ### Why Not Persist Query Cache
 

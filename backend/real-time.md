@@ -1,17 +1,14 @@
-# Real-Time Architecture
+﻿# Real-Time Architecture
 
 ## SignalR Setup
 
 ```typescript
 // lib/signalr/connection.ts
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { getAccessToken } from '@/lib/auth';
 
 export function createSignalRConnection() {
   return new HubConnectionBuilder()
-    .withUrl(`${import.meta.env.VITE_API_URL}/hubs/notifications`, {
-      accessTokenFactory: () => getAccessToken() ?? '',
-    })
+    .withUrl(`${import.meta.env.VITE_API_URL}/hubs/notifications`, {`r`n      withCredentials: true,`r`n    })
     .withAutomaticReconnect([0, 1000, 2000, 5000, 10000, 30000]) // Backoff
     .configureLogging(LogLevel.Warning)
     .build();
@@ -109,7 +106,8 @@ export function useWorkforceStatus() {
 
 ## Related
 
-- [[modules/notifications/signalr-real-time/overview|Signalr Real Time]] — SignalR implementation
-- [[modules/workforce-presence/overview|Workforce Presence]] — live presence tracking
-- [[modules/exception-engine/overview|Exception Engine]] — real-time alerts
-- [[backend/notification-system|Notification System]] — notification delivery
+- [[modules/notifications/signalr-real-time/overview|Signalr Real Time]] â€” SignalR implementation
+- [[modules/workforce-presence/overview|Workforce Presence]] â€” live presence tracking
+- [[modules/exception-engine/overview|Exception Engine]] â€” real-time alerts
+- [[backend/notification-system|Notification System]] â€” notification delivery
+

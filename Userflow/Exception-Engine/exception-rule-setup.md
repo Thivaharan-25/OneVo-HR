@@ -36,9 +36,10 @@
 ### Step 3: Set Severity
 - **UI:** Select: Low, Medium, High, Critical → determines notification urgency and escalation speed
 
-### Step 4: Set Notification Targets
-- **UI:** Who gets notified: Direct Manager, HR Admin, Department Head, CEO → varies by severity
-- Links: [[Userflow/Exception-Engine/escalation-chain-setup|Escalation Chain Setup]]
+### Step 4: Set Routing And Escalation
+- **UI:** Select notification and escalation recipients using resolver choices, such as employee's reporting manager, employee's team lead, employee's department owner, users with selected permission, users in a selected department/team/job level, a specific employee, previous approver, case participants, or the configured escalation owner.
+- **Rule:** Do not route to fixed role names such as HR, CEO, or department head. If the customer wants an HR-like destination, they select a permission, department, team, job level, specific employee, or configured escalation owner.
+- Links: [[Userflow/Exception-Engine/escalation-chain-setup|Escalation Chain Setup]] and [[Userflow/Automation/automation-center|Automation Center]]
 
 ### Step 5: Activate
 - **API:** `PUT /api/v1/exceptions/rules/{id}/activate`

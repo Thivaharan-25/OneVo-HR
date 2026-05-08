@@ -1,7 +1,7 @@
 # Grievance Investigation
 
 **Area:** Grievance  
-**Trigger:** HR Admin reviews filed grievance (reaction — triggered by grievance filing)
+**Trigger:** Configured grievance resolver reviews filed grievance (reaction — triggered by grievance filing)
 **Required Permission(s):** `grievance:manage`  
 **Related Permissions:** `employees:read` (view involved parties)
 
@@ -19,7 +19,7 @@
 - **API:** `GET /api/v1/grievance/cases/{id}`
 
 ### Step 2: Assign Investigator
-- **UI:** Assign investigator (HR staff or external) → set target resolution date
+- **UI:** Assign investigator using permitted employees, users with selected permission, configured grievance owner, or external investigator record → set target resolution date
 - **API:** `PUT /api/v1/grievance/cases/{id}/assign`
 - **DB:** `grievance_cases` — status: "Under Investigation", `investigator_id` set
 
@@ -29,7 +29,7 @@
 
 ### Step 4: Recommend Action
 - **UI:** Investigator recommends: No action, Mediation, Warning, Disciplinary Action, Policy Change
-- HR reviews recommendation
+- Configured resolver or case owner reviews recommendation
 
 ### Step 5: Resolve Case
 - **UI:** Enter resolution summary → select outcome → close case → employee notified of resolution (appropriate detail level based on confidentiality)

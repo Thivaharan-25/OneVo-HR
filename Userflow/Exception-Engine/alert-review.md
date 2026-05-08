@@ -39,7 +39,7 @@
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | Alert already acknowledged | Info | "This alert was already reviewed by [Name]" |
-| Escalation happened | Info | "Alert was auto-escalated to [Department Head]" |
+| Escalation happened | Info | "Alert was auto-escalated to the configured resolver" |
 
 ## Events Triggered
 

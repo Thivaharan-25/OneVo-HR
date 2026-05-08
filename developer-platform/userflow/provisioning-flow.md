@@ -55,7 +55,7 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 ## Step 2 — Plan Assignment
 
 **What you fill in:**
-- Subscription plan (dropdown of all plans from `subscription_plans`)
+- Subscription plan (dropdown of reusable plans from `subscription_plans`; operators do not create a new plan for every tenant)
 - Commercial model: `subscription` or `full_license_maintenance`
 - Billing start date
 - Whether Stripe billing is active for this tenant or manually managed
@@ -68,12 +68,16 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **State written:** `subscription_plans` association updated; commercial model, billing cycle/currency, contract dates, maintenance status/renewal date, custom contract value, and `stripe_managed` flag set for the tenant.
 
+**Plan rule:** plans are global commercial catalog records. A tenant receives one selected plan plus tenant-specific commercial terms. Custom pricing, discounts, contract value, maintenance rate, billing dates, and manual billing state belong on the tenant subscription/commercial record, not on a new one-off plan unless product intentionally adds a reusable custom plan.
+
+**Cost rule:** plan pricing and module pricing are commercial inputs. They decide what the tenant has bought, trialed, or been granted. They do not grant user permissions directly. RBAC is applied only after the tenant's entitled modules are resolved.
+
 ---
 
 ## Step 3 — Module Selection
 
 **What you fill in:**
-- Checklist of all available OneVo modules, each labelled with its phase (Phase 1, Phase 2, etc.)
+- Checklist loaded from the reusable `module_catalog`, each module labelled with pillar, phase, default pricing unit, and sellable status
 - Toggle which modules are active for this tenant
 - For each module, mark the sales state as `available`, `trial`, `quoted`, `purchased`, `maintenance_included`, `subscription_included`, or `disabled`
 - Optional module-specific pricing override, currency, start date, and end/trial expiry date
@@ -88,24 +92,35 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **State written:** tenant module entitlement records through the module entitlement registry. This module set becomes the permission boundary for role templates and tenant role management.
 
+**Module cost rule:** module prices may default from `module_catalog`, be included by the selected plan, or be overridden per tenant. The backend must preserve the operator-entered pricing model, price, currency, start date, end/trial expiry date, and sales state for audit and billing. A module in `quoted` or `available` state is visible in the console but is not active for tenant-facing access until it becomes `purchased`, `trial`, `subscription_included`, or `maintenance_included`.
+
 ---
 
 ## Step 4 - Role Template Setup
 
 **What you fill in:**
-- Pick ONEVO starter templates, such as Tenant Owner, HR Admin, Leave Manager, and Employee.
-- Create or edit tenant-specific role templates from the filtered permission catalog.
-- Confirm which templates should be materialized into tenant roles at activation.
+- Pick reusable ONEVO starter templates, such as Tenant Owner, HR Admin, Leave Manager, Employee, Workforce Supervisor, or WorkSync Project Manager.
+- Create a new reusable operator-managed role template and save it to the global template library when the pattern should be reused for other tenants.
+- Create tenant-specific roles directly during provisioning when the role is unique to this customer and should not become a global template.
+- Edit permissions on materialized tenant roles before activation, still constrained by the tenant's filtered permission catalog.
+- Confirm which templates and tenant-specific roles should exist before owner invite and activation.
 
 **API calls:**
 - `GET /admin/v1/tenants/{id}/permissions/catalog`
 - `GET /admin/v1/role-templates`
 - `POST /admin/v1/role-templates`
 - `POST /admin/v1/tenants/{id}/role-templates/{templateId}/apply`
+- `GET /admin/v1/tenants/{id}/roles`
+- `POST /admin/v1/tenants/{id}/roles`
+- `PUT /admin/v1/tenants/{id}/roles/{roleId}/permissions`
 
 **Permission boundary:** the catalog only includes universal permissions and permissions from modules enabled in Step 3. If the tenant bought only Employee Management and Leave, Payroll, Workforce Intelligence, WorkSync, Agent Gateway, and Identity Verification permissions are not shown and cannot be assigned.
 
 **State written:** tenant-scoped `roles` and `role_permissions` through Auth interfaces, plus audit records for every template applied or changed.
+
+**Role independence rule:** role creation does not require job levels. Basic roles are independent permission containers. Job levels, departments, reporting lines, and hierarchy are only needed later for scoped permissions, approval workflows, escalation rules, and organisation-aware access.
+
+**Template rule:** role templates are blueprints, not runtime authorization records. Applying a template materializes normal tenant-scoped roles. Applying the same template twice must be idempotent or require an explicit duplicate-name override; it must never silently create confusing duplicate roles.
 
 ---
 
@@ -135,7 +150,9 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **API call:** `POST /admin/v1/tenants/{id}/invite-admin`
 
-**State written:** A new row in `users` for this tenant with `role = 'super_admin'` and `status = 'invited'`. A set-password email is sent to the provided address.
+**State written:** A new row in `users` for this tenant with invited status, assignment to the selected tenant owner/admin role, and a set-password email record/token. A set-password email is sent to the provided address.
+
+**Password rule:** the operator never chooses or handles the tenant owner's final password. The tenant owner sets it through the invite link.
 
 **Note:** The invited user cannot log in yet — the tenant is still in `provisioning` status. The set-password link is valid for 72 hours. If the tenant is not activated within that window, a new invite can be sent.
 
@@ -159,11 +176,62 @@ When satisfied, click **Activate Tenant**.
 
 **State written:** `tenants.status` flips from `provisioning` to `active`.
 
+**Activation guard:** activation must fail with a checklist response until all required provisioning sections are complete: tenant details, subscription/commercial terms, module entitlements, at least one valid tenant owner/admin role, required settings, and first owner invite. Invalid role permissions, missing billing/commercial fields, expired required trial dates, or missing module-required settings must block activation.
+
 **After confirmation:**
 - The tenant is now live and visible to the main OneVo app
 - The invited admin can log in once they complete set-password
 - The yellow "In Progress" badge is replaced with a green "Active" badge in the Tenants list
 - The provisioning event is audit-logged with the developer account and timestamp
+
+## Required Admin API Surface
+
+The complete Phase 1 provisioning surface requires these admin endpoints:
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/admin/v1/subscription-plans` | Load reusable plans for Step 2 |
+| `GET` | `/admin/v1/modules/catalog` | Load reusable module catalog and default pricing for Step 3 |
+| `GET` | `/admin/v1/tenants/validate` | Validate slug/company/domain before or during draft creation |
+| `POST` | `/admin/v1/tenants` | Create provisioning draft |
+| `GET` | `/admin/v1/tenants/{id}` | Load tenant detail and resume state |
+| `PATCH` | `/admin/v1/tenants/{id}` | Edit draft tenant details before activation |
+| `PATCH` | `/admin/v1/tenants/{id}/subscription` | Save plan and commercial terms |
+| `PUT` | `/admin/v1/tenants/{id}/modules` | Save module entitlements and module pricing |
+| `GET` | `/admin/v1/tenants/{id}/permissions/catalog` | Load module-filtered permission catalog |
+| `GET` | `/admin/v1/role-templates` | Load reusable role templates |
+| `POST` | `/admin/v1/role-templates` | Create reusable role template |
+| `PATCH` | `/admin/v1/role-templates/{id}` | Edit reusable non-system role template |
+| `GET` | `/admin/v1/tenants/{id}/roles` | List materialized tenant roles during provisioning |
+| `POST` | `/admin/v1/tenants/{id}/roles` | Create tenant-specific role during provisioning |
+| `POST` | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Materialize template into tenant roles |
+| `PUT` | `/admin/v1/tenants/{id}/roles/{roleId}/permissions` | Adjust tenant role permissions |
+| `PATCH` | `/admin/v1/tenants/{id}/settings` | Save required settings |
+| `POST` | `/admin/v1/tenants/{id}/invite-admin` | Invite first tenant owner/admin |
+| `GET` | `/admin/v1/tenants/{id}/provisioning-summary` | Review activation checklist and chosen data |
+| `PATCH` | `/admin/v1/tenants/{id}/provision/confirm` | Activate provisioning tenant |
+
+Tenant-facing role APIs are separate and become available after activation:
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/v1/roles` | List tenant roles |
+| `POST` | `/api/v1/roles` | Tenant owner creates a role |
+| `PUT` | `/api/v1/roles/{id}` | Tenant owner edits role metadata |
+| `PUT` | `/api/v1/roles/{id}/permissions` | Tenant owner edits permissions within enabled module boundary |
+
+## Product Decisions Required Before Implementation
+
+- Exact default plan catalog, pricing units, and whether plan prices are per employee, per device, flat, or custom.
+- Whether plan-included modules are automatically enabled or only proposed in the wizard for operator confirmation.
+- How total contract value is calculated when both plan price and module override prices exist.
+- Whether trial modules require billing dates before activation.
+- Whether role templates can be tenant-private reusable templates or only global operator-managed templates plus tenant-specific roles.
+- Whether template re-apply updates an existing role, creates a duplicate with explicit override, or is blocked.
+- Which exact permission codes are required for the first tenant owner/admin role.
+- Exact required settings by module before activation.
+- Whether company registration number and email domain validation are strict blockers or warnings by country.
+- Whether the tenant owner may complete set-password before activation. Recommended rule: password can be set, but login remains blocked until tenant activation.
 
 ## Related
 

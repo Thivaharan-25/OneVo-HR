@@ -1,34 +1,39 @@
 # Authentication & Authorization Architecture: ONEVO
 
-## Authentication Flow
+## Customer Web Authentication
 
-### Login Flow
+Customer-facing browser sessions use a BFF-style HttpOnly cookie model. Browser JavaScript never receives, stores, decodes, or sends the tenant user JWT.
 
-```
+```text
 User                    Frontend                  Auth Module              Database
   |                        |                          |                       |
   |-- Enter credentials -->|                          |                       |
-  |                        |-- POST /auth/login ------>|                       |
-  |                        |                          |-- Verify password     |
-  |                        |                          |   (Argon2id) -------->|
-  |                        |                          |<-- User + Roles ------|
-  |                        |                          |-- Generate JWT (RS256)|
+  |                        |-- POST /auth/login ----->|                       |
+  |                        |   credentials: include   |-- Verify password --->|
+  |                        |                          |<-- User + roles ------|
   |                        |                          |-- Create session ---->|
-  |                        |<-- Access token + --------|                       |
-  |                        |   Refresh token (cookie)  |                       |
-  |<-- Redirect to --------|                          |                       |
-  |   dashboard            |                          |                       |
+  |                        |                          |-- Create backend-held |
+  |                        |                          |   auth state/JWT      |
+  |                        |<-- Set-Cookie + ---------|                       |
+  |                        |   safe session metadata  |                       |
+  |<-- Redirect dashboard -|                          |                       |
 ```
 
-### Token Lifecycle
+The backend may use short-lived tenant JWTs internally, but those JWTs do not leave the backend for browser web sessions.
 
-| Token | Type | Lifetime | Storage | Refresh |
-|:------|:-----|:---------|:--------|:--------|
-| Access token | JWT (RS256) | 15 minutes | Memory (frontend) | Via refresh token |
-| Refresh token | Opaque (hashed in DB) | 7 days | HttpOnly Secure cookie | Rotated on use |
-| Session | UUID | 24 hours | `sessions` table | Extended on activity |
+## Session Lifecycle
 
-### JWT Structure
+| Item | Type | Lifetime | Storage | Refresh |
+|:-----|:-----|:---------|:--------|:--------|
+| Web session | Server-side session or backend-held token binding | Server controlled | HttpOnly Secure SameSite cookie + `sessions` table | Rotated/extended by backend |
+| CSRF token | Random nonce | Server controlled | Readable CSRF cookie + `X-CSRF-Token` header | Rotated by backend |
+| Internal tenant token | JWT or equivalent backend credential | Short-lived | Backend only | Recreated by backend |
+| Device token | JWT | Agent policy controlled | Windows DPAPI/Credential Manager | Agent refresh flow |
+| IDE token | JWT/OAuth token | IDE policy controlled | VS Code SecretStorage | IDE refresh flow |
+
+## Internal Tenant JWT Shape
+
+When the backend uses an internal tenant JWT, it follows the normal ONEVO tenant claims model:
 
 ```json
 {
@@ -37,8 +42,8 @@ User                    Frontend                  Auth Module              Datab
     "sub": "user-uuid",
     "tenant_id": "tenant-uuid",
     "email": "user@company.com",
-    "roles": ["HR_Admin", "Manager"],
-    "permissions": ["employees:read", "employees:write", "leave:approve", "leave:read"],
+    "permissions": ["employees:read", "leave:approve"],
+    "perm_ver": 3,
     "iat": 1679616000,
     "exp": 1679616900,
     "iss": "onevo",
@@ -47,83 +52,84 @@ User                    Frontend                  Auth Module              Datab
 }
 ```
 
-### JWT Key Rotation
+This token is backend-held for browser sessions. Non-browser clients may receive JWTs only when their own contracts explicitly require it.
 
-Dual-key 24-hour rotation window:
+## Session Refresh
 
-1. Generate new RSA key pair
-2. Sign new tokens with new key, verify with both old + new keys
-3. After 24 hours, retire old key
-4. Users don't need to re-login during rotation
-
-### Refresh Token Rotation
-
-```
-1. Access token expires
-2. Frontend sends refresh token cookie to POST /auth/refresh
-3. Auth module validates: token_hash matches, not expired, not revoked
-4. Generate new access token + NEW refresh token
-5. Revoke old refresh token (is_revoked = true)
-6. Link old → new via replaced_by_id (chain for audit)
-7. Return new tokens
+```text
+1. Browser session reaches refresh window.
+2. Frontend calls POST /auth/refresh with credentials: include.
+3. Browser sends HttpOnly session cookie automatically.
+4. Auth module validates server-side session/refresh state.
+5. Backend rotates session/refresh state and recreates backend-held auth state if needed.
+6. Backend returns safe session metadata and sets a rotated HttpOnly cookie.
 ```
 
-If a revoked refresh token is used (replay attack), revoke the entire chain and force re-login.
+If a revoked session/refresh chain is used, the backend revokes the whole chain and forces re-login.
 
-## Authorization Model (RBAC)
+## Authorization Model
 
-### Role Hierarchy
-
-```
-Employee (base) → Manager → HR Admin → Org Owner → System Admin
-```
-
-| Role | Scope | Default Permissions |
-|:-----|:------|:-------------------|
-| `Employee` | Own data | `employees:read-own`, `leave:read-own`, `leave:create`, `attendance:read-own` |
-| `Manager` | Team data | Employee permissions + `employees:read-team`, `leave:approve`, `attendance:read-team`, `performance:read-team`, `workforce:view`, `exceptions:view`, `exceptions:acknowledge`, `analytics:view` |
-| `HR_Admin` | Org data | Manager permissions + `employees:write`, `leave:manage`, `payroll:read`, `performance:manage`, `grievance:manage`, `workforce:manage`, `exceptions:manage`, `monitoring:configure`, `monitoring:view-settings`, `analytics:export`, `verification:view`, `verification:configure`, `agent:manage`, `agent:view-health` |
-| `Org_Owner` | Full org | HR Admin + `settings:admin`, `billing:manage`, `roles:manage` |
-| `System_Admin` | System | Everything (system role, not assignable per tenant) |
+ONEVO uses permissions and module entitlements, not fixed role names. Tenant roles are customer-defined and must not be hard-coded.
 
 ### Permission Format
 
 `{resource}:{action}`
 
-90+ permissions covering:
+Examples:
 
-```
-// HR Management
-employees:read, employees:write, employees:delete, employees:read-own, employees:read-team
-leave:read, leave:create, leave:approve, leave:manage, leave:read-own
-attendance:read, attendance:write, attendance:approve, attendance:read-own, attendance:read-team
-payroll:read, payroll:write, payroll:run, payroll:approve
-performance:read, performance:write, performance:manage, performance:read-team
-skills:read, skills:write, skills:validate, skills:manage
-documents:read, documents:write, documents:manage
-grievance:read, grievance:write, grievance:manage
-expense:read, expense:create, expense:approve, expense:manage
-reports:read, reports:create, reports:create
-
-// Workforce Intelligence (NEW)
-workforce:view, workforce:manage
-exceptions:view, exceptions:manage, exceptions:acknowledge
-monitoring:configure, monitoring:view-settings
-agent:register, agent:manage, agent:view-health
-analytics:view, analytics:export
-verification:view, verification:configure
-
-// System
-notifications:read, notifications:manage
-settings:read, settings:admin
-billing:read, billing:manage
-roles:read, roles:manage
-users:read, users:manage
+```text
+employees:read
+employees:write
+leave:create
+leave:approve
+attendance:read-own
+exceptions:manage
+monitoring:configure
+roles:manage
+settings:admin
 ```
 
-### Device JWT (Agent Gateway)
+### Authorization Check
 
-Desktop agents use a separate device-level JWT. This is NOT the same as user JWT.
+```csharp
+[RequirePermission("employees:read")]
+public async Task<IResult> GetEmployees(...)
+{
+    // Middleware already verified:
+    // 1. Session cookie is valid
+    // 2. Backend-held auth state is valid
+    // 3. User has employees:read
+    // 4. Tenant context is set
+}
+```
+
+The frontend may hide UI based on permission metadata, but the backend is always authoritative.
+
+## Permission Revocation
+
+Backend-held auth state can contain permissions captured at issue time. ONEVO uses a permission version counter so permission changes propagate quickly.
+
+```text
+On permission grant/revoke/role change:
+  INCR perm_version:{user_id}
+  Log audit event
+
+On login/session refresh:
+  Read effective permissions from DB
+  Read current perm_version
+  Store permissions and perm_ver in backend-held auth state
+
+On authenticated request:
+  Resolve backend-held auth state from HttpOnly session cookie
+  Compare auth state's perm_ver against Redis perm_version
+  If stale, refresh server-side permission state or reject with 401
+```
+
+The browser does not decode JWT claims for permissions. It receives permission metadata from `/auth/session`, `/auth/refresh`, or `/auth/me/permissions`.
+
+## Device JWT
+
+Desktop agents use a separate device-level JWT. This is not the same as customer web session auth.
 
 ```json
 {
@@ -139,125 +145,38 @@ Desktop agents use a separate device-level JWT. This is NOT the same as user JWT
 }
 ```
 
-- Issued at agent registration (`POST /api/v1/agent/register`)
-- Contains `device_id` + `tenant_id` but **NO user permissions**
-- The `type: "agent"` claim distinguishes from user JWT
-- Employee context linked at login via MAUI tray app
-- See [[modules/agent-gateway/overview|Agent Gateway]] for full protocol
-
-### Authorization Check
-
-```csharp
-[RequirePermission("employees:read")]
-public async Task<IResult> GetEmployees(...)
-{
-    // Middleware already verified:
-    // 1. JWT is valid
-    // 2. User has "employees:read" permission
-    // 3. Tenant context is set
-    
-    // Service-level: additional data-scoping based on role
-    var scope = _currentUser.HasPermission("employees:read-team") 
-        ? DataScope.Team 
-        : DataScope.Own;
-    
-    var employees = await _employeeService.GetEmployeesAsync(scope, ct);
-    return Results.Ok(employees);
-}
-```
-
-### Time-Bound Roles
-
-Roles can have `expires_at` for temporary access:
-
-```csharp
-// Assign temporary HR Admin role for 30 days
-var userRole = new UserRole
-{
-    UserId = userId,
-    RoleId = hrAdminRoleId,
-    AssignedBy = currentUserId,
-    ExpiresAt = DateTimeOffset.UtcNow.AddDays(30)
-};
-```
-
-Expired roles are cleaned up by a Hangfire daily job.
-
-### Permission Revocation — Real-Time Propagation
-
-**The problem:** JWTs contain permissions baked-in at issue time. With a 15-minute access token lifetime, a revoked permission remains effective for up to 15 minutes after revocation.
-
-**The solution: Redis Permission Version Counter**
-
-Each user has a version counter in Redis: `perm_version:{user_id}` (integer, default 0).
-
-```
-On permission grant or revoke:
-  → INCR perm_version:{user_id}   (atomic, TTL: 24h)
-  → Log audit event
-
-On JWT issue (login or token refresh):
-  → Read current perm_version from Redis
-  → Embed as claim: "perm_ver": <current_version>
-
-On every authenticated request (middleware):
-  → Read "perm_ver" from JWT
-  → GET perm_version:{user_id} from Redis
-  → If JWT perm_ver < Redis version → reject with 401 + {"code": "permissions_changed"}
-  → Frontend receives 401 → silently refresh access token
-  → New JWT issued with fresh permissions from DB + new perm_ver
-
-On token refresh:
-  → Re-read all permissions from DB (fresh)
-  → GET current perm_version:{user_id} from Redis
-  → Embed fresh perm_ver in new JWT
-```
-
-**Propagation latency:** Revocation propagates within one request cycle — the next API call after a permission change triggers a 401 → silent refresh → new token with updated permissions. In practice: ≤1 second for active users.
-
-**Redis failure fallback:** If Redis is unavailable (circuit open), fall back to permitting the existing JWT permissions (fail-open). Log a warning. Do NOT fall back to DB permission lookup per request — that defeats the purpose of baking permissions into the JWT. The 15-minute window is acceptable during Redis outages.
-
-| Key | Type | TTL | Set when | Incremented when |
-|:----|:-----|:----|:---------|:----------------|
-| `perm_version:{user_id}` | String (integer) | 24h (reset on activity) | User first logs in | Any permission grant, revoke, role change, or role expiry |
-
-**Implementation:** `IPermissionVersionService` wraps the Redis calls. Injected into `AuthorizationMiddleware` and `TokenService`.
-
-```csharp
-public interface IPermissionVersionService
-{
-    Task<long> GetCurrentVersionAsync(Guid userId, CancellationToken ct);
-    Task<long> IncrementVersionAsync(Guid userId, CancellationToken ct);
-}
-```
+- Issued at agent registration.
+- Contains device and tenant identity, not user permissions.
+- Stored by the agent using OS secure storage.
+- Used only on `/api/v1/agent/*`.
 
 ## Password Security
 
 | Policy | Value |
 |:-------|:------|
-| Hashing | BCrypt with work factor 12, stored in the standard BCrypt hash format |
+| Hashing | Argon2id preferred for new backend work |
 | Min length | 12 characters |
 | Complexity | 1 uppercase, 1 lowercase, 1 digit, 1 special character |
 | Rate limiting | 5 attempts/minute per IP |
-| Account lockout | 10 failed attempts → 30 min lockout |
+| Account lockout | 10 failed attempts, 30 minute lockout |
 | Password reset | Token-based, 1 hour expiry, single use |
 | History | Cannot reuse last 5 passwords |
 
 ## MFA Support
 
-Multiple methods per user via `user_mfa` table (one row per method) and `mfa_recovery_codes` table (8 hashed codes per user):
-
-- **Email OTP** (6-digit code via Resend) - primary Phase 1 MFA method. Local development may log OTPs before the notification dispatcher is available; Phase 1 customer release requires Resend-backed email delivery through the notification service.
-- **Recovery codes** - 8 one-time use codes per setup, stored as BCrypt hashes in `mfa_recovery_codes`
+- **TOTP authenticator app** - primary Phase 1 MFA method. Secrets are encrypted at rest, users confirm setup with a current 6-digit authenticator code, and replay inside the accepted window is rejected.
+- **Email OTP fallback** - fallback/recovery only when tenant policy permits it. Customer release requires delivery through the notification service.
+- **Recovery codes** - one-time use codes stored as hashes.
 
 ## Session Security
 
 | Setting | Value | Reason |
 |:--------|:------|:-------|
-| Cookie `HttpOnly` | `true` | Prevents XSS from reading refresh token |
+| Cookie `HttpOnly` | `true` | Prevents JavaScript from reading the session |
 | Cookie `Secure` | `true` | Only sent over HTTPS |
-| Cookie `SameSite` | `Strict` | Prevents CSRF |
-| Session rotation | On role change | Prevents session fixation |
+| Cookie `SameSite` | `Strict` or `Lax` by route need | Reduces CSRF exposure |
+| CSRF header | Required on mutations | Protects cookie-authenticated writes |
+| Session rotation | Login, refresh, role change, privilege change | Limits replay risk |
 | Idle timeout | 30 minutes | Limits exposure window |
 | Absolute timeout | 24 hours | Forces re-authentication |
 | Device tracking | `sessions.device_type` + `ip_address` | Anomaly detection |
@@ -272,4 +191,3 @@ Multiple methods per user via `user_mfa` table (one row per method) and `mfa_rec
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 - [[security/compliance|Compliance]]
 - [[security/data-classification|Data Classification]]
-- [[current-focus/DEV2-auth-security|DEV2: Auth Security]]

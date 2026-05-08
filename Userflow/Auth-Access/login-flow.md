@@ -1,9 +1,9 @@
-# Login Flow
+﻿# Login Flow
 
 **Area:** Auth & Access
-**Trigger:** User navigates to login page (user action — every session)
+**Trigger:** User navigates to login page (user action â€” every session)
 **Required Permission(s):** None (public endpoint, any user)
-**Related Permissions:** All — after login, the user's effective permissions determine what they can access
+**Related Permissions:** All â€” after login, the user's effective permissions determine what they can access
 
 ---
 
@@ -17,7 +17,7 @@
 ### Step 1: Navigate to Login Page
 - **UI:** User opens `https://{tenant}.onevo.app/login` (or custom domain if configured via [[frontend/design-system/theming/tenant-branding|Tenant Branding]]). Login page displays: tenant logo, email field, password field, "Remember me" checkbox, "Forgot Password?" link, "Sign in with SSO" button (if SSO configured). If tenant not found by subdomain: generic ONEVO login page with tenant selector
 - **API:** `GET /api/v1/tenants/resolve?domain={hostname}` (resolves tenant from subdomain/custom domain)
-- **Backend:** `TenantResolver.ResolveAsync()` → [[modules/infrastructure/overview|Infrastructure]]
+- **Backend:** `TenantResolver.ResolveAsync()` â†’ [[modules/infrastructure/overview|Infrastructure]]
 - **Validation:** Tenant must exist and be active
 - **DB:** `tenants`, `tenant_branding` (for logo/colors)
 
@@ -38,11 +38,11 @@
     "rememberMe": true
   }
   ```
-- **Backend:** `AuthService.LoginAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
+- **Backend:** `AuthService.LoginAsync()` â†’ [[frontend/cross-cutting/authentication|Authentication]]
   1. Look up user by email + tenant_id
   2. Verify password hash (bcrypt compare)
   3. Check user status is `active` (not `disabled`, `invited`, or `locked`)
-  4. Check for account lockout (5 failed attempts → 15-minute lockout)
+  4. Check for account lockout (5 failed attempts â†’ 15-minute lockout)
   5. Record login attempt in `login_attempts` (success or failure)
   6. If password valid and no MFA: proceed to Step 5
   7. If password valid and MFA enabled: return `mfa_required: true` with temporary MFA token
@@ -50,7 +50,7 @@
 - **DB:** `users`, `login_attempts`
 
 ### Step 4: MFA Verification (if enabled)
-- **UI:** MFA challenge screen appears: "Enter the 6-digit code we sent to your email". Input field for email OTP code (6 digits, auto-tab between digits). "Resend code" action appears after the resend cooldown. The screen shows the masked destination email and 5-minute expiry.
+- **UI:** MFA challenge screen appears: "Enter the 6-digit code from your authenticator app". Input field for TOTP code (6 digits, auto-tab between digits). If policy permits email fallback, "Use recovery option" can start an email OTP fallback flow.
 - **API:** `POST /api/v1/auth/mfa/verify`
   ```json
   {
@@ -58,44 +58,42 @@
     "code": "123456"
   }
   ```
-- **Backend:** `MfaService.VerifyAsync()` → [[modules/auth/mfa/overview|MFA]]
+- **Backend:** `MfaService.VerifyAsync()` â†’ [[modules/auth/mfa/overview|MFA]]
   1. Validate temporary MFA token (valid for 5 minutes)
-  2. Load verified `email_otp` MFA method for the user
-  3. Reject if OTP is expired or already consumed
-  4. Compare submitted code with stored hash
-  5. If valid: clear stored OTP hash and proceed to Step 5
+  2. Load verified `totp` MFA method for the user
+  3. Verify submitted code against the encrypted TOTP secret with a small clock-skew window
+  4. Reject reused codes inside the accepted window
+  5. If valid: proceed to Step 5
   6. If invalid: return invalid MFA code
-- **Validation:** MFA token must be valid. Code must match. OTP expires after 5 minutes.
+- **Validation:** MFA token must be valid. Code must match the current TOTP window.
 - **DB:** `user_mfa`
-- **Resend:** User can request a new code through `POST /api/v1/auth/mfa/send`; the previous stored OTP hash is replaced.
+- **Fallback:** If email fallback is enabled, user can request an email OTP through `POST /api/v1/auth/mfa/send`; the fallback challenge is hashed, short-lived, single-use, and separate from the primary TOTP method.
 
-### Step 5: Token Issuance
+### Step 5: Session Creation
 - **UI:** N/A (backend processing)
-- **API:** Response from login or MFA verify:
+- **API:** Response from login or MFA verify sets an HttpOnly session cookie and returns safe session metadata:
   ```json
   {
-    "accessToken": "jwt-access-token",
-    "refreshToken": "refresh-token",
-    "expiresIn": 900,
+    "authenticated": true,
     "user": {
       "id": "uuid",
       "firstName": "Jane",
       "lastName": "Doe",
-      "email": "jane@acme.com",
-      "permissions": ["employees:read", "leave:create", ...]
-    }
+      "email": "jane@acme.com"
+    },
+    "permissions": ["employees:read", "leave:create"],
+    "active_modules": ["hr_management"]
   }
   ```
-- **Backend:** `TokenService.GenerateAccessTokenAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
+- **Backend:** `AuthSessionService.CreateSessionAsync()` -> [[frontend/cross-cutting/authentication|Authentication]]
   1. Compute effective permissions: role permissions + overrides (see [[Userflow/Auth-Access/permission-assignment|Permission Assignment]])
-  2. Generate JWT RS256 access token (15-minute expiry) with claims: `sub` (userId), `tenant_id`, `permissions[]`, `employee_id`, `iat`, `exp`
-  3. Generate refresh token (7-day expiry, or 30 days if "remember me"), store hash in `refresh_tokens`
-  4. Create session record in `sessions` table
-  5. Set refresh token in HTTP-only secure cookie (SameSite=Strict)
-  6. Return access token in response body
+  2. Create backend-held auth state or internal tenant token; do not return the JWT to browser JavaScript
+  3. Create session record in `sessions` table
+  4. Store refresh/session rotation state server-side
+  5. Set HttpOnly Secure SameSite session cookie
+  6. Return user, permissions, and active module metadata in the response body
 - **Validation:** N/A
-- **DB:** `sessions` (created), `refresh_tokens` (created), `user_roles`, `role_permissions`, `user_permission_overrides`
-
+- **DB:** `sessions` (created), `refresh_tokens` or session rotation records (created), `user_roles`, `role_permissions`, `user_permission_overrides`
 ### Step 6: Redirect to Dashboard
 - **UI:** User redirected to `/dashboard`. Dashboard loads based on permissions:
   - Widgets visible based on permission checks (e.g., "Team Leave" widget requires `leave:read-team`)
@@ -103,15 +101,15 @@
   - Quick actions based on write permissions
   - Pending approvals count (if user has any `*:approve` permissions)
 - **API:** `GET /api/v1/dashboard`
-- **Backend:** `DashboardService.GetDashboardAsync()` — assembles widgets based on user's effective permissions
-- **Validation:** JWT validated on every request via middleware
+- **Backend:** `DashboardService.GetDashboardAsync()` â€” assembles widgets based on user's effective permissions
+- **Validation:** HttpOnly session cookie validated on every request via middleware
 - **DB:** Various tables for dashboard widgets
 
 ### Step 7: SignalR Connection Established
 - **UI:** No visible UI change. Connection status icon in footer (green dot = connected)
 - **API:** WebSocket connection to `/hubs/notifications`
-- **Backend:** `NotificationHub.OnConnectedAsync()` — registers user's connection for real-time notifications, permission updates, and presence tracking
-- **Validation:** JWT included in WebSocket handshake for authentication
+- **Backend:** `NotificationHub.OnConnectedAsync()` â€” registers user's connection for real-time notifications, permission updates, and presence tracking
+- **Validation:** cookie-backed session included in the WebSocket handshake for authentication
 - **DB:** None (in-memory connection tracking)
 
 ## Variations
@@ -120,7 +118,7 @@
 - User clicks "Sign in with SSO"
 - Redirected to identity provider (Google/Azure AD) login page
 - After successful IDP authentication, redirected back to callback URL
-- `AuthService.HandleSsoCallbackAsync()` validates the IDP token, maps user, issues ONEVO JWT
+- `AuthService.HandleSsoCallbackAsync()` validates the IDP token, maps user, creates the ONEVO web session
 - MFA step is skipped (handled by the IDP)
 
 ### When GDPR consent is pending
@@ -130,9 +128,9 @@
 - If monitoring consent declined: monitoring features disabled for this user
 
 ### When session already exists (returning user)
-- If valid refresh token exists in cookie: attempt silent refresh
-- `POST /api/v1/auth/refresh` with refresh token
-- If valid: new access token issued, user goes straight to dashboard
+- If valid session cookie exists: attempt session refresh
+- `POST /api/v1/auth/refresh` with `credentials: "include"`
+- If valid: session metadata is refreshed and user goes straight to dashboard
 - If invalid/expired: redirect to login page
 
 ### When user has sessions on multiple devices
@@ -155,26 +153,29 @@
 
 ## Events Triggered
 
-- `UserLoggedInEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by session tracking, audit logging
-- `LoginFailedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by security monitoring, lockout counter
-- `SessionCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by presence tracking
-- `AuditLogEntry` (action: `auth.login.success` or `auth.login.failed`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `UserLoggedInEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by session tracking, audit logging
+- `LoginFailedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by security monitoring, lockout counter
+- `SessionCreatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by presence tracking
+- `AuditLogEntry` (action: `auth.login.success` or `auth.login.failed`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[Userflow/Auth-Access/password-reset|Password Reset]] — "Forgot Password?" link on login page
-- [[Userflow/Auth-Access/mfa-setup|Mfa Setup]] — enabling MFA before this flow
-- [[Userflow/Platform-Setup/sso-configuration|Sso Configuration]] — SSO setup by admin
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] — consent collection after login
-- [[Userflow/Auth-Access/user-invitation|User Invitation]] — account creation before first login
-- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]] — disabled accounts cannot login
+- [[Userflow/Auth-Access/password-reset|Password Reset]] â€” "Forgot Password?" link on login page
+- [[Userflow/Auth-Access/mfa-setup|Mfa Setup]] â€” enabling MFA before this flow
+- [[Userflow/Platform-Setup/sso-configuration|Sso Configuration]] â€” SSO setup by admin
+- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] â€” consent collection after login
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] â€” account creation before first login
+- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]] â€” disabled accounts cannot login
 
 ## Module References
 
-- [[frontend/cross-cutting/authentication|Authentication]] — login logic, JWT RS256 token issuance
-- [[frontend/cross-cutting/authorization|Authorization]] — effective permission computation for JWT claims
-- [[modules/auth/session-management/overview|Session Management]] — session creation and tracking
-- [[modules/auth/mfa/overview|MFA]] — email OTP verification
-- [[security/auth-architecture|Auth Architecture]] — overall auth design
-- [[security/auth-flow|Auth Flow]] — authentication flow diagrams
-- [[modules/infrastructure/overview|Infrastructure]] — tenant resolution, multi-tenancy
+- [[frontend/cross-cutting/authentication|Authentication]] â€” login logic, BFF session creation, backend-held auth state
+- [[frontend/cross-cutting/authorization|Authorization]] â€” effective permission computation for backend session metadata
+- [[modules/auth/session-management/overview|Session Management]] â€” session creation and tracking
+- [[modules/auth/mfa/overview|MFA]] â€” TOTP verification with optional email fallback
+- [[security/auth-architecture|Auth Architecture]] â€” overall auth design
+- [[security/auth-flow|Auth Flow]] â€” authentication flow diagrams
+- [[modules/infrastructure/overview|Infrastructure]] â€” tenant resolution, multi-tenancy
+
+
+

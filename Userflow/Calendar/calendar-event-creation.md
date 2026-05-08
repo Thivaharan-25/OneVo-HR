@@ -53,8 +53,8 @@ The `audience` field controls who receives the event. Available options depend o
 
 | Audience Option | Who can select it |
 |:----------------|:-----------------|
-| **Tenant-wide** | Super Admin or top of org hierarchy (CEO-equivalent) only |
-| **Department** | User is department head or above for that department |
+| **Tenant-wide** | User has tenant-wide calendar permission or top-of-org scope |
+| **Department** | User is department owner or has department-scoped calendar permission |
 | **Team** | User manages that team or is above it in hierarchy |
 | **Individual** | Any user with `calendar:write` + `employees:read` scoped to that person **or covered by an active bypass grant (`applies_to = 'calendar'` or `applies_to IS NULL`)** |
 

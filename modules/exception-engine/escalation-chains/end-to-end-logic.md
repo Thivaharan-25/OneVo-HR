@@ -16,8 +16,11 @@ POST /api/v1/exceptions/escalation-chains
     -> EscalationService.CreateChainAsync(command, ct)
       -> 1. Validate severity: info, warning, critical
       -> 2. For each step:
-         -> Validate notify_role: reporting_manager, department_head, hr, ceo, custom
-         -> If 'custom': validate notify_user_id exists
+         -> Validate resolver_type and resolver_config
+         -> Resolver may target reporting manager, team lead, department owner,
+            selected permission, selected department/team/job level,
+            specific employee, previous approver, case participants,
+            or configured escalation owner
          -> Validate delay_minutes >= 0
       -> 3. INSERT into escalation_chains (one row per step)
          -> step_order = 1, 2, 3...
@@ -36,9 +39,10 @@ EscalationJob (Hangfire, every 5 min)
     -> 2. For each unacknowledged alert:
        -> Find current step in escalation_chains for alert.severity
        -> If next step exists:
-          -> Resolve notify target (e.g., reporting_manager -> lookup from employee hierarchy)
+          -> Resolve notify target through resolver service
           -> UPDATE alert status = 'escalated'
-          -> Publish AlertEscalated event -> notifications module sends to next person
+          -> Create or update case conversation when configured
+          -> Publish AlertEscalated event -> delivery router sends action card through Chat or Inbox
        -> If no next step:
           -> Alert remains at highest escalation level
 ```
@@ -47,6 +51,9 @@ EscalationJob (Hangfire, every 5 min)
 
 - **Escalation chains are per-severity, not per-rule.** All critical alerts follow the same chain.
 - **Escalation is time-based** — delay_minutes from trigger or last escalation.
+
+- **Routing is resolver-based.** No fixed role names are used to decide recipients.
+- **Teams is discussion-only.** Teams replies can sync into the ONEVO case conversation, but official actions stay in ONEVO.
 
 ## Related
 

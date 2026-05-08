@@ -27,7 +27,7 @@ The Discrepancy Engine is a daily end-of-day job that cross-references three dat
 | **Depends on** | [[modules/calendar/overview\|Calendar]] | `ICalendarService` | Source of meeting/event time |
 | **Depends on** | [[modules/work-management/time/overview|WorkSync Time]] | `IWorkSyncTimeService` | Source of WorkSync task logged time |
 | **Depends on** | [[modules/configuration/monitoring-toggles/overview\|Configuration]] | `IConfigurationService` | Tenant-configured discrepancy thresholds |
-| **Consumed by** | [[modules/notifications/overview\|Notifications]] | — | Sends alerts to manager/HR Admin |
+| **Consumed by** | [[modules/notifications/overview\|Notifications]] | — | Routes alerts through Automation Center resolvers |
 | **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | — | Discrepancy rate as a signal |
 
 ---
@@ -115,7 +115,7 @@ Severity is calculated by `DiscrepancySeverityCalculator.Calculate()`. When a pr
 | `none` | z < 1.0 | Within normal range for this employee |
 | `low` | 1.0 ≤ z < 1.5 | Mildly above personal baseline — automated reminder |
 | `high` | 1.5 ≤ z < 2.5 | Significantly above baseline — manager notified privately |
-| `critical` | z ≥ 2.5 | Extreme anomaly — escalated to HR Admin |
+| `critical` | z ≥ 2.5 | Extreme anomaly — escalated through the configured resolver |
 
 **Absolute fallback (new employees, < 5 baseline samples):**
 
@@ -124,7 +124,7 @@ Severity is calculated by `DiscrepancySeverityCalculator.Calculate()`. When a pr
 | `none` | < 30 min | No action |
 | `low` | 30–60 min | Automated reminder to employee: "You have unlogged active time today" |
 | `high` | 60–180 min | Manager notified privately (employee NOT informed) |
-| `critical` | 180+ min | Escalated to HR Admin immediately |
+| `critical` | 180+ min | Escalated through the configured resolver immediately |
 
 See [[modules/discrepancy-engine/statistical-baselines/overview|Statistical Baselines]] for full details on baseline computation.
 
@@ -147,22 +147,24 @@ private async Task NotifyIfRequiredAsync(Employee employee, DiscrepancySeverity 
             break;
 
         case DiscrepancySeverity.High:
-            // Notify manager privately
-            await _notificationService.SendAsync(new Notification
+            // Route to the configured reviewer, such as reporting manager or team lead
+            await _automationRouter.RouteAsync(new AutomationRouteRequest
             {
-                RecipientId = employee.ManagerId,
-                Type = NotificationType.DiscrepancyAlert,
-                Data = new { EmployeeId = employee.Id, Severity = "high" }
+                EmployeeId = employee.Id,
+                EventType = "DiscrepancyHighDetected",
+                Severity = "high",
+                Data = new { UnaccountedMinutes = unaccountedMinutes }
             }, ct);
             break;
 
         case DiscrepancySeverity.Critical:
-            // Escalate to HR Admin
-            await _notificationService.SendAsync(new Notification
+            // Escalate through the configured resolver, not a fixed role name
+            await _automationRouter.RouteAsync(new AutomationRouteRequest
             {
-                RecipientId = employee.HrAdminId,
-                Type = NotificationType.DiscrepancyEscalation,
-                Data = new { EmployeeId = employee.Id, Severity = "critical" }
+                EmployeeId = employee.Id,
+                EventType = "DiscrepancyCriticalDetected",
+                Severity = "critical",
+                Data = new { UnaccountedMinutes = unaccountedMinutes }
             }, ct);
             break;
     }
@@ -175,8 +177,8 @@ private async Task NotifyIfRequiredAsync(Employee employee, DiscrepancySeverity 
 
 **NON-NEGOTIABLE: Discrepancy data is never visible to the employee.**
 
-- Managers see: their direct reports' discrepancy summaries (aggregated)
-- HR Admins see: all employees in their tenant
+- Resolver-assigned reviewers see discrepancy summaries for employees assigned to them by workflow or permission scope
+- Users with selected permissions can see tenant or scoped discrepancy views according to permission and data-scope rules
 - Employees see: their own activity timeline and productivity score ONLY — never the discrepancy analysis or gap calculation
 - Enforced at the repository query level using `RequirePermission("exceptions:manage")` — not just UI-level
 
@@ -250,7 +252,7 @@ See [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `discr
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `DiscrepancyCriticalDetected` | Severity = `critical` | [[modules/notifications/overview\|Notifications]] (escalate to HR Admin), `DiscrepancyEnrichmentHandler` (AI narrative enrichment) |
+| `DiscrepancyCriticalDetected` | Severity = `critical` | [[modules/notifications/overview\|Notifications]] and Automation Center delivery router, `DiscrepancyEnrichmentHandler` (AI narrative enrichment) |
 
 ### Consumes
 

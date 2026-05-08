@@ -281,7 +281,7 @@ SLA-based escalation triggers. Checked by Hangfire recurring job (hourly).
 | `trigger_condition` | `varchar(100)` | e.g., `status = 'pending'` |
 | `sla_hours` | `integer` | Hours before escalation fires |
 | `action_type` | `varchar(30)` | `remind`, `escalate`, `auto_approve` |
-| `escalate_to_role_id` | `uuid` | FK → roles (nullable) |
+| `escalate_to_role_id` | `uuid` | Legacy field; replace with escalation resolver configuration after approved migration |
 | `notification_template_id` | `uuid` | FK → notification_templates |
 | `is_active` | `boolean` | |
 | `created_by_id` | `uuid` | FK → users |

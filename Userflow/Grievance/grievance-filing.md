@@ -25,7 +25,7 @@
 ### Step 3: Submit
 - **Backend:** GrievanceService.FileAsync() → [[modules/grievance/overview|Grievance]]
 - **DB:** `grievance_cases` — case number generated (GRV-2026-001), status: "Open"
-- **Result:** HR team notified → case assigned to HR admin
+- **Result:** Automation Center creates or routes a confidential case to the configured grievance resolver, such as users with `grievance:manage`, a selected department/team, a specific employee, or the configured escalation owner.
 
 ### Step 4: Track Status
 - **UI:** Grievance → My Cases → see status (Open, Under Investigation, Resolved, Closed) → timeline of updates
@@ -40,7 +40,7 @@
 ## Events Triggered
 
 - `GrievanceFiled` → [[backend/messaging/event-catalog|Event Catalog]]
-- Notification to HR → [[backend/notification-system|Notification System]]
+- `WorkflowStepAssigned` or notification to configured resolver → [[backend/notification-system|Notification System]]
 
 ## Related Flows
 

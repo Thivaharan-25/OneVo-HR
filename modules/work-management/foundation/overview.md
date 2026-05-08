@@ -1,4 +1,4 @@
-# Work Management Foundation
+﻿# Work Management Foundation
 
 **Module:** Work Management
 **Feature:** Foundation
@@ -51,7 +51,7 @@ When enabled, changes in `team_members` add or deactivate `workspace_members` re
 1. Workspace creation seeds 3 system roles (Admin/Member/Viewer) in the same transaction.
 2. If tenant has Work Management enabled, a default workspace is created on tenant provisioning.
 3. Global query filters enforce both `tenant_id` and `workspace_id` on all workspace-scoped entities.
-4. Active workspace carried in JWT claims or `X-Workspace-Id` header; every Work Management request resolves workspace context.
+4. Active workspace carried in backend-held session metadata or `X-Workspace-Id` header; every Work Management request resolves workspace context.
 5. Workspace bound to a `legal_entity_id`: WMS visibility respects HR topbar legal entity scope when set.
 6. Workspace and project members must carry `employee_id`; querying by department, team, job, legal entity, and employment status must not require application-only joins.
 7. Offboarding or `employees.is_deleted = true` deactivates workspace/project memberships and prevents new task assignment.
@@ -102,3 +102,4 @@ When enabled, changes in `team_members` add or deactivate `workspace_members` re
 - [[database/schemas/wms-project-management|WMS Project Management Schema]]
 - [[database/cross-module-relationships|Cross-Module Relationships]]
 - [[current-focus/DEV3|DEV3 Task 1]]
+

@@ -1,9 +1,9 @@
-# Module Family: WorkSync (Work Management)
+﻿# Module Family: WorkSync (Work Management)
 
-**Pillar:** 3 — WorkSync
+**Pillar:** 3 â€” WorkSync
 **Phase:** 1
 **Solution namespace:** `ONEVO.Modules.WorkSync.*`
-**Database:** Same `ApplicationDbContext` as all other ONEVO modules — no separate database, no bridge APIs.
+**Database:** Same `ApplicationDbContext` as all other ONEVO modules â€” no separate database, no bridge APIs.
 
 ---
 
@@ -11,7 +11,7 @@
 
 WorkSync is ONEVO's internal work management pillar. It is not an external system. All WorkSync tables live in the same EF Core `ApplicationDbContext`, the same PostgreSQL database, and the same deployment unit as HR and Workforce Intelligence.
 
-WorkSync provides projects, tasks, sprints, boards, OKR, chat, AI chat assistance, documents, roadmaps, GitHub integration, and analytics — all accessible via the same JWT that authenticates users in the HR pillar.
+WorkSync provides projects, tasks, sprints, boards, OKR, chat, AI chat assistance, documents, roadmaps, GitHub integration, and analytics â€” all accessible via the same JWT that authenticates users in the HR pillar.
 
 Microsoft Teams workspace/group and chat sync is handled by the separate [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]] module. WorkSync owns workspace and chat behavior; the integration module owns Graph account linking, tokens, webhooks, and delta sync.
 
@@ -40,36 +40,36 @@ Microsoft Teams workspace/group and chat sync is handled by the separate [[modul
 ## Cross-Module Data Flow
 
 ```
-tenants (HR) ──────────────────────────────────────────────────────────>┐
-legal_entities (HR Org Structure) ──────────────────────────────────────>│
-                                                                         ▼
+tenants (HR) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€>â”
+legal_entities (HR Org Structure) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€>â”‚
+                                                                         â–¼
                                                               workspaces (Foundation)
-                                                                         │
-                              ┌──────────────────────────────────────────┤
-                              ▼                                          ▼
-                         projects ──────────────────────────────── workspace_members
-                              │
-               ┌──────────────┴──────────────┐
-               ▼                             ▼
-            tasks ──────────────────── sprints (Planning)
-               │                             │
-      ┌────────┴─────┐              sprint_backlog_items
-      ▼              ▼                       │
+                                                                         â”‚
+                              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+                              â–¼                                          â–¼
+                         projects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ workspace_members
+                              â”‚
+               â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+               â–¼                             â–¼
+            tasks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ sprints (Planning)
+               â”‚                             â”‚
+      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”              sprint_backlog_items
+      â–¼              â–¼                       â”‚
  task_assignments  boards                sprint_daily_snapshots (burndown)
  (users)     board_columns
              board_task_positions
 
-messages (Chat) ──────> premium_ai_detections ──────> ai_action_jobs
-                                                              │
+messages (Chat) â”€â”€â”€â”€â”€â”€> premium_ai_detections â”€â”€â”€â”€â”€â”€> ai_action_jobs
+                                                              â”‚
                                                         (creates task)
 
-Microsoft Teams (Graph) ──────> workspace_teams_links ──────> workspaces
-Microsoft Teams (Graph) ──────> channel_teams_links ──────> channels
-Microsoft Teams messages ──────> teams_message_sync_state ──────> messages
+Microsoft Teams (Graph) â”€â”€â”€â”€â”€â”€> workspace_teams_links â”€â”€â”€â”€â”€â”€> workspaces
+Microsoft Teams (Graph) â”€â”€â”€â”€â”€â”€> channel_teams_links â”€â”€â”€â”€â”€â”€> channels
+Microsoft Teams messages â”€â”€â”€â”€â”€â”€> teams_message_sync_state â”€â”€â”€â”€â”€â”€> messages
 
-tasks ──────> task_documents ──────> documents
-tasks ──────> task_repository_links ──────> repositories
-tasks ──────> code_activity_events (via webhook)
+tasks â”€â”€â”€â”€â”€â”€> task_documents â”€â”€â”€â”€â”€â”€> documents
+tasks â”€â”€â”€â”€â”€â”€> task_repository_links â”€â”€â”€â”€â”€â”€> repositories
+tasks â”€â”€â”€â”€â”€â”€> code_activity_events (via webhook)
 ```
 
 ---
@@ -86,12 +86,12 @@ WorkSync uses a **dual-layer** permission model:
 
 Authorization flow:
 ```
-Request arrives →
-  1. JWT validated (Auth module) — tenant_id, user_id confirmed
-  2. Workspace-level check — is user a member of this workspace?
-  3. Tenant RBAC check — does user have the required permission?
-  4. Team role stacking — if workspace role is insufficient, do any team roles grant access?
-  → Allow or 403
+Request arrives â†’
+  1. JWT validated (Auth module) â€” tenant_id, user_id confirmed
+  2. Workspace-level check â€” is user a member of this workspace?
+  3. Tenant RBAC check â€” does user have the required permission?
+  4. Team role stacking â€” if workspace role is insufficient, do any team roles grant access?
+  â†’ Allow or 403
 ```
 
 ---
@@ -125,21 +125,22 @@ Request arrives →
 
 ## Related
 
-- [[Userflow/Work-Management/wm-overview|WorkSync Userflow Overview]] — user-facing module map
-- [[Userflow/Work-Management/my-space-flow|My Space]] — personal boards, reminders, saved views
-- [[Userflow/Work-Management/chat-ai-flow|Chat AI Flow]] — AI action detection and undo window
-- [[Userflow/Work-Management/collaboration-flow|Work Management collaboration]] — documents, wiki, task document links
-- [[Userflow/Work-Management/work-analytics-flow|WorkSync Analytics]] — dashboards, saved views, exports
-- [[Userflow/Work-Management/integration-automation-flow|Integration Automation]] — repository events and automation rules
-- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]] — Microsoft Teams workspace/channel linking
+- [[Userflow/Work-Management/wm-overview|WorkSync Userflow Overview]] â€” user-facing module map
+- [[Userflow/Work-Management/my-space-flow|My Space]] â€” personal boards, reminders, saved views
+- [[Userflow/Work-Management/chat-ai-flow|Chat AI Flow]] â€” AI action detection and undo window
+- [[Userflow/Work-Management/collaboration-flow|Work Management collaboration]] â€” documents, wiki, task document links
+- [[Userflow/Work-Management/work-analytics-flow|WorkSync Analytics]] â€” dashboards, saved views, exports
+- [[Userflow/Work-Management/integration-automation-flow|Integration Automation]] â€” repository events and automation rules
+- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]] â€” Microsoft Teams workspace/channel linking
 
-- [[ADE-START-HERE|ADE Start Here]] — Build order for WorkSync (Weeks 1–4)
-- [[onevo-unified-entity-map|Entity Map]] — Sections 25–38 (all WorkSync tables)
-- [[database/schema-catalog|Schema Catalog]] — WorkSync section
-- [[modules/ide-extension/overview|IDE Extension]] — Uses WorkSync chat, tasks, sprints via tag engine
+- [[ADE-START-HERE|ADE Start Here]] â€” Build order for WorkSync (Weeks 1â€“4)
+- [[onevo-unified-entity-map|Entity Map]] â€” Sections 25â€“38 (all WorkSync tables)
+- [[database/schema-catalog|Schema Catalog]] â€” WorkSync section
+- [[modules/ide-extension/overview|IDE Extension]] â€” Uses WorkSync chat, tasks, sprints via tag engine
 - [[current-focus/DEV5-wms-foundation|DEV5 Task Pack]]
 - [[current-focus/DEV6-tasks-boards-planning|DEV6 Task Pack]]
 - [[current-focus/DEV7-chat-ai-reminders|DEV7 Task Pack]]
 - [[current-focus/DEV8-documents-github-ide|DEV8 Task Pack]]
+
 
 

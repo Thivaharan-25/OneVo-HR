@@ -7,26 +7,46 @@
 
 ## Provision New Tenant
 
-### Flow
+Tenant creation is an internal ONEVO operator flow. Customers cannot self-sign up, and
+`POST /api/v1/tenants` must not exist on the tenant-facing API. The canonical
+provisioning workflow is the Developer Platform wizard:
+[[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]].
+
+### Draft Creation Flow
 
 ```
-POST /api/v1/tenants
-  -> TenantController.Provision(CreateTenantCommand)
-    -> Public endpoint (signup flow)
-    -> TenantService.ProvisionTenantAsync(command, ct)
-      -> 1. Validate: name, slug (unique), industry_profile
-      -> 2. INSERT into tenants (status = 'trial')
-      -> 3. Seed default data:
-         -> a. Create default roles (Admin, HR Manager, Manager, Employee)
-         -> b. Assign all permissions to Admin role
-         -> c. Create monitoring_feature_toggles based on industry_profile
-            -> e.g., office_it gets activity_monitoring ON, manufacturing gets biometric ON
-         -> d. Create default tenant_settings (timezone, work hours)
-         -> e. Create admin user account
-      -> 4. Create subscription (trial plan)
-      -> 5. Log to audit_logs: action = "tenant.provisioned"
-      -> Return Result.Success(tenantDto)
+POST /admin/v1/tenants
+  -> Admin TenantController.CreateDraft(CreateTenantDraftCommand)
+    -> Platform-admin endpoint only
+    -> TenantProvisioningService.CreateDraftAsync(command, ct)
+      -> 1. Validate: company name, slug, country, timezone, currency, industry_profile
+      -> 2. INSERT into tenants (status = 'provisioning')
+      -> 3. Store initial tenant_settings captured during account setup
+      -> 4. Log to audit_logs: action = "tenant.provisioning_draft_created"
+      -> Return tenant_id, status = "provisioning", next_step = "subscription"
 ```
+
+### Provisioning Completion Flow
+
+After draft creation, the Developer Platform wizard completes the commercial and
+access setup through admin endpoints:
+
+1. Assign one reusable subscription plan and tenant-specific commercial terms.
+2. Save tenant module entitlement records and module pricing/sales state.
+3. Resolve the module-filtered permission catalog.
+4. Apply reusable role templates or create tenant-specific roles.
+5. Save required tenant settings and module defaults.
+6. Invite the first tenant owner with a set-password link.
+7. Activate the tenant through `PATCH /admin/v1/tenants/{id}/provision/confirm`.
+
+Activation must fail until tenant details, subscription/commercial terms, active
+module entitlements, at least one valid owner/admin role, required settings, and
+the owner invite are complete. Operators must not create or handle the tenant
+owner's final password.
+
+Roles are independent tenant-scoped permission containers. They do not require
+job levels. Job levels and hierarchy are used later for scoped permissions,
+approval routing, escalation, and organisation-aware access.
 
 ### Error Scenarios
 
@@ -34,6 +54,9 @@ POST /api/v1/tenants
 |:------|:---------|
 | Duplicate slug | Return 409 Conflict |
 | Invalid industry_profile | Return 422 |
+| Missing provisioning step | Return 422 checklist from provisioning summary |
+| Tenant owner invite missing | Block activation |
+| Invalid role permission for enabled modules | Block activation |
 
 ## Related
 

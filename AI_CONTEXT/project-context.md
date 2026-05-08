@@ -334,7 +334,7 @@ Every route, sidebar item, command menu item, API endpoint, and mobile/tablet re
 
 The frontend consumes the ONEVO REST API at `/api/v1/*`.
 
-- **Auth:** JWT in memory (access token) + HttpOnly cookie (refresh token)
+- **Auth:** BFF-style HttpOnly cookie session for customer web; tenant JWTs stay backend-side for browser sessions
 - **Pagination:** Cursor-based, max 100 items
 - **Errors:** RFC 7807 Problem Details
 - **Real-time:** SignalR hub at `/hubs/notifications`

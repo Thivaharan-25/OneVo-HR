@@ -1,4 +1,4 @@
-# Employee Profiles — End-to-End Logic
+﻿# Employee Profiles â€” End-to-End Logic
 
 **Module:** Core HR
 **Feature:** Employee Profiles
@@ -17,67 +17,67 @@ Employee Profiles is the central hub entity for all HR data. Every employee reco
 
 ```
 POST /api/v1/employees
-  → EmployeesController.Create(CreateEmployeeRequest)
-    → IEmployeeService.CreateAsync(dto, tenantId, performedById)
-      → Validate: email uniqueness (per tenant), employee_number uniqueness
-      → Validate: department_id, job_title_id, manager_id exist
-      → Validate: legal_entity_id belongs to tenant
-      → Map DTO → Employee entity
-      → _dbContext.Employees.Add(employee)
-      → _dbContext.SaveChangesAsync()  // single transaction
-      → Publish EmployeeCreated domain event
-      → Return EmployeeResponse (201 Created)
+  â†’ EmployeesController.Create(CreateEmployeeRequest)
+    â†’ IEmployeeService.CreateAsync(dto, tenantId, performedById)
+      â†’ Validate: email uniqueness (per tenant), employee_number uniqueness
+      â†’ Validate: department_id, job_title_id, manager_id exist
+      â†’ Validate: legal_entity_id belongs to tenant
+      â†’ Map DTO â†’ Employee entity
+      â†’ _dbContext.Employees.Add(employee)
+      â†’ _dbContext.SaveChangesAsync()  // single transaction
+      â†’ Publish EmployeeCreated domain event
+      â†’ Return EmployeeResponse (201 Created)
 ```
 
 ### 2. Update Employee
 
 ```
 PUT /api/v1/employees/{id}
-  → EmployeesController.Update(id, UpdateEmployeeRequest)
-    → IEmployeeService.UpdateAsync(id, dto, tenantId, performedById)
-      → Fetch employee by id + tenant_id (throw 404 if not found or is_deleted)
-      → Validate: if email changed, check uniqueness
-      → Validate: if manager_id changed, prevent circular hierarchy
-      → Detect changes for lifecycle events (department change → EmployeeTransferred)
-      → Apply changes to entity
-      → _dbContext.SaveChangesAsync()
-      → Publish domain events based on detected changes
-      → Return EmployeeResponse (200 OK)
+  â†’ EmployeesController.Update(id, UpdateEmployeeRequest)
+    â†’ IEmployeeService.UpdateAsync(id, dto, tenantId, performedById)
+      â†’ Fetch employee by id + tenant_id (throw 404 if not found or is_deleted)
+      â†’ Validate: if email changed, check uniqueness
+      â†’ Validate: if manager_id changed, prevent circular hierarchy
+      â†’ Detect changes for lifecycle events (department change â†’ EmployeeTransferred)
+      â†’ Apply changes to entity
+      â†’ _dbContext.SaveChangesAsync()
+      â†’ Publish domain events based on detected changes
+      â†’ Return EmployeeResponse (200 OK)
 ```
 
 ### 3. Soft Delete Employee
 
 ```
 DELETE /api/v1/employees/{id}
-  → EmployeesController.Delete(id)
-    → IEmployeeService.SoftDeleteAsync(id, tenantId, performedById)
-      → Fetch employee (throw 404 if not found or already deleted)
-      → Set is_deleted = true, termination_date = DateTime.UtcNow
-      → _dbContext.SaveChangesAsync()
-      → Publish EmployeeTerminated domain event
-      → Return 204 No Content
+  â†’ EmployeesController.Delete(id)
+    â†’ IEmployeeService.SoftDeleteAsync(id, tenantId, performedById)
+      â†’ Fetch employee (throw 404 if not found or already deleted)
+      â†’ Set is_deleted = true, termination_date = DateTime.UtcNow
+      â†’ _dbContext.SaveChangesAsync()
+      â†’ Publish EmployeeTerminated domain event
+      â†’ Return 204 No Content
 ```
 
 ### 4. Get Own Profile
 
 ```
 GET /api/v1/employees/me
-  → EmployeesController.GetMe()
-    → Extract user_id from JWT claims
-    → IEmployeeService.GetByUserIdAsync(userId, tenantId)
-      → Query employees WHERE user_id = @userId AND tenant_id = @tenantId AND is_deleted = false
-      → Include: addresses, emergency contacts, department, job title
-      → Return EmployeeDetailResponse (200 OK)
+  â†’ EmployeesController.GetMe()
+    â†’ Extract user_id from backend-held auth/session state
+    â†’ IEmployeeService.GetByUserIdAsync(userId, tenantId)
+      â†’ Query employees WHERE user_id = @userId AND tenant_id = @tenantId AND is_deleted = false
+      â†’ Include: addresses, emergency contacts, department, job title
+      â†’ Return EmployeeDetailResponse (200 OK)
 ```
 
 ### 5. Get Direct Reports
 
 ```
 GET /api/v1/employees/{id}/team
-  → EmployeesController.GetTeam(id)
-    → IEmployeeService.GetDirectReportsAsync(id, tenantId)
-      → Query employees WHERE manager_id = @id AND tenant_id = @tenantId AND is_deleted = false
-      → Return List<EmployeeSummaryResponse> (200 OK)
+  â†’ EmployeesController.GetTeam(id)
+    â†’ IEmployeeService.GetDirectReportsAsync(id, tenantId)
+      â†’ Query employees WHERE manager_id = @id AND tenant_id = @tenantId AND is_deleted = false
+      â†’ Return List<EmployeeSummaryResponse> (200 OK)
 ```
 
 ---
@@ -105,8 +105,8 @@ sequenceDiagram
     Service->>DB: Verify FK references (dept, job title, manager)
     Service->>DB: INSERT INTO employees
     Service->>Bus: Publish EmployeeCreated
-    Bus->>Bus: NotificationHandler → queue welcome email
-    Bus->>Bus: LeaveHandler → initialize leave balances
+    Bus->>Bus: NotificationHandler â†’ queue welcome email
+    Bus->>Bus: LeaveHandler â†’ initialize leave balances
     Service-->>Controller: EmployeeResponse
     Controller-->>Client: 201 Created
 ```
@@ -147,3 +147,4 @@ sequenceDiagram
 - [[modules/core-hr/compensation/overview|Compensation]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
+

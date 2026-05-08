@@ -51,10 +51,10 @@
 - **DB:** `tenants`, `tenant_settings`
 
 ### Step 5: Configure Plan, Modules, Role Templates, and Initial Settings
-- **UI:** Operator selects plan/commercial model, pricing terms, enabled modules, module sales states, starter role templates, settings defaults, integration prerequisites, workflow defaults, and optional data-import setup.
-- **API:** `PATCH /admin/v1/tenants/{tenantId}/subscription`, `PUT /admin/v1/tenants/{tenantId}/modules`, `GET /admin/v1/tenants/{tenantId}/permissions/catalog`, `POST /admin/v1/tenants/{tenantId}/role-templates/{templateId}/apply`, `PATCH /admin/v1/tenants/{tenantId}/settings`
-- **Backend:** Module services validate commercial plan/module choices, pricing terms, module sales states, expose the module-filtered permission catalog, materialize selected role templates, and write initial settings/workflow/configuration records through their owning modules.
-- **Validation:** Role-template permissions must belong to enabled modules. Disabled/unpurchased module permissions cannot be assigned.
+- **UI:** Operator selects one reusable plan, tenant-specific commercial terms, pricing overrides, enabled modules, module sales states, reusable role templates, tenant-specific roles, settings defaults, integration prerequisites, workflow defaults, and optional data-import setup.
+- **API:** `GET /admin/v1/subscription-plans`, `GET /admin/v1/modules/catalog`, `PATCH /admin/v1/tenants/{tenantId}/subscription`, `PUT /admin/v1/tenants/{tenantId}/modules`, `GET /admin/v1/tenants/{tenantId}/permissions/catalog`, `GET /admin/v1/role-templates`, `POST /admin/v1/role-templates`, `POST /admin/v1/tenants/{tenantId}/role-templates/{templateId}/apply`, `GET /admin/v1/tenants/{tenantId}/roles`, `POST /admin/v1/tenants/{tenantId}/roles`, `PUT /admin/v1/tenants/{tenantId}/roles/{roleId}/permissions`, `PATCH /admin/v1/tenants/{tenantId}/settings`
+- **Backend:** Module services validate commercial plan/module choices, pricing terms, module sales states, expose the module-filtered permission catalog, materialize selected role templates, create tenant-specific roles, and write initial settings/workflow/configuration records through their owning modules.
+- **Validation:** Role/template permissions must belong to enabled modules. Disabled, available, quoted, unpurchased, or expired module permissions cannot be assigned.
 - **DB:** `tenant_subscriptions`, module entitlement/pricing records, `roles`, `role_permissions`, `tenant_settings`, workflow/configuration tables as selected.
 
 ### Step 6: Invite Tenant Owner
@@ -62,7 +62,7 @@
 - **API:** `POST /admin/v1/tenants/{tenantId}/invite-admin`
 - **Backend:** `UserService.CreateAdminAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
   1. Creates user record in `users` table
-  2. Assigns the configured tenant owner role created from the selected role template
+  2. Assigns the configured tenant owner/admin role created from an applied template or tenant-specific provisioning role
   3. Creates employee stub record linked to the user
   4. Sends set-password invitation email with login link
 - **Validation:** Email must be unique across the platform. Email domain should match company domain (warning if not, but allowed)
@@ -72,7 +72,7 @@
 - **UI:** Success screen showing: Tenant ID, Login URL, Admin email. "Go to Tenant Dashboard" button
 - **API:** `PATCH /admin/v1/tenants/{tenantId}/provision/confirm` (sets status to `active`)
 - **Backend:** `TenantProvisioningService.ActivateAsync()` updates tenant status. Publishes `TenantProvisionedEvent`
-- **Validation:** All provisioning steps must have completed successfully
+- **Validation:** All provisioning steps must have completed successfully. Activation fails with a checklist until tenant details, commercial terms, active module entitlements, at least one valid tenant owner/admin role, required settings, and owner invite are complete.
 - **DB:** `tenants` (status → `active`)
 
 ## Variations
@@ -92,9 +92,10 @@
 ### Role template and permission catalog selection (always required)
 - After module selection, Developer Platform loads a tenant permission catalog from `/admin/v1/tenants/{tenantId}/permissions/catalog`.
 - The catalog includes only universal permissions and permissions from modules enabled for that tenant.
-- The operator applies ONEVO starter role templates or creates tenant-specific role templates from that filtered catalog.
+- The operator applies ONEVO starter role templates, creates reusable operator-managed templates, or creates tenant-specific roles from that filtered catalog.
 - Applied templates create normal tenant-scoped `roles` and `role_permissions`; they are starter configuration, not a separate runtime authorization model.
 - Tenant owners can later create or edit roles in the tenant app, but they are still limited to permissions exposed by enabled modules.
+- Roles do not require job levels. Job levels and hierarchy only affect scoped access, workflow approver resolution, escalation, and organisation-aware policies.
 
 ### When Workforce Intelligence (monitoring) is enabled
 Recommended setup sequence after provisioning completes:

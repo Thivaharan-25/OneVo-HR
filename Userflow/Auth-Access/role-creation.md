@@ -1,7 +1,7 @@
-# Role Creation
+﻿# Role Creation
 
 **Area:** Auth & Access
-**Trigger:** Admin clicks Create Role (user action — configuration)
+**Trigger:** Admin clicks Create Role (user action â€” configuration)
 **Required Permission(s):** `roles:manage`
 **Related Permissions:** `users:manage` (to assign the new role to users)
 
@@ -18,7 +18,7 @@
 ### Step 1: Navigate to Role Management
 - **UI:** Administration > Roles & Permissions. List view shows all roles: Name, Description, User Count (how many users have this role), Type (System/Custom), Created Date. System roles marked with a lock icon (cannot be deleted). "Create Role" button in top-right
 - **API:** `GET /api/v1/roles`
-- **Backend:** `RoleService.GetRolesAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
+- **Backend:** `RoleService.GetRolesAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** Permission check for `roles:manage`
 - **DB:** `roles`, `user_roles` (for user count)
 
@@ -27,7 +27,7 @@
   - **Basic Info:** Role Name (required, e.g., "HR Business Partner"), Description (optional, e.g., "Can manage employees in assigned departments")
   - **Permission Browser:** Accordion-style category list showing all 106 explicitly grantable permissions grouped by module. Universal permissions are shown separately as read-only auto-grants and cannot be selected.
 - **API:** `GET /api/v1/permissions` (loads all explicitly grantable permissions; universal permissions are excluded from assignment payloads)
-- **Backend:** `PermissionService.GetAllPermissionsAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
+- **Backend:** `PermissionService.GetAllPermissionsAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** N/A
 - **DB:** `permissions`
 
@@ -79,7 +79,7 @@
     "permissionIds": ["uuid1", "uuid2", "uuid3"]
   }
   ```
-- **Backend:** `RoleService.CreateRoleAsync()` → [[frontend/cross-cutting/authorization|Authorization]]
+- **Backend:** `RoleService.CreateRoleAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
   1. Validate role name is unique within tenant
   2. Create `roles` record
   3. Create `role_permissions` records for each selected permission
@@ -97,7 +97,7 @@
 ## Variations
 
 ### When cloning an existing role
-- From role list, click a role → "Clone Role" button
+- From role list, click a role â†’ "Clone Role" button
 - Pre-fills all permissions from the source role
 - Admin modifies name, description, and adjusts permissions
 - Saves as a new independent role (no link to source)
@@ -124,18 +124,19 @@
 
 ## Events Triggered
 
-- `RoleCreatedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging
-- `AuditLogEntry` (action: `role.created`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `RoleCreatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by audit logging
+- `AuditLogEntry` (action: `role.created`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — assign permissions to roles or override per employee
-- [[Userflow/Auth-Access/user-invitation|User Invitation]] — assign role during user invitation
-- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] — link role to job family levels for automatic assignment
-- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — role assigned during onboarding
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] â€” assign permissions to roles or override per employee
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] â€” assign role during user invitation
+- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] â€” link role to job family levels for automatic assignment
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] â€” role assigned during onboarding
 
 ## Module References
 
-- [[frontend/cross-cutting/authorization|Authorization]] — RBAC implementation, role and permission management
-- [[security/rbac-frontend|Rbac Frontend]] — role management UI components
-- [[frontend/cross-cutting/authentication|Authentication]] — JWT claims include permissions from assigned role
+- [[frontend/cross-cutting/authorization|Authorization]] â€” RBAC implementation, role and permission management
+- [[security/rbac-frontend|Rbac Frontend]] â€” role management UI components
+- [[frontend/cross-cutting/authentication|Authentication]] â€” backend session metadata includes permissions from assigned role
+

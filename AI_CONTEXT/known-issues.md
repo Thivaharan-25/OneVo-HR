@@ -1,4 +1,4 @@
-# Known Issues & Gotchas: ONEVO
+﻿# Known Issues & Gotchas: ONEVO
 
 **Last Updated:** 2026-04-06
 
@@ -20,11 +20,11 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 - **[[infrastructure/multi-tenancy|Multi-Tenancy]] Everywhere:** Every single query MUST be tenant-scoped. Application handlers and services must not use EF Core, `DbContext`, `ApplicationDbContext`, or `DbSet<T>` directly; create repository/reader interfaces instead. Raw SQL or direct DbContext access is only for reviewed Infrastructure repository implementations, and tenant-scoped data must include `WHERE tenant_id = @tenantId`. PostgreSQL RLS is a safety net, not a replacement for application-level filtering.
 
-- **RLS Interceptor — Guid-only string interpolation:** The `TenantRlsInterceptor` uses `$"SET LOCAL app.current_tenant_id = '{_tenantContext.TenantId}'"`. This is safe **only** because `TenantId` is a `Guid` (hex + hyphens — cannot contain SQL injection characters). **Never copy this pattern for string values.** For any non-`Guid` SET LOCAL, use `SELECT set_config('app.current_tenant_id', $1, true)` with a parameterized `NpgsqlParameter`. See [[infrastructure/multi-tenancy|Multi-Tenancy]] for the safe parameterized alternative.
+- **RLS Interceptor â€” Guid-only string interpolation:** The `TenantRlsInterceptor` uses `$"SET LOCAL app.current_tenant_id = '{_tenantContext.TenantId}'"`. This is safe **only** because `TenantId` is a `Guid` (hex + hyphens â€” cannot contain SQL injection characters). **Never copy this pattern for string values.** For any non-`Guid` SET LOCAL, use `SELECT set_config('app.current_tenant_id', $1, true)` with a parameterized `NpgsqlParameter`. See [[infrastructure/multi-tenancy|Multi-Tenancy]] for the safe parameterized alternative.
 
 - **Employee vs User:** `users` is the login identity (authentication). `employees` is the HR identity (business data). They are 1:1 linked via `user_id`. When working with HR features, always query through `employees`, not `users`. The `employees` table is the central hub.
 
-- **organisation_id vs tenant_id (RESOLVED):** Previously some tables used `organisation_id` instead of `tenant_id`. This has been fixed — all tables now use `tenant_id` consistently. No EF Core column mapping workarounds needed. Frontend types should use `tenantId` everywhere as well.
+- **organisation_id vs tenant_id (RESOLVED):** Previously some tables used `organisation_id` instead of `tenant_id`. This has been fixed â€” all tables now use `tenant_id` consistently. No EF Core column mapping workarounds needed. Frontend types should use `tenantId` everywhere as well.
 
 - **Snake Case in DB, PascalCase in C#:** Database uses `snake_case`. C# uses `PascalCase`. EF Core's `.UseSnakeCaseNamingConvention()` handles this automatically. Don't manually specify column names unless there's a mismatch.
 
@@ -36,23 +36,23 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 ### Workforce Intelligence
 
-- **Attendance → Workforce Presence Rename:** The old `Attendance` module no longer exists. It is now `Workforce Presence` (`ONEVO.Modules.WorkforcePresence`). All attendance-related tables remain but under this new namespace. References to "Attendance" in code should use "WorkforcePresence". See [[modules/workforce-presence/overview|Workforce Presence]].
+- **Attendance â†’ Workforce Presence Rename:** The old `Attendance` module no longer exists. It is now `Workforce Presence` (`ONEVO.Modules.WorkforcePresence`). All attendance-related tables remain but under this new namespace. References to "Attendance" in code should use "WorkforcePresence". See [[modules/workforce-presence/overview|Workforce Presence]].
 
 - **Activity Data Volume:** `activity_snapshots` generates ~240 rows/employee/day (one every 2-3 min for 8 hours). For 500 employees = 120,000 rows/day. Use pg_partman monthly partitions. Always query with `tenant_id` + date range. See [[modules/activity-monitoring/overview|Activity Monitoring]].
 
-- **Raw Buffer Purge:** `activity_raw_buffer` is partitioned by day and auto-purged after 48 hours by a Hangfire daily job. **Never query this table for reporting** — use `activity_daily_summary` instead. See [[modules/activity-monitoring/overview|Activity Monitoring]].
+- **Raw Buffer Purge:** `activity_raw_buffer` is partitioned by day and auto-purged after 48 hours by a Hangfire daily job. **Never query this table for reporting** â€” use `activity_daily_summary` instead. See [[modules/activity-monitoring/overview|Activity Monitoring]].
 
-- **Agent Authentication vs User Authentication:** Desktop agents use a separate device-level JWT (issued at registration). This is NOT the same as user JWT. Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. Employee context is established at login via the MAUI tray app → the Service calls `POST /api/v1/agent/session/login` which creates a server-side `agent_sessions` record (`device_id → employee_id`). The ingest endpoint validates `payload.employee_id` against this record for every batch — mismatch or missing session returns `403`. See [[modules/agent-gateway/data-collection|Data Collection — Employee-Device Binding]] and [[database/schemas/agent-gateway|Agent Gateway Schema]].
+- **Agent Authentication vs User Authentication:** Desktop agents use a separate device-level JWT (issued at registration). This is NOT the same as user JWT. Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. Employee context is established at login via the MAUI tray app â†’ the Service calls `POST /api/v1/agent/session/login` which creates a server-side `agent_sessions` record (`device_id â†’ employee_id`). The ingest endpoint validates `payload.employee_id` against this record for every batch â€” mismatch or missing session returns `403`. See [[modules/agent-gateway/data-collection|Data Collection â€” Employee-Device Binding]] and [[database/schemas/agent-gateway|Agent Gateway Schema]].
 
 - **Monitoring Feature Toggles:** Always check `monitoring_feature_toggles` (tenant-level) and `employee_monitoring_overrides` (employee-level) before processing any monitoring data. The desktop agent checks its policy on login, but the **server must double-validate**. See [[modules/configuration/overview|Configuration]].
 
 - **Screenshot Storage:** Screenshots are stored in blob storage (same as other files via `file_records`). Screenshot metadata in `screenshots` table has `file_record_id` FK. **Never store screenshots in the database.** Screenshots are classified as RESTRICTED data. See [[security/data-classification|Data Classification]].
 
-- **Identity Verification Photos:** Verification photos are temporary — retained for configurable period (default 30 days) then auto-deleted by retention job. They are NOT the same as employee profile photos. See [[modules/identity-verification/overview|Identity Verification]].
+- **Identity Verification Photos:** Verification photos are temporary â€” retained for configurable period (default 30 days) then auto-deleted by retention job. They are NOT the same as employee profile photos. See [[modules/identity-verification/overview|Identity Verification]].
 
 - **Exception Engine Timing:** The exception engine only evaluates rules during configured work hours (`exception_schedules`). Off-hours activity data is still collected but does NOT trigger alerts. Always check the schedule first. See [[modules/exception-engine/overview|Exception Engine]].
 
-- **Presence Session vs Device Session:** `presence_sessions` is ONE row per employee per day (unified from all sources). `device_sessions` can have MULTIPLE rows per day (one per laptop active/idle cycle). Don't confuse them — presence is the summary, device sessions are the raw source. See [[modules/workforce-presence/overview|Workforce Presence]].
+- **Presence Session vs Device Session:** `presence_sessions` is ONE row per employee per day (unified from all sources). `device_sessions` can have MULTIPLE rows per day (one per laptop active/idle cycle). Don't confuse them â€” presence is the summary, device sessions are the raw source. See [[modules/workforce-presence/overview|Workforce Presence]].
 
 - **Activity data can be empty:** If monitoring is disabled for a tenant or employee, activity endpoints return empty arrays, not errors. UI must handle "No monitoring data available" gracefully (frontend).
 
@@ -80,70 +80,71 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 - **RFC 7807 errors:** All API errors follow Problem Details format. Parse `title`, `detail`, and `errors` array consistently.
 
-- **Access token in memory only** — lost on page refresh. Always implement silent refresh via HttpOnly cookie.
+- **Customer web auth is BFF-style cookie auth:** Browser JavaScript must not receive, store, decode, or send tenant JWTs. Use HttpOnly Secure cookies with `credentials: "include"` and CSRF headers on mutations.
+
 
 - **Permission array can be large** (90+ permissions). Cache in Zustand store, don't re-fetch on every route change.
 
-- **Device JWT is NOT for frontend** — that's for the desktop agent. Frontend uses standard user JWT.
+- **Device JWT is NOT for frontend:** That is for the desktop agent. Customer web frontend uses cookie-backed sessions; IDE extension auth is separate and uses secure extension storage.
 
-- **SignalR requires auth** — pass JWT as query param on connection (SignalR standard pattern).
+- **SignalR requires auth:** Customer web SignalR handshakes use the cookie-backed session. IDE and agent SignalR flows may use token query parameters only where their own contracts say so.
 
-- **Channel permissions** — `workforce-live` and `exception-alerts` channels require `workforce:view` permission. Server will reject unauthorized subscriptions.
+- **Channel permissions** â€” `workforce-live` and `exception-alerts` channels require `workforce:view` permission. Server will reject unauthorized subscriptions.
 
-- **Reconnection storms** — if server restarts, all clients reconnect simultaneously. Use jitter in reconnection delay.
+- **Reconnection storms** â€” if server restarts, all clients reconnect simultaneously. Use jitter in reconnection delay.
 
-- **Activity heatmap performance** — hourly intensity data can be up to 24 points per employee per day. For team views with 50+ employees, use server-side aggregation, not client-side computation.
+- **Activity heatmap performance** â€” hourly intensity data can be up to 24 points per employee per day. For team views with 50+ employees, use server-side aggregation, not client-side computation.
 
-- **Employee list with live status** — the live workforce dashboard shows status for all employees. Use SignalR push updates, not polling individual employee endpoints.
+- **Employee list with live status** â€” the live workforce dashboard shows status for all employees. Use SignalR push updates, not polling individual employee endpoints.
 
-### Desktop Agent — Win32 API Hooks
+### Desktop Agent â€” Win32 API Hooks
 
-- **`SetWindowsHookEx` for keyboard/mouse** — use `WH_KEYBOARD_LL` and `WH_MOUSE_LL` (low-level hooks). These work system-wide but require a message pump. The Windows Service must run a message loop on a dedicated thread.
-- **Hook thread must be STA** — Win32 hooks require a Single-Threaded Apartment thread with `Application.Run()` or equivalent message loop.
-- **Antivirus false positives** — keyboard hooks trigger some AV heuristics. MSIX signing with a trusted certificate mitigates this. Include exclusion documentation for IT teams.
+- **`SetWindowsHookEx` for keyboard/mouse** â€” use `WH_KEYBOARD_LL` and `WH_MOUSE_LL` (low-level hooks). These work system-wide but require a message pump. The Windows Service must run a message loop on a dedicated thread.
+- **Hook thread must be STA** â€” Win32 hooks require a Single-Threaded Apartment thread with `Application.Run()` or equivalent message loop.
+- **Antivirus false positives** â€” keyboard hooks trigger some AV heuristics. MSIX signing with a trusted certificate mitigates this. Include exclusion documentation for IT teams.
 
-### Desktop Agent — MAUI Tray App
+### Desktop Agent â€” MAUI Tray App
 
-- **MAUI doesn't natively support system tray** — use `CommunityToolkit.Maui` or `H.NotifyIcon.WinUI` for tray icon functionality.
-- **MAUI app must NOT be the main entry point** — the Windows Service is the primary process. MAUI app launches separately and connects via Named Pipes.
-- **Camera access** — requires `webcam` capability in `Package.appxmanifest`. User is prompted on first use.
+- **MAUI doesn't natively support system tray** â€” use `CommunityToolkit.Maui` or `H.NotifyIcon.WinUI` for tray icon functionality.
+- **MAUI app must NOT be the main entry point** â€” the Windows Service is the primary process. MAUI app launches separately and connects via Named Pipes.
+- **Camera access** â€” requires `webcam` capability in `Package.appxmanifest`. User is prompted on first use.
 
-### Desktop Agent — SQLite Buffer
+### Desktop Agent â€” SQLite Buffer
 
-- **WAL mode required** — use Write-Ahead Logging for concurrent read/write (Service writes, sync reads).
-- **Buffer size limit** — if SQLite file exceeds 100MB, drop oldest unsent records. Log a warning.
-- **Encryption** — use SQLCipher for data-at-rest encryption. Key derived from machine DPAPI.
+- **WAL mode required** â€” use Write-Ahead Logging for concurrent read/write (Service writes, sync reads).
+- **Buffer size limit** â€” if SQLite file exceeds 100MB, drop oldest unsent records. Log a warning.
+- **Encryption** â€” use SQLCipher for data-at-rest encryption. Key derived from machine DPAPI.
 
-### Desktop Agent — Network
+### Desktop Agent â€” Network
 
-- **Corporate proxies** — some companies route traffic through HTTP proxies. Agent must respect system proxy settings via `HttpClient.DefaultProxy`.
-- **VPN disconnects** — common in remote work. Agent must handle sudden network loss gracefully (buffer locally).
-- **Certificate pinning** — in production, pin to ONEVO's certificate to prevent MITM. In dev, allow self-signed.
+- **Corporate proxies** â€” some companies route traffic through HTTP proxies. Agent must respect system proxy settings via `HttpClient.DefaultProxy`.
+- **VPN disconnects** â€” common in remote work. Agent must handle sudden network loss gracefully (buffer locally).
+- **Certificate pinning** â€” in production, pin to ONEVO's certificate to prevent MITM. In dev, allow self-signed.
 
-### Desktop Agent — Device JWT
+### Desktop Agent â€” Device JWT
 
-- **Token stored via DPAPI** — `ProtectedData.Protect()` with `DataProtectionScope.LocalMachine`. This means the token is tied to the machine, not the user.
-- **Token refresh** — Device JWT has 24-hour expiry. Agent must refresh before expiry. If refresh fails (revoked), show error in tray app.
-- **Multiple users on one machine** — edge case. Device is registered once, but different employees can log in/out. The `employee_id` changes on login, but `device_id` stays the same.
+- **Token stored via DPAPI** â€” `ProtectedData.Protect()` with `DataProtectionScope.LocalMachine`. This means the token is tied to the machine, not the user.
+- **Token refresh** â€” Device JWT has 24-hour expiry. Agent must refresh before expiry. If refresh fails (revoked), show error in tray app.
+- **Multiple users on one machine** â€” edge case. Device is registered once, but different employees can log in/out. The `employee_id` changes on login, but `device_id` stays the same.
 
-### Desktop Agent — Idle Detection
+### Desktop Agent â€” Idle Detection
 
-- **`GetLastInputInfo` quirk** — returns time since last keyboard/mouse input system-wide, NOT per-application. A user typing in Notepad counts as "active" even if they should be in Teams.
-- **Screensaver/lock screen** — when the screen locks, `GetLastInputInfo` stops updating. Treat screen lock as idle.
-- **Remote desktop** — RDP sessions have their own input state. Agent detects this via session change notifications (`WTSRegisterSessionNotification`).
+- **`GetLastInputInfo` quirk** â€” returns time since last keyboard/mouse input system-wide, NOT per-application. A user typing in Notepad counts as "active" even if they should be in Teams.
+- **Screensaver/lock screen** â€” when the screen locks, `GetLastInputInfo` stops updating. Treat screen lock as idle.
+- **Remote desktop** â€” RDP sessions have their own input state. Agent detects this via session change notifications (`WTSRegisterSessionNotification`).
 
-### Desktop Agent — Meeting Detection
+### Desktop Agent â€” Meeting Detection
 
-- **Phase 1: Process name matching only** — detect Teams.exe, zoom.exe, meet (Chrome tab — unreliable). This is basic and has false positives (Teams running in background ≠ in meeting).
-- **Camera/mic detection** — check if camera/microphone devices are in use via Windows Multimedia API. Presence of camera activity during meeting app = likely in meeting.
+- **Phase 1: Process name matching only** â€” detect Teams.exe, zoom.exe, meet (Chrome tab â€” unreliable). This is basic and has false positives (Teams running in background â‰  in meeting).
+- **Camera/mic detection** â€” check if camera/microphone devices are in use via Windows Multimedia API. Presence of camera activity during meeting app = likely in meeting.
 - **Phase 2:** Microsoft Teams Graph API will provide accurate meeting data. See [[backend/external-integrations|External Integrations]].
 
-### Desktop Agent — Installation
+### Desktop Agent â€” Installation
 
-- **MSIX requires Windows 10 1809+** — older Windows versions not supported.
-- **Auto-start** — Windows Service set to `Automatic (Delayed Start)`. MAUI app auto-starts via registry `Run` key for logged-in user.
-- **Uninstall** — MSIX uninstall removes both Service and MAUI app. SQLite buffer and logs are cleaned up.
-- **Updates** — MSIX supports auto-update from a URL. Agent checks for updates on heartbeat response.
+- **MSIX requires Windows 10 1809+** â€” older Windows versions not supported.
+- **Auto-start** â€” Windows Service set to `Automatic (Delayed Start)`. MAUI app auto-starts via registry `Run` key for logged-in user.
+- **Uninstall** â€” MSIX uninstall removes both Service and MAUI app. SQLite buffer and logs are cleaned up.
+- **Updates** â€” MSIX supports auto-update from a URL. Agent checks for updates on heartbeat response.
 
 ---
 
@@ -157,14 +158,14 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 ## Deprecated Patterns
 
-- **Don't use:** Direct `DbContext.Set<T>()`, `ApplicationDbContext`, `DbSet<T>`, or EF Core queries in handlers/services — use repository/reader interfaces so tenant filtering is centralized
-- **Don't use:** `throw new Exception()` for business logic — use `Result<T>` pattern
-- **Don't use:** Synchronous database calls — always `async/await` with `CancellationToken`
-- **Don't use:** `string` for IDs — always `Guid` (mapped to `uuid` in PostgreSQL)
-- **Don't use:** `DateTime` — use `DateTimeOffset` for timestamps, `DateOnly` for dates, `TimeOnly` for times
-- **Don't use:** "Attendance" as module name — it's now "WorkforcePresence" (see [[modules/workforce-presence/overview|Workforce Presence]])
-- **Don't use:** Offset-based pagination — backend uses cursor-based pagination only
-- **Don't use:** `useEffect` + `useState` for API calls in frontend — use TanStack Query
+- **Don't use:** Direct `DbContext.Set<T>()`, `ApplicationDbContext`, `DbSet<T>`, or EF Core queries in handlers/services â€” use repository/reader interfaces so tenant filtering is centralized
+- **Don't use:** `throw new Exception()` for business logic â€” use `Result<T>` pattern
+- **Don't use:** Synchronous database calls â€” always `async/await` with `CancellationToken`
+- **Don't use:** `string` for IDs â€” always `Guid` (mapped to `uuid` in PostgreSQL)
+- **Don't use:** `DateTime` â€” use `DateTimeOffset` for timestamps, `DateOnly` for dates, `TimeOnly` for times
+- **Don't use:** "Attendance" as module name â€” it's now "WorkforcePresence" (see [[modules/workforce-presence/overview|Workforce Presence]])
+- **Don't use:** Offset-based pagination â€” backend uses cursor-based pagination only
+- **Don't use:** `useEffect` + `useState` for API calls in frontend â€” use TanStack Query
 
 ---
 

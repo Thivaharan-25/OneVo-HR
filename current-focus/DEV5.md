@@ -51,7 +51,7 @@ npm run build
 
 ### Acceptance Criteria
 
-- [ ] API client attaches access token, tenant header, and correlation ID.
+- [ ] API client uses `credentials: "include"` for the HttpOnly customer web session, attaches tenant/entity context and correlation ID, and never attaches tenant JWTs from browser JavaScript.
 - [ ] API client maps validation, auth, forbidden, not found, rate limit, and server errors.
 - [ ] TanStack Query defaults are configured.
 - [ ] Cursor pagination helper exists.

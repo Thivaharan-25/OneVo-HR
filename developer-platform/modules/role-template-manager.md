@@ -6,6 +6,8 @@ The Role Template Manager lets ONEVO operators define starter role configuration
 
 Role templates are not runtime permissions by themselves. A template is a reusable operator-managed blueprint. When applied to a tenant, it materializes into normal tenant-scoped `roles` and `role_permissions` records owned by the Auth module.
 
+Operators do not need to create a new template for every tenant. They use the reusable global template library for common patterns, and create tenant-specific roles directly during provisioning when a role is unique to one customer. Both paths must use the same module-filtered permission catalog.
+
 ## Core Rule
 
 Role templates must always be filtered by the tenant's enabled modules.
@@ -32,6 +34,8 @@ The same rule applies later inside the tenant app: tenant owners can create and 
 
 Admin controllers must call module interfaces. They must not query tables directly.
 
+Roles do not require job levels. A basic role is a tenant-scoped permission container and can be created without departments, job families, reporting lines, or hierarchy records. Job levels and hierarchy become relevant only for scoped permissions, workflow approver resolution, escalation rules, or organisation-aware access policies.
+
 ## Required Capabilities
 
 ### Global Template Library
@@ -55,6 +59,8 @@ Each template stores:
 - version
 - active/inactive status
 
+Templates may be system/default templates or operator-created reusable templates. System templates can be cloned but should not be edited in place except by `super_admin`. Operator-created templates can be edited while preserving version history.
+
 ### Tenant Filtered Permission Catalog
 
 For a selected tenant, the backend exposes a permission catalog filtered by active modules:
@@ -74,6 +80,26 @@ POST /admin/v1/tenants/{tenantId}/role-templates/{templateId}/apply
 ```
 
 The backend validates every permission in the template against the tenant's enabled modules before creating the tenant role. Permissions outside the tenant entitlement boundary are rejected or skipped with an explicit validation result; they must never be silently granted.
+
+Applying a template creates or updates normal tenant-scoped roles. Re-applying the same template must be idempotent or require an explicit duplicate-name override. The system must not silently create duplicate roles with confusing names.
+
+### Tenant-Specific Role Creation During Provisioning
+
+During provisioning, operators can create roles that belong only to the selected tenant:
+
+```http
+GET /admin/v1/tenants/{tenantId}/roles
+POST /admin/v1/tenants/{tenantId}/roles
+PUT /admin/v1/tenants/{tenantId}/roles/{roleId}/permissions
+```
+
+Use this when a sales or onboarding agreement requires a unique role that should not be saved as a global template. These roles are still normal tenant-scoped Auth roles, and every permission must be validated against the same tenant permission catalog returned by:
+
+```http
+GET /admin/v1/tenants/{tenantId}/permissions/catalog
+```
+
+The first tenant owner/admin invite must assign one of the materialized tenant roles. The selected role must include the minimum owner/admin permission set required by product.
 
 ### Tenant Owner Role Management
 
@@ -96,9 +122,9 @@ The provisioning wizard uses Role Template Manager after module selection and be
 2. Plan/commercial model is selected.
 3. Modules are selected.
 4. Permission catalog is resolved from selected modules.
-5. Operator applies or edits role templates.
-6. First tenant owner invite is sent.
-7. Tenant activates only after the role-template step is complete.
+5. Operator applies reusable templates, creates a new reusable template, or creates tenant-specific roles.
+6. First tenant owner invite is sent and assigned to a valid tenant owner/admin role.
+7. Tenant activates only after the role/permission step is complete.
 
 ## Validation Rules
 
@@ -106,6 +132,8 @@ The provisioning wizard uses Role Template Manager after module selection and be
 - A template cannot assign permissions from modules not enabled for the selected tenant.
 - Applying the same template twice must be idempotent or require an explicit duplicate-name override.
 - System templates can be cloned but not edited in place unless the operator has `super_admin`.
+- Tenant-specific roles created during provisioning follow the same permission validation as template-applied roles.
+- First owner/admin invite cannot be sent unless at least one valid tenant owner/admin role exists.
 - Any template apply/update writes an audit log with tenant, operator, role name, template version, added permissions, and removed permissions.
 - Permission version counters are incremented for affected users when a materialized role changes.
 

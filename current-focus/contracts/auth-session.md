@@ -6,22 +6,37 @@
 
 ---
 
+## Customer Web Session Model
+
+Customer-facing browser sessions use a BFF-style HttpOnly cookie model. The browser frontend never receives, stores, decodes, or forwards the tenant user JWT. JWT creation and validation stay inside the backend.
+
+The backend sets:
+
+- `onevo_session` - HttpOnly, Secure, SameSite cookie that represents the active web session.
+- `onevo_csrf` - non-HttpOnly CSRF cookie/header pair for state-changing browser requests.
+
+The backend may still create short-lived tenant JWTs internally, but they are not returned to the browser web app.
+
+---
+
 ## POST `/api/v1/auth/login` - POST `/api/v1/auth/refresh`
 
 ```ts
 interface AuthResponseDto {
-  access_token: string        // short-lived JWT
-  refresh_token: string       // opaque, backend-managed, rotated on each use
-  expires_in: number          // seconds
-  token_type: "Bearer"
+  authenticated: boolean
+  user: CurrentUserDto | null
+  permissions: string[]
+  active_modules: string[]
   must_change_password: boolean
-  mfa_required: boolean       // true -> client must complete email OTP MFA before access_token is usable
+  mfa_required: boolean       // true -> client must complete TOTP MFA before session is established
 }
 ```
 
+Successful login, MFA verification, and refresh responses set or rotate the HttpOnly session cookie. The response body contains only session state and authorization metadata needed by the UI.
+
 ## POST `/api/v1/auth/mfa/send`
 
-Sends or resends the 6-digit email OTP for an `mfa_pending` token. Local development may log the OTP; customer release requires Resend-backed delivery.
+Starts or resends an email OTP fallback challenge for an `mfa_pending` token when fallback is allowed by policy. Primary MFA uses TOTP from an authenticator app. Local development may log fallback OTPs; customer release requires Resend-backed delivery.
 
 ## POST `/api/v1/auth/mfa/verify` -> `AuthResponseDto` (same shape, `mfa_required: false`)
 
@@ -41,7 +56,9 @@ interface PermissionsDto {
 
 ## Notes
 
-- `access_token` is a tenant-issuer JWT; rejected by `/admin/v1/*`
-- IDE extension stores tokens in `SecretStorage`, not `localStorage`
+- Customer web frontend uses cookie-based session auth and calls APIs with `credentials: "include"`.
+- Customer web frontend does not attach `Authorization: Bearer` for normal `/api/v1/*` calls.
+- Tenant JWTs are backend-internal for browser sessions and are rejected by `/admin/v1/*`.
+- IDE extension stores its own user tokens in `SecretStorage`, not `localStorage`; this is separate from browser web auth.
 - `permissions` is the definitive source for `<PermissionGate>` and `useAuth().hasPermission()`
 
