@@ -29,6 +29,22 @@ Per-plan feature inclusions: `feature_key`, `limit_value`, `is_included`.
 ### `tenant_subscriptions`
 Active subscription: `plan_id`, `billing_cycle`, `status`, `gateway_provider`, `gateway_customer_ref`, `gateway_subscription_ref`, selected company-size range, selected module keys, calculated price snapshots, override prices, and AI monthly token limit.
 
+Also stores trial and grace period fields snapshotted at tenant creation time:
+
+| Field | Description |
+|:------|:------------|
+| `TrialStartDate` | Date the trial begins (set at tenant creation) |
+| `TrialEndDate` | `TrialStartDate + trial_period_days`; the date payment first becomes required |
+| `UnpaidGracePeriodDays` | How many days after going unpaid before suspension begins (plan default: 7) |
+| `AccessEndsAt` | Computed date after which the tenant's access is suspended if unpaid |
+
+#### Trial and grace period rules
+
+- `trial_period_days` (plan default: 30): the free-access window for a new tenant before payment is required. If set to `0`, no trial is applied and the subscription status begins as `active` immediately.
+- `unpaid_grace_period_days` (plan default: 7): once a tenant goes unpaid (past `TrialEndDate` or a missed recurring payment), this is how many days access continues before suspension or termination.
+- **Both values are snapshotted onto `TenantSubscription` at tenant creation time.** Changes to the plan catalog — including changes to plan-level trial or grace period defaults — do NOT retroactively alter existing tenant contracts.
+- The ONEVO operator may override either value per-tenant at creation time by supplying `trial_period_days` and/or `unpaid_grace_period_days` in the `subscription` block of the `POST /admin/v1/tenants` request body.
+
 ### `subscription_invoices`
 Synced from Stripe or PayHere: `invoice_number`, `amount`, `status` (`draft`, `open`, `paid`, `void`), gateway invoice/payment reference.
 

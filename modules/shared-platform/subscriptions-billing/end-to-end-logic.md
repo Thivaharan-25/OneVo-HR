@@ -5,6 +5,62 @@
 
 ---
 
+## Tenant Creation and Subscription Bootstrap
+
+Subscription creation is **part of the tenant creation call** — it is not a separate step. When an ONEVO operator calls `POST /admin/v1/tenants`, the request body includes a `subscription` block:
+
+```json
+{
+  "subscription": {
+    "plan_id": "<uuid>",
+    "billing_cycle": "monthly",
+    "commercial_model": "subscription",
+    "trial_period_days": 30,
+    "unpaid_grace_period_days": 7
+  },
+  "tenant_configuration_setup": {
+    "setup_options": ["job_family_creation", "employee_invite", "role_permission_configuration"]
+  }
+}
+```
+
+### Subscription bootstrap flow
+
+```
+POST /admin/v1/tenants
+  -> TenantProvisioningService.ProvisionAsync()
+    -> 1. Create tenant + legal entity + tenant_settings
+    -> 2. Resolve plan from plan_id; snapshot trial_period_days and unpaid_grace_period_days
+         (operator-supplied values override plan defaults)
+    -> 3. INSERT tenant_subscriptions with status:
+         - "trialing" if trial_period_days > 0
+         - "active"   if trial_period_days = 0
+         TrialStartDate = now, TrialEndDate = now + trial_period_days
+    -> 4. Seed Owner role from subscribed modules (no role ID supplied by caller)
+    -> 5. Create provisioning checklist items from setup_options
+    -> Return tenantId + subscription summary
+```
+
+### One-time setup charges
+
+One-time setup charges are managed separately from the subscription via the billing API. They represent charges for ONEVO operator configuration services and are **not** recurring fees.
+
+```
+POST /admin/v1/tenants/{tenantId}/billing/one-time-charges
+  -> BillingService.CreateOneTimeChargeAsync()
+    -> Validate tenantId and charge details
+    -> INSERT one-time charge record with status "draft"
+    -> Link to setup_option key if applicable
+    -> Return charge record
+
+PATCH /admin/v1/tenants/{tenantId}/billing/one-time-charges/{chargeId}
+  -> Transition status: draft -> approved -> invoiced -> paid | void
+```
+
+Setup charges and recurring subscription charges appear as **separate line items** on the same invoice. The customer makes a single payment for both — there are no two separate payments.
+
+---
+
 ## Get Current Subscription
 
 ### Flow

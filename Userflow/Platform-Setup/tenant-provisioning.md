@@ -43,16 +43,42 @@
 ### Step 4: Create Draft Tenant
 - **UI:** Click "Create Tenant". The tenant enters the provisioning wizard and remains invisible to customer-facing APIs until activation.
 - **API:** `POST /admin/v1/tenants`
+- **Request body includes:**
+  - Company/legal entity details (name, registration number, country, address, currency, timezone)
+  - `subscription`: `{ plan_id, billing_cycle, commercial_model, trial_period_days?, unpaid_grace_period_days? }`
+  - `tenant_configuration_setup`: `{ setup_options: ["job_family_creation", "employee_invite", "role_permission_configuration"] }`
 - **Backend:** `TenantProvisioningService.ProvisionAsync()` → [[modules/infrastructure/overview|Infrastructure]]
   1. Creates a new row in `tenants` table with status `provisioning` and `company_size_range`
   2. Creates the primary `legal_entities` row with `name`, `registration_number`, `country_id`, `currency_code`, and `address_json`
   3. Stores default timezone and remaining tenant settings in `tenant_settings`
-  4. Uses the shared application schema with tenant-scoped rows; no per-tenant database or schema is created
-- **Validation:** Company name must be unique. Registration number validated against country format. Email domain not already registered to another tenant
-- **DB:** `tenants`, `legal_entities`, `tenant_settings`
+  4. Creates `tenant_subscriptions` row from the provided `subscription` block, snapshotting `trial_period_days` and `unpaid_grace_period_days` from the plan (or operator-supplied overrides). Status is set to `trialing` if `trial_period_days > 0`, or `active` if `trial_period_days = 0`.
+  5. Seeds the **Owner role** automatically from the subscribed modules — the operator does NOT select or supply a role ID. The Owner role receives all permissions exposed by the enabled module set.
+  6. Creates provisioning checklist items from `setup_options` — one checklist record per selected option, assigned to the ONEVO operator to complete before activation.
+  7. Uses the shared application schema with tenant-scoped rows; no per-tenant database or schema is created
+- **Validation:** Company name must be unique. Registration number validated against country format. Email domain not already registered to another tenant. `plan_id` must exist. `billing_cycle` must be `monthly` or `annual`. `commercial_model` must be `subscription` or `full_license_maintenance`.
+- **DB:** `tenants`, `legal_entities`, `tenant_settings`, `tenant_subscriptions`, `roles`, `role_permissions`, `tenant_provisioning_checklist`
 
-### Step 5: Configure Plan, Modules, Role Templates, and Initial Settings
-- **UI:** Operator selects one reusable plan, tenant-specific commercial terms, pricing overrides, enabled modules, module sales states, reusable role templates, tenant-specific roles, settings defaults, integration prerequisites, workflow defaults, and optional data-import setup.
+#### Setup Options (`tenant_configuration_setup.setup_options`)
+
+`setup_options` are provisioning checklist items for the ONEVO operator to complete as part of the onboarding service. Supported values in Phase 1:
+
+| Option key | ONEVO operator action |
+|:-----------|:----------------------|
+| `job_family_creation` | Create job families and levels for the tenant's org structure |
+| `employee_invite` | Send initial employee invites on the tenant's behalf |
+| `role_permission_configuration` | Configure roles and permission assignments for the tenant |
+
+**Important:** Setup options do NOT directly grant modules or permissions. Module entitlement comes from the subscribed plan. Roles and permissions are seeded/configured as a service — the checklist items track that the operator has completed that service work.
+
+#### Trial and Grace Period
+
+- `trial_period_days` (default: plan value, typically 30) — the number of days a new tenant can use the system before payment is required. Snapshotted onto `tenant_subscriptions` at creation time so plan catalog changes never alter an existing contract.
+- `unpaid_grace_period_days` (default: plan value, typically 7) — the number of days a tenant retains access after going unpaid before suspension begins.
+- Both values are stored on `TenantSubscription` alongside `TrialStartDate`, `TrialEndDate`, and `AccessEndsAt`.
+- The operator may override both per-tenant at creation time; defaults come from the selected plan.
+
+### Step 5: Configure Pricing Overrides, Module Sales States, and Initial Settings
+- **UI:** Operator reviews plan-calculated pricing, applies any approved overrides, sets module sales states, configures integration prerequisites, workflow defaults, and optional data-import setup. Role and permission configuration may be handled as a setup-option service (see Step 4) rather than requiring the operator to build roles manually during provisioning.
 - **API:** `GET /admin/v1/subscription-plans`, `GET /admin/v1/modules/catalog`, `PATCH /admin/v1/tenants/{tenantId}/subscription`, `PUT /admin/v1/tenants/{tenantId}/modules`, `GET /admin/v1/tenants/{tenantId}/permissions/catalog`, `GET /admin/v1/role-templates`, `POST /admin/v1/role-templates`, `POST /admin/v1/tenants/{tenantId}/role-templates/{templateId}/apply`, `GET /admin/v1/tenants/{tenantId}/roles`, `POST /admin/v1/tenants/{tenantId}/roles`, `PUT /admin/v1/tenants/{tenantId}/roles/{roleId}/permissions`, `PATCH /admin/v1/tenants/{tenantId}/settings`
 - **Backend:** Module services validate commercial plan/module choices, pricing terms, module sales states, expose the module-filtered permission catalog, materialize selected role templates, create tenant-specific roles, and write initial settings/workflow/configuration records through their owning modules.
 - **Validation:** Role/template permissions must belong to enabled modules. Disabled, available, quoted, unpurchased, or expired module permissions cannot be assigned.
@@ -63,7 +89,7 @@
 - **API:** `POST /admin/v1/tenants/{tenantId}/invite-admin`
 - **Backend:** `UserService.CreateAdminAsync()` → [[frontend/cross-cutting/authentication|Authentication]]
   1. Creates user record in `users` table
-  2. Assigns the configured tenant owner/admin role created from an applied template or tenant-specific provisioning role
+  2. Assigns the seeded Owner role (auto-created in Step 4 from subscribed modules — the operator does NOT select a role ID here)
   3. Creates employee stub record linked to the user
   4. Sends set-password invitation email with login link
 - **Validation:** Email must be unique across the platform. Email domain should match company domain (warning if not, but allowed)

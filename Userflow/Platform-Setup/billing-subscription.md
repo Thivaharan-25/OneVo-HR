@@ -68,6 +68,37 @@ Future modules (Governance, Skill & Talent Development, Payroll, Performance, et
 
 ---
 
+## One-Time Setup Charges
+
+One-time setup charges are fees billed once per tenant for initial ONEVO operator configuration services (see `setup_options` in [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]). They are **separate** from recurring monthly or annual subscription charges.
+
+### Key rules
+
+- Setup charges are priced and managed by the ONEVO operator via `/admin/v1/tenants/{tenantId}/billing/one-time-charges`.
+- They are billed **once** — not monthly or annually. They cover one-off operator labour such as job family creation, employee invites, or role and permission configuration.
+- The first invoice a tenant receives **may include both** recurring subscription line items and one-time setup line items together. The customer is NOT required to make two separate payments — both charge types appear as distinct line items on the same invoice and are settled in a single payment.
+- Setup charges can be tied to the specific `setup_options` selected during tenant creation.
+
+### Setup charge lifecycle
+
+| Status | Meaning |
+|:-------|:--------|
+| `draft` | Created by operator, not yet approved for invoicing |
+| `approved` | Approved; will be included on the next invoice run |
+| `invoiced` | Included on a generated invoice |
+| `paid` | Payment confirmed |
+| `void` | Cancelled before payment |
+
+### API (operator only)
+
+| Method | Route | Description |
+|:-------|:------|:------------|
+| GET | `/admin/v1/tenants/{tenantId}/billing/one-time-charges` | List setup charges for a tenant |
+| POST | `/admin/v1/tenants/{tenantId}/billing/one-time-charges` | Create a new setup charge |
+| PATCH | `/admin/v1/tenants/{tenantId}/billing/one-time-charges/{chargeId}` | Update status or amount |
+
+---
+
 ## Preconditions
 
 - Tenant provisioned via [[developer-platform/userflow/provisioning-flow|Provisioning Flow]]
