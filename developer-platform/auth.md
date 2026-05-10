@@ -174,3 +174,27 @@ Impersonation in the dev console is **not** a tenant login. It does not produce 
 | Network | IP allowlist or VPN required — enforced at infrastructure layer |
 | Session storage | httpOnly cookies — not accessible to JavaScript |
 | Token signing | Separate signing key from tenant JWT infrastructure |
+
+---
+
+## Development Mode Exception
+
+> **Applies to Development environment only — enforced via `IWebHostEnvironment.IsDevelopment()`.**
+
+In local development the Google OAuth flow requires a valid `@onevo.io` Google account and a running OAuth callback, which is impractical for backend-only development and testing. A dev-only carve-out allows email/password login against static credentials configured in `appsettings.Development.json`.
+
+```
+POST /admin/v1/auth/login
+Content-Type: application/json
+
+{ "email": "dev@onevo.io", "password": "<DevAdmin:Password>" }
+```
+
+**Behaviour:**
+- Returns `403 Forbidden` in any environment where `IsDevelopment()` is `false` — the endpoint does not exist functionally in Production or Staging.
+- Credentials are sourced exclusively from `appsettings.Development.json` under `DevAdmin:Email` and `DevAdmin:Password` — never from the database.
+- The issued JWT is structurally identical to a standard platform-admin JWT with `platform_role: "super_admin"`.
+- This carve-out does **not** create or modify a `dev_platform_accounts` row. It is a test scaffold, not a real account.
+- The endpoint must never be wired to a database credential lookup even in development — static config only.
+
+**Design decision:** Static credential chosen over Google OAuth mocking because mocking requires a running OAuth provider or token-stubbing in every developer environment. The `IsDevelopment()` guard ensures the carve-out cannot leak to production.

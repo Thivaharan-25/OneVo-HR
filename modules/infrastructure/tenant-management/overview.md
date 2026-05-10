@@ -7,12 +7,12 @@
 
 ## Purpose
 
-Operator-only tenant lifecycle management through Developer Platform. `industry_profile` sets monitoring defaults during operator provisioning.
+Operator-only tenant lifecycle management through Developer Platform. `industry_profile` sets monitoring defaults during operator provisioning. `company_size_range` is stored on the tenant as profile metadata.
 
 ## Database Tables
 
 ### `tenants`
-Key columns: `name`, `slug` (UNIQUE), `industry_profile` (`office_it`, `manufacturing`, `retail`, `healthcare`, `custom`), `status` (`trial`, `active`, `suspended`, `cancelled`), `subscription_plan_id`, `settings_json`.
+Key columns: `name`, `slug` (UNIQUE), `industry_profile` (`office_it`, `manufacturing`, `retail`, `healthcare`, `custom`), `company_size_range`, `status` (`provisioning`, `trial`, `active`, `suspended`, `cancelled`), `subscription_plan_id`, `settings_json`.
 
 ## Key Business Rules
 

@@ -14,13 +14,15 @@ POST /api/v1/legal-entities
   -> LegalEntityController.Create(CreateLegalEntityCommand)
     -> [RequirePermission("settings:admin")]
     -> FluentValidation: name required, registration_number required + unique,
-       country_id must reference valid country, address_json schema validated
+       country_id must reference valid country, currency_code must be valid ISO 4217,
+       address_json schema validated
     -> LegalEntityService.CreateAsync(command, ct)
       -> 1. Validate country_id exists in countries table
-      -> 2. Check registration_number uniqueness within tenant
-      -> 3. Build LegalEntity entity (is_active = true)
-      -> 4. Persist to legal_entities table
-      -> 5. Publish LegalEntityCreated domain event
+      -> 2. Default currency_code from the selected country when omitted
+      -> 3. Check registration_number uniqueness within tenant
+      -> 4. Build LegalEntity entity (is_active = true)
+      -> 5. Persist to legal_entities table
+      -> 6. Publish LegalEntityCreated domain event
       -> Return Result<LegalEntityDto>
     -> 201 Created
 ```
@@ -49,7 +51,7 @@ PUT /api/v1/legal-entities/{id}
   -> LegalEntityService.UpdateAsync(id, command, ct)
     -> 1. Load entity by id, verify ownership by tenant
     -> 2. If registration_number changed, re-validate uniqueness
-    -> 3. Update fields (name, registration_number, country_id, address_json)
+    -> 3. Update fields (name, registration_number, country_id, currency_code, address_json)
     -> 4. Persist changes
     -> 5. Publish LegalEntityUpdated domain event
     -> Return Result<LegalEntityDto>
@@ -79,6 +81,7 @@ PUT /api/v1/legal-entities/{id}/deactivate
 |:---------|:-----|:------|
 | Duplicate registration number | 409 | "Registration number already exists" |
 | Invalid country_id | 422 | "Country not found" |
+| Invalid currency_code | 422 | "Currency not supported" |
 | Deactivate with active departments | 409 | "Cannot deactivate: active departments exist" |
 | Entity not found | 404 | "Legal entity not found" |
 | Missing required fields | 400 | Validation errors |
@@ -86,6 +89,7 @@ PUT /api/v1/legal-entities/{id}/deactivate
 ### Edge Cases
 
 - Registration numbers may contain special characters (dashes, slashes) depending on country
+- currency_code is stored on the legal entity because one tenant can have legal entities in different currencies
 - address_json is stored as JSONB, validated against a flexible schema allowing country-specific formats
 - Deactivation is soft-delete; historical references from payroll runs remain intact
 

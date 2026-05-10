@@ -27,28 +27,29 @@
 - **DB:** None
 
 ### Step 2: Enter Company Details
-- **UI:** Form with fields: Company Name, Registration Number, Country, Primary Address, Industry, Company Size (employee count range)
+- **UI:** Form with fields: Company Name, Legal Entity Name, Registration Number, Country, Primary Address, Industry, Company Size (employee count range)
 - **API:** N/A (client-side form entry)
 - **Backend:** N/A
 - **Validation:** Client-side: all required fields filled, valid registration number format per country
 - **DB:** None
 
-### Step 3: Set Default Timezone and Currency
-- **UI:** Dropdowns for Default Timezone (e.g., UTC, Asia/Colombo) and Default Currency (e.g., USD, LKR, GBP). Option to set fiscal year start month
-- **API:** N/A (client-side form entry)
-- **Backend:** N/A
-- **Validation:** Timezone must be a valid IANA timezone identifier. Currency must be a valid ISO 4217 code
+### Step 3: Set Default Timezone and Legal Entity Currency
+- **UI:** Country selection calls `GET /admin/v1/reference/countries/{countryCode}/defaults` to prefill timezone and currency. Single-timezone countries can auto-fill timezone; multi-timezone countries must show timezone choices.
+- **API:** `GET /admin/v1/reference/countries/{countryCode}/defaults`
+- **Backend:** Returns country defaults from reference data: default timezone, supported timezones, default currency, and supported currency option(s).
+- **Validation:** Timezone must be a valid IANA timezone identifier. Currency must be a valid ISO 4217 code. Currency defaults from country but remains editable for legal/commercial edge cases.
 - **DB:** None
 
 ### Step 4: Create Draft Tenant
 - **UI:** Click "Create Tenant". The tenant enters the provisioning wizard and remains invisible to customer-facing APIs until activation.
 - **API:** `POST /admin/v1/tenants`
 - **Backend:** `TenantProvisioningService.ProvisionAsync()` → [[modules/infrastructure/overview|Infrastructure]]
-  1. Creates a new row in `tenants` table with status `provisioning`
-  2. Uses the shared application schema with tenant-scoped rows; no per-tenant database or schema is created
-  3. Stores initial configuration values captured so far
+  1. Creates a new row in `tenants` table with status `provisioning` and `company_size_range`
+  2. Creates the primary `legal_entities` row with `name`, `registration_number`, `country_id`, `currency_code`, and `address_json`
+  3. Stores default timezone and remaining tenant settings in `tenant_settings`
+  4. Uses the shared application schema with tenant-scoped rows; no per-tenant database or schema is created
 - **Validation:** Company name must be unique. Registration number validated against country format. Email domain not already registered to another tenant
-- **DB:** `tenants`, `tenant_settings`
+- **DB:** `tenants`, `legal_entities`, `tenant_settings`
 
 ### Step 5: Configure Plan, Modules, Role Templates, and Initial Settings
 - **UI:** Operator selects one reusable plan, tenant-specific commercial terms, pricing overrides, enabled modules, module sales states, reusable role templates, tenant-specific roles, settings defaults, integration prerequisites, workflow defaults, and optional data-import setup.
@@ -79,7 +80,7 @@
 
 ### When provisioning fails mid-way
 - System rolls back all changes (database transaction)
-- Tenant status set to `failed`
+- If the draft tenant was not committed, no tenant row remains. If a committed draft exists, it stays in `provisioning` and the latest blockers/errors are recorded in `tenant_provisioning_validation_results`.
 - Admin sees error message with option to retry
 - Failed provisioning attempt logged in `audit_logs`
 
@@ -119,7 +120,7 @@ See [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] for the f
 | Duplicate company name | `409 Conflict` returned | "A tenant with this company name already exists" |
 | Invalid registration number | Validation fails | "Registration number format is invalid for the selected country" |
 | Email domain already registered | `409 Conflict` returned | "This email domain is already associated with another tenant" |
-| Database provisioning timeout | Transaction rolled back, status set to `failed` | "Provisioning timed out. Please try again or contact support" |
+| Database provisioning timeout | Transaction rolled back. If a draft was already committed, it remains `provisioning` with blocker details in provisioning validation results. | "Provisioning timed out. Please try again or contact support" |
 | Email delivery fails | Tenant owner invite remains unsent or failed | Warning: "Tenant created but invitation email failed. Fix email delivery and resend the set-password invite." |
 
 ## Events Triggered

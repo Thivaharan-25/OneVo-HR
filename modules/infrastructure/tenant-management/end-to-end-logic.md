@@ -19,10 +19,11 @@ POST /admin/v1/tenants
   -> Admin TenantController.CreateDraft(CreateTenantDraftCommand)
     -> Platform-admin endpoint only
     -> TenantProvisioningService.CreateDraftAsync(command, ct)
-      -> 1. Validate: company name, slug, country, timezone, currency, industry_profile
-      -> 2. INSERT into tenants (status = 'provisioning')
-      -> 3. Store initial tenant_settings captured during account setup
-      -> 4. Log to audit_logs: action = "tenant.provisioning_draft_created"
+      -> 1. Validate: company name, slug, legal entity, country, timezone, currency, industry_profile, company_size_range
+      -> 2. INSERT into tenants (status = 'provisioning', company_size_range)
+      -> 3. INSERT primary legal_entities row (name, registration_number, country_id, currency_code, address_json)
+      -> 4. Store default timezone and initial tenant_settings captured during account setup
+      -> 5. Log to audit_logs: action = "tenant.provisioning_draft_created"
       -> Return tenant_id, status = "provisioning", next_step = "subscription"
 ```
 

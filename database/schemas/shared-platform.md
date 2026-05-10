@@ -273,14 +273,33 @@ Global commercial catalog for modules and add-ons. This supports both subscripti
 | `name` | `varchar(150)` | Display name |
 | `pillar` | `varchar(50)` | `hr`, `workforce_intelligence`, `worksync`, `shared` |
 | `phase` | `varchar(30)` | `phase_1`, `phase_2`, `future`, or product-defined release phase |
-| `default_price_monthly` | `decimal(10,2)` | Nullable default subscription add-on price |
-| `default_price_annual` | `decimal(10,2)` | Nullable default annual subscription add-on price |
+| `price_brackets` | `jsonb` | Company-size price ranges; see module pricing JSON below |
 | `full_license_price` | `decimal(12,2)` | Nullable one-time purchase price |
-| `default_maintenance_rate` | `decimal(5,2)` | Nullable yearly percentage for maintenance, e.g., 18.00 |
+| `maintenance_rate` | `decimal(5,2)` | Nullable yearly percentage for maintenance, e.g., 18.00 |
 | `pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
 | `is_active` | `boolean` | Whether the module can be sold/provisioned |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
+
+**Module pricing JSON contract:** `price_brackets` is the reusable catalog source for dynamic subscription-plan pricing. It uses the same employee ranges exposed by the tenant creation company-size dropdown. `max_employees = -1` means unlimited.
+
+```json
+{
+  "module_key": "core_hr",
+  "name": "Core HR",
+  "pricing_unit": "per_employee",
+  "is_active": true,
+  "price_brackets": [
+    { "min_employees": 0, "max_employees": 50, "monthly_price": 4, "annual_price": 40 },
+    { "min_employees": 51, "max_employees": 200, "monthly_price": 3.5, "annual_price": 35 },
+    { "min_employees": 201, "max_employees": -1, "monthly_price": 3, "annual_price": 30 }
+  ],
+  "full_license_price": 500000,
+  "maintenance_rate": 18
+}
+```
+
+**Dynamic plan pricing rule:** when an operator creates a reusable subscription plan, the plan editor selects a company-size range and modules. The backend sums the matching bracket price for each selected module. Example: Core HR at `$3.50` for `51-200` employees plus Work Management at `$4.00` for `51-200` employees produces `$7.50` per employee. Operator-entered overrides are stored separately from calculated prices.
 
 ---
 
@@ -339,10 +358,8 @@ Audit/history for reusable module catalog price changes.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `module_key` | `varchar(100)` | FK -> module_catalog.module_key |
-| `old_default_price_monthly` | `decimal(10,2)` | Nullable |
-| `new_default_price_monthly` | `decimal(10,2)` | Nullable |
-| `old_default_price_annual` | `decimal(10,2)` | Nullable |
-| `new_default_price_annual` | `decimal(10,2)` | Nullable |
+| `old_price_brackets` | `jsonb` | Nullable previous company-size bracket pricing |
+| `new_price_brackets` | `jsonb` | Nullable new company-size bracket pricing |
 | `old_full_license_price` | `decimal(12,2)` | Nullable |
 | `new_full_license_price` | `decimal(12,2)` | Nullable |
 | `old_default_maintenance_rate` | `decimal(5,2)` | Nullable |
@@ -409,7 +426,9 @@ The schema supports the commercial model requested by product:
 - `tenant_subscriptions.maintenance_collection_mode = gateway` means full-license maintenance/support is collected through the system payment gateway even when the one-time license was manually paid.
 - `tenant_subscriptions.maintenance_status`, `maintenance_start_date`, `maintenance_renewal_date`, `maintenance_rate`, and `maintenance_amount` track maintenance state and recurring fee calculation for full-license tenants.
 - `tenant_module_entitlements.sales_state` records manual sales state per module: `available`, `purchased`, `trial`, `quoted`, `maintenance_included`, `subscription_included`, or `disabled`.
-- Pricing defaults live on `subscription_plans` and `module_catalog`; tenant-specific negotiated pricing lives on `tenant_subscriptions` and `tenant_module_entitlements`.
+- Module pricing defaults live on `module_catalog.price_brackets`; reusable plan calculated/override prices live on `subscription_plans`; tenant-specific negotiated snapshots live on `tenant_subscriptions` and `tenant_module_entitlements`.
+- Subscription plan pricing is calculated from selected modules plus company-size range. Use the same company-size range values as tenant creation, and store operator overrides separately from calculated prices.
+- AI-capable plans and tenant subscriptions must store a positive `ai_token_limit_per_month`; non-AI plans leave it null.
 
 Pricing and module entitlement decide what the tenant has access to. RBAC permissions decide which users inside that tenant can use the entitled capabilities.
 
@@ -661,13 +680,19 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `tier` | `varchar(20)` | Ordering tier |
 | `feature_limits` | `jsonb` | e.g., `{"max_employees": 50, "modules": ["core_hr","leave"]}` |
 | `included_modules` | `jsonb` | Plan-allowed/included module keys used by entitlement resolution |
+| `company_size_range` | `varchar(30)` | Same value set as tenant creation company-size dropdown |
 | `pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
-| `monthly_price` | `decimal(10,2)` |  |
-| `annual_price` | `decimal(10,2)` |  |
+| `calculated_monthly_price` | `decimal(10,2)` | Sum of selected module bracket monthly prices |
+| `calculated_annual_price` | `decimal(10,2)` | Sum of selected module bracket annual prices |
+| `override_monthly_price` | `decimal(10,2)` | Nullable operator-adjusted monthly price |
+| `override_annual_price` | `decimal(10,2)` | Nullable operator-adjusted annual price |
+| `ai_token_limit_per_month` | `integer` | Nullable; required positive cap when the plan includes AI entitlement |
 | `currency` | `varchar(3)` | ISO 4217 |
 | `is_active` | `boolean` |  |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
+
+**Pricing source rule:** `subscription_plans.calculated_*` values are calculated from `module_catalog.price_brackets` for the selected `company_size_range` and `included_modules`. `override_*` values are the effective price only when present; they never erase the calculated values.
 
 ---
 
@@ -750,6 +775,13 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `maintenance_renewal_date` | `date` | Nullable; next maintenance renewal date |
 | `maintenance_rate` | `decimal(5,2)` | Nullable percentage of license value, e.g., 18.00 |
 | `maintenance_amount` | `decimal(12,2)` | Nullable explicit recurring maintenance amount when not rate-derived |
+| `company_size_range` | `varchar(30)` | Snapshot copied from the selected plan/tenant company-size range |
+| `selected_modules` | `jsonb` | Snapshot of module keys included in this tenant's commercial record |
+| `calculated_monthly_price` | `decimal(10,2)` | Snapshot of calculated monthly per-unit price at assignment time |
+| `calculated_annual_price` | `decimal(10,2)` | Snapshot of calculated annual per-unit price at assignment time |
+| `override_monthly_price` | `decimal(10,2)` | Nullable negotiated monthly per-unit price |
+| `override_annual_price` | `decimal(10,2)` | Nullable negotiated annual per-unit price |
+| `ai_token_limit_per_month` | `integer` | Nullable monthly AI token cap for this tenant subscription |
 | `custom_contract_value` | `decimal(12,2)` | Nullable manually-entered enterprise contract amount |
 | `discount_percent` | `decimal(5,2)` | Nullable negotiated discount applied to the tenant commercial record |
 | `created_by_id` | `uuid` | FK → users |

@@ -601,16 +601,16 @@ dotnet test ONEVO.sln --filter AdminApi
 
 - [ ] `GET /admin/v1/tenants` returns all tenants, including `provisioning` and `suspended` statuses, with search/filter support.
 - [ ] Tenant list includes company name, slug, plan tier, status, employee count, created date, agent count, and last login summary.
-- [ ] `GET /admin/v1/subscription-plans` returns reusable plan catalog records; operators do not create a plan per tenant.
-- [ ] `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plan base prices, included modules, active state, and pricing unit with audit reason.
-- [ ] `GET /admin/v1/modules/catalog` returns reusable module catalog records with pillar, phase, sellable state, default pricing, and pricing unit.
-- [ ] `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module default prices, full-license price, maintenance rate, active state, and pricing unit with audit reason.
+- [ ] `GET /admin/v1/subscription-plans` returns reusable plan catalog records with included modules, company-size price band, calculated monthly/annual price, override monthly/annual price, currency, active state, pricing unit, and AI monthly token limit; operators do not create a plan per tenant.
+- [ ] `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plans from selected modules and `module_catalog.price_brackets`, using the same company-size values as tenant creation, with optional override prices and audit reason.
+- [ ] `GET /admin/v1/modules/catalog` returns reusable module catalog records with pillar, phase, sellable state, price brackets, full-license price, maintenance rate, and pricing unit.
+- [ ] `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module price brackets, full-license price, maintenance rate, active state, and pricing unit with audit reason.
 - [ ] `GET /admin/v1/tenants/validate` validates tenant slug, company name, email domain, registration number, and country rules with conflicts and warnings.
 - [ ] `POST /admin/v1/tenants` creates a draft tenant in `provisioning` status from account setup data.
 - [ ] `PATCH /admin/v1/tenants/{id}` edits draft tenant details before activation without bypassing activation guards.
 - [ ] `GET /admin/v1/tenants/{id}` returns overview, plan, billing dates, status, users summary, agent summary, flags summary, settings summary, and audit summary links.
 - [ ] `PATCH /admin/v1/tenants/{id}/status` supports suspend, unsuspend, and activate with role checks.
-- [ ] `PATCH /admin/v1/tenants/{id}/subscription` supports provisioning commercial terms and post-activation exception subscription override with required reason and audit log.
+- [ ] `PATCH /admin/v1/tenants/{id}/subscription` supports provisioning commercial terms and post-activation exception subscription override with selected modules, company-size range, calculated price snapshot, override prices, AI monthly token limit, required reason, and audit log.
 - [ ] `PUT /admin/v1/tenants/{id}/modules` sets active module grants, module sales state, and module-level pricing override metadata for provisioning and post-provisioning changes.
 - [ ] `GET /admin/v1/tenants/{id}/permissions/catalog` returns only permissions exposed by the tenant's active modules plus universal permissions.
 - [ ] `GET /admin/v1/role-templates` lists global/default role templates with module and permission coverage.
@@ -635,6 +635,9 @@ dotnet test ONEVO.sln --filter AdminApi
 - [[developer-platform/userflow/tenant-management|Tenant Management Flows]] (developer-platform/userflow/tenant-management.md)
 - [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
 - [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
+- [[database/schemas/shared-platform|Shared Platform Schema]] (database/schemas/shared-platform.md)
+- [[Userflow/Platform-Setup/billing-subscription|Billing & Subscription]] (Userflow/Platform-Setup/billing-subscription.md)
+- [[backend/module-catalog|Backend Module Catalog]] (backend/module-catalog.md)
 - [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
 - [[modules/infrastructure/overview|Infrastructure]] (modules/infrastructure/overview.md)
 - [[modules/auth/overview|Auth]] (modules/auth/overview.md)

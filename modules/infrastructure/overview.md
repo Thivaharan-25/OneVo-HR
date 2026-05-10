@@ -59,13 +59,14 @@ public interface IFileService
 | `name` | `varchar(200)` | Company name |
 | `slug` | `varchar(100)` | URL-safe identifier, UNIQUE |
 | `industry_profile` | `varchar(30)` | `office_it`, `manufacturing`, `retail`, `healthcare`, `custom` — **sets monitoring defaults during operator provisioning** |
-| `status` | `varchar(20)` | `trial`, `active`, `suspended`, `cancelled` |
+| `company_size_range` | `varchar(30)` | Employee-count range captured during operator provisioning |
+| `status` | `varchar(20)` | `provisioning`, `trial`, `active`, `suspended`, `cancelled` |
 | `subscription_plan_id` | `uuid` | FK → subscription_plans |
 | `settings_json` | `jsonb` | Tenant-level settings |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Note:** `industry_profile` is new — used by [[modules/configuration/overview|Configuration]] to set default monitoring feature toggles during operator provisioning.
+**Note:** `industry_profile` is used by [[modules/configuration/overview|Configuration]] to set default monitoring feature toggles during operator provisioning. `company_size_range` is tenant-level profile metadata. `provisioning` is the admin-only draft tenant status; tenant-facing APIs exclude it until activation.
 
 ### `users`
 

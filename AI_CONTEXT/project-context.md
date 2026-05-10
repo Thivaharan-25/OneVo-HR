@@ -29,6 +29,7 @@ A second standalone frontend app (`dev-console` at `console.onevo.io`) exists fo
 - **Commercial model:** Each tenant is provisioned with an explicit commercial relationship:
   - **Subscription** - recurring SaaS payment for the selected plan/modules.
   - **Full license + maintenance** - customer has bought the agreed suite/license, but still pays recurring maintenance/support. New modules are not automatically included unless the contract says so.
+- **Subscription pricing rule:** Reusable subscription plans are calculated from selected module price brackets and the same company-size range values used in tenant creation. Store calculated prices separately from operator overrides, and snapshot selected modules, company-size range, effective prices, and AI monthly token limits on the tenant subscription.
 - **Future module sales rule:** New modules must be represented in the module catalog and surfaced in the Developer Console as `available`, `trial`, `quoted`, `purchased`, `maintenance_included`, or `disabled` for each tenant. Do not infer access from tenant age or plan name alone.
 - **Phase 2 (future, not yet designed):** ONEVO may introduce a self-service SaaS model. Until that is explicitly specced, assume all tenant lifecycle operations are operator-driven.
 

@@ -55,7 +55,10 @@ Target draft-creation body:
 ```json
 {
   "companyName": "Acme Ltd",
+  "legalEntityName": "Acme Lanka Pvt Ltd",
+  "registrationNumber": "PV12345",
   "slug": "acme",
+  "companySizeRange": "51-200",
   "country": "LK",
   "timezone": "Asia/Colombo",
   "currency": "LKR",
@@ -68,7 +71,7 @@ The target flow is:
 1. `GET /admin/v1/subscription-plans` loads reusable plan catalog records.
 2. `GET /admin/v1/modules/catalog` loads reusable module catalog and default pricing.
 3. `GET /admin/v1/tenants/validate` validates slug/company/domain/registration details when needed.
-4. `POST /admin/v1/tenants` creates a draft tenant in `provisioning` status.
+4. `POST /admin/v1/tenants` creates a draft tenant in `provisioning` status, saves `company_size_range` on `tenants`, creates the primary `legal_entities` row with `country_id` and `currency_code`, and stores default timezone in tenant settings.
 5. `PATCH /admin/v1/tenants/{id}/subscription` assigns one reusable plan plus tenant-specific commercial terms.
 6. `PUT /admin/v1/tenants/{id}/modules` records module entitlements, sales state, pricing, currency, and trial/expiry dates.
 7. `GET /admin/v1/tenants/{id}/permissions/catalog` returns permissions filtered by enabled modules.

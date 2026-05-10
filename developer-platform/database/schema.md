@@ -158,22 +158,24 @@ API keys for programmatic access to the developer platform admin API. Supports r
 
 ## Existing Table Changes
 
-### tenants.status Enum Update
+### tenants.status Enum
 
-The `tenants.status` column enum is expanded to include a `'provisioning'` state alongside existing `'active'` and `'suspended'` values.
+The canonical `tenants.status` lifecycle enum is: `'provisioning'`, `'trial'`, `'active'`, `'suspended'`, and `'cancelled'`. The Developer Platform uses `'provisioning'` for draft tenants while the wizard is incomplete; detailed wizard progress is stored in `tenant_provisioning_states` and `tenant_provisioning_validation_results`.
 
 | Status | Meaning | Visibility |
 |--------|---------|------------|
+| `provisioning` | Onboarding draft in progress | Excluded from tenant-facing queries; visible only in admin API for platform managers |
+| `trial` | Activated trial/evaluation tenant | Visible in tenant-facing and admin queries while trial is valid |
 | `active` | Production-ready tenant | Visible in all tenant-facing and admin queries |
 | `suspended` | Temporarily disabled | Excluded from tenant-facing queries; visible only in admin API |
-| `provisioning` | Onboarding in progress | Excluded from all tenant-facing queries; visible only in admin API for platform managers |
+| `cancelled` | Commercially cancelled/offboarded tenant | Excluded from tenant-facing queries; visible in admin API for retention, export, and audit workflows |
 
 **Visibility Rule**: Tenants in `provisioning` status are excluded from:
-- Multi-tenant admin API queries by default (must explicitly filter to include)
 - Tenant-facing application queries
+- Tenant-facing login/session creation
 - Standard analytics and reporting
 
-Provisioning tenants are only visible to developer platform super_admin and admin accounts via explicit admin API calls, ensuring clean separation during onboarding workflows.
+Provisioning tenants are visible to developer platform super_admin and admin accounts via `/admin/v1/*`, ensuring clean separation during onboarding workflows.
 
 ---
 
@@ -182,6 +184,7 @@ Provisioning tenants are only visible to developer platform super_admin and admi
 `PATCH /admin/v1/tenants/{id}/provision/confirm` may activate a tenant only after the provisioning draft is complete. The guard requires:
 
 - Completed tenant details: company name, slug, country, timezone, currency, legal entity, and industry profile.
+- Persistence rule for tenant details: `company_size_range` is stored on `tenants`; legal entity name, registration number, country, and currency are stored on the primary `legal_entities` row; default timezone is stored in tenant settings.
 - Completed subscription/commercial terms: commercial model, plan or custom contract, billing cycle/currency, contract dates, Stripe/manual billing mode, and maintenance status/renewal date when applicable.
 - Completed module selection: active modules and each module's sales state are recorded through the entitlement registry.
 - Completed role template application: at least the tenant owner/admin starter role is materialized from the module-filtered permission catalog. Role template completion is part of provisioning state, not optional decoration.

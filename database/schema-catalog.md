@@ -49,8 +49,12 @@ These tables are referenced by many others — design changes here have wide imp
 |:------|:--------|:--------|
 | `countries` | 5 | — |
 | `file_records` | 8 | — |
-| `tenants` | 9 | subscription_plan_id→subscription_plans |
+| `tenants` | 10 | subscription_plan_id→subscription_plans |
 | `users` | 12 | — (includes must_change_password, password_set_by_admin, temporary_password_expires_at) |
+
+> `tenants.status` has five valid values: `provisioning`, `trial`, `active`, `suspended`, and `cancelled`. `provisioning` is an admin-only draft state used by the Developer Platform provisioning wizard; tenant-facing APIs must exclude it until activation.
+
+> `tenants.company_size_range` stores the employee-count range selected during Developer Platform provisioning. Legal entity registration fields do not live on `tenants`.
 
 > `users` gains 3 temporary-password fields: `must_change_password boolean`, `password_set_by_admin boolean`, `temporary_password_expires_at timestamptz`. Backend returns `403 MUST_CHANGE_PASSWORD` on login when `must_change_password = true`.
 
@@ -79,13 +83,15 @@ These tables are referenced by many others — design changes here have wide imp
 | `job_families` | 5 | tenant_id→tenants |
 | `job_levels` | 5 | tenant_id→tenants |
 | `job_titles` | 7 | tenant_id→tenants |
-| `legal_entities` | 8 | tenant_id→tenants, country_id→countries |
+| `legal_entities` | 9 | tenant_id→tenants, country_id→countries |
 | `office_locations` | 8 | tenant_id→tenants, legal_entity_id→legal_entities |
 | `team_members` | 3 | employee_id→employees |
 | `team_member_roles` | 4 | team_id→teams, employee_id→employees, team_role_id→team_roles |
 | `team_role_permissions` | 3 | team_role_id→team_roles, permission_id→permissions |
 | `team_roles` | 5 | team_id→teams |
 | `teams` | 7 | tenant_id→tenants, team_lead_id→employees |
+
+> `legal_entities.currency_code` stores the ISO 4217 currency for that legal entity. Currency defaults from the selected country during provisioning, but the saved value belongs to the legal entity, not `tenants`.
 
 ### [[database/schemas/core-hr|Core HR]] (13 tables)
 

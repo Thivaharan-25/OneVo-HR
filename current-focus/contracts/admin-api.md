@@ -4,11 +4,15 @@
 **Consumers:** DEV5 Tasks 5-7  
 **Canonical source:** `ONEVO.Api` admin surface (`/admin/v1/*`). Phase 1 has one backend deployment; `ONEVO.Admin.Api` must not be deployed.
 
-**Provisioning API count:** Phase 1 tenant provisioning requires 22 admin endpoints: plan catalog, module catalog, tenant validation, tenant list/create/detail/edit/status, subscription, modules, permission catalog, role template list/create/edit/apply, tenant role list/create/permission update, settings, invite admin, provisioning summary, and activation confirm. Tenant-facing role management after activation is separate under `/api/v1/roles`.
+**Provisioning API count:** Phase 1 tenant provisioning requires 23 admin endpoints: plan catalog, module catalog, country defaults, tenant validation, tenant list/create/detail/edit/status, subscription, modules, permission catalog, role template list/create/edit/apply, tenant role list/create/permission update, settings, invite admin, provisioning summary, and activation confirm. Tenant-facing role management after activation is separate under `/api/v1/roles`.
 
-**Catalog cost-management APIs:** reusable plan prices and reusable module default prices are managed through additional catalog admin endpoints. Tenant provisioning can override those prices per tenant, but base catalog prices need their own APIs.
+**Catalog cost-management APIs:** reusable plan prices are calculated from selected module price brackets and company-size ranges. Reusable module price brackets are managed through catalog admin endpoints. Tenant provisioning can override calculated prices per tenant, but base catalog prices need their own APIs.
 
 **Backend API data rule:** every DTO below is the backend JSON contract between `ONEVO.Api` and the Developer Console. Field names are API response/request fields, not just UI labels. Frontend state may add view-only fields, but it must not rename or invent backend contract fields without updating this file.
+
+```ts
+type TenantLifecycleStatus = "provisioning" | "trial" | "active" | "suspended" | "cancelled"
+```
 
 ---
 
@@ -32,7 +36,7 @@ interface AdminAuthResponseDto {
 ```ts
 interface TenantListQueryDto {
   search?: string
-  status?: "provisioning" | "active" | "suspended"
+  status?: TenantLifecycleStatus
   plan_code?: string
   page?: number
   page_size?: number
@@ -43,7 +47,7 @@ interface TenantListItemDto {
   company_name: string
   slug: string
   plan_tier: string
-  status: "provisioning" | "active" | "suspended"
+  status: TenantLifecycleStatus
   employee_count: number
   agent_count: number
   created_at: string
@@ -69,9 +73,15 @@ interface SubscriptionPlanDto {
   name: string
   tier: string
   included_modules: string[]
+  company_size_range: string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
-  monthly_price: number | null
-  annual_price: number | null
+  calculated_monthly_price: number
+  calculated_annual_price: number
+  override_monthly_price: number | null
+  override_annual_price: number | null
+  effective_monthly_price: number
+  effective_annual_price: number
+  ai_token_limit_per_month: number | null
   currency: string
   is_active: boolean
 }
@@ -81,9 +91,11 @@ interface SubscriptionPlanListResponseDto {
 }
 ```
 
+`effective_*_price` is derived as `override_*_price ?? calculated_*_price`. The backend calculates `calculated_*_price` from `module_catalog.price_brackets` for `included_modules` and `company_size_range`.
+
 ## POST `/admin/v1/subscription-plans`
 
-Creates a reusable plan catalog record. Operators should use this only when ONEVO wants a plan reusable across tenants, not for one customer deal.
+Creates a reusable plan catalog record. Operators should use this only when ONEVO wants a plan reusable across tenants, not for one customer deal. The backend calculates plan prices from selected modules and company-size range; request override fields are optional negotiated catalog-level overrides.
 
 ```ts
 interface CreateSubscriptionPlanDto {
@@ -91,9 +103,11 @@ interface CreateSubscriptionPlanDto {
   name: string
   tier: string
   included_modules: string[]
+  company_size_range: string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
-  monthly_price?: number | null
-  annual_price?: number | null
+  override_monthly_price?: number | null
+  override_annual_price?: number | null
+  ai_token_limit_per_month?: number | null
   currency: string
   is_active?: boolean
 }
@@ -110,9 +124,11 @@ interface UpdateSubscriptionPlanDto {
   name?: string
   tier?: string
   included_modules?: string[]
+  company_size_range?: string
   pricing_unit?: "per_employee" | "per_device" | "flat" | "custom"
-  monthly_price?: number | null
-  annual_price?: number | null
+  override_monthly_price?: number | null
+  override_annual_price?: number | null
+  ai_token_limit_per_month?: number | null
   currency?: string
   is_active?: boolean
   reason: string
@@ -130,11 +146,17 @@ interface ModuleCatalogItemDto {
   pillar: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
   phase: "phase_1" | "phase_2" | "future" | string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
-  default_price_monthly: number | null
-  default_price_annual: number | null
+  price_brackets: ModulePriceBracketDto[]
   full_license_price: number | null
-  default_maintenance_rate: number | null
+  maintenance_rate: number | null
   is_active: boolean
+}
+
+interface ModulePriceBracketDto {
+  min_employees: number
+  max_employees: number       // -1 means unlimited
+  monthly_price: number
+  annual_price: number
 }
 
 interface ModuleCatalogResponseDto {
@@ -153,10 +175,9 @@ interface CreateModuleCatalogItemDto {
   pillar: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
   phase: "phase_1" | "phase_2" | "future" | string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
-  default_price_monthly?: number | null
-  default_price_annual?: number | null
+  price_brackets: ModulePriceBracketDto[]
   full_license_price?: number | null
-  default_maintenance_rate?: number | null
+  maintenance_rate?: number | null
   is_active?: boolean
 }
 
@@ -165,7 +186,7 @@ interface CreateModuleCatalogItemDto {
 
 ## PATCH `/admin/v1/modules/catalog/{moduleKey}`
 
-Updates reusable module metadata and default prices. Existing tenant entitlements keep their stored override prices unless product explicitly runs a migration/reprice operation.
+Updates reusable module metadata and bracketed catalog prices. Existing tenant entitlements and tenant subscriptions keep their stored pricing snapshots unless product explicitly runs a migration/reprice operation.
 
 ```ts
 interface UpdateModuleCatalogItemDto {
@@ -173,10 +194,9 @@ interface UpdateModuleCatalogItemDto {
   pillar?: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
   phase?: "phase_1" | "phase_2" | "future" | string
   pricing_unit?: "per_employee" | "per_device" | "flat" | "custom"
-  default_price_monthly?: number | null
-  default_price_annual?: number | null
+  price_brackets?: ModulePriceBracketDto[]
   full_license_price?: number | null
-  default_maintenance_rate?: number | null
+  maintenance_rate?: number | null
   is_active?: boolean
   reason: string
 }
@@ -251,6 +271,27 @@ interface UpdatePaymentGatewayConfigDto {
 // response: PaymentGatewayConfigDto
 ```
 
+## GET `/admin/v1/reference/countries/{countryCode}/defaults`
+
+Used by the tenant provisioning wizard after country selection to prefill timezone and legal entity currency.
+
+```ts
+interface CountryDefaultsDto {
+  country_code: string
+  country_name: string
+  default_timezone: string
+  timezones: string[]
+  default_currency: string
+  currencies: Array<{
+    code: string
+    name: string
+    symbol: string
+  }>
+}
+```
+
+Rule: single-timezone countries may auto-fill timezone. Multi-timezone countries must return all supported choices so the frontend can require operator selection. Currency defaults from country but is saved on `legal_entities.currency_code`.
+
 ## GET `/admin/v1/tenants/validate`
 
 Used by the wizard before or during draft creation. Country-specific registration validation may return warnings until product defines strict per-country rules.
@@ -280,6 +321,16 @@ interface TenantValidationResponseDto {
 ## POST `/admin/v1/tenants`
 
 ```ts
+interface TenantOwnerInviteDto {
+  email: string
+  first_name: string
+  last_name: string
+  role_id?: string | null
+  completion_methods?: string[] | null
+  allow_google_email_mismatch?: boolean | null
+  allowed_email_domains?: string[] | null
+}
+
 interface CreateTenantDraftDto {
   company_name: string
   slug: string
@@ -290,14 +341,25 @@ interface CreateTenantDraftDto {
   currency: string
   industry_profile: string
   company_size_range?: string | null
+  tenant_configuration_options?: string[] | null
+  owner_invite?: TenantOwnerInviteDto | null  // One-call shortcut — see design note below
 }
 
 interface CreateTenantDraftResponseDto {
   tenant_id: string
   status: "provisioning"
   next_step: "subscription"
+  owner_invite?: {
+    user_id: string
+    invite_expires_at: string
+    delivery_status: "sent" | "failed"
+  } | null
 }
 ```
+
+Persistence rule: `company_size_range` is stored on `tenants`; `legal_entity_name`, `registration_number`, `country`, and `currency` are stored on the primary `legal_entities` row (`currency_code`); `timezone` is stored in tenant settings/default timezone.
+
+**Design decision — one-call owner invite shortcut:** The KB provisioning wizard defines owner invite as Step 6 (`POST /admin/v1/tenants/{id}/invite-admin`). As an intentional product shortcut, `POST /admin/v1/tenants` optionally accepts `owner_invite` and orchestrates the invite in the same call. When `owner_invite` is supplied the backend runs the full invite flow (baseline owner role materialised, inactive user created, invite token issued, email sent) within the same database transaction. Email send failure after commit does NOT roll back the tenant draft — the operator can resend via the dedicated invite endpoint. When `owner_invite` is omitted, behaviour is identical to the sequential wizard step. The dedicated `POST /admin/v1/tenants/{id}/invite-admin` endpoint remains available for subsequent or re-sent invites.
 
 ## GET `/admin/v1/tenants/{id}`
 
@@ -312,8 +374,9 @@ interface TenantDetailDto {
   timezone: string
   currency: string
   industry_profile: string
+  company_size_range: string | null
   plan_tier: string
-  status: "provisioning" | "active" | "suspended"
+  status: TenantLifecycleStatus
   billing_start_date: string | null
   subscription_override: boolean
   commercial_model: "subscription" | "full_license_maintenance" | null
@@ -365,6 +428,13 @@ interface SubscriptionOverrideDto {
   billing_currency: string
   contract_start_date?: string
   contract_end_date?: string | null
+  company_size_range: string
+  selected_modules: string[]
+  calculated_monthly_price: number
+  calculated_annual_price: number
+  override_monthly_price?: number | null
+  override_annual_price?: number | null
+  ai_token_limit_per_month?: number | null
 
   // Required for commercial_model = "subscription".
   billing_cycle?: "monthly" | "annual"
@@ -399,6 +469,9 @@ interface SubscriptionOverrideDto {
 Rules:
 
 - Subscription tenants normally use `subscription_collection_mode = "gateway"` and `gateway_provider` so recurring plan/module fees are charged by the payment gateway.
+- `company_size_range` uses the same option set as tenant creation. `selected_modules` plus `company_size_range` must be recalculated from `module_catalog.price_brackets`; the calculated values supplied by the UI are display echoes and the backend remains authoritative.
+- `override_monthly_price` and `override_annual_price` are negotiated/effective prices when present. They must not replace `calculated_monthly_price` and `calculated_annual_price` in storage.
+- `ai_token_limit_per_month` is required and positive when the selected module set includes an AI capability such as `chat_ai`; it is omitted/null for non-AI plans.
 - Full-license tenants can use `license_payment_mode = "manual"` for the one-time license sale. The operator records `full_license_amount`, `license_paid_at`, and `license_reference`.
 - Full-license maintenance is separate from the one-time license. It normally uses `maintenance_collection_mode = "gateway"` so recurring maintenance/support fees are collected by the system payment gateway.
 - `manual` collection modes are exception paths and require `reason`.
@@ -626,7 +699,7 @@ Completing the invite with password uses the invited email. Completing the invit
 ```ts
 interface ProvisioningSummaryDto {
   tenant_id: string
-  status: "provisioning" | "active" | "suspended"
+  status: TenantLifecycleStatus
   sections: {
     tenant_details: ProvisioningSectionStatus
     subscription: ProvisioningSectionStatus

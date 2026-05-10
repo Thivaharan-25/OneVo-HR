@@ -29,15 +29,21 @@ Pricing is configurable in Developer Platform and must not be hardcoded. Operato
 
 | Pricing Area | Example |
 |--------------|---------|
-| Plan base price | Professional = 300/month |
-| Module add-on price | Payroll = 80/month |
+| Plan calculated price | Core HR + Work Management for `51-200` employees = 7.50/employee/month |
+| Plan override price | Sales-approved override = 7.00/employee/month |
+| Module price bracket | Core HR = 3.50/employee/month for `51-200` employees |
 | Per employee/device price | 3/employee/month or 2/device/month |
 | Full license purchase price | Full HR Suite = 10,000 one-time |
 | Maintenance price | 18% of license value yearly |
+| AI token limit | Chat AI plan includes 500,000 tokens/month |
 | Trial terms | Free for 30 days |
 | Custom enterprise price | Manually entered contract amount |
 
 Module entitlement and pricing decide what the tenant has access to. RBAC decides which users inside the tenant can use those capabilities. These concerns must remain separate.
+
+Reusable plan prices are calculated from selected module price brackets and the selected company-size range. The company-size range uses the same values as the operator tenant-creation dropdown. Tenant subscriptions store the calculated price and any override as a snapshot so future catalog price changes do not rewrite old contracts.
+
+AI-capable plans must carry a positive monthly token cap. Non-AI plans leave the token cap empty.
 ### Pricing Packs
 
 | Pack | Modules Included | Pricing Unit |

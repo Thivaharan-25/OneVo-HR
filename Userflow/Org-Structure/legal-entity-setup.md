@@ -20,16 +20,16 @@
 - **API:** `GET /api/v1/org/legal-entities` (list existing)
 
 ### Step 2: Enter Entity Details
-- **UI:** Form: name, registration number, tax ID, country, address, phone, email
-- **Validation:** Name unique within tenant, registration number format per country
+- **UI:** Form: name, registration number, country, currency, address
+- **Validation:** Name unique within tenant, registration number format per country, currency is a valid ISO 4217 code
 
 ### Step 3: Configure Entity Settings
-- **UI:** Set default currency, fiscal year start month, work week (Sun-Thu vs Mon-Fri), public holidays calendar
+- **UI:** Currency defaults from the selected country but can be overridden. Fiscal year start month, work week, and public holidays are configured through tenant settings/calendar setup, not stored directly on `legal_entities`.
 - **Backend:** LegalEntityService.CreateAsync() → [[modules/org-structure/legal-entities/overview|Legal Entities]]
 
 ### Step 4: Save
 - **API:** `POST /api/v1/org/legal-entities`
-- **DB:** `legal_entities` — new record created
+- **DB:** `legal_entities` — new record created with `name`, `registration_number`, `country_id`, `currency_code`, `address_json`, and `is_active`
 - **Result:** Entity available for department assignment, payroll configuration, leave policies
 - **Calendar result:** `LegalEntityCreated` seeds `holiday_calendar_settings` with the selected country as the default holiday calendar and queues country holiday import.
 
@@ -44,7 +44,7 @@
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | Duplicate name | Validation fails | "A legal entity with this name already exists" |
-| Invalid tax ID format | Validation fails | "Tax ID format invalid for selected country" |
+| Invalid registration number | Validation fails | "Registration number format invalid for selected country" |
 | Entity has employees | Cannot delete | "Cannot delete — reassign employees first" |
 
 ## Events Triggered

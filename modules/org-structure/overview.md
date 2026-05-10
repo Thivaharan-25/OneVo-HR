@@ -75,6 +75,7 @@ API endpoints:
 | `name` | `varchar(200)` | |
 | `registration_number` | `varchar(50)` | |
 | `country_id` | `uuid` | FK → countries |
+| `currency_code` | `varchar(3)` | ISO 4217 currency for this legal entity |
 | `address_json` | `jsonb` | |
 | `is_active` | `boolean` | |
 | `agent_clock_in_enabled` | `boolean` | Default `false`. When `true`, all employees in this legal entity can clock in/out via web or tray app regardless of `work_type` |
@@ -239,7 +240,7 @@ Records the module whitelist for employees who were granted `roles:manage` via d
 
 ## Features
 
-- [[modules/org-structure/legal-entities/overview|Legal Entities]] — Legal entity registration with country and address
+- [[modules/org-structure/legal-entities/overview|Legal Entities]] — Legal entity registration with country, currency, and address
 - [[modules/org-structure/departments/overview|Departments]] — Hierarchical department tree (`parent_department_id`, CTE-friendly)
 - [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — Job families, job levels (with rank), and job titles
 - [[modules/org-structure/teams/overview|Teams]] — Teams within departments with team leads and member assignments

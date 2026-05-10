@@ -40,13 +40,18 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 - Country
 - Industry
 - Legal entity name
+- Registration number
+- Company size
 - Timezone
+- Currency
 
 **Action:** Click **Create Tenant**
 
 **API call:** `POST /admin/v1/tenants`
 
-**State written:** New row in `tenants` with `status = 'provisioning'`. The tenant ID is returned and stored for all subsequent wizard steps.
+**State written:** New row in `tenants` with `status = 'provisioning'` and `company_size_range`; primary row in `legal_entities` with legal entity name, registration number, `country_id`, `currency_code`, and address; default timezone in `tenant_settings`. The tenant ID is returned and stored for all subsequent wizard steps.
+
+**Country defaults rule:** The UI calls `GET /admin/v1/reference/countries/{countryCode}/defaults` after country selection. Single-timezone countries can auto-fill timezone; multi-timezone countries must show a timezone dropdown. Currency defaults from country but remains editable.
 
 **Note:** If you close the browser before completing this step, nothing is saved — the tenant does not exist yet.
 
@@ -56,6 +61,10 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **What you fill in:**
 - Subscription plan (dropdown of reusable plans from `subscription_plans`; operators do not create a new plan for every tenant)
+- Company size price band (same values as the Step 1 company-size dropdown; defaults from the tenant's saved `company_size_range`)
+- Modules included in the plan; selecting modules recalculates the per-unit price from `module_catalog.price_brackets`
+- Calculated monthly/annual price and optional operator override price
+- Monthly AI token limit when the selected modules/plan include AI capability
 - Commercial model: `subscription` or `full_license_maintenance`
 - Billing start date
 - Payment collection mode and gateway provider (`stripe` or `payhere`) for subscription billing
@@ -68,9 +77,13 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **API call:** `PATCH /admin/v1/tenants/{id}/subscription`
 
-**State written:** `subscription_plans` association updated; commercial model, billing cycle/currency, contract dates, subscription collection mode, gateway provider, gateway references, license payment fields, maintenance collection mode/status/renewal date, custom contract value, and pricing overrides set for the tenant.
+**State written:** `subscription_plans` association updated; commercial model, billing cycle/currency, contract dates, subscription collection mode, gateway provider, gateway references, license payment fields, maintenance collection mode/status/renewal date, selected company-size range, selected module keys, calculated plan price snapshot, optional override price, AI monthly token limit, custom contract value, and pricing overrides set for the tenant.
 
 **Plan rule:** plans are global commercial catalog records. A tenant receives one selected plan plus tenant-specific commercial terms. Custom pricing, discounts, contract value, maintenance rate, billing dates, and manual billing state belong on the tenant subscription/commercial record, not on a new one-off plan unless product intentionally adds a reusable custom plan.
+
+**Dynamic pricing rule:** plan price is the sum of selected module bracket prices for the selected company-size range. Example: `core_hr` at `$3.50` for `51-200` employees plus `work_management` at `$4.00` for `51-200` employees shows `$7.50 per employee`. Changing company size or selected modules recalculates immediately. Operator overrides change the effective price but must preserve the calculated price for audit.
+
+**AI token rule:** when AI capability is included, the operator must set a positive monthly token limit. Non-AI plans store no AI token limit.
 
 **Gateway rule:** Stripe and PayHere are the primary Phase 1 payment gateways. Subscription tenants normally use gateway collection. Full-license tenants may record the one-time license payment manually, but recurring maintenance fees should use Stripe or PayHere when gateway collection is enabled. Gateway API keys, merchant secrets, and webhook secrets are managed through encrypted payment gateway configuration, not returned from APIs.
 
@@ -194,10 +207,13 @@ The complete Phase 1 provisioning surface requires these admin endpoints:
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/admin/v1/subscription-plans` | Load reusable plans for Step 2 |
+| `GET` | `/admin/v1/subscription-plans` | Load reusable plans with calculated/override pricing, included modules, company-size range, and AI token limits for Step 2 |
+| `POST` | `/admin/v1/subscription-plans` | Create reusable plans from selected modules and company-size bracket pricing |
+| `PATCH` | `/admin/v1/subscription-plans/{id}` | Update reusable plan modules, company-size price band, overrides, active state, and AI token limits |
 | `GET` | `/admin/v1/payment-gateways` | Load configured Stripe/PayHere gateway options for Step 2 |
 | `GET` | `/admin/v1/modules/catalog` | Load reusable module catalog and default pricing for Step 3 |
 | `GET` | `/admin/v1/tenants/validate` | Validate slug/company/domain before or during draft creation |
+| `GET` | `/admin/v1/reference/countries/{countryCode}/defaults` | Return default timezone/currency and supported timezone choices for account setup |
 | `POST` | `/admin/v1/tenants` | Create provisioning draft |
 | `GET` | `/admin/v1/tenants/{id}` | Load tenant detail and resume state |
 | `PATCH` | `/admin/v1/tenants/{id}` | Edit draft tenant details before activation |
@@ -227,9 +243,10 @@ Tenant-facing role APIs are separate and become available after activation:
 
 ## Product Decisions Required Before Implementation
 
-- Exact default plan catalog, pricing units, and whether plan prices are per employee, per device, flat, or custom.
+- Exact default plan catalog, pricing units, seeded module price brackets, and whether plan prices are per employee, per device, flat, or custom.
 - Whether plan-included modules are automatically enabled or only proposed in the wizard for operator confirmation.
-- How total contract value is calculated when both plan price and module override prices exist.
+- How total contract value is calculated when both calculated plan price, module override prices, and tenant subscription override prices exist.
+- Exact AI token-limit defaults for AI-enabled plans.
 - Whether trial modules require billing dates before activation.
 - Whether role templates can be tenant-private reusable templates or only global operator-managed templates plus tenant-specific roles.
 - Whether template re-apply updates an existing role, creates a duplicate with explicit override, or is blocked.

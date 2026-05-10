@@ -127,6 +127,8 @@ public void No_Repository_Should_Bypass_BaseRepository()
 
 ## Tenant Provisioning Flow
 
+`tenants.status` has five lifecycle values: `provisioning`, `trial`, `active`, `suspended`, and `cancelled`. `provisioning` is the admin-only draft state; wizard step completion and activation blockers live in `tenant_provisioning_states` and `tenant_provisioning_validation_results`.
+
 ```
 1. Operator provisions via Developer Console (`POST /admin/v1/tenants`) â†’ Create tenant record (status: provisioning)
 2. Seed        â†’ Create default roles, permissions, settings, department

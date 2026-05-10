@@ -16,12 +16,12 @@ Manages tenant lifecycle: creation, status, subscription, module assignment, pro
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/admin/v1/subscription-plans` | List reusable subscription/commercial plans for provisioning |
-| `POST` | `/admin/v1/subscription-plans` | Create a reusable subscription/commercial plan with base prices |
-| `PATCH` | `/admin/v1/subscription-plans/{id}` | Update reusable plan metadata, included modules, active state, and base prices |
-| `GET` | `/admin/v1/modules/catalog` | List reusable module catalog, sellable state, and default pricing |
-| `POST` | `/admin/v1/modules/catalog` | Create a reusable module catalog item with default prices |
-| `PATCH` | `/admin/v1/modules/catalog/{moduleKey}` | Update reusable module metadata, sellable state, and default prices |
+| `GET` | `/admin/v1/subscription-plans` | List reusable subscription/commercial plans for provisioning, including selected modules, company-size range, calculated/override prices, and AI token limits |
+| `POST` | `/admin/v1/subscription-plans` | Create a reusable subscription/commercial plan from selected modules and company-size bracket pricing |
+| `PATCH` | `/admin/v1/subscription-plans/{id}` | Update reusable plan metadata, included modules, company-size price band, active state, calculated/override prices, and AI token limits |
+| `GET` | `/admin/v1/modules/catalog` | List reusable module catalog, sellable state, and company-size bracket pricing |
+| `POST` | `/admin/v1/modules/catalog` | Create a reusable module catalog item with price brackets, full-license price, and maintenance rate |
+| `PATCH` | `/admin/v1/modules/catalog/{moduleKey}` | Update reusable module metadata, sellable state, price brackets, full-license price, and maintenance rate |
 | `GET` | `/admin/v1/payment-gateways` | List safe Stripe/PayHere gateway config metadata |
 | `POST` | `/admin/v1/payment-gateways` | Create Stripe or PayHere gateway config with encrypted secrets |
 | `PATCH` | `/admin/v1/payment-gateways/{id}` | Update gateway metadata or rotate encrypted secrets |
@@ -56,7 +56,15 @@ Payment collection rules:
 - Manual collection modes require an audit reason and should be treated as exceptions.
 - The primary Phase 1 gateway providers are `stripe` and `payhere`. Gateway secrets are stored in encrypted gateway config records or environment variables and are never returned by admin APIs.
 
-Reusable plan and module default prices are managed through the plan/module catalog endpoints above. Tenant-specific negotiated pricing is managed through `/admin/v1/tenants/{id}/subscription` and `/admin/v1/tenants/{id}/modules`. Updating a catalog base price must not silently rewrite existing tenant commercial records.
+Reusable module default prices are managed through `module_catalog.price_brackets`; reusable plan prices are calculated from selected modules and company-size range, with optional plan-level overrides. Tenant-specific negotiated pricing is managed through `/admin/v1/tenants/{id}/subscription` and `/admin/v1/tenants/{id}/modules`. Updating a catalog base price must not silently rewrite existing tenant commercial records.
+
+Plan price calculation contract:
+
+- Company-size range values come from the same dropdown used by tenant creation.
+- `POST/PATCH /admin/v1/subscription-plans` accepts selected module keys and company-size range, returns calculated monthly/annual prices, and stores optional override monthly/annual prices separately.
+- Example: `core_hr` at `$3.50` plus `work_management` at `$4.00` for `51-200` employees returns `$7.50` per employee.
+- AI-enabled plans must include a positive `ai_token_limit_per_month`; non-AI plans leave it null.
+- `/admin/v1/tenants/{id}/subscription` stores a tenant subscription snapshot of selected modules, company-size range, calculated prices, override prices, and AI token limit.
 
 Module sales states are commercial states. `available` and `quoted` do not grant tenant-facing access. `purchased`, `trial`, `subscription_included`, and `maintenance_included` can grant access while the entitlement is valid.
 

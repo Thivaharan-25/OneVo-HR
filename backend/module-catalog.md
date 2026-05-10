@@ -57,6 +57,12 @@ Tenants are provisioned by an ONEVO operator with a specific pack set. Once acti
 
 Phase 2 modules (Payroll, Performance, HR Documents, Governance, Skill & Talent Development, etc.) are introduced as standalone add-ons when released. The operator adds them to the module catalog in the Developer Console; they then appear as purchasable add-ons for all tenants.
 
+### Module Pricing Brackets
+
+Module catalog pricing is bracketed by company size and must be read from `module_catalog.price_brackets`, not hardcoded. The company-size values are the same values used by the tenant creation dropdown. Plan creation sums the selected modules' matching bracket prices, then stores both the calculated price and any operator override.
+
+Example: for the `51-200` employee range, Core HR at `$3.50` plus Work Management at `$4.00` displays `$7.50 per employee`. AI-enabled plans must also carry a positive monthly token limit; non-AI plans leave the token limit unset.
+
 ---
 
 ## Feature Registry

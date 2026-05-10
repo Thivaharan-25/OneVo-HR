@@ -13,7 +13,7 @@ All day-to-day tenant operations: finding tenants, inspecting their state, suspe
 The list renders all tenants across all statuses. Each row shows:
 - Company name and slug
 - Plan tier
-- Status badge (`active` → green, `suspended` → red, `provisioning` → yellow, `trial` → blue)
+- Status badge (`provisioning` → yellow, `trial` → blue, `active` → green, `suspended` → red, `cancelled` → gray)
 - Employee count
 - Created date
 
@@ -33,7 +33,7 @@ Click any active or suspended tenant row to open its detail page. The detail pag
 
 | Tab | Contents |
 |---|---|
-| **Overview** | Plan name, billing dates, `status`, employee count, agent count, last login (any user) |
+| **Overview** | Company profile, primary legal entity, country, currency, company size, plan name, billing dates, `status`, employee count, agent count, last login (any user) |
 | **Flags** | All per-tenant feature flag overrides — see `feature-flags.md` |
 | **Settings** | Current `tenant_settings` values; editable by admin+ |
 | **Users** | User list with roles and last-login timestamps (read-only) |

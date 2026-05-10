@@ -9,6 +9,7 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 | Table / System | Role |
 |---|---|
 | `tenants` | Read + write — status, plan, metadata |
+| `legal_entities` | Write during draft creation — primary legal entity name, registration number, country, currency, and address |
 | `users` | Read — per-tenant user list, last login |
 | `tenant_settings` | Write — initial and override configuration |
 | `subscription_plans` | Read reusable global plan catalog; assign selected plan to tenant |
@@ -65,13 +66,13 @@ Payment collection rules:
 
 The console must keep commercial entitlements separate from RBAC permissions. Commercial state decides whether a tenant has bought or trialed a capability; RBAC decides which users inside that tenant can use it.
 
-Pricing is configurable, not hardcoded. Operators can configure plan base prices, module add-on prices, per-employee/device rates, one-time full-license prices, annual maintenance rates, trial terms, and custom enterprise contract values. Module access is resolved from the active subscription/commercial terms, plan allowed modules, tenant module grants, and tenant feature grants.
+Pricing is configurable, not hardcoded. Operators can configure module price brackets by company-size range, reusable plan calculated prices, plan override prices, per-employee/device rates, one-time full-license prices, annual maintenance rates, trial terms, AI monthly token limits, and custom enterprise contract values. Module access is resolved from the active subscription/commercial terms, plan allowed modules, tenant module grants, and tenant feature grants.
 
 Plan and module base costs are managed in the reusable catalogs:
 
-- `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plan base prices.
-- `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module default prices.
-- `PATCH /admin/v1/tenants/{id}/subscription` stores tenant-specific commercial terms and negotiated plan pricing.
+- `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plans from selected modules, company-size range, calculated prices, optional override prices, active state, and AI monthly token limits.
+- `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module metadata and `price_brackets`.
+- `PATCH /admin/v1/tenants/{id}/subscription` stores tenant-specific commercial terms, selected company-size range, selected module keys, calculated price snapshots, negotiated plan pricing, and AI monthly token limit.
 - `PUT /admin/v1/tenants/{id}/modules` stores tenant-specific module sales state and price overrides.
 
 Changing a reusable catalog price must not silently rewrite existing tenant contracts. Existing tenants keep their stored commercial terms unless ONEVO explicitly runs a reviewed reprice/migration process.
@@ -83,8 +84,8 @@ A 7-step, draft-safe wizard for onboarding tenants through the internal operator
 
 | Step | What Happens |
 |---|---|
-| 1. Account Setup | Company name, slug, country, industry, legal entity name, timezone |
-| 2. Plan Assignment | Pick reusable subscription plan, commercial model, payment collection mode, billing start date, contract value, discounts, full-license payment evidence, and maintenance billing terms |
+| 1. Account Setup | Company name, slug, legal entity name, registration number, country, timezone, legal entity currency, industry, and company size |
+| 2. Plan Assignment | Pick reusable subscription plan, confirm company-size price band, select plan modules, review calculated module-total price, optionally override price, set AI monthly token limit when AI is included, commercial model, payment collection mode, billing start date, contract value, discounts, full-license payment evidence, and maintenance billing terms |
 | 3. Module Selection | Toggle active modules, sales state, trial dates, and module-level pricing overrides for add-ons/future modules |
 | 4. Role Template Setup | Apply reusable ONEVO defaults, create reusable operator templates, or create tenant-specific roles from the module-filtered permission catalog |
 | 5. Initial Configuration | Set key `tenant_settings`: monitoring mode, leave policy defaults, transparency mode |
@@ -93,9 +94,15 @@ A 7-step, draft-safe wizard for onboarding tenants through the internal operator
 
 The wizard is **draft-safe**: partially completed tenants remain in `provisioning` status and can be resumed before confirmation.
 
+Account setup persistence rule: company size is stored on `tenants.company_size_range`; legal entity name, registration number, country, currency, and address are stored on the primary `legal_entities` row; default timezone is stored in `tenant_settings`.
+
 ### Plan, Module, and Cost Rules
 
 - Operators do not create a new plan for every tenant. Plans are reusable catalog entries; tenant-specific pricing lives on `tenant_subscriptions` and module entitlement records.
+- Reusable plan prices are calculated from selected `module_catalog.price_brackets` for the selected company-size range. Example: Core HR `$3.50` plus Work Management `$4.00` in the `51-200` range displays `$7.50 per employee`.
+- The company-size price band uses the same values as tenant creation, defaults from `tenants.company_size_range`, and can be changed by the operator before saving commercial terms.
+- Operator price overrides never erase calculated prices; both calculated and effective/override values are preserved for audit.
+- AI-enabled plans require a positive monthly token limit; non-AI plans leave the token limit blank.
 - A selected plan can include modules, but the provisioning wizard must still show the effective module set so the operator can confirm, add trials, add purchased modules, or disable exceptions.
 - Module prices can come from `module_catalog`, be included by plan, or be overridden per tenant. Store the pricing model, price, currency, dates, and sales state for audit and billing.
 - `available` and `quoted` module states do not grant tenant-facing access. `purchased`, `trial`, `subscription_included`, and `maintenance_included` can grant access while valid.

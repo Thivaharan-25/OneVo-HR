@@ -83,7 +83,9 @@ Secure one-time invitation records for tenant owner/admin invites and normal use
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `user_id` | `uuid` | FK -> users; pending invited account |
+| `role_id` | `uuid` | Nullable FK → roles; role to assign on acceptance; required for provisioning owner invites |
 | `invited_email` | `varchar(255)` | Original email address the invite was sent to |
+| `invited_full_name` | `varchar(255)` | Display name of invitee; used in invite email and accept flow |
 | `token_hash` | `varchar(128)` | SHA-256 hash of invite token; never store raw token |
 | `status` | `varchar(20)` | `pending`, `accepted`, `expired`, `revoked` |
 | `completion_methods_json` | `jsonb` | Allowed methods: `password`, `google` |

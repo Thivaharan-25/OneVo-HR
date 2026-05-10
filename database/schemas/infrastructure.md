@@ -43,13 +43,24 @@
 | `name` | `varchar(200)` | Company name |
 | `slug` | `varchar(100)` | URL-safe identifier, UNIQUE |
 | `industry_profile` | `varchar(30)` | `office_it`, `manufacturing`, `retail`, `healthcare`, `custom` — **sets monitoring defaults at signup** |
-| `status` | `varchar(20)` | `trial`, `active`, `suspended`, `cancelled` |
+| `company_size_range` | `varchar(30)` | Employee-count range captured during Developer Platform provisioning, e.g. `1-50`, `51-200`, `201-500` |
+| `status` | `varchar(20)` | `provisioning`, `trial`, `active`, `suspended`, `cancelled` |
 | `subscription_plan_id` | `uuid` | FK → subscription_plans |
 | `settings_json` | `jsonb` | Tenant-level settings |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
 **Foreign Keys:** `subscription_plan_id` → [[database/schemas/shared-platform#`subscription_plans`|subscription_plans]]
+
+**Status semantics:**
+
+- `provisioning` - Developer Platform draft tenant. Visible to `/admin/v1/*` operators, excluded from tenant-facing `/api/v1/*`, login, analytics, and normal customer workflows until activation.
+- `trial` - Activated tenant in a time-limited trial/commercial evaluation state.
+- `active` - Activated production tenant with tenant-facing access enabled.
+- `suspended` - Temporarily disabled tenant. Data is preserved; tenant-facing login and workflows are blocked.
+- `cancelled` - Commercially cancelled/offboarded tenant. Data retention, export, and purge follow the offboarding policy.
+
+`company_size_range` is tenant profile metadata, not legal-entity data. Detailed provisioning progress is stored in `tenant_provisioning_states` and `tenant_provisioning_validation_results`; do not add wizard-step progress columns to `tenants`.
 
 ---
 

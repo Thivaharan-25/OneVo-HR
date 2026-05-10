@@ -109,6 +109,7 @@
 | `name` | `varchar(200)` |  |
 | `registration_number` | `varchar(50)` |  |
 | `country_id` | `uuid` | FK → countries |
+| `currency_code` | `varchar(3)` | ISO 4217 currency for this legal entity; defaults from selected country but can be overridden by operator |
 | `address_json` | `jsonb` |  |
 | `is_active` | `boolean` |  |
 | `created_at` | `timestamptz` |  |
