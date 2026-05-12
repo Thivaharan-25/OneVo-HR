@@ -1,102 +1,58 @@
-# Legal Entities — End-to-End Logic
+# Company Registration Profile - End-to-End Logic
 
 **Module:** Org Structure  
-**Feature:** Legal Entities
+**Feature:** Company Registration Profile
 
 ---
 
-## Create Legal Entity
+## Update Company Registration Profile
 
 ### Flow
 
-```
-POST /api/v1/legal-entities
-  -> LegalEntityController.Create(CreateLegalEntityCommand)
+```text
+PUT /api/v1/company-profile
+  -> CompanyProfileController.Update(UpdateCompanyProfileCommand)
     -> [RequirePermission("settings:admin")]
-    -> FluentValidation: name required, registration_number required + unique,
+    -> FluentValidation: registered name required, registration_number format valid,
        country_id must reference valid country, currency_code must be valid ISO 4217,
        address_json schema validated
-    -> LegalEntityService.CreateAsync(command, ct)
+    -> CompanyProfileService.UpdateAsync(command, ct)
       -> 1. Validate country_id exists in countries table
       -> 2. Default currency_code from the selected country when omitted
-      -> 3. Check registration_number uniqueness within tenant
-      -> 4. Build LegalEntity entity (is_active = true)
-      -> 5. Persist to legal_entities table
-      -> 6. Publish LegalEntityCreated domain event
-      -> Return Result<LegalEntityDto>
-    -> 201 Created
+      -> 3. Update current tenant company registration profile
+      -> 4. If country changed, publish CompanyProfileCountrySet
+      -> Return Result<CompanyProfileDto>
+    -> 200 OK
 ```
 
-## List Legal Entities
+The profile is tenant-local registration/compliance data. It must not be used to model another operating company inside the same tenant.
+
+## Get Company Registration Profile
 
 ### Flow
 
-```
-GET /api/v1/legal-entities
+```text
+GET /api/v1/company-profile
   -> [RequirePermission("settings:admin")]
-  -> LegalEntityService.GetAllAsync(ct)
-    -> 1. Query legal_entities filtered by tenant_id
+  -> CompanyProfileService.GetAsync(ct)
+    -> 1. Query profile filtered by current tenant_id
     -> 2. Include country navigation property
-    -> 3. Return List<LegalEntityDto>
+    -> 3. Return CompanyProfileDto
   -> 200 OK
 ```
 
-## Update Legal Entity
-
-### Flow
-
-```
-PUT /api/v1/legal-entities/{id}
-  -> [RequirePermission("settings:admin")]
-  -> LegalEntityService.UpdateAsync(id, command, ct)
-    -> 1. Load entity by id, verify ownership by tenant
-    -> 2. If registration_number changed, re-validate uniqueness
-    -> 3. Update fields (name, registration_number, country_id, currency_code, address_json)
-    -> 4. Persist changes
-    -> 5. Publish LegalEntityUpdated domain event
-    -> Return Result<LegalEntityDto>
-  -> 200 OK
-```
-
-## Deactivate Legal Entity
-
-### Flow
-
-```
-PUT /api/v1/legal-entities/{id}/deactivate
-  -> [RequirePermission("settings:admin")]
-  -> LegalEntityService.DeactivateAsync(id, ct)
-    -> 1. Load entity
-    -> 2. Check no active departments reference this legal entity
-    -> 3. Check no active payroll connections reference this legal entity
-    -> 4. Set is_active = false
-    -> 5. Publish LegalEntityDeactivated event
-    -> Return Result.Success()
-  -> 200 OK
-```
-
-### Error Scenarios
+## Error Scenarios
 
 | Scenario | HTTP | Error |
 |:---------|:-----|:------|
-| Duplicate registration number | 409 | "Registration number already exists" |
 | Invalid country_id | 422 | "Country not found" |
 | Invalid currency_code | 422 | "Currency not supported" |
-| Deactivate with active departments | 409 | "Cannot deactivate: active departments exist" |
-| Entity not found | 404 | "Legal entity not found" |
 | Missing required fields | 400 | Validation errors |
-
-### Edge Cases
-
-- Registration numbers may contain special characters (dashes, slashes) depending on country
-- currency_code is stored on the legal entity because one tenant can have legal entities in different currencies
-- address_json is stored as JSONB, validated against a flexible schema allowing country-specific formats
-- Deactivation is soft-delete; historical references from payroll runs remain intact
 
 ## Related
 
 - [[modules/org-structure/legal-entities/overview|Overview]]
-- [[modules/org-structure/departments/overview|Departments]]
 - [[modules/infrastructure/reference-data/overview|Reference Data]]
+- [[modules/shared-platform/company-connections/overview|Company Connections]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]

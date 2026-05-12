@@ -17,7 +17,7 @@ POST /api/v1/files/upload
       -> 1. Validate file size (max 50MB)
       -> 2. Validate content type (whitelist: pdf, docx, xlsx, png, jpg)
       -> 3. Generate unique storage path: {tenant_id}/{year}/{month}/{uuid}.{ext}
-      -> 4. Upload to blob storage (Railway/S3)
+      -> 4. Upload to Cloudflare R2 object storage through IFileStorageProvider
       -> 5. INSERT into file_records
          -> file_name, content_type, size_bytes, storage_path
       -> Return Result.Success(fileRecordDto)
@@ -34,13 +34,13 @@ GET /api/v1/files/{id}
     -> FileService.DownloadFileAsync(fileId, ct)
       -> 1. Load file_records by id
       -> 2. Verify tenant_id matches caller's tenant
-      -> 3. Generate signed URL or stream from blob storage
+      -> 3. Generate signed URL or stream from Cloudflare R2 object storage
       -> Return file stream
 ```
 
 ### Key Rules
 
-- **Files stored in blob storage, not database.** Only metadata in `file_records`.
+- **Files stored in Cloudflare R2 object storage, not database.** Only metadata in `file_records`.
 - **Tenant isolation:** Files are partitioned by tenant_id in storage path.
 
 ## Related

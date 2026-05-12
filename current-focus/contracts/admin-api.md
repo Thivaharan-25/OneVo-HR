@@ -6,7 +6,7 @@
 
 **Provisioning API count:** Phase 1 tenant provisioning requires 23 admin endpoints: plan catalog, module catalog, country defaults, tenant validation, tenant list/create/detail/edit/status, subscription, modules, permission catalog, role template list/create/edit/apply, tenant role list/create/permission update, settings, invite admin, provisioning summary, and activation confirm. Tenant-facing role management after activation is separate under `/api/v1/roles`.
 
-**Catalog cost-management APIs:** reusable plan prices are calculated from selected module price brackets and company-size ranges. Reusable module price brackets are managed through catalog admin endpoints. Tenant provisioning can override calculated prices per tenant, but base catalog prices need their own APIs.
+**Catalog cost-management APIs:** reusable plan prices are calculated from selected package/module price brackets and company-size ranges. Reusable package/module price brackets are managed through catalog admin endpoints. Tenant provisioning can override calculated prices per tenant, but base catalog prices need their own APIs.
 
 **Backend API data rule:** every DTO below is the backend JSON contract between `ONEVO.Api` and the Developer Console. Field names are API response/request fields, not just UI labels. Frontend state may add view-only fields, but it must not rename or invent backend contract fields without updating this file.
 
@@ -95,7 +95,7 @@ interface SubscriptionPlanListResponseDto {
 
 ## POST `/admin/v1/subscription-plans`
 
-Creates a reusable plan catalog record. Operators should use this only when ONEVO wants a plan reusable across tenants, not for one customer deal. The backend calculates plan prices from selected modules and company-size range; request override fields are optional negotiated catalog-level overrides.
+Creates a reusable plan catalog record. Operators should use this only when ONEVO wants a plan reusable across tenants, not for one customer deal. The backend calculates plan prices from selected packages/modules and company-size range; request override fields are optional negotiated catalog-level overrides.
 
 ```ts
 interface CreateSubscriptionPlanDto {

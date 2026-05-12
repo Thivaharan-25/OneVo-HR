@@ -17,11 +17,11 @@ Canonical reference for the ONEVO shell navigation. Navigation components, permi
 [■ Acme Malaysia Sdn Bhd  ▾]  |  [  Search...  ⌘K  ]  |  🔔  ☀  [Avatar ▾]
 ```
 
-Left: Legal entity name + hierarchy switcher dropdown  
+Left: Company tenant context + connected-company entry when permitted  
 Center: Search — command palette (⌘K / Ctrl+K)  
 Right: Notification bell · Theme toggle · User avatar menu
 
-See [[frontend/architecture/topbar|Topbar Architecture]] for full legal entity switcher design.
+See [[frontend/architecture/topbar|Topbar Architecture]] for full company context behavior. Connected companies must not appear as simple legal entity/session switching; they require explicit connection, permission, scope, and audit checks.
 
 
 ## Responsive Navigation Mapping
@@ -75,7 +75,7 @@ See [[frontend/design-system/components/nav-rail|Nav Rail]] for exact dimensions
 | Label | Route | Permission Key | WMS Module(s) | Notes |
 |---|---|---|---|---|
 | Presence | `/workforce` | `workforce:view` | workforce-presence, productivity-analytics, exception-engine | Default — live employee card grid |
-| Projects | `/workforce/projects` | `projects:read` | project | All projects in entity scope |
+| Projects | `/workforce/projects` | `projects:read` | project | All tenant-local projects in company scope |
 | My Work | `/workforce/my-work` | `tasks:read` | task | My assigned tasks across all projects |
 | Planner | `/workforce/planner` | `sprints:read` | planning | Sprints, Boards, Roadmap, Releases |
 | Goals | `/workforce/goals` | `okr:read` | okr | Objectives, key results, check-ins |
@@ -91,7 +91,7 @@ See [[frontend/design-system/components/nav-rail|Nav Rail]] for exact dimensions
 | Departments | `/org/departments` | `org:read` | Department CRUD |
 | Teams | `/org/teams` | `org:read` | Team CRUD |
 | Job Families | `/org/job-families` | `org:manage` | Role groupings for compensation bands and career paths |
-| Legal Entities | `/org/legal-entities` | `org:manage` | Create + manage entities shown in the topbar switcher |
+| Company Profile | `/org/company-profile` | `org:manage` | Manage the tenant's registration/compliance profile |
 
 ### Calendar
 

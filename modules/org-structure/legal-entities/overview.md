@@ -1,33 +1,33 @@
-# Legal Entities
+# Company Registration Profile
 
 **Module:** Org Structure  
-**Feature:** Legal Entities
+**Feature:** Company Registration Profile
 
 ---
 
 ## Purpose
 
-Company legal entities with registration, country, currency, and address information.
+The company registration profile stores the current tenant's registration, country, currency, and address information. It is not a way to model multiple operating companies inside one tenant. Separate operating companies must be provisioned as separate tenants and linked through [[modules/shared-platform/company-connections/overview|Company Connections]] when cross-company workflows are needed.
 
-When a legal entity is created, Calendar creates a Phase 1 holiday calendar setting that defaults to the legal entity country. Calendar admins can later disable holiday sync or choose a different calendar country from the Calendar screen without changing the legal entity country.
+When the company country is set, Calendar creates a Phase 1 holiday calendar setting that defaults to the company country. Calendar admins can later disable holiday sync or choose a different calendar country from the Calendar screen without changing the registration profile country.
 
 ## Database Tables
 
-### `legal_entities`
+### `company_registration_profiles`
 Fields: `name`, `registration_number`, `country_id`, `currency_code`, `address_json`, `is_active`.
 
-`currency_code` is the legal entity's ISO 4217 operating currency. It defaults from the selected country during provisioning or legal-entity creation, but operators can override it when the legal/commercial setup requires a different currency.
+`currency_code` is the company's ISO 4217 operating currency. It defaults from the selected country during provisioning, but operators can override it when the legal/commercial setup requires a different currency.
 
 ## API Endpoints
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/legal-entities` | `settings:admin` | List |
-| POST | `/api/v1/legal-entities` | `settings:admin` | Create |
+| GET | `/api/v1/company-profile` | `settings:admin` | Get current tenant registration profile |
+| PUT | `/api/v1/company-profile` | `settings:admin` | Update current tenant registration profile |
 
 ## Calendar Integration
 
-`POST /api/v1/legal-entities` publishes `LegalEntityCreated` with the selected country. The Calendar module consumes it to create `holiday_calendar_settings` and queue country holiday import.
+Updating the company country publishes `CompanyProfileCountrySet` with the tenant ID and selected country. The Calendar module consumes it to create or update `holiday_calendar_settings` and queue country holiday import.
 
 ## Related
 
@@ -36,6 +36,7 @@ Fields: `name`, `registration_number`, `country_id`, `currency_code`, `address_j
 - [[modules/org-structure/cost-centers/overview|Cost Centers]]
 - [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
 - [[modules/org-structure/teams/overview|Teams]]
+- [[modules/shared-platform/company-connections/overview|Company Connections]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 - [[frontend/cross-cutting/authorization|Authorization]]
 - [[backend/shared-kernel|Shared Kernel]]

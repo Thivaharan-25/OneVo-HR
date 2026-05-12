@@ -26,7 +26,7 @@ GET /api/v1/activity/meetings/{employeeId}?date=2026-04-05
 
 ```
 ProcessRawBufferJob
-  -> For each activity_snapshot with foreground_app matching meeting apps:
+  -> For each activity_snapshot with foreground_process_name matching meeting app process names:
     -> 1. Check against known patterns: Teams.exe, zoom.exe, meet.google.com
     -> 2. If new meeting detected (no open session for this platform):
        -> INSERT meeting_sessions with meeting_start = captured_at
@@ -48,7 +48,6 @@ ProcessRawBufferJob
 ### Edge Cases
 
 - **Phase 1 limitation:** Detection is process-name based only. No calendar integration.
-- **Phase 2:** Microsoft Teams Graph API will provide rich meeting data (participants, duration, recording status).
 - **Short meetings (< 2 min):** Still recorded but flagged in aggregation as potential false positives.
 
 ## Related

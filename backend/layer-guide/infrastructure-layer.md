@@ -15,7 +15,7 @@ Implements all interfaces defined in Application. Never referenced directly by A
 | `Caching/RedisCacheService.cs` | `ICacheService` | L1 + L2 Redis |
 | `Security/AesEncryptionService.cs` | `IEncryptionService` | AES-256-GCM |
 | `Email/SmtpEmailService.cs` | `IEmailService` | SMTP |
-| `Storage/BlobStorageService.cs` | `IStorageService` | Azure Blob / S3 |
+| `Storage/ObjectStorageService.cs` | `IStorageService` | Cloudflare R2 object storage |
 | `BackgroundJobs/BackgroundJobService.cs` | `IBackgroundJobService` | Hangfire |
 | `RealTime/SignalRNotificationDispatcher.cs` | `INotificationDispatcher` | SignalR hubs |
 

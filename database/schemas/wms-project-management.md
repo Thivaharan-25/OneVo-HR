@@ -12,7 +12,6 @@
 |---|---|---|
 | `id` | uuid | PK |
 | `tenant_id` | uuid | FK -> tenants |
-| `legal_entity_id` | uuid | FK -> legal_entities, nullable; binds Work Management visibility to HR topbar scope |
 | `name` | varchar(200) | |
 | `slug` | varchar(100) | UNIQUE per tenant |
 | `description` | text | nullable |
@@ -24,6 +23,8 @@
 | `updated_at` | timestamptz | |
 
 **Indexes:** `(tenant_id)`, `(tenant_id, slug) UNIQUE`
+
+**Scope rule:** Workspaces are tenant-local by default. Cross-company workspace/project collaboration requires an active company connection and explicit member/data-sharing scope; it is not modeled through topbar scope switching.
 
 ---
 

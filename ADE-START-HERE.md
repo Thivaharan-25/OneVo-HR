@@ -12,7 +12,7 @@ ONEVO is a **unified multi-tenant SaaS** platform combining three product pillar
 2. **Workforce Intelligence** — Desktop activity monitoring, presence tracking, biometric verification, exception detection, productivity analytics
 3. **WorkSync** — Work management built internally: projects, tasks, sprints, boards, roadmaps, OKR, chat, AI, documents, GitHub integration — all in the same backend and database as HR, no bridge APIs
 
-Plus an **IDE Extension** — a full chat sidebar and tag-based automation surface embedded in VS Code and JetBrains. Developers can trigger any OneVo action they have permission for without leaving their editor, using `@entity:action params` syntax.
+Plus an **IDE Extension** — a full chat sidebar and tag-based automation surface embedded in VS Code. Developers can trigger any OneVo action they have permission for without leaving their editor, using `@entity:action params` syntax.
 
 **Core value propositions:**
 - HR: "Who works here, what is their status, are they compliant?"
@@ -33,13 +33,15 @@ Plus an **IDE Extension** — a full chat sidebar and tag-based automation surfa
 | **Background Jobs** | Hangfire |
 | **Messaging** | MediatR for command/query dispatch; optional in-process domain events by exception |
 | **Caching** | Redis |
-| **File Storage** | Azure Blob Storage |
+| **File Storage** | Cloudflare R2 object storage |
 | **Email** | Resend |
 | **Auth** | JWT (RS256) + refresh tokens, MFA (TOTP) |
 | **Search** | PostgreSQL FTS (Phase 1) |
-| **IDE Extension** | VS Code Extension API (TypeScript) — Phase 1; JetBrains Plugin (Kotlin) — Phase 2 |
+| **IDE Extension** | VS Code Extension API (TypeScript) |
 
 **Architecture:** Clean Architecture + CQRS. Single `ApplicationDbContext` for all 38 modules. No microservices. No bridge APIs. Desktop monitoring agent is a separate solution (`ONEVO.Agent.sln`) with its own release cycle and ring-based deployment — it is not part of the main web deployment.
+
+**Tenant domain model:** ONEVO owns the parent domain, for example `onevo.com`. Cloudflare manages DNS for `onevo.com` and wildcard `*.onevo.com`; Azure hosts the app/API. Default tenant URLs are `https://{tenantSlug}.onevo.com`. Do not buy a new domain per tenant; tenant access uses ONEVO-owned subdomains only.
 
 ---
 
@@ -143,9 +145,7 @@ The remaining 10 Skills tables (courses, LMS, assessments, dev plans, certificat
 | **Payroll module** | Full payroll engine; activity data feed is read-only in Phase 1 |
 | **KPI targets** (`kpi_targets` table) | WorkSync Phase 2 |
 | **Billable rates** (`billable_rates` table) | WorkSync Phase 2 |
-| **JetBrains plugin** | IDE extension Phase 1 is VS Code only; JetBrains in Phase 2 |
 | **MacOS desktop agent** | Windows only in Phase 1 |
-| **Teams Graph API meeting analysis** | Activity Monitoring Phase 2 |
 | **Face recognition ML matching** | Identity Verification Phase 2 |
 
 ---
@@ -332,4 +332,3 @@ Every module overview (`modules/*/overview.md`) follows the same structure:
 8. **Do not install the desktop monitoring agent via the IDE extension without entitlement check** — always validate `agent_install_entitlements` server-side; never silently install
 9. **Do not validate permissions in the IDE extension client** — the extension sends actions to the backend; the backend validates and rejects if unauthorized
 10. **Do not build KPI targets or billable rates** — Phase 2 WorkSync features
-11. **Do not build the JetBrains plugin in Phase 1** — VS Code only

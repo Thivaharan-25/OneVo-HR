@@ -30,6 +30,11 @@ Supported resolver types:
 - Configured escalation owner
 - Previous workflow approver
 - Current case conversation participants
+- Owner of connected company
+- Users with selected permission in connected tenant
+- Target company HR approver
+- Source company manager
+- Group-level reviewer across selected connected companies
 
 Examples:
 
@@ -53,6 +58,12 @@ The builder uses a simple step-by-step shape:
 Supported triggers include leave request submitted, overtime request submitted, attendance correction submitted, exception alert created, identity verification failed, agent heartbeat lost, low activity detected, excess idle detected, presence/activity mismatch detected, approval unresolved, case unresolved, and message posted in a case conversation.
 
 Supported actions include create case conversation, send to Chat, send to Inbox, mirror to Teams if connected, notify assignee, notify employee, assign to resolver, request more information, escalate, create workflow task, add participant to case conversation, send daily summary, and mark for manager review.
+
+Connected-company-aware actions include request cross-company approval, create cross-company case conversation, share workflow evidence with a connected tenant, create target-tenant onboarding task, and revoke shared evidence after case closure. These actions require an active company connection and scoped cross-company permission.
+
+## Cross-Company Workflow Context
+
+Any workflow instance that crosses company tenants must store requester tenant, source tenant, target tenant, subject tenant, actor tenant, connection ID, and data-sharing scope. Workflow routing through a connected company must stop when the connection is revoked unless an explicit completion policy allows an already-started case to finish.
 
 ## Multiple Approver Modes
 
@@ -116,5 +127,6 @@ Do not implement database changes until the Automation Center database plan is a
 - [[modules/work-management/chat/overview|Chat & Messaging]]
 - [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync]]
 - [[modules/shared-platform/compliance-governance/overview|Compliance Governance]]
+- [[modules/shared-platform/company-connections/overview|Company Connections]]
 - [[frontend/architecture/sidebar-nav|Sidebar Navigation]]
 - [[frontend/cross-cutting/authorization|Authorization]]

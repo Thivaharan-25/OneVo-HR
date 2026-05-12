@@ -1,7 +1,7 @@
-# Legal Entity Setup
+# Company Registration Profile Setup
 
 **Area:** Org Structure  
-**Trigger:** Admin creates new legal entity (user action — configuration)
+**Trigger:** Admin updates the tenant's company registration profile  
 **Required Permission(s):** `org:manage`  
 **Related Permissions:** `settings:admin` (tenant-level config)
 
@@ -9,57 +9,49 @@
 
 ## Preconditions
 
-- Tenant provisioned → [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
-- Country data seeded in system → [[modules/infrastructure/overview|Infrastructure]]
+- Tenant provisioned -> [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
+- Country data seeded in system -> [[modules/infrastructure/overview|Infrastructure]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
-### Step 1: Navigate to Legal Entities
-- **UI:** Sidebar → Organization → Legal Entities → click "Add Legal Entity"
-- **API:** `GET /api/v1/org/legal-entities` (list existing)
+### Step 1: Navigate to Company Profile
+- **UI:** Sidebar -> Organization -> Company Profile
+- **API:** `GET /api/v1/company-profile`
 
-### Step 2: Enter Entity Details
-- **UI:** Form: name, registration number, country, currency, address
-- **Validation:** Name unique within tenant, registration number format per country, currency is a valid ISO 4217 code
+### Step 2: Enter Registration Details
+- **UI:** Form: registered name, registration number, country, currency, address
+- **Validation:** Registration number format per country, currency is a valid ISO 4217 code
 
-### Step 3: Configure Entity Settings
-- **UI:** Currency defaults from the selected country but can be overridden. Fiscal year start month, work week, and public holidays are configured through tenant settings/calendar setup, not stored directly on `legal_entities`.
-- **Backend:** LegalEntityService.CreateAsync() → [[modules/org-structure/legal-entities/overview|Legal Entities]]
+### Step 3: Configure Profile Settings
+- **UI:** Currency defaults from the selected country but can be overridden. Fiscal year start month, work week, and public holidays are configured through tenant settings/calendar setup.
+- **Backend:** CompanyProfileService.UpdateAsync() -> [[modules/org-structure/legal-entities/overview|Company Registration Profile]]
 
 ### Step 4: Save
-- **API:** `POST /api/v1/org/legal-entities`
-- **DB:** `legal_entities` — new record created with `name`, `registration_number`, `country_id`, `currency_code`, `address_json`, and `is_active`
-- **Result:** Entity available for department assignment, payroll configuration, leave policies
-- **Calendar result:** `LegalEntityCreated` seeds `holiday_calendar_settings` with the selected country as the default holiday calendar and queues country holiday import.
-
-## Variations
-
-### When editing existing entity
-- `PUT /api/v1/org/legal-entities/{id}` — update details
-- Changes to fiscal year affect payroll and leave entitlement calculations
+- **API:** `PUT /api/v1/company-profile`
+- **DB:** `company_registration_profiles` updated for the current tenant
+- **Result:** Profile available for registration/compliance, payroll configuration, leave policies, and default country holiday setup
+- **Calendar result:** `CompanyProfileCountrySet` seeds or updates `holiday_calendar_settings` with the selected country as the default holiday calendar and queues country holiday import.
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| Duplicate name | Validation fails | "A legal entity with this name already exists" |
 | Invalid registration number | Validation fails | "Registration number format invalid for selected country" |
-| Entity has employees | Cannot delete | "Cannot delete — reassign employees first" |
+| Invalid currency | Validation fails | "Currency is not supported" |
 
 ## Events Triggered
 
-- `LegalEntityCreated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `CompanyProfileCountrySet` -> [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
 - [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
-- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
 - [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
 - [[Userflow/Leave/leave-policy-setup|Leave Policy Setup]]
 - [[Userflow/Calendar/calendar-integrations|Calendar Integrations]]
 
 ## Module References
 
-- [[modules/org-structure/legal-entities/overview|Legal Entities]]
+- [[modules/org-structure/legal-entities/overview|Company Registration Profile]]
 - [[modules/org-structure/overview|Org Structure]]

@@ -16,10 +16,10 @@ The topbar must preserve entity context, navigation access, search, notification
 
 | Viewport | Topbar behavior |
 |:---------|:----------------|
-| Mobile `<640px` | Show hamburger, concise page title, one primary action when present, and overflow menu. Entity switcher and search move into the navigation drawer or icon triggers. |
-| Tablet `640-1023px` | Show hamburger, active entity in compact form, search icon, notifications, and avatar/overflow menu. Breadcrumbs collapse to current page or one parent. |
-| Laptop `1024-1279px` | Show compact entity switcher, short breadcrumb, search pill, notifications, theme, and avatar. Hide low-priority labels before actions. |
-| Desktop `>=1280px` | Show full entity switcher, breadcrumb, search, notification, theme, and avatar controls. |
+| Mobile `<640px` | Show hamburger, concise page title, one primary action when present, and overflow menu. Company context and search move into the navigation drawer or icon triggers. |
+| Tablet `640-1023px` | Show hamburger, active company in compact form, search icon, notifications, and avatar/overflow menu. Breadcrumbs collapse to current page or one parent. |
+| Laptop `1024-1279px` | Show compact company context, short breadcrumb, search pill, notifications, theme, and avatar. Hide low-priority labels before actions. |
+| Desktop `>=1280px` | Show full company context, breadcrumb, search, notification, theme, and avatar controls. |
 
 Rules:
 
@@ -28,47 +28,48 @@ Rules:
 - Search must remain reachable at every viewport, even when the full search pill is hidden.
 - Hamburger controls the same permission-aware `MobileNavDrawer` used by tablet/mobile navigation.
 
-## Left — Legal Entity Switcher
+## Left — Company Context
 
 ### What it shows
-The legal entity the user currently operates within — the registered company or business unit their data access is scoped to. Not a generic "workspace" or "tenant" name.
+The company tenant the user is currently signed into. In ONEVO, company is the business-facing name for a tenant, and tenant remains the hard data, subscription, settings, branding, permission, and audit boundary.
 
-### Why legal entity, not workspace name
-ONEVO's permission model is hierarchy-scoped. A Super Admin may govern multiple entities (e.g., "Acme Malaysia Sdn Bhd", "Acme Singapore Pte Ltd", "Acme Group"). Their data access changes depending on which entity they are operating in. The topbar makes this context explicit and switchable.
+### Why company context, not legal entity switching
+Separate operating companies are separate tenants. The topbar must not make connected companies look like simple in-session legal entity switching. When a user has approved cross-company access, those connected companies appear only inside relevant cross-company views or workflows, and only after the backend validates the active connection, permission, scope, and audit requirements.
 
-### Switcher dropdown anatomy
+### Context dropdown anatomy
 
 ```
 [■ Acme Malaysia Sdn Bhd  ▾]
 ─────────────────────────────────
 ✓  Acme Malaysia Sdn Bhd         ← current (checkmark)
-   Acme Group                    ← parent entity (if user has access)
-   Acme Singapore Pte Ltd        ← sibling entity (if user has access)
+   Connected companies           ← opens permission-scoped connected-company views
+   Company profile               ← registration, billing, settings, branding
 ─────────────────────────────────
-   + Add Entity                  ← only visible with org:manage permission
+   Request company connection    ← only visible when enabled and permitted
 ```
 
-Only entities within the user's hierarchy-scoped access appear. A regular employee sees only their own entity — the label is static, no dropdown triggered.
+Regular employees normally see only their current company label. Admins may see company profile and connected-company actions, but those actions do not switch the active tenant unless a future session-switching feature is explicitly designed.
 
-### Entity switching behavior
-When user selects a different entity:
-1. Auth session updates the active entity context
-2. All scoped data re-fetches (employees, projects, reports visible in this entity)
-3. App redirects to `/` (Home) — prevents showing stale data on the current page
-4. Active entity persists in session across page refreshes
+### Connected-company behavior
+When user opens a connected-company view:
+1. Auth session remains anchored to the current company tenant.
+2. Backend resolves active company connections and scoped grants.
+3. Only approved projections, workflow evidence, or transfer actions are shown.
+4. Every cross-company view, action, and export is audit logged with requester tenant and source tenant.
 
 ### Permission gating
 | Permission | Behavior |
 |---|---|
-| `org:read` | User sees their own entity name as a static label — no dropdown |
-| Any user with access to 2+ entities | Switcher dropdown is active |
-| `org:manage` | Dropdown includes "+ Add Entity" option |
+| Any authenticated user | User sees their current company name |
+| `settings:read` or `org:read` | Dropdown can include Company Profile |
+| `company-connections:read` | Dropdown can include Connected Companies entry |
+| `company-connections:manage` | Dropdown can include request/manage connection actions |
 
 ### Component
-`EntitySwitcher` — lives in the topbar layout component.
+`CompanyContextMenu` — lives in the topbar layout component.
 
 ### Data source
-Entities are created and managed at Org → Legal Entities (`/org/legal-entities`). The switcher reads from this list filtered to the user's hierarchy access scope.
+The current company comes from authenticated session metadata. Company registration/profile fields come from tenant detail and the retained primary registration profile. Connected-company entries come from company connection grants, not from registration profile records.
 
 ## Center — Search
 
@@ -177,7 +178,7 @@ Shows: quick nav to any page, recent pages, global people search, global actions
 // src/components/layout/topbar.tsx
 <header className="h-10 bg-white dark:bg-[#17181F] rounded-[10px] border border-[#E2E3EA] dark:border-white/[0.06] shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.30)] flex items-center px-[10px] gap-2 shrink-0">
 
-  {/* Entity switcher */}
+  {/* Company context */}
   <div className="flex items-center gap-1.5 px-[7px] py-[3px] rounded-[7px] cursor-pointer hover:bg-[#F4F5F8] dark:hover:bg-white/[0.07] shrink-0">
     <span className="text-[12px] font-semibold text-[#1E2140] dark:text-white/[0.82] whitespace-nowrap">
       Acme Malaysia Sdn Bhd
@@ -224,4 +225,4 @@ Shows: quick nav to any page, recent pages, global people search, global actions
 - [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] — full pillar and permission reference
 - [[frontend/design-system/components/shell-layout|Shell Layout]] — overall layout this topbar sits in
 - [[frontend/design-system/foundations/color-tokens|Color Tokens]] — brand + shell color values
-- Org → Legal Entities (`/org/legal-entities`) — where entities are created and managed
+- [[modules/shared-platform/company-connections/overview|Company Connections]] — permission-scoped cross-company views and workflows

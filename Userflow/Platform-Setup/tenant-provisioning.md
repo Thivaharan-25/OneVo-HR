@@ -111,8 +111,8 @@
 - Failed provisioning attempt logged in `audit_logs`
 
 ### Module entitlement selection (always required)
-- During provisioning, the operator selects which modules are enabled for this tenant based on the commercial agreement: HR Management modules, Workforce Intelligence modules, WorkSync modules, or any combination
-- Only selected pillars' seed data and feature flags are provisioned — e.g., a tenant without Workforce Intelligence gets no monitoring tables seeded and no `/workforce/*` routes visible
+- During provisioning, the operator selects Foundation plus Package 1, Package 2, or both based on the commercial agreement
+- Only selected packages' seed data and feature flags are provisioned — e.g., a tenant without Package 1 gets no monitoring routes visible, and a tenant without Package 2 gets no Work Management or IDE routes visible
 - Module entitlement is resolved from `tenant_subscriptions`, plan allowed modules, and tenant-level module/feature grants, then checked server-side on every API request and client-side for route visibility
 - When ONEVO releases a new module in the future, an operator manually enables it for tenants that have paid for the upgrade — no automatic upgrade
 

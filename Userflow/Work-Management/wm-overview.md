@@ -6,7 +6,7 @@
 
 ## Purpose
 
-ONEVO's Work Management System, branded as **WorkSync**, is the project and task management layer inside ONEVO. It can be sold independently from HR Management, or combined with HR and Workforce Intelligence in one tenant. It answers what teams are building through Projects, Tasks, Goals, Time, Chat, Docs, and Analytics. When Workforce Intelligence is also enabled, WorkSync can be shown beside presence/productivity data; when it is sold alone, it runs without monitoring.
+ONEVO's Work Management System, branded as **WorkSync**, is the project and task management layer inside ONEVO. It is sold through Package 2. It answers what teams are building through projects, chat, third-party integrations, and the IDE extension. When Package 1 is also enabled, Work Management can be shown beside attendance, monitoring, productivity, and exception data.
 
 ## Ownership
 
@@ -35,22 +35,22 @@ ONEVO's Work Management System, branded as **WorkSync**, is the project and task
 | WorkSync Concept | ONEVO HR Connection |
 |---|---|
 | WorkSync User | Maps to ONEVO User and optional Employee identity. WorkSync-only tenants still create a minimal CoreHR identity anchor, but HR pages remain hidden unless entitled. |
-| Task assignee | Must be an employee within the current legal entity scope |
+| Task assignee | Must be an employee within the current company tenant scope unless a cross-company project grant explicitly allows a connected-company participant |
 | Timesheet entry | Connects to Calendar → Attendance correction records |
 | Overtime entry | Connects to Calendar → Overtime approval records |
 | Resource capacity | Uses shift schedule data from Calendar → Schedules |
-| Project team member | Must be an employee within the same entity scope |
+| Project team member | Must be an employee within the same company tenant scope unless an active company connection and scoped grant allow a connected-company participant |
 | Productivity score | Surfaces on Workforce Presence card only when Workforce Intelligence is enabled |
 
 ## Data Scope
 
-All WorkSync data is tenant-scoped and, when legal entities are enabled, scoped to the selected legal entity/workspace. Switching legal entity or workspace changes which projects, tasks, goals, and docs are visible.
+All WorkSync data is tenant-scoped. Workspaces, projects, tasks, goals, and docs remain company-local by default. Cross-company collaboration requires an active company connection and explicit member/data-sharing scope; it must not be modeled as legal entity switching inside one tenant.
 
 ## Packaging Rules
 
-- WorkSync can be sold without HR Management.
-- HR Management can be sold without WorkSync.
-- Individual WorkSync modules can be enabled separately, such as Projects + Tasks only, Chat only, or Time + Reports only.
+- Work Management is sold through Package 2.
+- Package 2 includes Project Management, Agentic Chat, Third Party Integrations, and IDE Extension.
+- Package 1 covers HR Core + Intelligence modules.
 - The React frontend must hide disabled modules on every device size; route guards and backend APIs must enforce the same module entitlements server-side.
 - There are no WorkManage Pro bridge endpoints. Do not call `/api/v1/bridges/*`.
 

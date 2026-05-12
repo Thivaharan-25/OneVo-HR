@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Detects meeting sessions from desktop agent data. Phase 1 uses basic process name matching (e.g., `Teams.exe`, `zoom.exe`). Phase 2 will add Microsoft Teams Graph API for rich analytics.
+Detects meeting sessions from desktop agent data. Phase 1 uses basic process name matching (e.g., `Teams.exe`, `zoom.exe`).
 
 ## Database Tables
 

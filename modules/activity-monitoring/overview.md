@@ -103,7 +103,7 @@ Periodic activity data from agent (every 2-3 minutes).
 | `active_seconds` | `int` | Seconds with input activity |
 | `idle_seconds` | `int` | Seconds without input |
 | `intensity_score` | `decimal(5,2)` | 0–100 computed score |
-| `foreground_app` | `varchar(255)` | Application name (e.g., "Visual Studio Code") |
+| `foreground_process_name` | `varchar(100)` | Foreground process name (e.g., `code.exe`) |
 | `created_at` | `timestamptz` | |
 
 **Partitioning:** Monthly via `pg_partman` on `captured_at`
@@ -122,7 +122,8 @@ Time per application per day.
 | `tenant_id` | `uuid` | FK → tenants |
 | `employee_id` | `uuid` | FK → employees |
 | `date` | `date` | |
-| `application_name` | `varchar(255)` | e.g., "Google Chrome" |
+| `process_name` | `varchar(100)` | e.g., `chrome.exe` — authoritative matching key |
+| `application_name` | `varchar(255)` | e.g., "Google Chrome" — display metadata only |
 | `application_category` | `varchar(100)` | FK-like to `application_categories` |
 | `window_title_hash` | `varchar(64)` | SHA-256 hash (privacy — never store raw title) |
 | `total_seconds` | `int` | Time spent |
@@ -148,7 +149,6 @@ Detected meeting time.
 | `had_mic_activity` | `boolean` | Detected via audio device usage |
 
 **Phase 1:** Meeting detection is basic — process name matching (e.g., `Teams.exe`, `zoom.exe`).
-**Phase 2:** Microsoft Teams Graph API for rich meeting analytics.
 
 ### `screenshots`
 
@@ -261,7 +261,7 @@ Device interaction tracking per day.
 4. **Feature toggle check:** Before processing any data, verify the feature is enabled for this employee via `IConfigurationService`. The desktop agent checks policy on login, but the **server must double-validate**.
 5. **Intensity score formula:** `(keyboard_events_count + mouse_events_count) / max_expected_events * 100`, capped at 100.
 6. **Presence-window validation:** Only process activity snapshots that fall within an active presence session. Snapshots outside clock-in/clock-out or during breaks are discarded with a warning log. See [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]].
-7. **App allowlist check:** During `ProcessRawBufferJob`, each `app_usage` record is checked against the employee's resolved allowlist (via `IConfigurationService.GetResolvedAppAllowlistAsync`). The `is_allowed` flag is set on `application_usage`. If cumulative non-allowed usage exceeds the tenant's `violation_threshold_minutes`, publish `AppAllowlistViolationDetected` event.
+7. **App allowlist check:** During `ProcessRawBufferJob`, each `app_usage` record is checked against the employee's resolved allowlist by `process_name` (via `IConfigurationService.GetResolvedAppAllowlistAsync`). The `is_allowed` flag is set on `application_usage`. If cumulative non-allowed usage exceeds the tenant's `violation_threshold_minutes`, publish `AppAllowlistViolationDetected` event.
 8. **Break time exclusion:** Activity data received during break periods is discarded. The `total_active_minutes` and `total_idle_minutes` in `activity_daily_summary` only count time within active presence windows (excluding breaks).
 9. **Activity score is not productivity.** Activity Monitoring produces `activity_score` and supporting context only. Final `productivity_score` is owned by Productivity Analytics and may combine this data with WorkSync output evidence.
 10. **Meeting handling:** Valid meeting minutes inside presence windows count as work context and reduce idle penalties. Low input activity during a detected meeting is not automatically low productivity.
@@ -362,8 +362,6 @@ See also: [[backend/module-catalog|Module Catalog]], [[modules/agent-gateway/ove
 > [!WARNING]
 > The following features are deferred to Phase 2. Do not implement them. Specs are preserved here for future reference.
 
-### Microsoft Teams Graph API Integration
-Phase 1 uses basic process name matching (`Teams.exe`, `zoom.exe`) for meeting detection. Phase 2 will integrate with the Microsoft Teams Graph API for rich meeting analytics: participant lists, meeting duration from calendar, audio/video participation status, screen sharing detection. This requires Azure AD app registration and tenant-level Graph API consent.
 
 ### Screen Recording
 Phase 2 will add continuous or triggered screen recording as a data collection type alongside screenshots. This requires significant storage planning, employee consent flows, and retention policy updates.

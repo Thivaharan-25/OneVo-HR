@@ -29,29 +29,28 @@ Pricing is configurable in Developer Platform and must not be hardcoded. Operato
 
 | Pricing Area | Example |
 |--------------|---------|
-| Plan calculated price | Core HR + Work Management for `51-200` employees = 7.50/employee/month |
+| Plan calculated price | Package 1 + Package 2 for the selected company-size range = calculated package total before override |
 | Plan override price | Sales-approved override = 7.00/employee/month |
-| Module price bracket | Core HR = 3.50/employee/month for `51-200` employees |
-| Per employee/device price | 3/employee/month or 2/device/month |
-| Full license purchase price | Full HR Suite = 10,000 one-time |
+| Package price bracket | Package 1 = 3.50/employee/month for `51-200` employees |
+| Per employee/device price | Package-specific employee/device pricing configured by operator |
+| Full license purchase price | Agreed ONEVO package license = 10,000 one-time |
 | Maintenance price | 18% of license value yearly |
-| AI token limit | Chat AI plan includes 500,000 tokens/month |
+| AI token limit | Package 2 agentic chat includes 500,000 tokens/month |
 | Trial terms | Free for 30 days |
 | Custom enterprise price | Manually entered contract amount |
 
 Module entitlement and pricing decide what the tenant has access to. RBAC decides which users inside the tenant can use those capabilities. These concerns must remain separate.
 
-Reusable plan prices are calculated from selected module price brackets and the selected company-size range. The company-size range uses the same values as the operator tenant-creation dropdown. Tenant subscriptions store the calculated price and any override as a snapshot so future catalog price changes do not rewrite old contracts.
+Reusable plan prices are calculated from selected package/module price brackets and the selected company-size range. The company-size range uses the same values as the operator tenant-creation dropdown. Tenant subscriptions store the calculated price and any override as a snapshot so future catalog price changes do not rewrite old contracts.
 
 AI-capable plans must carry a positive monthly token cap. Non-AI plans leave the token cap empty.
 ### Pricing Packs
 
 | Pack | Modules Included | Pricing Unit |
 |------|-----------------|--------------|
-| **HR Pack** | Org Structure, Core HR, Leave, Calendar, Skills Core | Per active employee / month |
-| **Workforce Intelligence Pack** | Workforce Presence, Activity Monitoring, Discrepancy Engine, Identity Verification, Exception Engine, Productivity Analytics + Desktop Agent | Per monitored device / month |
-| **WorkSync Pack** | Projects, Tasks, Planning, OKR, Time, Resources, Chat, Collaboration, Analytics, Integrations + IDE Extension | Per active employee / month |
-| **Chat AI Add-on** | AI-assisted chat actions, premium AI detections | Per active employee / month |
+| **Foundation** | Authentication and Authorization, Tenant Configuration and Onboarding, Roles and Permissions | Always included |
+| **Package 1** | Profile Management, Attendance and Leave Management, E2E Monitoring, Productivity and Performance Analytics, Exception Detection, Overtime Management | Commercial pricing by active employee and/or monitored employee/device, finalized in billing configuration |
+| **Package 2** | Project Management, Agentic Chat, Third Party Integrations, IDE Extension | Commercial pricing by active Work Management user, finalized in billing configuration |
 
 Future modules (Governance, Skill & Talent Development, Payroll, Performance, etc.) are released as standalone add-ons. When ONEVO introduces a new module, the operator adds it to the catalog in the Developer Console and it appears as a purchasable add-on for all tenants that don't have it.
 
@@ -59,12 +58,11 @@ Future modules (Governance, Skill & Talent Development, Payroll, Performance, et
 
 | Item | Rule |
 |------|------|
-| HR Pack / WorkSync Pack billing unit | Active employees (`employees.status = 'active'`) at end-of-month snapshot |
-| Workforce Intelligence Pack billing unit | Enrolled devices (`registered_agents` with `status = 'active'`) at end-of-month snapshot |
-| Chat AI add-on billing unit | Active employees at end-of-month snapshot |
+| Package 1 billing unit | Active employees and/or monitored employees/devices, based on commercial configuration |
+| Package 2 billing unit | Active Work Management users at end-of-month snapshot |
 | Billing cycle | Calendar month (1st to last day) |
 | Invoice generation | ONEVO generates and sends invoice by 3rd of the following month |
-| Proration | New packs/add-ons added mid-cycle are prorated for remaining days. Removals take effect from the next billing cycle. |
+| Proration | Packages added mid-cycle are prorated for remaining days. Removals take effect from the next billing cycle. |
 
 ---
 

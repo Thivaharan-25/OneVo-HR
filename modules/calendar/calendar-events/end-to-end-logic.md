@@ -50,15 +50,15 @@ POST /api/v1/calendar
 | Invalid event_type | Return 422 |
 | Event not found (update/delete) | Return 404 |
 
-## Legal Entity Holiday Calendar Default
+## Company Holiday Calendar Default
 
 ### Flow
 
 ```
-LegalEntityCreated(legal_entity_id, country_code)
+CompanyProfileCountrySet(tenant_id, country_code)
   -> CalendarHolidaySettingsHandler
     -> 1. Create holiday_calendar_settings
-       -> default_country_code = legal entity country
+       -> default_country_code = company country
        -> override_country_code = null
        -> effective_country_code = default_country_code
        -> holiday_sync_enabled = true
@@ -79,7 +79,7 @@ PUT /api/v1/calendar/holiday-settings/{id}
   body: { holiday_sync_enabled, override_country_code? }
   -> CalendarHolidaySettingsController.Update
     -> [RequirePermission("calendar:admin")]
-    -> 1. Load setting and validate legal entity scope
+    -> 1. Load setting and validate company tenant scope
     -> 2. If override_country_code is set, use it as effective country
     -> 3. If holiday_sync_enabled = false, stop future imports but keep existing events unless admin chooses resync
     -> 4. If country changed, mark current imported holiday events as superseded and queue resync

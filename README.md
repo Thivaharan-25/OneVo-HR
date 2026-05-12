@@ -16,7 +16,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 - **Pillar 1: HR Management** — Employee lifecycle, leave, performance, payroll, skills
 - **Pillar 2: Workforce Intelligence** — Activity monitoring, presence tracking, identity verification, exception detection, productivity analytics
 - **Pillar 3: WorkSync** — Projects, tasks, sprints, OKR, chat, documents, roadmaps, GitHub integration — built as internal modules in the same backend and database as HR
-- **IDE Extension** — Full WorkSync chat sidebar + tag-based automation for every OneVo feature the user has permission to use, embedded in VS Code / JetBrains
+- **IDE Extension** — Full WorkSync chat sidebar + tag-based automation for every OneVo feature the user has permission to use, embedded in VS Code
 - **~288 database tables** across **38 modules**
 - **.NET 9** backend (Clean Architecture + CQRS, single deployable monolith)
 - **.NET MAUI + Windows Service** desktop monitoring agent (separate solution `ONEVO.Agent.sln`, independent release cycle)
@@ -30,20 +30,27 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 
 ## Product Packaging
 
-ONEVO can be sold by pillar or by selected modules. HR Management and WorkSync can each be sold independently, and customers can later add Workforce Intelligence, IDE Extension, or individual module packs without creating a separate deployment.
+ONEVO uses two sellable packages plus always-included Foundation modules. Each tenant has explicit module entitlements, and the UI, API, navigation, scheduled jobs, desktop agent, and IDE extension must check those entitlements before showing or serving features.
 
-| Package | Core | HR Pillar | Workforce Intel | WorkSync | IDE Extension |
-|:--------|:----:|:---------:|:---------------:|:--------:|:-------------:|
-| HR Management | yes | Selected HR modules | Optional add-on | no | no |
-| WorkSync Only | yes | no | no | Selected WorkSync modules | Optional add-on |
-| Workforce Intelligence Only | yes | CoreHR identity only | Selected monitoring modules | no | no |
-| HR + Workforce Intel | yes | Selected HR modules | Selected monitoring modules | no | no |
-| HR + WorkSync | yes | Selected HR modules | Optional add-on | Selected WorkSync modules | Optional add-on |
-| Full Suite | yes | Selected HR modules | Selected monitoring modules | Selected WorkSync modules | Optional add-on |
+| # | Module | Layer | Package | Tenant Access |
+|---:|---|---|---|---|
+| 1 | Authentication and Authorization | Foundation | Always Included | None |
+| 2 | Tenant Configuration and Onboarding | Foundation | Always Included | None |
+| 3 | Roles and Permissions | Foundation | Always Included | Use only |
+| 4 | Profile Management | HR Core | Package 1 | Full |
+| 5 | Attendance and Leave Management | HR Core | Package 1 | Full |
+| 6 | E2E Monitoring | Intelligence | Package 1 | View only |
+| 7 | Productivity and Performance Analytics | Intelligence | Package 1 | View only |
+| 8 | Exception Detection | Intelligence | Package 1 | View only |
+| 9 | Overtime Management | Intelligence | Package 1 | Full |
+| 10 | Project Management | Work Management | Package 2 | Full |
+| 11 | Agentic Chat | Work Management | Package 2 | Full |
+| 12 | Third Party Integrations | Work Management | Package 2 | Full |
+| 13 | IDE Extension | Work Management | Package 2 | Full |
 
-**Core (always active):** Infrastructure + Auth + CoreHR identity + Notifications + SharedPlatform
-**Module-level sales:** Each tenant has explicit module entitlements. A package can include only Leave + Core HR, only Projects + Tasks, only Chat, or any other approved module selection. The UI, API, and navigation must check these module entitlements before showing or serving features.
-**IDE Extension:** Per-user/per-tenant entitlement. Chat + tag engine is available when WorkSync is active. Desktop monitoring agent provisioning requires a separate monitoring entitlement checked server-side.
+**Foundation:** Always active for every tenant.  
+**Package 1:** HR Core + Intelligence.  
+**Package 2:** Work Management + IDE Extension.
 
 ## Repository Structure
 

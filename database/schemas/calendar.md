@@ -48,14 +48,14 @@ Used only when `calendar_events.audience_type = individual`. For tenant, departm
 
 ## `holiday_calendar_settings`
 
-Per-tenant or per-legal-entity country holiday calendar settings. When a legal entity is created, Calendar creates a default row using the legal entity country.
+Per-tenant/company country holiday calendar settings. When company country is set, Calendar creates a default row using the company country.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `legal_entity_id` | `uuid` | FK -> legal_entities; nullable for tenant default |
-| `default_country_code` | `char(2)` | ISO 3166-1 alpha-2 from the legal entity country |
+| `registration_profile_id` | `uuid` | Optional FK -> company_registration_profiles; nullable for tenant default |
+| `default_country_code` | `char(2)` | ISO 3166-1 alpha-2 from the company country |
 | `override_country_code` | `char(2)` | Nullable; admin-selected calendar country override |
 | `effective_country_code` | `char(2)` | Derived from override_country_code or default_country_code |
 | `holiday_sync_enabled` | `boolean` | Admin can stop country holiday sync from Calendar screen |
@@ -66,9 +66,9 @@ Per-tenant or per-legal-entity country holiday calendar settings. When a legal e
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Unique:** `(tenant_id, legal_entity_id)`
+**Unique:** `(tenant_id, registration_profile_id)`
 
-**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `legal_entity_id` -> [[database/schemas/org-structure#`legal_entities`|legal_entities]], `updated_by_id` -> [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `registration_profile_id` -> [[database/schemas/org-structure#company-registration-profile|company_registration_profiles]], `updated_by_id` -> [[database/schemas/infrastructure#`users`|users]]
 
 ---
 

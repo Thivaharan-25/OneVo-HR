@@ -31,7 +31,7 @@ Assignments are employee-backed in Phase 1. The system stores both `user_id` and
 ### View My Work (`/workforce/my-work`)
 
 1. User opens Workforce -> My Work.
-2. System loads all tasks assigned to the current employee across all projects in the entity scope.
+2. System loads all tasks assigned to the current employee across all projects in the current company tenant scope.
 3. Tasks are grouped by project and filterable by status, priority, due date.
 4. User clicks a task to open its detail panel.
 

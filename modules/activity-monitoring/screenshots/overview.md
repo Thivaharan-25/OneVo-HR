@@ -32,7 +32,7 @@ Phase 1 does not support scheduled or random screenshot capture. Screenshots are
 1. Screenshots require feature toggle enabled via `IConfigurationService`.
 2. Screenshots are captured only by explicit manager/user command (`manual` / `on_demand`). Do not build scheduled or random screenshot capture in Phase 1.
 3. RESTRICTED data classification - encrypted at rest, access-logged.
-4. **Screenshot URLs are time-limited SAS tokens only** (Azure Blob Shared Access Signature, 15-minute expiry). The `/view` endpoint calls `IFileService.GetTemporaryUrlAsync(fileRecordId, expiry: TimeSpan.FromMinutes(15))` and returns the signed URL. It never redirects to or returns a permanent blob URL. This ensures RBAC revocation is effective: a revoked `workforce:view` permission stops access on the next request.
+4. **Screenshot URLs are time-limited signed URLs only** (15-minute expiry). The `/view` endpoint calls `IFileService.GetTemporaryUrlAsync(fileRecordId, expiry: TimeSpan.FromMinutes(15))` and returns the signed URL. It never redirects to or returns a permanent object URL. This ensures RBAC revocation is effective: a revoked `workforce:view` permission stops access on the next request.
 
 ## Domain Events
 

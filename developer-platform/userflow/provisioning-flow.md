@@ -1,13 +1,15 @@
-# Manual Customer Provisioning Flow
+﻿# Manual Customer Provisioning Flow
 
 ## Purpose
 
-The provisioning wizard is the **only way** a tenant is created in ONEVO. There is no public self-signup, no public tenant registration endpoint, and no customer-facing checkout flow. Every tenant — regardless of size or plan — is created by an ONEVO operator through this wizard after a sales agreement is reached.
+The provisioning wizard is the **only way** a company tenant is created in ONEVO. There is no public self-signup, no public tenant registration endpoint, and no customer-facing checkout flow. Every company is created as its own tenant by an ONEVO operator through this wizard after a sales agreement is reached.
 
 **Use this flow for all tenant creation:**
 - Enterprise deal closed by sales
-- White-glove onboarding — ONEVO team sets up the environment on behalf of the customer
-- Internal test tenants — creating isolated test accounts
+- White-glove onboarding â€” ONEVO team sets up the environment on behalf of the customer
+- Internal test tenants â€” creating isolated test accounts
+
+Separate operating companies must be provisioned as separate tenants. Do not create another company as a legal entity inside an existing tenant. If companies need to share workflows, data views, employee transfers, or reporting, create a [[modules/shared-platform/company-connections/overview|Company Connection]] after both tenants exist.
 
 **ADE rule:** Do not build or expose a public tenant creation path. `POST /api/v1/tenants` must not exist on the customer-facing API. Tenant creation is always through `POST /admin/v1/tenants` via this console.
 
@@ -23,7 +25,7 @@ The provisioning wizard is the **only way** a tenant is created in ONEVO. There 
 
 ## Draft Behaviour
 
-After Step 1 completes, the tenant exists in `tenants.status = 'provisioning'`. This tenant is **invisible to the main OneVo app** — no customer-facing endpoint returns provisioning-status tenants.
+After Step 1 completes, the tenant exists in `tenants.status = 'provisioning'`. This tenant is **invisible to the main OneVo app** â€” no customer-facing endpoint returns provisioning-status tenants.
 
 The wizard can be **closed at any point after Step 1** and resumed later:
 - The tenant appears in the Tenants list with a yellow **"In Progress"** badge
@@ -32,14 +34,14 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 ---
 
-## Step 1 — Account Setup
+## Step 1 â€” Account Setup
 
 **What you fill in:**
 - Company name
-- Slug (URL-safe identifier, must be unique — validated on blur)
+- Slug (URL-safe identifier, must be unique â€” validated on blur)
 - Country
 - Industry
-- Legal entity name
+- Registration/profile name
 - Registration number
 - Company size
 - Timezone
@@ -53,11 +55,11 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **Country defaults rule:** The UI calls `GET /admin/v1/reference/countries/{countryCode}/defaults` after country selection. Single-timezone countries can auto-fill timezone; multi-timezone countries must show a timezone dropdown. Currency defaults from country but remains editable.
 
-**Note:** If you close the browser before completing this step, nothing is saved — the tenant does not exist yet.
+**Note:** If you close the browser before completing this step, nothing is saved â€” the tenant does not exist yet.
 
 ---
 
-## Step 2 — Plan Assignment
+## Step 2 â€” Plan Assignment
 
 **What you fill in:**
 - Subscription plan (dropdown of reusable plans from `subscription_plans`; operators do not create a new plan for every tenant)
@@ -81,7 +83,7 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **Plan rule:** plans are global commercial catalog records. A tenant receives one selected plan plus tenant-specific commercial terms. Custom pricing, discounts, contract value, maintenance rate, billing dates, and manual billing state belong on the tenant subscription/commercial record, not on a new one-off plan unless product intentionally adds a reusable custom plan.
 
-**Dynamic pricing rule:** plan price is the sum of selected module bracket prices for the selected company-size range. Example: `core_hr` at `$3.50` for `51-200` employees plus `work_management` at `$4.00` for `51-200` employees shows `$7.50 per employee`. Changing company size or selected modules recalculates immediately. Operator overrides change the effective price but must preserve the calculated price for audit.
+**Dynamic pricing rule:** plan price is the sum of selected package/module bracket prices for the selected company-size range. Example: Package 1 plus Package 2 for `51-200` employees shows the calculated package total before any override. Changing company size or selected packages/modules recalculates immediately. Operator overrides change the effective price but must preserve the calculated price for audit.
 
 **AI token rule:** when AI capability is included, the operator must set a positive monthly token limit. Non-AI plans store no AI token limit.
 
@@ -91,7 +93,7 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 ---
 
-## Step 3 — Module Selection
+## Step 3 â€” Module Selection
 
 **What you fill in:**
 - Checklist loaded from the reusable `module_catalog`, each module labelled with pillar, phase, default pricing unit, and sellable status
@@ -141,7 +143,7 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 ---
 
-## Step 5 — Initial Configuration
+## Step 5 â€” Initial Configuration
 
 **What you fill in:**
 - Monitoring transparency mode (select: `transparent` | `private` | `disclosed`)
@@ -157,7 +159,7 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 ---
 
-## Step 6 — Invite Admin
+## Step 6 â€” Invite Admin
 
 **What you fill in:**
 - Customer's super-admin email address
@@ -171,13 +173,13 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 
 **Password rule:** the operator never chooses or handles the tenant owner's final password. The tenant owner sets it through the invite link.
 
-**Note:** The invited user cannot log in yet — the tenant is still in `provisioning` status. The set-password link is valid for 72 hours. If the tenant is not activated within that window, a new invite can be sent.
+**Note:** The invited user cannot log in yet â€” the tenant is still in `provisioning` status. The set-password link is valid for 72 hours. If the tenant is not activated within that window, a new invite can be sent.
 
 ---
 
-## Step 7 — Review & Confirm
+## Step 7 â€” Review & Confirm
 
-**What you see:** A summary screen showing all choices from Steps 1–6:
+**What you see:** A summary screen showing all choices from Steps 1â€“6:
 - Company details and slug
 - Plan and billing configuration
 - Active modules list
@@ -185,7 +187,7 @@ The wizard can be **closed at any point after Step 1** and resumed later:
 - Key settings values
 - Invited admin email
 
-**Review each section.** Any step can be edited by clicking **Edit** next to that section — this navigates back to that step without losing progress on others.
+**Review each section.** Any step can be edited by clicking **Edit** next to that section â€” this navigates back to that step without losing progress on others.
 
 When satisfied, click **Activate Tenant**.
 
@@ -208,7 +210,7 @@ The complete Phase 1 provisioning surface requires these admin endpoints:
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/admin/v1/subscription-plans` | Load reusable plans with calculated/override pricing, included modules, company-size range, and AI token limits for Step 2 |
-| `POST` | `/admin/v1/subscription-plans` | Create reusable plans from selected modules and company-size bracket pricing |
+| `POST` | `/admin/v1/subscription-plans` | Create reusable plans from selected packages/modules and company-size bracket pricing |
 | `PATCH` | `/admin/v1/subscription-plans/{id}` | Update reusable plan modules, company-size price band, overrides, active state, and AI token limits |
 | `GET` | `/admin/v1/payment-gateways` | Load configured Stripe/PayHere gateway options for Step 2 |
 | `GET` | `/admin/v1/modules/catalog` | Load reusable module catalog and default pricing for Step 3 |
@@ -254,6 +256,8 @@ Tenant-facing role APIs are separate and become available after activation:
 - Exact required settings by module before activation.
 - Whether company registration number and email domain validation are strict blockers or warnings by country.
 - Whether the tenant owner may complete set-password before activation. Recommended rule: password can be set, but login remains blocked until tenant activation.
+- Whether company connections are Developer Platform-only in Phase 1 or whether tenant owners can request connections from the tenant-facing app.
+- Whether retained legal entity terminology is renamed to Company Registration Profile across UI and APIs.
 
 ## Related
 

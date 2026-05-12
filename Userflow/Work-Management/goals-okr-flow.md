@@ -6,7 +6,7 @@
 
 ## Purpose
 
-Goals are the strategic layer above projects and tasks. An Objective defines a qualitative target. Key Results are measurable outcomes that determine if the Objective was achieved. Goals are scoped to the legal entity and can be aligned across teams.
+Goals are the strategic layer above projects and tasks. An Objective defines a qualitative target. Key Results are measurable outcomes that determine if the Objective was achieved. Goals are scoped to the current company tenant and can be aligned across teams.
 
 ## Key Entities
 
@@ -23,7 +23,7 @@ Goals are the strategic layer above projects and tasks. An Objective defines a q
 
 ### View Goals (`/workforce/goals`)
 1. User opens Workforce → Goals
-2. System loads all objectives in the entity scope, grouped by owner or team
+2. System loads all objectives in the current company tenant scope, grouped by owner or team
 3. Each objective shows: title, owner, progress bar, count of key results, status
 4. User clicks an objective to open its detail
 

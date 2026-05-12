@@ -15,8 +15,8 @@
 ## Flow Steps
 
 ### Step 1: Navigate to Login Page
-- **UI:** User opens `https://{tenant}.onevo.app/login` (or custom domain if configured via [[frontend/design-system/theming/tenant-branding|Tenant Branding]]). Login page displays: tenant logo, email field, password field, "Remember me" checkbox, "Forgot Password?" link, "Sign in with SSO" button (if SSO configured). If tenant not found by subdomain: generic ONEVO login page with tenant selector
-- **API:** `GET /api/v1/tenants/resolve?domain={hostname}` (resolves tenant from subdomain/custom domain)
+- **UI:** User opens `https://{tenantSlug}.onevo.com/login`. Login page displays: tenant logo, email field, password field, "Remember me" checkbox, "Forgot Password?" link, "Sign in with SSO" button (if SSO configured). If tenant not found by subdomain: generic ONEVO login page with tenant selector
+- **API:** `GET /api/v1/tenants/resolve?host={hostname}` (resolves tenant from ONEVO subdomain)
 - **Backend:** `TenantResolver.ResolveAsync()` â†’ [[modules/infrastructure/overview|Infrastructure]]
 - **Validation:** Tenant must exist and be active
 - **DB:** `tenants`, `tenant_branding` (for logo/colors)

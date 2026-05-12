@@ -542,7 +542,7 @@ Phase 2 Microsoft Teams integration additions (optional integration, not SSO):
 ## Known Issues
 
 - **Escalation boundary:** `escalation_rules` (Shared Platform) handles workflow SLA timeouts; `escalation_chains` (Exception Engine) handles alert routing for anomalies. These are distinct — do not merge.
-- **documents table shared ownership:** WorkManagement.Collaboration owns the Phase 1 definition. HR Documents Phase 2 adds columns via migration. If `documents` columns conflict between HR and Work Management concerns, HR Documents wins for `employee_id`/`legal_entity_id` scope; Work Management wins for `workspace_id`/`project_id` scope.
+- **documents table shared ownership:** WorkManagement.Collaboration owns the Phase 1 definition. HR Documents Phase 2 adds columns via migration. If `documents` columns conflict between HR and Work Management concerns, HR Documents wins for `employee_id` and company registration/compliance scope; Work Management wins for `workspace_id`/`project_id` scope.
 - **HR/Work Management identity bridge:** Work Management membership, assignment, watcher, approval, and contributor tables persist both `user_id` and `employee_id` where HR state matters. Phase 1 must not assign work to users without active employee records.
 - **Work Management schema coverage:** Core Work Management schema files now exist for project management, task management, planning, chat, collaboration, analytics, integrations, and IDE extension. OKR, time management, and resource management are covered in the unified entity map and module docs; create dedicated schema files if the implementation team wants one file per Work Management subdomain.
 

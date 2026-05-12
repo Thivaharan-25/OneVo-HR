@@ -46,7 +46,7 @@ Chat is real-time team communication within ONEVO. It is a first-class pillar â€
 
 ### Start a Direct Message
 1. User clicks "+ New DM"
-2. User searches for one or more employees within the entity scope
+2. User searches for one or more employees within the current company tenant scope
 3. System creates `DIRECT_MESSAGE_CHANNEL` and `DM_PARTICIPANT` records
 4. Conversation opens immediately
 

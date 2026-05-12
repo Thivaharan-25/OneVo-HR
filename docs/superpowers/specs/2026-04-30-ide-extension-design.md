@@ -580,7 +580,6 @@ src/
 5. **Agent install is never silent.** Always requires explicit user action. Entitlement is validated server-side on every install request.
 6. **Undo window is server-enforced.** Backend rejects undo after `undo_expires_at`. Client countdown is UI convenience only.
 7. **Every tag execution is audit-logged.** `ide_tag_executions` row created for every attempt, allowed or denied.
-8. **JetBrains plugin is Phase 2.** All backend APIs are editor-agnostic. Phase 1 ships VS Code only.
 9. **Extension reads code context, not code content.** Branch name, file path, git remote — not keystrokes, file content, or terminal commands.
 
 ---

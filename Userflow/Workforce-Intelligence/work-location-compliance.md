@@ -35,7 +35,7 @@ No work-location evidence is collected before clock-in, after clock-out, during 
 
 | Configuration | Owner | Notes |
 |:--------------|:------|:------|
-| Legal entity workplace | Admin / HR admin | Office, branch, or company-approved worksite |
+| Company workplace | Admin / HR admin | Office, branch, or company-approved worksite in the current tenant |
 | Employee work mode | Admin / HR admin | `office`, `remote`, `hybrid`, `field`, `no_enforcement` |
 | Approved remote workplace | Employee initiates, manager approves changes | Captured from the employee's first approved remote clock-in |
 | Grace period and severity | Admin / HR admin | Can inherit from tenant defaults or be overridden by workplace/rule |
@@ -43,7 +43,7 @@ No work-location evidence is collected before clock-in, after clock-out, during 
 
 ---
 
-## Legal Entity Workplace Setup
+## Company Workplace Setup
 
 Admins configure company workplaces from **Settings -> Monitoring -> Work Locations**.
 
@@ -51,7 +51,7 @@ Required fields:
 
 | Field | Required | Notes |
 |:------|:---------|:------|
-| Legal Entity | Yes | Example: `OneVo Sri Lanka` |
+| Company | Yes | Current tenant/company; example: `OneVo Sri Lanka` |
 | Work Location Name | Yes | Example: `Colombo Office` |
 | Work Location Type | Yes | `office`, `branch`, `remote_allowed`, `field` |
 | Verification Method | Yes | At least one of Wi-Fi BSSID/router MAC, public IP range, or approved VPN range |
@@ -80,7 +80,7 @@ The admin reviews the captured values and saves the workplace.
 
 | Work Mode | Expected Location Behavior |
 |:----------|:---------------------------|
-| `office` | Must match assigned legal entity workplace network |
+| `office` | Must match assigned company workplace network |
 | `remote` | Must match the employee's approved remote workplace profile |
 | `hybrid` | May match either assigned office workplace or approved remote workplace |
 | `field` | No strict network enforcement; manager review may be used instead |
@@ -191,7 +191,7 @@ Additional recipients are included only when all are true:
 recipient is configured on the work-location alert rule
 AND recipient is directly above the employee in the org hierarchy
 AND recipient has exceptions:view or verification:review permission
-AND recipient is in scope for the employee's legal entity, department, or team
+AND recipient is in scope for the employee's company tenant, department, or team
 ```
 
 If the alert is not acknowledged within the configured delay, the normal Exception Engine escalation chain applies.

@@ -204,7 +204,7 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 | Partitioning | pg_partman | Latest | Time-series partitioning for activity data, audit_logs, biometric_events |
 | Search (Phase 1) | PostgreSQL Full-Text Search | Built-in | Initial search implementation |
 | Search (Phase 2) | Meilisearch | Latest | Upgraded search at scale |
-| File Storage | Blob Storage (Railway/S3) | - | Documents, avatars, screenshots, verification photos |
+| File Storage | Cloudflare R2 object storage | - | Documents, logos, avatars, screenshots, verification photos, payslips, report exports |
 
 ---
 
@@ -212,9 +212,10 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 
 | Category | Technology | Notes |
 |:---------|:-----------|:------|
-| Backend Hosting | Railway | .NET 9 deployment |
-| Frontend Hosting | Static hosting / CDN | Vite build output |
-| CDN/Edge | Cloudflare | WAF, DDoS, geo-routing, rate limiting |
+| Backend Hosting | Azure | .NET 9 deployment through the selected Azure hosting service |
+| Frontend Hosting | Azure | Vite build output served through the selected Azure hosting/static delivery path |
+| DNS / Edge | Cloudflare DNS + optional Cloudflare proxy | `onevo.com`, wildcard `*.onevo.com`, DDoS/WAF/CDN if proxy mode is enabled |
+| Tenant URLs | Cloudflare wildcard DNS -> Azure | Default tenant URL pattern: `{tenantSlug}.onevo.com` |
 | Containerization | Docker | Development + deployment — all services in docker-compose.yml |
 | Message Broker | None in Phase 1 | No RabbitMQ/MassTransit; optional in-process domain events only for justified post-save side effects |
 | CI/CD | GitHub Actions | Build, test, deploy pipeline |
@@ -234,8 +235,6 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 | Biometric Terminals | Attendance capture | HMAC-SHA256 webhooks | Phase 1 |
 | Google Calendar | Leave event sync | OAuth 2.0 | Phase 2 |
 | Slack | Notifications | App integration | Phase 2 |
-| Microsoft Teams Graph API | Rich meeting analytics | OAuth 2.0 | Phase 2 |
-| Microsoft Teams Graph API | WorkSync workspace/group + two-way chat sync | OAuth 2.0 + Graph webhooks/delta | Phase 2 |
 | ADP / Oracle | Payroll sync | OAuth + REST | Phase 4 |
 | LMS Providers | Learning content | SSO + API | Phase 3 |
 
@@ -264,12 +263,10 @@ See [[backend/external-integrations|External Integrations]] for full integration
 
 | Technology | Reason |
 |:-----------|:-------|
-| Python AI Service | AI chatbot (Nexis) deferred |
 | ChromaDB | AI semantic cache deferred |
 | Groq | LLM routing deferred |
 | Flutter | Mobile app deferred |
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
-| Teams Graph API (deep) | Basic meeting detection via process name sufficient for Phase 1 |
 | Teams chat/group sync | Requires tenant Graph consent, user account linking, webhook/delta sync, and communication-data compliance review. Phase 2. |
 | macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` — a parallel implementation. Phase 2. |
 | Browser Extension | Optional browser domain tracking via Chrome/Edge/Firefox extension. Phase 2. |

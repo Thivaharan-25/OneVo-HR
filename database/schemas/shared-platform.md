@@ -427,7 +427,7 @@ The schema supports the commercial model requested by product:
 - `tenant_subscriptions.maintenance_status`, `maintenance_start_date`, `maintenance_renewal_date`, `maintenance_rate`, and `maintenance_amount` track maintenance state and recurring fee calculation for full-license tenants.
 - `tenant_module_entitlements.sales_state` records manual sales state per module: `available`, `purchased`, `trial`, `quoted`, `maintenance_included`, `subscription_included`, or `disabled`.
 - Module pricing defaults live on `module_catalog.price_brackets`; reusable plan calculated/override prices live on `subscription_plans`; tenant-specific negotiated snapshots live on `tenant_subscriptions` and `tenant_module_entitlements`.
-- Subscription plan pricing is calculated from selected modules plus company-size range. Use the same company-size range values as tenant creation, and store operator overrides separately from calculated prices.
+- Subscription plan pricing is calculated from selected packages/modules plus company-size range. Use the same company-size range values as tenant creation, and store operator overrides separately from calculated prices.
 - AI-capable plans and tenant subscriptions must store a positive `ai_token_limit_per_month`; non-AI plans leave it null.
 
 Pricing and module entitlement decide what the tenant has access to. RBAC permissions decide which users inside that tenant can use the entitled capabilities.
@@ -717,7 +717,6 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `custom_domain` | `varchar(255)` | Nullable |
 | `logo_file_id` | `uuid` | FK → file_records (nullable) |
 | `primary_color` | `varchar(7)` | Hex color |
 | `accent_color` | `varchar(7)` | Hex color |

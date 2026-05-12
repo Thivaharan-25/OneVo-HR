@@ -17,7 +17,7 @@ GET /api/v1/activity/apps/{employeeId}?date=2026-04-05
       -> 1. Validate employeeId exists via IEmployeeService
       -> 2. Check caller has access (own data or manager/admin)
       -> 3. Query application_usage WHERE employee_id = @id AND date = @date
-         -> JOIN application_categories ON application_name LIKE application_name_pattern
+         -> JOIN application_categories by process_name when available; display application_name only in response
       -> 4. Group by application_category, order by total_seconds DESC
       -> 5. Map to List<ApplicationUsageDto>
       -> Return Result.Success(usageDtos)
@@ -50,6 +50,7 @@ POST /api/v1/activity/categories
 
 ### Edge Cases
 
+- **Process name is authoritative** for app identity and allowlist/category matching. `application_name` is display metadata only.
 - **Window titles are never exposed** — only `application_name` and `window_title_hash` are stored.
 - **Category changes don't retroactively update** — existing `is_productive` flags on `application_usage` rows stay as-is. New data uses updated categories.
 

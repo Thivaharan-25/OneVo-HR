@@ -42,11 +42,11 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 - **Raw Buffer Purge:** `activity_raw_buffer` is partitioned by day and auto-purged after 48 hours by a Hangfire daily job. **Never query this table for reporting** â€” use `activity_daily_summary` instead. See [[modules/activity-monitoring/overview|Activity Monitoring]].
 
-- **Agent Authentication vs User Authentication:** Desktop agents use a separate device-level JWT (issued at registration). This is NOT the same as user JWT. Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. Employee context is established at login via the MAUI tray app â†’ the Service calls `POST /api/v1/agent/session/login` which creates a server-side `agent_sessions` record (`device_id â†’ employee_id`). The ingest endpoint validates `payload.employee_id` against this record for every batch â€” mismatch or missing session returns `403`. See [[modules/agent-gateway/data-collection|Data Collection â€” Employee-Device Binding]] and [[database/schemas/agent-gateway|Agent Gateway Schema]].
+- **Agent Authentication vs User Authentication:** Desktop agents use a separate device-level JWT (issued at registration). This is NOT the same as user JWT. Agent JWT contains `device_id` + `tenant_id` but NO user permissions. The `type: "agent"` claim distinguishes them. Employee context is established at login via the MAUI tray app â†’ the Service calls `POST /api/v1/agent/login` which creates a server-side `agent_sessions` record (`device_id â†’ employee_id`). The ingest endpoint resolves `tenant_id` from the Device JWT and validates `payload.employee_id` against this record for every batch â€” mismatch or missing session returns `403`. See [[modules/agent-gateway/data-collection|Data Collection â€” Employee-Device Binding]] and [[database/schemas/agent-gateway|Agent Gateway Schema]].
 
 - **Monitoring Feature Toggles:** Always check `monitoring_feature_toggles` (tenant-level) and `employee_monitoring_overrides` (employee-level) before processing any monitoring data. The desktop agent checks its policy on login, but the **server must double-validate**. See [[modules/configuration/overview|Configuration]].
 
-- **Screenshot Storage:** Screenshots are stored in blob storage (same as other files via `file_records`). Screenshot metadata in `screenshots` table has `file_record_id` FK. **Never store screenshots in the database.** Screenshots are classified as RESTRICTED data. See [[security/data-classification|Data Classification]].
+- **Screenshot Storage:** Screenshots are stored in Cloudflare R2 object storage (same as other files via `file_records`). Screenshot metadata in `screenshots` table has `file_record_id` FK. **Never store screenshots in the database.** Screenshots are classified as RESTRICTED data. See [[security/data-classification|Data Classification]].
 
 - **Identity Verification Photos:** Verification photos are temporary â€” retained for configurable period (default 30 days) then auto-deleted by retention job. They are NOT the same as employee profile photos. See [[modules/identity-verification/overview|Identity Verification]].
 
@@ -137,7 +137,6 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 - **Phase 1: Process name matching only** â€” detect Teams.exe, zoom.exe, meet (Chrome tab â€” unreliable). This is basic and has false positives (Teams running in background â‰  in meeting).
 - **Camera/mic detection** â€” check if camera/microphone devices are in use via Windows Multimedia API. Presence of camera activity during meeting app = likely in meeting.
-- **Phase 2:** Microsoft Teams Graph API will provide accurate meeting data. See [[backend/external-integrations|External Integrations]].
 
 ### Desktop Agent â€” Installation
 

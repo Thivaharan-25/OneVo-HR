@@ -18,6 +18,10 @@ High-throughput ingestion endpoint for desktop agent data. Returns **202 Accepte
 
 ## Ingestion Payload Schema
 
+Tenant ownership is never accepted from the payload. `tenant_id`, `agent_id`, and the trusted `device_id`
+come from the Device JWT (`type = agent`). The optional payload `device_id` and `employee_id` are
+validation hints only: they must match the JWT device claim and the active `agent_sessions` row.
+
 ```json
 {
   "device_id": "uuid",
@@ -26,11 +30,25 @@ High-throughput ingestion endpoint for desktop agent data. Returns **202 Accepte
   "batch": [
     {
       "type": "activity_snapshot",
-      "data": { "keyboard_events_count": 342, "mouse_events_count": 128, "active_seconds": 140, "idle_seconds": 10, "foreground_app": "Visual Studio Code" }
+      "data": {
+        "keyboard_events_count": 342,
+        "mouse_events_count": 128,
+        "active_seconds": 140,
+        "idle_seconds": 10,
+        "foreground_process_name": "code.exe"
+      }
     },
     {
       "type": "app_usage",
-      "data": { "application_name": "Google Chrome", "window_title_hash": "sha256...", "duration_seconds": 45 }
+      "data": {
+        "process_name": "chrome.exe",
+        "application_name": "Google Chrome",
+        "publisher": "Google LLC",
+        "executable_path_hash": "sha256...",
+        "window_title_hash": "sha256...",
+        "duration_seconds": 45,
+        "captured_at": "2026-04-05T10:29:45Z"
+      }
     },
     {
       "type": "device_session",
@@ -45,6 +63,28 @@ High-throughput ingestion endpoint for desktop agent data. Returns **202 Accepte
 | Method | Route | Auth | Description |
 |:-------|:------|:-----|:------------|
 | POST | `/api/v1/agent/ingest` | Device JWT | Submit activity data batch (202 Accepted) |
+
+## Identity Rules
+
+| Identity field | Source of truth | Rule |
+|:---------------|:----------------|:-----|
+| `tenant_id` | Device JWT claim | Never accepted from the JSON payload. Any client-sent `tenant_id` is ignored or rejected. |
+| `agent_id` | Device JWT claim | Used to find `registered_agents` and write agent-scoped data. |
+| `device_id` | Device JWT claim | Payload `device_id`, when present, must match this claim. |
+| `employee_id` | Active `agent_sessions` row | Payload `employee_id`, when present, must match the active session for this device. |
+
+## App Identity Rules
+
+`process_name` is the authoritative application matching key. `application_name` is display metadata only
+and must not be used for allowlist/blocklist decisions unless a legacy fallback is explicitly needed.
+
+Examples:
+
+| Process name | Display name |
+|:-------------|:-------------|
+| `chrome.exe` | Google Chrome |
+| `code.exe` | Visual Studio Code |
+| `teams.exe` | Microsoft Teams |
 
 ## Related
 

@@ -179,6 +179,10 @@ If `has_pending_commands` is true and SignalR is disconnected, the agent immedia
 
 **When:** Every 2-3 minutes, configurable via `snapshot_interval_seconds`, and only while monitoring is allowed.
 
+Tenant identity is resolved from the Device JWT (`type = agent`). The backend must ignore or reject any
+client-sent `tenant_id`. The payload `device_id` and `employee_id` are validation hints only and must
+match the JWT device claim plus the active `agent_sessions` row.
+
 ```
 POST /api/v1/agent/ingest
 Authorization: Bearer {device_token}
@@ -196,7 +200,7 @@ Content-Type: application/json
         "mouse_events_count": 128,
         "active_seconds": 140,
         "idle_seconds": 10,
-        "foreground_app": "Visual Studio Code"
+        "foreground_process_name": "code.exe"
       }
     },
     {
@@ -217,8 +221,11 @@ Response 202 Accepted
 Important rules:
 
 - Server returns `202 Accepted` immediately; processing is async.
+- Server resolves `tenant_id`, `agent_id`, and trusted `device_id` from the Device JWT.
+- Client-sent `tenant_id` is never trusted.
 - Server verifies the employee has active `monitoring` consent in `gdpr_consent_records`.
 - Server verifies `employee_id` matches the active `agent_sessions` row for the `device_id`.
+- Application allowlist/blocklist matching uses `process_name`; `application_name` is display metadata only.
 - If consent is missing or false, the request returns `403 Forbidden`; the agent stops collection and shows consent-required / policy-blocked state in the TrayApp.
 
 ### 7. Employee Logout
@@ -317,8 +324,8 @@ The ingest endpoint validates every batch before queueing it. Violations return 
 | `idle_seconds` | Integer, 0-`snapshot_interval_seconds` | Cannot exceed collection window |
 | `active_seconds + idle_seconds` | <= `snapshot_interval_seconds` + 5 | Sum cannot exceed interval plus tolerance |
 | `duration_seconds` | Integer, 0-`snapshot_interval_seconds` | Cannot exceed collection window |
-| `application_name` | Max 200 characters, non-empty | Prevents oversized strings |
-| `process_name` | Max 100 characters, non-empty | Used for allowlist matching |
+| `process_name` | Max 100 characters, non-empty | Authoritative app identity used for allowlist matching |
+| `application_name` | Max 200 characters, optional | Display metadata only; never authoritative for allowlist matching |
 | `window_title_hash` | Exactly 64 hex characters | Validates SHA-256 hash |
 | `employee_id` | Must match active `agent_sessions` record for this `device_id` | Enforces employee-device binding |
 

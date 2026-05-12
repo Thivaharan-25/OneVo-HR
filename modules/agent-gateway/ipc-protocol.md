@@ -80,7 +80,7 @@ Sent when employee enters credentials in the login window.
 
 **What the Service does after receiving this:**
 1. Authenticates the employee against ONEVO (`POST /api/v1/auth/login`)
-2. Calls `POST /api/v1/agent/session/login` with the Device JWT to create a server-side `agent_sessions` record (`device_id → employee_id`)
+2. Calls `POST /api/v1/agent/login` with the Device JWT to create a server-side `agent_sessions` record (`device_id → employee_id`)
 3. Stores the employee context locally (for ingest payload construction)
 4. Sends `status_update` back to TrayApp with the result (success or error message)
 

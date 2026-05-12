@@ -16,7 +16,7 @@ Stripe and PayHere are the primary Phase 1 payment gateways. The selected provid
 ### `subscription_plans`
 NOT tenant-scoped. Fields: `name`, `code` (`starter`, `professional`, `enterprise`), `feature_limits` (jsonb), `included_modules` (jsonb), `company_size_range`, `calculated_monthly_price`, `calculated_annual_price`, optional `override_monthly_price`, optional `override_annual_price`, `ai_token_limit_per_month`, and `currency`.
 
-Reusable plan prices are calculated from selected module price brackets and the selected company-size range. Overrides are stored separately from calculated prices.
+Reusable plan prices are calculated from selected package/module price brackets and the selected company-size range. Overrides are stored separately from calculated prices.
 
 ### `module_catalog`
 NOT tenant-scoped. Fields include `module_key`, `name`, `pillar`, `phase`, `pricing_unit`, `price_brackets` (jsonb), `full_license_price`, `maintenance_rate`, and `is_active`.

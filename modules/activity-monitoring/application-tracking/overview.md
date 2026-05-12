@@ -19,13 +19,17 @@ Tracks time spent per application per day per employee. Applications are categor
 | `tenant_id` | `uuid` | FK → tenants |
 | `employee_id` | `uuid` | FK → employees |
 | `date` | `date` | |
-| `application_name` | `varchar(255)` | e.g., "Google Chrome" |
+| `process_name` | `varchar(100)` | e.g., `chrome.exe` — authoritative matching key |
+| `application_name` | `varchar(255)` | e.g., "Google Chrome" — display metadata only |
 | `application_category` | `varchar(100)` | FK-like to `application_categories` |
 | `window_title_hash` | `varchar(64)` | SHA-256 hash (privacy — never store raw title) |
 | `total_seconds` | `int` | Time spent |
 | `is_productive` | `boolean` | Nullable — from `application_categories` |
 
 ## Key Business Rules
+
+1. **Process name is authoritative** for app identity, allowlist/blocklist matching, and catalog joins.
+2. **Application name is display metadata only** and must not be used as the primary matching key.
 
 1. **Window titles are hashed** (SHA-256) before storage — never store raw window titles.
 2. **Never log application names or window titles** in application logs — log counts only.

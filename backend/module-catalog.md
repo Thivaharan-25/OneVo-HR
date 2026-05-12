@@ -32,28 +32,35 @@ Work Management is **Pillar 3** - it is internal to ONEVO. All three pillars sha
 
 ## Product Configuration Matrix
 
-IDE Extension is bundled inside the WorkSync Pack — it is not sold separately. Desktop Agent is bundled inside the Workforce Intelligence Pack. Chat AI is the only standalone add-on in Phase 1.
+ONEVO uses two sellable packages plus always-included Foundation modules. Tenant access controls whether tenant admins can configure/manage the module (`Full`), only consume/use tenant-provided setup (`Use only`), only view module outputs (`View only`), or have no tenant-facing access (`None`).
 
-| Tier | Core | HR Pack | Workforce Intelligence Pack (incl. Desktop Agent) | WorkSync Pack (incl. IDE Extension) | Chat AI Add-on |
-|------|:----:|:-------:|:-------------------------------------------------:|:------------------------------------:|:--------------:|
-| HR Management | ✓ | ✓ | ✗ | ✗ | ✗ |
-| WorkSync Only | ✓ | ✗ | ✗ | ✓ | optional |
-| HR + Workforce Intel | ✓ | ✓ | ✓ | ✗ | ✗ |
-| HR + WorkSync | ✓ | ✓ | ✗ | ✓ | optional |
-| Full Suite | ✓ | ✓ | ✓ | ✓ | optional |
+| # | Module | Layer | Package | Tenant Access |
+|---:|---|---|---|---|
+| 1 | Authentication and Authorization | Foundation | Always Included | None |
+| 2 | Tenant Configuration and Onboarding | Foundation | Always Included | None |
+| 3 | Roles and Permissions | Foundation | Always Included | Use only |
+| 4 | Profile Management | HR Core | Package 1 | Full |
+| 5 | Attendance and Leave Management | HR Core | Package 1 | Full |
+| 6 | E2E Monitoring | Intelligence | Package 1 | View only |
+| 7 | Productivity and Performance Analytics | Intelligence | Package 1 | View only |
+| 8 | Exception Detection | Intelligence | Package 1 | View only |
+| 9 | Overtime Management | Intelligence | Package 1 | Full |
+| 10 | Project Management | Work Management | Package 2 | Full |
+| 11 | Agentic Chat | Work Management | Package 2 | Full |
+| 12 | Third Party Integrations | Work Management | Package 2 | Full |
+| 13 | IDE Extension | Work Management | Package 2 | Full |
 
 ---
 
 ## Billing Packs
 
-Tenants are provisioned by an ONEVO operator with a specific pack set. Once active, tenant admins can self-add packs and the Chat AI add-on through the billing section of the app. See [[Userflow/Platform-Setup/billing-subscription|Billing & Subscription]].
+Tenants are provisioned by an ONEVO operator with Foundation plus one or both sellable packages. See [[Userflow/Platform-Setup/billing-subscription|Billing & Subscription]].
 
 | Pack | Modules Included | Pricing Unit |
 |------|-----------------|--------------|
-| **HR Pack** | Org Structure, Core HR, Leave, Calendar, Skills Core | Per active employee / month |
-| **Workforce Intelligence Pack** | Workforce Presence, Activity Monitoring, Discrepancy Engine, Identity Verification, Exception Engine, Productivity Analytics + Desktop Agent | Per monitored device / month |
-| **WorkSync Pack** | Projects, Tasks, Planning, OKR, Time, Resources, Chat, Collaboration, Analytics, Integrations + IDE Extension | Per active employee / month |
-| **Chat AI Add-on** | AI-assisted chat actions, premium AI detections (W9) | Per active employee / month |
+| **Foundation** | Authentication and Authorization, Tenant Configuration and Onboarding, Roles and Permissions | Always included |
+| **Package 1** | Profile Management, Attendance and Leave Management, E2E Monitoring, Productivity and Performance Analytics, Exception Detection, Overtime Management | Commercial pricing by active employee and/or monitored employee/device, finalized in billing configuration |
+| **Package 2** | Project Management, Agentic Chat, Third Party Integrations, IDE Extension | Commercial pricing by active Work Management user, finalized in billing configuration |
 
 Phase 2 modules (Payroll, Performance, HR Documents, Governance, Skill & Talent Development, etc.) are introduced as standalone add-ons when released. The operator adds them to the module catalog in the Developer Console; they then appear as purchasable add-ons for all tenants.
 
@@ -61,7 +68,7 @@ Phase 2 modules (Payroll, Performance, HR Documents, Governance, Skill & Talent 
 
 Module catalog pricing is bracketed by company size and must be read from `module_catalog.price_brackets`, not hardcoded. The company-size values are the same values used by the tenant creation dropdown. Plan creation sums the selected modules' matching bracket prices, then stores both the calculated price and any operator override.
 
-Example: for the `51-200` employee range, Core HR at `$3.50` plus Work Management at `$4.00` displays `$7.50 per employee`. AI-enabled plans must also carry a positive monthly token limit; non-AI plans leave the token limit unset.
+Example: for the `51-200` employee range, Package 1 plus Package 2 displays the summed calculated price for the tenant before any operator-negotiated override.
 
 ---
 
@@ -108,7 +115,7 @@ Example: for the `51-200` employee range, Core HR at `$3.50` plus Work Managemen
 | W6 | Time | `Features/Time` | ~4 | Phase 1 |
 | W7 | Resources | `Features/Resources` | ~3 | Phase 1 |
 | W8 | Chat & Messaging | `Features/Chat` | 8 | Phase 1/2 |
-| W9 | Chat AI | `Features/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 — **standalone add-on, not bundled in WorkSync Pack** |
+| W9 | Agentic Chat AI | `Features/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 — included in Package 2 Agentic Chat |
 | W10 | Collaboration | `Features/Collaboration` | 4 new + extends documents | Phase 1 |
 | W11 | Analytics & Insights | `Features/WorkSyncAnalytics` | 7 | Phase 1 |
 | W12 | Integrations | `Features/WorkSyncIntegrations` | 7 | Phase 1 |

@@ -56,7 +56,7 @@
   3. If department/job family provided: create employee profile stub
   4. If job family level provided: auto-assign the role linked to that job family level (overrides manually selected role)
   5. Assign selected role to user via `user_roles`
-  6. Send invitation email with link: `https://{tenant}.onevo.app/accept-invite?token={token}`
+  6. Send invitation email with link: `https://{tenantSlug}.onevo.com/accept-invite?token={token}`
   7. Invitation token expires in 72 hours
 - **Validation:** Email must be unique within tenant. Role must exist. If job family level specified, it must be valid
 - **DB:** `users` (status: `invited`), `user_roles`, `invitation_tokens`, `employees` (if department provided)

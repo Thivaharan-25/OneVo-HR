@@ -328,6 +328,10 @@ Pending and completed commands sent from server to agent.
 
 ### Ingestion Payload Schema
 
+Tenant ownership is resolved from the Device JWT (`type = agent`). Agents do not submit trusted
+`tenant_id` in the payload. The backend resolves the current employee through the active
+`agent_sessions` row for the token's `device_id`.
+
 ```json
 {
   "device_id": "uuid",
@@ -341,13 +345,16 @@ Pending and completed commands sent from server to agent.
         "mouse_events_count": 128,
         "active_seconds": 140,
         "idle_seconds": 10,
-        "foreground_app": "Visual Studio Code"
+        "foreground_process_name": "code.exe"
       }
     },
     {
       "type": "app_usage",
       "data": {
+        "process_name": "chrome.exe",
         "application_name": "Google Chrome",
+        "publisher": "Google LLC",
+        "executable_path_hash": "sha256...",
         "window_title_hash": "sha256...",
         "duration_seconds": 45,
         "app_category_type": "browser"
@@ -356,6 +363,7 @@ Pending and completed commands sent from server to agent.
     {
       "type": "document_usage",
       "data": {
+        "process_name": "excel.exe",
         "application_name": "Microsoft Excel",
         "document_category": "spreadsheet",
         "duration_seconds": 1800
@@ -364,6 +372,7 @@ Pending and completed commands sent from server to agent.
     {
       "type": "communication_usage",
       "data": {
+        "process_name": "outlook.exe",
         "application_name": "Microsoft Outlook",
         "active_seconds": 3600,
         "send_event_count": 12
@@ -381,6 +390,9 @@ Pending and completed commands sent from server to agent.
 }
 ```
 
+`process_name` is the authoritative application identity for allowlist/blocklist matching. Display
+fields such as `application_name` are for reports and UI labels only.
+
 ---
 
 ## Hangfire Jobs
@@ -397,6 +409,8 @@ Pending and completed commands sent from server to agent.
 ## Important Notes
 
 - **This is the ONLY ingestion endpoint for agent data.** All agent data flows through `/api/v1/agent/ingest`.
+- **Tenant isolation comes from Device JWT.** The backend ignores or rejects any client-sent `tenant_id`.
+- **App allowlist matching uses `process_name`.** `application_name` is not authoritative.
 - **Rate limiting:** Per device, not per user. Default: 30 requests/minute/device.
 - **Data routing:** The ingestion handler routes different `type` values to different modules: `activity_snapshot` â†’ `activity_raw_buffer`, `device_session` â†’ `device_sessions`, `verification_photo` â†’ [[modules/identity-verification/overview|Identity Verification]].
 - **Agent does NOT have HR permissions.** It cannot read employee profiles, leave data, or any HR information.

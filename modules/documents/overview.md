@@ -12,7 +12,7 @@
 
 Document management with versioning, categorization (hierarchical), approval workflow, wiki pages, and expiry tracking. Shared between HR (employee/company documents) and WorkSync (project/workspace documents). Stores metadata in PostgreSQL, files in blob storage via `IFileService`.
 
-The `documents` table is a **shared table** — HR scope uses `employee_id`/`legal_entity_id`; WorkSync scope uses `workspace_id`/`project_id`. Both scopes coexist in the same table, differentiated by `document_scope`.
+The `documents` table is a **shared table** — HR scope uses `employee_id` and company/profile document scope; WorkSync scope uses `workspace_id`/`project_id`. Both scopes coexist in the same table, differentiated by `document_scope`.
 
 ---
 
@@ -73,7 +73,7 @@ Document metadata. Actual files are stored in blob storage via `IFileService`. S
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `legal_entity_id` | `uuid` | FK → legal_entities (nullable — HR scope) |
+| `registration_profile_id` | `uuid` | Optional FK → company_registration_profiles (nullable — company HR scope) |
 | `employee_id` | `uuid` | FK → employees (nullable — HR employee-level docs) |
 | `workspace_id` | `uuid` | FK → workspaces (nullable — WorkSync scope) |
 | `project_id` | `uuid` | FK → projects (nullable — WorkSync project-level docs) |

@@ -207,13 +207,12 @@ Per-tenant overrides for global feature flags. Not in HTML ERD — to be added.
 
 #### `tenant_branding`
 
-Custom branding per tenant (logo, colors, domain).
+Custom branding per tenant. The default tenant URL is derived from `tenants.slug` as `{tenantSlug}.onevo.com` using Cloudflare wildcard DNS to Azure hosting.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `custom_domain` | `varchar(255)` | Nullable |
 | `logo_file_id` | `uuid` | FK → file_records (nullable) |
 | `primary_color` | `varchar(7)` | Hex color |
 | `accent_color` | `varchar(7)` | Hex color |
@@ -615,7 +614,7 @@ Hangfire job metadata for visibility/management. Not in HTML ERD — to be added
 - [[modules/shared-platform/sso-authentication/overview|Sso Authentication]] — SSO provider configuration (Google, Microsoft, SAML, OIDC) with auto-provisioning
 - [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] — Stripe/PayHere-backed subscription plans, invoices, and payment methods
 - [[frontend/cross-cutting/feature-flags|Feature Flags]] — Per-tenant feature flag definitions with targeting conditions
-- [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — Custom domain, logo, and brand colors per tenant
+- [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — Default `{tenantSlug}.onevo.com` URL, logo, and brand colors per tenant
 - [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] — Automation Center engine for approvals, alerts, requests, case conversations, delivery routing, and escalation
 - [[modules/shared-platform/compliance-governance/overview|Compliance Governance]] — Legal holds, retention policies, GDPR subject access exports
 - [[modules/shared-platform/hardware-terminals/overview|Hardware Terminals]] — Physical biometric/RFID/kiosk terminal management

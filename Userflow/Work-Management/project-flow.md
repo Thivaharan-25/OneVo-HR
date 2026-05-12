@@ -6,9 +6,9 @@
 
 ## Purpose
 
-Projects are the top-level containers for all work in the WMS. Each project holds tasks, epics, milestones, sprints, and members. Projects are scoped to the current legal entity.
+Projects are the top-level containers for all work in the WMS. Each project holds tasks, epics, milestones, sprints, and members. Projects are tenant-local by default and scoped to the current company tenant.
 
-Project members are employee-backed in Phase 1. The system stores both `user_id` and `employee_id` so project access can follow HR status, offboarding, department/team reporting, and legal-entity scope.
+Project members are employee-backed in Phase 1. The system stores both `user_id` and `employee_id` so project access can follow HR status, offboarding, department/team reporting, and company tenant scope.
 
 ## Key Entities
 
@@ -26,7 +26,7 @@ Project members are employee-backed in Phase 1. The system stores both `user_id`
 ### View All Projects
 
 1. User opens Workforce -> Projects.
-2. System loads all projects in the current legal entity scope, filtered by active membership.
+2. System loads all projects in the current company tenant scope, filtered by active membership.
 3. Projects display as a list or grid: name, status badge, member count, open task count, due date.
 4. User can filter by status or search by name.
 
@@ -50,10 +50,14 @@ Project members are employee-backed in Phase 1. The system stores both `user_id`
 ### Add Project Member
 
 1. From project detail, user clicks "Add Member" (requires `projects:write`).
-2. User searches for an employee scoped to the same legal entity/workspace.
+2. User searches for an employee scoped to the same company tenant/workspace.
 3. User selects a role: owner, member, or viewer.
 4. System validates the employee is active and already belongs to the workspace.
 5. System creates a `PROJECT_MEMBER` record with both `user_id` and `employee_id`.
+
+### Cross-Company Project Participation
+
+Cross-company projects are not created by switching an in-tenant operating scope. They require an active company connection plus an explicit project/workspace data-sharing scope. Members from a connected company may be represented through a controlled projection or invite flow, while source-of-truth employee records remain inside their own tenant.
 
 ### Submit Change Request
 
