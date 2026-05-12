@@ -83,6 +83,21 @@ If many candidates:
 
 Resolvers must use tenant-owned org structure and permission assignments. They must never check fixed role names.
 
+For connected-company workflows, resolver input also includes requester tenant, source tenant, target tenant, subject tenant, connection ID, and grant scope. The resolver must verify the connection is active and the grant includes the target tenant, resource type, and action before returning connected-tenant candidates.
+
+## Cross-Company Workflow
+
+```text
+Cross-company trigger arrives, such as EmployeeCrossCompanyTransferRequested
+  -> Load requester tenant, source tenant, target tenant, subject tenant, connection ID
+  -> Verify active company connection
+  -> Verify caller permission and scoped grant
+  -> Create workflow instance with tenant provenance and data-sharing scope
+  -> Resolve source approver and target approver
+  -> Share only approved workflow evidence with target tenant
+  -> Audit every action with actor tenant and source/target tenant IDs
+```
+
 ## Delivery Router
 
 ```text

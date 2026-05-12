@@ -105,6 +105,20 @@ public async Task<IResult> GetEmployees(...)
 
 The frontend may hide UI based on permission metadata, but the backend is always authoritative.
 
+### Cross-Company Authorization
+
+Tenant permissions are local to the authenticated tenant. A tenant-local Super Admin with `*` does not automatically gain access to another company tenant.
+
+Cross-company access requires all of the following:
+
+- active company connection between the current tenant and target tenant,
+- explicit cross-company permission such as `cross-company:employees:read`,
+- grant scope covering the target tenant, resource type, action, and data category,
+- module entitlement where the source or target tenant owns the action,
+- audit entry with actor identity, requester tenant, and source/target tenant IDs.
+
+Platform-admin authorization remains separate and is valid only on `/admin/v1/*` Developer Platform endpoints. Tenant tokens must not cross into admin endpoints, and platform-admin tokens must not bypass tenant endpoint scope checks.
+
 ## Permission Revocation
 
 Backend-held auth state can contain permissions captured at issue time. ONEVO uses a permission version counter so permission changes propagate quickly.

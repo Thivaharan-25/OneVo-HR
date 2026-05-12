@@ -31,7 +31,7 @@
 
 ### Step 3: Breadcrumb Updates
 
-- **UI:** Topbar breadcrumb updates to: `[Entity Name] / Workforce / Presence` (pillar + first active panel item)
+- **UI:** Topbar breadcrumb updates to: `[Company Name] / Workforce / Presence` (pillar + first active panel item)
 
 ### Step 4: Content Area Navigates
 
@@ -49,7 +49,7 @@
 
 ### Step 2: Breadcrumb and Content Update
 
-- **UI:** Breadcrumb → `[Entity Name] / Workforce / Projects`. Content area navigates to `/workforce/projects`.
+- **UI:** Breadcrumb → `[Company Name] / Workforce / Projects`. Content area navigates to `/workforce/projects`.
 - **Rail:** Workforce item remains active (clicking a panel item does not change the active pillar).
 
 ---
@@ -66,7 +66,7 @@
 ### Step 2: Panel Closes
 
 - **UI:** If a panel was open: animates to `width: 0, opacity: 0` over `220ms`. No panel renders for no-panel pillars.
-- **Breadcrumb:** Updates to `[Entity Name] / Home` — only two levels (no third level without a panel).
+- **Breadcrumb:** Updates to `[Company Name] / Home` — only two levels (no third level without a panel).
 
 ### Step 3: Content Navigates Directly
 
@@ -89,23 +89,23 @@
 
 ---
 
-## Flow 5 — Entity Switcher in Topbar
+## Flow 5 — Company Context in Topbar
 
-**Trigger:** User clicks the entity name in the topbar (only visible if user has access to 2+ entities)
+**Trigger:** User clicks the company name in the topbar
 
 ### Step 1: Dropdown Opens
 
-- **UI:** Dropdown shows accessible entities. Current entity has a checkmark. Includes "+ Add Entity" if user has `org:manage`.
+- **UI:** Dropdown shows current company context, Company Profile, and Connected Companies when permitted. It must not present connected companies as legal entity/session switching.
 
-### Step 2: User Selects an Entity
+### Step 2: User Opens Company Profile Or Connected Companies
 
-- **Auth:** Session updates to new entity context.
-- **Data:** All scoped data re-fetches.
-- **Navigation:** App redirects to `/` (Home). Active pillar resets.
+- **Company Profile:** Navigates to the current tenant's profile/registration settings.
+- **Connected Companies:** Opens permission-scoped connected-company views or management. Auth session remains anchored to the current company tenant.
+- **Audit:** Cross-company views and actions are audit logged with requester tenant and source tenant.
 
-### Step 3: No Dropdown for Single-Entity Users
+### Step 3: Static Label For Basic Users
 
-- **UI:** Entity name renders as a static label (no chevron, no click behavior) for users with access to only one entity.
+- **UI:** Company name renders as a static label when the user has no company profile or connected-company permissions.
 
 ---
 
@@ -133,6 +133,6 @@
 
 - [[frontend/design-system/components/nav-rail|Nav Rail]] — icon rail spec (dimensions, icons, states)
 - [[frontend/design-system/components/expansion-panel|Expansion Panel]] — panel spec (dimensions, animation, items)
-- [[frontend/architecture/topbar|Topbar]] — topbar spec including breadcrumb and entity switcher
+- [[frontend/architecture/topbar|Topbar]] — topbar spec including breadcrumb and company context
 - [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] — all pillar routes and permission keys
 - [[Userflow/Dashboard/dashboard-overview|Dashboard Overview]] — what renders in the content area on load

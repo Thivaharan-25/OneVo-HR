@@ -1,6 +1,6 @@
 # Permissions Reference
 
-**Total explicitly grantable:** 107 permissions across 28 modules  
+**Total explicitly grantable:** 113 permissions across 29 modules  
 **Related flows:** [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] · [[Userflow/Auth-Access/role-creation|Role Creation]]
 
 ---
@@ -9,7 +9,7 @@
 
 | Permission | What it gives |
 |:-----------|:--------------|
-| `*` | Super Admin bypass — grants access to all endpoints regardless of permission checks; assigned only to the Super Admin role during tenant provisioning; must not appear in the role creation browser, per-employee override lists, or any assignable permission payload |
+| `*` | Tenant-local Super Admin bypass — grants access to tenant endpoints regardless of permission checks inside the current tenant only; assigned only to the Super Admin role during tenant provisioning; must not appear in the role creation browser, per-employee override lists, or any assignable permission payload; does not grant platform-admin access or cross-company access without a scoped cross-company grant |
 
 ---
 
@@ -107,7 +107,7 @@ Universal permissions must not appear in the role creation permission browser, r
 | # | Permission | Description |
 |:--|:-----------|:------------|
 | 33 | `calendar:write` | Create and manage calendar events for others |
-| 33a | `calendar:admin` | Manage country holiday sync, legal-entity calendar overrides, and calendar integrations |
+| 33a | `calendar:admin` | Manage country holiday sync, company/location calendar overrides, and calendar integrations |
 
 ### Notifications
 | # | Permission | Description |
@@ -120,7 +120,7 @@ Universal permissions must not appear in the role creation permission browser, r
 | 35 | `settings:read` | View any settings section (read-only) |
 | 36 | `settings:admin` | Manage core system settings — timezone, work hours, privacy mode, data retention |
 | 37 | `settings:billing` | Manage subscription, plan, and payment methods |
-| 38 | `settings:branding` | Manage company logo, colors, and custom domain |
+| 38 | `settings:branding` | Manage company logo and brand colors |
 | 39 | `settings:integrations` | Connect or disconnect tenant-wide app integrations via OAuth (Teams, Slack, LMS) and enter migration API keys for onboarding from existing HR systems. Google/Outlook Calendar is managed under `calendar:admin` / user-owned Calendar connections. |
 | 40 | `settings:notifications` | Manage notification templates and delivery channels |
 | 41 | `settings:alerts` | Configure alert thresholds and escalation rules |
@@ -213,6 +213,18 @@ Universal permissions must not appear in the role creation permission browser, r
 |:--|:-----------|:------------|
 | 79 | `reports:read` | View reports |
 | 80 | `reports:create` | Create and run reports |
+
+### Company Connections And Cross-Company Access
+| # | Permission | Description |
+|:--|:-----------|:------------|
+| 80a | `company-connections:read` | View connected companies and connection state visible to the current tenant |
+| 80b | `company-connections:manage` | Request, approve, revoke, or manage connection grants within tenant-facing permissions |
+| 80c | `cross-company:employees:read` | View approved employee projections from connected companies |
+| 80d | `cross-company:employees:transfer` | Start or approve cross-company employee transfer between connected tenants |
+| 80e | `cross-company:reports:view` | View approved cross-company reports and dashboards |
+| 80f | `cross-company:workflows:manage` | Create or manage automations that reference connected companies |
+
+Cross-company permissions are inert without a grant scope. Scope must include selected connected tenant IDs, resource type, action, optional allowed fields or data categories, optional expiry, and the user or role receiving the grant. A matching owner email or an active connection alone never exposes data.
 
 ### Chat
 | # | Permission | Description |
@@ -334,3 +346,4 @@ These were in the original 153 but are invalid, renamed, or redundant:
 - Explicitly grantable permissions are the only permissions shown in role creation, role editing, and employee override pickers.
 - Any permission used by a user flow, frontend route, API endpoint, or module overview must appear either in Universal Permissions or Explicitly Grantable Permissions.
 - Any legacy permission must appear in Removed from Original List with a replacement or a reason.
+- The `*` permission remains tenant-local. Cross-company access requires an active company connection, explicit cross-company permission, grant scope, and audit.

@@ -167,7 +167,7 @@ API endpoints:
 
 1. **Tenant provisioning flow:** Operator creates provisioning draft -> assign plan/modules/settings/role templates -> invite owner -> activate.
 2. **Users ≠ Employees.** `users` is the login identity. `employees` is the HR identity in [[modules/core-hr/overview|Core Hr]]. They are 1:1 linked via `user_id` on the employees table. When working with HR features, always query through `employees`.
-3. **Files are stored in blob storage** (Railway/S3). Only metadata lives in `file_records`.
+3. **Files are stored in Cloudflare R2 object storage.** Only metadata lives in `file_records`.
 4. **Countries table has no `tenant_id`** — it's global reference data.
 
 ---

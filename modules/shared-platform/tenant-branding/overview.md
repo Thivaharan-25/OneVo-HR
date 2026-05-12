@@ -7,12 +7,14 @@
 
 ## Purpose
 
-Custom branding per tenant and per-user UI preferences.
+Custom branding per tenant and per-user UI preferences. Every tenant gets a default ONEVO-owned URL in the form `https://{tenantSlug}.onevo.com`. Cloudflare DNS manages `onevo.com` and wildcard `*.onevo.com`, while Azure hosts the ONEVO application.
 
 ## Database Tables
 
 ### `tenant_branding`
-Fields: `custom_domain`, `logo_file_id`, `primary_color`, `accent_color`, `metadata`.
+Fields: `logo_file_id`, `primary_color`, `accent_color`, `metadata`.
+
+The default `{tenantSlug}.onevo.com` URL comes from `tenants.slug` plus the ONEVO parent domain and does not require a separate branding field.
 
 ### `user_preferences`
 Per-user: `preference_key` (`theme`, `locale`, `timezone`), `preference_value` (jsonb).

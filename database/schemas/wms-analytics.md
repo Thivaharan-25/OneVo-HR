@@ -75,7 +75,7 @@ Point-in-time report data for comparison or scheduled reporting.
 
 ## `report_exports` — Phase 1
 
-Async export jobs. Generates CSV/PDF/Excel files and stores in Azure Blob.
+Async export jobs. Generates CSV/PDF/Excel files and stores in Cloudflare R2 object storage.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -90,7 +90,7 @@ Async export jobs. Generates CSV/PDF/Excel files and stores in Azure Blob.
 | `created_at` | timestamptz | |
 | `completed_at` | timestamptz | nullable |
 
-**Hangfire job:** Processes export, uploads to Azure Blob, sets `file_asset_id` and `status = ready`, sends notification to `requested_by_id`.
+**Hangfire job:** Processes export, uploads to object storage, sets `file_asset_id` and `status = ready`, sends notification to `requested_by_id`.
 
 ---
 

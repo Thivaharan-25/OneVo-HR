@@ -445,7 +445,7 @@ dotnet test ONEVO.sln --filter Audit
 - [ ] Subscription plan catalog exists with plan features and tenant subscription state.
 - [ ] Stripe/PayHere-facing subscription, maintenance, and invoice records are represented behind module interfaces.
 - [ ] Feature flag service resolves tenant flags and module gates.
-- [ ] Tenant branding records exist for custom domain, logo, and colors.
+- [ ] Tenant branding records exist for logo and colors; default tenant URL comes from `tenants.slug`.
 - [ ] Notification templates and notification channel configuration exist.
 - [ ] Workflow definitions, workflow steps, workflow instances, workflow step instances, and approval actions are mapped.
 - [ ] Workflow engine can start an instance for any `resource_type` + `resource_id`.
@@ -610,7 +610,7 @@ dotnet test ONEVO.sln --filter AdminApi
 - [ ] `PATCH /admin/v1/tenants/{id}` edits draft tenant details before activation without bypassing activation guards.
 - [ ] `GET /admin/v1/tenants/{id}` returns overview, plan, billing dates, status, users summary, agent summary, flags summary, settings summary, and audit summary links.
 - [ ] `PATCH /admin/v1/tenants/{id}/status` supports suspend, unsuspend, and activate with role checks.
-- [ ] `PATCH /admin/v1/tenants/{id}/subscription` supports provisioning commercial terms and post-activation exception subscription override with selected modules, company-size range, calculated price snapshot, override prices, AI monthly token limit, required reason, and audit log.
+- [ ] `PATCH /admin/v1/tenants/{id}/subscription` supports provisioning commercial terms and post-activation exception subscription override with selected packages/modules, company-size range, calculated price snapshot, override prices, AI monthly token limit, required reason, and audit log.
 - [ ] `PUT /admin/v1/tenants/{id}/modules` sets active module grants, module sales state, and module-level pricing override metadata for provisioning and post-provisioning changes.
 - [ ] `GET /admin/v1/tenants/{id}/permissions/catalog` returns only permissions exposed by the tenant's active modules plus universal permissions.
 - [ ] `GET /admin/v1/role-templates` lists global/default role templates with module and permission coverage.

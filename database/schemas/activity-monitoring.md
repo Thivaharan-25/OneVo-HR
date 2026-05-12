@@ -67,7 +67,7 @@
 | `active_seconds` | `int` | Seconds with input activity |
 | `idle_seconds` | `int` | Seconds without input |
 | `intensity_score` | `decimal(5,2)` | 0–100 computed score |
-| `foreground_app` | `varchar(255)` | Application name (e.g., "Visual Studio Code") |
+| `foreground_process_name` | `varchar(100)` | Foreground process name (e.g., `code.exe`) |
 | `created_at` | `timestamptz` |  |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
@@ -99,6 +99,7 @@
 | `employee_id` | `uuid` | FK → employees |
 | `date` | `date` |  |
 | `application_name` | `varchar(255)` | e.g., "Google Chrome" |
+| `process_name` | `varchar(100)` | e.g., `chrome.exe` — authoritative matching key |
 | `application_category` | `varchar(100)` | FK-like to `application_categories` |
 | `window_title_hash` | `varchar(64)` | SHA-256 hash (privacy — never store raw title) |
 | `total_seconds` | `int` | Time spent |

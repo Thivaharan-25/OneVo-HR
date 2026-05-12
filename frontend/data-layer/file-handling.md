@@ -26,7 +26,7 @@ User selects file(s)
     │   Body: { fileName, contentType, category }
     │   Response: { uploadUrl, fileId, expiresAt }
     │
-    ├── Upload directly to blob storage (Azure Blob / S3)
+    ├── Upload directly to object storage (Cloudflare R2 preferred)
     │   PUT {uploadUrl}
     │   Body: file binary
     │   Headers: Content-Type, x-ms-blob-type

@@ -39,11 +39,11 @@ MAUI captures photo (PhotoCaptureWindow — unchanged)
       │    ✗ Fail → failure_reason = "poor_quality" | "liveness_check_failed"
       │       → soft fail, employee continues
       │
-      ├─ Step 2: Fetch employee profile photo bytes from Railway blob storage
+      ├─ Step 2: Fetch employee profile photo bytes from Cloudflare R2 object storage
       │    (only if Step 1 passes)
       │    • Download as byte stream via IImportFileStorage.DownloadFileAsync
       │    • Pass as Bytes to CompareFaces (not S3Object — Railway is MinIO, not AWS S3)
-      │    • No enrollment changes required — profile photo stays in Railway blob storage
+      │    • No enrollment changes required — profile photo stays in Cloudflare R2 object storage
       │
       ├─ Step 3: CompareFaces
       │    • Similarity ≥ threshold (default 80, tenant-configurable)

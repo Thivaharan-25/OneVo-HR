@@ -71,7 +71,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Platform-Setup/billing-subscription\|Billing Subscription]] | Plan selection, payment, upgrade/downgrade | Documented | MUST |
 | [[Userflow/Platform-Setup/sso-configuration\|SSO Configuration]] | SSO provider setup (Google, Azure AD) | Documented | SHOULD |
 | [[Userflow/Platform-Setup/feature-flag-management\|Feature Flag Management]] | Enable/disable modules per tenant | Documented | MUST |
-| [[Userflow/Platform-Setup/tenant-branding\|Tenant Branding]] | Logo, colors, custom domain | Documented | COULD |
+| [[Userflow/Platform-Setup/tenant-branding\|Tenant Branding]] | Logo, colors, tenant URL display | Documented | COULD |
 
 ### Auth & Access — `roles:manage`, `users:manage`
 

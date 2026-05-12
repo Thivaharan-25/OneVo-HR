@@ -70,7 +70,7 @@ Pricing is configurable, not hardcoded. Operators can configure module price bra
 
 Plan and module base costs are managed in the reusable catalogs:
 
-- `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plans from selected modules, company-size range, calculated prices, optional override prices, active state, and AI monthly token limits.
+- `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plans from selected packages/modules, company-size range, calculated prices, optional override prices, active state, and AI monthly token limits.
 - `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module metadata and `price_brackets`.
 - `PATCH /admin/v1/tenants/{id}/subscription` stores tenant-specific commercial terms, selected company-size range, selected module keys, calculated price snapshots, negotiated plan pricing, and AI monthly token limit.
 - `PUT /admin/v1/tenants/{id}/modules` stores tenant-specific module sales state and price overrides.

@@ -5,7 +5,7 @@
 ## 1. Platform Overview
 
 - **Project Name:** ONEVO
-- **Short Description:** A production-grade, multi-tenant **white-label SaaS** platform combining HR Management, Workforce Intelligence, and optional Work/Task Management into a unified ecosystem. Customers deploy it under their own brand; the platform is cloud-hosted and multi-tenant.
+- **Short Description:** A production-grade, multi-tenant, tenant-branded SaaS platform combining HR Management, Workforce Intelligence, and optional Work/Task Management into a unified ecosystem. Customers use a ONEVO-owned tenant URL such as `{tenantSlug}.onevo.com`, with their own logo, colors, and settings.
 - **Vision:** Become the go-to integrated HR + Workforce Monitoring platform for SMBs and mid-market companies.
 - **Mission:** Provide accurate, automated, and unbiased visibility of employee work behaviour alongside seamless employee lifecycle management.
 - **Key Stakeholders:** Product Owner, 8-member development team, enterprise clients
@@ -29,7 +29,7 @@ A second standalone frontend app (`dev-console` at `console.onevo.io`) exists fo
 - **Commercial model:** Each tenant is provisioned with an explicit commercial relationship:
   - **Subscription** - recurring SaaS payment for the selected plan/modules.
   - **Full license + maintenance** - customer has bought the agreed suite/license, but still pays recurring maintenance/support. New modules are not automatically included unless the contract says so.
-- **Subscription pricing rule:** Reusable subscription plans are calculated from selected module price brackets and the same company-size range values used in tenant creation. Store calculated prices separately from operator overrides, and snapshot selected modules, company-size range, effective prices, and AI monthly token limits on the tenant subscription.
+- **Subscription pricing rule:** Reusable subscription plans are calculated from selected package price brackets and the same company-size range values used in tenant creation. Store calculated prices separately from operator overrides, and snapshot selected packages/modules, company-size range, effective prices, and AI monthly token limits for Package 2 agentic chat where applicable.
 - **Future module sales rule:** New modules must be represented in the module catalog and surfaced in the Developer Console as `available`, `trial`, `quoted`, `purchased`, `maintenance_included`, or `disabled` for each tenant. Do not infer access from tenant age or plan name alone.
 - **Phase 2 (future, not yet designed):** ONEVO may introduce a self-service SaaS model. Until that is explicitly specced, assume all tenant lifecycle operations are operator-driven.
 
@@ -37,20 +37,39 @@ A second standalone frontend app (`dev-console` at `console.onevo.io`) exists fo
 
 ---
 
-ONEVO is designed around **three core pillars** sold independently, together, or as selected module packs:
+ONEVO is designed around **always-included Foundation modules** plus **two sellable packages**:
 
-| Configuration | Target Market | Modules Included |
-|:-------------|:-------------|:----------------|
-| **HR Management** | Companies needing core HR | Shared Foundation + selected HR modules |
-| **WorkSync Only** | Teams wanting project/task/chat management | Shared Foundation + selected WorkSync modules |
-| **Workforce Intelligence Only** | Companies needing monitoring/presence without full HR | Shared Foundation + CoreHR identity anchor + selected Workforce modules + Desktop Agent |
-| **HR + Workforce Intelligence** | Companies wanting employee monitoring with HR | Selected HR modules + selected Workforce modules + Desktop Agent |
-| **HR + WorkSync** | Companies wanting HR + project/task management | Selected HR modules + selected WorkSync modules + optional IDE Extension |
-| **Full Suite** | Companies wanting everything | Selected modules across all 3 pillars + Desktop Agent + optional IDE Extension |
+| # | Module | Layer | Package | Tenant Access |
+|---:|---|---|---|---|
+| 1 | Authentication and Authorization | Foundation | Always Included | None |
+| 2 | Tenant Configuration and Onboarding | Foundation | Always Included | None |
+| 3 | Roles and Permissions | Foundation | Always Included | Use only |
+| 4 | Profile Management | HR Core | Package 1 | Full |
+| 5 | Attendance and Leave Management | HR Core | Package 1 | Full |
+| 6 | E2E Monitoring | Intelligence | Package 1 | View only |
+| 7 | Productivity and Performance Analytics | Intelligence | Package 1 | View only |
+| 8 | Exception Detection | Intelligence | Package 1 | View only |
+| 9 | Overtime Management | Intelligence | Package 1 | Full |
+| 10 | Project Management | Work Management | Package 2 | Full |
+| 11 | Agentic Chat | Work Management | Package 2 | Full |
+| 12 | Third Party Integrations | Work Management | Package 2 | Full |
+| 13 | IDE Extension | Work Management | Package 2 | Full |
 
 **WorkSync (Pillar 3)** is a fully-integrated Jira/Slack-equivalent built directly inside ONEVO — same backend, same database, no external bridges.
 
 ## 3. System Architecture
+
+### Tenant Domain Model
+
+ONEVO uses Cloudflare DNS for the ONEVO-owned parent domain and Azure for hosting.
+
+- Default tenant URL: `https://{tenantSlug}.onevo.com`
+- DNS: Cloudflare manages `onevo.com` and wildcard `*.onevo.com`
+- Hosting: wildcard traffic routes to the Azure-hosted ONEVO application
+- Backend tenant resolution: request host -> subdomain slug -> tenant record
+- Blocked system slugs: `www`, `api`, `console`, `admin`, `status`, `support`, `assets`, `cdn`, `mail`, `app`
+
+Do not create or buy a new domain per tenant. Tenant access uses ONEVO-owned subdomains only.
 
 ### Three-Pillar Unified Model
 
@@ -84,7 +103,7 @@ ONEVO is designed around **three core pillars** sold independently, together, or
               ▲                                  ▲
               │                                  │
        WorkPulse Agent                    IDE Extension
-       (MSIX · Windows P1               (VS Code / JetBrains)
+       (MSIX · Windows P1               (VS Code)
         macOS Phase 2)                  Tag engine: @entity:action
 ```
 
@@ -192,11 +211,8 @@ No bridge API keys. No `wms_tenant_links`. No HTTP between pillars.
 
 ## 8. What We Are NOT Building in Phase 1
 
-- AI Chatbot (Nexis) — deferred to later phase
 - Mobile Application (Flutter) — deferred to later phase
-- Multi-region deployment — single region for Phase 1
-- Teams Graph API deep integration — basic meeting detection via process name in Phase 1
-- JetBrains IDE Extension — VS Code only in Phase 1; JetBrains in Phase 2
+- macOS WorkPulse Agent — Windows only in Phase 1
 
 ---
 
@@ -324,10 +340,10 @@ Vite + React 19 + React Router v7
 
 | Package | What is visible |
 |:--------|:----------------|
-| HR-only module pack | Only entitled HR, org, calendar, notification, and settings routes |
-| WorkSync-only module pack | Only entitled WorkSync routes such as projects, tasks, chat, docs, time, and goals |
-| Workforce Intelligence pack | Workforce presence, monitoring, agent, exception, and productivity routes enabled by entitlement |
-| Combined package | Union of entitled HR, WorkSync, and Workforce Intelligence modules |
+| Foundation only | Tenant setup, auth/session surfaces, and role/permission use surfaces required to operate the tenant |
+| Package 1 | Profile, attendance/leave, monitoring views, productivity/performance analytics views, exception views, and overtime management |
+| Package 2 | Project management, agentic chat, third-party integrations, and IDE extension |
+| Package 1 + Package 2 | Union of Package 1 and Package 2 modules |
 
 Every route, sidebar item, command menu item, API endpoint, and mobile/tablet responsive layout must check tenant module entitlements. Disabled modules are hidden in the React UI and rejected server-side with `403`.
 

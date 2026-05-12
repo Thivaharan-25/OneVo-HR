@@ -59,7 +59,7 @@ private IntPtr KeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
 
 ### 2. App Tracker (`AppTracker.cs`)
 
-**What:** Foreground application name and window title (hashed).
+**What:** Foreground process identity, display application name, and window title hash.
 
 **How:**
 ```csharp
@@ -67,7 +67,12 @@ var hwnd = GetForegroundWindow();
 var processId = 0u;
 GetWindowThreadProcessId(hwnd, out processId);
 var process = Process.GetProcessById((int)processId);
-var appName = process.ProcessName; // e.g., "chrome"
+var rawProcessName = process.ProcessName; // e.g., "chrome"
+var processName = rawProcessName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+    ? rawProcessName.ToLowerInvariant()
+    : $"{rawProcessName}.exe".ToLowerInvariant();
+var applicationName = FileVersionInfo.GetVersionInfo(process.MainModule?.FileName ?? "")
+    .ProductName ?? rawProcessName;
 
 var title = new StringBuilder(256);
 GetWindowText(hwnd, title, 256);
@@ -77,13 +82,19 @@ var titleHash = SHA256.HashData(Encoding.UTF8.GetBytes(title.ToString()));
 **Output:**
 ```json
 {
+  "process_name": "chrome.exe",
   "application_name": "Google Chrome",
+  "publisher": "Google LLC",
+  "executable_path_hash": "sha256:...",
   "window_title_hash": "a1b2c3d4...",
   "duration_seconds": 45
 }
 ```
 
 **Frequency:** Polled every 5 seconds. Aggregated per app per snapshot interval.
+
+**Identity:** `process_name` is the authoritative matching key for app allowlist/blocklist logic.
+`application_name` is display metadata only and may change between app versions.
 
 **Privacy:** Window title is SHA-256 hashed BEFORE buffering. Raw title never touches disk.
 
@@ -137,7 +148,7 @@ if (meetingProcess != null)
 }
 ```
 
-**Limitations:** Process name matching has false positives (Teams running in background). Phase 2 uses Teams Graph API.
+**Limitations:** Process name matching has false positives (Teams running in background).
 
 ### 5. Device Tracker (`DeviceTracker.cs`)
 
@@ -234,6 +245,7 @@ public enum DocumentCategory { Document, Spreadsheet, Presentation, Design, Unkn
 **Output:**
 ```json
 {
+  "process_name": "excel.exe",
   "application_name": "Microsoft Excel",
   "document_category": "spreadsheet",
   "duration_seconds": 1800
@@ -280,6 +292,7 @@ public class CommunicationTracker : ICollector
 **Output:**
 ```json
 {
+  "process_name": "outlook.exe",
   "application_name": "Microsoft Outlook",
   "active_seconds": 3600,
   "send_event_count": 12
@@ -371,7 +384,7 @@ The batch payload includes `employee_id`. The ingest endpoint validates this aga
 **Flow:**
 1. Employee opens tray app and enters credentials in the login window
 2. Tray app → Service (IPC): `{type: "employee_login", email: "...", password: "..."}`
-3. Service authenticates the employee against ONEVO and calls `POST /api/v1/agent/session/login` (Device JWT)
+3. Service authenticates the employee against ONEVO and calls `POST /api/v1/agent/login` (Device JWT)
 4. Server creates an `agent_sessions` record linking `device_id → employee_id`
 5. Agent includes `employee_id` in every ingest batch payload
 6. Server validates: `payload.employee_id == agent_sessions[device_id].employee_id`

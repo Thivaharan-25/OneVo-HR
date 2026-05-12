@@ -7,7 +7,7 @@
 
 ## Purpose
 
-File upload/download service. Metadata in PostgreSQL, files in blob storage (Railway/S3).
+File upload/download service. Metadata lives in PostgreSQL; binary files live in Cloudflare R2 object storage.
 
 ## Database Tables
 

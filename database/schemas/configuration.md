@@ -32,7 +32,7 @@
 | `scope_type` | `varchar(20)` | `tenant`, `role`, `employee` |
 | `scope_id` | `uuid` | Null for tenant, role_id for role, employee_id for employee |
 | `application_name` | `varchar(200)` | e.g., "Microsoft Teams", "Visual Studio Code" |
-| `process_name` | `varchar(100)` | e.g., "ms-teams.exe" — authoritative matching key. Nullable (backward-compatible) |
+| `process_name` | `varchar(100)` | e.g., "ms-teams.exe" — authoritative matching key |
 | `category` | `varchar(50)` | `browser`, `communication`, `development`, `office`, `design`, `productivity`, `other` |
 | `is_allowed` | `boolean` | True = allowed during work, False = not allowed |
 | `source` | `varchar(20)` | `global_catalog`, `tenant_observed`, `manual` |
@@ -45,7 +45,7 @@
 
 **Unique constraint:** `(tenant_id, scope_type, COALESCE(scope_id, uuid_nil), process_name)` — same app cannot appear twice for the same scope.
 
-**Matching priority (ingest processor):** match by `process_name` first (case-insensitive), fallback to `application_name` exact. No match → `is_allowed = null` (pending — never triggers alerts). See [[docs/superpowers/plans/2026-04-26-app-catalog-observed-applications|App Catalog Plan]] for full resolution logic.
+**Matching rule (ingest processor):** match by `process_name` case-insensitively. `application_name` is display metadata only and is not authoritative for allowlist/blocklist decisions. No `process_name` match → `is_allowed = null` (pending — never triggers alerts). See [[docs/superpowers/plans/2026-04-26-app-catalog-observed-applications|App Catalog Plan]] for full resolution logic.
 
 ---
 

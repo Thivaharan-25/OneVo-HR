@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Audit trail for promotions, transfers, salary changes, suspensions, terminations, and resignations.
+Audit trail for promotions, within-company transfers, salary changes, suspensions, terminations, and resignations. Cross-company transfer does not move the source employee record between tenants; it records source-side lifecycle history and creates or activates a separate target-tenant employee record after approval.
 
 ## Database Tables
 
@@ -30,7 +30,9 @@ Audit trail for promotions, transfers, salary changes, suspensions, terminations
 |:------|:---------------|:----------|
 | `EmployeeCreated` | New employee added | [[modules/notifications/overview\|Notifications]], [[modules/leave/overview\|Leave]] |
 | `EmployeePromoted` | Promotion event | [[modules/notifications/overview\|Notifications]], [[modules/payroll/overview\|Payroll]] |
-| `EmployeeTransferred` | Department/team change | [[modules/notifications/overview\|Notifications]] |
+| `EmployeeTransferred` | Department/team change inside one tenant | [[modules/notifications/overview\|Notifications]] |
+| `CrossCompanyTransferRequested` | Transfer case starts between connected tenants | [[modules/shared-platform/workflow-engine/overview\|Workflow Engine]], [[modules/notifications/overview\|Notifications]] |
+| `CrossCompanyTransferAccepted` | Target tenant accepts and creates/activates its own employee record | [[modules/shared-platform/workflow-engine/overview\|Workflow Engine]], [[modules/notifications/overview\|Notifications]] |
 | `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview\|Leave]], [[modules/payroll/overview\|Payroll]], [[modules/agent-gateway/overview\|Agent Gateway]] |
 
 ## API Endpoints

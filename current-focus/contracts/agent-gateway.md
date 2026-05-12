@@ -36,6 +36,80 @@ interface AgentDetailDto {
 }
 ```
 
+## POST `/api/v1/agent/ingest`
+
+Auth: Device JWT only. Tenant ownership is resolved from token claims, not from the JSON payload.
+
+```ts
+interface AgentDeviceClaims {
+  type: "agent"
+  tenant_id: string
+  agent_id: string
+  device_id: string
+}
+
+interface AgentIngestPayload {
+  device_id?: string       // validation hint; must match JWT claim when present
+  employee_id?: string     // validation hint; must match active agent_sessions row
+  timestamp: string
+  batch: AgentIngestItem[]
+}
+
+type AgentIngestItem =
+  | ActivitySnapshotItem
+  | AppUsageItem
+  | DeviceSessionItem
+  | WorkLocationEvidenceItem
+  | MeetingItem
+
+interface ActivitySnapshotItem {
+  type: "activity_snapshot"
+  data: {
+    keyboard_events_count: number
+    mouse_events_count: number
+    active_seconds: number
+    idle_seconds: number
+    foreground_process_name?: string
+    captured_at: string
+  }
+}
+
+interface AppUsageItem {
+  type: "app_usage"
+  data: {
+    process_name: string          // required, authoritative app identity
+    application_name?: string     // display metadata only
+    publisher?: string | null
+    executable_path_hash?: string | null
+    window_title_hash?: string | null
+    duration_seconds: number
+    captured_at: string
+  }
+}
+
+interface DeviceSessionItem {
+  type: "device_session"
+  data: Record<string, unknown>
+}
+
+interface WorkLocationEvidenceItem {
+  type: "work_location_evidence"
+  data: Record<string, unknown>
+}
+
+interface MeetingItem {
+  type: "meeting"
+  data: Record<string, unknown>
+}
+```
+
+Server rules:
+
+- `tenant_id`, `agent_id`, and trusted `device_id` come from Device JWT claims.
+- Client-sent `tenant_id` is ignored or rejected.
+- `employee_id` comes from the active `agent_sessions` row for the device.
+- App allowlist/blocklist matching uses `process_name`; `application_name` is never authoritative.
+
 ## POST `/api/v1/ide/agent-install/request`
 
 ```ts

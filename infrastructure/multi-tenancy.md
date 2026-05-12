@@ -2,6 +2,10 @@
 
 ## Overview
 
+ONEVO treats every company as a separate tenant. A tenant is the hard data, subscription, settings, branding, audit, and permission boundary for that company.
+
+Cross-company behavior is supported only through explicit [[modules/shared-platform/company-connections/overview|Company Connections]]. A company connection links two tenants without merging their users, employees, payroll, settings, subscriptions, or audit logs. Owner email matching may make a connection eligible, but it never grants access by itself.
+
 ONEVO uses a **shared database, shared schema** multi-tenancy model with **4 layers of data isolation**:
 
 ```
@@ -129,6 +133,8 @@ public void No_Repository_Should_Bypass_BaseRepository()
 
 `tenants.status` has five lifecycle values: `provisioning`, `trial`, `active`, `suspended`, and `cancelled`. `provisioning` is the admin-only draft state; wizard step completion and activation blockers live in `tenant_provisioning_states` and `tenant_provisioning_validation_results`.
 
+Each provisioned company receives its own tenant. Do not model a separate operating company as a legal entity inside an existing tenant. If two companies need shared workflows, transfers, or reporting, create a company connection between their tenants.
+
 ```
 1. Operator provisions via Developer Console (`POST /admin/v1/tenants`) â†’ Create tenant record (status: provisioning)
 2. Seed        â†’ Create default roles, permissions, settings, department
@@ -190,6 +196,7 @@ public async Task<Result<TenantDto>> ProvisionTenantAsync(CreateTenantCommand cm
 - [[security/auth-architecture|Auth Architecture]] â€” backend-held auth/session state carrying tenant_id
 - [[backend/module-boundaries|Module Boundaries]] â€” ArchUnitNET tests for tenant isolation enforcement
 - [[security/compliance|Compliance]] â€” GDPR tenant offboarding and data export
+- [[modules/shared-platform/company-connections/overview|Company Connections]] â€” Explicit tenant-to-tenant links for approved cross-company flows
 
 
 

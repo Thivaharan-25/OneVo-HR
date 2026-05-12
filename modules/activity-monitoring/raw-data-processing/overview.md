@@ -43,7 +43,7 @@ Periodic activity data from agent (every 2-3 minutes).
 | `active_seconds` | `int` | Seconds with input activity |
 | `idle_seconds` | `int` | Seconds without input |
 | `intensity_score` | `decimal(5,2)` | 0–100 computed score |
-| `foreground_app` | `varchar(255)` | Application name |
+| `foreground_process_name` | `varchar(100)` | Foreground process name, e.g. `code.exe` |
 | `created_at` | `timestamptz` | |
 
 **Partitioning:** Monthly via `pg_partman` on `captured_at`

@@ -236,7 +236,7 @@ Tamper detection and device health.
 ## Key Business Rules
 
 1. **Verification photos are temporary** — retained for configurable period (default 30 days) then auto-deleted by `PurgeExpiredVerificationPhotosJob`. They are NOT approved reference photos.
-2. **Photos are RESTRICTED data** — stored in blob storage via `file_records`, never in the database.
+2. **Photos are RESTRICTED data** — stored in Cloudflare R2 object storage via `file_records`, never in the database.
 3. **Biometric consent is mandatory** — `consent_given` must be `true` before enrollment. This is a GDPR/PDPA requirement.
 4. **Fingerprint templates are NEVER stored in ONEVO** — only `template_hash` (a reference to the biometric device's local storage). The actual template stays on the hardware.
 5. **Verification policy respects monitoring overrides** — if an employee has `identity_verification = false` in `employee_monitoring_overrides`, skip verification even if tenant policy is active.

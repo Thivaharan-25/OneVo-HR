@@ -21,7 +21,7 @@ In `appsettings.Development.json`:
 ```json
 {
   "AgentGateway": {
-    "BaseUrl": "https://agent.onevo.app",
+    "BaseUrl": "https://agent.onevo.com",
     "UseMockGateway": true
   },
   "Logging": {
@@ -263,7 +263,7 @@ Console output from the Service:
 [INF] Collectors started (policy: all enabled)
 [INF] [MOCK] Ingest #1: 3 items for employee def456
 [DBG] [MOCK]   - activity_snapshot: {"keyboard_events_count":42,"mouse_events_count":15,...}
-[DBG] [MOCK]   - app_usage: {"application_name":"Code","window_title_hash":"a1b2c3",...}
+[DBG] [MOCK]   - app_usage: {"process_name":"code.exe","application_name":"Code","window_title_hash":"a1b2c3",...}
 [DBG] [MOCK]   - device_session: {"active_minutes":1,"idle_minutes":0}
 ```
 
@@ -334,7 +334,7 @@ When the ONEVO backend server is available:
 ```json
 {
   "AgentGateway": {
-    "BaseUrl": "https://staging.onevo.app",
+    "BaseUrl": "https://staging.onevo.com",
     "UseMockGateway": false
   },
   "TenantApiKey": "legacy-only-not-used-by-default-enrollment"

@@ -42,7 +42,7 @@
 - **DB:** None
 
 ### Step 4: Configure Callback URL
-- **UI:** System displays the callback/redirect URL that must be registered in the identity provider's console (e.g., `https://{tenant}.onevo.app/api/v1/auth/sso/callback`). Copy button provided. Instructions panel with step-by-step guide for the selected provider
+- **UI:** System displays the callback/redirect URL that must be registered in the identity provider's console (e.g., `https://{tenantSlug}.onevo.com/api/v1/auth/sso/callback`). Copy button provided. Instructions panel with step-by-step guide for the selected provider
 - **API:** N/A (display only)
 - **Backend:** Callback URL generated from tenant configuration
 - **Validation:** N/A

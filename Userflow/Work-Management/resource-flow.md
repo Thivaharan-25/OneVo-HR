@@ -23,7 +23,7 @@ Resource management answers: who is available, at what capacity, and with which 
 
 ### View Capacity (`/workforce/analytics`)
 1. User opens Workforce → Analytics
-2. System loads capacity snapshots for all employees in the entity scope
+2. System loads capacity snapshots for all employees in the current company tenant scope
 3. Capacity view shows: employee name, current allocation %, available hours, scheduled hours
 4. Employees above 100% utilisation are highlighted as overallocated
 5. Data is sourced from `CAPACITY_SNAPSHOT` records (weekly snapshots)

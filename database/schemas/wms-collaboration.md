@@ -34,7 +34,7 @@
 | `id` | uuid | PK |
 | `document_id` | uuid | FK → documents |
 | `version_number` | int | Auto-incremented per document |
-| `content_snapshot` | text | Full content at this version (or Azure Blob key for large docs) |
+| `content_snapshot` | text | Full content at this version (or object storage key for large docs) |
 | `change_summary` | varchar(500) | nullable — optional description of changes |
 | `created_by_id` | uuid | FK → users |
 | `created_at` | timestamptz | |

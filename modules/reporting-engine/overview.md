@@ -13,7 +13,7 @@
 
 ## Purpose
 
-Scheduled and on-demand report generation serving **both pillars** — HR reports (headcount, turnover, leave utilization) and workforce intelligence reports (productivity, exceptions, presence). Supports CSV/Excel export.
+Scheduled and on-demand report generation serving **both pillars** — HR reports (headcount, turnover, leave utilization) and workforce intelligence reports (productivity, exceptions, presence). Supports CSV/Excel export. Reports are tenant-local by default; cross-company report mode can aggregate connected tenants only through permissioned read-only projections.
 
 ---
 
@@ -130,6 +130,12 @@ API endpoints:
 | GET | `/api/v1/reports/executions` | `reports:read` | List past executions |
 | GET | `/api/v1/reports/executions/{id}/download` | `reports:read` | Download report file |
 
+## Cross-Company Report Mode
+
+Cross-company reports must only include connected tenants selected in the user's cross-company scope. Raw tenant tables are not directly queryable across tenants; the report engine reads controlled projections or approved workflow evidence packages.
+
+Sensitive fields such as payroll, identity verification, activity screenshots, documents, disciplinary records, and private files require separate data-category grants. Exports require explicit export permission and must audit requester tenant plus every source tenant included in the output.
+
 ## Features
 
 - [[modules/reporting-engine/report-definitions/overview|Report Definitions]] — Scheduled and on-demand report definitions with cron expressions
@@ -141,6 +147,7 @@ API endpoints:
 ## Related
 
 - [[infrastructure/multi-tenancy|Multi Tenancy]] — All definitions and executions are tenant-scoped
+- [[modules/shared-platform/company-connections/overview|Company Connections]] — Permission-scoped cross-company projections
 - [[security/data-classification|Data Classification]] — Report files stored in blob storage via `file_records`
 - [[security/compliance|Compliance]] — Audit and exception reports support both HR and workforce intelligence pillars
 - [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]] — Implementation task file

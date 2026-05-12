@@ -1,7 +1,7 @@
 ﻿# Landing Page
 
 **Area:** Auth & Access  
-**Trigger:** User navigates to `https://{tenant}.onevo.app` (any unauthenticated visit â€” every session start)  
+**Trigger:** User navigates to `https://{tenantSlug}.onevo.com` (any unauthenticated visit â€” every session start)  
 **Required Permission(s):** None (public endpoint, no auth)  
 **Related Permissions:** All â€” after sign-in, the user's effective permissions determine what dashboard zones they see
 
@@ -19,7 +19,7 @@
 
 ### Step 1: Navigate to Landing Page
 
-- **UI:** Browser navigates to `https://{tenant}.onevo.app`. While branding loads: base dark background (`#09090b`), no flash of unstyled content (branding applied before first paint via server-side fetch). Navbar appears: tenant logo + name left, `System Live` status pill + `Sign In â†’` button right
+- **UI:** Browser navigates to `https://{tenantSlug}.onevo.com`. While branding loads: base dark background (`#09090b`), no flash of unstyled content (branding applied before first paint via server-side fetch). Navbar appears: tenant logo + name left, `System Live` status pill + `Sign In â†’` button right
 - **API:** `GET /api/v1/tenants/current/branding`
   - Response: `{ logoUrl, name, primaryColor, tagline, publicStats: { activeNow, idleAway, alertCount, avgScore } }`
   - No auth required. Tenant resolved from `Host` header (subdomain)
@@ -102,7 +102,7 @@
 ### When tenant subdomain is not found
 - `GET /api/v1/tenants/current/branding` returns 404
 - User sees generic ONEVO landing page with no tenant branding and a tenant selector input
-- Tenant selector submits to `https://{enteredSubdomain}.onevo.app`
+- Tenant selector submits to `https://{enteredSubdomain}.onevo.com`
 
 ### When Three.js particle scene fails to load
 - Dynamic import failure caught silently

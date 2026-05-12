@@ -12,7 +12,7 @@
 
 Core workspace infrastructure for Work Management. Every Work Management entity is scoped to a workspace. Workspaces are tenant-level containers for projects, members, and roles. A tenant can have multiple workspaces.
 
-Phase 1 workspace membership is employee-backed. `workspace_members` stores both `user_id` for auth and `employee_id` for HR joins, availability, offboarding, department/team reporting, and legal-entity checks. Microsoft Teams group sync is a Phase 2 integration option and is separate from HR team-to-workspace sync.
+Phase 1 workspace membership is employee-backed. `workspace_members` stores both `user_id` for auth and `employee_id` for HR joins, availability, offboarding, department/team reporting, and company tenant checks. Microsoft Teams group sync is a Phase 2 integration option and is separate from HR team-to-workspace sync.
 
 ---
 
@@ -20,7 +20,7 @@ Phase 1 workspace membership is employee-backed. `workspace_members` stores both
 
 ### `workspaces`
 
-Key columns: `tenant_id`, `legal_entity_id` (nullable, binds Work Management visibility to HR entity), `name`, `slug`, `is_active`, `owner_id`.
+Key columns: `tenant_id`, `name`, `slug`, `is_active`, `owner_id`.
 
 ### `workspace_roles`
 
@@ -52,8 +52,8 @@ When enabled, changes in `team_members` add or deactivate `workspace_members` re
 2. If tenant has Work Management enabled, a default workspace is created on tenant provisioning.
 3. Global query filters enforce both `tenant_id` and `workspace_id` on all workspace-scoped entities.
 4. Active workspace carried in backend-held session metadata or `X-Workspace-Id` header; every Work Management request resolves workspace context.
-5. Workspace bound to a `legal_entity_id`: WMS visibility respects HR topbar legal entity scope when set.
-6. Workspace and project members must carry `employee_id`; querying by department, team, job, legal entity, and employment status must not require application-only joins.
+5. Workspace visibility is tenant-local by default. Cross-company workspace collaboration requires an active company connection and explicit member/data-sharing scope.
+6. Workspace and project members must carry `employee_id`; querying by department, team, job, company tenant, and employment status must not require application-only joins.
 7. Offboarding or `employees.is_deleted = true` deactivates workspace/project memberships and prevents new task assignment.
 8. HR team-to-workspace sync is Phase 1 through `workspace_hr_team_links`.
 9. Microsoft Teams group creation/linking is Phase 2 and must not be treated as SSO.
@@ -98,6 +98,7 @@ When enabled, changes in `team_members` add or deactivate `workspace_members` re
 - [[modules/work-management/overview|Work Management Module Family]]
 - [[modules/work-management/projects/overview|Project Management]]
 - [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]]
+- [[modules/shared-platform/company-connections/overview|Company Connections]]
 - [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]]
 - [[database/schemas/wms-project-management|WMS Project Management Schema]]
 - [[database/cross-module-relationships|Cross-Module Relationships]]

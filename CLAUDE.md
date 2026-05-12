@@ -141,7 +141,6 @@ Default request flow: `Controller -> Command/Query -> Validator -> Handler -> Re
 - Separate WMS backend or WMS database
 - RabbitMQ / MassTransit / IEventBus
 - Meilisearch (use PostgreSQL FTS)
-- JetBrains plugin (VS Code only)
 - KPI targets or billable rates
 - macOS agent
 

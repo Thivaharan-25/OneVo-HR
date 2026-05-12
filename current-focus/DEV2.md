@@ -22,7 +22,7 @@ When Dev 2 asks to continue, start with the first unchecked item in **Current Un
 ### Acceptance Criteria
 
 - [ ] Legal entities, departments, teams, job families, jobs, locations, cost centers, and reporting lines exist.
-- [ ] Legal entity creation publishes `LegalEntityCreated` with the selected country so Calendar can seed default holiday settings.
+- [ ] Company registration profile country changes publish `CompanyProfileCountrySet` so Calendar can seed default holiday settings.
 - [ ] Team permission stacking tables exist for `team_roles`, `team_role_permissions`, and `team_member_roles`.
 - [ ] Employee aggregate supports personal, contact, employment, manager, department, and team fields.
 - [ ] Employee create/update/list/detail APIs exist.
@@ -104,8 +104,8 @@ dotnet test ONEVO.sln --filter Skills
 - [ ] Leave request approval uses the Shared Platform workflow engine.
 - [ ] Leave request API validates balance, dates, overlap, and approval routing.
 - [ ] Calendar APIs return holidays, shifts, leaves, and company events in one feed.
-- [ ] Calendar supports Phase 1 country holiday sync through `holiday_calendar_settings`, defaulting to legal entity country.
-- [ ] Calendar admins can disable country holiday sync or override the holiday calendar country without changing the legal entity.
+- [ ] Calendar supports Phase 1 country holiday sync through `holiday_calendar_settings`, defaulting to company country.
+- [ ] Calendar admins can disable country holiday sync or override the holiday calendar country without changing the company registration profile.
 - [ ] Google Calendar and Outlook Calendar connections support OAuth callback, encrypted token storage, pull/push/two-way sync direction, and idempotent event links.
 - [ ] IDE-ready endpoints exist for leave types, leave balance, and leave request creation.
 - [ ] Notifications are emitted for leave submitted, approved, rejected, and cancelled.

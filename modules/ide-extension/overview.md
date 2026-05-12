@@ -5,7 +5,7 @@
 **Pillar:** Cross-Pillar (WorkSync + HR + Workforce Intelligence)
 **Owner:** Dev 7 (core + tag engine) + Dev 8 (context engine + agent entitlement)
 **Tables:** 5 (`ide_extension_installs`, `ide_sessions`, `ide_tag_executions`, `ide_context_links`, `ide_chat_threads`)
-**Client:** VS Code Extension (TypeScript) — Phase 1. JetBrains Plugin (Kotlin) — Phase 2.
+**Client:** VS Code Extension (TypeScript).
 
 ---
 
@@ -230,7 +230,7 @@ These are automatically resolved from current editor context if not provided exp
 
 ## SignalR Hub: `IDEHub`
 
-**Connection:** `wss://{tenant}.onevo.app/hubs/ide?access_token={jwt}`
+**Connection:** `wss://{tenantSlug}.onevo.com/hubs/ide?access_token={jwt}`
 
 IDE extension connects with a JWT and session_id. Hub groups:
 - `user:{userId}` — personal notifications
@@ -316,7 +316,6 @@ Optional file at repo root. Controls extension behavior per repository:
 3. **Undo window is server-enforced.** The undo window timestamp is set by the backend. The client shows the countdown as a UI convenience only — the backend rejects undo calls after `undo_expires_at`.
 4. **Tag executions are audit-logged even when denied.** Every `@entity:action` attempt creates an `ide_tag_executions` row regardless of the permission check result.
 5. **Context resolution is best-effort.** If `GET /api/v1/ide/context/branch` finds no linked task, the extension operates without context — no error shown to user.
-6. **JetBrains plugin deferred.** Phase 1 ships VS Code only. The backend APIs are editor-agnostic — the JetBrains plugin will reuse the same endpoints in Phase 2.
 
 ---
 

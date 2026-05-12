@@ -33,8 +33,8 @@
 ### Step 3: Configure Work Locations
 - **UI:** Settings -> Monitoring -> Work Locations
 - **Use when:** Tenant wants office, remote, or hybrid employees verified against approved work locations during paid working time
-- **Flow:** Admin creates legal entity workplaces and employee work modes -> [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]]
-- **Required minimum:** Legal entity, work location name, work location type, and at least one verification method (Wi-Fi BSSID/router MAC, public IP range, or approved VPN range)
+- **Flow:** Admin creates company workplaces and employee work modes -> [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]]
+- **Required minimum:** Company, work location name, work location type, and at least one verification method (Wi-Fi BSSID/router MAC, public IP range, or approved VPN range)
 
 ### Step 4: Set Data Retention
 - **UI:** Set retention per data type: screenshots (30 days), activity data (90 days), raw data (7 days), work-location evidence (tenant policy)

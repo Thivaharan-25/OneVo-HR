@@ -31,7 +31,7 @@ Point-in-time report captures. Key columns: `workspace_id`, `report_type`, `gene
 ### `report_exports`
 Async export jobs. Key columns: `workspace_id`, `report_type`, `format` (`pdf`, `csv`, `xlsx`), `parameters_json`, `status` (`queued`, `processing`, `ready`, `failed`), `file_asset_id` (FK → file_assets, nullable — set when Hangfire completes), `requested_by_id`, `completed_at`.
 
-Hangfire processes export → uploads to Azure Blob → sets `file_asset_id` → sends notification.
+Hangfire processes export -> uploads to Cloudflare R2 object storage -> sets `file_asset_id` -> sends notification.
 
 ### `dashboard_shares`
 Fine-grained ACL for dashboard sharing. Key columns: `dashboard_id`, `share_type` (`user`, `team`, `workspace`), `target_id` (user_id or team_id — null if workspace), `can_edit`, `shared_by_id`.
@@ -47,7 +47,7 @@ Fine-grained ACL for saved views. Key columns: `saved_view_id`, `share_type`, `t
 
 1. **Dashboard visibility:** Check BOTH `dashboards.is_shared` (workspace-wide) AND `dashboard_shares` (ACL). A user can view if either condition is true.
 2. `widget.config_json` stores all filter, date-range, and scope parameters — there are no separate filter tables.
-3. Report exports are async: Hangfire job → Azure Blob upload → `file_asset_id` set → notification sent. Never block HTTP on export.
+3. Report exports are async: Hangfire job -> object storage upload -> `file_asset_id` set -> notification sent. Never block HTTP on export.
 4. `saved_views` with `user_id = null` are workspace-level; with `user_id` set they are personal (My Space).
 5. `is_default` dashboard: only one per user per workspace — application layer enforces uniqueness.
 

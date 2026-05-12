@@ -106,7 +106,7 @@ For enterprise deployment via Microsoft Intune, SCCM, or Group Policy:
 | .NET Runtime | .NET 9 Desktop Runtime (bundled in self-contained package, or pre-installed for framework-dependent) |
 | Architecture | x64 only (no ARM64 in Phase 1) |
 | Permissions | Admin rights for install (or MDM-pushed) |
-| Network | HTTPS access to `agent.onevo.app` (Agent Gateway) |
+| Network | HTTPS access to `agent.onevo.com` (Agent Gateway) |
 
 ---
 
@@ -207,7 +207,7 @@ The agent checks for updates via the heartbeat response from the server.
 {
   "status": "ok",
   "update_available": true,
-  "update_url": "https://agent.onevo.app/updates/ONEVO.Agent.1.1.0.msixbundle",
+  "update_url": "https://agent.onevo.com/updates/ONEVO.Agent.1.1.0.msixbundle",
   "update_version": "1.1.0",
   "update_required": false
 }

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-All day-to-day tenant operations: finding tenants, inspecting their state, suspending them, impersonating their admin for support, and overriding their subscription/commercial terms when the normal payment gateway path cannot be used.
+All day-to-day company/tenant operations: finding companies, inspecting their tenant state, suspending them, impersonating their admin for support, managing connected-company relationships, and overriding their subscription/commercial terms when the normal payment gateway path cannot be used.
 
 ---
 
@@ -33,7 +33,8 @@ Click any active or suspended tenant row to open its detail page. The detail pag
 
 | Tab | Contents |
 |---|---|
-| **Overview** | Company profile, primary legal entity, country, currency, company size, plan name, billing dates, `status`, employee count, agent count, last login (any user) |
+| **Overview** | Company profile, registration profile, country, currency, company size, plan name, billing dates, `status`, employee count, agent count, last login (any user) |
+| **Connected Companies** | Active and pending company connections, owner email eligibility, access grants, and connection audit |
 | **Flags** | All per-tenant feature flag overrides — see `feature-flags.md` |
 | **Settings** | Current `tenant_settings` values; editable by admin+ |
 | **Users** | User list with roles and last-login timestamps (read-only) |
@@ -43,7 +44,36 @@ Click any active or suspended tenant row to open its detail page. The detail pag
 
 ---
 
-## 3. Suspend a Tenant
+## 3. Connected Companies
+
+**Minimum role:** admin to view, super_admin to approve or revoke
+
+Connected Companies links this company tenant to another company tenant for approved cross-company transfers, workflow routing, reporting, data views, or collaboration. A connection never merges users, employees, subscriptions, payroll, settings, branding, or audit logs.
+
+**Eligibility rule:** matching verified owner email can mark another company as eligible, but it does not grant access by itself.
+
+**Steps:**
+
+1. Open tenant detail page (`/tenants/{id}`) -> **Connected Companies**
+2. Search by company name, slug, or owner email
+3. Review eligibility, owner email match state, tenant status, and existing connection state
+4. Click **Request Connection** or **Approve Connection**
+5. Backend creates or activates the company connection and audit-logs the action
+6. Configure scoped access grants only for the cross-company flows that should be allowed
+
+**APIs:**
+
+- `GET /admin/v1/company-connections/eligible?ownerEmail=...`
+- `GET /admin/v1/tenants/{tenantId}/company-connections`
+- `POST /admin/v1/tenants/{tenantId}/company-connections`
+- `PATCH /admin/v1/company-connections/{connectionId}/approve`
+- `PATCH /admin/v1/company-connections/{connectionId}/reject`
+- `PATCH /admin/v1/company-connections/{connectionId}/revoke`
+- `GET /admin/v1/company-connections/{connectionId}/audit`
+
+---
+
+## 4. Suspend a Tenant
 
 **Minimum role:** super_admin
 
@@ -72,7 +102,7 @@ Both actions are audit-logged with the developer account, timestamp, and previou
 
 ---
 
-## 4. Impersonate Tenant Admin
+## 5. Impersonate Tenant Admin
 
 **Minimum role:** super_admin
 
@@ -99,7 +129,7 @@ When the 15-minute token expires the new tab is logged out automatically. The de
 
 ---
 
-## 5. Subscription Override
+## 6. Subscription Override
 
 **Minimum role:** super_admin
 

@@ -126,7 +126,7 @@ Tracks which employee is currently logged in on each device. Used by the ingest 
 
 UNIQUE partial index: `(device_id) WHERE is_active = true` — enforces one active session per device.
 
-**Flow:** Employee login via tray app → Service calls `POST /api/v1/agent/session/login` → previous session deactivated, new row inserted. Ingest endpoint looks up `agent_sessions` by `device_id` from Device JWT to resolve and validate the `employee_id` in the payload.
+**Flow:** Employee login via tray app → Service calls `POST /api/v1/agent/login` → previous session deactivated, new row inserted. Ingest endpoint looks up `agent_sessions` by `device_id` from Device JWT to resolve and validate the `employee_id` in the payload. `tenant_id` is resolved from the Device JWT and is never trusted from the ingest payload.
 
 **Foreign Keys:** `device_id` → [[#`registered_agents`|registered_agents]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
 

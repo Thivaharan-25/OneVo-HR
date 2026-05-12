@@ -11,6 +11,7 @@
 
 - Data visible on any analytics page
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+- Cross-company export requires the matching cross-company view/report permission, selected connected-tenant scope, allowed data categories, and explicit export permission.
 
 ## Flow Steps
 
@@ -23,6 +24,7 @@
 
 ### Step 3: Configure Export
 - **UI:** Select columns to include → apply current page filters → select date range → optionally anonymize employee names (for compliance)
+- **Cross-company:** Only source tenants and fields included in the user's grant scope can be exported. Sensitive fields require separate data-category grants.
 
 ### Step 4: Download
 - **UI:** File generated → download starts → for large exports: "Processing — you'll be notified when ready"
@@ -42,7 +44,7 @@
 
 ## Events Triggered
 
-- `DataExported` → audit trail
+- `DataExported` → audit trail, including requester tenant and every source tenant for cross-company exports
 
 ## Related Flows
 

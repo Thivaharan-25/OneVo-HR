@@ -49,11 +49,22 @@ The dev console talks to the **same OneVo backend** via a dedicated `/admin/v1/*
 
 ---
 
+## Company And Tenant Model
+
+In ONEVO, every company is a tenant. The Developer Platform provisions and manages companies as independent tenants with separate subscription, module entitlement, settings, branding, users, employees, and audit history.
+
+Separate operating companies must not be modeled as legal entities inside one tenant. When companies need to work together, the Developer Platform manages an explicit [[modules/shared-platform/company-connections/overview|Company Connection]] between their tenants.
+
+Owner email matching can make two tenants eligible for a connection, but it does not silently expose data. Cross-company access requires an active connection, scoped permission, module entitlement where applicable, and audit logging.
+
+---
+
 ## Modules
 
 | Module | Purpose |
 |:---|:---|
 | Tenant Console | Manage tenants, subscriptions, impersonation, provisioning wizard |
+| Company Connections | Link separate company tenants for approved cross-company transfers, workflows, reporting, and data views |
 | Role Template Manager | Build and apply module-filtered role templates during tenant provisioning |
 | Feature Flag Manager | Global flags, per-tenant overrides, module enable/disable |
 | Desktop Agent Version Manager | Version catalog, deployment rings, force-update |

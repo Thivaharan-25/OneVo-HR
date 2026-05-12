@@ -119,7 +119,7 @@ src/
 â”‚   â”‚   â”œâ”€â”€ WorkforceAnalyticsPage.tsx # Productivity scores + capacity analytics
 â”‚   â”‚   â”‚
 â”‚   â”‚   â”œâ”€â”€ projects/
-â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectsPage.tsx       # All projects in entity scope
+â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectsPage.tsx       # All projects in company tenant scope
 â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectNewPage.tsx     # Create project
 â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectDetailPage.tsx  # /workforce/projects/:id â€” overview (epics, milestones, members)
 â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectBoardPage.tsx   # Kanban / list view of tasks
@@ -277,7 +277,7 @@ Use React Suspense boundaries around async data components.
 | 12 | infrastructure | No pages | Backend-only |
 | 13 | leave | `/people/leave/` | Requests, calendar, balances, policies |
 | 14 | notifications | `/notifications/`, `/settings/notifications` | Inbox + preferences + org config |
-| 15 | org-structure | `/org/` | Departments, teams, org chart, job families, legal entities |
+| 15 | org-structure | `/org/` | Departments, teams, org chart, job families, company profile |
 | 16 | payroll | Employee detail `#pay-benefits` section | Phase 2 |
 | 17 | performance | Employee detail section | Phase 2 |
 | 18 | productivity-analytics | `/workforce` (card score), `/workforce/analytics` | Card score + dedicated analytics page |
@@ -400,7 +400,7 @@ Apply to: org charts, kanban boards, roadmap timelines, activity heatmaps, rich 
 | People (Employees + Leave) | ~12 |
 | Workforce Presence | ~2 |
 | Workforce WMS (Projects, My Work, Planner, Goals, Docs, Time, Analytics) | ~18 |
-| Org (Chart, Departments, Teams, Job Families, Legal Entities) | ~8 |
+| Org (Chart, Departments, Teams, Job Families, Company Profile) | ~8 |
 | Calendar (Calendar, Schedules, Attendance, Overtime) | ~4 |
 | Chat | ~1 |
 | Inbox | 1 |

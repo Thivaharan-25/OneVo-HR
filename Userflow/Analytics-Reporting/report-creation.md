@@ -11,6 +11,7 @@
 
 - Data exists in system
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+- Cross-company reports require `cross-company:reports:view`, an active company connection, and a scope listing the connected tenants and data categories allowed.
 
 ## Flow Steps
 
@@ -23,6 +24,11 @@
 
 ### Step 3: Apply Filters
 - **UI:** Add filters: date range, department, status, etc. → combine with AND/OR
+
+### Optional: Cross-Company Scope
+- **UI:** Select connected companies only from the caller's approved cross-company report scope.
+- **Backend:** Query controlled read-only projections, not raw tenant tables.
+- **Audit:** Record requester tenant and every source tenant included.
 
 ### Step 4: Group & Sort
 - **UI:** Group by: department, team, month → sort by: name, value, date → add subtotals
@@ -43,6 +49,7 @@
 |:---------|:-------------|:----------|
 | No data matches filters | Empty report | "No records match the selected criteria" |
 | Too many records | Performance warning | "Report contains 50,000+ rows — consider adding filters" |
+| Connected company outside scope | Report blocked | "You do not have access to this connected company" |
 
 ## Events Triggered
 

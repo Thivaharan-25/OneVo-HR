@@ -57,7 +57,7 @@ ProcessReportExportJob (Hangfire):
     → 1. UPDATE report_exports.status = "processing"
     → 2. Generate report data from parameters_json
     → 3. Render to requested format (pdf/csv/xlsx)
-    → 4. Upload to Azure Blob via IStorageService
+    → 4. Upload to Cloudflare R2 object storage via IStorageService
     → 5. INSERT file_assets row
     → 6. UPDATE report_exports:
              status = "ready"
