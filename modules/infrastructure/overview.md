@@ -165,10 +165,11 @@ API endpoints:
 
 ## Key Business Rules
 
-1. **Tenant provisioning flow:** Operator creates provisioning draft -> assign plan/modules/settings/role templates -> invite owner -> activate.
-2. **Users ≠ Employees.** `users` is the login identity. `employees` is the HR identity in [[modules/core-hr/overview|Core Hr]]. They are 1:1 linked via `user_id` on the employees table. When working with HR features, always query through `employees`.
-3. **Files are stored in Cloudflare R2 object storage.** Only metadata lives in `file_records`.
-4. **Countries table has no `tenant_id`** — it's global reference data.
+1. **Tenant creation and configuration flow:** Operator creates customer profile draft -> assigns commercial plan/payment terms in Step 2 -> opens tenant card Manage/Configure -> confirms entitled modules -> applies roles/templates/settings -> configures required module setup services -> optionally invites owner -> activates.
+2. **Tenant profile only:** Tenant creation captures company name, slug, primary contact email, country, industry profile, registration/profile name, registration number, company size, timezone, and currency. It does not create legal-entity records. Separate operating companies are modeled as separate tenants, even when the same owner email is invited to more than one tenant.
+3. **Users ≠ Employees.** `users` is the login identity. `employees` is the HR identity in [[modules/core-hr/overview|Core Hr]]. They are 1:1 linked via `user_id` on the employees table. When working with HR features, always query through `employees`.
+4. **Files are stored in Cloudflare R2 object storage.** Only metadata lives in `file_records`.
+5. **Countries table has no `tenant_id`** — it's global reference data.
 
 ---
 

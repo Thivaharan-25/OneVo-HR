@@ -2,8 +2,8 @@
 
 ## Overview
 
-- **RDBMS:** PostgreSQL 16
-- **ORM:** Entity Framework Core 9
+- **RDBMS:** PostgreSQL 16.13 baseline; PostgreSQL 18 target after hosting and migration validation
+- **ORM:** Entity Framework Core 10
 - **Total Tables:** 252 unique schema tables — see [[database/schema-catalog|Schema Catalog]]
 - **Multi-tenancy:** `tenant_id` on all tenant-scoped tables + PostgreSQL RLS
 - **Connection Pooling:** PgBouncer

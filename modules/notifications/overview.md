@@ -4,7 +4,7 @@
 **Phase:** 1 — Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 2
-**Tables:** 2
+**Owned Tables:** 0
 
 ---
 
@@ -51,16 +51,25 @@ Application (CQRS):
   ONEVO.Application/Features/Notifications/EventHandlers/
 
 Infrastructure:
-  ONEVO.Infrastructure/Persistence/Configurations/Notifications/
+  Notification delivery infrastructure lives under the Notifications feature. Do not add
+  `Persistence/Configurations/Notifications/` table mappings unless a database ownership
+  decision later assigns physical notification tables to this module.
 
 API endpoints:
   ONEVO.Api/Controllers/Notifications/NotificationsController.cs
 
 ---
 
-## Database Tables (2)
+## Database Tables
+
+Notifications currently owns no physical database tables. `database/schemas/notifications.md`
+marks notification configuration as physically owned by Shared Platform. The tables below are
+referenced by Notifications but must be implemented in the Shared Platform schema/migrations,
+not as separate Notifications-owned tables.
 
 ### `notification_templates`
+
+Owner: Shared Platform.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -73,6 +82,8 @@ API endpoints:
 | `is_active` | `boolean` | |
 
 ### `notification_channels`
+
+Owner: Shared Platform.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -152,6 +163,10 @@ See [[backend/notification-system|Notification System]] for the full 6-step pipe
 | PUT | `/api/v1/notifications/preferences` | `notifications:manage` | Update preferences |
 
 ## Features
+
+Template and channel feature pages describe notification pipeline behavior only. Physical
+template/channel configuration remains Shared Platform-owned unless a later migration plan
+changes table ownership.
 
 - [[modules/notifications/notification-templates/overview|Notification Templates]] — Per-channel, per-event templates (Liquid/Handlebars)
 - [[modules/notifications/notification-channels/overview|Notification Channels]] — Channel provider configuration (email, Slack, webhook)

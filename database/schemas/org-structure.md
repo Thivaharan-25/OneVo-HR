@@ -12,14 +12,13 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `legal_entity_id` | `uuid` | FK → legal_entities |
 | `name` | `varchar(100)` | e.g., "Kuala Lumpur HQ — Floor 12" |
 | `address_json` | `jsonb` | Street, city, state, postcode, country |
 | `timezone` | `varchar(50)` | IANA timezone, e.g., `Asia/Kuala_Lumpur` |
 | `is_active` | `boolean` |  |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `legal_entity_id` → [[#`legal_entities`|legal_entities]]
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
 
 ---
 
@@ -48,11 +47,10 @@
 | `code` | `varchar(20)` |  |
 | `parent_department_id` | `uuid` | Self-referencing FK (nullable) |
 | `head_employee_id` | `uuid` | FK → employees (nullable) |
-| `legal_entity_id` | `uuid` | FK → legal_entities |
 | `is_active` | `boolean` |  |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `head_employee_id` → [[database/schemas/core-hr#`employees`|employees]], `legal_entity_id` → [[#`legal_entities`|legal_entities]]
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `head_employee_id` → [[database/schemas/core-hr#`employees`|employees]]
 
 ---
 
@@ -100,7 +98,7 @@
 
 ---
 
-## `legal_entities`
+## `company_registration_profiles`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -109,7 +107,7 @@
 | `name` | `varchar(200)` |  |
 | `registration_number` | `varchar(50)` |  |
 | `country_id` | `uuid` | FK → countries |
-| `currency_code` | `varchar(3)` | ISO 4217 currency for this legal entity; defaults from selected country but can be overridden by operator |
+| `currency_code` | `varchar(3)` | ISO 4217 currency for this company profile; defaults from selected country but can be overridden by operator |
 | `address_json` | `jsonb` |  |
 | `is_active` | `boolean` |  |
 | `created_at` | `timestamptz` |  |

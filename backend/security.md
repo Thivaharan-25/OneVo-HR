@@ -8,7 +8,7 @@
 
 **Library:** `BCrypt.Net-Next`
 **WorkFactor:** 12 (non-negotiable — never lower in production)
-**Interface:** `IPasswordHasher` in `ONEVO.Application/Common/Interfaces/`
+**Interface:** `IPasswordHasher` in `ONEVO.Application/Common/ServiceInterfaces/`
 **Implementation:** `ONEVO.Infrastructure/Identity/PasswordHasher.cs`
 
 Rule: never store plain text. Never use MD5 or SHA1. All comparisons go through `IPasswordHasher.Verify()`.
@@ -25,7 +25,7 @@ public interface IPasswordHasher
 
 ## Authentication Tokens And Sessions
 
-**Interface:** `ITokenService` in `ONEVO.Application/Common/Interfaces/`
+**Interface:** `ITokenService` in `ONEVO.Application/Common/ServiceInterfaces/`
 **Implementation:** `ONEVO.Infrastructure/Identity/JwtTokenService.cs`
 
 Customer browser sessions use HttpOnly cookie-backed BFF auth. Tenant JWTs for browser users are backend-held and are not returned to frontend JavaScript. JWT validation still applies to backend-held customer auth state and to non-browser clients.
@@ -66,7 +66,7 @@ Tokens from one issuer are **rejected** at endpoints requiring another.
 ## PII Encryption
 
 **Algorithm:** AES-256-GCM
-**Interface:** `IEncryptionService` in `ONEVO.Application/Common/Interfaces/`
+**Interface:** `IEncryptionService` in `ONEVO.Application/Common/ServiceInterfaces/`
 **Implementation:** `ONEVO.Infrastructure/Security/AesEncryptionService.cs`
 
 ```csharp

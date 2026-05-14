@@ -63,9 +63,9 @@ Owner email matching can make two tenants eligible for a connection, but it does
 
 | Module | Purpose |
 |:---|:---|
-| Tenant Console | Manage tenants, subscriptions, impersonation, provisioning wizard |
+| Tenant Console | Manage tenants, subscriptions, impersonation, two-step tenant creation, and post-creation Manage/Configure |
 | Company Connections | Link separate company tenants for approved cross-company transfers, workflows, reporting, and data views |
-| Role Template Manager | Build and apply module-filtered role templates during tenant provisioning |
+| Role Template Manager | Build and apply module-filtered role templates during tenant Manage/Configure |
 | Feature Flag Manager | Global flags, per-tenant overrides, module enable/disable |
 | Desktop Agent Version Manager | Version catalog, deployment rings, force-update |
 | Audit Console | Cross-tenant read-only audit log viewer |

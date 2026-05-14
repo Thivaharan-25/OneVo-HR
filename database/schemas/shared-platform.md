@@ -37,9 +37,11 @@
 | `action` | `varchar(20)` | `approve`, `reject`, `delegate`, `request_info` |
 | `comment` | `text` | Nullable |
 | `acted_at` | `timestamptz` |  |
+| `workflow_step_assignment_id` | `uuid` | FK -> workflow_step_assignments; nullable for legacy actions |
+| `action_metadata` | `jsonb` | Optional action-card or resolver metadata |
 | `delegated_to_id` | `uuid` | FK → employees (nullable — only for delegate action) |
 
-**Foreign Keys:** `workflow_instance_id` → [[#`workflow_instances`|workflow_instances]], `workflow_step_id` → [[#`workflow_steps`|workflow_steps]], `actor_id` → [[database/schemas/core-hr#`employees`|employees]], `delegated_to_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `workflow_instance_id` → [[#`workflow_instances`|workflow_instances]], `workflow_step_id` → [[#`workflow_steps`|workflow_steps]], `actor_id` → [[database/schemas/core-hr#`employees`|employees]], `delegated_to_id` → [[database/schemas/core-hr#`employees`|employees]], `workflow_step_assignment_id` -> [[#`workflow_step_assignments`|workflow_step_assignments]]
 
 ---
 
@@ -277,6 +279,10 @@ Global commercial catalog for modules and add-ons. This supports both subscripti
 | `full_license_price` | `decimal(12,2)` | Nullable one-time purchase price |
 | `maintenance_rate` | `decimal(5,2)` | Nullable yearly percentage for maintenance, e.g., 18.00 |
 | `pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
+| `permission_codes_json` | `jsonb` | Permission codes owned by this module; each permission may belong to only one module |
+| `requires_ai_token_limit` | `boolean` | True when tenant subscription must set an AI token limit for this module |
+| `requires_storage_limit` | `boolean` | True when tenant subscription must set a storage limit for this module |
+| `default_storage_limit_gb` | `integer` | Nullable default storage entitlement for storage-backed modules |
 | `is_active` | `boolean` | Whether the module can be sold/provisioned |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
@@ -300,6 +306,8 @@ Global commercial catalog for modules and add-ons. This supports both subscripti
 ```
 
 **Dynamic plan pricing rule:** when an operator creates a reusable subscription plan, the plan editor selects a company-size range and modules. The backend sums the matching bracket price for each selected module. Example: Core HR at `$3.50` for `51-200` employees plus Work Management at `$4.00` for `51-200` employees produces `$7.50` per employee. Operator-entered overrides are stored separately from calculated prices.
+
+**Permission ownership rule:** a permission code can be owned by only one module catalog item. The Developer Platform must show the owning module beside each permission and must reject attempts to assign a permission to a second module unless it is first removed from the original module through an explicit catalog update.
 
 ---
 
@@ -381,11 +389,12 @@ Draft-safe provisioning wizard state. This is the source for resume behavior and
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `tenant_id` | `uuid` | PK, FK -> tenants |
-| `current_step` | `varchar(50)` | `tenant_details`, `subscription`, `modules`, `roles`, `settings`, `owner_invite`, `review` |
+| `current_step` | `varchar(50)` | `tenant_profile`, `subscription`, `modules`, `roles`, `setup_services`, `settings`, `owner_invite`, `review` |
 | `tenant_details_completed_at` | `timestamptz` | Nullable |
 | `subscription_completed_at` | `timestamptz` | Nullable |
 | `modules_completed_at` | `timestamptz` | Nullable |
 | `roles_completed_at` | `timestamptz` | Nullable |
+| `setup_services_completed_at` | `timestamptz` | Nullable |
 | `settings_completed_at` | `timestamptz` | Nullable |
 | `owner_invite_completed_at` | `timestamptz` | Nullable |
 | `activation_ready` | `boolean` | Cached readiness after latest validation |
@@ -425,12 +434,106 @@ The schema supports the commercial model requested by product:
 - Full-license tenants can use `tenant_subscriptions.license_payment_mode = manual` for the one-time license sale; `full_license_amount`, `license_paid_at`, and `license_reference` record the manual/offline purchase.
 - `tenant_subscriptions.maintenance_collection_mode = gateway` means full-license maintenance/support is collected through the system payment gateway even when the one-time license was manually paid.
 - `tenant_subscriptions.maintenance_status`, `maintenance_start_date`, `maintenance_renewal_date`, `maintenance_rate`, and `maintenance_amount` track maintenance state and recurring fee calculation for full-license tenants.
+- Manual subscription, full-license, and maintenance payments require `manual_billing_evidence_file_id` or `manual_billing_reference` plus an audit reason. Evidence files are stored through Infrastructure file records.
+- Payment exception/grace windows can apply to subscription tenants and full-license/maintenance tenants. They are tenant-specific commercial exceptions and are not inferred from reusable plan defaults after assignment.
+- Work Management storage-backed modules require `work_management_storage_limit_gb`; AI-capable modules require `ai_token_limit_per_month`.
 - `tenant_module_entitlements.sales_state` records manual sales state per module: `available`, `purchased`, `trial`, `quoted`, `maintenance_included`, `subscription_included`, or `disabled`.
 - Module pricing defaults live on `module_catalog.price_brackets`; reusable plan calculated/override prices live on `subscription_plans`; tenant-specific negotiated snapshots live on `tenant_subscriptions` and `tenant_module_entitlements`.
 - Subscription plan pricing is calculated from selected packages/modules plus company-size range. Use the same company-size range values as tenant creation, and store operator overrides separately from calculated prices.
 - AI-capable plans and tenant subscriptions must store a positive `ai_token_limit_per_month`; non-AI plans leave it null.
 
 Pricing and module entitlement decide what the tenant has access to. RBAC permissions decide which users inside that tenant can use the entitled capabilities.
+
+---
+
+## `setup_services`
+
+Reusable Developer Platform setup services. Every setup service is connected to one or more module keys so the tenant's selected subscription/modules determine which services can be applied. A service can be free/global or paid, but it is still resolved through module entitlement.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `service_key` | `varchar(100)` | Unique service key |
+| `name` | `varchar(150)` | Display name |
+| `description` | `text` | Nullable |
+| `module_keys_json` | `jsonb` | One or more `module_catalog.module_key` values this setup service applies to |
+| `applies_to_all_entitled_modules` | `boolean` | True for free/global services that should be auto-added for every matching entitled module |
+| `is_free` | `boolean` | True when ONEVO provides this service without setup billing |
+| `price` | `decimal(12,2)` | Nullable service price when paid |
+| `currency` | `varchar(3)` | Nullable ISO 4217 |
+| `is_active` | `boolean` | |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Rules:**
+
+- A setup service can be selected or auto-added for a tenant only when at least one linked module key is in the tenant's entitled module set.
+- Free/global setup services are auto-added for matching entitled modules with `is_billable = false`; operators can still configure them during tenant setup.
+- Paid setup services are explicitly selected by the operator and tracked against the linked entitled module.
+
+---
+
+## `tenant_setup_services`
+
+Tenant-specific service setup checklist and charge state.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `setup_service_id` | `uuid` | FK -> setup_services |
+| `module_key` | `varchar(100)` | Entitled module that caused or allowed this setup service |
+| `status` | `varchar(30)` | `needed`, `in_progress`, `configured`, `waived`, `cancelled` |
+| `is_billable` | `boolean` | Snapshot from service and tenant agreement |
+| `price` | `decimal(12,2)` | Nullable tenant-specific setup price |
+| `selected_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `configured_by_id` | `uuid` | Nullable FK -> users or dev platform account boundary |
+| `configured_at` | `timestamptz` | Nullable |
+| `notes` | `text` | Nullable |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+---
+
+## `configuration_templates`
+
+Reusable setup templates visible in the Developer Platform Templates area.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `template_key` | `varchar(100)` | Unique template key |
+| `template_type` | `varchar(50)` | `configuration`, `role`, `org_structure`, `job_family`, `leave_policy`, `onboarding`, `app_allowlist`, `monitoring_policy`, `data_import_mapping` |
+| `name` | `varchar(150)` | Display name |
+| `version` | `integer` | Template version |
+| `module_keys_json` | `jsonb` | Modules/services this template applies to |
+| `payload_json` | `jsonb` | Template content owned by the target module contract |
+| `is_system` | `boolean` | ONEVO default template |
+| `is_active` | `boolean` | |
+| `created_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+---
+
+## `tenant_configuration_template_applications`
+
+Tracks when a reusable template is applied and then customized for a tenant.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `configuration_template_id` | `uuid` | FK -> configuration_templates |
+| `template_type` | `varchar(50)` | Snapshot of the template type |
+| `applied_version` | `integer` | Version applied |
+| `custom_payload_json` | `jsonb` | Tenant-specific override payload after application |
+| `status` | `varchar(20)` | `applied`, `customized`, `superseded`, `removed` |
+| `applied_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `applied_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | Nullable |
+
+**Rule:** applying a reusable template creates tenant-specific configuration. Editing the tenant copy must not mutate the global template.
 
 Catalog price changes do not silently update existing tenant commercial records. Existing tenant subscriptions and module entitlements keep their stored negotiated prices unless ONEVO runs an explicit reviewed reprice/migration process.
 
@@ -780,7 +883,16 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `calculated_annual_price` | `decimal(10,2)` | Snapshot of calculated annual per-unit price at assignment time |
 | `override_monthly_price` | `decimal(10,2)` | Nullable negotiated monthly per-unit price |
 | `override_annual_price` | `decimal(10,2)` | Nullable negotiated annual per-unit price |
+| `override_full_license_amount` | `decimal(12,2)` | Nullable negotiated one-time full-license amount |
+| `override_maintenance_rate` | `decimal(5,2)` | Nullable negotiated maintenance percentage |
+| `override_maintenance_amount` | `decimal(12,2)` | Nullable negotiated recurring maintenance amount |
 | `ai_token_limit_per_month` | `integer` | Nullable monthly AI token cap for this tenant subscription |
+| `work_management_storage_limit_gb` | `integer` | Nullable storage entitlement for Work Management storage-backed features |
+| `manual_billing_evidence_file_id` | `uuid` | Nullable FK -> file_records for manual subscription/license/maintenance evidence |
+| `manual_billing_reference` | `varchar(100)` | Nullable external invoice/reference for manual payment evidence |
+| `payment_exception_starts_at` | `date` | Nullable approved commercial exception start |
+| `payment_exception_ends_at` | `date` | Nullable approved commercial exception end |
+| `payment_exception_reason` | `text` | Nullable reason for approved payment grace/exception |
 | `custom_contract_value` | `decimal(12,2)` | Nullable manually-entered enterprise contract amount |
 | `discount_percent` | `decimal(5,2)` | Nullable negotiated discount applied to the tenant commercial record |
 | `created_by_id` | `uuid` | FK → users |
@@ -841,6 +953,85 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 
 ---
 
+## `automation_definitions`
+
+Customer-created Automation Center definitions.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `name` | `varchar(100)` | |
+| `description` | `text` | Nullable |
+| `trigger_type` | `varchar(50)` | Domain event or scheduled/manual trigger |
+| `resource_type` | `varchar(50)` | Resource type this automation handles |
+| `is_active` | `boolean` | |
+| `current_version` | `integer` | Active definition version |
+| `created_by_id` | `uuid` | FK -> users |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `created_by_id` -> [[database/schemas/infrastructure#`users`|users]]
+
+---
+
+## `automation_definition_versions`
+
+Immutable version snapshots for Automation Center definitions.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `automation_definition_id` | `uuid` | FK -> automation_definitions |
+| `version` | `integer` | |
+| `definition_json` | `jsonb` | Trigger, condition, resolver, action, wait, escalation config |
+| `created_by_id` | `uuid` | FK -> users |
+| `created_at` | `timestamptz` | |
+
+**Foreign Keys:** `automation_definition_id` -> [[#`automation_definitions`|automation_definitions]], `created_by_id` -> [[database/schemas/infrastructure#`users`|users]]
+
+---
+
+## `automation_templates`
+
+Operator-managed starter templates that customers can apply and edit.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `name` | `varchar(100)` | |
+| `description` | `text` | Nullable |
+| `resource_type` | `varchar(50)` | |
+| `template_json` | `jsonb` | Builder configuration copied into an automation definition |
+| `is_active` | `boolean` | |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+---
+
+## `automation_runs`
+
+Execution record for an automation definition version.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `automation_definition_id` | `uuid` | FK -> automation_definitions |
+| `automation_definition_version_id` | `uuid` | FK -> automation_definition_versions |
+| `workflow_instance_id` | `uuid` | FK -> workflow_instances; nullable until workflow starts |
+| `trigger_event_type` | `varchar(100)` | |
+| `resource_type` | `varchar(50)` | |
+| `resource_id` | `uuid` | |
+| `status` | `varchar(20)` | `matched`, `started`, `completed`, `failed`, `skipped` |
+| `started_at` | `timestamptz` | |
+| `completed_at` | `timestamptz` | Nullable |
+| `metadata_json` | `jsonb` | Nullable execution metadata |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `automation_definition_id` -> [[#`automation_definitions`|automation_definitions]], `automation_definition_version_id` -> [[#`automation_definition_versions`|automation_definition_versions]], `workflow_instance_id` -> [[#`workflow_instances`|workflow_instances]]
+
+---
+
 ## `workflow_definitions`
 
 | Column | Type | Notes |
@@ -873,6 +1064,14 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `initiated_by_id` | `uuid` | FK → employees |
 | `current_step_order` | `integer` | Which step is active |
 | `status` | `varchar(20)` | `in_progress`, `completed`, `cancelled` |
+| `requester_tenant_id` | `uuid` | Nullable; cross-company workflow provenance |
+| `source_tenant_id` | `uuid` | Nullable; cross-company source tenant |
+| `target_tenant_id` | `uuid` | Nullable; cross-company target tenant |
+| `subject_tenant_id` | `uuid` | Nullable; tenant that owns the workflow subject/resource |
+| `actor_tenant_id` | `uuid` | Nullable; tenant of the initiating actor |
+| `company_connection_id` | `uuid` | Nullable; Shared Platform company connection used for routing |
+| `data_sharing_scope` | `jsonb` | Nullable; approved fields/evidence scope for cross-company case |
+| `completion_policy` | `varchar(30)` | Nullable; behavior if company connection is revoked mid-case |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
@@ -887,13 +1086,79 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `id` | `uuid` | PK |
 | `workflow_instance_id` | `uuid` | FK → workflow_instances |
 | `workflow_step_id` | `uuid` | FK → workflow_steps |
-| `assigned_to_id` | `uuid` | FK → employees (resolved approver) |
+| `assigned_to_id` | `uuid` | Legacy single-assignee compatibility field; new implementation uses `workflow_step_assignments` |
 | `status` | `varchar(20)` | `pending`, `approved`, `rejected`, `skipped` |
 | `started_at` | `timestamptz` |  |
 | `completed_at` | `timestamptz` | Nullable |
 | `sla_deadline_at` | `timestamptz` | When timeout fires |
 
-**Foreign Keys:** `workflow_instance_id` → [[#`workflow_instances`|workflow_instances]], `workflow_step_id` → [[#`workflow_steps`|workflow_steps]], `assigned_to_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `workflow_instance_id` → [[#`workflow_instances`|workflow_instances]], `workflow_step_id` → [[#`workflow_steps`|workflow_steps]], `assigned_to_id` → [[database/schemas/core-hr#`employees`|employees]] (legacy only)
+
+---
+
+## `workflow_step_assignments`
+
+Resolved assignees/approvers for one active workflow step.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `workflow_step_instance_id` | `uuid` | FK -> workflow_step_instances |
+| `assigned_employee_id` | `uuid` | FK -> employees |
+| `assigned_user_id` | `uuid` | FK -> users; nullable if employee has no user account |
+| `sequence_order` | `integer` | Used for sequential approval |
+| `status` | `varchar(20)` | `pending`, `approved`, `rejected`, `skipped`, `expired` |
+| `resolved_from` | `varchar(50)` | Resolver that produced this assignment |
+| `assigned_at` | `timestamptz` | |
+| `acted_at` | `timestamptz` | Nullable |
+| `expires_at` | `timestamptz` | Nullable |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `workflow_step_instance_id` -> [[#`workflow_step_instances`|workflow_step_instances]], `assigned_employee_id` -> [[database/schemas/core-hr#`employees`|employees]], `assigned_user_id` -> [[database/schemas/infrastructure#`users`|users]]
+
+---
+
+## `case_conversations`
+
+Shared Platform metadata linking workflow/case state to WorkSync Chat private channels.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `channel_id` | `uuid` | FK -> WorkSync Chat `channels` |
+| `case_type` | `varchar(50)` | `approval`, `alert`, `request`, `escalation`, `workflow` |
+| `resource_type` | `varchar(50)` | Polymorphic resource type |
+| `resource_id` | `uuid` | Polymorphic resource id |
+| `workflow_instance_id` | `uuid` | FK -> workflow_instances |
+| `workflow_step_instance_id` | `uuid` | FK -> workflow_step_instances; nullable |
+| `status` | `varchar(20)` | `open`, `resolved`, `cancelled` |
+| `created_by_automation_id` | `uuid` | FK -> automation_definitions; nullable |
+| `created_at` | `timestamptz` | |
+| `resolved_at` | `timestamptz` | Nullable |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `channel_id` -> [[database/schemas/wms-chat#`channels`|channels]], `workflow_instance_id` -> [[#`workflow_instances`|workflow_instances]], `workflow_step_instance_id` -> [[#`workflow_step_instances`|workflow_step_instances]], `created_by_automation_id` -> [[#`automation_definitions`|automation_definitions]]
+
+---
+
+## `workflow_delivery_routes`
+
+Delivery routing state for workflow action cards.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `workflow_instance_id` | `uuid` | FK -> workflow_instances |
+| `workflow_step_instance_id` | `uuid` | FK -> workflow_step_instances |
+| `target_type` | `varchar(30)` | `employee`, `user`, `channel`, `inbox`, `teams` |
+| `target_id` | `uuid` | Target id where available |
+| `delivery_surface` | `varchar(30)` | `chat`, `inbox`, `teams_mirror`, `email`, `push`, `signalr` |
+| `status` | `varchar(20)` | `pending`, `sent`, `failed`, `cancelled` |
+| `last_sent_at` | `timestamptz` | Nullable |
+| `metadata_json` | `jsonb` | Provider/action-card metadata |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `workflow_instance_id` -> [[#`workflow_instances`|workflow_instances]], `workflow_step_instance_id` -> [[#`workflow_step_instances`|workflow_step_instances]]
 
 ---
 
@@ -905,13 +1170,18 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `workflow_definition_id` | `uuid` | FK → workflow_definitions |
 | `step_order` | `integer` | Execution order |
 | `step_type` | `varchar(30)` | `approval`, `notification`, `condition` |
-| `approver_type` | `varchar(30)` | `reporting_manager`, `department_head`, `role`, `specific_user` |
-| `approver_role_id` | `uuid` | FK → roles (nullable — only for role-based steps) |
+| `approver_type` | `varchar(30)` | Legacy compatibility field; do not use for new definitions |
+| `approver_role_id` | `uuid` | Legacy compatibility field; do not use for new definitions |
+| `resolver_type` | `varchar(50)` | Dynamic resolver type, e.g. `reporting_manager`, `selected_permission`, `case_participants` |
+| `resolver_config` | `jsonb` | Resolver parameters such as permission code, department/team/job level, employee id, connected tenant scope |
+| `approval_mode` | `varchar(30)` | `only_one_required`, `all_required`, `sequential` |
+| `action_config` | `jsonb` | Action-card, request-info, escalation, or task creation settings |
+| `delivery_config` | `jsonb` | Chat, Inbox, Teams mirror, notification routing preferences |
 | `conditions` | `jsonb` | Step conditions (e.g., skip if amount < threshold) |
 | `sla_hours` | `integer` | Hours before timeout action |
 | `on_timeout_action` | `varchar(30)` | `escalate`, `auto_approve`, `auto_reject` |
 
-**Foreign Keys:** `workflow_definition_id` → [[#`workflow_definitions`|workflow_definitions]], `approver_role_id` → [[database/schemas/auth#`roles`|roles]]
+**Foreign Keys:** `workflow_definition_id` → [[#`workflow_definitions`|workflow_definitions]], `approver_role_id` → [[database/schemas/auth#`roles`|roles]] (legacy only)
 
 ---
 

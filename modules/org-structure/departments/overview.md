@@ -12,15 +12,15 @@ Hierarchical department structure via self-referencing `parent_department_id`. H
 ## Database Tables
 
 ### `departments`
-Fields: `name`, `code`, `parent_department_id` (self-referencing), `head_employee_id`, `legal_entity_id`, `is_active`.
+Fields: `name`, `code`, `parent_department_id` (self-referencing), `head_employee_id`, `is_active`.
 
 ## API Endpoints
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/departments` | `employees:read` | List (flat or tree) |
-| POST | `/api/v1/departments` | `settings:admin` | Create |
-| PUT | `/api/v1/departments/{id}` | `settings:admin` | Update |
+| GET | `/api/v1/org/departments` | `employees:read` | List (flat or tree) |
+| POST | `/api/v1/org/departments` | `org:manage` | Create |
+| PUT | `/api/v1/org/departments/{id}` | `org:manage` | Update |
 
 ## Related
 

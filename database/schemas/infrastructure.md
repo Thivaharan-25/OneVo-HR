@@ -42,8 +42,14 @@
 | `id` | `uuid` | PK |
 | `name` | `varchar(200)` | Company name |
 | `slug` | `varchar(100)` | URL-safe identifier, UNIQUE |
+| `primary_contact_email` | `varchar(255)` | Primary customer contact captured during Developer Platform tenant profile creation |
+| `country_code` | `varchar(3)` | Tenant/company profile country code selected during provisioning |
 | `industry_profile` | `varchar(30)` | `office_it`, `manufacturing`, `retail`, `healthcare`, `custom` — **sets monitoring defaults at signup** |
+| `registration_profile_name` | `varchar(200)` | Registration/profile display name captured on the tenant profile, not a legal entity name |
+| `registration_number` | `varchar(50)` | Nullable registration/profile number captured on the tenant profile |
 | `company_size_range` | `varchar(30)` | Employee-count range captured during Developer Platform provisioning, e.g. `1-50`, `51-200`, `201-500` |
+| `timezone` | `varchar(50)` | Tenant default IANA timezone selected during profile setup |
+| `currency_code` | `varchar(3)` | Tenant default ISO 4217 currency selected during profile setup |
 | `status` | `varchar(20)` | `provisioning`, `trial`, `active`, `suspended`, `cancelled` |
 | `subscription_plan_id` | `uuid` | FK → subscription_plans |
 | `settings_json` | `jsonb` | Tenant-level settings |
@@ -60,7 +66,9 @@
 - `suspended` - Temporarily disabled tenant. Data is preserved; tenant-facing login and workflows are blocked.
 - `cancelled` - Commercially cancelled/offboarded tenant. Data retention, export, and purge follow the offboarding policy.
 
-`company_size_range` is tenant profile metadata, not legal-entity data. Detailed provisioning progress is stored in `tenant_provisioning_states` and `tenant_provisioning_validation_results`; do not add wizard-step progress columns to `tenants`.
+`country_code`, `registration_profile_name`, `registration_number`, `company_size_range`, `timezone`, and `currency_code` are tenant profile metadata, not legal-entity data. Detailed provisioning progress is stored in `tenant_provisioning_states` and `tenant_provisioning_validation_results`; do not add wizard-step progress columns to `tenants`.
+
+Tenant profile creation does not create legal entity records. Separate operating companies are separate tenants. The same owner email can be invited to multiple tenants and accepting one invitation grants access only to that tenant.
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## Stack
 
-- **Library:** Serilog 3.x
+- **Library:** Serilog 4.3.1
 - **Sinks:** Console (dev), Seq (dev), OpenTelemetry (staging/prod)
 - **Enrichers:** Correlation ID, Tenant ID, User ID, Machine Name
 

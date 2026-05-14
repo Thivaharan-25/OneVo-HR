@@ -1,121 +1,95 @@
-# Legal Entities — Testing
+# Company Registration Profile - Testing
 
-**Module:** Org Structure  
-**Feature:** Legal Entities  
-**Location:** `tests/ONEVO.Tests.Unit/Modules/OrgStructure/LegalEntityServiceTests.cs`
+**Module:** Org Structure
+**Feature:** Company Registration Profile
+**Location:** `tests/ONEVO.Tests.Unit/Modules/OrgStructure/CompanyProfileServiceTests.cs`
 
 ---
 
 ## Unit Tests
 
 ```csharp
-public class LegalEntityServiceTests
+public class CompanyProfileServiceTests
 {
-    private readonly Mock<ILegalEntityRepository> _repoMock = new();
+    private readonly Mock<ICompanyProfileRepository> _repoMock = new();
     private readonly Mock<ICountryRepository> _countryRepoMock = new();
     private readonly Mock<IDomainEventPublisher> _eventPublisherMock = new();
-    private readonly LegalEntityService _sut;
+    private readonly CompanyProfileService _sut;
 
-    public LegalEntityServiceTests()
+    public CompanyProfileServiceTests()
     {
-        _sut = new LegalEntityService(
+        _sut = new CompanyProfileService(
             _repoMock.Object,
             _countryRepoMock.Object,
             _eventPublisherMock.Object);
     }
 
     [Fact]
-    public async Task CreateAsync_WithValidData_ReturnsSuccess()
+    public async Task UpdateAsync_WithValidData_ReturnsSuccess()
     {
         _countryRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Guid>(), default))
             .ReturnsAsync(true);
-        _repoMock.Setup(r => r.IsRegistrationNumberUniqueAsync(
-                It.IsAny<string>(), It.IsAny<Guid>(), default))
-            .ReturnsAsync(true);
 
-        var command = new CreateLegalEntityCommand
+        var command = new UpdateCompanyProfileCommand
         {
             Name = "ONEVO Ltd",
             RegistrationNumber = "UK-12345678",
             CountryId = Guid.NewGuid(),
+            CurrencyCode = "GBP",
             AddressJson = """{"line1": "10 Downing St", "city": "London", "postcode": "SW1A 2AA"}"""
         };
 
-        var result = await _sut.CreateAsync(command, default);
+        var result = await _sut.UpdateAsync(command, default);
 
         result.IsSuccess.Should().BeTrue();
         result.Value!.Name.Should().Be("ONEVO Ltd");
-        result.Value.IsActive.Should().BeTrue();
-        _repoMock.Verify(r => r.AddAsync(It.IsAny<LegalEntity>(), default), Times.Once);
+        _repoMock.Verify(r => r.UpsertForCurrentTenantAsync(It.IsAny<CompanyRegistrationProfile>(), default), Times.Once);
     }
 
     [Fact]
-    public async Task CreateAsync_WithDuplicateRegistrationNumber_ReturnsFailure()
-    {
-        _countryRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Guid>(), default))
-            .ReturnsAsync(true);
-        _repoMock.Setup(r => r.IsRegistrationNumberUniqueAsync(
-                It.IsAny<string>(), It.IsAny<Guid>(), default))
-            .ReturnsAsync(false);
-
-        var command = new CreateLegalEntityCommand
-        {
-            Name = "Duplicate Corp",
-            RegistrationNumber = "UK-EXISTING",
-            CountryId = Guid.NewGuid()
-        };
-
-        var result = await _sut.CreateAsync(command, default);
-
-        result.IsSuccess.Should().BeFalse();
-        result.Error!.Message.Should().Contain("Registration number already exists");
-    }
-
-    [Fact]
-    public async Task CreateAsync_WithInvalidCountry_ReturnsFailure()
+    public async Task UpdateAsync_WithInvalidCountry_ReturnsFailure()
     {
         _countryRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Guid>(), default))
             .ReturnsAsync(false);
 
-        var command = new CreateLegalEntityCommand
+        var command = new UpdateCompanyProfileCommand
         {
             Name = "Bad Country Corp",
             RegistrationNumber = "XX-000",
-            CountryId = Guid.NewGuid()
+            CountryId = Guid.NewGuid(),
+            CurrencyCode = "USD"
         };
 
-        var result = await _sut.CreateAsync(command, default);
+        var result = await _sut.UpdateAsync(command, default);
 
         result.IsSuccess.Should().BeFalse();
         result.Error!.Message.Should().Contain("Country not found");
     }
 
     [Fact]
-    public async Task DeactivateAsync_WithActiveDepartments_ReturnsFailure()
+    public async Task UpdateAsync_WhenCountryChanges_PublishesCompanyProfileCountrySet()
     {
-        var entityId = Guid.NewGuid();
-        _repoMock.Setup(r => r.GetByIdAsync(entityId, default))
-            .ReturnsAsync(new LegalEntity { Id = entityId, IsActive = true });
-        _repoMock.Setup(r => r.HasActiveDepartmentsAsync(entityId, default))
+        var previousCountryId = Guid.NewGuid();
+        var newCountryId = Guid.NewGuid();
+
+        _repoMock.Setup(r => r.GetForCurrentTenantAsync(default))
+            .ReturnsAsync(new CompanyRegistrationProfile { CountryId = previousCountryId });
+        _countryRepoMock.Setup(r => r.ExistsAsync(newCountryId, default))
             .ReturnsAsync(true);
 
-        var result = await _sut.DeactivateAsync(entityId, default);
+        var command = new UpdateCompanyProfileCommand
+        {
+            Name = "ONEVO Ltd",
+            RegistrationNumber = "UK-12345678",
+            CountryId = newCountryId,
+            CurrencyCode = "GBP"
+        };
 
-        result.IsSuccess.Should().BeFalse();
-        result.Error!.Message.Should().Contain("active departments exist");
-    }
-
-    [Fact]
-    public async Task DeactivateAsync_WithNoDependencies_SetsInactive()
-    {
-        var entity = new LegalEntity { Id = Guid.NewGuid(), IsActive = true };
-        _repoMock.Setup(r => r.GetByIdAsync(entity.Id, default)).ReturnsAsync(entity);
-        _repoMock.Setup(r => r.HasActiveDepartmentsAsync(entity.Id, default)).ReturnsAsync(false);
-
-        var result = await _sut.DeactivateAsync(entity.Id, default);
+        var result = await _sut.UpdateAsync(command, default);
 
         result.IsSuccess.Should().BeTrue();
-        entity.IsActive.Should().BeFalse();
+        _eventPublisherMock.Verify(p => p.PublishAsync(
+            It.IsAny<CompanyProfileCountrySet>(), default), Times.Once);
     }
 }
 ```
@@ -123,56 +97,49 @@ public class LegalEntityServiceTests
 ## Integration Tests
 
 ```csharp
-public class LegalEntityEndpointTests : IClassFixture<ONEVOWebFactory>
+public class CompanyProfileEndpointTests : IClassFixture<ONEVOWebFactory>
 {
     private readonly HttpClient _adminClient;
 
-    public LegalEntityEndpointTests(ONEVOWebFactory factory)
+    public CompanyProfileEndpointTests(ONEVOWebFactory factory)
     {
-        _adminClient = factory.CreateAuthenticatedClient(role: "settings:admin");
+        _adminClient = factory.CreateAuthenticatedClient(permission: "org:manage");
     }
 
     [Fact]
-    public async Task CreateAndList_ReturnsCreatedEntity()
+    public async Task UpdateAndGet_ReturnsCurrentTenantProfile()
     {
-        var create = new
+        var update = new
         {
             Name = "Integration Test Ltd",
             RegistrationNumber = $"INT-{Guid.NewGuid():N}",
             CountryId = TestData.UkCountryId,
+            CurrencyCode = "GBP",
             AddressJson = """{"line1":"1 Test St","city":"London"}"""
         };
 
-        var createResp = await _adminClient.PostAsJsonAsync("/api/v1/legal-entities", create);
-        createResp.StatusCode.Should().Be(HttpStatusCode.Created);
+        var updateResp = await _adminClient.PutAsJsonAsync("/api/v1/org/company-profile", update);
+        updateResp.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var listResp = await _adminClient.GetFromJsonAsync<List<LegalEntityDto>>(
-            "/api/v1/legal-entities");
-        listResp.Should().Contain(e => e.RegistrationNumber == create.RegistrationNumber);
+        var profile = await _adminClient.GetFromJsonAsync<CompanyProfileDto>(
+            "/api/v1/org/company-profile");
+        profile!.RegistrationNumber.Should().Be(update.RegistrationNumber);
     }
 
     [Fact]
-    public async Task Create_DuplicateRegistrationNumber_Returns409()
+    public async Task Update_InvalidCountry_Returns422()
     {
-        var regNumber = $"DUP-{Guid.NewGuid():N}";
-        var body = new { Name = "First", RegistrationNumber = regNumber, CountryId = TestData.UkCountryId };
+        var update = new
+        {
+            Name = "Invalid Country Ltd",
+            RegistrationNumber = "BAD-COUNTRY",
+            CountryId = Guid.NewGuid(),
+            CurrencyCode = "GBP"
+        };
 
-        await _adminClient.PostAsJsonAsync("/api/v1/legal-entities", body);
-        var duplicate = await _adminClient.PostAsJsonAsync("/api/v1/legal-entities",
-            new { Name = "Second", RegistrationNumber = regNumber, CountryId = TestData.UkCountryId });
+        var response = await _adminClient.PutAsJsonAsync("/api/v1/org/company-profile", update);
 
-        duplicate.StatusCode.Should().Be(HttpStatusCode.Conflict);
-    }
-
-    [Fact]
-    public async Task TenantIsolation_CannotSeeOtherTenantEntities()
-    {
-        var otherTenantClient = _factory.CreateAuthenticatedClient(
-            role: "settings:admin", tenantId: TestData.OtherTenantId);
-
-        var entities = await otherTenantClient.GetFromJsonAsync<List<LegalEntityDto>>(
-            "/api/v1/legal-entities");
-        entities.Should().NotContain(e => e.TenantId == TestData.DefaultTenantId);
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 }
 ```
@@ -181,15 +148,12 @@ public class LegalEntityEndpointTests : IClassFixture<ONEVOWebFactory>
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| Create with valid data | Unit | Success, is_active = true |
-| Create with duplicate registration number | Unit | Failure, conflict |
-| Create with invalid country_id | Unit | Failure, validation error |
-| Deactivate with active departments | Unit | Failure, cannot deactivate |
-| Deactivate with no dependencies | Unit | Success, is_active = false |
-| Create and list round-trip | Integration | Entity appears in list |
-| Duplicate registration number across API | Integration | 409 Conflict |
-| Tenant isolation | Integration | Cannot see other tenant data |
-| Update registration number to existing | Integration | 409 Conflict |
+| Update with valid data | Unit | Success |
+| Update with invalid country_id | Unit | Failure, validation error |
+| Country change | Unit | Publishes `CompanyProfileCountrySet` |
+| Update and get round-trip | Integration | Profile reflects latest update |
+| Invalid country across API | Integration | 422 |
+| Tenant isolation | Integration | Profile is scoped to current tenant |
 
 ## Related
 

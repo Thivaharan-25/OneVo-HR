@@ -11,6 +11,9 @@ Channel provider configuration (email via Resend, Slack, webhooks).
 
 ## Database Tables
 
+Notifications does not own this table. `notification_channels` is physically owned by
+Shared Platform and referenced by this feature for delivery routing/provider configuration.
+
 ### `notification_channels`
 Fields: `channel_type` (`email`, `slack`, `webhook`), `config_json`, `credentials_encrypted`, `is_active`.
 

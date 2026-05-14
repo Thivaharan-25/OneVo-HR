@@ -1,15 +1,26 @@
 # Clean Architecture Overview: ONEVO
 
-**Last Updated:** 2026-05-08
+**Last Updated:** 2026-05-13
 
 Clean Architecture organises code into layers. The core rule is: dependencies point inward. Domain knows nothing about frameworks, databases, or the web.
 
 ```text
-ONEVO.Api                       HTTP, SignalR, JWT middleware
-  -> ONEVO.Infrastructure        EF Core, Redis, Hangfire, SMTP
-      -> ONEVO.Application       CQRS handlers, interfaces, DTOs, validation
-          -> ONEVO.Domain        Entities, value objects, business rules
+ONEVO.Api
+  -> ONEVO.Application
+  -> ONEVO.Infrastructure
+
+ONEVO.Infrastructure
+  -> ONEVO.Application
+  -> ONEVO.Domain
+
+ONEVO.Application
+  -> ONEVO.Domain
+
+ONEVO.Domain
+  -> no project dependencies
 ```
+
+Current implementation target: .NET 9 / C# 13. .NET 10 / C# 14 is a future upgrade target and must not be treated as already implemented until the backend projects move to `net10.0`.
 
 Domain events are optional. They are not required by Clean Architecture or CQRS.
 

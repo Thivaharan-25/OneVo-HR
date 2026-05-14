@@ -11,6 +11,9 @@ Per-channel notification templates using Liquid/Handlebars rendering.
 
 ## Database Tables
 
+Notifications does not own this table. `notification_templates` is physically owned by
+Shared Platform and referenced by this feature for rendering.
+
 ### `notification_templates`
 Key columns: `event_type` (e.g., `leave.approved`, `exception.alert.created`), `channel` (`email`, `in_app`, `push`, `signalr`), `subject_template`, `body_template`, `is_active`.
 

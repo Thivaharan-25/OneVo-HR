@@ -1,4 +1,4 @@
-﻿# Role Creation
+# Role Creation
 
 **Area:** Auth & Access
 **Trigger:** Admin clicks Create Role (user action â€” configuration)

@@ -1,4 +1,4 @@
-﻿# Employee Profiles â€” Testing Strategy
+# Employee Profiles - Testing Strategy
 
 **Module:** Core HR
 **Feature:** Employee Profiles
@@ -7,32 +7,30 @@
 
 ## Unit Tests
 
+Unit tests must exercise handlers/services through repository and service interfaces. They must not mock `IApplicationDbContext`, `DbSet<T>`, or EF Core queryables.
+
 ```csharp
-public class EmployeeServiceTests
+public class CreateEmployeeCommandHandlerTests
 {
-    private readonly Mock<IApplicationDbContext> _dbContextMock;
-    private readonly Mock<IMediator> _mediatorMock;
-    private readonly Mock<ICurrentTenantService> _tenantServiceMock;
-    private readonly EmployeeService _sut;
+    private readonly Mock<IEmployeeRepository> _employeeRepositoryMock = new();
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
+    private readonly Mock<ICurrentUser> _currentUserMock = new();
+    private readonly CreateEmployeeCommandHandler _sut;
 
-    public EmployeeServiceTests()
+    public CreateEmployeeCommandHandlerTests()
     {
-        _dbContextMock = new Mock<IApplicationDbContext>();
-        _mediatorMock = new Mock<IMediator>();
-        _tenantServiceMock = new Mock<ICurrentTenantService>();
-        _tenantServiceMock.Setup(x => x.TenantId).Returns(Guid.NewGuid());
+        _currentUserMock.Setup(x => x.TenantId).Returns(Guid.NewGuid());
 
-        _sut = new EmployeeService(
-            _dbContextMock.Object,
-            _mediatorMock.Object,
-            _tenantServiceMock.Object);
+        _sut = new CreateEmployeeCommandHandler(
+            _employeeRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            _currentUserMock.Object);
     }
 
     [Fact]
-    public async Task CreateAsync_ValidEmployee_ReturnsCreatedEmployee()
+    public async Task Handle_ValidEmployee_ReturnsCreatedEmployee()
     {
-        // Arrange
-        var dto = new CreateEmployeeDto
+        var command = new CreateEmployeeCommand
         {
             FirstName = "John",
             LastName = "Doe",
@@ -42,167 +40,69 @@ public class EmployeeServiceTests
             HireDate = DateOnly.FromDateTime(DateTime.Today)
         };
 
-        var employees = new List<Employee>().AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(x => x.Employees).Returns(employees.Object);
+        _employeeRepositoryMock
+            .Setup(x => x.EmailExistsAsync(command.Email, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
-        // Act
-        var result = await _sut.CreateAsync(dto, Guid.NewGuid());
+        var result = await _sut.Handle(command, CancellationToken.None);
 
-        // Assert
-        result.Should().NotBeNull();
-        result.FirstName.Should().Be("John");
-        result.LastName.Should().Be("Doe");
-        _dbContextMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _mediatorMock.Verify(x => x.Publish(
-            It.IsAny<EmployeeCreatedEvent>(),
-            It.IsAny<CancellationToken>()), Times.Once);
+        result.IsSuccess.Should().BeTrue();
+        _employeeRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Employee>(), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task CreateAsync_DuplicateEmail_ThrowsConflictException()
+    public async Task Handle_DuplicateEmail_ReturnsConflict()
     {
-        // Arrange
-        var tenantId = Guid.NewGuid();
-        var existing = new Employee { Email = "john@company.com", TenantId = tenantId, IsDeleted = false };
-        var employees = new List<Employee> { existing }.AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(x => x.Employees).Returns(employees.Object);
+        var command = new CreateEmployeeCommand { Email = "john@company.com" };
 
-        var dto = new CreateEmployeeDto { Email = "john@company.com" };
+        _employeeRepositoryMock
+            .Setup(x => x.EmailExistsAsync(command.Email, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
-        // Act
-        var act = () => _sut.CreateAsync(dto, Guid.NewGuid());
+        var result = await _sut.Handle(command, CancellationToken.None);
 
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>()
-            .WithMessage("*email*already exists*");
-    }
-
-    [Fact]
-    public async Task SoftDeleteAsync_ExistingEmployee_SetsIsDeletedTrue()
-    {
-        // Arrange
-        var employeeId = Guid.NewGuid();
-        var employee = new Employee
-        {
-            Id = employeeId,
-            IsDeleted = false,
-            TenantId = _tenantServiceMock.Object.TenantId
-        };
-        var employees = new List<Employee> { employee }.AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(x => x.Employees).Returns(employees.Object);
-
-        // Act
-        await _sut.SoftDeleteAsync(employeeId, Guid.NewGuid());
-
-        // Assert
-        employee.IsDeleted.Should().BeTrue();
-        employee.TerminationDate.Should().NotBeNull();
-        _mediatorMock.Verify(x => x.Publish(
-            It.IsAny<EmployeeTerminatedEvent>(),
-            It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task SoftDeleteAsync_AlreadyDeleted_ThrowsNotFoundException()
-    {
-        // Arrange
-        var employees = new List<Employee>().AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(x => x.Employees).Returns(employees.Object);
-
-        // Act
-        var act = () => _sut.SoftDeleteAsync(Guid.NewGuid(), Guid.NewGuid());
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-    }
-
-    [Fact]
-    public async Task UpdateAsync_ManagerIdCreatesCircle_ThrowsValidationException()
-    {
-        // Arrange
-        var empA = new Employee { Id = Guid.NewGuid(), ManagerId = null, TenantId = _tenantServiceMock.Object.TenantId, IsDeleted = false };
-        var empB = new Employee { Id = Guid.NewGuid(), ManagerId = empA.Id, TenantId = _tenantServiceMock.Object.TenantId, IsDeleted = false };
-        var employees = new List<Employee> { empA, empB }.AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(x => x.Employees).Returns(employees.Object);
-
-        var dto = new UpdateEmployeeDto { ManagerId = empB.Id }; // A -> B -> A = cycle
-
-        // Act
-        var act = () => _sut.UpdateAsync(empA.Id, dto, Guid.NewGuid());
-
-        // Assert
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*circular*");
-    }
-
-    [Fact]
-    public async Task GetDirectReportsAsync_ReturnsOnlyActiveDirectReports()
-    {
-        // Arrange
-        var managerId = Guid.NewGuid();
-        var tenantId = _tenantServiceMock.Object.TenantId;
-        var reports = new List<Employee>
-        {
-            new() { Id = Guid.NewGuid(), ManagerId = managerId, TenantId = tenantId, IsDeleted = false },
-            new() { Id = Guid.NewGuid(), ManagerId = managerId, TenantId = tenantId, IsDeleted = false },
-            new() { Id = Guid.NewGuid(), ManagerId = managerId, TenantId = tenantId, IsDeleted = true } // soft-deleted
-        };
-        var employees = reports.AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(x => x.Employees).Returns(employees.Object);
-
-        // Act
-        var result = await _sut.GetDirectReportsAsync(managerId);
-
-        // Assert
-        result.Should().HaveCount(2);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Contain("DuplicateEmail");
     }
 }
 
-public class CreateEmployeeValidatorTests
+public class UpdateEmployeeCommandHandlerTests
 {
-    private readonly CreateEmployeeValidator _sut = new();
+    private readonly Mock<IEmployeeRepository> _employeeRepositoryMock = new();
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
+    private readonly UpdateEmployeeCommandHandler _sut;
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Validate_EmptyFirstName_Fails(string firstName)
+    public UpdateEmployeeCommandHandlerTests()
     {
-        var dto = new CreateEmployeeDto { FirstName = firstName, LastName = "Doe", Email = "a@b.com" };
-        var result = _sut.Validate(dto);
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(dto.FirstName));
+        _sut = new UpdateEmployeeCommandHandler(
+            _employeeRepositoryMock.Object,
+            _unitOfWorkMock.Object);
     }
 
     [Fact]
-    public void Validate_InvalidEmailFormat_Fails()
+    public async Task Handle_ManagerIdCreatesCircle_ReturnsValidationFailure()
     {
-        var dto = new CreateEmployeeDto { FirstName = "John", LastName = "Doe", Email = "not-an-email" };
-        var result = _sut.Validate(dto);
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(dto.Email));
-    }
+        var employeeId = Guid.NewGuid();
+        var managerId = Guid.NewGuid();
 
-    [Fact]
-    public void Validate_ValidEmployee_Passes()
-    {
-        var dto = new CreateEmployeeDto
-        {
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john@company.com",
-            DepartmentId = Guid.NewGuid(),
-            HireDate = DateOnly.FromDateTime(DateTime.Today)
-        };
-        var result = _sut.Validate(dto);
-        result.IsValid.Should().BeTrue();
+        _employeeRepositoryMock
+            .Setup(x => x.WouldCreateManagerCycleAsync(employeeId, managerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await _sut.Handle(
+            new UpdateEmployeeCommand { EmployeeId = employeeId, ManagerId = managerId },
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Contain("ManagerCycle");
     }
 }
 ```
 
----
-
 ## Integration Tests
+
+Integration tests may verify persistence through the API response and repository interfaces. Direct `ApplicationDbContext`, `IApplicationDbContext`, or `DbSet<T>` access is not part of the test contract.
 
 ```csharp
 public class EmployeesApiTests : IClassFixture<CustomWebApplicationFactory>
@@ -221,7 +121,6 @@ public class EmployeesApiTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task CreateEmployee_ValidPayload_Returns201AndPersists()
     {
-        // Arrange
         var department = await _factory.SeedDepartmentAsync();
         var payload = new
         {
@@ -232,104 +131,63 @@ public class EmployeesApiTests : IClassFixture<CustomWebApplicationFactory>
             hireDate = "2026-01-15"
         };
 
-        // Act
         var response = await _client.PostAsJsonAsync("/api/v1/employees", payload);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var body = await response.Content.ReadFromJsonAsync<EmployeeResponse>();
         body!.FirstName.Should().Be("Integration");
         body.Email.Should().Be(payload.email);
 
-        // Verify persisted
         using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
-        var persisted = await db.Employees.FindAsync(body.Id);
+        var employees = scope.ServiceProvider.GetRequiredService<IEmployeeRepository>();
+        var persisted = await employees.GetByIdAsync(body.Id, CancellationToken.None);
         persisted.Should().NotBeNull();
     }
 
     [Fact]
     public async Task DeleteEmployee_ExistingEmployee_Returns204AndSoftDeletes()
     {
-        // Arrange
         var employee = await _factory.SeedEmployeeAsync();
 
-        // Act
         var response = await _client.DeleteAsync($"/api/v1/employees/{employee.Id}");
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
-        var deleted = await db.Employees.IgnoreQueryFilters()
-            .FirstOrDefaultAsync(e => e.Id == employee.Id);
+        var employees = scope.ServiceProvider.GetRequiredService<IEmployeeRepository>();
+        var deleted = await employees.GetByIdIncludingDeletedAsync(employee.Id, CancellationToken.None);
         deleted!.IsDeleted.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task GetEmployee_WithoutPermission_Returns403()
-    {
-        // Arrange
-        var noPermClient = _factory.CreateClient();
-        noPermClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", _factory.GetTestToken()); // no permissions
-
-        // Act
-        var response = await noPermClient.GetAsync($"/api/v1/employees/{Guid.NewGuid()}");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    public async Task ListEmployees_Paginated_ReturnsCorrectPage()
-    {
-        // Arrange
-        for (int i = 0; i < 15; i++)
-            await _factory.SeedEmployeeAsync();
-
-        // Act
-        var response = await _client.GetAsync("/api/v1/employees?page=1&pageSize=10");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<PagedResponse<EmployeeResponse>>();
-        body!.Items.Should().HaveCount(10);
-        body.TotalCount.Should().BeGreaterOrEqualTo(15);
     }
 }
 ```
-
----
 
 ## Test Scenarios
 
 | Scenario | Input | Expected Output | Type |
 |:---------|:------|:----------------|:-----|
-| Create valid employee | Complete DTO with valid FKs | 201 + employee persisted + EmployeeCreated event | Integration |
-| Create with duplicate email | Email already exists in tenant | 409 Conflict | Unit |
-| Create with duplicate employee_number | Number already taken | 409 Conflict | Unit |
-| Update with circular manager | manager_id forms a cycle | 422 Validation error | Unit |
-| Soft delete active employee | Valid employee ID | 204 + is_deleted=true + EmployeeTerminated event | Integration |
-| Soft delete already-deleted | Deleted employee ID | 404 Not Found | Unit |
+| Create valid employee | Complete DTO with valid FKs | 201 + employee persisted | Integration |
+| Create with duplicate email | Email already exists in tenant | Conflict result or 409 | Unit/API |
+| Create with duplicate employee number | Number already taken | Conflict result or 409 | Unit/API |
+| Update with circular manager | Manager relationship forms a cycle | Validation failure | Unit |
+| Soft delete active employee | Valid employee ID | 204 + `is_deleted=true` | Integration |
+| Soft delete already-deleted | Deleted employee ID | Not found result or 404 | Unit/API |
 | Get own profile | Authenticated customer web session | 200 + own employee data | Integration |
-| Get direct reports | Manager ID with 3 active + 1 deleted report | 200 + 3 results (excludes soft-deleted) | Unit |
-| List with pagination | page=2, pageSize=5 | 200 + correct slice of data | Integration |
-| Create missing required fields | Empty first_name | 400 + validation errors | Unit |
-| Cross-tenant access | Employee from tenant B | 404 (tenant filter) | Integration |
-
----
+| Get direct reports | Manager ID with active and deleted reports | Deleted reports excluded | Unit |
+| List with pagination | page and pageSize | Correct page and total count | Integration |
+| Create missing required fields | Empty required field | Validation errors | Unit/API |
+| Cross-tenant access | Employee from another tenant | 404 or forbidden according to endpoint contract | Integration |
 
 ## Test Data
 
-- **CustomWebApplicationFactory**: Extends `WebApplicationFactory<Program>`, uses Testcontainers for PostgreSQL, seeds a default tenant, and provides helper methods like `SeedEmployeeAsync()` and `SeedDepartmentAsync()`.
-- **Test tokens**: Generated via `GetTestToken(params string[] permissions)` that creates JWT with specified permission claims scoped to the test tenant.
-- **Fixtures**: Each test seeds its own data to avoid cross-test interference. Tests run in parallel with separate database schemas per test class.
+- `CustomWebApplicationFactory` extends `WebApplicationFactory<Program>`, uses Testcontainers for PostgreSQL, seeds a default tenant, and provides helper methods like `SeedEmployeeAsync()` and `SeedDepartmentAsync()`.
+- Test tokens are generated via `GetTestToken(params string[] permissions)` with permission claims scoped to the test tenant.
+- Each test seeds its own data to avoid cross-test interference.
+- Tests that need deleted rows use repository methods that explicitly expose deleted-row reads for verification, not direct EF query filters.
 
 ## Related
 
 - [[modules/core-hr/employee-profiles/overview|Employee Profiles Overview]]
+- [[backend/repository-persistence-boundary|Repository Persistence Boundary]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 

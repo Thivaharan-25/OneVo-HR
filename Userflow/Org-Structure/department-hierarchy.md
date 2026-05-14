@@ -9,7 +9,7 @@
 
 ## Preconditions
 
-- At least one legal entity exists → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- Company registration profile exists → [[Userflow/Org-Structure/legal-entity-setup|Company Registration Profile Setup]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
@@ -20,10 +20,10 @@
 
 ### Step 2: Create Department
 - **UI:** Click "Add Department" → enter name, code
-- **Validation:** Name unique within legal entity, code unique globally
+- **Validation:** Name unique within tenant, code unique within tenant
 
 ### Step 3: Set Hierarchy
-- **UI:** Select parent department (or set as root) → select legal entity → assign cost center (optional)
+- **UI:** Select parent department (or set as root) → assign cost center (optional)
 - **Backend:** DepartmentService.CreateAsync() → [[modules/org-structure/departments/overview|Departments]]
 
 ### Step 4: Assign Department Owner
@@ -48,7 +48,7 @@
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | Circular hierarchy | Validation fails | "Cannot set parent — would create circular reference" |
-| Duplicate name in entity | Validation fails | "Department name already exists in this legal entity" |
+| Duplicate name in tenant | Validation fails | "Department name already exists" |
 | Delete with employees | Blocked | "Reassign 15 employees before deleting" |
 
 ## Events Triggered
@@ -58,7 +58,7 @@
 
 ## Related Flows
 
-- [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- [[Userflow/Org-Structure/legal-entity-setup|Company Registration Profile Setup]]
 - [[Userflow/Org-Structure/team-creation|Team Creation]]
 - [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
 - [[Userflow/Employee-Management/employee-transfer|Employee Transfer]]

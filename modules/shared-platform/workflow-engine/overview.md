@@ -101,9 +101,16 @@ Teams is for discussion only. ONEVO remains the source of truth for permissions,
 
 ## Database Tables
 
-The current schema documents still model the older workflow shape with `approver_type`, `approver_role_id`, and one `assigned_to_id` per step instance. That is not enough for dynamic resolvers, case conversations, template-backed automations, delivery routing, or multiple approver modes.
+The approved migration direction is additive and keeps legacy workflow rows readable. New workflow definitions must use resolver fields and child assignment rows instead of fixed role targeting.
 
-Do not implement database changes until the Automation Center database plan is approved. The likely migration area is Shared Platform workflow tables plus WorkSync Chat case conversation metadata.
+Approved migration decisions:
+
+- Resolver configuration lives on `workflow_steps` as `resolver_type` plus `resolver_config`.
+- Multiple approvers live in `workflow_step_assignments`.
+- Case conversation metadata lives in Shared Platform `case_conversations` and links to WorkSync Chat `channels`.
+- Delivery routing state lives in `workflow_delivery_routes`.
+- Cross-company context lives as nullable provenance fields on `workflow_instances`.
+- Legacy `approver_type`, `approver_role_id`, and `assigned_to_id` stay during expand-contract migration but are not used for new definitions.
 
 ## API Endpoints
 
@@ -114,11 +121,13 @@ Do not implement database changes until the Automation Center database plan is a
 | PATCH | `/api/v1/automations/{id}` | `automation:manage` | Edit, enable, disable, or archive automation |
 | GET | `/api/v1/automation-templates` | `automation:read` | List practical starter templates |
 | POST | `/api/v1/automation-templates/{id}/apply` | `automation:manage` | Create editable automation from template |
-| GET | `/api/v1/workflows/{resourceType}/{resourceId}` | Authenticated | Workflow or case status |
-| POST | `/api/v1/workflows/{instanceId}/approve` | Authenticated | Approve current assigned step |
-| POST | `/api/v1/workflows/{instanceId}/reject` | Authenticated | Reject current assigned step |
-| POST | `/api/v1/workflows/{instanceId}/request-info` | Authenticated | Request more information |
-| POST | `/api/v1/cases/{caseId}/resolve` | Authenticated | Resolve a case conversation |
+| GET | `/api/v1/workflows/{resourceType}/{resourceId}` | Authenticated + workflow participant or resource-scoped viewer | Workflow or case status |
+| POST | `/api/v1/workflows/{instanceId}/approve` | Authenticated + assigned approver | Approve current assigned step |
+| POST | `/api/v1/workflows/{instanceId}/reject` | Authenticated + assigned approver | Reject current assigned step |
+| POST | `/api/v1/workflows/{instanceId}/request-info` | Authenticated + assigned participant | Request more information |
+| POST | `/api/v1/cases/{caseId}/resolve` | Authenticated + case participant with resolve rights | Resolve a case conversation |
+
+`Authenticated` by itself only means the caller is logged in. Workflow action endpoints must also verify assignment, case participation, or resource-scoped access before returning data or accepting decisions.
 
 ## Related
 

@@ -1,6 +1,6 @@
 # Project Context: ONEVO
 
-> Phase 1 backend deployment rule: ONEVO has exactly one backend deployment unit, `src/ONEVO.Api/ONEVO.Api.csproj`. Customer APIs live under `/api/v1/*`; Developer Console admin APIs live under `/admin/v1/*` in the same ASP.NET Core host. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed as a second backend service.
+> Phase 1 backend deployment rule: ONEVO has exactly one backend deployment unit, `src/ONEVO.Api/ONEVO.Api.csproj`. Customer APIs live under `/api/v1/*`; Developer Console admin APIs live under `/admin/v1/*` in the same ASP.NET Core host. `ONEVO.Admin.Api` is deprecated historical scaffold only, does not exist in the current `Onevo_Backend/src` tree, and must not be recreated or deployed as a second backend service.
 
 ## 1. Platform Overview
 
@@ -109,21 +109,21 @@ Do not create or buy a new domain per tenant. Tenant access uses ONEVO-owned sub
 
 ### Architecture Style
 
-- **Clean Architecture + CQRS** — single deployable .NET 9 application with 4-layer structure
+- **Clean Architecture + CQRS** — single deployable .NET 9 / C# 13 application with 4-layer structure; .NET 10 / C# 14 is a future upgrade target
 - Strict layer and feature separation enforced via namespaces and dependency rules
 - Inter-module communication: Application-owned interfaces/services for normal cross-feature work; optional in-process domain events only for justified post-save side effects
 - See [[backend/folder-structure|Folder Structure]] for complete solution tree
 
 ## Solution Structure
 
-ONEVO follows **Clean Architecture + CQRS** (.NET 9). See [[backend/folder-structure|Folder Structure]] for the complete solution tree.
+ONEVO follows **Clean Architecture + CQRS** (.NET 9 current, .NET 10 target). See [[backend/folder-structure|Folder Structure]] for the complete solution tree.
 
 **Layers:**
 - `ONEVO.Domain` - entities, value objects, business rules, optional domain events (zero external dependencies)
 - `ONEVO.Application` — CQRS handlers (MediatR), interfaces, DTOs, validators
 - `ONEVO.Infrastructure` — EF Core (single ApplicationDbContext, ~300 tables), JWT, BCrypt, Redis, Hangfire, SignalR
 - `ONEVO.Api` — single ASP.NET Core host for customer APIs (`/api/v1/*`) and Developer Console admin APIs (`/admin/v1/*`)
-- `ONEVO.Admin.Api` — deprecated scaffold only; must not be deployed as a second backend service
+- `ONEVO.Admin.Api` — deprecated historical scaffold only; does not exist in the current `Onevo_Backend/src` tree and must not be recreated or deployed as a second backend service
 
 ## 4. Key Stats
 
@@ -365,7 +365,7 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 ## 11. AI Agent Instructions
 
 - **Prioritization:** Always read this file and [[AI_CONTEXT/rules|Rules]] before generating any code
-- **Tech Stack:** See [[AI_CONTEXT/tech-stack|Tech Stack]] for full details (.NET 9, Vite + React 19, WPF/MAUI agent)
+- **Tech Stack:** See [[AI_CONTEXT/tech-stack|Tech Stack]] for full details (.NET 9 current / .NET 10 target backend, Vite + React 19, Windows Service/MAUI agent)
 - **Module Boundaries:** Never violate module boundaries. See [[backend/module-boundaries|Module Boundaries]]
 - **Multi-Tenancy:** Every query must be tenant-scoped. See [[infrastructure/multi-tenancy|Multi Tenancy]]
 - **Module Details:** Each module has its own doc in `modules/`. Read the specific module doc before working on it.

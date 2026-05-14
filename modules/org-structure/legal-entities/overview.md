@@ -22,8 +22,8 @@ Fields: `name`, `registration_number`, `country_id`, `currency_code`, `address_j
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/company-profile` | `settings:admin` | Get current tenant registration profile |
-| PUT | `/api/v1/company-profile` | `settings:admin` | Update current tenant registration profile |
+| GET | `/api/v1/org/company-profile` | `org:manage` | Get current tenant registration profile |
+| PUT | `/api/v1/org/company-profile` | `org:manage` | Update current tenant registration profile |
 
 ## Calendar Integration
 

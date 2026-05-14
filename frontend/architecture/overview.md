@@ -76,7 +76,7 @@ SignalR pushes are **cache invalidation signals**, not primary data sources. Whe
           â”‚                  â”‚
           â–¼                  â–¼
 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  .NET 9 API Gateway (per-tenant)        â”‚
+â”‚  .NET 9 current API Gateway (per-tenant)â”‚
 â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
 â”‚  â”‚ Core HR  â”‚ â”‚ Workforceâ”‚ â”‚ Payroll â”‚ â”‚
 â”‚  â”‚ Service  â”‚ â”‚ Service  â”‚ â”‚ Service â”‚ â”‚

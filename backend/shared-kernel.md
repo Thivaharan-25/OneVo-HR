@@ -5,7 +5,9 @@
 `ONEVO.SharedKernel` is not a separate project. Shared primitives live in:
 
 - `ONEVO.Domain/Common/` for entities, value objects, errors, and optional domain-event marker types.
-- `ONEVO.Application/Common/` for interfaces, models, and pipeline behaviors.
+- `ONEVO.Application/Common/RepositoryInterfaces/` for common persistence contracts.
+- `ONEVO.Application/Common/ServiceInterfaces/` for common service contracts.
+- `ONEVO.Application/Common/Models/` and `ONEVO.Application/Common/Behaviors/` for shared models and pipeline behaviors.
 
 ## Domain Common
 
@@ -73,13 +75,16 @@ public class Result<T>
 
 Handlers return `Result<T>` for expected business outcomes. Exceptions are for infrastructure failures and unexpected states.
 
-### Interfaces
+### Repository And Service Interfaces
 
-Application defines interfaces. Infrastructure implements them.
+Application defines repository and service interfaces. Infrastructure implements them.
 
-Common examples:
+Common repository examples:
 
 - `IUnitOfWork`
+
+Common service examples:
+
 - `ICurrentUser`
 - `ICacheService`
 - `IEncryptionService`
@@ -94,7 +99,8 @@ Common examples:
 Feature-specific repositories and readers live under:
 
 ```text
-ONEVO.Application/Features/{Feature}/Interfaces/
+ONEVO.Application/Features/{Feature}/{SubFeature}/RepositoryInterfaces/
+ONEVO.Application/Features/{Feature}/{SubFeature}/ServiceInterfaces/
 ```
 
 ## Validation Location
@@ -102,7 +108,7 @@ ONEVO.Application/Features/{Feature}/Interfaces/
 Command validators live beside the command:
 
 ```text
-ONEVO.Application/Features/{Feature}/Commands/{UseCase}/{UseCase}Validator.cs
+ONEVO.Application/Features/{Feature}/{SubFeature}/Commands/{UseCase}/{UseCase}Validator.cs
 ```
 
 Do not use a feature-level `Validators/` folder.
@@ -112,8 +118,8 @@ Do not use a feature-level `Validators/` folder.
 Only create event folders when a use case has a justified post-save side effect:
 
 ```text
-ONEVO.Domain/Features/{Feature}/Events/
-ONEVO.Application/Features/{Feature}/EventHandlers/
+ONEVO.Domain/Features/{Feature}/{SubFeature}/Events/
+ONEVO.Application/Features/{Feature}/{SubFeature}/EventHandlers/
 ```
 
 See [[backend/domain-events|Domain Events]] for the decision rule.

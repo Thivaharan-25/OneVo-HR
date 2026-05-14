@@ -9,12 +9,13 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 | Table / System | Role |
 |---|---|
 | `tenants` | Read + write — status, plan, metadata |
-| `legal_entities` | Write during draft creation — primary legal entity name, registration number, country, currency, and address |
 | `users` | Read — per-tenant user list, last login |
 | `tenant_settings` | Write — initial and override configuration |
 | `subscription_plans` | Read reusable global plan catalog; assign selected plan to tenant |
 | `tenant_subscriptions` | Write tenant-specific commercial terms, billing dates, payment collection modes, gateway refs, full-license payment evidence, custom contract value, and maintenance state |
 | `module_catalog` | Read reusable global module catalog and default pricing |
+| setup services catalog | Read + write — module-connected free/global and paid setup services |
+| configuration templates | Read + write — reusable setup templates and tenant-specific template applications |
 | `payment_gateway_configs` | Read/write safe Stripe/PayHere gateway config metadata and encrypted secrets |
 | module entitlement registry | Write through module interfaces - which modules are active per tenant |
 | role templates / tenant roles | Read + write through Auth interfaces - starter role configuration |
@@ -40,7 +41,7 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 - **Impersonation** — generates a short-lived JWT scoped to the tenant's super-admin role, for support debugging without requiring the customer's credentials. All impersonation events are audit-logged.
 
 ### Subscription / Commercial Terms
-Sets or changes a tenant's plan and commercial terms. This is used during provisioning and as a reviewed post-activation exception tool.
+Sets or changes a tenant's plan and commercial terms. This is used during tenant creation Step 2 and as a reviewed post-activation exception tool.
 
 > **Important:** Post-activation override is an exception path. The normal, primary flow is: sales agreement -> operator creates provisioning draft -> operator assigns commercial terms/modules/role templates/settings -> invite tenant owner -> activate. Use post-activation subscription override only for:
 > - Enterprise deals closed by sales or manually adjusted by finance
@@ -71,30 +72,38 @@ Pricing is configurable, not hardcoded. Operators can configure module price bra
 Plan and module base costs are managed in the reusable catalogs:
 
 - `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plans from selected packages/modules, company-size range, calculated prices, optional override prices, active state, and AI monthly token limits.
-- `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module metadata and `price_brackets`.
-- `PATCH /admin/v1/tenants/{id}/subscription` stores tenant-specific commercial terms, selected company-size range, selected module keys, calculated price snapshots, negotiated plan pricing, and AI monthly token limit.
+- `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module metadata, module-owned permission set, `price_brackets`, full-license price, and maintenance rate.
+- `PATCH /admin/v1/tenants/{id}/subscription` stores tenant-specific commercial terms, selected company-size range, selected module keys, calculated price snapshots, negotiated monthly/annual/full-license/maintenance pricing, AI monthly token limit, Work Management storage limit, billing evidence references, and payment exception/grace dates.
 - `PUT /admin/v1/tenants/{id}/modules` stores tenant-specific module sales state and price overrides.
 
 Changing a reusable catalog price must not silently rewrite existing tenant contracts. Existing tenants keep their stored commercial terms unless ONEVO explicitly runs a reviewed reprice/migration process.
 
 For subscription tenants, enabled modules are plan-included modules plus paid add-ons and trial modules, minus disabled modules. For full-license tenants, enabled modules are owned license modules plus maintenance-included modules, purchased add-ons, and trial modules, minus disabled modules. Expired maintenance may block support, updates, or new modules according to contract policy, but it should not automatically remove already-owned core modules unless the signed agreement says so.
 
-### Manual Customer Provisioning Wizard
-A 7-step, draft-safe wizard for onboarding tenants through the internal operator-only flow. A tenant in `provisioning` status is invisible to the main OneVo app until the wizard is confirmed.
+### Manual Customer Creation Wizard
+A draft-safe two-step wizard creates the tenant profile and commercial/subscription terms through the internal operator-only flow. A tenant in `provisioning` status is invisible to the main OneVo app until the tenant is configured and activated.
 
 | Step | What Happens |
 |---|---|
-| 1. Account Setup | Company name, slug, legal entity name, registration number, country, timezone, legal entity currency, industry, and company size |
-| 2. Plan Assignment | Pick reusable subscription plan, confirm company-size price band, select plan modules, review calculated module-total price, optionally override price, set AI monthly token limit when AI is included, commercial model, payment collection mode, billing start date, contract value, discounts, full-license payment evidence, and maintenance billing terms |
-| 3. Module Selection | Toggle active modules, sales state, trial dates, and module-level pricing overrides for add-ons/future modules |
-| 4. Role Template Setup | Apply reusable ONEVO defaults, create reusable operator templates, or create tenant-specific roles from the module-filtered permission catalog |
-| 5. Initial Configuration | Set key `tenant_settings`: monitoring mode, leave policy defaults, transparency mode |
-| 6. Admin User Invite | Create first tenant owner/admin user, assign a valid tenant owner role, and send set-password invite email |
-| 7. Review & Confirm | Summary view — one-click confirm sets `tenants.status` to `active` |
+| 1. Customer Profile | Company name, slug, primary contact email, country, industry, registration/profile name, registration number, company size, timezone, and currency |
+| 2. Commercial Selection | Pick reusable subscription plan, confirm company-size price band, select plan modules, review calculated monthly/annual/full-license/maintenance prices, optionally override pricing, set AI monthly token limit, set Work Management storage limit, choose subscription or full-license + maintenance, select payment collection mode, attach manual billing evidence, and set approved payment exception/grace dates |
 
-The wizard is **draft-safe**: partially completed tenants remain in `provisioning` status and can be resumed before confirmation.
+The wizard is **draft-safe**: partially completed tenants remain in `provisioning` status and can be resumed before completion.
 
-Account setup persistence rule: company size is stored on `tenants.company_size_range`; legal entity name, registration number, country, currency, and address are stored on the primary `legal_entities` row; default timezone is stored in `tenant_settings`.
+Customer profile persistence rule: country, registration/profile name, registration number, company size, timezone, currency, and contact metadata are stored on the tenant profile/draft state. Tenant creation does not create `legal_entities` rows. Separate companies are separate tenants; the same owner email can be invited to multiple tenants without merging tenant data.
+
+### Post-Creation Manage / Configure Flow
+After the two-step tenant creation succeeds, the tenant card exposes **Manage/Configure**. This is where operators prepare the tenant for use before activation.
+
+| Area | What Happens |
+|---|---|
+| Module Entitlements | Confirm active modules from the selected plan, sales state, trial dates, module-level pricing overrides, and module-specific setup-service needs |
+| Role And Permission Templates | Apply reusable ONEVO defaults, create reusable operator templates, or create tenant-specific roles from the module-filtered permission catalog |
+| Tenant Configuration And Setup Services | Apply configuration templates, role/org/job-family/leave/onboarding/app-allowlist/monitoring/data-import templates, customize tenant-specific configuration, and mark module-connected free/global or paid setup services complete |
+| Tenant Owner Invite | Explicitly create first tenant owner/admin user, assign a valid tenant owner role, and send set-password invite email only when the operator clicks invite |
+| Activation Review | Summary/checklist view; activation sets `tenants.status` to `active` only after required commercial, module, role, template, setup-service, and settings checks pass |
+
+No invite email is sent by tenant creation, commercial selection, module configuration, setup completion, or activation. Email is sent only by the explicit tenant owner invite action.
 
 ### Plan, Module, and Cost Rules
 
@@ -103,7 +112,10 @@ Account setup persistence rule: company size is stored on `tenants.company_size_
 - The company-size price band uses the same values as tenant creation, defaults from `tenants.company_size_range`, and can be changed by the operator before saving commercial terms.
 - Operator price overrides never erase calculated prices; both calculated and effective/override values are preserved for audit.
 - AI-enabled plans require a positive monthly token limit; non-AI plans leave the token limit blank.
-- A selected plan can include modules, but the provisioning wizard must still show the effective module set so the operator can confirm, add trials, add purchased modules, or disable exceptions.
+- Work Management plans with storage-backed features require a positive storage limit or selected plan default; non-Work Management plans leave storage entitlement blank.
+- Manual subscription, manual full-license payment, and manual maintenance payment require billing evidence or an approved external reference plus an audit reason.
+- Payment exception/grace periods are commercial exceptions that can apply to subscription tenants or full-license/maintenance tenants and are snapshotted onto the tenant commercial record.
+- A selected plan can include modules, but the post-creation Manage/Configure flow must still show the effective module set so the operator can confirm, add trials, add purchased modules, or disable exceptions.
 - Module prices can come from `module_catalog`, be included by plan, or be overridden per tenant. Store the pricing model, price, currency, dates, and sales state for audit and billing.
 - `available` and `quoted` module states do not grant tenant-facing access. `purchased`, `trial`, `subscription_included`, and `maintenance_included` can grant access while valid.
 - Commercial entitlement decides what the tenant has bought or trialed. RBAC decides which users inside that tenant can use the entitled modules.
@@ -111,11 +123,29 @@ Account setup persistence rule: company size is stored on `tenants.company_size_
 ### Role Rules During Provisioning
 
 - Reusable role templates are global operator-managed blueprints.
-- Tenant-specific roles can be created directly during provisioning without becoming global templates.
+- Tenant-specific roles can be created directly during Manage/Configure without becoming global templates.
 - Applying a template materializes normal tenant-scoped Auth roles and permissions.
 - Role creation does not require job levels. Job levels and org hierarchy are only needed for scoped access, approvals, escalation, and workflow routing.
 - The first owner/admin invite must assign a materialized tenant role that satisfies the minimum owner/admin permission set.
 - The operator never sets the tenant owner's final password; the owner sets it through the invite link.
+- No invite email is sent automatically by profile creation, commercial selection, module configuration, setup completion, or activation. Owner invitation is an explicit operator action.
+- The same owner email can be invited to more than one tenant. Each accepted invitation grants access only to that tenant.
+
+### Module Catalog Permission Rules
+
+- Each permission belongs to exactly one module.
+- Module Catalog screens must show which module owns each permission.
+- A permission assigned to one module cannot be assigned to another module unless it is first removed from the original module through an explicit catalog change.
+- Subscription plan creation and tenant role/template setup use this module ownership to filter assignable permissions.
+
+### Setup Services And Templates
+
+- Every setup service is connected to one or more module keys.
+- Free/global setup services are auto-added when a tenant has a matching entitled module, can still be configured by the operator, and must not create billing.
+- Paid setup services must be explicitly selected and tracked.
+- A setup service can only be applied when at least one linked module is in the tenant's entitled module set.
+- Reusable templates include Configuration Templates, Role Templates, Org Structure Templates, Job Family Templates, Leave Policy Templates, Onboarding Templates, App Allowlist Templates, Monitoring Policy Templates, and Data Import Mapping Templates.
+- Applying a reusable template creates tenant-specific configuration that can be customized without changing the global template.
 
 ## Notes
 

@@ -34,7 +34,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `registered_agents` | Agent Gateway | 8 tables |
 | `skills` | Skills & Learning | 6 tables |
 | `departments` | Org Structure | 5 tables |
-| `legal_entities` | Org Structure | 5 tables |
+| `company_registration_profiles` | Org Structure | Tenant registration profile |
 | `roles` | Auth & Security | 5 tables |
 | `leave_types` | Leave | 4 tables |
 | `subscription_plans` | Shared Platform | 3 tables |
@@ -83,15 +83,15 @@ These tables are referenced by many others — design changes here have wide imp
 | `job_families` | 5 | tenant_id→tenants |
 | `job_levels` | 5 | tenant_id→tenants |
 | `job_titles` | 7 | tenant_id→tenants |
-| `legal_entities` | 9 | tenant_id→tenants, country_id→countries |
-| `office_locations` | 8 | tenant_id→tenants, legal_entity_id→legal_entities |
+| `company_registration_profiles` | 9 | tenant_id->tenants, country_id->countries |
+| `office_locations` | 7 | tenant_id->tenants |
 | `team_members` | 3 | employee_id→employees |
 | `team_member_roles` | 4 | team_id→teams, employee_id→employees, team_role_id→team_roles |
 | `team_role_permissions` | 3 | team_role_id→team_roles, permission_id→permissions |
 | `team_roles` | 5 | team_id→teams |
 | `teams` | 7 | tenant_id→tenants, team_lead_id→employees |
 
-> `legal_entities.currency_code` stores the ISO 4217 currency for that legal entity. Currency defaults from the selected country during provisioning, but the saved value belongs to the legal entity, not `tenants`.
+> `company_registration_profiles.currency_code` stores the ISO 4217 currency for the tenant registration profile. Currency defaults from the selected country during provisioning, but the saved value belongs to the company registration profile, not `tenants`.
 
 ### [[database/schemas/core-hr|Core HR]] (13 tables)
 
@@ -137,7 +137,7 @@ These tables are referenced by many others — design changes here have wide imp
 |:------|:--------|:--------|
 | `calendar_events` | 18 | tenant_id→tenants, created_by_id->users |
 | `calendar_event_participants` | 2 | event_id→calendar_events, employee_id→employees |
-| `holiday_calendar_settings` | 13 | tenant_id→tenants, legal_entity_id→legal_entities, updated_by_id→users |
+| `holiday_calendar_settings` | 13 | tenant_id->tenants, registration_profile_id->company_registration_profiles, updated_by_id->users |
 | `external_calendar_connections` | 15 | tenant_id→tenants, user_id→users |
 | `external_calendar_event_links` | 14 | tenant_id→tenants, calendar_event_id→calendar_events, external_calendar_connection_id→external_calendar_connections |
 
@@ -154,7 +154,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `monitoring_feature_toggles` | 11 | tenant_id->tenants |
 | `remote_work_location_change_requests` | 11 | tenant_id->tenants, employee_id->employees, reviewed_by_id->users |
 | `tenant_settings` | 12 | tenant_id->tenants |
-| `work_locations` | 16 | tenant_id->tenants, legal_entity_id->legal_entities, created_by_id->users |
+| `work_locations` | 16 | tenant_id->tenants, created_by_id->users |
 
 ---
 
@@ -244,7 +244,7 @@ Phase 2 Microsoft Teams workspace sync additions (optional integration, not SSO)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
-| `workspaces` | 12 | tenant_id->tenants, owner_id->users, legal_entity_id->legal_entities |
+| `workspaces` | 12 | tenant_id->tenants, owner_id->users |
 | `workspace_roles` | 4 | workspace_id->workspaces |
 | `workspace_members` | 11 | workspace_id->workspaces, user_id->users, employee_id->employees, workspace_role_id->workspace_roles |
 | `workspace_hr_team_links` | 10 | tenant_id->tenants, workspace_id->workspaces, hr_team_id->teams |
@@ -366,7 +366,7 @@ Phase 2 Microsoft Teams chat sync additions (optional integration, not SSO):
 
 ## Phase 1 — Shared Foundation
 
-### [[database/schemas/shared-platform|Shared Platform]] (35 tables)
+### [[database/schemas/shared-platform|Shared Platform]] (42 tables)
 
 > Old external-provisioning tables removed because Work Management is internal.
 
@@ -382,7 +382,12 @@ Phase 2 Microsoft Teams integration additions (optional integration, not SSO):
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
 | `api_keys` | 11 | tenant_id→tenants, created_by_id->users |
-| `approval_actions` | 8 | actor_id→employees, delegated_to_id→employees |
+| `automation_definition_versions` | 6 | automation_definition_id->automation_definitions, created_by_id->users |
+| `automation_definitions` | 11 | tenant_id->tenants, created_by_id->users |
+| `automation_runs` | 12 | tenant_id->tenants, automation_definition_id->automation_definitions, workflow_instance_id->workflow_instances |
+| `automation_templates` | 8 | global/operator-managed templates |
+| `approval_actions` | 10 | actor_id→employees, delegated_to_id→employees, workflow_step_assignment_id->workflow_step_assignments |
+| `case_conversations` | 12 | tenant_id->tenants, channel_id->channels, workflow_instance_id->workflow_instances |
 | `compliance_exports` | 10 | tenant_id→tenants, requested_by_id->users, target_user_id→users |
 | `escalation_rules` | 11 | tenant_id→tenants, escalate_to_role_id→roles, created_by_id->users |
 | `global_app_catalog` | 11 | created_by_id→dev_platform_accounts |
@@ -411,9 +416,11 @@ Phase 2 Microsoft Teams integration additions (optional integration, not SSO):
 | `webhook_deliveries` | 9 | tenant_id→tenants |
 | `webhook_endpoints` | 8 | tenant_id→tenants, created_by_id->users |
 | `workflow_definitions` | 11 | tenant_id→tenants, created_by_id->users |
-| `workflow_instances` | 10 | tenant_id→tenants, initiated_by_id→employees |
+| `workflow_instances` | 18 | tenant_id→tenants, initiated_by_id→employees; nullable cross-company tenant provenance fields |
+| `workflow_delivery_routes` | 10 | tenant_id->tenants, workflow_instance_id->workflow_instances, workflow_step_instance_id->workflow_step_instances |
+| `workflow_step_assignments` | 11 | tenant_id->tenants, workflow_step_instance_id->workflow_step_instances, assigned_employee_id->employees, assigned_user_id->users |
 | `workflow_step_instances` | 8 | assigned_to_id→employees |
-| `workflow_steps` | 9 | approver_role_id→roles |
+| `workflow_steps` | 14 | approver_role_id→roles legacy only; resolver_type/resolver_config for new definitions |
 
 ### [[database/schemas/agent-gateway|Agent Gateway]] (6 tables)
 
@@ -445,9 +452,9 @@ Phase 2 Microsoft Teams integration additions (optional integration, not SSO):
 | `employee_pension_enrollments` | 6 | employee_id→employees |
 | `payroll_adjustments` | 7 | employee_id→employees |
 | `payroll_audit_trail` | 7 | — |
-| `payroll_connections` | 5 | tenant_id→tenants, legal_entity_id→legal_entities |
+| `payroll_connections` | 5 | tenant_id->tenants, company_registration_profile_id->company_registration_profiles |
 | `payroll_providers` | 6 | — |
-| `payroll_runs` | 13 | legal_entity_id→legal_entities, executed_by_id→users |
+| `payroll_runs` | 13 | company_registration_profile_id->company_registration_profiles, executed_by_id->users |
 | `payslips` | 20 | employee_id→employees |
 | `pension_plans` | 6 | tenant_id→tenants |
 | `tax_configurations` | 5 | country_id→countries |

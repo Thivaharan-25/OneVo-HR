@@ -1,8 +1,8 @@
 # Backend Architecture
 
-> Planning status: backend implementation has not started yet. This folder is the architecture and implementation blueprint.
+> Status: backend implementation exists in `../Onevo_Backend`. This folder is the architecture and implementation blueprint, and should stay aligned with the actual solution.
 
-**.NET 9 Clean Architecture + CQRS** - feature folders, single `ApplicationDbContext`, strict layer boundaries.
+**.NET 9 / C# 13 Clean Architecture + CQRS** - feature folders, single `ApplicationDbContext`, strict layer boundaries. .NET 10 / C# 14 is a future upgrade target, not the current implemented runtime.
 
 ## Quick Links
 
@@ -34,6 +34,6 @@ Domain events are optional. Use [[backend/domain-events|Domain Events]] only for
 ## Related
 
 - [[frontend/README|Frontend]] - Vite + React 19
-- [[database/README|Database]] - PostgreSQL 16
+- [[database/README|Database]] - PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation
 - [[code-standards/backend-standards|Backend Standards]] - .NET naming and patterns
 - [[Userflow/README|User Flows]] - end-to-end feature flows

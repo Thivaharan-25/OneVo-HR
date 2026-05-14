@@ -19,7 +19,7 @@ The list renders all tenants across all statuses. Each row shows:
 
 **Filter bar:** filter by status, plan tier, or free-text search on name/slug.
 
-Provisioning-status tenants (in-progress wizard) appear in this list with a yellow **"In Progress"** badge. Clicking them resumes the provisioning wizard at the last completed step — see `provisioning-flow.md`.
+Provisioning-status tenants appear in this list with a yellow **"In Progress"** badge. Clicking them resumes tenant creation if Step 2 is incomplete, or opens the tenant card Manage/Configure flow when the two-step creation is complete but activation is still pending — see `provisioning-flow.md`.
 
 **API:** `GET /admin/v1/tenants`
 
@@ -33,7 +33,7 @@ Click any active or suspended tenant row to open its detail page. The detail pag
 
 | Tab | Contents |
 |---|---|
-| **Overview** | Company profile, registration profile, country, currency, company size, plan name, billing dates, `status`, employee count, agent count, last login (any user) |
+| **Overview** | Company profile, primary contact, company size, plan name, billing dates, commercial model, payment exception/grace state, `status`, employee count, agent count, last login (any user) |
 | **Connected Companies** | Active and pending company connections, owner email eligibility, access grants, and connection audit |
 | **Flags** | All per-tenant feature flag overrides — see `feature-flags.md` |
 | **Settings** | Current `tenant_settings` values; editable by admin+ |

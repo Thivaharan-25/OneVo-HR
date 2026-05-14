@@ -9,6 +9,8 @@
 
 Configurable application allowlist that defines which apps are permitted during work time. Follows the **hybrid permission model** — tenant sets defaults, roles can override, individual employees can have further overrides. Non-allowed app usage is logged and triggers exception alerts (NOT blocked).
 
+App identities should come from the Developer Platform App Catalog wherever possible. The App Catalog can be seeded by ONEVO, bulk-approved from tenant observations, or created from a Super Admin/operator Tray App discovery session that captures currently running applications before tenant rollout.
+
 ## Three-Tier Model
 
 ```
@@ -96,7 +98,8 @@ New rule type: `non_allowed_app_usage`
 3. **Role changes cascade.** If an employee's role changes, their resolved allowlist updates on next policy sync.
 4. **Audit trail.** All allowlist changes are logged in `app_allowlist_audit` with who changed what and when.
 5. **Categories are informational.** Category is for reporting grouping only — it doesn't affect allow/block logic.
-6. **Case-insensitive matching.** App names matched case-insensitively (`chrome` = `Chrome` = `CHROME`).
+6. **Process name is authoritative.** Matching should use the catalog/agent `process_name` case-insensitively. Display app name is metadata only.
+7. **Templates use catalog identities.** App Allowlist Templates should reference catalog ids/process names and categories such as browser, communication/meeting, development, office/documentation, design, productivity, and other.
 
 ## Related
 

@@ -4,7 +4,7 @@
 
 The App Catalog Manager maintains the **global app catalog** — a OneVo-curated library of known applications (Chrome, Teams, Slack, VS Code, etc.) that is made available to all tenants. HR admins use this catalog as the primary source when building their monitoring allowlists, instead of typing app names manually or waiting for organic discovery.
 
-It also surfaces **uncatalogued apps** — processes appearing frequently across tenant agents that the dev team hasn't yet classified — so they can be bulk-approved into the catalog with one action.
+It also surfaces **uncatalogued apps** — processes appearing frequently across tenant agents or on an ONEVO Super Admin/operator device running the Tray App that the dev team hasn't yet classified — so they can be bulk-approved into the catalog with one action.
 
 ---
 
@@ -52,12 +52,27 @@ This auto-links all existing tenant observations across all tenants instantly. F
 
 ### Reported But Uncatalogued
 
-A prioritized list of process names appearing in `observed_applications` across multiple tenants that have no `global_catalog_id` match.
+A prioritized list of process names appearing in `observed_applications` across multiple tenants or from an operator Tray App discovery session that have no `global_catalog_id` match.
 
 - Sorted by: number of tenants reporting the app (descending)
 - Shows: process name, tenant count, aggregate employee count across all tenants, first/last seen
 - **Bulk approve**: Select one or more entries → fill metadata (name, category, publisher, icon) → save → creates catalog entries + auto-links all existing observations in one transaction
 - **Dismiss**: Mark as noise (e.g., OS process, telemetry agent) — won't reappear in this list
+
+### Operator Tray App Discovery
+
+A Super Admin/operator can install the Tray App on their own device to capture currently running applications for catalog setup. This is used to identify common browser, documentation, development, meeting, communication, office, design, and productivity tools before tenant rollout.
+
+Discovered apps are saved as candidate identities with:
+
+- process name as the canonical matching key
+- display name
+- publisher
+- category
+- source = operator discovery
+- optional icon/metadata
+
+Approved candidates can become global catalog entries and can be reused in App Allowlist Templates for tenant provisioning.
 
 ### Usage Analytics
 
@@ -80,7 +95,7 @@ The dev team pre-seeds ~40 apps at platform launch so every new tenant's HR admi
 | Office | Word, Excel, PowerPoint, OneNote |
 | Development | VS Code, Visual Studio, IntelliJ, Git, Docker, Terminal |
 | Design | Figma, Adobe Photoshop, Adobe Illustrator |
-| Productivity | Notion, Trello, Asana |
+| Documentation/Productivity | Notion, Trello, Asana, note/documentation tools |
 
 All seeded entries have `is_public = true` and `is_productive_default` set appropriately.
 
@@ -92,3 +107,4 @@ All seeded entries have `is_public = true` and `is_productive_default` set appro
 - `is_productive_default` is a starting classification only — HR admins can override productivity classification per app in their own monitoring configuration without affecting the catalog.
 - Removing an app from the catalog (`is_public = false`) does not delete existing allowlist entries — tenants that already added the app retain it. The change only prevents the app from appearing in new catalog browsing sessions.
 - All catalog writes are audit-logged with the developer account, timestamp, and field-level changes.
+- App Allowlist Templates should reference catalog identities by process name/catalog id, not free-text display names.

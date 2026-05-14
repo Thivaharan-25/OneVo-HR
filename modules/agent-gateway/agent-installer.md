@@ -103,7 +103,7 @@ For enterprise deployment via Microsoft Intune, SCCM, or Group Policy:
 | Requirement | Details |
 |:------------|:--------|
 | Windows version | Windows 10 (1809+) or Windows 11 |
-| .NET Runtime | .NET 9 Desktop Runtime (bundled in self-contained package, or pre-installed for framework-dependent) |
+| .NET Runtime | .NET 9 Desktop Runtime current; .NET 10 Desktop Runtime target pending WorkPulse device validation |
 | Architecture | x64 only (no ARM64 in Phase 1) |
 | Permissions | Admin rights for install (or MDM-pushed) |
 | Network | HTTPS access to `agent.onevo.com` (Agent Gateway) |

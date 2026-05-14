@@ -12,41 +12,47 @@ Platform-admin JWTs are issued with issuer `onevo-platform-admin` and have a 30-
 
 ## Tenant Console
 
-Manages tenant lifecycle: creation, status, subscription, module assignment, provisioning, and impersonation.
+Manages tenant lifecycle: creation, status, subscription, module assignment, post-creation Manage/Configure, activation, and impersonation.
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/admin/v1/subscription-plans` | List reusable subscription/commercial plans for provisioning, including selected packages/modules, company-size range, calculated/override prices, and AI token limits |
+| `GET` | `/admin/v1/subscription-plans` | List reusable subscription/commercial plans for tenant creation, including selected packages/modules, company-size range, calculated/override prices, and AI token limits |
 | `POST` | `/admin/v1/subscription-plans` | Create a reusable subscription/commercial plan from selected packages/modules and company-size bracket pricing |
 | `PATCH` | `/admin/v1/subscription-plans/{id}` | Update reusable plan metadata, included modules, company-size price band, active state, calculated/override prices, and AI token limits |
-| `GET` | `/admin/v1/modules/catalog` | List reusable module catalog, sellable state, and company-size bracket pricing |
-| `POST` | `/admin/v1/modules/catalog` | Create a reusable module catalog item with price brackets, full-license price, and maintenance rate |
-| `PATCH` | `/admin/v1/modules/catalog/{moduleKey}` | Update reusable module metadata, sellable state, price brackets, full-license price, and maintenance rate |
+| `GET` | `/admin/v1/modules/catalog` | List reusable module catalog, sellable state, company-size bracket pricing, and module-owned permissions |
+| `POST` | `/admin/v1/modules/catalog` | Create a reusable module catalog item with price brackets, full-license price, maintenance rate, module limits, and permission ownership |
+| `PATCH` | `/admin/v1/modules/catalog/{moduleKey}` | Update reusable module metadata, sellable state, price brackets, full-license price, maintenance rate, module limits, and permission ownership |
 | `GET` | `/admin/v1/payment-gateways` | List safe Stripe/PayHere gateway config metadata |
 | `POST` | `/admin/v1/payment-gateways` | Create Stripe or PayHere gateway config with encrypted secrets |
 | `PATCH` | `/admin/v1/payment-gateways/{id}` | Update gateway metadata or rotate encrypted secrets |
-| `GET` | `/admin/v1/tenants/validate` | Validate tenant slug, company, domain, and registration fields |
+| `GET` | `/admin/v1/tenants/validate` | Validate tenant slug, company name, domain, and primary contact fields |
 | `GET` | `/admin/v1/tenants` | List all tenants |
-| `POST` | `/admin/v1/tenants` | Create tenant (manual provisioning — step 1) |
+| `POST` | `/admin/v1/tenants` | Create tenant draft through creation wizard Step 1 |
 | `GET` | `/admin/v1/tenants/{id}` | Get tenant detail |
 | `PATCH` | `/admin/v1/tenants/{id}` | Edit draft tenant details before activation |
 | `PATCH` | `/admin/v1/tenants/{id}/status` | Suspend, unsuspend, or activate a tenant |
 | `POST` | `/admin/v1/tenants/{id}/impersonate` | Issue an impersonation token (15 min TTL, `impersonation: true`) |
-| `PATCH` | `/admin/v1/tenants/{id}/subscription` | Assign or override subscription/commercial terms (provisioning step 2; exception tool after activation) |
-| `PUT` | `/admin/v1/tenants/{id}/modules` | Set tenant module entitlements and sales state (provisioning step 3) |
+| `PATCH` | `/admin/v1/tenants/{id}/subscription` | Assign or override subscription/commercial terms (creation wizard Step 2; exception tool after activation) |
+| `PUT` | `/admin/v1/tenants/{id}/modules` | Set tenant module entitlements and sales state during Manage/Configure |
 | `PATCH` | `/admin/v1/tenants/{id}/provision/confirm` | Finalise provisioning draft -> set status active |
-| `GET` | `/admin/v1/tenants/{id}/permissions/catalog` | Return universal permissions plus permissions exposed by enabled tenant modules (provisioning step 4) |
-| `GET` | `/admin/v1/role-templates` | List global/default role templates (provisioning step 4) |
-| `POST` | `/admin/v1/role-templates` | Create operator-managed role template from a module-filtered permission set (provisioning step 4) |
+| `GET` | `/admin/v1/tenants/{id}/permissions/catalog` | Return universal permissions plus permissions exposed by enabled tenant modules during Manage/Configure |
+| `GET` | `/admin/v1/role-templates` | List global/default role templates during Manage/Configure |
+| `POST` | `/admin/v1/role-templates` | Create operator-managed role template from a module-filtered permission set |
 | `PATCH` | `/admin/v1/role-templates/{id}` | Edit reusable non-system role template and version the change |
-| `GET` | `/admin/v1/tenants/{id}/roles` | List materialized tenant roles during provisioning |
-| `POST` | `/admin/v1/tenants/{id}/roles` | Create tenant-specific role during provisioning |
-| `POST` | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Materialize a role template into tenant-scoped roles (provisioning step 4) |
+| `GET` | `/admin/v1/tenants/{id}/roles` | List materialized tenant roles during Manage/Configure |
+| `POST` | `/admin/v1/tenants/{id}/roles` | Create tenant-specific role during Manage/Configure |
+| `POST` | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Materialize a role template into tenant-scoped roles during Manage/Configure |
 | `PUT` | `/admin/v1/tenants/{id}/roles/{roleId}/permissions` | Adjust a tenant role using only permissions in the tenant catalog |
-| `POST` | `/admin/v1/tenants/{id}/invite-admin` | Create first super-admin and send invite email (provisioning step 6) |
+| `GET` | `/admin/v1/setup-services` | List global/free, paid, and module-specific setup services |
+| `POST` | `/admin/v1/setup-services` | Create a setup service definition and optional module binding |
+| `PUT` | `/admin/v1/tenants/{id}/setup-services` | Select and track setup services required for the tenant |
+| `GET` | `/admin/v1/configuration-templates` | List reusable configuration, role, org, job-family, leave, onboarding, app-allowlist, monitoring, and data-import templates |
+| `POST` | `/admin/v1/configuration-templates` | Create a reusable configuration/template record |
+| `POST` | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply a reusable template as tenant-specific configuration |
+| `POST` | `/admin/v1/tenants/{id}/invite-admin` | Create first super-admin and send invite email only by explicit Manage/Configure invite action |
 | `GET` | `/admin/v1/tenants/{id}/provisioning-summary` | Return review data, missing steps, warnings, and activation blockers |
 
-Commercial terms track the tenant's commercial model (`subscription` or `full_license_maintenance`), billing cycle/currency, contract dates, payment collection mode, gateway references, full-license payment evidence, maintenance status/renewal date, discount, and any custom contract value. Plans are reusable catalog records; operators do not create a new plan per tenant unless product intentionally creates a reusable custom plan. Module entitlements are resolved from the active subscription/commercial plan, plan allowed modules, tenant module grants, and tenant feature grants; RBAC permissions are filtered after entitlement resolution.
+Commercial terms track the tenant's commercial model (`subscription` or `full_license_maintenance`), billing cycle/currency, contract dates, payment collection mode, gateway references, manual billing evidence, payment exception/grace dates, full-license payment evidence, maintenance status/renewal date, discount, Work Management storage limits, AI token limits, and any custom contract value. Plans are reusable catalog records; operators do not create a new plan per tenant unless product intentionally creates a reusable custom plan. Module entitlements are resolved from the active subscription/commercial plan, plan allowed modules, tenant module grants, and tenant feature grants; RBAC permissions are filtered after entitlement resolution.
 
 Payment collection rules:
 
@@ -64,11 +70,19 @@ Plan price calculation contract:
 - `POST/PATCH /admin/v1/subscription-plans` accepts selected module keys and company-size range, returns calculated monthly/annual prices, and stores optional override monthly/annual prices separately.
 - Example: `core_hr` at `$3.50` plus `work_management` at `$4.00` for `51-200` employees returns `$7.50` per employee.
 - AI-enabled plans must include a positive `ai_token_limit_per_month`; non-AI plans leave it null.
-- `/admin/v1/tenants/{id}/subscription` stores a tenant subscription snapshot of selected packages/modules, company-size range, calculated prices, override prices, and AI token limit.
+- Work Management plans with storage-backed features must include a positive storage limit or selected plan default; non-Work Management plans leave it null.
+- `/admin/v1/tenants/{id}/subscription` stores a tenant subscription snapshot of selected packages/modules, company-size range, calculated prices, monthly/annual/full-license/maintenance override prices, AI token limit, storage limit, manual billing evidence references, and payment exception/grace dates.
+
+Module permission ownership contract:
+
+- Each permission belongs to exactly one module.
+- Module Catalog APIs must show the owning module for every assigned permission.
+- A permission already assigned to one module cannot be assigned to another module unless it is explicitly removed from the original module first.
+- Tenant permission catalogs and role-template APIs use module ownership plus tenant entitlements to decide what permissions can be shown or assigned.
 
 Module sales states are commercial states. `available` and `quoted` do not grant tenant-facing access. `purchased`, `trial`, `subscription_included`, and `maintenance_included` can grant access while the entitlement is valid.
 
-Role templates are reusable blueprints. Applying a template creates normal tenant-scoped Auth roles. Operators may also create tenant-specific roles directly during provisioning without saving them as reusable templates. Role creation does not require job levels; job levels only matter later for hierarchy scope and workflow routing.
+Role templates are reusable blueprints. Applying a template creates normal tenant-scoped Auth roles. Operators may also create tenant-specific roles directly during Manage/Configure without saving them as reusable templates. Role creation does not require job levels; job levels only matter later for hierarchy scope and workflow routing.
 
 ---
 

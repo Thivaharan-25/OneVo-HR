@@ -26,8 +26,8 @@ Plus an **IDE Extension** — a full chat sidebar and tag-based automation surfa
 
 | Layer | Technology |
 |:------|:-----------|
-| **Backend** | .NET 9, C# 13, Minimal APIs |
-| **Database** | PostgreSQL 16 + EF Core 9 — single `ApplicationDbContext`, ~288 tables |
+| **Backend** | .NET 9 / C# 13 current; .NET 10 / C# 14 target after migration |
+| **Database** | PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation + EF Core 9 current / EF Core 10 target — single `ApplicationDbContext`, ~288 tables |
 | **Frontend** | Vite + React 19, TypeScript, React Router v7, shadcn/ui, TanStack Query |
 | **Real-time** | SignalR — agent↔server bidirectional; server→browser for WorkSync live updates and IDE extension |
 | **Background Jobs** | Hangfire |
@@ -229,7 +229,7 @@ Week 6 (IDE Extension — tag engine + entitlement):
 All 38 modules share one `ApplicationDbContext`. WorkSync tables (`projects`, `tasks`, `sprints`, `boards`, `channels`, etc.) are EF Core entities exactly like HR tables. `backend/bridge-api-contracts.md` is **DEPRECATED**. Do not implement it.
 
 ### Hybrid Permission Model
-NOT simple RBAC. Roles are **templates** — Super Admin can grant any feature to any role or individual employee. Access is hierarchy-scoped (manager sees their team only). WorkSync adds workspace-level roles (Admin/Member/Viewer) on top of HR tenant-level roles. Both are evaluated together for cross-module flows. Team roles (`team_roles`, `team_role_permissions`) stack on top of workspace roles. See [[modules/auth/overview|Auth]].
+NOT simple RBAC. Roles are **templates**. Tenant Super Admin / tenant owner can grant permissions only from that tenant's enabled module catalog (subscription plan modules + paid add-ons + trial modules + approved feature grants - disabled modules). Tenant Super Admin does not bypass commercial entitlement; disabled or unpurchased module permissions must not be shown, assigned, or accepted by APIs. Platform Super Admin is separate and applies only to Developer Platform / operator routes. Access is hierarchy-scoped (manager sees their team only), with explicit bypass grants for approved exceptions. WorkSync adds workspace-level roles (Admin/Member/Viewer) on top of HR tenant-level roles. Both are evaluated together for cross-module flows. Team roles (`team_roles`, `team_role_permissions`) stack on top of workspace roles. See [[modules/auth/overview|Auth]].
 
 ### Temporary Password Flow
 HR sets temporary credentials when creating a WorkSync user via the onboarding flow. The `users` table has `must_change_password` (boolean), `password_set_by_admin` (boolean), and `temporary_password_expires_at` (timestamptz). On first login, if `must_change_password = true`, the backend returns a 403 with code `MUST_CHANGE_PASSWORD` — the frontend blocks all navigation and forces password change before issuing a full session.

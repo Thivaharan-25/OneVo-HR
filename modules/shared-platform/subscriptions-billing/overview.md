@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Plan definitions, module pricing, tenant subscriptions, invoices, AI token limits, and payment methods. Integrated with Stripe and PayHere.
+Plan definitions, module pricing, tenant subscriptions, invoices, AI token limits, Work Management storage limits, manual billing evidence, approved payment exception/grace periods, and payment methods. Integrated with Stripe and PayHere.
 
 Stripe and PayHere are the primary Phase 1 payment gateways. The selected provider is stored as `gateway_provider` (`stripe` or `payhere`) on the tenant subscription/commercial setup. Gateway API keys, merchant secrets, and webhook secrets are stored through encrypted payment gateway configuration and must never be returned by API responses.
 
@@ -19,7 +19,9 @@ NOT tenant-scoped. Fields: `name`, `code` (`starter`, `professional`, `enterpris
 Reusable plan prices are calculated from selected package/module price brackets and the selected company-size range. Overrides are stored separately from calculated prices.
 
 ### `module_catalog`
-NOT tenant-scoped. Fields include `module_key`, `name`, `pillar`, `phase`, `pricing_unit`, `price_brackets` (jsonb), `full_license_price`, `maintenance_rate`, and `is_active`.
+NOT tenant-scoped. Fields include `module_key`, `name`, `pillar`, `phase`, `pricing_unit`, `price_brackets` (jsonb), `full_license_price`, `maintenance_rate`, module-owned `permission_codes_json`, module limit flags such as `requires_ai_token_limit` and `requires_storage_limit`, and `is_active`.
+
+Each permission belongs to exactly one module. The Developer Platform must show which module owns each permission and reject assigning one permission to multiple modules.
 
 Example calculation: Core HR at `$3.50` for `51-200` employees plus Work Management at `$4.00` for `51-200` employees produces `$7.50 per employee`.
 
@@ -27,7 +29,7 @@ Example calculation: Core HR at `$3.50` for `51-200` employees plus Work Managem
 Per-plan feature inclusions: `feature_key`, `limit_value`, `is_included`.
 
 ### `tenant_subscriptions`
-Active subscription: `plan_id`, `billing_cycle`, `status`, `gateway_provider`, `gateway_customer_ref`, `gateway_subscription_ref`, selected company-size range, selected module keys, calculated price snapshots, override prices, and AI monthly token limit.
+Active subscription/commercial record: `plan_id`, `billing_cycle`, `status`, `gateway_provider`, `gateway_customer_ref`, `gateway_subscription_ref`, selected company-size range, selected module keys, calculated price snapshots, monthly/annual/full-license/maintenance override prices, AI monthly token limit, Work Management storage limit, manual billing evidence/reference, and approved payment exception/grace dates.
 
 Also stores trial and grace period fields snapshotted at tenant creation time:
 
@@ -43,7 +45,10 @@ Also stores trial and grace period fields snapshotted at tenant creation time:
 - `trial_period_days` (plan default: 30): the free-access window for a new tenant before payment is required. If set to `0`, no trial is applied and the subscription status begins as `active` immediately.
 - `unpaid_grace_period_days` (plan default: 7): once a tenant goes unpaid (past `TrialEndDate` or a missed recurring payment), this is how many days access continues before suspension or termination.
 - **Both values are snapshotted onto `TenantSubscription` at tenant creation time.** Changes to the plan catalog — including changes to plan-level trial or grace period defaults — do NOT retroactively alter existing tenant contracts.
-- The ONEVO operator may override either value per-tenant at creation time by supplying `trial_period_days` and/or `unpaid_grace_period_days` in the `subscription` block of the `POST /admin/v1/tenants` request body.
+- The ONEVO operator may override either value per tenant during commercial selection.
+- Approved payment exception/grace periods may also be set on the tenant commercial record for subscription or full-license/maintenance tenants. They are tenant-specific exceptions and are not retroactively changed by plan catalog updates.
+- Manual subscription, license, or maintenance payments require billing evidence or an external reference plus an audit reason.
+- AI-capable modules require a positive monthly token limit. Work Management storage-backed modules require a storage limit or selected plan default.
 
 ### `subscription_invoices`
 Synced from Stripe or PayHere: `invoice_number`, `amount`, `status` (`draft`, `open`, `paid`, `void`), gateway invoice/payment reference.
