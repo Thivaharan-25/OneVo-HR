@@ -2,7 +2,7 @@
 
 ## Architecture Decisions
 
-> Phase 1 deployment rule: the Developer Console uses `/admin/v1/*` inside the single `ONEVO.Api` backend deployment. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed as a second backend unit.
+> Phase 1 deployment rule: the Developer Console uses `/admin/v1/*` inside the single `ONEVO.Api` backend deployment. `ONEVO.Admin.Api` is deprecated historical scaffold only, does not exist in the current `Onevo_Backend/src` tree, and must not be recreated or deployed as a second backend unit.
 
 ### Decision 1: Admin API Layer, Not a New Service
 
@@ -39,7 +39,7 @@ There is no `tenant_id` column. These accounts are platform-level.
 
 ## Backend Namespace: `ONEVO.Api/Controllers/Admin/`
 
-`ONEVO.Api/Controllers/Admin/` is the Developer Console controller namespace inside the single `ONEVO.Api` host. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed. Admin controllers own no DbContext and contain no business logic. All data access goes through module interfaces injected via DI.
+`ONEVO.Api/Controllers/Admin/` is the Developer Console controller namespace inside the single `ONEVO.Api` host. `ONEVO.Admin.Api` is deprecated historical scaffold only, does not exist in the current `Onevo_Backend/src` tree, and must not be recreated or deployed. Admin controllers own no DbContext and contain no business logic. All data access goes through module interfaces injected via DI.
 
 ```
 ONEVO.sln
@@ -54,7 +54,7 @@ ONEVO.sln
 │   │       ├── AppCatalogController.cs     ← calls IGlobalAppCatalogService (SharedPlatform)
 │   │       └── ApiKeysController.cs        ← Phase 2
 │   └── Program.cs                      ← composition root: registers app, infra, tenant JWT, admin JWT, policies
-├── ONEVO.Admin.Api/                    ← deprecated scaffold only; do not deploy or add controllers
+├── ONEVO.Admin.Api/                    ← deprecated historical scaffold only; not present in current src; do not recreate
 │
 ├── Application/Features/DevPlatform/    ← NEW feature — owns all dev_platform_* + agent_* tables
 │   ├── Dto/

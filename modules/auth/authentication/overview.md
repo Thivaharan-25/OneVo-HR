@@ -1,4 +1,4 @@
-﻿# Authentication
+# Authentication
 
 **Module:** Auth & Security
 **Feature:** Authentication

@@ -13,14 +13,14 @@ Command handlers, query handlers, event handlers, application services, domain s
 Repository interfaces live in Application:
 
 ```text
-ONEVO.Application/Features/{Feature}/Interfaces/I{Feature}Repository.cs
-ONEVO.Application/Common/Interfaces/I{SharedConcern}Repository.cs
+ONEVO.Application/Features/{Feature}/{SubFeature}/RepositoryInterfaces/I{SubFeature}Repository.cs
+ONEVO.Application/Common/RepositoryInterfaces/I{SharedConcern}Repository.cs
 ```
 
 Infrastructure implements those interfaces:
 
 ```text
-ONEVO.Infrastructure/Persistence/Repositories/{Feature}/{Feature}Repository.cs
+ONEVO.Infrastructure/Persistence/Repositories/{Feature}/{SubFeature}/{SubFeature}Repository.cs
 ```
 
 ## Allowed Direct DbContext Usage
@@ -63,8 +63,8 @@ public class ExecutePayrollCommandHandler : IRequestHandler<ExecutePayrollComman
 Payroll persistence belongs here:
 
 ```text
-ONEVO.Application/Features/Payroll/Interfaces/IPayrollRepository.cs
-ONEVO.Infrastructure/Persistence/Repositories/Payroll/PayrollRepository.cs
+ONEVO.Application/Features/Payroll/{SubFeature}/RepositoryInterfaces/IPayrollRepository.cs
+ONEVO.Infrastructure/Persistence/Repositories/Payroll/{SubFeature}/PayrollRepository.cs
 ```
 
 Use a feature-specific repository for payroll because payroll has batch persistence, joins, projections, and locking requirements such as `SELECT FOR UPDATE`. Do not create a thin CRUD wrapper unless it centralizes tenant filtering, locking, projection, or transactional behavior.

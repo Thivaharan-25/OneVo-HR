@@ -89,7 +89,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
-| [[Userflow/Org-Structure/legal-entity-setup\|Legal Entity Setup]] | Create/configure legal entities | Documented | MUST |
+| [[Userflow/Org-Structure/legal-entity-setup\|Company Registration Profile Setup]] | Configure the tenant's registration profile | Documented | MUST |
 | [[Userflow/Org-Structure/department-hierarchy\|Department Hierarchy]] | Create departments, set parent-child | Documented | MUST |
 | [[Userflow/Org-Structure/job-family-setup\|Job Family Setup]] | Job families, levels, salary bands | Documented | MUST |
 | [[Userflow/Org-Structure/team-creation\|Team Creation]] | Teams, team leads | Documented | SHOULD |

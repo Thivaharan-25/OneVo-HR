@@ -7,11 +7,12 @@
 
 ---
 
-> **This is the KEY flow in the ONEVO RBAC system.** All other flows depend on permissions being correctly assigned. Explicit permissions can be assigned at two levels: (1) to a Role (affects all users with that role), or (2) as per-employee overrides (adds or removes specific permissions for one user). Universal permissions are auto-granted to every active employee and are never assigned or revoked here.
+> **This is the KEY flow in the ONEVO RBAC system.** All other flows depend on permissions being correctly assigned. Explicit permissions can be assigned at two levels: (1) to a Role (affects all users with that role), or (2) as per-employee overrides (adds or removes specific permissions for one user). Universal permissions are auto-granted to every active employee and are never assigned or revoked here. Tenant Super Admin can manage permissions only from the tenant's enabled module catalog; commercial entitlement is never bypassed by role power.
 
 ## Preconditions
 
 - Tenant is active
+- Tenant enabled module catalog is resolved from subscription plan modules, paid add-ons, trial modules, approved feature grants, and disabled-module exclusions
 - Roles exist (system or custom via [[Userflow/Auth-Access/role-creation|Role Creation Flow]])
 - Explicit permissions are seeded (106 assignable permissions during [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]). Universal permissions are resolved automatically by the auth layer.
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]] (recursive: an admin who already has `roles:manage`)
@@ -97,15 +98,19 @@
   ```json
   {
     "addedPermissionIds": ["uuid1", "uuid2"],
-    "removedPermissionIds": ["uuid3"]
+    "removedPermissionIds": ["uuid3"],
+    "validFrom": "2026-05-20T00:00:00Z",
+    "expiresAt": "2026-05-22T23:59:59Z"
   }
   ```
 - **Backend:** `PermissionService.SaveOverridesAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
-  1. Upsert `user_permission_overrides` records (type: `grant` or `revoke`)
-  2. Invalidate permission cache for this specific user
-  3. Publish `UserPermissionsOverriddenEvent`
-  4. Audit log entry with full before/after permission diff
-- **Validation:** Cannot create circular situations (e.g., removing `roles:manage` from the last admin). Reject any universal permission ID in `addedPermissionIds` or `removedPermissionIds`.
+  1. Validate every permission belongs to a module enabled for the tenant
+  2. Validate optional `validFrom` / `expiresAt` window
+  3. Upsert `user_permission_overrides` records (type: `grant` or `revoke`) with optional validity window
+  4. Invalidate permission cache for this specific user
+  5. Publish `UserPermissionsOverriddenEvent`
+  6. Audit log entry with full before/after permission diff and expiry details
+- **Validation:** Cannot create circular situations (e.g., removing `roles:manage` from the last admin). Reject any universal permission ID in `addedPermissionIds` or `removedPermissionIds`. Reject permissions from disabled or unpurchased modules. `expiresAt` must be empty or greater than `validFrom` / current time.
 - **DB:** `user_permission_overrides`, `audit_logs`
 
 #### Step B4: Immediate Effect
@@ -121,7 +126,7 @@
 - **UI:** Employees > search employee > click profile > Security tab > scroll to **"Bypass Grants"** section (below Override Permissions panel)
 - **API:** `GET /api/v1/employees/{employeeId}/bypass-grants`
 - **Backend:** `BypassGrantService.GetByEmployeeAsync()` â†’ [[modules/auth/authorization/end-to-end-logic|Authorization]]
-- **Validation:** Permission check for `roles:manage`. Granter must have an active `permission_delegation_scopes` record or be a root admin.
+- **Validation:** Permission check for `roles:manage`. Granter must have an active `permission_delegation_scopes` record or be Tenant Super Admin. Tenant Super Admin can grant bypasses only inside enabled tenant modules.
 - **DB:** `hierarchy_scope_exceptions`, `permission_delegation_scopes`
 
 #### Step C2: Add a Bypass Grant
@@ -172,7 +177,8 @@ Triggered automatically when granting `roles:manage` to an employee via role ass
 #### Step D1: Module Scope Panel Appears
 - **UI:** After selecting the `roles:manage` permission in the permission browser, a **"Delegation Scope"** panel appears below automatically.
   - Module checklist is shown â€” one checkbox per module
-  - Root admin sees all modules
+  - Tenant root admin sees all modules enabled for that tenant, not the full ONEVO product catalog
+  - Platform root admin sees platform modules only in Developer Platform / operator context
   - Delegated granter sees only modules within their own `module_scope` (ceiling rule â€” cannot delegate beyond own scope)
 - **Validation:** At least one module must be selected before save is enabled.
 - **DB:** None (client-side)
@@ -190,7 +196,8 @@ Triggered automatically when granting `roles:manage` to an employee via role ass
   ```
 - **Backend:** After saving the permission, atomically insert `permission_delegation_scopes` record
   - Ceiling check: `moduleScope` must be subset of granter's own `module_scope`
-  - If granter is root admin (no `permission_delegation_scopes` record), any modules are allowed
+  - If granter is tenant root admin (no `permission_delegation_scopes` record), any enabled tenant modules are allowed
+  - Disabled or unpurchased modules are never allowed in `moduleScope`
 - **DB:** `user_permission_overrides` or `role_permissions` (existing) + `permission_delegation_scopes` (new)
 
 #### Step D3: Combined Scope Effect
@@ -208,13 +215,18 @@ Triggered automatically when granting `roles:manage` to an employee via role ass
 
 The system resolves effective permissions in this order:
 
-1. **Universal:** Auto-grants for every active employee
-2. **Base:** Explicit permissions from the user's assigned role (via `role_permissions`)
-3. **Add:** Explicit permissions in `user_permission_overrides` with type `grant`
-4. **Remove:** Explicit permissions in `user_permission_overrides` with type `revoke`
-5. **Result:** `Universal + (Role Permissions + Grants - Revokes) = Effective Permissions`
+1. **Tenant enabled catalog:** subscription plan modules + paid add-ons + trial modules + approved feature grants - disabled modules
+2. **Universal:** Auto-grants for every active employee
+3. **Tenant owner expansion:** tenant owner / Tenant Super Admin receives all assignable permissions from enabled tenant modules only
+4. **Base:** Explicit permissions from the user's active assigned role (via `role_permissions`; ignore expired `user_roles`)
+5. **Add:** Explicit permissions in active `user_permission_overrides` with type `grant`
+6. **Remove:** Explicit permissions in active `user_permission_overrides` with type `revoke`
+7. **Filter:** Remove any non-universal permission whose module is not enabled for the tenant
+8. **Result:** `Universal + enabled-module tenant owner expansion + enabled-module role permissions + active grants - active revokes = Effective Permissions`
 
 For customer web sessions, this effective permission set is stored in backend-held auth state and returned to the frontend as permission metadata. Browser JavaScript does not receive or decode the tenant JWT.
+
+`*` must not be treated as a global tenant-user bypass. If a wildcard exists in implementation, tenant sessions must interpret it as "all permissions from enabled tenant modules." Platform-wide bypass belongs only to Developer Platform / operator routes.
 
 ## Variations
 
@@ -241,12 +253,16 @@ For customer web sessions, this effective permission set is stored in backend-he
 |:---------|:-------------|:----------|
 | Removing last admin's `roles:manage` | Save blocked | "Cannot remove this permission: at least one user must retain roles:manage" |
 | Attempting to assign or revoke a universal permission | Save blocked | "Universal permissions are auto-granted and cannot be manually assigned or revoked" |
+| Tenant owner assigns disabled-module permission | Save blocked / API returns 403 | "This module is not enabled for this tenant" |
+| Temporary permission expiry is in the past | Save blocked | "Expiry must be in the future" |
+| Temporary permission has expired | Permission omitted on next permission snapshot | User no longer sees or can use the action |
+| Platform admin bypass used on tenant route | `403 Forbidden` returned | "Platform administrator access is not valid for this tenant route" |
 | System role modification attempt | `403 Forbidden` returned | "System roles cannot be modified. Create a custom role instead" |
 | Employee not found | `404 Not Found` returned | "Employee not found" |
 | Circular permission removal | Save blocked | "This change would lock out the last administrator. Operation cancelled" |
 | Concurrent edit conflict | `409 Conflict` returned | "Permissions were modified by another admin. Please refresh and try again" |
 | Bypass grant target outside granter's scope | Scope picker filters silently | Picker only shows accessible targets |
-| Delegated granter sets `All Features` bypass | Save blocked | "All Features bypass can only be granted by root administrators" |
+| Delegated granter sets `All Features` bypass | Save blocked | "All Features bypass can only be granted by Tenant Super Admin inside enabled tenant modules" |
 | Delegation scope exceeds granter's own scope | Save blocked | "You can only delegate modules within your own scope" |
 
 ## Events Triggered
@@ -275,4 +291,3 @@ For customer web sessions, this effective permission set is stored in backend-he
 - [[modules/auth/session-management/overview|Session Management]] â€” token refresh for permission propagation
 - [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] â€” job family to role mapping
 - [[modules/auth/audit-logging/overview|Audit Logging]] â€” permission change audit trail
-

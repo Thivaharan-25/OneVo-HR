@@ -41,9 +41,9 @@
 - **DB:** `job_families`, `job_levels`, `job_titles` — records created with role associations
 - **Result:** When employees are assigned to a job family level during onboarding, they automatically inherit the level's default role and its permissions
 
-### Step 5: Assign Required Skills to Job Family
+### Step 6: Assign Required Skills to Job Family
 - **UI:** Inside the job family detail view, navigate to "Required Skills" tab. Empty state: "No skills assigned yet — add skills this job family requires". Click "Add Skill Requirement". Modal: search and select a skill from the skill taxonomy (requires skills to be set up first — see [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]]). For each skill: set Minimum Proficiency (slider 1–5 with level label), toggle Mandatory / Optional. Save
-- **API:** `POST /api/v1/job-families/{familyId}/skill-requirements`
+- **API:** `POST /api/v1/org/job-families/{familyId}/skill-requirements`
   ```json
   {
     "skillId": "uuid",

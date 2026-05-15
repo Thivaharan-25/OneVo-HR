@@ -10,9 +10,9 @@
 ### Flow
 
 ```
-POST /api/v1/job-families
+POST /api/v1/org/job-families
   -> JobHierarchyController.CreateFamily(CreateJobFamilyCommand)
-    -> [RequirePermission("settings:admin")]
+    -> [RequirePermission("org:manage")]
     -> FluentValidation: name required + unique within tenant
     -> JobHierarchyService.CreateFamilyAsync(command, ct)
       -> 1. Validate name uniqueness within tenant
@@ -29,7 +29,7 @@ POST /api/v1/job-families
 
 ```
 POST /api/v1/job-levels
-  -> [RequirePermission("settings:admin")]
+  -> [RequirePermission("org:manage")]
   -> JobHierarchyService.CreateLevelAsync(command, ct)
     -> 1. Validate name uniqueness within tenant
     -> 2. Validate rank uniqueness within tenant (numeric, e.g., 100, 200, 300)
@@ -44,8 +44,8 @@ POST /api/v1/job-levels
 ### Flow
 
 ```
-POST /api/v1/job-titles
-  -> [RequirePermission("settings:admin")]
+POST /api/v1/org/job-titles
+  -> [RequirePermission("org:manage")]
   -> JobHierarchyService.CreateTitleAsync(command, ct)
     -> 1. Validate job_family_id exists
     -> 2. Validate job_level_id exists
@@ -62,7 +62,7 @@ POST /api/v1/job-titles
 ### Flow
 
 ```
-GET /api/v1/job-families
+GET /api/v1/org/job-families
   -> [RequirePermission("employees:read")]
   -> JobHierarchyService.GetFamiliesAsync(ct)
     -> Query job_families filtered by tenant
@@ -76,7 +76,7 @@ GET /api/v1/job-families
 ### Flow
 
 ```
-GET /api/v1/job-titles?familyId={id}&levelId={id}
+GET /api/v1/org/job-titles?familyId={id}&levelId={id}
   -> [RequirePermission("employees:read")]
   -> JobHierarchyService.GetTitlesAsync(filters, ct)
     -> 1. Query job_titles with joins to job_families and job_levels

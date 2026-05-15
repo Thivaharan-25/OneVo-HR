@@ -10,9 +10,9 @@
 ### Flow
 
 ```text
-PUT /api/v1/company-profile
+PUT /api/v1/org/company-profile
   -> CompanyProfileController.Update(UpdateCompanyProfileCommand)
-    -> [RequirePermission("settings:admin")]
+    -> [RequirePermission("org:manage")]
     -> FluentValidation: registered name required, registration_number format valid,
        country_id must reference valid country, currency_code must be valid ISO 4217,
        address_json schema validated
@@ -32,8 +32,8 @@ The profile is tenant-local registration/compliance data. It must not be used to
 ### Flow
 
 ```text
-GET /api/v1/company-profile
-  -> [RequirePermission("settings:admin")]
+GET /api/v1/org/company-profile
+  -> [RequirePermission("org:manage")]
   -> CompanyProfileService.GetAsync(ct)
     -> 1. Query profile filtered by current tenant_id
     -> 2. Include country navigation property

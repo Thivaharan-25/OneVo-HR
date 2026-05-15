@@ -75,7 +75,7 @@ Concrete targets and enforcement:
 
 ## Related
 
-- [[backend/README|Backend]] â€” .NET 9 API architecture
+- [[backend/README|Backend]] â€” .NET 9 current / .NET 10 target API architecture
 - [[security/README|Security]] â€” platform security model
 - [[infrastructure/README|Infrastructure]] â€” deployment, cloud architecture
 - [[Userflow/README|User Flows]] â€” end-to-end feature flows

@@ -1,6 +1,8 @@
-# Coding Standards: ONEVO (.NET 9 / C#)
+# Coding Standards: ONEVO (.NET 9 / C# 13 current)
 
-**Last Updated:** 2026-05-08
+**Last Updated:** 2026-05-13
+
+.NET 10 / C# 14 is a future migration target. These standards follow the current `net9.0` backend projects until the migration is completed.
 
 ## General Principles
 

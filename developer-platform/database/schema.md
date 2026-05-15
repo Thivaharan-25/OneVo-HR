@@ -183,13 +183,13 @@ Provisioning tenants are visible to developer platform super_admin and admin acc
 
 `PATCH /admin/v1/tenants/{id}/provision/confirm` may activate a tenant only after the provisioning draft is complete. The guard requires:
 
-- Completed tenant details: company name, slug, country, timezone, currency, legal entity, and industry profile.
-- Persistence rule for tenant details: `company_size_range` is stored on `tenants`; legal entity name, registration number, country, and currency are stored on the primary `legal_entities` row; default timezone is stored in tenant settings.
-- Completed subscription/commercial terms: commercial model, plan or custom contract, billing cycle/currency, contract dates, Stripe/manual billing mode, and maintenance status/renewal date when applicable.
+- Completed tenant profile: company name, slug, primary contact email, country, industry profile, registration/profile name, registration number, company size, timezone, and currency.
+- Persistence rule for tenant profile: country, registration/profile name, registration number, company size, timezone, currency, and contact metadata are stored as tenant profile/draft state. Tenant provisioning does not create `legal_entities` rows.
+- Completed subscription/commercial terms: commercial model, plan or custom contract, billing cycle/currency, contract dates, gateway/manual billing mode, billing evidence for manual payment, payment exception/grace dates when approved, AI token limit when AI is included, Work Management storage limit when storage-backed Work Management is included, and maintenance status/renewal date when applicable.
 - Completed module selection: active modules and each module's sales state are recorded through the entitlement registry.
 - Completed role template application: at least the tenant owner/admin starter role is materialized from the module-filtered permission catalog. Role template completion is part of provisioning state, not optional decoration.
-- Completed required settings: monitoring defaults, privacy/transparency mode, leave defaults, and any module-required settings.
-- Completed owner invite: first tenant owner exists in invited state and has a set-password invite token/email record.
+- Completed required settings/templates/setup services: monitoring defaults, privacy/transparency mode, leave defaults, template applications, setup-service state, and any module-required settings.
+- Owner invite state is tracked separately. The invite email is sent only by the explicit invite action, not automatically by tenant creation, configuration, or activation. The same email can be invited to multiple isolated tenants.
 
 Activation fails with `422 Unprocessable Entity` and a checklist of missing steps when any required item is incomplete. Provisioning tenants remain invisible to tenant-facing `/api/v1/*` APIs until activation succeeds.
 

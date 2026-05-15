@@ -4,8 +4,8 @@
 
 | Language | Version | Key Usage Areas |
 |:---------|:--------|:----------------|
-| C# | 13 (.NET 9) | Backend API, business logic, background jobs, desktop agent service + tray app |
-| SQL | PostgreSQL 16 | Database queries, RLS policies, migrations |
+| C# | 13 current (.NET 9); 14 target after .NET 10 migration | Backend API, business logic, background jobs; desktop agent upgrade is a separate validation track |
+| SQL | PostgreSQL 16.13 baseline; PostgreSQL 18 target after environment approval | Database queries, RLS policies, migrations |
 | TypeScript | ES2024 / 5.x | Frontend (Vite + React 19) |
 | XAML | .NET MAUI | Desktop agent tray app UI |
 
@@ -15,22 +15,22 @@
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
-| Runtime | .NET | 9.0 | LTS, Clean Architecture + CQRS backend |
-| Web Framework | ASP.NET Core | 9.0 | Minimal APIs + Controllers |
-| ORM | Entity Framework Core | 9.0 | Code-first migrations, `xmin` optimistic concurrency |
+| Runtime | .NET | 9 current; 10 LTS target after migration | Clean Architecture + CQRS backend |
+| Web Framework | ASP.NET Core | 9.x current; 10.x target | Controllers with admin endpoints under `/admin/v1/*` in `ONEVO.Api` |
+| ORM | Entity Framework Core | 9.0.4 current; 10.x target | Code-first migrations, `xmin` optimistic concurrency |
 | Authentication | BFF cookie sessions + backend-held JWT | - | Browser uses HttpOnly session cookies; backend owns JWT/refresh state |
 | Authorization | Custom RBAC | - | `RequirePermission` attribute, 90+ permissions |
-| Background Jobs | Hangfire | 1.8.x | 5-queue priority system (Critical/High/Default/Low/Batch) |
-| CQRS / Mediator | MediatR | Latest | In-process command/query dispatch; optional domain events by exception |
-| Real-time | SignalR | 9.0 | WebSocket connections, presence tracking, live dashboards |
+| Background Jobs | Hangfire | 1.8.23 | 5-queue priority system (Critical/High/Default/Low/Batch) |
+| CQRS / Mediator | MediatR | 12.4.1 current | In-process command/query dispatch; optional domain events by exception |
+| Real-time | SignalR | ASP.NET Core 9 current; 10.x target | WebSocket connections, presence tracking, live dashboards |
 | API Documentation | Swagger/OpenAPI | 3.0 | Auto-generated, Kiota SDK generation |
-| Validation | FluentValidation | 11.x | Request validation |
+| Validation | FluentValidation | 11.11.0 current | Request validation |
 | Mapping | Mapster or AutoMapper | Latest | DTO ↔ Entity mapping |
-| Logging | Serilog | 3.x | Structured logging with PII scrubbing |
+| Logging | Serilog | 4.3.1 | Structured logging with PII scrubbing |
 | HTTP Client | HttpClientFactory | Built-in | For external API calls with Polly resilience |
-| Resilience | Polly | 8.x | Circuit breakers, retries, timeouts |
-| Testing | xUnit + Moq + FluentAssertions | Latest | Unit + integration tests |
-| Architecture Tests | ArchUnitNET | Latest | Module boundary enforcement |
+| Resilience | Polly | 8.6.6 | Circuit breakers, retries, timeouts |
+| Testing | xUnit v3 + Moq + FluentAssertions | xUnit v3 / Moq 4.20.72 / FluentAssertions 8.x | Unit + integration tests |
+| Architecture Tests | ArchUnitNET | 0.13.x | Module boundary enforcement |
 
 ---
 
@@ -92,9 +92,9 @@ The WorkPulse Agent is the ONEVO activity monitoring package distributed as an *
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
-| Background Service | .NET Windows Service | 9.0 | `Microsoft.Extensions.Hosting.WindowsServices` — always-on data collector |
-| Tray App UI | .NET MAUI | 9.0 | System tray icon, photo capture, employee login, break toggle |
-| Language | C# | 13 | Same as backend |
+| Background Service | .NET Windows Service | 9.0 current; 10 target pending device validation | `Microsoft.Extensions.Hosting.WindowsServices` — always-on data collector |
+| Tray App UI | .NET MAUI | 9.0 current; MAUI 10 target pending device validation | System tray icon, photo capture, employee login, break toggle |
+| Language | C# | 13 current; 14 target with .NET 10 agent validation | Same language family as backend |
 | Local Storage | SQLite | via `Microsoft.Data.Sqlite` | Offline buffer for activity data |
 | Activity Capture | Win32 APIs (user32.dll) | - | `SetWindowsHookEx` for keyboard/mouse event COUNTS (not keystrokes) |
 | App Detection | Win32 APIs | - | `GetForegroundWindow`, `GetWindowText`, process enumeration |
@@ -198,9 +198,9 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 
 | Type | Technology | Version | Key Usage |
 |:-----|:-----------|:--------|:----------|
-| Primary DB | PostgreSQL | 16.x | All application data, RLS for multi-tenancy |
+| Primary DB | PostgreSQL | 16.13 baseline; 18.x target after hosting and migration validation | All application data, RLS for multi-tenancy |
 | Connection Pool | PgBouncer | Latest | Connection pooling for PostgreSQL |
-| Cache | Redis | 7.x | L1/L2/L3 caching, rate limiting, feature flags |
+| Cache | Redis | 8.x target after hosting support validation | L1/L2/L3 caching, rate limiting, feature flags |
 | Partitioning | pg_partman | Latest | Time-series partitioning for activity data, audit_logs, biometric_events |
 | Search (Phase 1) | PostgreSQL Full-Text Search | Built-in | Initial search implementation |
 | Search (Phase 2) | Meilisearch | Latest | Upgraded search at scale |
@@ -212,7 +212,7 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 
 | Category | Technology | Notes |
 |:---------|:-----------|:------|
-| Backend Hosting | Azure | .NET 9 deployment through the selected Azure hosting service |
+| Backend Hosting | Azure | .NET 9 current deployment; .NET 10 LTS after migration through the selected Azure hosting service |
 | Frontend Hosting | Azure | Vite build output served through the selected Azure hosting/static delivery path |
 | DNS / Edge | Cloudflare DNS + optional Cloudflare proxy | `onevo.com`, wildcard `*.onevo.com`, DDoS/WAF/CDN if proxy mode is enabled |
 | Tenant URLs | Cloudflare wildcard DNS -> Azure | Default tenant URL pattern: `{tenantSlug}.onevo.com` |

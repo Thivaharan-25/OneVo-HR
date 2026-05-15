@@ -19,7 +19,7 @@ dev-console/
 │       ├── tenants/
 │       │   ├── page.tsx               # Tenant list: search, filter by plan/status
 │       │   ├── new/
-│       │   │   └── page.tsx           # Manual provisioning wizard (7-step, saveable draft)
+│       │   │   └── page.tsx           # Two-step tenant creation wizard, saveable draft
 │       │   └── [tenantId]/
 │       │       ├── page.tsx           # Tenant detail: overview + quick actions
 │       │       ├── provision/page.tsx # Resume/complete a provisioning draft
@@ -56,7 +56,7 @@ dev-console/
 │   │   ├── TenantTable.tsx
 │   │   ├── TenantDetailCard.tsx
 │   │   ├── ImpersonateButton.tsx
-│   │   └── ProvisioningWizard.tsx     # 7-step stepper, draft-safe, each step is own component
+│   │   └── ProvisioningWizard.tsx     # Two-step creation wizard plus Manage/Configure entry points
 │   ├── feature-flags/
 │   │   ├── FlagTable.tsx
 │   │   └── TenantOverrideMatrix.tsx
@@ -98,7 +98,7 @@ The `lib/` folder contains shared utilities and configuration:
 Components are organized by domain:
 
 - **`layout/`** — Reusable layout components (Sidebar, Topbar)
-- **`tenants/`** — Tenant-related UI components (table, detail cards, provisioning wizard)
+- **`tenants/`** — Tenant-related UI components (table, detail cards, creation wizard, Manage/Configure flow)
 - **`feature-flags/`** — Feature flag management UI
 - **`agents/`** — Agent version and ring assignment components
 - **`shared/`** — Generic, reusable UI components (status badges, tables, dialogs)

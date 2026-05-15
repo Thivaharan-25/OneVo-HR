@@ -1,6 +1,6 @@
 # Permissions Reference
 
-**Total explicitly grantable:** 113 permissions across 29 modules  
+**Total explicitly grantable:** 127 permissions across 31 modules  
 **Related flows:** [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] · [[Userflow/Auth-Access/role-creation|Role Creation]]
 
 ---
@@ -17,21 +17,21 @@
 
 These are given to every active employee automatically when they enter the system. They are resolved by the auth layer, not assigned through roles, and they cannot be revoked through role permissions or employee overrides.
 
-| Permission | What it gives |
-|:-----------|:--------------|
-| `inbox:read` | Access to inbox (content adapts by role) |
-| `notifications:read` | Receive notifications |
-| `employees:read-own` | View own employee profile |
-| `leave:read-own` | View own leave balance and history |
-| `attendance:read-own` | View own attendance and presence history |
-| `attendance:write-own` | Submit own attendance corrections (e.g., missing punch, correction requests) |
-| `payroll:read-own` | View own payslips and payroll history |
-| `performance:read-own` | View own performance records and review tasks |
-| `documents:read-own` | View documents assigned to self |
-| `calendar:read` | View calendar |
-| `activity:read:self` | View own activity log |
-| `workforce:dashboard` | Access workforce dashboard (shows team data if manager, own data if not; manager can toggle to own view) |
-| *(no code)* | Personal app account linking - connect own Teams/Slack/Google account from profile settings |
+| Permission             | What it gives                                                                                            |
+| :--------------------- | :------------------------------------------------------------------------------------------------------- |
+| `inbox:read`           | Access to inbox (content adapts by role)                                                                 |
+| `notifications:read`   | Receive notifications                                                                                    |
+| `employees:read-own`   | View own employee profile                                                                                |
+| `leave:read-own`       | View own leave balance and history                                                                       |
+| `attendance:read-own`  | View own attendance and presence history                                                                 |
+| `attendance:write-own` | Submit own attendance corrections (e.g., missing punch, correction requests)                             |
+| `payroll:read-own`     | View own payslips and payroll history                                                                    |
+| `performance:read-own` | View own performance records and review tasks                                                            |
+| `documents:read-own`   | View documents assigned to self                                                                          |
+| `calendar:read`        | View calendar                                                                                            |
+| `activity:read:self`   | View own activity log                                                                                    |
+| `workforce:dashboard`  | Access workforce dashboard (shows team data if manager, own data if not; manager can toggle to own view) |
+| *(no code)*            | Personal app account linking - connect own Teams/Slack/Google account from profile settings              |
 
 Universal permissions must not appear in the role creation permission browser, role permission save payloads, or per-employee override add/remove lists. They may still appear in API endpoint documentation to explain the access check used for self-service routes.
 
@@ -40,12 +40,14 @@ Universal permissions must not appear in the role creation permission browser, r
 ## Explicitly Grantable Permissions
 
 ### Employees
-| # | Permission | Description |
-|:--|:-----------|:------------|
-| 1 | `employees:read` | View all employees in scope |
-| 2 | `employees:read-team` | View direct reports only |
-| 3 | `employees:write` | Create, update employees |
-| 4 | `employees:delete` | Delete employee records |
+| #   | Permission            | Description                 |
+| :-- | :-------------------- | :-------------------------- |
+| 1   | `employees:read`      | View all employees in scope |
+| 2   | `employees:read-team` | View direct reports only    |
+| 3   | `employees:write`     | Create, update employees    |
+| 4   | `employees:delete`    | Delete employee records     |
+| 4a  | `employees:import`    | Import employee records in bulk |
+| 4b  | `employees:export`    | Export employee data to file |
 
 ### Organization
 | # | Permission | Description |
@@ -134,7 +136,11 @@ Universal permissions must not appear in the role creation permission browser, r
 | 45 | `users:read` | View user accounts |
 | 46 | `users:manage` | Create, suspend, and manage user accounts |
 | 47 | `roles:read` | View roles and their permission sets |
-| 48 | `roles:manage` | Create and edit roles, assign permissions |
+| 48 | `roles:create` | Create new roles |
+| 48a | `roles:update` | Edit role names, descriptions, and permission sets |
+| 48b | `roles:delete` | Delete custom roles |
+| 48c | `roles:assign` | Assign roles to users |
+| 48d | `permissions:manage` | Grant or revoke permissions within delegation scope |
 
 ### Billing
 | # | Permission | Description |
@@ -159,14 +165,17 @@ Universal permissions must not appear in the role creation permission browser, r
 ### Monitoring
 | # | Permission | Description |
 |:--|:-----------|:------------|
-| 57 | `monitoring:view-settings` | View monitoring toggles and employee overrides |
+| 57 | `monitoring:read` | View monitoring data, insights, and activity summaries |
+| 57a | `monitoring:view-settings` | View monitoring toggles and employee overrides |
 | 58 | `monitoring:configure` | Enable/disable monitoring features, set employee overrides |
+| 58a | `monitoring:alerts:read` | View monitoring and exception alerts |
+| 58b | `monitoring:alerts:resolve` | Acknowledge and resolve monitoring alerts |
+| 58c | `monitoring:recommendations:read` | View agent-generated recommendations |
+| 58d | `monitoring:recommendations:apply` | Apply agent recommendations to configuration or workflows |
 
 ### Exceptions
 | # | Permission | Description |
 |:--|:-----------|:------------|
-| 59 | `exceptions:view` | View exception alerts |
-| 60 | `exceptions:acknowledge` | Acknowledge and resolve exception alerts |
 | 61 | `exceptions:manage` | Manage exception rules and thresholds |
 
 ### Verification
@@ -213,6 +222,22 @@ Universal permissions must not appear in the role creation permission browser, r
 |:--|:-----------|:------------|
 | 79 | `reports:read` | View reports |
 | 80 | `reports:create` | Create and run reports |
+| 80g | `reports:export` | Export report data to file |
+
+### Audit
+| # | Permission | Description |
+|:--|:-----------|:------------|
+| 80h | `audit:read` | View audit logs — permission changes, employee updates, hierarchy changes, login/security events, and agent actions |
+| 80i | `audit:export` | Export audit log data to file |
+
+### Workflows
+| # | Permission | Description |
+|:--|:-----------|:------------|
+| 80j | `workflows:read` | View workflow rules and execution history |
+| 80k | `workflows:create` | Create new workflow rules |
+| 80l | `workflows:update` | Edit existing workflow rules |
+| 80m | `workflows:delete` | Delete workflow rules |
+| 80n | `workflows:execute` | Manually trigger workflow execution |
 
 ### Company Connections And Cross-Company Access
 | # | Permission | Description |
@@ -289,7 +314,7 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `approvals:read` | Not a standalone permission - approvals are per-module |
 | `attendance:manage` | Covered by `attendance:write` |
 | `attendance:read-own` | Universal |
-| `audit:read` | Covered by `settings:system` |
+| `audit:read` | Restored as standalone grantable permission `audit:read` |
 | `branding:manage` | Renamed to `settings:branding` |
 | `worksync:*` module permissions | Internal WorkSync module permissions; no bridge API scopes are active |
 | `calendar:sync` | Covered by `settings:integrations` |
@@ -300,8 +325,11 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `docs:read` | Renamed to `documents:read` |
 | `documents:read-own` | Universal |
 | `employee:create` / `employees:create` / `employees:update` / `employees:bulk-update` | All covered by `employees:write` |
-| `exceptions:read` | Renamed to `exceptions:view` |
-| `exceptions:resolve` | Same as `exceptions:acknowledge` - removed |
+| `exceptions:read` | Renamed to `monitoring:alerts:read` |
+| `exceptions:view` | Renamed to `monitoring:alerts:read` |
+| `exceptions:acknowledge` | Renamed to `monitoring:alerts:resolve` |
+| `exceptions:resolve` | Same as `monitoring:alerts:resolve` — removed |
+| `roles:manage` | Split into `roles:create`, `roles:update`, `roles:delete`, `roles:assign`, `permissions:manage` |
 | `expense:admin` | Covered by `expense:manage` |
 | `goals:read` / `goals:write` | Renamed to `okr:read` / `okr:write` |
 | `hr:read` | Covered by `employees:read` |
@@ -346,4 +374,6 @@ These were in the original 153 but are invalid, renamed, or redundant:
 - Explicitly grantable permissions are the only permissions shown in role creation, role editing, and employee override pickers.
 - Any permission used by a user flow, frontend route, API endpoint, or module overview must appear either in Universal Permissions or Explicitly Grantable Permissions.
 - Any legacy permission must appear in Removed from Original List with a replacement or a reason.
+- `roles:manage` is retired — use `roles:create`, `roles:update`, `roles:delete`, `roles:assign`, and `permissions:manage` individually. Assign all five to replicate the old `roles:manage` scope.
+- `exceptions:view` and `exceptions:acknowledge` are retired — use `monitoring:alerts:read` and `monitoring:alerts:resolve`. `exceptions:manage` remains for rule configuration.
 - The `*` permission remains tenant-local. Cross-company access requires an active company connection, explicit cross-company permission, grant scope, and audit.

@@ -1,10 +1,10 @@
 # Feature Catalog: ONEVO
 
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-13
 
 ## Architecture Overview
 
-ONEVO follows **Clean Architecture + CQRS** (.NET 9). All features are **feature folders** within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`.
+ONEVO follows **Clean Architecture + CQRS**. The current implemented backend targets **.NET 9 / C# 13**; .NET 10 / C# 14 is a future upgrade target. All features are **feature folders** within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`.
 
 There are **no separate module `.csproj` files**. The canonical database catalog currently lists **252 unique schema tables**, all served by a single `ApplicationDbContext`.
 
@@ -19,7 +19,7 @@ ONEVO PLATFORM
   ┌─────────────────────────────────────────────────────┐
   │  ONEVO Frontend (Vite + React 19)                           │
   │    HR Sidebar ──────┐                               │
-  │    Work Management Sidebar─┼──→  ONEVO.Api (.NET 9)        │
+  │    Work Management Sidebar─┼──→  ONEVO.Api (.NET 9 current)│
   │    IDE Extension ───┘      single host, all pillars  │
   └─────────────────────────────────────────────────────┘
                                ↕ ApplicationDbContext
@@ -209,7 +209,7 @@ No RabbitMQ. No IEventBus. No MassTransit. Most feature communication is direct 
 
 ## Developer Platform — Admin API
 
-Developer Console endpoints live under `/admin/v1/*` inside the single `ONEVO.Api` host. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed. All data access goes through Application-owned repository/service interfaces exactly like customer APIs. Platform-level cross-tenant reads/writes must be explicit in those interface names and implementations.
+Developer Console endpoints live under `/admin/v1/*` inside the single `ONEVO.Api` host. `ONEVO.Admin.Api` is deprecated historical scaffold only, does not exist in the current `Onevo_Backend/src` tree, and must not be recreated or deployed. All data access goes through Application-owned repository/service interfaces exactly like customer APIs. Platform-level cross-tenant reads/writes must be explicit in those interface names and implementations.
 
 | Aspect | Detail |
 |:-------|:-------|

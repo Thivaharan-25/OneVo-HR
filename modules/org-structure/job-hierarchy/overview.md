@@ -27,12 +27,12 @@ Required skills per job family with minimum proficiency. Fields: `job_family_id`
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/job-families` | `employees:read` | List families |
-| POST | `/api/v1/job-families` | `org:manage` | Create job family |
-| GET | `/api/v1/job-titles` | `employees:read` | List titles |
-| GET | `/api/v1/job-families/{familyId}/skill-requirements` | `skills:read` | Required skills for a job family |
-| POST | `/api/v1/job-families/{familyId}/skill-requirements` | `skills:manage` | Assign required skill to job family |
-| DELETE | `/api/v1/job-families/{familyId}/skill-requirements/{id}` | `skills:manage` | Remove skill requirement |
+| GET | `/api/v1/org/job-families` | `employees:read` | List families |
+| POST | `/api/v1/org/job-families` | `org:manage` | Create job family |
+| GET | `/api/v1/org/job-titles` | `employees:read` | List titles |
+| GET | `/api/v1/org/job-families/{familyId}/skill-requirements` | `skills:read` | Required skills for a job family |
+| POST | `/api/v1/org/job-families/{familyId}/skill-requirements` | `skills:manage` | Assign required skill to job family |
+| DELETE | `/api/v1/org/job-families/{familyId}/skill-requirements/{id}` | `skills:manage` | Remove skill requirement |
 
 ## Related
 

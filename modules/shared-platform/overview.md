@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Cross-cutting platform services: SSO provider management, subscription/billing through Stripe and PayHere, feature flags, and the generic workflow/automation engine used by leave, overtime, attendance corrections, expense claims, document approvals, exception alerts, requests, escalations, and follow-ups.
+Cross-cutting platform services: SSO provider management, subscription/billing through Stripe and PayHere, module catalog, setup services, reusable configuration templates, feature flags, and the generic workflow/automation engine used by leave, overtime, attendance corrections, expense claims, document approvals, exception alerts, requests, escalations, and follow-ups.
 
 ---
 
@@ -292,13 +292,78 @@ SLA-based escalation triggers. Checked by Hangfire recurring job (hourly).
 
 The workflow engine is **resource-type agnostic**. It works via `resource_type` + `resource_id` polymorphic references and is configured through Automation Center. Same engine handles approvals, alerts, requests, escalations, follow-ups, and case conversations.
 
-> **Automation Center schema note:** The field lists below reflect the current/legacy workflow schema. Automation Center requires an approved database migration plan before these tables are changed. New implementation must use dynamic resolvers instead of fixed role names and must support case conversations, delivery routing, templates, and multiple approver modes.
+> **Automation Center schema note:** The additive migration direction is approved in [[docs/superpowers/plans/2026-05-07-automation-center-database-plan|Automation Center Database Plan]]. New implementation must use dynamic resolvers instead of fixed role names. Legacy fields remain readable during migration but must not be used for new workflow definitions.
 
 **How it works:**
 1. Module creates a workflow instance: `resource_type = "LeaveRequest"`, `resource_id = {leaveRequestId}`
 2. Engine resolves assignees or approvers using tenant-scoped resolvers, such as reporting manager, team lead, department owner, selected permission, selected department/team/job level, specific employee, previous approver, case participants, or configured escalation owner.
 3. Approver takes action → engine advances to next step or completes
 4. Module receives `WorkflowCompleted` event with outcome
+
+#### `automation_definitions`
+
+Customer-created Automation Center definitions.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `name` | `varchar(100)` | |
+| `description` | `text` | Nullable |
+| `trigger_type` | `varchar(50)` | Domain event or scheduled/manual trigger |
+| `resource_type` | `varchar(50)` | Resource type this automation handles |
+| `is_active` | `boolean` | |
+| `current_version` | `integer` | Active definition version |
+| `created_by_id` | `uuid` | FK -> users |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+#### `automation_definition_versions`
+
+Immutable version snapshots for Automation Center definitions.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `automation_definition_id` | `uuid` | FK -> automation_definitions |
+| `version` | `integer` | |
+| `definition_json` | `jsonb` | Trigger, condition, resolver, action, wait, escalation config |
+| `created_by_id` | `uuid` | FK -> users |
+| `created_at` | `timestamptz` | |
+
+#### `automation_templates`
+
+Operator-managed starter templates that customers can apply and edit.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `name` | `varchar(100)` | |
+| `description` | `text` | Nullable |
+| `resource_type` | `varchar(50)` | |
+| `template_json` | `jsonb` | Builder configuration copied into an automation definition |
+| `is_active` | `boolean` | |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+#### `automation_runs`
+
+Execution record for an automation definition version.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `automation_definition_id` | `uuid` | FK -> automation_definitions |
+| `automation_definition_version_id` | `uuid` | FK -> automation_definition_versions |
+| `workflow_instance_id` | `uuid` | FK -> workflow_instances; nullable until workflow starts |
+| `trigger_event_type` | `varchar(100)` | |
+| `resource_type` | `varchar(50)` | |
+| `resource_id` | `uuid` | |
+| `status` | `varchar(20)` | `matched`, `started`, `completed`, `failed`, `skipped` |
+| `started_at` | `timestamptz` | |
+| `completed_at` | `timestamptz` | Nullable |
+| `metadata_json` | `jsonb` | Nullable execution metadata |
 
 #### `workflow_definitions`
 
@@ -328,8 +393,13 @@ Steps within a workflow definition.
 | `workflow_definition_id` | `uuid` | FK → workflow_definitions |
 | `step_order` | `integer` | Execution order |
 | `step_type` | `varchar(30)` | `approval`, `notification`, `condition` |
-| `approver_type` | `varchar(30)` | Legacy field; replace with resolver type after approved migration |
-| `approver_role_id` | `uuid` | Legacy field; replace with resolver configuration after approved migration |
+| `approver_type` | `varchar(30)` | Legacy compatibility field; do not use for new definitions |
+| `approver_role_id` | `uuid` | Legacy compatibility field; do not use for new definitions |
+| `resolver_type` | `varchar(50)` | Dynamic resolver type, e.g. `reporting_manager`, `selected_permission`, `case_participants` |
+| `resolver_config` | `jsonb` | Resolver parameters such as permission code, department/team/job level, employee id, connected tenant scope |
+| `approval_mode` | `varchar(30)` | `only_one_required`, `all_required`, `sequential` |
+| `action_config` | `jsonb` | Action-card, request-info, escalation, or task creation settings |
+| `delivery_config` | `jsonb` | Chat, Inbox, Teams mirror, notification routing preferences |
 | `conditions` | `jsonb` | Step conditions (e.g., skip if amount < threshold) |
 | `sla_hours` | `integer` | Hours before timeout action |
 | `on_timeout_action` | `varchar(30)` | `escalate`, `auto_approve`, `auto_reject` |
@@ -348,6 +418,14 @@ Active workflow instance for a specific resource.
 | `initiated_by_id` | `uuid` | FK → employees |
 | `current_step_order` | `integer` | Which step is active |
 | `status` | `varchar(20)` | `in_progress`, `completed`, `cancelled` |
+| `requester_tenant_id` | `uuid` | Nullable; cross-company workflow provenance |
+| `source_tenant_id` | `uuid` | Nullable; cross-company source tenant |
+| `target_tenant_id` | `uuid` | Nullable; cross-company target tenant |
+| `subject_tenant_id` | `uuid` | Nullable; tenant that owns the workflow subject/resource |
+| `actor_tenant_id` | `uuid` | Nullable; tenant of the initiating actor |
+| `company_connection_id` | `uuid` | Nullable; Shared Platform company connection used for routing |
+| `data_sharing_scope` | `jsonb` | Nullable; approved fields/evidence scope for cross-company case |
+| `completion_policy` | `varchar(30)` | Nullable; what happens if a company connection is revoked mid-case |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
@@ -360,11 +438,65 @@ Current step state for an active workflow instance. Not in HTML ERD — to be ad
 | `id` | `uuid` | PK |
 | `workflow_instance_id` | `uuid` | FK → workflow_instances |
 | `workflow_step_id` | `uuid` | FK → workflow_steps |
-| `assigned_to_id` | `uuid` | Legacy single-assignee field; multiple approvers require a child assignment table after approved migration |
+| `assigned_to_id` | `uuid` | Legacy single-assignee compatibility field; new implementation uses `workflow_step_assignments` |
 | `status` | `varchar(20)` | `pending`, `approved`, `rejected`, `skipped` |
 | `started_at` | `timestamptz` | |
 | `completed_at` | `timestamptz` | Nullable |
 | `sla_deadline_at` | `timestamptz` | When timeout fires |
+
+#### `workflow_step_assignments`
+
+Resolved assignees/approvers for one active workflow step.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `workflow_step_instance_id` | `uuid` | FK -> workflow_step_instances |
+| `assigned_employee_id` | `uuid` | FK -> employees |
+| `assigned_user_id` | `uuid` | FK -> users; nullable if employee has no user account |
+| `sequence_order` | `integer` | Used for sequential approval |
+| `status` | `varchar(20)` | `pending`, `approved`, `rejected`, `skipped`, `expired` |
+| `resolved_from` | `varchar(50)` | Resolver that produced this assignment |
+| `assigned_at` | `timestamptz` | |
+| `acted_at` | `timestamptz` | Nullable |
+| `expires_at` | `timestamptz` | Nullable |
+
+#### `case_conversations`
+
+Shared Platform metadata linking workflow/case state to WorkSync Chat private channels.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `channel_id` | `uuid` | FK -> WorkSync Chat `channels` |
+| `case_type` | `varchar(50)` | `approval`, `alert`, `request`, `escalation`, `workflow` |
+| `resource_type` | `varchar(50)` | Polymorphic resource type |
+| `resource_id` | `uuid` | Polymorphic resource id |
+| `workflow_instance_id` | `uuid` | FK -> workflow_instances |
+| `workflow_step_instance_id` | `uuid` | FK -> workflow_step_instances; nullable |
+| `status` | `varchar(20)` | `open`, `resolved`, `cancelled` |
+| `created_by_automation_id` | `uuid` | FK -> automation_definitions; nullable |
+| `created_at` | `timestamptz` | |
+| `resolved_at` | `timestamptz` | Nullable |
+
+#### `workflow_delivery_routes`
+
+Delivery routing state for workflow action cards.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `workflow_instance_id` | `uuid` | FK -> workflow_instances |
+| `workflow_step_instance_id` | `uuid` | FK -> workflow_step_instances |
+| `target_type` | `varchar(30)` | `employee`, `user`, `channel`, `inbox`, `teams` |
+| `target_id` | `uuid` | Target id where available |
+| `delivery_surface` | `varchar(30)` | `chat`, `inbox`, `teams_mirror`, `email`, `push`, `signalr` |
+| `status` | `varchar(20)` | `pending`, `sent`, `failed`, `cancelled` |
+| `last_sent_at` | `timestamptz` | Nullable |
+| `metadata_json` | `jsonb` | Provider/action-card metadata |
 
 #### `approval_actions`
 
@@ -379,6 +511,8 @@ Individual approval/rejection action records.
 | `action` | `varchar(20)` | `approve`, `reject`, `delegate`, `request_info` |
 | `comment` | `text` | Nullable |
 | `acted_at` | `timestamptz` | |
+| `workflow_step_assignment_id` | `uuid` | FK -> workflow_step_assignments; nullable for legacy actions |
+| `action_metadata` | `jsonb` | Optional action-card or resolver metadata |
 | `delegated_to_id` | `uuid` | FK → employees (nullable — only for delegate action) |
 
 ### Sub-System 7: Compliance & Data Governance
@@ -612,7 +746,9 @@ Hangfire job metadata for visibility/management. Not in HTML ERD — to be added
 ## Features
 
 - [[modules/shared-platform/sso-authentication/overview|Sso Authentication]] — SSO provider configuration (Google, Microsoft, SAML, OIDC) with auto-provisioning
-- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] — Stripe/PayHere-backed subscription plans, invoices, and payment methods
+- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] — Stripe/PayHere-backed subscription plans, invoices, payment methods, manual billing evidence, payment exceptions, AI token limits, and Work Management storage limits
+- Setup Services — Global/free, paid, and module-specific implementation services selected during tenant provisioning
+- Configuration Templates — Reusable configuration, role, org, job-family, leave, onboarding, app allowlist, monitoring policy, and data import mapping templates
 - [[frontend/cross-cutting/feature-flags|Feature Flags]] — Per-tenant feature flag definitions with targeting conditions
 - [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — Default `{tenantSlug}.onevo.com` URL, logo, and brand colors per tenant
 - [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] — Automation Center engine for approvals, alerts, requests, case conversations, delivery routing, and escalation

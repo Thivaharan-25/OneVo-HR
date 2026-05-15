@@ -87,4 +87,4 @@ For initial tenant setup or a wholesale flag reset:
 
 **API call:** `PUT /admin/v1/tenants/{id}/feature-flags` with body `{ "overrides": { "<flag_key>": true | false, ... } }`
 
-This replaces all existing overrides for the tenant with the provided set. Flags omitted from the payload revert to global default. This API is not exposed in the UI as a single action — it is called by the provisioning wizard's module selection step.
+This replaces all existing overrides for the tenant with the provided set. Flags omitted from the payload revert to global default. This API is not exposed in the UI as a single action — it is called by the tenant card Manage/Configure module setup flow when bulk flag alignment is required.

@@ -70,7 +70,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `employees` | `nationality_id` | [[database/schemas/infrastructure#`countries`\|countries]] | Infrastructure |
 | `employees` | `department_id` | [[database/schemas/org-structure#`departments`\|departments]] | Org Structure |
 | `employees` | `job_title_id` | [[database/schemas/org-structure#`job_titles`\|job_titles]] | Org Structure |
-| `employees` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure |
+| `employees` | `company_registration_profile_id` | [[database/schemas/org-structure#`company_registration_profiles`|company_registration_profiles]] | Org Structure |
 | `employees` | `avatar_file_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
 | `onboarding_tasks` | `assigned_to_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `onboarding_templates` | `department_id` | [[database/schemas/org-structure#`departments`\|departments]] | Org Structure |
@@ -84,7 +84,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `document_acknowledgements` | `acknowledged_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `document_templates` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `document_versions` | `uploaded_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
-| `documents` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure |
+| `documents` | `company_registration_profile_id` | [[database/schemas/org-structure#`company_registration_profiles`|company_registration_profiles]] | Org Structure |
 | `documents` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `documents` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `documents` | `workspace_id` | [[database/schemas/wms-project-management#`workspaces`\|workspaces]] | Work Management.Foundation |
@@ -153,7 +153,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | Source Table | Column | Target Table | Target Module |
 |:------------|:-------|:-------------|:-------------|
 | `departments` | `head_employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `legal_entities` | `country_id` | [[database/schemas/infrastructure#`countries`\|countries]] | Infrastructure |
+| `company_registration_profiles` | `country_id` | [[database/schemas/infrastructure#`countries`|countries]] | Infrastructure |
 | `team_members` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `teams` | `team_lead_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 
@@ -164,8 +164,8 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `employee_allowances` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `employee_pension_enrollments` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `payroll_adjustments` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `payroll_connections` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure |
-| `payroll_runs` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure |
+| `payroll_connections` | `company_registration_profile_id` | [[database/schemas/org-structure#`company_registration_profiles`|company_registration_profiles]] | Org Structure |
+| `payroll_runs` | `company_registration_profile_id` | [[database/schemas/org-structure#`company_registration_profiles`|company_registration_profiles]] | Org Structure |
 | `payroll_runs` | `executed_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `payslips` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `tax_configurations` | `country_id` | [[database/schemas/infrastructure#`countries`\|countries]] | Infrastructure |
@@ -234,9 +234,15 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `user_preferences` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `webhook_endpoints` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `workflow_definitions` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `automation_definitions` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `automation_runs` | `workflow_instance_id` | [[database/schemas/shared-platform#`workflow_instances`\|workflow_instances]] | Shared Platform |
 | `workflow_instances` | `initiated_by_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `workflow_step_instances` | `assigned_to_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `workflow_steps` | `approver_role_id` | [[database/schemas/auth#`roles`\|roles]] | Auth & Security |
+| `workflow_instances` | `requester/source/target/subject/actor_tenant_id` | [[database/schemas/infrastructure#`tenants`\|tenants]] | Infrastructure |
+| `workflow_step_instances` | `assigned_to_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR; legacy compatibility only |
+| `workflow_step_assignments` | `assigned_employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
+| `workflow_step_assignments` | `assigned_user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `workflow_steps` | `approver_role_id` | [[database/schemas/auth#`roles`\|roles]] | Auth & Security; legacy compatibility only |
+| `case_conversations` | `channel_id` | [[database/schemas/wms-chat#`channels`\|channels]] | Work Management Chat |
 
 ## Skills & Learning
 
@@ -279,7 +285,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 |:------------|:-------|:-------------|:-------------|
 | `workspaces` | `tenant_id` | `tenants` | Infrastructure |
 | `workspaces` | `owner_id` | `users` | Infrastructure |
-| `workspaces` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`|legal_entities]] | Org Structure |
+| `workspaces` | `company_registration_profile_id` | [[database/schemas/org-structure#`company_registration_profiles`|company_registration_profiles]] | Org Structure |
 | `workspace_roles` | `workspace_id` | `workspaces` | Work Management.Foundation |
 | `workspace_members` | `workspace_id` | `workspaces` | Work Management.Foundation |
 | `workspace_members` | `user_id` | `users` | Infrastructure |
@@ -413,7 +419,7 @@ Based on FK dependencies, modules should be migrated in this order:
 ```
 1. infrastructure (tenants, users, countries, file_records)
 2. auth (roles, permissions, sessions)
-3. org-structure (departments, job_titles, legal_entities, team_roles)
+3. org-structure (departments, job_titles, company_registration_profiles, team_roles)
 4. core-hr (employees — the central hub)
 5. configuration (tenant_settings, monitoring_toggles)
 6. agent-gateway (registered_agents)

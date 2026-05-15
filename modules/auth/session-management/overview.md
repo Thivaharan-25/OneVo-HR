@@ -1,4 +1,4 @@
-﻿# Session Management
+# Session Management
 
 **Module:** Auth & Security
 **Feature:** Session Management

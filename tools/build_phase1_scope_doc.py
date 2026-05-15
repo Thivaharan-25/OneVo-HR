@@ -1211,7 +1211,7 @@ def build():
 
     h(doc, "Executive Summary", 1)
     p(doc, "OneVo-HR is a multi-tenant, white-label SaaS platform that combines HR management with workforce intelligence. Phase 1 delivers the operational foundation, HR lifecycle capabilities, leave, organisation structure, skills core, workforce presence, desktop monitoring, identity verification, exception handling, productivity analytics, configuration, notifications, WMS integration support, and the internal Developer Platform used by OneVo operators.")
-    p(doc, "The system uses a .NET 9 Clean Architecture backend with clear layer boundaries, CQRS-style use cases, a Next.js frontend, PostgreSQL persistence, and a Windows monitoring agent. The Developer Platform is separate from the customer frontend and uses a dedicated admin API namespace and a separate JWT issuer.")
+    p(doc, "The system uses a .NET 9 current / .NET 10 target Clean Architecture backend with clear layer boundaries, CQRS-style use cases, a Vite + React 19 frontend, PostgreSQL persistence, and a Windows monitoring agent. The Developer Platform is separate from the customer frontend and uses the /admin/v1/* namespace inside the single ONEVO.Api host with a separate JWT issuer.")
 
     add_table(doc, ["Area", "Phase 1 scope"], [
         ["Customer product", "HR management plus workforce intelligence modules delivered through the main OneVo web application."],
@@ -1232,9 +1232,9 @@ def build():
     h(doc, "Platform Architecture", 1)
     add_table(doc, ["Layer", "Technology / role"], [
         ["Frontend", "Next.js 14 App Router main customer application at app.onevo.io."],
-        ["Backend", ".NET 9 Clean Architecture backend with CQRS-style application use cases."],
-        ["Admin backend", "ONEVO.Admin.Api host for /admin/v1/* Developer Platform endpoints."],
-        ["Database", "PostgreSQL 16 with tenant-scoped tables and row-level security design."],
+        ["Backend", ".NET 9 current / .NET 10 target Clean Architecture backend with CQRS-style application use cases."],
+        ["Admin backend", "/admin/v1/* Developer Platform endpoints inside the single ONEVO.Api host."],
+        ["Database", "PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation with tenant-scoped tables and row-level security design."],
         ["Real-time", "SignalR for live dashboards, alert updates, and agent command delivery."],
         ["Background jobs", "Hangfire for raw buffer processing, aggregation, retention, command expiry, and health checks."],
         ["Desktop agent", "Windows service + MAUI tray app + shared library, packaged for Windows Phase 1."],

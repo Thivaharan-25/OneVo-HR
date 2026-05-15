@@ -1,4 +1,4 @@
-﻿# Work Management Foundation
+# Work Management Foundation
 
 **Module:** Work Management
 **Feature:** Foundation

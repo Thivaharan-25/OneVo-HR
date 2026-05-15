@@ -3,7 +3,7 @@
 **Area:** Org Structure  
 **Trigger:** Admin updates the tenant's company registration profile  
 **Required Permission(s):** `org:manage`  
-**Related Permissions:** `settings:admin` (tenant-level config)
+**Related Permissions:** None
 
 ---
 
@@ -17,7 +17,7 @@
 
 ### Step 1: Navigate to Company Profile
 - **UI:** Sidebar -> Organization -> Company Profile
-- **API:** `GET /api/v1/company-profile`
+- **API:** `GET /api/v1/org/company-profile`
 
 ### Step 2: Enter Registration Details
 - **UI:** Form: registered name, registration number, country, currency, address
@@ -28,7 +28,7 @@
 - **Backend:** CompanyProfileService.UpdateAsync() -> [[modules/org-structure/legal-entities/overview|Company Registration Profile]]
 
 ### Step 4: Save
-- **API:** `PUT /api/v1/company-profile`
+- **API:** `PUT /api/v1/org/company-profile`
 - **DB:** `company_registration_profiles` updated for the current tenant
 - **Result:** Profile available for registration/compliance, payroll configuration, leave policies, and default country holiday setup
 - **Calendar result:** `CompanyProfileCountrySet` seeds or updates `holiday_calendar_settings` with the selected country as the default holiday calendar and queues country holiday import.

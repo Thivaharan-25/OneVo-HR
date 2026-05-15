@@ -273,7 +273,7 @@ interface UpdatePaymentGatewayConfigDto {
 
 ## GET `/admin/v1/reference/countries/{countryCode}/defaults`
 
-Used by the tenant provisioning wizard after country selection to prefill timezone and legal entity currency.
+Reference endpoint used by tenant profile setup after the operator selects a country. The response supplies default timezone and currency choices for the tenant/company profile. These values are profile data and must not create or update `legal_entities`.
 
 ```ts
 interface CountryDefaultsDto {
@@ -290,25 +290,29 @@ interface CountryDefaultsDto {
 }
 ```
 
-Rule: single-timezone countries may auto-fill timezone. Multi-timezone countries must return all supported choices so the frontend can require operator selection. Currency defaults from country but is saved on `legal_entities.currency_code`.
+Rule: single-timezone countries may auto-fill timezone. Multi-timezone countries must return all supported choices so the frontend can require operator selection.
 
 ## GET `/admin/v1/tenants/validate`
 
-Used by the wizard before or during draft creation. Country-specific registration validation may return warnings until product defines strict per-country rules.
+Used by the wizard before or during draft creation.
 
 ```ts
 interface TenantValidationQuery {
   slug?: string
   company_name?: string
   email_domain?: string
+  primary_contact_email?: string
+  registration_profile_name?: string
   registration_number?: string
-  country?: string
+  country_code?: string
+  timezone?: string
+  currency_code?: string
 }
 
 interface TenantValidationResponseDto {
   valid: boolean
   conflicts: Array<{
-    field: "slug" | "company_name" | "email_domain" | "registration_number"
+    field: "slug" | "company_name" | "email_domain" | "primary_contact_email" | "registration_profile_name" | "registration_number" | "country_code" | "timezone" | "currency_code"
     message: string
   }>
   warnings: Array<{
@@ -334,32 +338,26 @@ interface TenantOwnerInviteDto {
 interface CreateTenantDraftDto {
   company_name: string
   slug: string
-  legal_entity_name: string
-  registration_number?: string | null
-  country: string
-  timezone: string
-  currency: string
+  primary_contact_email: string
+  country_code: string
   industry_profile: string
+  registration_profile_name: string
+  registration_number?: string | null
   company_size_range?: string | null
-  tenant_configuration_options?: string[] | null
-  owner_invite?: TenantOwnerInviteDto | null  // One-call shortcut — see design note below
+  timezone: string
+  currency_code: string
 }
 
 interface CreateTenantDraftResponseDto {
   tenant_id: string
   status: "provisioning"
   next_step: "subscription"
-  owner_invite?: {
-    user_id: string
-    invite_expires_at: string
-    delivery_status: "sent" | "failed"
-  } | null
 }
 ```
 
-Persistence rule: `company_size_range` is stored on `tenants`; `legal_entity_name`, `registration_number`, `country`, and `currency` are stored on the primary `legal_entities` row (`currency_code`); `timezone` is stored in tenant settings/default timezone.
+Persistence rule: company name, slug, primary contact email, country, industry, registration/profile name, registration number, company size, timezone, and currency are stored as tenant profile/provisioning data. Tenant draft creation does not create legal-entity records and does not write `legal_entities`.
 
-**Design decision — one-call owner invite shortcut:** The KB provisioning wizard defines owner invite as Step 6 (`POST /admin/v1/tenants/{id}/invite-admin`). As an intentional product shortcut, `POST /admin/v1/tenants` optionally accepts `owner_invite` and orchestrates the invite in the same call. When `owner_invite` is supplied the backend runs the full invite flow (baseline owner role materialised, inactive user created, invite token issued, email sent) within the same database transaction. Email send failure after commit does NOT roll back the tenant draft — the operator can resend via the dedicated invite endpoint. When `owner_invite` is omitted, behaviour is identical to the sequential wizard step. The dedicated `POST /admin/v1/tenants/{id}/invite-admin` endpoint remains available for subsequent or re-sent invites.
+**Invite rule:** `POST /admin/v1/tenants` must not send the tenant owner invitation. The dedicated `POST /admin/v1/tenants/{id}/invite-admin` endpoint is the explicit send action.
 
 ## GET `/admin/v1/tenants/{id}`
 
@@ -368,13 +366,14 @@ interface TenantDetailDto {
   id: string
   company_name: string
   slug: string
-  legal_entity_name: string
-  registration_number: string | null
-  country: string
-  timezone: string
-  currency: string
+  primary_contact_email: string
+  country_code: string
   industry_profile: string
+  registration_profile_name: string
+  registration_number: string | null
   company_size_range: string | null
+  timezone: string
+  currency_code: string
   plan_tier: string
   status: TenantLifecycleStatus
   billing_start_date: string | null
@@ -397,13 +396,14 @@ Draft tenant details can be edited before activation. Post-activation edits shou
 ```ts
 interface UpdateTenantDraftDto {
   company_name?: string
-  legal_entity_name?: string
-  registration_number?: string | null
-  country?: string
-  timezone?: string
-  currency?: string
+  primary_contact_email?: string
+  country_code?: string
   industry_profile?: string
+  registration_profile_name?: string
+  registration_number?: string | null
   company_size_range?: string | null
+  timezone?: string
+  currency_code?: string
 }
 // response: 204 No Content
 ```
@@ -666,6 +666,62 @@ interface TenantInitialSettingsDto {
 // response: 204 No Content
 ```
 
+## GET `/admin/v1/setup-services`
+
+Loads reusable setup services that ONEVO can configure during tenant provisioning. Every setup service is linked to one or more module keys. Free/global services are still module-connected; they are auto-added for tenants with matching entitled modules and must not create billing.
+
+```ts
+interface SetupServiceDto {
+  id: string
+  service_key: string
+  name: string
+  description: string | null
+  module_keys: string[]
+  applies_to_all_entitled_modules: boolean
+  is_free: boolean
+  price: number | null
+  currency: string | null
+  is_active: boolean
+}
+
+interface SetupServiceListQueryDto {
+  module_keys?: string[]
+  include_inactive?: boolean
+}
+
+interface SetupServiceListResponseDto {
+  items: SetupServiceDto[]
+}
+```
+
+## PUT `/admin/v1/tenants/{id}/setup-services`
+
+Stores the tenant setup-service checklist for module-connected free/global and paid services.
+
+```ts
+interface TenantSetupServiceSelectionDto {
+  setup_service_id: string
+  module_key: string
+  status: "needed" | "in_progress" | "configured" | "waived" | "cancelled"
+  is_billable: boolean
+  price?: number | null
+  currency?: string | null
+  notes?: string | null
+}
+
+interface UpdateTenantSetupServicesDto {
+  services: TenantSetupServiceSelectionDto[]
+}
+
+// response: 204 No Content
+```
+
+Rules:
+
+- `module_key` must be one of the tenant's entitled modules and one of the setup service's linked module keys.
+- Free/global services are saved with `is_billable = false`.
+- Paid services require explicit operator selection and are tracked for billing/evidence outside RBAC.
+
 ## POST `/admin/v1/tenants/{id}/invite-admin`
 
 ```ts
@@ -705,6 +761,7 @@ interface ProvisioningSummaryDto {
     subscription: ProvisioningSectionStatus
     modules: ProvisioningSectionStatus
     roles: ProvisioningSectionStatus
+    setup_services: ProvisioningSectionStatus
     settings: ProvisioningSectionStatus
     owner_invite: ProvisioningSectionStatus
   }
@@ -722,7 +779,7 @@ interface ProvisioningSectionStatus {
 
 ## PATCH `/admin/v1/tenants/{id}/provision/confirm`
 
-Activation is allowed only after tenant details, subscription/commercial terms, module selection, role templates, required settings, and owner invite are complete.
+Activation is allowed only after tenant profile, subscription/commercial terms, module selection, role templates, required settings/templates, and required setup services are complete. Owner invitation is an explicit action and must not be sent implicitly by activation.
 
 ```ts
 interface ProvisionConfirmRequestDto {

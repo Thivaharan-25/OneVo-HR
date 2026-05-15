@@ -10,6 +10,7 @@
 ## Preconditions
 
 - At least one department exists → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Employee reporting lines are available for scoped creators. If reporting lines are missing, only unrestricted org admins can create teams until hierarchy data is complete.
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Creator Tier Resolution
@@ -72,6 +73,7 @@ The set of employees a creator can add as members or team lead:
 | Team lead not in member pool | `403 Forbidden` | "Team lead must be within your accessible employee pool" |
 | Member not in member pool (API) | `403 Forbidden` | "You can only add employees within your hierarchy scope" |
 | Leaf head dept picker attempted | Prevented at UI | Dept field rendered as read-only label |
+| No reporting-line data for scoped creator | Team creation blocked | "No eligible employees found in your hierarchy" |
 
 ## Events Triggered
 

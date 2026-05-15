@@ -10,21 +10,20 @@
 ### Flow
 
 ```
-POST /api/v1/departments
+POST /api/v1/org/departments
   -> DepartmentController.Create(CreateDepartmentCommand)
-    -> [RequirePermission("settings:admin")]
+    -> [RequirePermission("org:manage")]
     -> FluentValidation: name required, code required + unique,
-       legal_entity_id required, parent_department_id optional
+       parent_department_id optional
     -> DepartmentService.CreateAsync(command, ct)
-      -> 1. Validate legal_entity_id exists and is active
-      -> 2. Validate code uniqueness within tenant
-      -> 3. If parent_department_id provided:
+      -> 1. Validate code uniqueness within tenant
+      -> 2. If parent_department_id provided:
            a. Verify parent exists and is active
-           b. Verify parent belongs to same legal entity
-      -> 4. If head_employee_id provided, validate employee exists
-      -> 5. Build Department entity (is_active = true)
-      -> 6. Persist to departments table
-      -> 7. Publish DepartmentCreated domain event
+           b. Verify parent belongs to same tenant
+      -> 3. If head_employee_id provided, validate employee exists
+      -> 4. Build Department entity (is_active = true)
+      -> 5. Persist to departments table
+      -> 6. Publish DepartmentCreated domain event
       -> Return Result<DepartmentDto>
     -> 201 Created
 ```
@@ -34,7 +33,7 @@ POST /api/v1/departments
 ### Flow
 
 ```
-GET /api/v1/departments?view=tree|flat
+GET /api/v1/org/departments?view=tree|flat
   -> [RequirePermission("employees:read")]
   -> DepartmentService.GetAllAsync(view, ct)
     -> If view = "flat":
@@ -57,8 +56,8 @@ GET /api/v1/departments?view=tree|flat
 ### Flow
 
 ```
-PUT /api/v1/departments/{id}
-  -> [RequirePermission("settings:admin")]
+PUT /api/v1/org/departments/{id}
+  -> [RequirePermission("org:manage")]
   -> DepartmentService.UpdateAsync(id, command, ct)
     -> 1. Load department by id
     -> 2. If parent_department_id changed:
@@ -78,10 +77,9 @@ PUT /api/v1/departments/{id}
 | Scenario | HTTP | Error |
 |:---------|:-----|:------|
 | Duplicate code | 409 | "Department code already exists" |
-| Invalid legal entity | 422 | "Legal entity not found or inactive" |
 | Parent not found | 422 | "Parent department not found" |
 | Circular reference detected | 422 | "Circular department hierarchy detected" |
-| Cross-entity parent | 422 | "Parent must belong to same legal entity" |
+| Cross-tenant parent | 422 | "Parent must belong to the same tenant" |
 | Head employee not found | 422 | "Employee not found" |
 | Department not found | 404 | "Department not found" |
 

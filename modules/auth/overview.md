@@ -11,11 +11,13 @@
 
 ## Purpose
 
-Handles customer web authentication through BFF-style HttpOnly cookie sessions, backend-held tenant auth state/JWTs, authorization (**hybrid permission control** with 106 explicitly grantable permissions plus universal auto-grants, role templates, per-employee overrides, hierarchy-scoped access), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
+Handles customer web authentication through BFF-style HttpOnly cookie sessions, backend-held tenant auth state/JWTs, authorization (**hybrid permission control** with 106 explicitly grantable permissions plus universal auto-grants, role templates, per-employee overrides, temporary grants, hierarchy-scoped access, and hierarchy bypass grants), session management, MFA, audit logging, and GDPR consent tracking. Provides the security backbone for the entire platform.
 
-**Authorization model:** NOT simple RBAC. Roles are tenant-scoped permission bundles created from templates. Developer Platform can create starter role templates during provisioning, but the materialized tenant roles still live in the Auth module. Universal permissions are auto-granted to every active employee and cannot be revoked. Per-employee permission overrides (grant/revoke) always win over role defaults for explicitly grantable permissions. All data access is scoped to the user's position in the org hierarchy (they only see employees below them).
+**Authorization model:** NOT simple RBAC. Roles are tenant-scoped permission bundles created from templates. Developer Platform can create starter role templates during provisioning, but the materialized tenant roles still live in the Auth module. Universal permissions are auto-granted to every active employee and cannot be revoked. Per-employee permission overrides (grant/revoke) always win over role defaults for explicitly grantable permissions when they are inside their valid date window. All data access is scoped to the user's position in the org hierarchy (they only see employees below them), except for explicit hierarchy bypass grants.
 
 **Module entitlement boundary:** role templates, tenant roles, and permission override screens must only expose permissions from modules enabled for the tenant, plus universal permissions. If a tenant has only Employee Management and Leave enabled, Payroll, WorkSync, Workforce Intelligence, Agent Gateway, and other disabled-module permissions cannot be shown or assigned.
+
+**Super Admin boundary:** Platform Super Admin and Tenant Super Admin are different powers. Platform Super Admin is only for Developer Platform / operator routes. Tenant Super Admin / tenant owner means full administration inside the tenant's enabled module catalog only. Tenant Super Admin must not bypass subscription, paid add-on, trial, disabled-module, or module-catalog checks.
 
 ---
 
@@ -65,14 +67,16 @@ public interface IRoleTemplateService
 
 public interface IPermissionResolver
 {
-    /// Resolves effective permissions: universal auto-grants + role permissions + individual overrides, filtered by feature grants
+    /// Resolves effective permissions from tenant enabled modules, universal auto-grants,
+    /// active roles, valid individual overrides, feature grants, and tenant-owner expansion.
+    /// Commercial entitlement is evaluated before RBAC; tenant Super Admin cannot access disabled modules.
     Task<List<string>> ResolveAsync(Guid userId, Guid tenantId, CancellationToken ct);
 }
 
 public interface IHierarchyScopeService
 {
     /// Returns a HierarchyFilter value object for the current user.
-    /// Super Admin â†’ HierarchyFilter.All (no restriction, no CTE)
+    /// Tenant Super Admin -> HierarchyFilter.All inside enabled tenant modules only.
     /// Manager (employees:read-team) â†’ HierarchyFilter.SubordinatesOf(managerId)
     /// Employee â†’ HierarchyFilter.OwnOnly(employeeId)
     /// Pass the filter into repository methods â€” never materialize a list of IDs.
@@ -177,11 +181,12 @@ Global permission definitions â€” NOT tenant-scoped.
 | `role_id` | `uuid` | FK â†’ roles |
 | `assigned_at` | `timestamptz` | |
 | `assigned_by` | `uuid` | FK â†’ users (who granted this) |
+| `expires_at` | `timestamptz` | nullable; use for temporary role assignment |
 | PK: `(user_id, role_id)` | | |
 
 ### `user_permission_overrides`
 
-Per-employee permission overrides. Super Admin can grant or revoke individual permissions for any employee, independent of their role. **Overrides always win over role permissions.**
+Per-employee permission overrides. Tenant Super Admin can grant or revoke individual permissions for any employee, independent of their role, but only for permissions in enabled tenant modules. **Overrides always win over role permissions** when active.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -191,13 +196,15 @@ Per-employee permission overrides. Super Admin can grant or revoke individual pe
 | `permission_id` | `uuid` | FK â†’ permissions |
 | `grant_type` | `varchar(10)` | `grant` or `revoke` |
 | `reason` | `varchar(255)` | Why this override exists |
-| `granted_by` | `uuid` | FK â†’ users (Super Admin who set this) |
+| `granted_by` | `uuid` | FK â†’ users (Tenant Super Admin or delegated permission admin who set this) |
+| `valid_from` | `timestamptz` | nullable; default active immediately |
+| `expires_at` | `timestamptz` | nullable; use for date/time-bound individual permission |
 | `created_at` | `timestamptz` | |
 | UNIQUE: `(tenant_id, user_id, permission_id)` | | |
 
 ### `feature_access_grants`
 
-Module-level access grants. Super Admin toggles entire feature modules for a role or individual employee.
+Module-level access grants. Tenant Super Admin can toggle tenant-enabled feature modules for a role or individual employee. These grants cannot enable a module the tenant has not purchased, trialed, or otherwise received through an approved tenant entitlement.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -208,6 +215,8 @@ Module-level access grants. Super Admin toggles entire feature modules for a rol
 | `module` | `varchar(50)` | Module code: `leave`, `payroll`, `performance`, etc. |
 | `is_enabled` | `boolean` | |
 | `granted_by` | `uuid` | FK â†’ users |
+| `valid_from` | `timestamptz` | nullable; default active immediately |
+| `expires_at` | `timestamptz` | nullable; use for temporary role/employee module grant |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 | UNIQUE: `(tenant_id, grantee_type, grantee_id, module)` | | |
@@ -299,10 +308,10 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 
 1. **Customer web BFF sessions** â€” HttpOnly session cookies with backend-held tenant auth state/JWT and `perm_ver` for real-time permission staleness checks.
 2. **Password hashing** - BCrypt with work factor 12. Do not use any other algorithm for user passwords.
-3. **Hybrid permission control** â€” effective permissions = universal auto-grants + role permissions + individual overrides; filtered by module entitlements/feature grants; scoped by org hierarchy.
+3. **Hybrid permission control** â€” commercial entitlement decides which module permissions exist for the tenant; RBAC decides who can use those permissions. Effective permissions = universal auto-grants + active role permissions + valid individual overrides; filtered by subscription/module entitlements and feature grants; scoped by org hierarchy.
 4. **Permission version counter** â€” Redis key `perm_version:{user_id}` (integer, 24h TTL). Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 â†’ frontend silently refreshes. Fails open if Redis unavailable.
-5. **Hierarchy scoping** â€” users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Super Admin bypasses hierarchy.
-6. **Never hardcode role names** â€” roles are custom, created by Super Admin. Always check permissions, never role names.
+5. **Hierarchy scoping** â€” users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Tenant Super Admin bypasses hierarchy only inside enabled tenant modules. Non-admin exceptions use explicit hierarchy bypass grants with optional expiry.
+6. **Never hardcode role names** â€” roles are custom, created by Tenant Super Admin or delegated permission admins. Always check permissions, never role names.
 7. **Role templates are provisioning blueprints** â€” Developer Platform templates can seed tenant roles, but tenant owners can later edit/create roles using only permissions exposed by their enabled modules.
 8. **Device JWT** for agents â€” contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
 9. **Refresh token rotation** â€” each use generates a new token, old one is marked with `replaced_by_id`. If a revoked token is reused, the entire replacement chain is revoked (token theft detection).

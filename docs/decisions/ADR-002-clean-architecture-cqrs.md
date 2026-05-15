@@ -8,34 +8,41 @@
 
 ## Context
 
-ONEVO was designed as a modular monolith with 24 separate `.csproj` module projects. No code had been written. The May 31 delivery deadline and the dropped microservice extraction goal made the original architecture unnecessary complex.
+ONEVO was designed as a modular monolith with separate module projects. No production backend code had been written for that direction. The delivery timeline and the dropped microservice extraction goal made the original architecture unnecessarily complex.
 
 ## Decision
 
-Adopt **Clean Architecture** with a 4-layer solution:
-- `ONEVO.Domain` — entities, domain events, value objects
-- `ONEVO.Application` — CQRS handlers, interfaces, DTOs, validators
-- `ONEVO.Infrastructure` — EF Core, JWT, BCrypt, Redis, Hangfire, SignalR
-- `ONEVO.Api` / `ONEVO.Admin.Api` — thin ASP.NET Core hosts
+Adopt Clean Architecture with a 4-layer solution:
 
-The 24 module projects become **feature folders** within `ONEVO.Domain/Features/` and `ONEVO.Application/Features/`.
+- `ONEVO.Domain` - entities, value objects, errors, enums, and optional domain events
+- `ONEVO.Application` - CQRS handlers, DTOs, validators, repository interfaces, and service interfaces
+- `ONEVO.Infrastructure` - EF Core, repositories, unit of work, security, background jobs, caching, identity, and external service implementations
+- `ONEVO.Api` - the single ASP.NET Core host for customer APIs and `/admin/v1/*` developer-console APIs
 
-**CQRS** is implemented with MediatR. Every write operation is a `Command`, every read is a `Query`. MediatR pipeline behaviors handle cross-cutting concerns (validation, logging, performance, exception handling).
+The planning modules become feature folders inside the layer projects. There are no separate module `.csproj` files.
+
+CQRS is implemented with MediatR. Every write operation is a command and every read operation is a query. MediatR pipeline behaviors handle validation, logging, performance, and exception safety.
+
+Domain events are optional. They are not required by Clean Architecture or CQRS and should only be added when a completed use case needs decoupled post-save side effects.
 
 ## Consequences
 
 **Positive:**
-- Framework independence — Domain has zero external dependencies
-- Testability — handlers tested without HTTP or DB
-- Single deployable unit — simpler than 24 projects
-- Faster to build — less boilerplate, no module registration ceremony
-- No distributed systems complexity
+
+- Domain remains framework independent.
+- Handlers are testable without HTTP or a real database.
+- One deployable backend host is simpler than module services or multiple API hosts.
+- Repository interfaces keep persistence behind Application-owned contracts.
+- No RabbitMQ, MassTransit, or integration-event broker is required in Phase 1.
 
 **Negative:**
-- Microservice extraction is no longer a natural path (acceptable — not a goal)
-- All 176 tables in one ApplicationDbContext (managed via feature configuration folders)
 
-## Alternatives considered
+- Microservice extraction is no longer a natural path. This is acceptable because it is not a Phase 1 goal.
+- All feature persistence shares one `ApplicationDbContext`; repository boundaries and architecture tests must prevent handlers and services from bypassing repositories.
 
-- Keep modular monolith — rejected: too complex for May 31
-- Microservices — rejected: no team bandwidth, premature
+## Alternatives Considered
+
+- Keep the modular monolith with separate module projects - rejected as too complex for the current delivery target.
+- Microservices - rejected because there is no current product need or team bandwidth.
+- Separate `ONEVO.Admin.Api` host - rejected. Developer-console endpoints live under `/admin/v1/*` inside `ONEVO.Api`.
+

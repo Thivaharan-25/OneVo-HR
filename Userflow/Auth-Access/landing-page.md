@@ -1,4 +1,4 @@
-﻿# Landing Page
+# Landing Page
 
 **Area:** Auth & Access  
 **Trigger:** User navigates to `https://{tenantSlug}.onevo.com` (any unauthenticated visit â€” every session start)  

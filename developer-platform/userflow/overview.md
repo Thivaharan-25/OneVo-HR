@@ -49,7 +49,7 @@ All developer platform accounts hold one of three roles, stored in `dev_platform
 | View feature flags | viewer |
 | View agent version catalog | viewer |
 | View audit logs | viewer |
-| Provision a new tenant (wizard) | admin |
+| Provision a new tenant (two-step creation wizard plus Manage/Configure) | admin |
 | Toggle feature flag global default | admin |
 | Toggle per-tenant feature flag override | admin |
 | Publish a new agent version | admin |
@@ -73,6 +73,6 @@ The platform-admin JWT includes the `role` claim. All `/admin/v1/*` endpoints en
 | File | Covers |
 |---|---|
 | `tenant-management.md` | Tenant list, tenant detail, suspend/unsuspend, impersonation, subscription override |
-| `provisioning-flow.md` | 7-step manual provisioning wizard |
+| `provisioning-flow.md` | Two-step tenant creation plus post-creation Manage/Configure flow |
 | `feature-flags.md` | Global flag list, toggle global default, per-tenant override |
 | `agent-versions.md` | Version catalog, publish, force-update ring, ring assignment, rollback |

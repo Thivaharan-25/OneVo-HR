@@ -20,9 +20,9 @@
 
 ### Unit Tests (Services, Validators, Handlers)
 
-- **Framework:** xUnit
-- **Mocking:** Moq
-- **Assertions:** FluentAssertions
+- **Framework:** xUnit v3
+- **Mocking:** Moq 4.20.72
+- **Assertions:** FluentAssertions 8.x
 - **Coverage target:** 80%+ for all services
 - **Location:** `tests/ONEVO.Tests.Unit/Modules/{ModuleName}/`
 
@@ -71,7 +71,7 @@ public class EmployeeServiceTests
 
 ### Integration Tests (API + Database)
 
-- **Framework:** xUnit + WebApplicationFactory
+- **Framework:** xUnit v3 + WebApplicationFactory
 - **Database:** Testcontainers (real PostgreSQL in Docker)
 - **Location:** `tests/ONEVO.Tests.Integration/`
 
@@ -108,7 +108,7 @@ public class EmployeeEndpointTests : IClassFixture<ONEVOWebFactory>
 }
 ```
 
-### Architecture Tests (ArchUnitNET)
+### Architecture Tests (ArchUnitNET 0.13.x)
 
 - **Location:** `tests/ONEVO.Tests.Architecture/`
 - **Purpose:** Enforce module boundaries, naming conventions, dependency rules

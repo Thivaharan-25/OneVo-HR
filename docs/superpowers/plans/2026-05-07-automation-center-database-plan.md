@@ -1,8 +1,8 @@
 # Automation Center Database Plan
 
 **Date:** 2026-05-07  
-**Status:** Proposed - awaiting validation  
-**Scope:** Database design plan only. Do not change canonical schema docs or EF migrations until approved.
+**Status:** Approved for documentation alignment - additive migration direction  
+**Scope:** Database design plan and canonical schema documentation. EF migrations still require a separate implementation task.
 
 ---
 
@@ -153,12 +153,18 @@ After validation, update:
 - Avoid destructive column drops in the first migration; deprecate first, remove later.
 - Add indexes on tenant, workflow instance, resolver type, case resource, and unresolved status.
 
-## Validation Questions
+## Resolved Decisions
 
-1. Should Automation Center definitions live in Shared Platform, or should they have a dedicated `automation` schema/module?
-2. Should case conversations be a dedicated table linked to `channels`, or should `channels` receive case metadata columns directly?
-3. Should escalation working-time delays use simple minutes first, or store working-calendar-aware delay config from day one?
-4. Should Inbox comments reuse case conversation messages, or have their own comment table that can later migrate into Chat?
+1. Automation Center definitions live in Shared Platform.
+2. Case conversation metadata uses a dedicated `case_conversations` table linked to WorkSync Chat `channels`.
+3. Escalation delays start with simple minute/SLA fields plus JSON action config; working-calendar-specific behavior can be added later without replacing the table.
+4. Inbox is a delivery surface for the same workflow action card. Chat messages remain in WorkSync Chat; workflow decisions remain in Shared Platform workflow/case APIs.
+
+## Deferred Questions
+
+1. Exact Inbox storage table is still not defined in the provided schema docs.
+2. Final enum names must be mirrored in code constants when EF migrations are implemented.
+3. Legacy fields are deprecated after the additive migration, but not dropped until a later contract migration.
 
 ## Recommendation
 
