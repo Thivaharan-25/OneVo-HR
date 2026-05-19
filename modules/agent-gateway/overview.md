@@ -1,4 +1,4 @@
-﻿# Module: Agent Gateway
+# Module: Agent Gateway
 
 **Feature Folder:** `Application/Features/AgentGateway`
 **Phase:** 1 â€” Build

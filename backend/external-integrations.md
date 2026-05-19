@@ -101,9 +101,26 @@ Required config concepts:
 - Per-tenant sender configuration via `notification_channels`
 - Delivery tracking (future: `email_delivery_logs`)
 
+### 3. Google Calendar + Outlook Calendar (User Calendar Sync)
+
+| Property | Value |
+|:---------|:------|
+| **Module** | Calendar |
+| **Auth** | OAuth 2.0 (Google Identity / Microsoft Graph) |
+| **Purpose** | User-level pull/push/two-way sync of calendar events between ONEVO and Google Calendar or Outlook Calendar |
+| **Tables** | `external_calendar_connections`, `external_calendar_event_links` |
+
+**Key Flows:**
+- User connects via OAuth consent; backend stores encrypted access + refresh tokens.
+- User selects sync mode: `pull_only`, `push_only`, `two_way`, or `disabled`.
+- Hangfire recurring job (every 15 min) processes active connections.
+- Deduplication via `external_event_id` + etag; conflict resolution on etag mismatch (external wins inbound, ONEVO wins outbound).
+
+See [[Userflow/Calendar/calendar-integrations|Calendar Integrations Flow]].
+
 ## Phase 2 Integrations
 
-### 3. Biometric Terminals (Presence Capture)
+### 4. Biometric Terminals (Presence Capture)
 
 | Property | Value |
 |:---------|:------|
@@ -123,14 +140,6 @@ public bool VerifyWebhookSignature(string payload, string signature, string apiK
 }
 ```
 
-### 4. Google Calendar (Leave Sync)
-
-| Property | Value |
-|:---------|:------|
-| **Module** | Calendar |
-| **Auth** | OAuth 2.0 |
-| **Purpose** | Sync approved leave events to Google Calendar |
-
 ### 5. Slack (Notifications)
 
 | Property | Value |
@@ -139,7 +148,7 @@ public bool VerifyWebhookSignature(string payload, string signature, string apiK
 | **Auth** | App integration (Bot token) |
 | **Purpose** | Real-time notifications for leave approvals, reviews, etc. |
 
-### 6. Microsoft Teams (Work Management Chat + Workspace Sync)
+### 6. Microsoft Teams (Chat + Workspace Sync)
 
 | Property | Value |
 |:---------|:------|

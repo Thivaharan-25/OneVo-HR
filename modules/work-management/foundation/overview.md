@@ -12,7 +12,7 @@
 
 Core workspace infrastructure for Work Management. Every Work Management entity is scoped to a workspace. Workspaces are tenant-level containers for projects, members, and roles. A tenant can have multiple workspaces.
 
-Phase 1 workspace membership is employee-backed. `workspace_members` stores both `user_id` for auth and `employee_id` for HR joins, availability, offboarding, department/team reporting, and company tenant checks. Microsoft Teams group sync is a Phase 2 integration option and is separate from HR team-to-workspace sync.
+Phase 1 workspace membership is employee-backed. `workspace_members` stores both `user_id` for auth and `employee_id` for HR joins, availability, offboarding, department/team reporting, and company tenant checks. Microsoft Teams group sync is an optional Phase 1 integration and is separate from HR team-to-workspace sync.
 
 ---
 
@@ -42,7 +42,7 @@ When enabled, changes in `team_members` add or deactivate `workspace_members` re
 
 ### Microsoft Teams Link Tables
 
-`workspace_teams_links` and `teams_member_sync_status` are Phase 2 integration tables. They are for Microsoft Teams channel/group sync, not login, not SSO, and not the Phase 1 HR team sync bridge.
+`workspace_teams_links` and `teams_member_sync_status` are optional Phase 1 integration tables. They are for Microsoft Teams channel/group sync, not login, not SSO, and not the Phase 1 HR team sync bridge.
 
 ---
 
@@ -56,7 +56,7 @@ When enabled, changes in `team_members` add or deactivate `workspace_members` re
 6. Workspace and project members must carry `employee_id`; querying by department, team, job, company tenant, and employment status must not require application-only joins.
 7. Offboarding or `employees.is_deleted = true` deactivates workspace/project memberships and prevents new task assignment.
 8. HR team-to-workspace sync is Phase 1 through `workspace_hr_team_links`.
-9. Microsoft Teams group creation/linking is Phase 2 and must not be treated as SSO.
+9. Microsoft Teams group creation/linking is an optional Phase 1 integration and must not be treated as SSO.
 
 ---
 
@@ -103,4 +103,3 @@ When enabled, changes in `team_members` add or deactivate `workspace_members` re
 - [[database/schemas/wms-project-management|WMS Project Management Schema]]
 - [[database/cross-module-relationships|Cross-Module Relationships]]
 - [[current-focus/DEV3|DEV3 Task 1]]
-

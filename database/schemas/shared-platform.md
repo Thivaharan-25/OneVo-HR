@@ -1,7 +1,7 @@
 # Shared Platform — Schema
 
 **Module:** [[modules/shared-platform/overview|Shared Platform]]
-**Phase:** Phase 1 + Phase 2 integration additions
+**Phase:** Phase 1, including optional Microsoft Teams integration additions
 **Tables:** 36
 
 ---
@@ -497,43 +497,53 @@ Tenant-specific service setup checklist and charge state.
 
 ## `configuration_templates`
 
-Reusable setup templates visible in the Developer Platform Templates area.
+Reusable setup templates managed in the Developer Platform → Configuration Template Manager. Platform operators create and version these globally; applying a template to a tenant seeds the corresponding module tables without mutating the global template.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `template_key` | `varchar(100)` | Unique template key |
-| `template_type` | `varchar(50)` | `configuration`, `role`, `org_structure`, `job_family`, `leave_policy`, `onboarding`, `app_allowlist`, `monitoring_policy`, `data_import_mapping` |
+| `template_key` | `varchar(100)` | Unique machine-readable key, e.g. `uk-standard-leave`, `engineering-job-family` |
+| `template_type` | `varchar(50)` | `configuration`, `job_family`, `leave_policy`, `onboarding`, `app_allowlist`, `monitoring_policy`, `data_import_mapping` |
 | `name` | `varchar(150)` | Display name |
-| `version` | `integer` | Template version |
-| `module_keys_json` | `jsonb` | Modules/services this template applies to |
-| `payload_json` | `jsonb` | Template content owned by the target module contract |
-| `is_system` | `boolean` | ONEVO default template |
-| `is_active` | `boolean` | |
-| `created_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `description` | `varchar(500)` | Nullable — human-readable summary shown in the template picker |
+| `version` | `integer` | Incremented on every edit; applied version is snapshotted in `tenant_configuration_template_applications` |
+| `module_keys_json` | `jsonb` | Module keys that must be entitled on the tenant before apply is allowed |
+| `industry_profile_tag` | `varchar(50)` | Nullable — links monitoring policy templates to an industry for auto-selection during provisioning |
+| `payload_json` | `jsonb` | Type-specific template content — schema defined per `template_type` in the Configuration Template Manager end-to-end-logic doc |
+| `is_system` | `boolean` | `true` = ONEVO-managed default; system templates cannot be edited, only cloned |
+| `is_active` | `boolean` | Inactive templates cannot be applied; deactivation is blocked if any `job_levels` row has `pending_role_template_id` referencing a linked role template |
+| `created_by_id` | `uuid` | FK → dev_platform_accounts |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
+
+**Note on `role` type:** Role templates are managed separately via the Role Template Manager module and stored in `role_templates`, not here. The `job_family` payload references `role_templates.id` per level for the deferred role-linking mechanism — see `job_levels.pending_role_template_id`.
+
+**Foreign Keys:** `created_by_id` → [[developer-platform/database/schema#dev_platform_accounts|dev_platform_accounts]]
 
 ---
 
 ## `tenant_configuration_template_applications`
 
-Tracks when a reusable template is applied and then customized for a tenant.
+Audit record of every template application to a tenant. One row per apply action — reapplying creates a new row, not an update.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK -> tenants |
-| `configuration_template_id` | `uuid` | FK -> configuration_templates |
-| `template_type` | `varchar(50)` | Snapshot of the template type |
-| `applied_version` | `integer` | Version applied |
-| `custom_payload_json` | `jsonb` | Tenant-specific override payload after application |
-| `status` | `varchar(20)` | `applied`, `customized`, `superseded`, `removed` |
-| `applied_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `tenant_id` | `uuid` | FK → tenants |
+| `configuration_template_id` | `uuid` | FK → configuration_templates |
+| `template_type` | `varchar(50)` | Snapshot of the template type at apply time |
+| `applied_version` | `integer` | Template version that was applied |
+| `applied_payload_json` | `jsonb` | Snapshot of the payload that was applied — immutable after creation |
+| `custom_payload_json` | `jsonb` | Nullable — tenant-specific overrides made after application; does not mutate the global template |
+| `warnings_json` | `jsonb` | Array of warning strings returned at apply time, e.g. unresolved job level rank references |
+| `status` | `varchar(20)` | `applied` → `customized` (if tenant edited) → `superseded` (if reapplied) → `removed` |
+| `applied_by_id` | `uuid` | FK → dev_platform_accounts |
 | `applied_at` | `timestamptz` | |
-| `updated_at` | `timestamptz` | Nullable |
+| `updated_at` | `timestamptz` | Nullable — set when status changes or custom payload is edited |
 
-**Rule:** applying a reusable template creates tenant-specific configuration. Editing the tenant copy must not mutate the global template.
+**Rule:** Applying a template creates tenant-specific configuration; the global template record is never mutated. Editing the tenant copy sets `status = customized`. Reapplying the same template sets the previous application row to `superseded` and creates a new `applied` row.
+
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#tenants|tenants]], `configuration_template_id` → [[#configuration_templates|configuration_templates]], `applied_by_id` → [[developer-platform/database/schema#dev_platform_accounts|dev_platform_accounts]]
 
 Catalog price changes do not silently update existing tenant commercial records. Existing tenant subscriptions and module entitlements keep their stored negotiated prices unless ONEVO runs an explicit reviewed reprice/migration process.
 

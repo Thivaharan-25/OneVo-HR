@@ -277,7 +277,7 @@ dotnet test ONEVO.sln --filter "Auth|LayerDependency"
 - [[Userflow/Auth-Access/permissions-reference|Permissions Reference]] (Userflow/Auth-Access/permissions-reference.md)
 - [[Userflow/Auth-Access/role-creation|Role Creation]] (Userflow/Auth-Access/role-creation.md)
 - [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] (Userflow/Auth-Access/permission-assignment.md)
-- [[developer-platform/modules/role-template-manager|Role Template Manager]] (developer-platform/modules/role-template-manager.md)
+- [[developer-platform/modules/role-template-manager/overview|Role Template Manager]] (developer-platform/modules/role-template-manager/overview.md)
 
 ### Verification
 
@@ -384,7 +384,7 @@ Delivered the foundational RBAC slice that the Tenant Creation API (and every ot
 - [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
 - [[database/schemas/shared-platform|Shared Platform Schema]] (database/schemas/shared-platform.md)
 - [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md)
-- [[developer-platform/modules/role-template-manager|Role Template Manager]] (developer-platform/modules/role-template-manager.md)
+- [[developer-platform/modules/role-template-manager/overview|Role Template Manager]] (developer-platform/modules/role-template-manager/overview.md)
 - [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
 
 ### Verification
@@ -557,7 +557,7 @@ dotnet test ONEVO.sln --filter AppAllowlist
 - [ ] Platform admin JWT is accepted only by `/admin/v1/*` endpoints.
 - [ ] Tenant JWT is rejected by every `/admin/v1/*` endpoint.
 - [ ] Platform admin JWT is rejected by tenant `/api/v1/*` endpoints.
-- [ ] Platform roles are enforced: `super_admin`, `admin`, `viewer`.
+- [ ] Platform permissions are enforced through Developer Platform RBAC; `super_admin`, `admin`, and `viewer` are compatibility presets only.
 - [ ] Admin session records store token hash, account ID, created timestamp, expiry timestamp, and IP address.
 - [ ] `last_login_at` updates after successful login.
 - [ ] Tests cover Google callback success, inactive account rejection, non-`@onevo.io` rejection, issuer separation, role claim mapping, and session persistence.
@@ -625,7 +625,7 @@ dotnet test ONEVO.sln --filter AdminApi
 - [ ] `POST /admin/v1/tenants/{id}/invite-admin` creates the first tenant super-admin invite.
 - [ ] `GET /admin/v1/tenants/{id}/provisioning-summary` returns review data, section completion, warnings, and activation blockers.
 - [ ] `PATCH /admin/v1/tenants/{id}/provision/confirm` activates a provisioning tenant only after required steps are complete.
-- [ ] `POST /admin/v1/tenants/{id}/impersonate` is `super_admin` only, creates a 15-minute non-renewable impersonation token, and always writes an audit log.
+- [ ] `POST /admin/v1/tenants/{id}/impersonate` requires `platform.tenants.impersonate`, creates a 15-minute non-renewable impersonation token, and always writes an audit log.
 - [ ] Provisioning tenants are invisible to tenant-facing `/api/v1/*` queries.
 - [ ] Tests cover tenant draft creation, provisioning resume data, activation guard, suspend/unsuspend, subscription/commercial terms override audit, module assignment and pricing state, invite admin, and impersonation role enforcement.
 
@@ -641,7 +641,7 @@ dotnet test ONEVO.sln --filter AdminApi
 - [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
 - [[modules/infrastructure/overview|Infrastructure]] (modules/infrastructure/overview.md)
 - [[modules/auth/overview|Auth]] (modules/auth/overview.md)
-- [[developer-platform/modules/role-template-manager|Role Template Manager]] (developer-platform/modules/role-template-manager.md)
+- [[developer-platform/modules/role-template-manager/overview|Role Template Manager]] (developer-platform/modules/role-template-manager/overview.md)
 - [[Userflow/Auth-Access/role-creation|Role Creation]] (Userflow/Auth-Access/role-creation.md)
 - [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] (Userflow/Auth-Access/permission-assignment.md)
 

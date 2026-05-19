@@ -436,12 +436,12 @@ Based on FK dependencies, modules should be migrated in this order:
    - wms-collaboration (document extensions → wiki_pages → task_documents)
    - wms-analytics (dashboards → dashboard_shares)
    - wms-integrations (repositories → code_activity_events → task_automation_rules)
+   - optional Microsoft Teams sync additions (external_account_connections -> microsoft_graph_tokens -> workspace_teams_links -> channel_teams_links -> teams_message_sync_state)
 9. IDE Extension (depends on workspaces, projects, tasks, channels):
    - ide_extension_installs → ide_sessions → ide_tag_executions
    - ide_context_links, ide_chat_threads
    - agent_install_entitlements, agent_install_jobs (Agent Gateway additions)
 10. Phase 2 modules (after Phase 1 is stable):
-   - Microsoft Teams sync additions (external_account_connections -> microsoft_graph_tokens -> workspace_teams_links -> channel_teams_links -> teams_message_sync_state)
     - payroll, performance, skills
     - hr-documents (Phase 2 additions), grievance, expense
     - reporting-engine

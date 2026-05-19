@@ -235,7 +235,7 @@ These tables are referenced by many others — design changes here have wide imp
 
 ### [[database/schemas/wms-project-management|Work Management Foundation + Projects]] (13 tables)
 
-Phase 2 Microsoft Teams workspace sync additions (optional integration, not SSO):
+Optional Phase 1 Microsoft Teams workspace sync additions (optional integration, not SSO):
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -291,7 +291,7 @@ Phase 2 Microsoft Teams workspace sync additions (optional integration, not SSO)
 
 ### [[database/schemas/wms-chat|Chat + Chat AI]] (11 tables)
 
-Phase 2 Microsoft Teams chat sync additions (optional integration, not SSO):
+Optional Phase 1 Microsoft Teams chat sync additions (optional integration, not SSO):
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -370,7 +370,7 @@ Phase 2 Microsoft Teams chat sync additions (optional integration, not SSO):
 
 > Old external-provisioning tables removed because Work Management is internal.
 
-Phase 2 Microsoft Teams integration additions (optional integration, not SSO):
+Optional Phase 1 Microsoft Teams integration additions (optional integration, not SSO):
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -378,6 +378,10 @@ Phase 2 Microsoft Teams integration additions (optional integration, not SSO):
 | `microsoft_graph_tokens` | 11 | external_account_connection_id->external_account_connections |
 | `teams_webhook_subscriptions` | 12 | tenant_id->tenants |
 | `teams_delta_sync_state` | 10 | tenant_id->tenants |
+| `workspace_teams_links` | 12 | tenant_id->tenants, workspace_id->workspaces, linked_by_id->users |
+| `channel_teams_links` | 10 | tenant_id->tenants, onevo_channel_id->channels, workspace_teams_link_id->workspace_teams_links |
+| `teams_member_sync_status` | 8 | tenant_id->tenants, workspace_teams_link_id->workspace_teams_links, user_id->users |
+| `teams_message_sync_state` | 14 | tenant_id->tenants, onevo_message_id->messages, channel_teams_link_id->channel_teams_links |
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|

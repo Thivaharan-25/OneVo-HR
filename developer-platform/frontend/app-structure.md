@@ -1,5 +1,55 @@
 # App Structure
 
+## Canonical Navigation
+
+The Developer Platform frontend uses a sidebar icon rail with a secondary panel for grouped modules. This navigation is separate from the tenant-facing ONEVO app navigation in `frontend/architecture/sidebar-nav.md`.
+
+| Rail Area | Default Route | Has Panel | Panel Items |
+|---|---|---:|---|
+| Dashboard | `/` | No | None |
+| Platform Management | `/platform/tenants` | Yes | Tenants, Subscriptions, Platform Users & Roles, Global Policies, Feature Management / Module Catalog, Role Templates, Feature Flags |
+| System Operations | `/operations/platform-health` | Yes | Platform Health, Services Monitor, Device Management, Infrastructure, Background Jobs, Agent Versions |
+| Security & Compliance | `/security/security-center` | Yes | Security Center, Audit Logs, Compliance Center, Data Retention |
+| Analytics & Reports | `/analytics/platform` | Yes | Platform Analytics, Reports |
+| Settings | `/settings/system` | Yes | System Settings, App Catalog, API Keys *(Phase 2)* |
+
+Route visibility is controlled by platform permissions from Platform Access. Do not use tenant roles or ONEVO product module entitlements to show Developer Platform routes.
+
+## Canonical Route Tree
+
+```text
+app/(console)/
+|-- page.tsx
+|-- platform/
+|   |-- tenants/
+|   |-- subscriptions/
+|   |-- platform-users/
+|   |-- platform-roles/
+|   |-- global-policies/
+|   |-- module-catalog/
+|   |-- role-templates/
+|   `-- feature-flags/
+|-- operations/
+|   |-- platform-health/
+|   |-- services/
+|   |-- devices/
+|   |-- infrastructure/
+|   |-- background-jobs/
+|   `-- agent-versions/
+|-- security/
+|   |-- security-center/
+|   |-- audit-logs/
+|   |-- compliance/
+|   `-- data-retention/
+|-- analytics/
+|   |-- platform/
+|   `-- reports/
+`-- settings/
+    |-- system/
+    |-- app-catalog/
+    `-- api-keys/  # Phase 2
+```
+
 ## Full Directory Tree
 
 ```

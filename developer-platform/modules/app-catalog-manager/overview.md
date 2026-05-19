@@ -108,3 +108,16 @@ All seeded entries have `is_public = true` and `is_productive_default` set appro
 - Removing an app from the catalog (`is_public = false`) does not delete existing allowlist entries — tenants that already added the app retain it. The change only prevents the app from appearing in new catalog browsing sessions.
 - All catalog writes are audit-logged with the developer account, timestamp, and field-level changes.
 - App Allowlist Templates should reference catalog identities by process name/catalog id, not free-text display names.
+
+## Navigation
+
+| Route | Permission |
+|---|---|
+| `/platform/app-catalog` | `platform.app_catalog.read` |
+| Create / update / bulk approve | `platform.app_catalog.manage` |
+
+## Related
+
+- [[developer-platform/modules/app-catalog-manager/end-to-end-logic|App Catalog Manager End-to-End Logic]]
+- [[modules/configuration/app-allowlist/overview|App Allowlist]] — tenant-facing allowlist configuration that references catalog entries
+- [[modules/agent-gateway/overview|Agent Gateway]] — observed_applications data source

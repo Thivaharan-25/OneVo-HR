@@ -74,11 +74,24 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
+| `job_family_id` | `uuid` | FK → job_families |
 | `name` | `varchar(50)` | e.g., "Junior", "Senior", "Lead", "Director" |
-| `rank` | `int` | Numeric ordering |
+| `rank` | `int` | Numeric ordering — unique per job family |
+| `salary_minimum` | `decimal(14,2)` | Nullable — indicative band minimum in tenant currency |
+| `salary_maximum` | `decimal(14,2)` | Nullable — indicative band maximum in tenant currency |
+| `default_role_id` | `uuid` | Nullable FK → roles — resolved when the linked role template is applied to this tenant |
+| `pending_role_template_id` | `uuid` | Nullable FK → role_templates — set when a job family template references a role template that has not yet been applied; cleared and `default_role_id` is set when the role template is later applied |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `job_family_id` → [[#`job_families`|job_families]], `default_role_id` → [[database/schemas/auth#`roles`|roles]], `pending_role_template_id` → [[database/schemas/auth#`role_templates`|role_templates]]
+
+**Unique constraint:** `(job_family_id, rank)` — rank must be unique within a family.
+
+**Deferred role-linking rule:** When a Job Family template is applied and a level references a `role_template_id`:
+- If that role template has already been applied to this tenant (`roles.source_template_id = role_template_id`): `default_role_id` is set immediately, `pending_role_template_id` stays null.
+- If the role template has not been applied yet: `pending_role_template_id` is set, `default_role_id` stays null.
+- When the role template is later applied, the system scans all `job_levels` for this tenant where `pending_role_template_id` matches, sets `default_role_id`, and clears `pending_role_template_id`.
+- Employees at a level with no `default_role_id` require manual role assignment.
 
 ---
 

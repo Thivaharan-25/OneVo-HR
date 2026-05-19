@@ -90,26 +90,44 @@ The inverse also applies: a tenant JWT presented at `/admin/v1/*` is rejected by
 
 ---
 
-## Role Levels
+## Platform Permissions
 
-| Role | Can Do | Cannot Do |
-|:---|:---|:---|
-| `super_admin` | Everything: all modules, impersonation, account management, system config | Nothing blocked |
-| `admin` | All operational modules (tenants, flags, versions, audit, config) | Cannot impersonate tenants, cannot manage dev platform accounts |
-| `viewer` | Read-only access to all modules | Cannot write, cannot impersonate, cannot manage accounts |
+Developer Platform authorization is permission-based. Built-in roles are presets, not the complete security model.
 
-Role is encoded in the `platform_role` claim of the platform-admin JWT. Authorization checks at the controller or policy level enforce role boundaries. The `PlatformAdmin` policy verifies the role claim is present and valid; individual endpoint policies enforce what each role may call.
+| Preset Role | Typical Permissions |
+|:---|:---|
+| Platform Super Admin | All platform permissions, including platform account management and impersonation |
+| Tenant Operations Manager | Tenant read/create/manage/activate, provisioning, role-template apply; no impersonation unless explicitly granted |
+| Billing Manager | Subscription plans, payment gateways, invoices, commercial read/manage |
+| Security Auditor | Security, audit, compliance, and retention read-only |
+| Module Catalog Manager | Product module catalog and role-template read/manage |
+| Operations Engineer | Platform health, services, devices, infrastructure, jobs, agent versions |
+
+Effective access is resolved from `dev_platform_account_roles`, `dev_platform_roles`, `dev_platform_role_permissions`, and `dev_platform_permissions`.
+
+The platform-admin JWT includes account identity and either effective permission claims or a permission version reference. Authorization checks at the controller or policy level enforce permission boundaries. Frontend route filtering is not the security boundary.
+
+High-risk permissions include:
+
+| Permission | Meaning |
+|:---|:---|
+| `platform.tenants.impersonate` | Issue short-lived impersonation token |
+| `platform.accounts.manage` | Invite/deactivate platform accounts and revoke sessions |
+| `platform.roles.manage` | Change platform role permission sets |
+| `platform.tenants.suspend` | Suspend or unsuspend tenants |
+| `platform.tenants.activate` | Activate provisioning tenants |
+| `platform.agent_versions.force_update` | Push force-update commands to agent rings |
 
 ---
 
 ## Impersonation Model
 
-Impersonation allows a `super_admin` to take a tenant-user's perspective for debugging — seeing exactly what that user sees in the main product. It is strictly controlled.
+Impersonation allows an explicitly authorized platform account to take a tenant-user's perspective for debugging. It is strictly controlled and requires `platform.tenants.impersonate`.
 
 ### How It Works
 
 ```
-super_admin requests impersonation of user X in tenant Y
+Authorized operator requests impersonation of user X in tenant Y
         │
         ▼
 POST /admin/v1/tenants/{tenantId}/impersonate
@@ -117,7 +135,7 @@ POST /admin/v1/tenants/{tenantId}/impersonate
         │
         ▼
 Backend checks:
-  - Caller has platform_role = super_admin
+  - Caller has `platform.tenants.impersonate`
   - Target tenant and user exist and are active
   - Audit log entry written (cannot be skipped)
         │
@@ -149,7 +167,7 @@ Returns: Impersonation JWT (separate, short-lived)
 | Renewable | **No** — must re-request after expiry; requires re-audit |
 | `impersonation` claim | `true` — distinguishes this token from a regular admin token |
 | Audit log | Always written before token is issued — cannot be bypassed |
-| Who can issue | `super_admin` only — checked before issuance |
+| Who can issue | Accounts with `platform.tenants.impersonate` only — checked before issuance |
 | Scope | Grants read access to that tenant's data through the admin API; does NOT grant a full tenant session |
 
 **Scope Enforcement:**

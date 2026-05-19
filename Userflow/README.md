@@ -313,10 +313,30 @@ These flows track chain reactions across multiple modules — when one action tr
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[developer-platform/userflow/overview\|Developer Platform Overview]] | Internal operator console navigation and access levels | Documented | MUST |
+| [[developer-platform/userflow/dashboard\|Dashboard]] | Cross-tenant platform summary and click-through | Documented | SHOULD |
+| [[developer-platform/userflow/platform-access\|Platform Access]] | Invite platform managers, assign roles, restrict module access, revoke sessions | Documented | MUST |
 | [[developer-platform/userflow/provisioning-flow\|Manual Customer Provisioning]] | Internal 7-step tenant provisioning wizard | Documented | SHOULD |
 | [[developer-platform/userflow/tenant-management\|Tenant Management]] | Manage tenant status, details, and operational actions | Documented | SHOULD |
+| [[developer-platform/userflow/subscription-management\|Subscription Management]] | Reusable plans, payment gateways, invoices, and tenant commercial terms | Documented | SHOULD |
+| [[developer-platform/userflow/module-catalog\|Module Catalog]] | Manage ONEVO product modules, pricing, permission ownership, and tenant impact | Documented | MUST |
+| [[developer-platform/userflow/role-template-management\|Role Template Management]] | Manage reusable tenant role templates and materialize tenant roles | Documented | SHOULD |
+| [[developer-platform/userflow/global-policies\|Global Policies]] | Manage platform policy defaults and explicit tenant propagation | Documented | SHOULD |
 | [[developer-platform/userflow/feature-flags\|Feature Flags]] | Manage global and tenant-level feature flags | Documented | SHOULD |
 | [[developer-platform/userflow/agent-versions\|Agent Versions]] | Manage desktop agent rollout rings and versions | Documented | SHOULD |
+| [[developer-platform/userflow/platform-health\|Platform Health]] | View health and dependency status | Documented | SHOULD |
+| [[developer-platform/userflow/services-monitor\|Services Monitor]] | Inspect service status and approved actions | Documented | SHOULD |
+| [[developer-platform/userflow/device-management\|Device Management]] | Inspect devices and queue approved agent commands | Documented | SHOULD |
+| [[developer-platform/userflow/infrastructure-operations\|Infrastructure Operations]] | Infrastructure capacity and dependency summary | Documented | SHOULD |
+| [[developer-platform/userflow/background-jobs\|Background Jobs]] | Job observability, retry, and schedule controls | Documented | SHOULD |
+| [[developer-platform/userflow/security-center\|Security Center]] | Security overview and session review | Documented | SHOULD |
+| [[developer-platform/userflow/audit-console\|Audit Console]] | Cross-tenant audit query and export | Documented | SHOULD |
+| [[developer-platform/userflow/compliance-center\|Compliance Center]] | Compliance exports and legal holds | Documented | SHOULD |
+| [[developer-platform/userflow/data-retention\|Data Retention]] | Retention policy management and sweep behavior | Documented | SHOULD |
+| [[developer-platform/userflow/platform-analytics\|Platform Analytics]] | Cross-tenant analytics | Documented | SHOULD |
+| [[developer-platform/userflow/reports\|Reports]] | Platform report exports | Documented | SHOULD |
+| [[developer-platform/userflow/system-config\|System Config]] | Global defaults and tenant setting overrides | Documented | SHOULD |
+| [[developer-platform/userflow/app-catalog\|App Catalog]] | Global app catalog and uncatalogued app approval | Documented | SHOULD |
+| [[developer-platform/userflow/api-keys\|API Keys]] | Phase 2 platform API key management | Documented | COULD |
 
 ---
 

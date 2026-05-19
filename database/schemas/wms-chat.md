@@ -1,7 +1,7 @@
 # Schema: Work Management — Chat + Chat AI
 
 **Module:** `Work Management.Chat` + `Work Management.ChatAI`
-**Phase:** 1 + Phase 2 Teams sync additions
+**Phase:** 1, including optional Microsoft Teams sync additions
 **Owner:** DEV7
 
 ---
@@ -56,8 +56,8 @@
 | `created_at` | timestamptz | |
 
 **Index:** `(channel_id, created_at DESC)`, `(parent_message_id)` where not null
-**Phase 2 Teams sync columns:** `external_source`, `external_message_id`, `sync_direction`, and `sync_status` are required only when Microsoft Teams two-way sync is enabled.
-**Phase 2 Teams sync unique key:** `(tenant_id, external_source, external_message_id)` where `external_message_id IS NOT NULL`.
+**Teams sync columns:** `external_source`, `external_message_id`, `sync_direction`, and `sync_status` are required only when Microsoft Teams two-way sync is enabled.
+**Teams sync unique key:** `(tenant_id, external_source, external_message_id)` where `external_message_id IS NOT NULL`.
 
 ---
 
@@ -162,7 +162,7 @@ Two-way sync between chat and task status.
 
 ---
 
-## `channel_teams_links` - Phase 2
+## `channel_teams_links` - Phase 1 Optional Integration
 
 Maps ONEVO chat channels to Microsoft Teams channels or chats. Owned by Work Management Chat; Graph credentials remain in Shared Platform integration tables.
 
@@ -188,7 +188,7 @@ Maps ONEVO chat channels to Microsoft Teams channels or chats. Owned by Work Man
 
 ---
 
-## `teams_message_sync_state` - Phase 2
+## `teams_message_sync_state` - Phase 1 Optional Integration
 
 Idempotency and retry state for Microsoft Teams message sync.
 

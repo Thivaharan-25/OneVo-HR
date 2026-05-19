@@ -28,7 +28,7 @@ The existing `users` table is scoped to tenants (it has a `tenant_id` column). D
 | `id` | UUID | Primary key |
 | `email` | string | Must be `@onevo.io` domain |
 | `google_sub` | string | Google OAuth subject identifier |
-| `role` | enum | `super_admin`, `admin`, `viewer` |
+| `legacy_role` | enum | Compatibility preset only; effective access comes from platform roles/permissions |
 | `created_at` | timestamp | |
 | `last_login_at` | timestamp | |
 | `is_active` | bool | Soft disable without deleting |
@@ -77,7 +77,7 @@ All controllers under `ONEVO.Api/Controllers/Admin/` are decorated with:
 The `PlatformAdmin` policy validates:
 1. Token issuer is `onevo-platform-admin`
 2. Token audience matches the admin API audience
-3. The `platform_role` claim is present and valid
+3. The platform account is active and has the required platform permission for the endpoint
 
 ---
 

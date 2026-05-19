@@ -61,17 +61,35 @@ Owner email matching can make two tenants eligible for a connection, but it does
 
 ## Modules
 
+Developer Platform modules follow the same KB shape as ONEVO product modules: each module folder contains `overview.md`, `end-to-end-logic.md`, and `testing.md`. User journeys live under `developer-platform/userflow/`.
+
 | Module | Purpose |
 |:---|:---|
-| Tenant Console | Manage tenants, subscriptions, impersonation, two-step tenant creation, and post-creation Manage/Configure |
-| Company Connections | Link separate company tenants for approved cross-company transfers, workflows, reporting, and data views |
-| Role Template Manager | Build and apply module-filtered role templates during tenant Manage/Configure |
-| Feature Flag Manager | Global flags, per-tenant overrides, module enable/disable |
-| Desktop Agent Version Manager | Version catalog, deployment rings, force-update |
-| Audit Console | Cross-tenant read-only audit log viewer |
-| System Config | Global defaults editor, per-tenant settings override |
+| Dashboard | Cross-tenant operational summary and quick links |
+| Tenant Console | Tenant lifecycle, provisioning, activation, status changes, and impersonation |
+| Subscription Manager | Reusable plans, payment gateways, invoices, and commercial rules |
+| Platform Access | Platform account invites, platform roles, platform permissions, and session revocation |
+| Global Policies | Platform policy defaults and explicit tenant-impact propagation |
+| Module Catalog Manager | ONEVO product module catalog: pricing, package inclusion, permission ownership, limits, and setup links |
+| Role Template Manager | Module-filtered tenant role templates and tenant role materialization |
+| Feature Flag Manager | Global flags and per-tenant overrides |
+| Platform Health | Overall health status and dependency summary |
+| Services Monitor | Detailed service/component health and safe service actions |
+| Device Management | Cross-tenant agent/device visibility and approved agent commands |
+| Infrastructure Operations | Infrastructure capacity and dependency summaries |
+| Background Jobs | Scheduled/queued job observability and approved retries |
+| Security Center | Security overview, risky activity, and session review |
+| Audit Console | Cross-tenant read-only audit log viewer and exports |
+| Compliance Center | Compliance exports and legal holds |
+| Data Retention | Retention policy management and retention sweep observability |
+| Platform Analytics | Cross-tenant operational and commercial analytics |
+| Report Manager | Platform report catalog and exports |
+| System Config | Global defaults editor and per-tenant settings override |
 | App Catalog Manager | Global app catalog, `is_public` toggles, uncatalogued app bulk-approval |
-| Platform API Keys | *(Phase 2)* Platform-level API key management |
+| Desktop Agent Version Manager | Agent version catalog, deployment rings, force-update, and rollback |
+| Platform API Key Manager | *(Phase 2)* Platform-level API key management |
+
+Module Catalog Manager manages ONEVO product modules only. It does not manage Developer Platform sidebar sections or platform manager access; those are controlled by Platform Access.
 
 ---
 
@@ -84,6 +102,12 @@ Owner email matching can make two tenants eligible for a connection, but it does
 | A `/platform-admin` route in the main frontend | No — it is a completely separate Next.js application on a separate domain. |
 | A duplicate of existing data stores | No — feature flags, settings, and tenant data live in the existing schema. The console reads/writes those through the admin API. |
 | Phase 2 customer webhook/API infrastructure | No — customer-facing developer APIs are a Phase 2 concept, entirely separate. |
+
+---
+
+## Implementation Reference
+
+The backend implementation plan for subscription provisioning is at [[developer-platform/plans/subscription-provisioning-implementation-plan|Subscription Provisioning Implementation Plan]] — it documents the resolved architectural decisions, data model contracts, and phase-by-phase task breakdown for the backend team.
 
 ---
 

@@ -94,6 +94,6 @@ Setup service rule:
 
 - [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]]
 - [[developer-platform/modules/tenant-console/overview|Tenant Console]]
-- [[developer-platform/modules/role-template-manager|Role Template Manager]]
+- [[developer-platform/modules/role-template-manager/overview|Role Template Manager]]
 - [[modules/shared-platform/subscriptions-billing/overview|Subscriptions & Billing]]
 - [[modules/configuration/app-allowlist/overview|App Allowlist]]

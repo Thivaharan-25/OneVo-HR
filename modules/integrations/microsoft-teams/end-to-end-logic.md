@@ -140,6 +140,52 @@ POST /api/v1/integrations/teams/webhooks/messages
          e. Push SignalR update to ONEVO channel
 ```
 
+## Graph Webhook Renewal
+
+Microsoft Graph change notification subscriptions have a maximum lifetime (60 days for channel messages, 1 hour for chat messages). ONEVO must renew them before expiry or Teams messages stop arriving.
+
+```
+Hangfire recurring job: TeamsWebhookRenewalJob
+  Cadence: daily at 02:00 UTC
+
+  1. Load all teams_webhook_subscriptions where status = active
+  2. For each subscription where expiry_date < NOW() + 3 days:
+       a. Call Graph PATCH /subscriptions/{id}
+            body: { expirationDateTime: NOW() + max_lifetime }
+       b. On success → update expiry_date + last_renewed_at
+       c. On 404 (subscription gone) → set status = expired; trigger re-subscribe
+       d. On throttle (429) → honour Retry-After header; defer to next job run
+       e. On other error → set status = failed; fall back to delta poll for that resource
+
+  3. For any subscription with status = expired or failed:
+       a. Query teams_delta_sync_state for the same resource
+       b. Use stored delta_token to poll Graph /messages/delta directly
+       c. Process delta results same as webhook inbound path
+       d. Attempt to re-create subscription; on success set status = active
+```
+
+Re-subscription flow:
+```
+POST /subscriptions
+  resource: /teams/{team_id}/channels/{channel_id}/messages
+  changeType: created,updated,deleted
+  notificationUrl: {base_url}/api/v1/integrations/teams/webhooks/messages
+  expirationDateTime: NOW() + max_lifetime
+  clientState: HMAC-SHA256(tenant_id + subscription_id, webhook_secret)
+  -> On success: INSERT or UPDATE teams_webhook_subscriptions
+```
+
+Subscription lifetime constants:
+| Resource type | Max lifetime |
+|:---|:---|
+| Channel messages | 60 days |
+| Chat messages | 60 minutes (must be renewed frequently; prefer delta poll for chats) |
+| Users/groups | 29 days |
+
+For chat message subscriptions (1-hour max), ONEVO defaults to delta poll rather than webhook subscription unless the tenant has approved Application-level permissions. Chat webhooks are opt-in per tenant.
+
+---
+
 ## Error Scenarios
 
 | Scenario | Handling |

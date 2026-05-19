@@ -1,7 +1,7 @@
 # Schema: Work Management - Project Management
 
 **Module:** `Work Management.Foundation` + `Work Management.Projects`
-**Phase:** 1 + Phase 2 Teams sync additions
+**Phase:** 1, including optional Microsoft Teams sync additions
 **Owner:** DEV3
 
 ---
@@ -87,7 +87,7 @@ Maps an HR Org Structure team to a Work Management workspace for Phase 1 members
 
 ---
 
-## `workspace_teams_links` - Phase 2 Integration
+## `workspace_teams_links` - Phase 1 Optional Integration
 
 Maps a Work Management workspace to a Microsoft Team/group. Used when the workspace creation checkbox creates a new Team or when an admin links an existing Team with matching members.
 
@@ -113,7 +113,7 @@ Maps a Work Management workspace to a Microsoft Team/group. Used when the worksp
 
 ---
 
-## `teams_member_sync_status` - Phase 2 Integration
+## `teams_member_sync_status` - Phase 1 Optional Integration
 
 Per-member Teams readiness and membership sync state for a linked workspace.
 
