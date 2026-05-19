@@ -2,62 +2,67 @@
 
 ## Purpose
 
-The Agent Version Manager controls the lifecycle and rollout of the OneVo desktop agent binary across all tenant endpoints. It manages version catalog, deployment rings, tenant ring assignments, and can push update or rollback commands directly to agents via the AgentGateway.
+Agent Version Manager controls the full lifecycle of the OneVo desktop agent binary across all tenant endpoints — from publishing new releases and managing deployment rings to pushing force-update commands directly to agents in the field.
 
 ## Database Tables / Systems Controlled
 
 | Table / System | Role |
 |---|---|
-| `agent_version_releases` | Read + write — version catalog, release metadata |
-| `agent_deployment_rings` | Read + write — ring definitions |
-| `agent_deployment_ring_assignments` | Read + write — which tenants are in which ring |
-| `agent_commands` (AgentGateway) | Write — push commands to agents in the field |
-
-The first three tables are new tables introduced for the Developer Platform. `agent_commands` is an existing AgentGateway table.
+| `agent_version_releases` | Read + write — version catalog, channel, OS compatibility, download URL |
+| `agent_deployment_rings` | Read — ring definitions (Internal=0, Beta=1, GA=2) |
+| `agent_deployment_ring_assignments` | Read + write — tenant-to-ring assignments |
+| `agent_commands` (AgentGateway) | Write — push update/rollback/diagnostic commands to field agents |
+| Audit log | Write every version publish, ring change, and force-update |
 
 ## Capabilities
 
 ### Version Catalog
-- List all desktop agent releases with:
-  - Version number
-  - Release notes
-  - Minimum OS version requirement
-  - Current status label
-
-### Version Status Labels
-Mark any version as one of:
-
-| Status | Meaning |
-|---|---|
-| `stable` | Recommended release; GA ring default |
-| `beta` | Available to opted-in beta tenants |
-| `deprecated` | Older release; agents are prompted to update |
-| `recalled` | Critical defect; agents are force-updated away from this version |
+- Publish a new agent version with semver format (`major.minor.patch`), release channel, minimum OS version, release notes (Markdown), and download URL
+- Set channel for any version: `stable`, `beta`, or `recalled`
+- Recalled versions are permanently excluded from deployment eligibility — devices on recalled versions are targeted for force-update
 
 ### Deployment Rings
-Rings control which tenants receive a version first. The three fixed rings are:
 
-| Ring | Audience |
-|---|---|
-| Ring 0 | Internal OneVo test tenants |
-| Ring 1 | Opted-in beta tenants |
-| Ring 2 | All tenants (General Availability) |
+| Ring | Number | Audience |
+|---|---|---|
+| Internal | 0 | ONEVO internal test tenants — first to receive any new version |
+| Beta | 1 | Opted-in beta partner tenants |
+| GA | 2 | All remaining production tenants |
+
+**Ring promotion gate:** Before a version can be promoted to GA (Ring 2), Ring 0 must run the version for ≥ 24 hours with no crash reports or forced rollbacks, and Ring 1 must confirm compatibility across ≥ 10 tenants. Operator confirms the gate manually.
 
 ### Ring Management
-- View all tenants assigned to each ring
-- Assign or move a tenant to a different ring
+- Assign or move any tenant to a different deployment ring
+- Each tenant can be in exactly one ring at a time
+- View all tenants currently in each ring with their installed agent version
 
-### Force-Update Command
-- Push an `UPDATE_AGENT` command via AgentGateway to all agents in a selected ring
-- Agents receive the command on next check-in and begin updating to the designated version
-- Used when a version is recalled or an urgent security patch must be applied immediately
+### Force-Update
+- Push `UPDATE_AGENT` command via AgentGateway to all devices on a specific version within a ring
+- Agents receive the command on next check-in and begin updating
+- Used for recalled versions, urgent security patches, or ring-promotion pushes
+- Requires `platform.agent_versions.force_update` permission
 
 ### Rollback
-- Force-pin a specific tenant's agents to a previous stable version
-- Agents in that tenant will not auto-update past the pinned version until the pin is removed
+- Force-pin specific tenant agents to a previous stable version
+- Pin prevents auto-updates past the pinned version until removed
 
-## Notes
+## Navigation
 
-- Force-update and rollback commands are dispatched through AgentGateway and are audit-logged.
-- Ring promotion to Ring 2 follows a validation gate: Ring 0 must run the version for at least 24 hours with no crash reports or forced rollbacks, and Ring 1 must confirm agent compatibility across at least 10 tenants. The operator confirms the gate manually before promoting to Ring 2 (GA).
-- Recalled versions trigger automatic escalation — consider pushing a force-update to Ring 2 immediately.
+| Route | Permission |
+|---|---|
+| `/operations/agent-versions` | `platform.agent_versions.read` |
+| Publish / channel change | `platform.agent_versions.manage` |
+| Force-update | `platform.agent_versions.force_update` |
+
+## Key Rules
+
+- Recalled versions cannot be un-recalled — publish a new version to supersede them
+- Force-update and rollback commands are dispatched through AgentGateway and are always audit-logged
+- Semver format (`major.minor.patch`) is enforced — non-semver version strings are rejected
+- One ring per tenant at a time — assigning a new ring removes the previous assignment
+
+## Related
+
+- [[developer-platform/modules/agent-version-manager/end-to-end-logic|Agent Version Manager End-to-End Logic]]
+- [[developer-platform/modules/device-management/overview|Device Management]] — per-device visibility and commands
+- [[modules/agent-gateway/overview|Agent Gateway]] — agent command infrastructure

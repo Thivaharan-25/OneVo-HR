@@ -69,6 +69,61 @@ Provider event IDs are stored in `external_calendar_event_links` so retries do n
 
 ---
 
+## Background Sync Job
+
+```
+Hangfire recurring job: CalendarSyncJob
+  Cadence: every 15 minutes
+  Per active external_calendar_connection (status = active):
+
+    1. Load connection; skip if sync_direction = disabled
+    2. Check expires_at — if token expires within 5 minutes:
+         a. Use refresh_token_encrypted to get new access token
+         b. Update access_token_encrypted + expires_at
+         c. If refresh fails → set status = reauth_required; skip connection
+    3. Determine sync direction:
+         pull_only  → fetch external events since last_synced_at → upsert calendar_events
+         push_only  → find local events modified since last_synced_at → push to provider
+         two_way    → pull first, then push (pull wins on same-event conflict; see below)
+    4. Batch limit: 200 events per run per connection
+    5. On success → update last_synced_at
+    6. On error   → increment failure counter; after 3 consecutive failures
+                    → set status = failed; notify user via notifications channel
+```
+
+Provider sync calls:
+- **Google Calendar:** `events.list` with `updatedMin` + `syncToken` for incremental fetch; `events.insert` / `events.patch` / `events.delete` for outbound.
+- **Outlook Calendar:** Microsoft Graph `calendarView` with `$deltaToken` for incremental fetch; `POST /events`, `PATCH /events/{id}`, `DELETE /events/{id}` for outbound.
+
+---
+
+## Conflict Resolution (Two-Way Sync)
+
+A conflict occurs when the same event was modified in both ONEVO and the external calendar since the last sync. Detected via etag mismatch on pull.
+
+```
+Pull phase fetches event with external_etag != stored external_etag:
+  -> Load external_calendar_event_links row
+  -> If local calendar_event.updated_at > last_synced_at (local was also changed):
+       CONFLICT — apply resolution rule:
+         pull_wins  → overwrite local with external version; log conflict
+         push_wins  → keep local; push local version to provider; log conflict
+  -> Default resolution rule: pull_wins (external calendar is treated as authoritative)
+  -> Set external_calendar_event_links.sync_status = conflict + log in last_error
+  -> Admin can view conflicts in Calendar settings; manual resolution resets sync_status = synced
+```
+
+Conflict rules per sync direction:
+| Scenario | Resolution |
+|:---------|:-----------|
+| Two-way, both sides changed | External wins (pull_wins) by default |
+| Push-only, provider rejects etag | Retry with latest etag; if rejected twice, mark failed |
+| Pull-only, local edit detected | Local edit is ignored; external version applied |
+| Event deleted externally | Soft-delete local event; mark `source_type = external_sync` deletion |
+| Event deleted locally in two-way | Attempt delete on provider; if fails, mark sync_status = failed |
+
+---
+
 ## Data Rules
 
 - Country holidays are stored as `calendar_events` with `event_type = holiday`, `source_type = holiday`, and `external_source = country_holiday`.

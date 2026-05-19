@@ -145,7 +145,7 @@ Tag engine, context engine, agent entitlement, and SignalR IDEHub spec: [[module
 | 21 | Expense | `Features/Expense` | 3 | Phase 2 |
 | 22 | Agent Gateway | `Features/AgentGateway` | 6 | Phase 1 |
 | 23 | Dev Platform | `Features/DevPlatform` | 5 (P1) + 1 (P2) | Mixed |
-| 24 | Microsoft Teams Integration | `Features/Integrations/MicrosoftTeams` | Uses Shared Platform + Work Management Teams tables | Phase 2 |
+| 24 | Microsoft Teams Integration | `Features/Integrations/MicrosoftTeams` | Uses Shared Platform + Work Management Teams tables | Phase 1 optional integration |
 
 > **Shared Platform note:** Old external-provisioning tables removed because Work Management is internal. Count is 35 after Microsoft Teams account/token/webhook/delta tables.
 > **Agent Gateway note:** Added `agent_install_entitlements` and `agent_install_jobs` for IDE Extension entitlement gating. Count is 6 (was 4).

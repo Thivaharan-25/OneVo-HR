@@ -361,7 +361,7 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 ## Related
 
 - [[security/auth-architecture|Auth Architecture]] â€” BFF web session design, backend-held tenant JWT, device JWT, token rotation
-- [[developer-platform/modules/role-template-manager|Role Template Manager]] â€” Developer Platform starter role templates
+- [[developer-platform/modules/role-template-manager/overview|Role Template Manager]] â€” Developer Platform starter role templates
 - [[infrastructure/multi-tenancy|Multi Tenancy]] â€” All roles and sessions are tenant-scoped
 - [[security/compliance|Compliance]] â€” Audit logs are never deleted; GDPR consent records
 - [[security/data-classification|Data Classification]] â€” Refresh tokens hashed (SHA-256), never stored raw

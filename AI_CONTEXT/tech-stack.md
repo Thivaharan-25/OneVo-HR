@@ -267,7 +267,7 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | Groq | LLM routing deferred |
 | Flutter | Mobile app deferred |
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
-| Teams chat/group sync | Requires tenant Graph consent, user account linking, webhook/delta sync, and communication-data compliance review. Phase 2. |
+| Teams chat/group sync | Requires tenant Graph consent, user account linking, webhook/delta sync, and communication-data compliance review. Phase 1 optional integration. |
 | macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` — a parallel implementation. Phase 2. |
 | Browser Extension | Optional browser domain tracking via Chrome/Edge/Firefox extension. Phase 2. |
 

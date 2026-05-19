@@ -29,18 +29,23 @@ Provisioning-status tenants appear in this list with a yellow **"In Progress"** 
 
 **Path:** `/tenants/{id}`
 
-Click any active or suspended tenant row to open its detail page. The detail page has tabbed sections:
+Click any tenant row to open the full tenant detail page. This is the primary management surface after initial provisioning. The detail page has tabbed sections:
 
 | Tab | Contents |
 |---|---|
-| **Overview** | Company profile, primary contact, company size, plan name, billing dates, commercial model, payment exception/grace state, `status`, employee count, agent count, last login (any user) |
-| **Connected Companies** | Active and pending company connections, owner email eligibility, access grants, and connection audit |
-| **Flags** | All per-tenant feature flag overrides — see `feature-flags.md` |
-| **Settings** | Current `tenant_settings` values; editable by admin+ |
-| **Users** | User list with roles and last-login timestamps (read-only) |
-| **Audit** | Audit log filtered to this tenant only |
+| **Overview** | Company profile header, KPI summary cards (total users, active users today, registered devices, active devices, storage used, platform health), user activity chart, work mode distribution, subscription & limits progress bars, recent alerts, top departments by activity, integrations status |
+| **Usage & Analytics** | DAU trend, session duration distribution, feature usage breakdown, module engagement heatmap, device activity, exception events |
+| **Users** | Tenant user list with role, status, work mode, department, last login — read-only |
+| **Devices** | Registered device list with agent version badge, connection status, deployment ring — read-only |
+| **Subscriptions** | Current plan detail, module entitlements table with status per module, invoices table |
+| **Policies** | Feature flag overrides for this tenant, global policy overrides |
+| **Integrations** | All integration statuses (Microsoft 365, Azure AD SSO, Biometric, Slack, etc.) with connection health and last sync |
+| **Activity Log** | Audit log filtered to this tenant only — all actor types (tenant user, platform admin, system) |
+| **Settings** | Editable tenant settings: org profile, operational settings, monitoring configuration (if applicable) |
 
 **API:** `GET /admin/v1/tenants/{id}`
+
+**Tenant creation path:** Tenant creation uses a 4-step wizard accessed via `+ Create Tenant` on the Tenants list. After the wizard completes and the tenant is activated, all ongoing management happens from this Tenant Detail page — see [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] for the full wizard specification.
 
 ---
 
@@ -133,14 +138,14 @@ When the 15-minute token expires the new tab is logged out automatically. The de
 
 **Minimum role:** super_admin
 
-> **Warning - exception tool only.** The normal, primary path for standard subscription collection is through the configured payment gateway (`stripe` or `payhere`). Use this tool only when that path cannot be used or when the tenant has negotiated commercial terms:
+> **Warning - exception tool only.** The normal, primary path for standard subscription collection is through the configured payment gateway (`paddle` or `payhere`). Use this tool only when that path cannot be used or when the tenant has negotiated commercial terms:
 > - Enterprise deals closed by sales
 > - Full-license tenants with manually recorded one-time license payment
 > - Trial extensions approved outside the gateway
 > - Internal test accounts
 > - Fixing a confirmed gateway sync error
 >
-> Do not use subscription override as a routine billing management tool. Direct standard subscription changes through the configured Stripe/PayHere flow.
+> Do not use subscription override as a routine billing management tool. Direct standard subscription changes through the configured Paddle/PayHere flow.
 
 **Steps:**
 
@@ -148,7 +153,7 @@ When the 15-minute token expires the new tab is logged out automatically. The de
 2. Click **Override Subscription**
 3. A form appears: select new plan from dropdown, choose commercial model, set billing dates, select collection mode and gateway provider when applicable, enter reason (required free-text field)
 4. Click **Apply Override**
-5. API call: `PATCH /admin/v1/tenants/{id}/subscription` with body including `plan_code`, `commercial_model`, collection modes, optional `gateway_provider` (`stripe` or `payhere`), and `reason`
+5. API call: `PATCH /admin/v1/tenants/{id}/subscription` with body including `plan_code`, `commercial_model`, collection modes, optional `gateway_provider` (`paddle` or `payhere`), and `reason`
 6. Toast: "Subscription updated"
 7. Overview tab reflects the new plan; gateway-managed, manually managed, or full-license maintenance labels appear next to billing dates
 

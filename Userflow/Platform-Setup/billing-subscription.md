@@ -58,11 +58,14 @@ Future modules (Governance, Skill & Talent Development, Payroll, Performance, et
 
 | Item | Rule |
 |------|------|
-| Package 1 billing unit | Active employees and/or monitored employees/devices, based on commercial configuration |
-| Package 2 billing unit | Active Work Management users at end-of-month snapshot |
+| Package 1 billing unit | Active users with monitoring enabled. **Users for whom monitoring is fully disabled are excluded from the billable count.** No device-based billing. |
+| Package 2 billing unit | Active WorkSync workspace members at end-of-month snapshot |
+| AI token billing | Consumed tokens tracked against the agreed monthly limit. Overages are a Phase 2 concern. |
 | Billing cycle | Calendar month (1st to last day) |
 | Invoice generation | ONEVO generates and sends invoice by 3rd of the following month |
 | Proration | Packages added mid-cycle are prorated for remaining days. Removals take effect from the next billing cycle. |
+
+**Monitoring-disabled exclusion:** If an employee has all monitoring features disabled (either via the tenant default policy or an employee-specific override), they are excluded from the Package 1 billable seat count at the monthly snapshot. This is evaluated per-employee at snapshot time — it is not a bulk toggle.
 
 ---
 
@@ -119,23 +122,24 @@ One-time setup charges are fees billed once per tenant for initial ONEVO operato
 - **Backend:** `BillingService.GetCurrentSubscriptionAsync()`
 - **DB:** `tenant_subscriptions`, `subscription_plans`
 
-### Step 2: View Active User / Device Count
+### Step 2: View Active Billable User Count
 
-- **UI:** Expandable breakdown — active employees by department, enrolled devices by department. Read-only. Helps the tenant understand how their invoice is calculated.
-- **API:** `GET /api/v1/billing/active-users`, `GET /api/v1/billing/enrolled-devices`
-- **Backend:** `BillingService.GetActiveUserCountAsync()`, `BillingService.GetEnrolledDeviceCountAsync()`
-- **DB:** `employees` (status filter), `registered_agents` (status filter), `billing_snapshots`
+- **UI:** Expandable breakdown — billable users by department (users with monitoring enabled). Read-only. Helps the tenant understand how their invoice is calculated.
+- **Note:** Users with monitoring fully disabled are shown separately as "Monitoring disabled — not billed" so the tenant can audit the exclusion.
+- **API:** `GET /api/v1/billing/active-users`
+- **Backend:** `BillingService.GetBillableUserCountAsync()` — filters to active employees with at least one monitoring feature enabled
+- **DB:** `employees` (status filter), `monitoring_feature_toggles` (per-employee override check), `billing_snapshots`
 
-### Step 3: View Invoice History
+### Step 3: View Invoice History and Download PDFs
 
-- **UI:** Table of past invoices — date, billing basis (user/device count), rate, total, status (paid/pending). Each row has a **Download PDF** link.
-- **API:** `GET /api/v1/billing/invoices`
-- **Backend:** `BillingService.GetInvoiceHistoryAsync()`
+- **UI:** Table of past invoices — date, billing basis (user/device count), rate, total, status (paid/pending). Each row has a **Download PDF** button.
+- **API:** `GET /api/v1/billing/invoices` — list; `GET /api/v1/billing/invoices/{id}/pdf` — download
+- **Backend:** PayHere tenants: QuestPDF generates the PDF server-side on demand and streams it directly. Paddle tenants: redirect `302` to `paddle_invoice_url` (Paddle-hosted PDF).
 - **DB:** `subscription_invoices`
 
 ### Step 4: Add a New Pack or Add-on (Self-Service Upgrade)
 
-Tenant admins can add packs and the Chat AI add-on directly when their commercial model and payment policy allow self-service upgrades. Subscription tenants use the configured payment gateway (`stripe` or `payhere`). Full-license tenants route new purchases through ONEVO sales/operator approval unless the contract explicitly allows gateway-collected add-ons.
+Tenant admins can add packs and the Chat AI add-on directly when their commercial model and payment policy allow self-service upgrades. Subscription tenants use the configured payment gateway (`paddle` or `payhere`). Full-license tenants route new purchases through ONEVO sales/operator approval unless the contract explicitly allows gateway-collected add-ons.
 
 - **UI:** "Available Add-ons" section shows all packs and add-ons the tenant has not purchased. Each card shows:
   - Pack / add-on name and modules included
@@ -145,7 +149,7 @@ Tenant admins can add packs and the Chat AI add-on directly when their commercia
   - **"Add [Pack Name]"** button
 - **API:** `POST /api/v1/billing/modules/{moduleId}/add`
 - **Backend:**
-  1. Validates a payment method is on file for the configured gateway (`stripe` or `payhere`)
+  1. Validates a payment method is on file for the configured gateway (`paddle` or `payhere`)
   2. Charges proration through the selected gateway
   3. Updates the tenant module entitlement registry through module interfaces
   4. Publishes `SubscriptionChangedEvent` → feature flag service activates new modules immediately
@@ -154,12 +158,120 @@ Tenant admins can add packs and the Chat AI add-on directly when their commercia
 
 **Note:** Pack removal (downgrade) is not self-service — tenant contacts ONEVO. This prevents accidental data access loss.
 
-### Step 5: Upgrade Nudge (In-App)
+### Step 5: Cancel Subscription
+
+Tenant admins with `billing:manage` permission can request cancellation of their subscription.
+
+- **UI:** Settings sidebar > Billing & Subscription > Danger Zone section > **Cancel Subscription** button. Shows confirmation modal with:
+  - Current plan name
+  - Access end date (last day of current billing period)
+  - Warning: "All tenant data is retained for 90 days after cancellation. After that, data is permanently deleted."
+  - Required free-text reason field
+  - **Confirm Cancellation** button
+- **API:** `POST /api/v1/billing/subscription/cancel` with `{ "reason": "..." }`
+- **Backend:**
+  1. Sets `tenant_subscriptions.cancellation_requested_at = now()`, `cancel_at_period_end = true`
+  2. For Paddle tenants: calls Paddle API to cancel subscription at period end
+  3. For PayHere tenants: no gateway call needed — `DunningJob` will not generate next invoice
+  4. Creates `billing_audit_logs` entry: `action = 'subscription.cancel_requested'`
+  5. Platform admin notified via Info alert: `billing.cancellation_requested`
+  6. Tenant retains full access until `billing_period_end`
+- **DB:** `tenant_subscriptions`, `billing_audit_logs`, `platform_alerts`
+
+**Rules:**
+- Cancellation takes effect at end of current billing period — never immediate
+- Once requested, cancellation can only be reversed by a platform admin (not tenant self-service)
+- Tenant status transitions to `cancelled` after `billing_period_end` passes (handled by background job)
+
+### Step 6: Upgrade Nudge (In-App)
 
 Locked features across the app surface an upgrade prompt to guide tenant admins to the billing section.
 
 - **UI:** Lock icon on any feature from an unpurchased pack. Tooltip: "Available in [Pack Name] — from $X/user/month. **Add it in Billing.**" Clicking the lock navigates to the billing section with that pack pre-highlighted in the Available Add-ons section.
 - No API call from the lock icon itself — it is a frontend navigation cue only.
+
+---
+
+## Active User Definition
+
+### Package 1 Billable Seat
+
+An employee counts as a **billable Package 1 seat** at the monthly snapshot when ALL of the following are true:
+
+1. `employees.status = 'active'`
+2. `users.status ≠ 'deactivated'` (associated user account exists and is not deactivated)
+3. Monitoring is **not** fully disabled for this employee — at least one monitoring feature toggle is enabled (from tenant default or employee-specific override)
+
+**Excluded from billing:**
+- Employees with monitoring fully disabled
+- Offboarded / deactivated employees
+- Invited users who have not yet accepted (`status = 'invited'`)
+
+### Package 2 Billable Seat
+
+An employee/user counts as a **billable WorkSync seat** when they are an active member of at least one WorkSync workspace at snapshot time.
+
+> **Open decision:** Whether Package 2 requires at least one login action in the billing period (vs. just workspace membership) is not yet finalised. Confirm with product and finance before Phase 1 billing goes live.
+
+---
+
+## Plan Change Rules
+
+### Upgrade / Adding Modules
+
+| Scenario | Rule |
+|:---|:---|
+| Operator adds a module | Effective immediately; module entitlement activated |
+| Proration | Prorated charge for remaining days in current cycle included on next invoice |
+| Gateway subscription update | Paddle/PayHere subscription updated via gateway API |
+| Manual collection | Operator records new commercial terms; next manual invoice reflects updated amount |
+
+### Downgrade / Removing Modules
+
+| Scenario | Rule |
+|:---|:---|
+| Operator removes a module | Effective at end of current billing period — never immediate |
+| Data preservation | Configuration and data preserved until period end |
+| No proration credit | No credit issued for removed modules mid-cycle |
+| Downgrade restrictions | Cannot remove modules that other active modules depend on (e.g. cannot remove Core HR while Leave is active) |
+| Self-service | Pack removal is NOT self-service — tenant contacts ONEVO |
+
+### Cancellation
+
+| Scenario | Rule |
+|:---|:---|
+| Tenant requests cancellation | `cancel_at_period_end = true`; full access until `billing_period_end` |
+| Timing | Always at end of current billing period |
+| Reversal | Platform admin only — not tenant self-service |
+| Data retention | All tenant data retained for **90 days** after `billing_period_end` |
+| After 90 days | Permanent deletion job runs; data cannot be recovered |
+| Status | `tenants.status = 'cancelled'`; all module entitlements set to `disabled` |
+
+### Restarting a Cancelled Subscription
+
+| Scenario | Rule |
+|:---|:---|
+| Within 90-day retention window | Operator re-activates via Developer Console; existing data intact; new billing start date set |
+| After 90-day window | Data deleted; must re-provision as a new account |
+
+### Payment Failure
+
+| Scenario | Rule |
+|:---|:---|
+| First failure | Retry attempted automatically; tenant continues operating |
+| After 3 retries (~17 days) | Critical alert; 7-day grace period before auto-suspension |
+| Payment exception window | Operator can grant approved exception to halt dunning |
+| Auto-suspension | `tenants.status = 'suspended'`; users cannot log in |
+| Recovery | Operator unsuspends via Developer Console after payment confirmed |
+
+### Usage Limit Breach
+
+| Scenario | Rule |
+|:---|:---|
+| AI tokens at 80% | Warning alert raised |
+| AI tokens at 100% | AI features soft-limited or blocked; platform admin alerted |
+| Storage at 80% | Warning alert raised |
+| Storage at 100% | File uploads return `413 storage_limit_exceeded`; existing data preserved |
 
 ---
 
@@ -171,6 +283,8 @@ Locked features across the app surface an upgrade prompt to guide tenant admins 
 | Gateway charge fails | Module not activated | "Payment failed. Please check your payment method and try again." |
 | Active user count API unavailable | Cached snapshot used | Count shown with "(estimate)" label |
 | Invoice PDF unavailable | Retry link shown | "Invoice PDF is being generated. Try again shortly." |
+| Cancellation attempted with no active subscription | Request blocked | "No active subscription to cancel." |
+| Cancellation already requested | Request blocked | "A cancellation is already pending for this subscription." |
 
 ---
 
