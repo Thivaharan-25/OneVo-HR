@@ -7,7 +7,7 @@
 
 ---
 
-> **This is the KEY flow in the ONEVO RBAC system.** All other flows depend on permissions being correctly assigned. Explicit permissions can be assigned at two levels: (1) to a Role (affects all users with that role), or (2) as per-employee overrides (adds or removes specific permissions for one user). Universal permissions are auto-granted to every active employee and are never assigned or revoked here. Tenant Super Admin can manage permissions only from the tenant's enabled module catalog; commercial entitlement is never bypassed by role power.
+> **This is the KEY flow in the ONEVO RBAC system.** All other flows depend on permissions being correctly assigned. Explicit permissions can be assigned at two levels: (1) to a Role (affects all users with that role), or (2) as per-employee overrides (adds or removes specific permissions for one user). Module auto-grant permissions are given to every active employee based on the tenant's active modules and are never assigned or revoked here. Derived permissions (inbox:read, notifications:read) are computed automatically from the effective permission set. Tenant Super Admin can manage permissions only from the tenant's enabled module catalog; commercial entitlement is never bypassed by role power.
 
 ## Preconditions
 
@@ -216,13 +216,14 @@ Triggered automatically when granting `roles:manage` to an employee via role ass
 The system resolves effective permissions in this order:
 
 1. **Tenant enabled catalog:** subscription plan modules + paid add-ons + trial modules + approved feature grants - disabled modules
-2. **Universal:** Auto-grants for every active employee
+2. **Module auto-grants:** self-service permissions for every active employee, gated by active modules (e.g. `leave:read-own` only if `leave` module is active)
 3. **Tenant owner expansion:** tenant owner / Tenant Super Admin receives all assignable permissions from enabled tenant modules only
 4. **Base:** Explicit permissions from the user's active assigned role (via `role_permissions`; ignore expired `user_roles`)
 5. **Add:** Explicit permissions in active `user_permission_overrides` with type `grant`
-6. **Remove:** Explicit permissions in active `user_permission_overrides` with type `revoke`
-7. **Filter:** Remove any non-universal permission whose module is not enabled for the tenant
-8. **Result:** `Universal + enabled-module tenant owner expansion + enabled-module role permissions + active grants - active revokes = Effective Permissions`
+6. **Remove:** Explicit permissions in active `user_permission_overrides` with type `revoke` (cannot remove module auto-grants)
+7. **Filter:** Remove any permission whose module is not enabled for the tenant
+8. **Derived:** `inbox:read` added if effective set contains any inbox-triggering permission; `notifications:read` added if effective set contains any notification-triggering permission
+9. **Result:** `Module auto-grants + enabled-module role permissions + active grants - active revokes + derived = Effective Permissions`
 
 For customer web sessions, this effective permission set is stored in backend-held auth state and returned to the frontend as permission metadata. Browser JavaScript does not receive or decode the tenant JWT.
 
@@ -252,7 +253,7 @@ For customer web sessions, this effective permission set is stored in backend-he
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | Removing last admin's `roles:manage` | Save blocked | "Cannot remove this permission: at least one user must retain roles:manage" |
-| Attempting to assign or revoke a universal permission | Save blocked | "Universal permissions are auto-granted and cannot be manually assigned or revoked" |
+| Attempting to assign or revoke a module auto-grant permission | Save blocked | "Module auto-grant permissions are given automatically based on active modules and cannot be manually assigned or revoked" |
 | Tenant owner assigns disabled-module permission | Save blocked / API returns 403 | "This module is not enabled for this tenant" |
 | Temporary permission expiry is in the past | Save blocked | "Expiry must be in the future" |
 | Temporary permission has expired | Permission omitted on next permission snapshot | User no longer sees or can use the action |
