@@ -101,7 +101,7 @@ dotnet test ONEVO.sln --filter Time
 
 ## Task 3: Chat + Chat AI
 
-**Goal:** implement WorkSync chat and action suggestion pipeline used by web and IDE.
+**Goal:** implement WorkSync chat, Microsoft Teams sync hooks, and the first-party Semantic Kernel assistant/action pipeline used by web, IDE, and Teams-linked channels.
 
 **Requires:** DEV3 Task 1 complete
 
@@ -111,8 +111,11 @@ dotnet test ONEVO.sln --filter Time
 - [ ] Chat APIs support channel list, message page, send message, and mark read.
 - [ ] SignalR publishes `chat:message`, `chat:typing`, and unread update events.
 - [ ] AI action job flow supports pending, finalized, and undone states.
-- [ ] Chat AI can detect task/action intents and produce undoable action jobs.
+- [ ] Chat AI is implemented as ONEVO-owned Semantic Kernel orchestration with permission-filtered Kernel Functions.
+- [ ] Chat AI can detect HR/WorkSync query and task/action intents, answer read-only questions, and produce undoable action jobs.
 - [ ] Chat AI suggestions are filtered by backend permissions and active modules.
+- [ ] Microsoft Teams inbound messages can be imported into ONEVO chat and invoke assistant only after sender mapping to a ONEVO user.
+- [ ] Microsoft Teams outbound sync records `teams_message_sync_state` and never blocks local ONEVO message delivery.
 - [ ] Undo window is server-enforced.
 - [ ] Tests cover message send, realtime event contract, and undo state transitions.
 

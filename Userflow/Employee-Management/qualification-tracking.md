@@ -1,6 +1,7 @@
 # Qualification Tracking
 
 **Area:** Employee Management  
+**Phase:** Phase 2  
 **Trigger:** Employee adds education or certifications (user action — self-service)
 **Required Permission(s):** `employees:read-own` (own) or `employees:write` (admin)  
 **Related Permissions:** `documents:write` (upload supporting docs)

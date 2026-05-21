@@ -1,13 +1,14 @@
 # Qualifications
 
 **Module:** Core HR  
-**Feature:** Qualifications
+**Feature:** Qualifications  
+**Phase:** Phase 2
 
 ---
 
 ## Purpose
 
-Manages employee qualifications (degrees, certifications, licenses) and previous work history.
+Manages employee qualifications (degrees, certifications, licenses) and previous work history. This is a Phase 2 feature.
 
 ## Database Tables
 

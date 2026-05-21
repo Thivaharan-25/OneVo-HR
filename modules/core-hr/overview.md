@@ -11,7 +11,7 @@
 
 ## Purpose
 
-The **central hub** of ONEVO. Manages employee profiles, lifecycle events (onboarding, offboarding, promotions, transfers), and the full employee data model (dependents, addresses, qualifications, work history, salary, bank details). Nearly every other module depends on Core HR for employee context.
+The **central hub** of ONEVO. Manages employee profiles, lifecycle events (onboarding, offboarding, promotions, transfers), and the Phase 1 employee data model (dependents, addresses, work history, bank details). Qualification tracking and compensation setup are Phase 2. Nearly every other module depends on Core HR for employee context.
 
 ---
 
@@ -131,7 +131,7 @@ Central hub entity. Linked 1:1 to `users` via `user_id`.
 | `is_emergency_contact` | `boolean` | |
 | `phone` | `varchar(20)` | |
 
-### `employee_qualifications`
+### `employee_qualifications` — Phase 2
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -158,7 +158,7 @@ Central hub entity. Linked 1:1 to `users` via `user_id`.
 | `end_date` | `date` | |
 | `reason_for_leaving` | `varchar(255)` | |
 
-### `employee_salary_history`
+### `employee_salary_history` — Phase 2
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -186,7 +186,7 @@ Central hub entity. Linked 1:1 to `users` via `user_id`.
 
 ### `employee_lifecycle_events`
 
-Audit trail for promotions, transfers, salary changes, etc.
+Audit trail for promotions, transfers, suspension, termination, and other employee lifecycle events. Salary-change events are Phase 2 with compensation setup.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -307,7 +307,7 @@ Audit trail for promotions, transfers, salary changes, etc.
 | GET | `/api/v1/employees/{id}/lifecycle` | `employees:read` | Lifecycle events |
 | POST | `/api/v1/employees/{id}/onboarding` | `employees:write` | Start onboarding |
 | POST | `/api/v1/employees/{id}/offboarding` | `employees:write` | Start offboarding |
-| GET | `/api/v1/employees/{id}/salary-history` | `payroll:read` | Salary history |
+| GET | `/api/v1/employees/{id}/salary-history` | `payroll:read` | Phase 2 salary history |
 | PUT | `/api/v1/employees/{id}/bank-details` | `employees:write` | Update bank details (encrypted) |
 
 ## Features
@@ -317,8 +317,8 @@ Audit trail for promotions, transfers, salary changes, etc.
 - [[modules/core-hr/onboarding/overview|Onboarding]] — Onboarding task checklists and templates
 - [[modules/core-hr/offboarding/overview|Offboarding]] — Offboarding records, exit interviews, penalty tracking
 - [[modules/core-hr/dependents-contacts/overview|Dependents Contacts]] — Dependents and emergency contacts
-- [[modules/core-hr/qualifications/overview|Qualifications]] — Degrees, certifications, licenses with document upload
-- [[modules/core-hr/compensation/overview|Compensation]] — Salary history and bank details (encrypted)
+- [[modules/core-hr/qualifications/overview|Qualifications]] — Phase 2; degrees, certifications, licenses with document upload
+- [[modules/core-hr/compensation/overview|Compensation]] — Phase 2; salary history and compensation setup. Bank details remain in Phase 1 employee profile data.
 
 ---
 

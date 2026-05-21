@@ -1,7 +1,8 @@
 # Qualifications — End-to-End Logic
 
 **Module:** Core HR
-**Feature:** Qualifications & Work History
+**Feature:** Qualifications & Work History  
+**Phase:** Phase 2
 
 ---
 

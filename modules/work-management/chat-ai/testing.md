@@ -1,7 +1,7 @@
-# Chat AI — Testing
+# Chat AI - Testing
 
 **Module:** WorkSync
-**Feature:** Chat AI
+**Feature:** Chat AI / ONEVO Semantic Kernel Assistant
 **Location:** `tests/ONEVO.Tests.Unit/Features/WorkSync/ChatAI/`
 
 ---
@@ -9,6 +9,66 @@
 ## Unit Tests
 
 ```csharp
+public class SemanticKernelChatOrchestratorTests
+{
+    [Fact]
+    public async Task ProcessMessage_WithoutPremiumAi_SkipsKernel()
+    {
+        SetupTenantWithoutPremiumAi();
+
+        await _sut.ProcessMessageAsync(_messageId, default);
+
+        _kernelMock.Verify(k => k.InvokeAsync(It.IsAny<KernelArguments>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task ProcessMessage_UserWithoutPermission_DoesNotRegisterRestrictedFunction()
+    {
+        SetupUserPermissions("chat:read");
+
+        await _sut.ProcessMessageAsync(_messageId, default);
+
+        _pluginRegistryMock.Verify(r =>
+            r.RegisterFunction("WorkSync.CreateTask", It.IsAny<KernelFunction>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReadOnlyAnswer_CreatesAssistantMessage()
+    {
+        SetupKernelReadOnlyAnswer("3 overdue tasks need review.");
+
+        await _sut.ProcessMessageAsync(_messageId, default);
+
+        _messageRepoMock.Verify(r =>
+            r.InsertAsync(It.Is<Message>(m =>
+                m.SenderType == "assistant" &&
+                m.ContentType == "ai_answer"), default), Times.Once);
+    }
+
+    [Fact]
+    public async Task ToolAction_CreatesPendingActionJob()
+    {
+        SetupKernelToolCall("WorkSync.CreateTask");
+
+        await _sut.ProcessMessageAsync(_messageId, default);
+
+        _jobRepoMock.Verify(r =>
+            r.InsertAsync(It.Is<AiActionJob>(j =>
+                j.Status == "pending" &&
+                j.SourceMessageId == _messageId), default), Times.Once);
+    }
+
+    [Fact]
+    public async Task TeamsMessage_UnmappedSender_SkipsAssistantTools()
+    {
+        SetupImportedTeamsMessage(mappedUserId: null);
+
+        await _sut.ProcessMessageAsync(_messageId, default);
+
+        _kernelMock.Verify(k => k.InvokeAsync(It.IsAny<KernelArguments>(), default), Times.Never);
+    }
+}
+
 public class AiActionJobServiceTests
 {
     [Fact]
@@ -70,14 +130,6 @@ public class AiActionJobServiceTests
         result.IsSuccess.Should().BeTrue();
         _entityCreatorMock.Verify(c => c.CreateAsync(It.IsAny<AiActionJob>(), default), Times.Never);
     }
-
-    [Fact]
-    public async Task ChatAIDetection_WithoutPremiumFlag_SkipsDetection()
-    {
-        SetupTenantWithoutPremiumAi();
-        await _sut.ProcessMessageAsync(_messageId, default);
-        _aiServiceMock.Verify(a => a.DetectIntentAsync(It.IsAny<string>(), default), Times.Never);
-    }
 }
 ```
 
@@ -87,12 +139,32 @@ public class AiActionJobServiceTests
 public class AiActionJobEndpointTests : IClassFixture<ONEVOWebFactory>
 {
     [Fact]
+    public async Task AssistantRun_ReadOnlyQuestion_ReturnsAssistantMessage()
+    {
+        var response = await PostAssistantRunAsync(_channelId, "What tasks are overdue?");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await AssertAssistantMessageCreatedAsync(_channelId);
+        await AssertSignalRPublishedAsync("chat:message", _channelId);
+    }
+
+    [Fact]
+    public async Task AssistantRun_ActionIntent_PublishesPendingAction()
+    {
+        var response = await PostAssistantRunAsync(_channelId, "Create a task for Sarah to review payroll.");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await AssertPendingAiActionCreatedAsync(_channelId);
+        await AssertSignalRPublishedAsync("ai:action_pending", _channelId);
+    }
+
+    [Fact]
     public async Task UndoFlow_WithinWindow_CancelsAction()
     {
-        var jobId = await SimulateAiDetectionAsync();
+        var jobId = await CreatePendingAssistantActionAsync();
         var response = await _client.DeleteAsync($"/api/v1/ai-actions/{jobId}/undo");
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var job = await GetJobAsync(jobId);
         job.Status.Should().Be("undone");
     }
@@ -101,11 +173,20 @@ public class AiActionJobEndpointTests : IClassFixture<ONEVOWebFactory>
     public async Task FinalizeJob_HangfireProcess_CreatesEntity()
     {
         var jobId = await CreatePendingJobAsync(undoWindow: TimeSpan.FromMilliseconds(100));
-        await System.Threading.Tasks.Task.Delay(200); // let window expire
+        await System.Threading.Tasks.Task.Delay(200);
         await TriggerFinalizeJobAsync();
 
         var job = await GetJobAsync(jobId);
         job.Status.Should().Be("finalized");
+    }
+
+    [Fact]
+    public async Task ImportedTeamsMessage_MappedSender_CanInvokeAssistant()
+    {
+        await ImportTeamsMessageAsync(_channelId, _teamsMessageId, mappedUserId: _userId);
+
+        await AssertAssistantRunCreatedAsync(_channelId);
+        await AssertNoDuplicateMessageForExternalIdAsync(_teamsMessageId);
     }
 }
 ```
@@ -114,16 +195,22 @@ public class AiActionJobEndpointTests : IClassFixture<ONEVOWebFactory>
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| Undo within 10s window | Unit | status = undone |
-| Undo after window expired | Unit | UNDO_WINDOW_EXPIRED error |
-| Undo with tag_execution_id | Unit | Both job and tag execution undone |
-| Finalize already-finalized | Unit | Idempotent — no double creation |
-| Detection without premium_ai | Unit | AI service not called |
-| Full undo flow | Integration | Status = undone, entity not created |
+| Tenant without Agentic Chat / `premium_ai` | Unit | Kernel is not invoked |
+| User lacks tool permission | Unit | Restricted Kernel function is not registered |
+| Read-only answer | Unit + Integration | Assistant message stored with `sender_type = assistant` |
+| Action intent | Unit + Integration | `premium_ai_detections` and pending `ai_action_jobs` rows created |
+| Undo within 10s window | Unit + Integration | status = undone, entity not created |
+| Undo after window expired | Unit | `UNDO_WINDOW_EXPIRED` error |
+| Undo with `tag_execution_id` | Unit | Both job and tag execution undone |
+| Finalize already-finalized | Unit | Idempotent, no double creation |
 | Hangfire finalize | Integration | Entity created, status = finalized |
+| Teams imported message from unmapped sender | Unit | Assistant tools skipped |
+| Teams imported message from mapped sender | Integration | Message imported once, assistant can run when enabled |
 
 ## Related
 
 - [[modules/work-management/chat-ai/overview|Chat AI Overview]]
 - [[modules/work-management/chat-ai/end-to-end-logic|Chat AI Logic]]
+- [[modules/shared-platform/chatbot-api-integration|Semantic Kernel Assistant Integration]]
+- [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]

@@ -68,9 +68,9 @@ public class ChatEndpointTests : IClassFixture<ONEVOWebFactory>
     [Fact]
     public async Task SendMessage_SignalREventFired()
     {
-        var hubMock = _factory.Services.GetRequiredService<Mock<IChannelHub>>();
+        var hubMock = ResolveWorkSyncChatHubMock();
         await SendMessageAsync(_channelId, "Hello");
-        hubMock.Verify(h => h.SendToChannelAsync(_channelId, It.IsAny<object>(), default), Times.Once);
+        hubMock.VerifyPublished("chat:message", _channelId, Times.Once);
     }
 
     [Fact]
@@ -100,9 +100,11 @@ public class ChatEndpointTests : IClassFixture<ONEVOWebFactory>
 | Reply to a thread reply (nested) | Unit | CANNOT_NEST_THREADS |
 | Soft delete retains content | Unit | Content preserved, is_deleted = true |
 | Unread count based on last_read_at | Unit | Count > 0 when messages after last read |
-| SignalR fired on message | Integration | Hub notified |
+| SignalR fired on message | Integration | WorkSync chat hub publishes canonical `chat:message` payload |
 | Linked Teams channel queues outbound sync | Integration | Teams sync job queued |
 | Inbound Teams duplicate ignored | Unit + Integration | No duplicate ONEVO message |
+| Assistant message created | Integration | Assistant message stored and `chat:message` plus `ai:*` events published |
+| Inbound Teams message from mapped sender | Integration | ONEVO message imported and assistant invoked only when enabled |
 
 ## Related
 

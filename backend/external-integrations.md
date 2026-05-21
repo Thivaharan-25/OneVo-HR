@@ -118,7 +118,7 @@ Required config concepts:
 
 See [[Userflow/Calendar/calendar-integrations|Calendar Integrations Flow]].
 
-## Phase 2 Integrations
+## Additional / Optional Integrations
 
 ### 4. Biometric Terminals (Presence Capture)
 
@@ -154,7 +154,7 @@ public bool VerifyWebhookSignature(string payload, string signature, string apiK
 |:---------|:------|
 | **Module** | Integrations + Work Management Chat + Work Management Foundation |
 | **Auth** | Microsoft OAuth 2.0 / Microsoft Graph delegated + tenant-admin approved scopes |
-| **Purpose** | Link ONEVO users to Teams accounts, fetch Teams contacts, create or link Teams groups for Work Management workspaces, and two-way sync messages between ONEVO Chat and Teams |
+| **Purpose** | Phase 1 optional link between ONEVO users/channels/workspaces and Microsoft Teams for two-way chat sync; broader Graph features can expand later |
 | **Tables** | `external_account_connections`, `microsoft_graph_tokens`, `teams_webhook_subscriptions`, `teams_delta_sync_state`, `workspace_teams_links`, `channel_teams_links`, `teams_message_sync_state` |
 
 **Key Flows:**

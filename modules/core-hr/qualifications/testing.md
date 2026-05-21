@@ -1,7 +1,8 @@
 # Qualifications — Testing
 
 **Module:** Core HR
-**Feature:** Qualifications
+**Feature:** Qualifications  
+**Phase:** Phase 2
 **Location:** `tests/ONEVO.Tests.Unit/Modules/CoreHR/QualificationServiceTests.cs`
 
 ---

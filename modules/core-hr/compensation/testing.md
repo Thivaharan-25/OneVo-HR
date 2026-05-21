@@ -1,7 +1,8 @@
 # Compensation — Testing
 
 **Module:** Core HR
-**Feature:** Compensation
+**Feature:** Compensation  
+**Phase:** Phase 2
 **Location:** `tests/ONEVO.Tests.Unit/Modules/CoreHR/CompensationServiceTests.cs`
 
 ---

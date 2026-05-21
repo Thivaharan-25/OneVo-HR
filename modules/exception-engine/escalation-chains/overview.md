@@ -33,7 +33,7 @@ Do not use fixed escalation labels like HR or CEO. If a customer wants an HR-lik
 
 ### `escalation_chains`
 
-Key columns should describe severity, step order, resolver type, resolver configuration, delay, and action. Existing schema references such as `notify_role = hr` or `ceo` should be replaced during the approved database migration.
+Key columns describe severity, step order, resolver type, resolver configuration, delay, and action. The canonical schema uses `resolver_type` and `resolver_config`; do not add fixed recipient columns such as `notify_role` or `notify_user_id`.
 
 Example for `critical`:
 

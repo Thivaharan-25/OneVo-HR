@@ -6,7 +6,7 @@
 
 ## Purpose
 
-Chat is real-time team communication within ONEVO. It is a first-class pillar — not nested inside Workforce — because communication happens across HR, project, and org contexts. Channels can be tied to projects, teams, or be open workspace-wide.
+Chat is real-time team communication within ONEVO. It is a first-class pillar — not nested inside Workforce — because communication happens across HR, project, and org contexts. Channels can be tied to projects, teams, or be open workspace-wide. Chat also hosts the ONEVO Semantic Kernel assistant for permission-scoped HR and WorkSync questions/actions.
 
 ## Key Entities
 
@@ -20,6 +20,7 @@ Chat is real-time team communication within ONEVO. It is a first-class pillar �
 | `DIRECT_MESSAGE_CHANNEL` | A private 1:1 or group DM conversation |
 | `DM_PARTICIPANT` | Members of a DM conversation |
 | `MESSAGE_READ_RECEIPT` | Tracks who has read which messages |
+| `ASSISTANT_MESSAGE` | ONEVO assistant answer or action card stored in the normal messages table |
 
 ## Flow Steps
 
@@ -36,6 +37,7 @@ Chat is real-time team communication within ONEVO. It is a first-class pillar �
 2. User types in the message input and presses Enter (or clicks Send)
 3. System creates a `MESSAGE` record and delivers it to all channel members via SignalR
 4. `MESSAGE_READ_RECEIPT` is created for the sender; others receive receipts as they view
+5. If Agentic Chat is enabled, the Semantic Kernel assistant may answer, ask a clarification, or create an undoable action card
 
 ### Create a Channel
 1. User clicks "+ New Channel" (requires `chat:write`)
@@ -87,6 +89,7 @@ Flow:
 3. Teams messages sent in the linked conversation appear in ONEVO
 4. ONEVO messages sent in the linked channel appear in Teams
 5. Sync failures show a retry state and do not duplicate messages
+6. Teams-originated messages can invoke the assistant only after the Teams sender is mapped to a ONEVO user and ONEVO permissions are resolved
 
 - [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]]
 

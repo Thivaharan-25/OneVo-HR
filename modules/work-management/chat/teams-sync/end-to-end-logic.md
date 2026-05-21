@@ -7,9 +7,11 @@
 
 ## Purpose
 
-Defines how WorkSync Chat mirrors messages with Microsoft Teams after a workspace/channel or workflow case conversation has been linked to a Teams Team/channel or Teams chat.
+Defines how WorkSync Chat mirrors user messages, assistant messages, and case-conversation discussion with Microsoft Teams after a workspace/channel or workflow case conversation has been linked to a Teams Team/channel or Teams chat.
 
 For Automation Center case conversations, Teams is discussion-only. ONEVO sends a summary and secure ONEVO link for official actions. Teams replies can sync back into the ONEVO case conversation, but Teams-native approval buttons, bots, and text command parsing must not change workflow state.
+
+For Agentic Chat, Microsoft Teams is an input/output channel. Inbound Teams messages are normalized into ONEVO messages first, then the Semantic Kernel assistant may process them only after the Teams sender maps to a ONEVO user and ONEVO permissions are resolved.
 
 ---
 
@@ -26,7 +28,7 @@ POST /api/v1/channels/{id}/messages
          a. Load channel_teams_links for channel_id
          b. Verify link status = active
          c. Verify sender has linked Teams account
-         d. Transform markdown to Teams-supported format
+         d. Transform markdown/assistant card summary to Teams-supported format
          e. Send Graph message
          f. Store external_message_id in teams_message_sync_state
          g. Update messages.sync_status = "synced"
@@ -45,12 +47,13 @@ Graph change notification
          a. Skip if teams_message_sync_state already has external_message_id
          b. Map sender by teams_user_id/email
          c. INSERT messages:
-              external_source = "microsoft_teams"
-              external_message_id = Graph message id
-              sync_direction = "inbound"
-              sync_status = "synced"
+               external_source = "microsoft_teams"
+               external_message_id = Graph message id
+               sync_direction = "inbound"
+               sync_status = "synced"
          d. Store attachments via file pipeline if allowed
          e. Push SignalR `message:created`
+         f. If sender is mapped and assistant is enabled, invoke Semantic Kernel assistant
 ```
 
 ## Mirror Case Conversation To Teams
@@ -141,6 +144,8 @@ Outbound sync must also record the local `message_id` before retrying so a Graph
 | Attachment too large | Import message, mark attachment sync failed |
 | Message already imported | No-op idempotent success |
 | Teams user attempts approval by reply text | Import as discussion only; workflow state remains unchanged |
+| Teams sender is not mapped to ONEVO user | Import discussion only if tenant policy allows; assistant tools are skipped |
+| Assistant reply outbound is disabled | Save assistant message in ONEVO only; do not post to Teams |
 
 ---
 
