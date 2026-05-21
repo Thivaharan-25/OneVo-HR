@@ -26,8 +26,8 @@
 
 ### Step 3: Set Employment Details
 - **UI:** Select department → select team → select job family → select level within family → enter job title → set employment type (full-time, part-time, contract) → set start date → select reporting manager
-- **Backend:** Job family level auto-assigns default role → [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
-- **Key:** The role assigned here determines what features/permissions the employee will have
+- **Backend:** Job family level selection stores `JobLevelId` on the invitation token. The role is NOT assigned yet at this point — it is assigned automatically when the employee accepts the invitation.
+- **Key:** The role assigned at acceptance time (from the job level's `DefaultRoleId`) determines the employee's explicit permissions. Module auto-grants (self-service permissions) are added automatically by the auth layer based on the tenant's active modules.
 
 ### Step 4: Set Compensation (if `payroll:write`)
 - **UI:** Enter base salary → select currency → add allowances → enter bank details (encrypted at rest)
@@ -38,8 +38,8 @@
 - **Backend:** EmployeeService.CreateAsync() → [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
 - **DB:** `employees` — status: "Onboarding", `user_roles` — default role assigned
 - **Triggers:**
-  1. User account created with temporary password
-  2. Invitation email sent
+  1. User account activated (password set or Google linked)
+  2. Role automatically assigned from the job level's DefaultRoleId (if JobLevelId was set on the token)
   3. Onboarding workflow instance created
   4. Onboarding checklist generated (IT setup, badge, training, docs to sign)
 

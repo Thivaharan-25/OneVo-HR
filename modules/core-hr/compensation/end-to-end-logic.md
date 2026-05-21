@@ -1,7 +1,8 @@
 # Compensation — End-to-End Logic
 
 **Module:** Core HR
-**Feature:** Compensation (Salary History)
+**Feature:** Compensation (Salary History)  
+**Phase:** Phase 2
 
 ---
 

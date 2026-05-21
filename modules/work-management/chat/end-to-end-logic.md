@@ -18,9 +18,10 @@ POST /api/v1/channels/{id}/messages
          verify parent has no parent (one level of threading only)
     → 4. INSERT messages row
     → 5. Publish MessageSentEvent:
-         → SignalR IChannelHub pushes to all channel members
-         → ChatAI detection (if premium_ai flag — see Chat AI module)
+         → WorkSync chat hub pushes to all channel members
+         → Semantic Kernel Chat AI detection (if Agentic Chat / premium_ai is enabled)
          → Notifications for @mentions
+         → Teams outbound sync if channel has active channel_teams_links and sync_to_teams = true
     → Return Result<MessageDto>
   → 201 Created
 ```
@@ -44,8 +45,10 @@ Teams Graph webhook/delta notification
   -> TeamsMessageWebhookHandler
     -> 1. Resolve Teams channel/chat to ONEVO channel
     -> 2. Deduplicate by external_message_id
-    -> 3. Insert inbound ONEVO message
-    -> 4. Push SignalR update
+    -> 3. Map Teams sender to ONEVO user; if unmapped, import as external only when tenant policy allows
+    -> 4. Insert inbound ONEVO message with external_source = "microsoft_teams"
+    -> 5. Push SignalR update
+    -> 6. Invoke Semantic Kernel assistant only when sender is mapped to a ONEVO user and Agentic Chat is enabled
 ```
 
 ```

@@ -1,13 +1,14 @@
 # Compensation
 
 **Module:** Core HR  
-**Feature:** Compensation
+**Feature:** Compensation  
+**Phase:** Phase 2
 
 ---
 
 ## Purpose
 
-Manages salary history and encrypted bank details.
+Manages salary history and encrypted bank details. This is a Phase 2 feature.
 
 ## Database Tables
 

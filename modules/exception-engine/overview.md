@@ -156,7 +156,7 @@ Notification routing by severity.
 2. Users with permission `exceptions:manage` — delay 30 min (if not acknowledged)
 3. Configured escalation owner — delay 60 min (if still not acknowledged)
 
-> Database note: the canonical schema still needs the approved Automation Center database migration before these resolver columns replace older fixed-role columns.
+> Database note: resolver-based routing is the canonical Phase 1 shape. Do not reintroduce fixed HR/CEO role columns for exception escalation.
 
 ### `alert_acknowledgements`
 

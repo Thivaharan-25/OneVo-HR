@@ -1,7 +1,8 @@
 # Cost Centers — End-to-End Logic
 
 **Module:** Org Structure
-**Feature:** Cost Centers
+**Feature:** Cost Centers  
+**Phase:** Phase 2
 
 ---
 
@@ -35,8 +36,8 @@ PUT /api/v1/org/departments/{id}/cost-center
 
 ### Key Rules
 
-- **Cost centers are used in payroll** for expense allocation across departments.
-- **Budget tracking** per cost center is a Phase 2 feature.
+- **Cost centers are Phase 2** and are used in payroll for expense allocation across departments.
+- **Budget tracking** per cost center is included in the Phase 2 scope.
 
 ## Related
 

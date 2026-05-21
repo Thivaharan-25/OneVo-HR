@@ -50,16 +50,15 @@ MODULES = [
         "name": "Org Structure",
         "phase": "Phase 1",
         "tables": [
-            "department_cost_centers", "departments", "job_families", "job_levels",
-            "job_titles", "legal_entities", "office_locations", "team_members", "teams",
+            "departments", "job_families", "job_levels", "job_titles",
+            "legal_entities", "office_locations", "team_members", "teams",
         ],
-        "purpose": "Company hierarchy, legal entities, departments, jobs, teams, offices, and cost centers.",
+        "purpose": "Company hierarchy, legal entities, departments, jobs, teams, and offices.",
         "scope": [
             "Multiple legal entities per tenant with country and registration context.",
             "Parent-child department hierarchy with department heads.",
             "Job families, levels, titles, and salary band context.",
             "Teams separate from department hierarchy for operational grouping.",
-            "Cost centers linked to departments for finance/reporting context.",
             "Office locations used by presence, public holidays, verification, and policy scoping.",
         ],
     },
@@ -68,18 +67,16 @@ MODULES = [
         "phase": "Phase 1",
         "tables": [
             "employee_addresses", "employee_bank_details", "employee_custom_fields", "employee_dependents",
-            "employee_emergency_contacts", "employee_lifecycle_events", "employee_qualifications",
-            "employee_salary_history", "employee_work_history", "employees", "offboarding_records",
-            "onboarding_tasks", "onboarding_templates",
+            "employee_emergency_contacts", "employee_lifecycle_events", "employee_work_history",
+            "employees", "offboarding_records", "onboarding_tasks", "onboarding_templates",
         ],
         "purpose": "Employee system of record from hiring through offboarding.",
         "scope": [
             "Employee profiles with personal, work, reporting, job, department, office, and status fields.",
-            "Addresses, bank details, emergency contacts, dependents, custom fields, work history, qualifications.",
+            "Addresses, bank details, emergency contacts, dependents, custom fields, and work history.",
             "Onboarding templates and task generation by department.",
             "Offboarding records and checklists.",
-            "Lifecycle events for hire, transfer, promotion, salary change, and termination.",
-            "Salary history with effective date, approval, and reason.",
+            "Lifecycle events for hire, transfer, promotion, suspension, and termination.",
         ],
     },
     {
@@ -419,14 +416,13 @@ SIMPLE_WORKFLOWS = [
             "Assign department heads.",
             "Create job families, job levels, and job titles.",
             "Create teams and assign team leads/members.",
-            "Create cost centers and link them to departments.",
         ],
         "system": [
             "Store legal entities and link them to countries.",
             "Store departments using parent-child relationships.",
             "Store job family/level/title records.",
             "Store teams and team_members.",
-            "Store office locations and cost centers.",
+            "Store office locations.",
             "Use this structure for employee profile, leave policy, reporting scope, team assignment, and workflow approvals.",
         ],
         "edge": [
@@ -442,12 +438,12 @@ SIMPLE_WORKFLOWS = [
             "Enter personal details, work email, employee number, phone, DOB, gender, and nationality.",
             "Assign department, job title, manager, legal entity, office, employment type, work mode, hire date, and probation date.",
             "Upload employee photo/avatar if available.",
-            "Add addresses, emergency contacts, dependents, bank details, qualifications, and work history.",
+            "Add addresses, emergency contacts, dependents, bank details, and work history.",
         ],
         "system": [
             "Create employees record.",
             "Link employee to user account where applicable.",
-            "Store related records in addresses, emergency contacts, dependents, bank details, qualifications, and work history tables.",
+            "Store related records in addresses, emergency contacts, dependents, bank details, and work history tables.",
             "Encrypt bank account number before storage.",
             "Create lifecycle event for hire.",
             "Make employee available to onboarding, leave, workforce presence, skills, and monitoring modules.",
@@ -500,21 +496,18 @@ SIMPLE_WORKFLOWS = [
             "Open employee profile.",
             "Choose promote action.",
             "Select new job title and effective date.",
-            "Enter new salary if salary changes.",
             "Enter reason for promotion.",
             "Submit for approval or apply based on permission/workflow.",
         ],
         "system": [
             "Validate employee exists and is active.",
             "Update job_title_id when promotion is effective.",
-            "Create salary history record if salary changes.",
             "Create employee_lifecycle_events record with event_type promoted.",
             "Notify employee, manager, and HR where configured.",
             "Expose promotion in employee lifecycle timeline.",
         ],
         "edge": [
             ["Backdated promotion", "Allow if HR correction policy permits; created_at still records actual insertion time."],
-            ["Salary not changed", "Create promotion lifecycle event without salary history change."],
             ["Invalid job title", "Reject request."],
         ],
     },
@@ -1151,6 +1144,13 @@ def detail_files():
     seen = set()
     ordered = []
     for f in files:
+        lower_path = str(f).replace("\\", "/").lower()
+        if any(part in lower_path for part in [
+            "/cost-centers/",
+            "/compensation/",
+            "/qualifications/",
+        ]):
+            continue
         if f not in seen:
             seen.add(f)
             ordered.append(f)
@@ -1692,6 +1692,9 @@ def build():
     add_table(doc, ["Area", "Boundary"], [
         ["Payroll", "Designed as Phase 2 module; not active Phase 1 build scope."],
         ["Performance", "Designed as Phase 2 module; not active Phase 1 build scope."],
+        ["Cost Center Setup", "Phase 2; department_cost_centers and cost-center budgeting are not active Phase 1 build scope."],
+        ["Compensation Setup", "Phase 2; employee_salary_history, salary change workflows, and compensation setup screens are not active Phase 1 build scope."],
+        ["Qualification Tracking", "Phase 2; employee_qualifications and qualification document tracking are not active Phase 1 build scope."],
         ["Full Skills and Learning", "Only Skills Core is Phase 1; courses, assessments, certifications, and development plans are Phase 2."],
         ["Documents", "Phase 2 module; file_records exist in Phase 1 as shared file registry."],
         ["Grievance", "Phase 2."],

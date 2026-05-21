@@ -31,12 +31,14 @@
 | `tenant_id` | `uuid` | FK → tenants |
 | `severity` | `varchar(20)` | Which severity triggers this chain |
 | `step_order` | `int` | 1, 2, 3… |
-| `notify_role` | `varchar(30)` | `reporting_manager`, `department_head`, `hr`, `ceo`, `custom` |
-| `notify_user_id` | `uuid` | Nullable — for `custom` role |
+| `resolver_type` | `varchar(50)` | `reporting_manager`, `team_lead`, `department_owner`, `permission`, `department`, `team`, `job_level`, `specific_employee`, `configured_escalation_owner`, `previous_approver`, `case_participants` |
+| `resolver_config` | `jsonb` | Resolver-specific configuration such as permission key, department/team/job level id, or selected employee id |
 | `delay_minutes` | `int` | Wait N minutes before escalating to next step |
 | `created_at` | `timestamptz` |  |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+
+**Routing rule:** Do not use fixed role names such as HR or CEO for exception routing. Resolve recipients dynamically through `resolver_type` + `resolver_config` so tenant-specific org structures and permissions control routing.
 
 ---
 

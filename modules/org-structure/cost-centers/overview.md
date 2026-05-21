@@ -1,13 +1,14 @@
 # Cost Centers
 
 **Module:** Org Structure  
-**Feature:** Cost Centers
+**Feature:** Cost Centers  
+**Phase:** Phase 2
 
 ---
 
 ## Purpose
 
-Department-level cost center tracking with budget amounts per fiscal year.
+Department-level cost center tracking with budget amounts per fiscal year. This is a Phase 2 feature.
 
 ## Database Tables
 

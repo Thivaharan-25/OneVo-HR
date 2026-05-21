@@ -93,7 +93,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Org-Structure/department-hierarchy\|Department Hierarchy]] | Create departments, set parent-child | Documented | MUST |
 | [[Userflow/Org-Structure/job-family-setup\|Job Family Setup]] | Job families, levels, salary bands | Documented | MUST |
 | [[Userflow/Org-Structure/team-creation\|Team Creation]] | Teams, team leads | Documented | SHOULD |
-| [[Userflow/Org-Structure/cost-center-setup\|Cost Center Setup]] | Cost center management | Documented | SHOULD |
+| [[Userflow/Org-Structure/cost-center-setup\|Cost Center Setup]] | Cost center management (Phase 2) | Documented | COULD |
 
 ### People — `employees:read/write/delete`
 
@@ -101,12 +101,12 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Employee-Management/employee-onboarding\|Employee Onboarding]] | Full hire flow: create profile → assign role → onboarding checklist | Documented | MUST |
 | [[Userflow/Employee-Management/profile-management\|Profile Management]] | View/edit employee profile (own or by permission) | Documented | MUST |
-| [[Userflow/Employee-Management/compensation-setup\|Compensation Setup]] | Salary, allowances, bank details | Documented | MUST |
+| [[Userflow/Employee-Management/compensation-setup\|Compensation Setup]] | Salary, allowances, bank details (Phase 2) | Documented | COULD |
 | [[Userflow/Employee-Management/employee-transfer\|Employee Transfer]] | Department/team/location transfer | Documented | SHOULD |
 | [[Userflow/Employee-Management/employee-promotion\|Employee Promotion]] | Title change, salary revision | Documented | SHOULD |
 | [[Userflow/Employee-Management/employee-offboarding\|Employee Offboarding]] | Exit workflow: checklist → access revoke → final pay | Documented | MUST |
 | [[Userflow/Employee-Management/dependent-management\|Dependent Management]] | Add/edit dependents and emergency contacts | Documented | SHOULD |
-| [[Userflow/Employee-Management/qualification-tracking\|Qualification Tracking]] | Education, certifications, experience | Documented | COULD |
+| [[Userflow/Employee-Management/qualification-tracking\|Qualification Tracking]] | Education, certifications, experience (Phase 2) | Documented | COULD |
 
 ### Data Import — `employees:write`
 

@@ -13,27 +13,34 @@
 
 ---
 
-## Universal Permissions (Auto-granted - never assign manually)
+## Module Auto-Grant Permissions
 
-These are given to every active employee automatically when they enter the system. They are resolved by the auth layer, not assigned through roles, and they cannot be revoked through role permissions or employee overrides.
+These are given automatically to every active employee **when the tenant's subscription includes the relevant module**. They are resolved by the auth layer, never assigned through roles, and cannot be revoked through role permissions or employee overrides.
 
-| Permission             | What it gives                                                                                            |
-| :--------------------- | :------------------------------------------------------------------------------------------------------- |
-| `inbox:read`           | Access to inbox (content adapts by role)                                                                 |
-| `notifications:read`   | Receive notifications                                                                                    |
-| `employees:read-own`   | View own employee profile                                                                                |
-| `leave:read-own`       | View own leave balance and history                                                                       |
-| `attendance:read-own`  | View own attendance and presence history                                                                 |
-| `attendance:write-own` | Submit own attendance corrections (e.g., missing punch, correction requests)                             |
-| `payroll:read-own`     | View own payslips and payroll history                                                                    |
-| `performance:read-own` | View own performance records and review tasks                                                            |
-| `documents:read-own`   | View documents assigned to self                                                                          |
-| `calendar:read`        | View calendar                                                                                            |
-| `activity:read:self`   | View own activity log                                                                                    |
-| `workforce:dashboard`  | Access workforce dashboard (shows team data if manager, own data if not; manager can toggle to own view) |
-| *(no code)*            | Personal app account linking - connect own Teams/Slack/Google account from profile settings              |
+| Permission | Module Required | What it gives |
+| :--------- | :-------------- | :------------ |
+| `employees:read-own` | `employees` | View own employee profile |
+| `leave:read-own` | `leave` | View own leave balance and history |
+| `attendance:read-own` | `attendance` | View own attendance and presence history |
+| `attendance:write-own` | `attendance` | Submit own attendance corrections |
+| `calendar:read` | `calendar` | View calendar |
+| `activity:read:self` | `monitoring` | View own activity log |
+| `workforce:dashboard` | `workforce` | Access workforce dashboard |
 
-Universal permissions must not appear in the role creation permission browser, role permission save payloads, or per-employee override add/remove lists. They may still appear in API endpoint documentation to explain the access check used for self-service routes.
+Module auto-grant permissions must not appear in the role creation permission browser, role permission save payloads, or per-employee override add/remove lists.
+
+> **Phase 2 note:** `payroll:read-own`, `performance:read-own`, and `documents:read-own` will be added to this table when their modules (Payroll, Performance, HR Documents) are released.
+
+## Derived Permissions
+
+These are computed automatically by the auth layer based on the employee's effective permission set. They cannot be assigned or revoked manually.
+
+| Permission | Derived when |
+| :--------- | :----------- |
+| `inbox:read` | Effective set contains any of: `leave:approve`, `leave:manage`, `attendance:approve`, `payroll:approve`, `payroll:run`, `performance:write`, `performance:manage`, `expense:approve`, `tasks:approve`, `documents:approve`, `grievance:manage`, `monitoring:alerts:read`, `monitoring:alerts:resolve`, `verification:review`, `workflows:execute` |
+| `notifications:read` | Effective set contains any of: `leave:approve`, `leave:manage`, `attendance:approve`, `employees:write`, `payroll:approve`, `performance:manage`, `monitoring:alerts:read`, `tasks:approve` |
+
+Derived permissions never appear in the role creation browser or override pickers.
 
 ---
 
@@ -313,7 +320,7 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `analytics:view:self` / `analytics:view:ceo` | Covered by `analytics:view` plus server-side scope |
 | `approvals:read` | Not a standalone permission - approvals are per-module |
 | `attendance:manage` | Covered by `attendance:write` |
-| `attendance:read-own` | Universal |
+| `attendance:read-own` | Module auto-grant (attendance module) |
 | `audit:read` | Restored as standalone grantable permission `audit:read` |
 | `branding:manage` | Renamed to `settings:branding` |
 | `worksync:*` module permissions | Internal WorkSync module permissions; no bridge API scopes are active |
@@ -323,7 +330,7 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `deployment:write` | Not defined |
 | `devices:manage` | Split into `settings:device` + `settings:device:configure` |
 | `docs:read` | Renamed to `documents:read` |
-| `documents:read-own` | Universal |
+| `documents:read-own` | Module auto-grant (HR Documents module) |
 | `employee:create` / `employees:create` / `employees:update` / `employees:bulk-update` | All covered by `employees:write` |
 | `exceptions:read` | Renamed to `monitoring:alerts:read` |
 | `exceptions:view` | Renamed to `monitoring:alerts:read` |
@@ -333,21 +340,21 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `expense:admin` | Covered by `expense:manage` |
 | `goals:read` / `goals:write` | Renamed to `okr:read` / `okr:write` |
 | `hr:read` | Covered by `employees:read` |
-| `inbox:read` | Universal |
-| `calendar:read` | Universal |
+| `inbox:read` | Derived (computed from effective permission set) |
+| `calendar:read` | Module auto-grant (calendar module) |
 | `leave:none` | Not a permission - sentinel value |
-| `leave:read-own` | Universal |
+| `leave:read-own` | Module auto-grant (leave module) |
 | `leave:write` | Covered by `leave:create` + `leave:manage` |
 | `monitoring:update-settings` | Renamed to `monitoring:configure` |
 | `notifications:configure` | Covered by `settings:notifications` |
-| `notifications:read` | Universal |
+| `notifications:read` | Derived (computed from effective permission set) |
 | `org:write` | Covered by `org:manage` |
 | `overtime:read` | Covered by `attendance:read` |
 | `payroll:manage` | Renamed to `payroll:write` |
-| `payroll:read-own` | Universal |
+| `payroll:read-own` | Module auto-grant (Payroll module — Phase 2) |
 | `payroll:view` | Renamed to `payroll:read` |
 | `payroll:view-salary` | Covered by `payroll:read` |
-| `performance:read-own` | Universal |
+| `performance:read-own` | Module auto-grant (Performance module — Phase 2) |
 | `people:read` | Covered by `employees:read` |
 | `planning:read` / `planning:write` | Replaced by `sprints:*`, `roadmaps:*`, and `projects:*` |
 | `platform:admin` | Renamed to `settings:admin` |
@@ -363,14 +370,14 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `wms:chat` / `wms:okr` / `wms:projects` | Wrong prefix - use `chat:*`, `okr:*`, `projects:*` |
 | `workforce:approve-overtime` | Same as `attendance:approve` - removed |
 | `workforce:correct-attendance` | Same as `attendance:write` - removed |
-| `workforce:dashboard` | Universal |
+| `workforce:dashboard` | Module auto-grant (workforce module) |
 | `workforce:manage-biometric` | Renamed to `settings:device:configure` |
 | `workforce:read` | Renamed to `workforce:view` |
 ---
 
 ## Validation Rules
 
-- Universal permissions are auto-granted to every active employee and are never manually assigned or revoked.
+- Module auto-grant permissions are given to every active employee based on the tenant's active modules and are never manually assigned or revoked. Derived permissions (inbox:read, notifications:read) are computed automatically from the effective permission set.
 - Explicitly grantable permissions are the only permissions shown in role creation, role editing, and employee override pickers.
 - Any permission used by a user flow, frontend route, API endpoint, or module overview must appear either in Universal Permissions or Explicitly Grantable Permissions.
 - Any legacy permission must appear in Removed from Original List with a replacement or a reason.

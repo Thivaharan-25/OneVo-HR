@@ -152,7 +152,7 @@ Self-referencing hierarchy via `parent_department_id`.
 | `joined_at` | `timestamptz` | |
 | PK: `(team_id, employee_id)` | | |
 
-### `department_cost_centers`
+### `department_cost_centers` — Phase 2
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -243,7 +243,7 @@ Records the module whitelist for employees who were granted `roles:manage` via d
 - [[modules/org-structure/departments/overview|Departments]] — Hierarchical department tree (`parent_department_id`, CTE-friendly)
 - [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — Job families, job levels (with rank), and job titles
 - [[modules/org-structure/teams/overview|Teams]] — Teams within departments with team leads and member assignments
-- [[modules/org-structure/cost-centers/overview|Cost Centers]] — Department cost centers with budget per fiscal year
+- [[modules/org-structure/cost-centers/overview|Cost Centers]] — Phase 2; department cost centers with budget per fiscal year
 
 ---
 

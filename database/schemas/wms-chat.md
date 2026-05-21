@@ -46,18 +46,27 @@
 |---|---|---|
 | `id` | uuid | PK |
 | `channel_id` | uuid | FK → channels |
-| `user_id` | uuid | FK → users |
+| `user_id` | uuid | FK → users, nullable for assistant/system/external messages |
+| `sender_type` | varchar(20) | `user`, `assistant`, `system`, `external` |
 | `content` | text | Rich text / markdown |
+| `content_type` | varchar(20) | `text`, `markdown`, `system`, `ai_answer`, `ai_action_card` |
 | `parent_message_id` | uuid | FK → messages, nullable — thread reply |
 | `is_edited` | boolean | default false |
 | `edited_at` | timestamptz | nullable |
 | `is_deleted` | boolean | default false — soft delete |
 | `deleted_at` | timestamptz | nullable |
+| `metadata_json` | jsonb | nullable; assistant/tool metadata, external sender metadata, or action card data |
 | `created_at` | timestamptz | |
 
 **Index:** `(channel_id, created_at DESC)`, `(parent_message_id)` where not null
 **Teams sync columns:** `external_source`, `external_message_id`, `sync_direction`, and `sync_status` are required only when Microsoft Teams two-way sync is enabled.
 **Teams sync unique key:** `(tenant_id, external_source, external_message_id)` where `external_message_id IS NOT NULL`.
+
+**Sender rules:**
+- `sender_type = user` requires `user_id`.
+- `sender_type = assistant` is used for ONEVO Semantic Kernel assistant replies. `metadata_json` should include an assistant run/audit reference when available.
+- `sender_type = system` is used for system-generated chat cards or workflow notices.
+- `sender_type = external` is used only when a Microsoft Teams sender cannot be mapped to a ONEVO user and tenant policy allows importing external participants.
 
 ---
 
@@ -109,6 +118,7 @@ One row per message that the AI processes. Only created when tenant has `premium
 | `channel_id` | uuid | FK → channels |
 | `detected_intent` | varchar(20) | task / report / issue / reminder / other |
 | `confidence_score` | numeric(5,4) | 0.0000–1.0000 |
+| `source` | varchar(30) | `semantic_kernel`, `heuristic`, `manual` |
 | `auto_created` | boolean | Whether an entity was auto-created |
 | `created_entity_type` | varchar(30) | nullable — task / reminder |
 | `created_entity_id` | uuid | nullable |
@@ -127,6 +137,9 @@ Universal undo state machine for all AI-triggered and IDE-tag-triggered reversib
 | `tag_execution_id` | uuid | FK → ide_tag_executions, nullable |
 | `user_id` | uuid | FK → users |
 | `tenant_id` | uuid | FK → tenants |
+| `channel_id` | uuid | FK -> channels, nullable for IDE tag actions |
+| `source_message_id` | uuid | FK -> messages, nullable |
+| `source` | varchar(30) | `onevo_chat`, `microsoft_teams`, `ide_tag`, `system` |
 | `action_type` | varchar(50) | auto_create_task / auto_create_reminder / auto_update_status |
 | `action_params` | jsonb | Params used to create the entity |
 | `status` | varchar(20) | pending / finalized / undone / failed |
@@ -140,6 +153,8 @@ Universal undo state machine for all AI-triggered and IDE-tag-triggered reversib
 **Index:** `(user_id, status, undo_expires_at)` — for Hangfire finalization job
 
 **Hangfire job:** Scans `status = pending AND undo_expires_at < now()` every 5 seconds. Finalizes by creating the entity from `action_params` and setting `status = finalized`.
+
+**Semantic Kernel rule:** Tool calls that create or update reversible entities from chat must create `ai_action_jobs` first. The actual entity is created only when the undo window expires.
 
 ---
 

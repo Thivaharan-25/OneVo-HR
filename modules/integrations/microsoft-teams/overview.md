@@ -2,14 +2,14 @@
 
 **Module:** Integrations
 **Feature:** Microsoft Teams Integration
-**Phase:** Phase 2
+**Phase:** Phase 1 optional for WorkSync chat/workspace sync; expanded Graph capabilities remain Phase 2
 **Owner:** Shared Platform + WorkSync
 
 ---
 
 ## Purpose
 
-Connects ONEVO users and WorkSync workspaces to Microsoft Teams through Microsoft Graph. Supports user account linking, Teams contact/member discovery, workspace-to-Team mapping, optional Team creation during workspace creation, existing Team sync, and two-way message sync between ONEVO Chat and Teams.
+Connects ONEVO users and WorkSync workspaces to Microsoft Teams through Microsoft Graph. Phase 1 covers user account linking, workspace/channel mapping, and two-way message sync between ONEVO Chat and Teams. Expanded contact/member discovery, advanced edit/delete/reaction parity, and private chat sync can be phased based on approved Graph scopes.
 
 This integration is not the same as Activity Monitoring meeting detection. Activity Monitoring detects that Teams was used on the device; this module reads and writes Teams data through Graph only after tenant/user consent.
 

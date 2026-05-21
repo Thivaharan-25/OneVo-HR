@@ -1,7 +1,7 @@
 # Chat AI Flow
 
 **Area:** WorkSync -> Chat  
-**Trigger:** User sends a chat message that contains an actionable intent  
+**Trigger:** User sends a ONEVO chat, IDE chat, or Microsoft Teams-synced message that contains a question or actionable intent
 **Required Permission(s):** `chat:read`, `chat:write`  
 **Related Permissions:** Feature flag `premium_ai`
 
@@ -10,8 +10,9 @@
 ## Preconditions
 
 - Tenant has WorkSync Chat enabled -> [[Userflow/Chat/chat-overview|Chat Overview]]
-- Tenant has `premium_ai` enabled
+- Tenant has Agentic Chat / `premium_ai` enabled
 - User has access to the workspace/channel
+- For Microsoft Teams messages, the Teams sender is mapped to a ONEVO user
 
 ## Flow Steps
 
@@ -20,9 +21,9 @@
 - **Backend:** Chat message is persisted normally before AI processing
 
 ### Step 2: AI Detects Intent
-- **Backend:** Chat AI checks tenant feature flag and processes the message
+- **Backend:** ONEVO Semantic Kernel assistant checks tenant feature flag, module entitlements, and user permissions before registering callable tools
 - **DB:** `premium_ai_detections`
-- **Examples:** create task, set reminder, schedule meeting
+- **Examples:** answer HR/work status questions, create task, set reminder, schedule meeting
 
 ### Step 3: Pending AI Action Is Created
 - **Backend:** Creates `ai_action_jobs` with `status = pending`
@@ -48,10 +49,11 @@
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| Premium AI disabled | AI does not process message | Normal chat only |
+| Premium AI disabled | Assistant does not process message | Normal chat only |
 | Low confidence intent | No action job created | No automation prompt |
 | Undo window expired | Undo request rejected | "This action has already been applied" |
 | Entity creation fails | Job moves to failed | Failure notification with retry if supported |
+| Teams sender unmapped | Assistant tools are skipped | Imported discussion only |
 
 ## Events Triggered
 
@@ -64,6 +66,7 @@
 - [[Userflow/Chat/chat-overview|Chat Overview]]
 - [[Userflow/Work-Management/my-space-flow|My Space]]
 - [[Userflow/IDE-Extension/tag-engine-flow|Tag Engine Flow]]
+- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]]
 
 ## Module References
 

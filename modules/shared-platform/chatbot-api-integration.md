@@ -1,176 +1,256 @@
-﻿# Chatbot API Integration â€” Semantic Kernel
+# Semantic Kernel Assistant Integration
 
-**Module:** Shared Platform
-**Phase:** 1 (OAuth client registration + bridge key scoping)
-**Purpose:** Enable the WMS team's Semantic Kernel chatbot to call ONEVO APIs on behalf of authenticated users, with all existing RBAC permissions enforced automatically.
+**Module:** Shared Platform + WorkSync Chat AI
+**Phase:** 1
+**Purpose:** Build ONEVO's first-party Semantic Kernel assistant inside the ONEVO backend so HR Management, Workforce Intelligence, and WorkSync actions use the same tenant context, RBAC, module entitlements, audit trail, and undo workflow.
 
 > [!IMPORTANT]
-> **ONEVO does NOT build the chatbot.** The WMS team builds it using Microsoft Semantic Kernel. ONEVO's responsibility is to expose a secure, permission-checked API that the chatbot can call. Every action the chatbot requests goes through the same `[RequirePermission]` attribute as any other ONEVO client â€” if the user doesn't have access, the API returns 403 and the chatbot tells the user they lack permission.
+> ONEVO owns this assistant. It is not an external WMS chatbot and it must not bypass ONEVO application services. Semantic Kernel is the orchestration layer that chooses permission-checked ONEVO functions; the functions execute through existing CQRS handlers or application service interfaces.
 
 ---
 
 ## Architecture
 
-```
-User (talking to WMS chatbot)
-    â”‚
-    â–¼
-WMS Chatbot (Semantic Kernel)
-    â”‚  Uses ONEVO delegated server-side session/bridge token
-    -  ONEVO backend calls APIs with backend-held auth context
-    â–¼
-ONEVO REST API (/api/v1/*)
-    â”‚  [RequirePermission("leave:approve")] â€” user's own permissions checked
-    â”‚  Returns 403 if insufficient â†’ chatbot says "You don't have access for that"
-    â–¼
-Database (tenant-scoped, all existing RBAC rules apply)
+```text
+ONEVO Web Chat / IDE Chat / Microsoft Teams linked channel
+    -> Chat message saved in WorkSync Chat
+    -> MessageSentEvent or TeamsMessageImportedEvent
+    -> SemanticKernelChatOrchestrator
+    -> Kernel plugins expose ONEVO functions
+    -> Function permission/module filter runs before execution
+    -> Application service / CQRS handler executes
+    -> Query answer or ai_action_jobs pending action
+    -> Assistant message + SignalR update
+    -> Optional Microsoft Teams outbound sync
 ```
 
-No special chatbot endpoints. No bypasses. The chatbot is just another API consumer.
+The assistant is a backend capability. Browser JavaScript never receives provider keys, Semantic Kernel credentials, or user JWTs.
 
 ---
 
-## How User Authentication Works
+## Runtime Boundaries
 
-**Scenario: Chatbot embedded in ONEVO UI**
-
-The chatbot widget runs inside the ONEVO frontend. The user is already authenticated with ONEVO through the HttpOnly cookie-backed web session. Chatbot JavaScript must not read or forward a user JWT. Instead, the widget calls a ONEVO backend chatbot bridge with `credentials: "include"`; the backend validates the session and invokes the Semantic Kernel backend or ONEVO APIs using backend-held auth context.
-
-This keeps browser tokens hidden while still enforcing the user's ONEVO permissions.
-
-**Scenario: Standalone WMS app calls ONEVO on behalf of user**
-
-The user explicitly authorizes WMS to act on their behalf in ONEVO. This requires OAuth 2.0 Authorization Code + PKCE flow:
-
-1. WMS registers as an OAuth client in ONEVO (`POST /api/v1/oauth/clients` â€” Admin only)
-2. User clicks "Connect ONEVO" in WMS â†’ redirect to ONEVO OAuth authorize screen
-3. User reviews requested scopes and approves
-4. ONEVO issues a delegated access token (same JWT structure, contains user's permissions)
-5. WMS chatbot uses this token for all subsequent ONEVO API calls
-
-**Phase 1:** Backend chatbot bridge for the embedded scenario. **Phase 2:** Full OAuth 2.0 AS (standalone scenario â€” builds on top of the existing Auth module).
+| Boundary | Rule |
+|---|---|
+| Tenant context | Resolved from the authenticated web/IDE/Teams-mapped ONEVO user, never from AI text. |
+| Permissions | Every tool call checks the same effective permissions used by REST endpoints. |
+| Module entitlements | Tools are disabled when the tenant lacks the module or add-on. |
+| Data access | Kernel functions call application-layer services/CQRS handlers, not DbContext directly. |
+| Actions | Reversible creates/updates go through `ai_action_jobs` and the server-enforced undo window. |
+| Audit | Store assistant runs, tool calls, permission denials, and finalized actions with user and tenant context. |
+| PII | Do not send unnecessary HR, payroll, identity, or monitoring data to the model. Send only the minimal context required for the requested function. |
 
 ---
 
-## Permission Enforcement â€” How It Works
+## Entry Points
 
-All existing ONEVO API endpoints use `[RequirePermission("resource:action")]`. This attribute:
-1. Resolves the user identity from the cookie-backed session or delegated backend-held token
-2. Loads the user's effective permissions (role permissions + overrides)
-3. Checks if the required permission is present
-4. Returns `403 Forbidden` (RFC 7807 Problem Details) if not
+### ONEVO Web Chat
 
-The chatbot receives the 403 response. Semantic Kernel's function calling mechanism surfaces this as an error. The chatbot converts it to a user-facing message: **"You don't have permission to [action]. Contact your administrator if you need access."**
+```text
+POST /api/v1/channels/{channelId}/messages
+  -> save user message
+  -> publish MessageSentEvent
+  -> SemanticKernelChatOrchestrator handles the message when assistant is enabled
+  -> assistant answer or pending action appears in the same channel
+```
 
-No extra permission logic is needed â€” the existing RBAC system handles everything.
+### IDE Chat
 
-### Examples
+```text
+IDEHub chat message
+  -> save message into the linked ONEVO channel or IDE chat thread
+  -> use same orchestrator and same permission checks
+  -> IDE receives chat:message and ai:* events
+```
 
-| User asks chatbot | ONEVO API call | User has permission? | Result |
-|:-----------------|:---------------|:---------------------|:-------|
-| "Approve this leave request" | `POST /api/v1/workflows/{id}/approve` | `leave:approve` âœ“ | Approved |
-| "Create a calendar event" | `POST /api/v1/calendar/events` | `calendar:write` âœ— | "You don't have access to create calendar events" |
-| "Show me John's attendance" | `GET /api/v1/attendance/{employeeId}` | `attendance:read-team` âœ“ | Returns data |
-| "Run payroll" | `POST /api/v1/payroll/runs` | `payroll:run` âœ— | "You don't have permission to run payroll" |
+### Microsoft Teams Linked Channel
 
----
+```text
+Graph webhook/delta
+  -> TeamsMessageWebhookHandler
+  -> map Teams sender to ONEVO user
+  -> insert ONEVO message with external_source = "microsoft_teams"
+  -> invoke SemanticKernelChatOrchestrator if assistant is enabled for the channel
+  -> assistant reply can sync back to Teams when policy allows
+```
 
-## Semantic Kernel Integration Pattern
-
-The WMS team uses Semantic Kernel to define ONEVO API functions as SK Kernel Functions (plugins). Two approaches:
-
-**Option A: OpenAPI Plugin** (recommended â€” less maintenance)
-- ONEVO exposes its OpenAPI/Swagger spec at `/api/v1/swagger.json`
-- WMS loads it as an OpenApiKernelPlugin: `kernel.ImportPluginFromOpenApiAsync("ONEVO", new Uri("https://api.onevo.com/api/v1/swagger.json"), ...)`
-- SK automatically discovers all endpoints as callable functions
-- The backend-held auth context is applied by ONEVO server-side integration code
-
-**Option B: Custom Kernel Functions**
-- WMS team writes C# Kernel Functions that wrap specific ONEVO endpoints
-- More control, more maintenance
-
-ONEVO's existing Swagger/OpenAPI doc (`Swagger/OpenAPI 3.0`) is already generated â€” no changes needed for Option A.
+Teams messages are discussion by default. Official state changes still execute only through ONEVO application commands after user mapping and permission checks.
 
 ---
 
-## Security Requirements
+## Kernel Plugin Model
 
-### For ONEVO to implement
+Use typed in-process Kernel Functions for Phase 1. OpenAPI import is allowed later for internal reuse, but the first build should keep function boundaries explicit so permission filtering, module entitlement checks, and undo behavior are predictable.
 
-1. **OAuth client registration table** (Phase 2 if standalone scenario needed):
-   ```
-   oauth_clients
-   - id, tenant_id, client_name, client_id (public), client_secret_hash
-   - redirect_uris (text[])
-   - allowed_scopes (text[])
-   - is_active
-   ```
+### HR Plugin
 
-2. **Scope definitions** â€” map ONEVO permissions to OAuth scopes:
-   - `onevo.read` â†’ read-only permissions only
-   - `onevo.hr.leave` â†’ leave-related permissions
-   - `onevo.hr.approvals` â†’ approval permissions
-   - `onevo.workforce` â†’ workforce intelligence permissions
-   - `onevo.admin` â†’ admin-level permissions (requires explicit user consent)
+| Function | Required permission | Result |
+|---|---|---|
+| `GetEmployeeProfile` | `employees:read` or `employees:read-team` | Returns scoped employee summary. |
+| `GetLeaveBalance` | `leave:read` or own employee context | Returns leave balance. |
+| `CreateLeaveRequest` | `leave:write` | Creates leave request through Leave module. |
+| `ApproveLeaveRequest` | `leave:approve` | Approves through workflow API. |
+| `GetAttendanceStatus` | `attendance:read-team` or own context | Returns presence/activity summary. |
+| `ListExceptionAlerts` | `exceptions:view` | Returns visible exception alerts. |
 
-3. **Token binding** â€” delegated tokens must include `azp` (authorized party) claim identifying the WMS OAuth client, so ONEVO audit logs show "action performed by [user] via [WMS chatbot]"
+### WorkSync Plugin
 
-### For the WMS team to implement
+| Function | Required permission | Result |
+|---|---|---|
+| `CreateTask` | `tasks:write` | Creates pending `ai_action_jobs` before task creation. |
+| `UpdateTaskStatus` | `tasks:write` | Creates pending action or direct update depending on reversibility. |
+| `ListMyTasks` | `tasks:read` | Returns assigned tasks. |
+| `CreateReminder` | `chat:write` | Creates pending reminder action. |
+| `PostChatMessage` | `chat:write` | Posts assistant/system message. |
 
-1. Do not expose ONEVO user JWTs to browser JavaScript; embedded chatbot calls use the ONEVO HttpOnly session and backend bridge
-2. Session refresh handling - rely on ONEVO cookie session refresh for embedded web use
-3. Never log ONEVO API responses containing PII
-4. Handle 403 gracefully â€” surface to user as "no permission" message, not as an error
-5. Rate limit chatbot calls â€” respect ONEVO's `X-RateLimit-*` headers
+### Calendar Plugin
 
----
+| Function | Required permission | Result |
+|---|---|---|
+| `CreateCalendarEvent` | `calendar:write` | Creates pending calendar action when triggered from chat. |
+| `FindAvailability` | `calendar:read` | Returns availability summary. |
 
-## Chatbot-Accessible Features (Phase 1)
+### Exception Plugin
 
-Actions the chatbot can perform on behalf of a user (all subject to user's permissions):
-
-**Leave:**
-- View pending leave requests (manager: all team, employee: own)
-- Approve / reject leave request with note
-- Show conflict summary for a leave request (uses `conflict_snapshot_json`)
-- Check employee leave balance
-
-**Calendar:**
-- View calendar events for date range
-- Create calendar event (if `calendar:write` permission)
-
-**Employee:**
-- Look up employee profile (if `employees:read` or `employees:read-team`)
-- Check who is on leave today
-
-**Workforce:**
-- Check employee attendance status (if `attendance:read-team`)
-- View exception alerts (if `exceptions:view`)
-
-**Notifications:**
-- List unread notifications for the current user
+| Function | Required permission | Result |
+|---|---|---|
+| `GetActiveAlerts` | `exceptions:view` | Returns alert cards. |
+| `AcknowledgeAlert` | `exceptions:acknowledge` | Acknowledges through Exception Engine. |
+| `RequestCaptureForAlert` | `agent:command` | Creates remote capture command through Agent Gateway. |
 
 ---
 
-## API Endpoints for Chatbot OAuth (Phase 2)
+## Orchestration Payloads
 
-| Method | Route | Permission | Description |
-|:-------|:------|:-----------|:------------|
-| GET | `/api/v1/oauth/authorize` | Public | OAuth authorization screen |
-| POST | `/api/v1/oauth/token` | Public | Token exchange (code â†’ JWT) |
-| POST | `/api/v1/oauth/token/refresh` | Public | Refresh access token |
-| POST | `/api/v1/oauth/clients` | `settings:admin` | Register new OAuth client (WMS) |
-| GET | `/api/v1/oauth/clients` | `settings:admin` | List OAuth clients |
-| DELETE | `/api/v1/oauth/clients/{id}` | `settings:admin` | Revoke OAuth client |
+### Kernel Input Context
+
+```json
+{
+  "tenant_id": "tenant-uuid",
+  "user_id": "user-uuid",
+  "employee_id": "employee-uuid",
+  "source": "onevo_chat",
+  "channel_id": "channel-uuid",
+  "workspace_id": "workspace-uuid",
+  "message": {
+    "id": "msg-uuid",
+    "content": "Create a task to review payroll before Friday",
+    "created_at": "2026-05-20T10:30:00Z"
+  },
+  "permissions": ["chat:write", "tasks:write"],
+  "enabled_modules": ["work_management", "agentic_chat", "core_hr"],
+  "locale": "en-LK",
+  "timezone": "Asia/Colombo"
+}
+```
+
+### Tool Call Selected By Semantic Kernel
+
+```json
+{
+  "tool": "WorkSync.CreateTask",
+  "arguments": {
+    "workspace_id": "workspace-uuid",
+    "title": "Review payroll",
+    "due_date": "2026-05-22",
+    "source_message_id": "msg-uuid"
+  }
+}
+```
+
+### Permission Denial Result
+
+```json
+{
+  "status": "denied",
+  "reason": "missing_permission",
+  "missing_permission": "tasks:write",
+  "user_message": "You do not have permission to create tasks."
+}
+```
+
+### Pending Action Result
+
+```json
+{
+  "status": "pending_action",
+  "job_id": "job-uuid",
+  "action_type": "auto_create_task",
+  "action_description": "Create task: Review payroll",
+  "undo_expires_at": "2026-05-20T10:30:10Z"
+}
+```
+
+---
+
+## Data Processing Flow
+
+1. Save the original user/Teams/IDE message before AI processing.
+2. Build `KernelInputContext` from trusted server-side context.
+3. Register only the tools allowed by the user's permissions and tenant modules.
+4. Invoke Semantic Kernel with a system instruction that requires tool use for product data/actions and forbids guessing.
+5. For read-only queries, execute the tool and write an assistant message with summarized results plus metadata.
+6. For reversible actions, create `ai_action_jobs` with `status = pending` and send `ai:action_pending`.
+7. If the user clicks Undo, mark the job `undone`.
+8. If the undo window expires, Hangfire finalizes the job by executing the stored `action_params`.
+9. Send `ai:action_finalized`.
+10. If the source channel is Teams-linked and policy allows assistant sync, send the assistant response to Microsoft Teams.
+
+---
+
+## User Experience
+
+| Outcome | UI behavior |
+|---|---|
+| Read-only answer | Assistant message in the chat thread with concise answer and source links when available. |
+| Low confidence | Assistant asks a clarification question; no action job is created. |
+| Permission denied | Assistant says the user lacks permission; no stack trace or raw 403 is shown. |
+| Pending action | Inline AI action card with countdown and Undo button. |
+| Finalized action | Chat shows created entity link, e.g. "Task created: Review payroll". |
+| Failed action | Chat shows failure card with retry only if the action is safe to retry. |
+| Teams-originated action | Prefer confirmation in ONEVO unless the tenant explicitly allows Teams-originated auto-actions. |
+
+---
+
+## Microsoft Teams Sync Rules
+
+The assistant runs on normalized ONEVO messages. Teams is an input/output channel, not a separate authority.
+
+| Direction | Rule |
+|---|---|
+| ONEVO -> Teams | Assistant replies and normal chat messages may sync when `channel_teams_links.status = active` and policy allows outbound sync. |
+| Teams -> ONEVO | Teams messages are imported, deduplicated by Graph message id, mapped to a ONEVO user, then processed by the same assistant flow. |
+| Workflow actions | Teams discussion does not change workflow state unless the message maps to a ONEVO user and the assistant executes a permission-checked ONEVO command. |
+| Audit | Store the source as `microsoft_teams` and the external message id on imported messages and tool runs. |
+
+---
+
+## Required Storage
+
+Use existing Chat AI tables for action state:
+
+- `premium_ai_detections`
+- `ai_action_jobs`
+- `chat_reminder_items`
+
+The Chat message schema must also support assistant/system messages and metadata. Minimum required fields are documented in [[database/schemas/wms-chat|WMS Chat Schema]].
+
+Implementation should add assistant-run audit storage if existing audit logs cannot answer:
+
+- who asked
+- what source channel/message triggered the run
+- which tool was selected
+- which permissions were checked
+- whether the tool executed, was denied, failed, or became a pending action
+- model/provider token usage if available
 
 ---
 
 ## Related
 
-- [[modules/auth/overview|Auth Module]] â€” JWT infrastructure this builds on
-- [[modules/shared-platform/overview|Shared Platform]] â€” Where OAuth client registration lives
-- [[backend/external-integrations|External Integrations]] â€” External first-party integration conventions (separate from chatbot API)
-- [[AI_CONTEXT/rules|Rules]] â€” `[RequirePermission]` convention
-
-
-
+- [[modules/work-management/chat/overview|Chat]]
+- [[modules/work-management/chat-ai/overview|Chat AI]]
+- [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync]]
+- [[database/schemas/wms-chat|WMS Chat Schema]]
+- [[current-focus/contracts/signalr-events|SignalR Events]]
+- [[AI_CONTEXT/rules|Rules]]
