@@ -494,6 +494,67 @@ Global ONEVO product module registry. One row per module. Managed by Module Cata
 
 ---
 
+### platform_permission_catalog (owned by: SharedPlatform)
+
+Master registry of all ONEVO tenant-facing permission codes. This is the authoritative list that the permission picker reads — it includes every permission that exists in the system, whether claimed by a module or unclaimed. Without this table, unclaimed permissions would have no home and the `/available` endpoint could only return already-claimed ones.
+
+This table is distinct from `dev_platform_permissions`, which lists developer platform admin permissions (e.g. `platform.tenants.read`). This table lists tenant-facing permissions (e.g. `leave:approve`, `core_hr:read`).
+
+| Column | Type | Notes |
+|---|---|---|
+| `code` | varchar(120) | PRIMARY KEY — e.g. `'leave:approve'`, `'core_hr:read'` |
+| `display_name` | varchar(150) | NOT NULL — human-readable label shown in permission picker |
+| `description` | text | Nullable — explains what granting this permission allows |
+| `is_high_risk` | boolean | NOT NULL, default false — flagged permissions shown with warning in role builders |
+| `created_at` | timestamptz | NOT NULL |
+
+**Index:** `btree(code)`
+
+**How `GET /admin/v1/modules/catalog/{moduleKey}/permissions/available` uses this table:**
+
+```sql
+SELECT
+  p.code,
+  p.display_name,
+  p.description,
+  p.is_high_risk,
+  m.module_key   AS owned_by_module_key,
+  m.name         AS owned_by_module_name
+FROM platform_permission_catalog p
+LEFT JOIN module_catalog m
+  ON m.permission_codes_json::jsonb @> to_jsonb(p.code)
+ORDER BY p.code;
+```
+
+The frontend uses `owned_by_module_key` to determine picker state:
+- `null` → unclaimed — checkbox enabled
+- equals current module key → already owned by this module — checked
+- any other value → owned by another module — checkbox disabled, tooltip shows `owned_by_module_name`
+
+**Seeding:** Permission codes are seeded alongside module seeds. New permission codes added by backend changes must have a corresponding `platform_permission_catalog` row before they can be assigned to a module.
+
+---
+
+### module_catalog_price_history (owned by: SharedPlatform)
+
+Immutable price change audit trail for the module catalog. One row written per `PATCH /admin/v1/modules/catalog/{moduleKey}/pricing` call. Never updated or deleted.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `module_key` | varchar(80) | FK → module_catalog(module_key), NOT NULL |
+| `changed_by_id` | uuid | FK → dev_platform_accounts(id), NOT NULL |
+| `changed_at` | timestamptz | NOT NULL |
+| `previous_price_brackets` | jsonb | NOT NULL — full bracket snapshot before the change |
+| `new_price_brackets` | jsonb | NOT NULL — full bracket snapshot after the change |
+| `reason` | text | Nullable — operator-provided reason for the change |
+
+**Indexes:** `btree(module_key, changed_at DESC)`
+
+**Notes:** Append-only. Tracks module base pricing changes only — `subscription_plan_price_history` separately tracks plan-level pricing snapshots.
+
+---
+
 ### tenant_module_entitlements (owned by: SharedPlatform)
 
 Runtime access source of truth. One row per module per tenant. This table — not the subscription snapshot — is what the ONEVO application checks to determine if a tenant may access a module.
@@ -880,6 +941,7 @@ Stores per-tenant OAuth tokens and connection state for Customer OAuth integrati
 | Cross-module additions | `tenant_provisioning_states`, `tenant_provisioning_validation_results` | 185 |
 | AI / Gateway / Integration | `ai_provider_configs`, `tenant_ai_provider_overrides`, `platform_oauth_apps`, `platform_service_keys`, `integration_catalog`, `module_integration_links`, `tenant_integration_credentials` | 192 |
 | Billing additions | `billing_audit_logs` | 193 |
+| Permission catalog | `platform_permission_catalog` | 194 |
 
 **Note:** `subscription_plans`, `subscription_plan_price_brackets`, `subscription_plan_price_history`, `tenant_subscriptions`, `tenant_module_entitlements`, `module_catalog`, `payment_gateway_configs`, `subscription_invoices`, `feature_flags`, `feature_access_grants`, `users` are existing SharedPlatform/Auth/Billing tables. Authoritative definitions in `database/schemas/shared-platform.sql` and `database/schemas/auth.sql`.
 

@@ -210,8 +210,6 @@ Tenant users access their own billing information. All routes require a valid te
 | `GET` | `/admin/v1/modules/catalog/{moduleKey}/integrations` | Integrations linked to this module | `platform.module_catalog.read` |
 | `POST` | `/admin/v1/modules/catalog/{moduleKey}/integrations` | Link an integration to this module | `platform.module_catalog.manage` |
 | `DELETE` | `/admin/v1/modules/catalog/{moduleKey}/integrations/{integrationKey}` | Unlink integration from module | `platform.module_catalog.manage` |
-| `GET` | `/admin/v1/tenants/{id}/modules/runtime-status` | All module runtime enable/disable statuses for a tenant | `platform.feature_flags.read` |
-| `PATCH` | `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status` | Toggle module runtime status — does not change billing | `platform.feature_flags.manage` |
 
 ---
 
@@ -240,6 +238,8 @@ Tenant users access their own billing information. All routes require a valid te
 | `GET` | `/admin/v1/tenants/{id}/feature-flags` | Effective flag values for a specific tenant | `platform.feature_flags.read` |
 | `PATCH` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Set per-tenant override | `platform.feature_flags.manage` |
 | `DELETE` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Remove per-tenant override | `platform.feature_flags.manage` |
+| `GET` | `/admin/v1/tenants/{id}/modules/runtime-status` | All module runtime enable/disable statuses for a tenant | `platform.feature_flags.read` |
+| `PATCH` | `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status` | Toggle module runtime status — does not change billing | `platform.feature_flags.manage` |
 
 ---
 

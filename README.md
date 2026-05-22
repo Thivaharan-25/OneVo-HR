@@ -20,7 +20,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 - **~288 database tables** across **38 modules**
 - **.NET 9 / C# 13 current** backend (Clean Architecture + CQRS, single deployable monolith); .NET 10 / C# 14 is a future migration target
 - **.NET MAUI + Windows Service** desktop monitoring agent (separate solution `ONEVO.Agent.sln`, independent release cycle)
-- **Vite + React 19** frontend - responsive SPA for all enabled pillars/modules
+- **Angular 21** frontend — two-app monorepo: `employee-app` (`app.{tenant}.onevo.com`) and `management-app` (`manage.{tenant}.onevo.com`), sharing a `shared` Angular library
 - **PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation** — single unified database, no bridge APIs, no external WMS backend
 - **8-week delivery plan** with 8 developers
 
@@ -58,7 +58,7 @@ ONEVO uses two sellable packages plus always-included Foundation modules. Each t
 onevo-hr-brain/
 ├── AI_CONTEXT/                  # AI context — read FIRST
 │   ├── project-context.md       # Three-pillar architecture, business logic
-│   ├── tech-stack.md            # .NET 9 current / .NET 10 target, PostgreSQL, Vite + React 19
+│   ├── tech-stack.md            # .NET 9 current / .NET 10 target, PostgreSQL, Angular 21 two-app monorepo
 │   ├── rules.md                 # AI agent rules (backend + frontend + agent)
 │   ├── known-issues.md          # Gotchas, monitoring data, agent auth
 │   └── changelog/               # Knowledge base update log (one file per change)
@@ -73,10 +73,10 @@ onevo-hr-brain/
 │   ├── module-boundaries.md     # Boundary rules and enforcement
 │   ├── shared-kernel.md         # Cross-cutting code (Result<T>, ITenantContext)
 │   └── messaging/               # Event catalog, exchange topology
-├── frontend/                    # Vite + React frontend architecture
-│   ├── architecture/            # React Router layout
-│   ├── data-layer/              # TanStack Query + Zustand
-│   └── design-system/           # UI tokens, components, typography
+├── frontend/                    # Angular 21 two-app monorepo architecture
+│   ├── architecture/            # Angular Router, app structure, lazy loading
+│   ├── data-layer/              # Angular Signals, resource(), SignalR
+│   └── design-system/           # Angular Material, UI tokens, components, typography
 ├── database/                    # PostgreSQL 16.13 baseline / PostgreSQL 18 target — single unified schema
 │   ├── schema-catalog.md        # Authoritative table list (~288 tables, 38 modules)
 │   ├── schemas/                 # Per-module schema files (HR + WorkSync + IDE)
@@ -99,7 +99,7 @@ onevo-hr-brain/
 | **What users do** | `Userflow/` | End-to-end flows by permission |
 | **What to build** | `modules/` | Feature specs, DB schema, APIs |
 | **How to build (backend)** | `backend/` | .NET architecture, patterns |
-| **How to build (frontend)** | `frontend/` | Vite + React structure, components |
+| **How to build (frontend)** | `frontend/` | Angular 21 two-app monorepo, components, patterns |
 | **Data layer** | `database/` | Schema catalog, migrations, performance |
 | **Code rules** | `code-standards/` | Naming, git, logging |
 | **Security** | `security/` | Auth, RBAC, compliance |

@@ -36,49 +36,72 @@
 
 ## 3. Frontend
 
+### Monorepo Structure
+
+Two customer-facing Angular apps share a single Angular workspace monorepo:
+
+| App | URL pattern | Persona |
+|:----|:------------|:--------|
+| `employee-app` | `app.{tenant}.onevo.com` | Employee self-service |
+| `management-app` | `manage.{tenant}.onevo.com` | HR / Admin / Manager / Executive |
+| `shared` (library) | — | Auth, API services, design system, models |
+
+Both apps share the same JWT session cookie (same parent domain), same backend `/api/v1/*`, and same SignalR hubs. A context-switcher in the header lets dual-role users (team leads, player-coaches) jump between apps without re-login.
+
+### Core Stack
+
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
-| Framework | Vite + React | Vite 8.x / React 19 | CSR SPA with React Router |
+| Framework | Angular | 21.x | Standalone components, signals-based reactivity |
 | Language | TypeScript | 5.x | Strict mode enabled |
-| Runtime | Node.js | 20 LTS | |
-| Package Manager | npm | Latest | Current `OneVo/` app scripts use npm-compatible Vite commands |
-| CSS Framework | Tailwind CSS | 3.x | Utility-first, CSS custom property tokens |
-| Component Library | shadcn/ui | Latest | Copy-paste Radix primitives, enterprise-grade |
-| Icons | Lucide React | Latest | Consistent icon set |
-| Charts | Recharts | Latest | Standard charts (line, bar, pie, area) |
-| Dashboard Blocks | Tremor | Latest | Pre-built KPI cards, sparklines |
-| Animation | Framer Motion | Latest | Page transitions, micro-interactions |
-| Theming | CSS Custom Properties | - | Light/dark mode, tenant branding |
-| Server State | TanStack Query | v5 | API data fetching, caching, mutations, optimistic updates |
-| Client State | Zustand | 4.x | Sidebar, filters, UI preferences, monitoring config cache |
-| URL State | React Router `useSearchParams` | v7 | Filters, pagination, search params in URL |
-| Forms | React Hook Form + Zod | Latest | Form state + validation (mirrors backend FluentValidation) |
-| Real-time | @microsoft/signalr | Latest | WebSocket connection to ONEVO backend |
-| SignalR channels | `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status` | - | Auto-reconnect with exponential backoff |
-| Testing | Vitest + RTL + Playwright + MSW | Latest | Unit, component, E2E, API mocking |
-| Linting | ESLint + Prettier | - | |
-| Bundle Analysis | rollup-plugin-visualizer / Vite analyzer | - | |
+| Runtime | Node.js | 22 LTS | |
+| Package Manager | npm | Latest | |
+| Build | Angular CLI (esbuild) | 21.x | `ng build`, `ng serve` |
+| CSS Framework | Tailwind CSS | 4.x | Utility-first; CSS custom property tokens for tenant branding |
+| Component Library | Angular Material | 21.x | Official Angular UI primitives; enterprise-grade |
+| Icons | Material Symbols | Latest | Google icon font, variable weight |
+| Charts | ng2-charts (Chart.js) | Latest | Line, bar, pie, doughnut, area |
+| Animation | Angular Animations | Built-in | `@angular/animations` — page transitions, micro-interactions |
+| Theming | CSS Custom Properties + Angular Material theming | — | Light/dark mode, per-tenant brand tokens |
+| Reactive State | Angular Signals | Built-in (21.x) | `signal()`, `computed()`, `effect()` — no NgRx |
+| URL State | Angular Router `ActivatedRoute` + `queryParams` | Built-in | Filters, pagination, search params |
+| HTTP | Angular `HttpClient` | Built-in | `resource()` + `toSignal()` for signal integration |
+| Forms | Angular Reactive Forms | Built-in | `FormBuilder`, `FormGroup`, `Validators` |
+| Form Validation | Zod | Latest | Schema validation mirrors backend FluentValidation |
+| Real-time | @microsoft/signalr | Latest | Wrapped in Angular services; auto-reconnect with exponential backoff |
+| SignalR channels | `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status` | — | Same hub as always |
+| Testing | Jest + Angular Testing Library + Playwright + MSW | Latest | Unit, component, E2E, API mocking |
+| Linting | ESLint + Prettier | — | Angular ESLint config |
+| i18n | Angular i18n | Built-in | `$localize` + locale files |
 
-### Key Frontend Dependencies
+### Key npm Dependencies
 
 ```json
 {
+  "@angular/core": "^21",
+  "@angular/material": "^21",
+  "@angular/router": "^21",
+  "@angular/forms": "^21",
+  "@angular/animations": "^21",
   "@microsoft/signalr": "latest",
-  "@tanstack/react-query": "^5",
-  "@radix-ui/react-*": "latest",
-  "zustand": "^4",
-  "react-hook-form": "latest",
+  "ng2-charts": "latest",
+  "chart.js": "latest",
+  "tailwindcss": "^4",
   "zod": "latest",
-  "recharts": "latest",
-  "@tremor/react": "latest",
-  "lucide-react": "latest",
-  "framer-motion": "latest",
-  "date-fns": "latest",
-  "class-variance-authority": "latest",
-  "clsx": "latest",
-  "tailwind-merge": "latest"
+  "date-fns": "latest"
 }
 ```
+
+### Angular Conventions (v21 Standalone)
+
+- **No NgModules** — every component, pipe, and directive is standalone (`standalone: true`)
+- **Dependency injection** — use `inject()` function, not constructor injection
+- **Reactive state** — `signal()` / `computed()` / `effect()` replace component state; no RxJS `BehaviorSubject` for UI state
+- **New control flow** — use `@if`, `@for`, `@switch` (not `*ngIf`, `*ngFor`)
+- **Typed routes** — Angular Router typed route params
+- **HTTP with signals** — `toSignal(this.http.get(...))` or `resource()` for async data
+- **Guards** — functional guards (`CanActivateFn`), not class-based
+- **Interceptors** — functional interceptors (`HttpInterceptorFn`)
 
 ---
 
@@ -267,6 +290,7 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | Groq | LLM routing deferred |
 | Flutter | Mobile app deferred |
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
+| NgRx | Angular Signals cover all state management needs in Phase 1 |
 | Teams chat/group sync | Requires tenant Graph consent, user account linking, webhook/delta sync, and communication-data compliance review. Phase 1 optional integration. |
 | macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` — a parallel implementation. Phase 2. |
 | Browser Extension | Optional browser domain tracking via Chrome/Edge/Firefox extension. Phase 2. |

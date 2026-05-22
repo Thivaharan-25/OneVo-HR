@@ -36,10 +36,11 @@
   - Currently assigned permissions pre-checked
   - Search bar to filter permissions
   - "Select All" / "Deselect All" per category
+  - For employee-data permissions (e.g. `leave:read`, `attendance:read`, `employees:read`): an **access policy picker** appears inline next to the checkbox — dropdown with options: `self`, `direct_reports`, `reporting_tree`, `department`, `department_tree`, `org_unit_tree`, `organization`. Defaults to `self` if not explicitly set.
   - Change summary panel: "Adding 3, Removing 1"
 - **API:** N/A (client-side selection)
 - **Backend:** N/A
-- **Validation:** At least one explicitly grantable permission must remain. Universal permissions cannot be added, removed, selected, or submitted.
+- **Validation:** At least one explicitly grantable permission must remain. Universal permissions cannot be added, removed, selected, or submitted. Access policy defaults to `self` for employee-data permissions if not explicitly chosen.
 - **DB:** None
 
 #### Step A3: Save Permission Changes
@@ -80,8 +81,8 @@
 #### Step B2: Add or Remove Permission Overrides
 - **UI:** Permission override panel shows three columns:
   1. **Universal:** Auto-granted permissions inherited by every active employee (read-only, no checkboxes)
-  2. **From Role:** Explicit permissions inherited from the assigned role (read-only, grayed out checkboxes)
-  3. **Added Overrides:** Extra explicit permissions granted to this specific employee (green highlight)
+  2. **From Role:** Explicit permissions inherited from the assigned role; for employee-data permissions, the role's access policy is shown as a badge (e.g. `reporting_tree`). Read-only checkboxes, but access policy can be overridden individually — click the policy badge to reveal a dropdown and select a different policy for this employee only.
+  3. **Added Overrides:** Extra explicit permissions granted to this specific employee (green highlight); access policy picker shown for employee-data permissions
   4. **Removed Overrides:** Explicit role permissions revoked for this specific employee (red strikethrough)
   
   To add an override: click "+" next to any unassigned permission â†’ moves to "Added Overrides"
@@ -223,11 +224,22 @@ The system resolves effective permissions in this order:
 6. **Remove:** Explicit permissions in active `user_permission_overrides` with type `revoke` (cannot remove module auto-grants)
 7. **Filter:** Remove any permission whose module is not enabled for the tenant
 8. **Derived:** `inbox:read` added if effective set contains any inbox-triggering permission; `notifications:read` added if effective set contains any notification-triggering permission
-9. **Result:** `Module auto-grants + enabled-module role permissions + active grants - active revokes + derived = Effective Permissions`
+8a. **Access Policy Resolution:** For each employee-data permission in the effective set, resolve its assigned access policy from `role_permissions.access_policy` (role default) or `user_permission_overrides.access_policy` (per-employee override; takes precedence). Permissions with no assigned policy default to `self`. The result is a `(permission, policy)` capability pair set.
+9. **Result:** `Module auto-grants + enabled-module role permissions + active grants - active revokes + derived = Effective Permission Set`. Access policy pairs are included in the `/api/v1/me/app-context` response as `capabilities`.
 
 For customer web sessions, this effective permission set is stored in backend-held auth state and returned to the frontend as permission metadata. Browser JavaScript does not receive or decode the tenant JWT.
 
 `*` must not be treated as a global tenant-user bypass. If a wildcard exists in implementation, tenant sessions must interpret it as "all permissions from enabled tenant modules." Platform-wide bypass belongs only to Developer Platform / operator routes.
+
+### App Context Endpoint
+
+`GET /api/v1/me/app-context` is called on session start and after any permission refresh signal. It returns:
+
+- `modules` — active modules for this tenant
+- `capabilities` — effective `(permission, policy)` pairs for this employee
+- `navigation` — the list of nav items the user is allowed to see, computed by the backend from capabilities
+
+Angular renders `navigation` exactly as returned. No navigation item is shown or hidden based on role name, title, or any frontend inference. See [[Userflow/Auth-Access/access-policy|Access Policy Reference]] for the full response shape and navigation resolution rules.
 
 ## Variations
 

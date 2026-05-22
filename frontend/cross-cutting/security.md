@@ -4,145 +4,179 @@
 
 | Threat | Risk in ONEVO | Mitigation |
 |:-------|:-------------|:-----------|
-| XSS | High - HR data, salary info | CSP, React auto-escaping, DOMPurify for rich content |
-| CSRF | Medium - cookie-authenticated writes | SameSite cookies, CSRF token on mutations |
-| Session theft | High - access to HR data | HttpOnly Secure cookies, rotation, short idle timeout |
-| Clickjacking | Medium | X-Frame-Options, CSP frame-ancestors |
-| Data exposure in client | High - sensitive employee data | Never cache sensitive data to localStorage, clear on logout |
-| Open redirect | Low | Whitelist redirect targets |
-| Dependency supply chain | Medium | Lock files, audit, Snyk/Dependabot |
+| XSS | High — HR data, salary info | CSP, Angular auto-escaping, `DomSanitizer` for rich content |
+| CSRF | Medium — cookie-authenticated writes | SameSite cookies + `X-CSRF-Token` header on mutations |
+| Session theft | High — access to HR data | HttpOnly Secure cookies, rotation, short idle timeout |
+| Clickjacking | Medium | `X-Frame-Options`, CSP `frame-ancestors` |
+| Data exposure in client | High — sensitive employee data | Never cache sensitive data to localStorage; clear on logout |
+| Open redirect | Low | Whitelist redirect targets after login |
+| Dependency supply chain | Medium | Lock files, `npm audit`, Dependabot/Snyk |
 
-## Security Layer (`src/lib/security/`)
+## Security Services (in `@onevo/shared`)
 
-| File | Responsibility |
-|------|---------------|
-| `csrf.ts` | Reads the CSRF nonce cookie and provides the `X-CSRF-Token` header value for mutations. |
-| `idle-timeout.ts` | Listens to user activity and logs out after configurable inactivity. |
-| `sanitizer.ts` | DOMPurify wrapper. All user-generated HTML must pass through `sanitize(html)` before rendering. |
-| `permission-guard.tsx` | `<ProtectedRoute permission="key">` checks permission metadata and redirects to `/403` if denied. |
+| Service / File | Responsibility |
+|:---|:---|
+| `auth.interceptor.ts` | Adds `withCredentials: true`; never attaches JWT in Authorization header for customer web |
+| `csrf.interceptor.ts` | Reads CSRF nonce cookie and adds `X-CSRF-Token` header to non-GET/HEAD requests |
+| `idle-timeout.service.ts` | Listens to user activity and calls `AuthService.logout()` after configurable inactivity |
+| `sanitizer.service.ts` | Angular `DomSanitizer` wrapper — all user-generated HTML must pass through it before rendering |
+| `auth.guard.ts` | Functional guard — redirects unauthenticated users to `/login` |
+| `permission.guard.ts` | Functional guard — redirects users lacking permission to `/403` |
 
 Do not add a browser `token-manager.ts` for customer web auth. Browser JavaScript must not receive or store tenant JWTs.
 
 ## Content Security Policy (CSP)
 
-Security headers are set in the dev server and production edge/CDN config.
+Security headers are set in the Angular dev proxy config and production edge/CDN config. They are **not** set in Angular code itself.
 
-```typescript
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+### Development (`proxy.conf.json` + Angular dev server headers)
 
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    headers: {
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-      'Content-Security-Policy': [
-        "default-src 'self'",
-        "script-src 'self'",
-        "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' blob: data: https://*.blob.core.windows.net",
-        "font-src 'self'",
-        `connect-src 'self' ${process.env.VITE_API_URL} wss://*.signalr.net`,
-        "frame-ancestors 'none'",
-        "base-uri 'self'",
-        "form-action 'self'",
-      ].join('; '),
-    },
-  },
-});
+```json
+{
+  "headers": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.blob.core.windows.net; font-src 'self'; connect-src 'self' https://api.onevo.com wss://*.signalr.net; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+  }
+}
 ```
+
+### Production
+
+CSP, `X-Frame-Options`, and security headers are set at the Azure CDN / nginx edge layer, not in the Angular build output.
 
 ## XSS Prevention
 
-React escapes JSX expressions by default. Never bypass this for untrusted content.
+Angular auto-escapes all template interpolations by default. Never bypass the sanitizer for untrusted content.
 
-```tsx
-// Safe
-<p>{employee.name}</p>
+```html
+<!-- ✅ Safe — Angular escapes automatically -->
+<p>{{ employee.name }}</p>
 
-// Unsafe unless sanitized first
-<div dangerouslySetInnerHTML={{ __html: userInput }} />
+<!-- ❌ Unsafe — bypasses Angular sanitizer -->
+<div [innerHTML]="userInput"></div>
 ```
 
-If rich HTML must be rendered:
+If rich user HTML must be rendered (documents, wiki pages):
 
-```tsx
-import DOMPurify from 'dompurify';
+```typescript
+// shared/src/lib/security/sanitizer.service.ts
+@Injectable({ providedIn: 'root' })
+export class SanitizerService {
+  private domSanitizer = inject(DomSanitizer);
 
-function SafeHTML({ html }: { html: string }) {
-  const clean = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a'],
-    ALLOWED_ATTR: ['href', 'target', 'rel'],
-  });
-
-  return <div dangerouslySetInnerHTML={{ __html: clean }} />;
+  sanitizeHtml(html: string): SafeHtml {
+    // DOMPurify first, then Angular's SafeHtml
+    const clean = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'h1', 'h2', 'h3'],
+      ALLOWED_ATTR: ['href', 'target', 'rel'],
+    });
+    return this.domSanitizer.bypassSecurityTrustHtml(clean);
+  }
 }
+```
+
+```html
+<!-- Usage in template -->
+<div [innerHTML]="sanitizer.sanitizeHtml(document.content)"></div>
 ```
 
 ## CSRF Protection
 
-Because customer web auth uses cookies, state-changing requests must include a CSRF header.
+Customer web auth uses cookies, so state-changing requests must include a CSRF header:
 
-- Session cookie is `HttpOnly`, `Secure`, and `SameSite`.
-- CSRF nonce is sent in a separate readable cookie.
-- Mutations include `X-CSRF-Token`.
+- Session cookie: `HttpOnly`, `Secure`, `SameSite=Strict`
+- CSRF nonce: separate readable cookie (not HttpOnly)
+- All non-GET/HEAD requests include `X-CSRF-Token` header (added by `csrfInterceptor`)
 
-```tsx
-async fetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'X-Correlation-Id': crypto.randomUUID(),
-  };
+```typescript
+// shared/src/lib/api/interceptors/csrf.interceptor.ts
+export const csrfInterceptor: HttpInterceptorFn = (req, next) => {
+  const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+  if (safeMethods.includes(req.method)) return next(req);
 
-  if (options?.method && !['GET', 'HEAD'].includes(options.method)) {
-    headers['X-CSRF-Token'] = getCsrfToken();
-  }
+  const csrfToken = getCsrfTokenFromCookie();
+  return next(req.clone({ setHeaders: { 'X-CSRF-Token': csrfToken } }));
+};
 
-  return fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
-    credentials: 'include',
-  });
+function getCsrfTokenFromCookie(): string {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith('xsrf-token='))
+    ?.split('=')[1] ?? '';
 }
 ```
 
 ## Sensitive Data Handling
 
-```tsx
-// Never store sensitive data in localStorage/sessionStorage
+```typescript
+// ❌ Never store sensitive data in localStorage / sessionStorage
 localStorage.setItem('employees', JSON.stringify(employeeData));
 
-// Keep server data in TanStack Query memory cache only
-// Cache is cleared on logout and page refresh
+// ✅ Keep server data in resource() / HttpClient memory only
+// Data is released when the component is destroyed
+// AuthService.clear() + SignalRService.disconnect() on logout
 ```
 
-## Clear On Logout
+## Logout — Clean State
 
-```tsx
-function logout() {
-  useAuthStore.getState().clear();
-  queryClient.clear();
-  signalRConnection?.stop();
-  window.location.href = '/login';
+```typescript
+// shared/src/lib/auth/auth.service.ts
+logout(): Observable<void> {
+  return this.http.post<void>('/api/v1/auth/logout', {}).pipe(
+    finalize(() => {
+      this.clear();                          // Clear AuthService signals
+      inject(SignalRService).disconnect();   // Stop real-time connection
+      inject(Router).navigate(['/login']);   // Redirect
+    }),
+  );
 }
 ```
 
 ## Open Redirect Prevention
 
-```tsx
+```typescript
+// shared/src/lib/auth/auth.guard.ts
 function getSafeRedirect(redirect: string | null): string {
-  if (!redirect) return '/overview';
+  if (!redirect) return '/home';
+  // Only allow relative paths; reject protocol-relative URLs
   if (redirect.startsWith('/') && !redirect.startsWith('//')) return redirect;
-  return '/overview';
+  return '/home';
+}
+```
+
+## Idle Timeout
+
+```typescript
+// shared/src/lib/security/idle-timeout.service.ts
+@Injectable({ providedIn: 'root' })
+export class IdleTimeoutService implements OnDestroy {
+  private auth = inject(AuthService);
+  private readonly TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+  private timer: ReturnType<typeof setTimeout> | null = null;
+  private readonly events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+
+  start() {
+    this.reset();
+    this.events.forEach(e => window.addEventListener(e, () => this.reset(), { passive: true }));
+  }
+
+  private reset() {
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = setTimeout(() => firstValueFrom(this.auth.logout()), this.TIMEOUT_MS);
+  }
+
+  ngOnDestroy() {
+    if (this.timer) clearTimeout(this.timer);
+  }
 }
 ```
 
 ## Related
 
-- [[frontend/cross-cutting/authentication|Authentication]] - session handling
-- [[frontend/cross-cutting/authorization|Authorization]] - RBAC enforcement
-- [[frontend/data-layer/file-handling|File Handling]] - file upload security
-- [[backend/messaging/error-handling|Error Handling]] - auth error flows
+- [[frontend/cross-cutting/authentication|Authentication]] — session handling
+- [[frontend/cross-cutting/authorization|Authorization]] — RBAC enforcement
+- [[frontend/data-layer/api-integration|API Integration]] — HttpClient interceptors
+- [[frontend/architecture/routing|Routing]] — functional route guards

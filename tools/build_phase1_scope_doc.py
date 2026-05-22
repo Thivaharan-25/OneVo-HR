@@ -302,38 +302,83 @@ MODULES = [
 
 
 PERMISSIONS = [
-    "activity:read", "activity:read:self", "admin:access", "admin:agents", "admin:audit", "admin:compliance",
-    "admin:devices", "admin:read", "admin:roles", "admin:users", "admin:write", "agent:command",
-    "agent:manage", "agent:read", "agent:register", "agent:view-health", "agents:manage",
-    "alerts:manage", "analytics:export", "analytics:read", "analytics:view", "analytics:write",
-    "approvals:read", "attendance:approve", "attendance:read", "attendance:read-own", "attendance:read-team",
-    "attendance:write", "audit:read", "billing:manage", "billing:read", "branding:manage",
-    "bridges:read", "bridges:write", "calendar:read", "calendar:write", "chat:read", "chat:write",
-    "compliance:manage", "departments:read", "deployment:write", "devices:manage", "docs:read",
-    "documents:manage", "documents:read", "documents:write", "employee:create", "employees:bulk-update",
-    "employees:create", "employees:delete", "employees:read", "employees:read-own", "employees:read-team",
-    "employees:update", "employees:write", "exceptions:acknowledge", "exceptions:manage",
-    "exceptions:read", "exceptions:resolve", "exceptions:view", "expense:admin", "expense:approve",
-    "expense:create", "expense:manage", "expense:read", "goals:read", "goals:write",
-    "grievance:manage", "grievance:read", "grievance:write", "hr:read", "inbox:read",
-    "integrations:manage", "leave:approve", "leave:create", "leave:manage", "leave:none",
-    "leave:read", "leave:read-own", "leave:read-team", "leave:write", "monitoring:configure",
-    "monitoring:update-settings", "monitoring:view-settings", "notifications:configure",
-    "notifications:manage", "notifications:read", "org:manage", "org:read", "org:write",
-    "overtime:read", "payroll:approve", "payroll:manage", "payroll:read", "payroll:run",
-    "payroll:view", "payroll:view-salary", "payroll:write", "people:read", "performance:manage",
-    "performance:read", "performance:read-team", "performance:write", "planning:read",
-    "planning:write", "platform:admin", "project:create", "projects:read", "projects:write",
-    "reports:create", "reports:manage", "reports:read", "roles:manage", "roles:read",
-    "schedule:read", "settings:admin", "settings:alerts", "settings:billing", "settings:branding",
-    "settings:integrations", "settings:manage", "settings:notifications", "settings:read",
-    "settings:system", "settings:write", "skills:manage", "skills:read", "skills:validate",
-    "skills:write", "skills:write-team", "sprint:manage", "task:assign", "tasks:read",
-    "tasks:write", "teams:read", "time:read", "time:write", "users:manage", "users:read",
-    "verification:configure", "verification:read", "verification:review", "verification:view",
-    "wms:chat", "wms:okr", "wms:projects", "workforce:approve-overtime",
-    "workforce:correct-attendance", "workforce:dashboard", "workforce:manage",
-    "workforce:manage-biometric", "workforce:read", "workforce:view",
+    # Auto-grants (module-level, not assignable via roles)
+    "activity:read:self", "attendance:read-own", "attendance:write-own",
+    "calendar:read", "employees:read-own", "leave:read-own", "workforce:dashboard",
+    # Employees (scope via access_policy on role_permissions)
+    "employees:read", "employees:write", "employees:delete", "employees:import", "employees:export",
+    # Org structure
+    "org:read", "org:manage",
+    # Leave
+    "leave:read", "leave:create", "leave:approve", "leave:manage",
+    # Attendance
+    "attendance:read", "attendance:write", "attendance:approve",
+    # Payroll
+    "payroll:read", "payroll:write", "payroll:approve", "payroll:run",
+    # Performance (Phase 2)
+    "performance:read", "performance:write", "performance:manage",
+    # Skills
+    "skills:read", "skills:write", "skills:validate", "skills:manage",
+    # Expense (Phase 2)
+    "expense:read", "expense:create", "expense:approve", "expense:manage",
+    # Calendar
+    "calendar:write", "calendar:admin",
+    # Notifications
+    "notifications:manage",
+    # Settings
+    "settings:read", "settings:admin", "settings:billing", "settings:branding",
+    "settings:integrations", "settings:notifications", "settings:alerts",
+    "settings:system", "settings:device", "settings:device:configure",
+    # Users & Roles
+    "users:read", "users:manage",
+    "roles:read", "roles:create", "roles:update", "roles:delete", "roles:assign",
+    "permissions:manage",
+    # Billing
+    "billing:read", "billing:manage",
+    # Integrations
+    "integrations:read", "integrations:manage",
+    # Analytics
+    "analytics:read", "analytics:view", "analytics:export", "analytics:write",
+    # Monitoring
+    "monitoring:read", "monitoring:view-settings", "monitoring:configure",
+    "monitoring:alerts:read", "monitoring:alerts:resolve",
+    "monitoring:recommendations:read", "monitoring:recommendations:apply",
+    # Exceptions
+    "exceptions:manage",
+    # Verification
+    "verification:view", "verification:review", "verification:configure",
+    # Workforce Intelligence
+    "workforce:view", "workforce:manage",
+    # Agent Gateway
+    "agent:command", "agent:manage", "agent:register", "agent:view-health",
+    # Documents (Phase 2)
+    "documents:read", "documents:write", "documents:approve", "documents:manage", "documents:admin",
+    # Grievance (Phase 2)
+    "grievance:read", "grievance:write", "grievance:manage",
+    # Reports
+    "reports:read", "reports:create", "reports:export",
+    # Audit
+    "audit:read", "audit:export",
+    # Workflows
+    "workflows:read", "workflows:create", "workflows:update", "workflows:delete", "workflows:execute",
+    # Company connections & cross-company
+    "company-connections:read", "company-connections:manage",
+    "cross-company:employees:read", "cross-company:employees:transfer",
+    "cross-company:reports:view", "cross-company:workflows:manage",
+    # Chat
+    "chat:read", "chat:write", "chat:manage",
+    # Tasks
+    "tasks:read", "tasks:write", "tasks:approve", "tasks:delete",
+    # Time tracking
+    "time:read", "time:write", "time:approve",
+    # Projects
+    "projects:read", "projects:write", "projects:create",
+    # Work Management
+    "okr:read", "okr:write", "wiki:read", "wiki:write",
+    "sprints:read", "sprints:manage",
+    "workspaces:read", "workspaces:create", "workspaces:manage",
+    "resources:read", "resources:manage",
+    "roadmaps:read", "roadmaps:write",
 ]
 
 

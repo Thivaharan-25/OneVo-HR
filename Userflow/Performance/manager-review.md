@@ -2,7 +2,7 @@
 
 **Area:** Performance  
 **Trigger:** Manager opens team review during review cycle (reaction — triggered by cycle launch)
-**Required Permission(s):** `performance:read-team` + `performance:write`  
+**Required Permission(s):** `performance:read` + `performance:write`  
 **Related Permissions:** `workforce:view` (include productivity data)
 
 ---

@@ -96,7 +96,7 @@
 - **DB:** `sessions` (created), `refresh_tokens` or session rotation records (created), `user_roles`, `role_permissions`, `user_permission_overrides`
 ### Step 6: Redirect to Dashboard
 - **UI:** User redirected to `/dashboard`. Dashboard loads based on permissions:
-  - Widgets visible based on permission checks (e.g., "Team Leave" widget requires `leave:read-team`)
+  - Widgets visible based on permission checks (e.g., "Team Leave" widget requires `leave:read` with team/reporting access policy)
   - Navigation sidebar built from permitted modules
   - Quick actions based on write permissions
   - Pending approvals count (if user has any `*:approve` permissions)

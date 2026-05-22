@@ -9,7 +9,7 @@ The Application layer owns use cases. It contains commands, queries, handlers, v
 ## Feature Folder Structure
 
 ```text
-ONEVO.Application/Features/{Feature}/
+ONEVO.Application/Features/{Feature}/{SubFeature}/
 |-- Commands/
 |   `-- {UseCase}/
 |       |-- {UseCase}Command.cs
@@ -22,21 +22,34 @@ ONEVO.Application/Features/{Feature}/
 |-- DTOs/
 |   |-- Requests/
 |   `-- Responses/
-`-- Interfaces/
+|-- RepositoryInterfaces/
+|   `-- I{SubFeature}Repository.cs
+|-- ServiceInterfaces/
+|   `-- I{SubFeature}Service.cs
+|-- Mappings/                   # optional — manual entity→DTO mapping; only when non-trivial
+|   `-- {SubFeature}Mappings.cs
+|-- Helpers/                    # optional — SubFeature-scoped utility logic with no DI deps
+|   `-- {SubFeature}Helper.cs
+`-- EventHandlers/              # optional — only when a justified domain event exists
 ```
 
 Rules:
-
-- Command validators live beside the command they validate.
-- Do not create a feature-level `Validators/` folder.
-- Query validators are allowed only when the query accepts user input that needs validation.
-- Do not create `EventHandlers/` by default.
-- Add `EventHandlers/` only when a justified domain event exists.
+- SubFeature is the second level inside every Feature folder.
+- Validators stay inside Commands/{UseCase}/ beside the command they validate.
+- Do not create a feature-level Validators/ folder.
+- Do not create EventHandlers/ by default — only when a justified domain event exists.
+- Do not use Interfaces/, Repositories/, or Services/ as folder names.
+  Use RepositoryInterfaces/ and ServiceInterfaces/ exactly.
+- Do not use AutoMapper. All mapping is done via static manual methods in Mappings/.
+- Mappings/ is optional — only add it when entity→DTO projection is non-trivial.
+- Helpers/ is optional — only add it for pure utility logic that has no DI dependencies.
+  If the helper needs DI, make it a service (ServiceInterfaces/ + implementation).
+- Cross-feature helpers and LINQ extensions go in Common/Helpers/ and Common/Extensions/.
 
 Optional event handler shape:
 
 ```text
-ONEVO.Application/Features/{Feature}/EventHandlers/
+ONEVO.Application/Features/{Feature}/{SubFeature}/EventHandlers/
 `-- {EventName}Handler.cs
 ```
 
@@ -64,23 +77,19 @@ This is the ONEVO security default because repository boundaries centralize tena
 
 ## Interfaces
 
-All interfaces are defined in Application and implemented in Infrastructure.
+Common interfaces are in `Application/Common/RepositoryInterfaces/` and `Application/Common/ServiceInterfaces/`.
+Feature interfaces are in `Application/Features/{Feature}/{SubFeature}/RepositoryInterfaces/` and `ServiceInterfaces/`.
+All interfaces are implemented in Infrastructure. Application must not reference Infrastructure.
 
-| Interface | Purpose |
-|---|---|
-| Repository/reader interfaces | Persistence contracts for handlers and services |
-| `IRepository<T>` | Generic tenant-safe CRUD when present |
-| `IUnitOfWork` | `SaveChangesAsync` and optional post-save event dispatch |
-| `ICurrentUser` | UserId, TenantId, Permissions from JWT |
-| `ICacheService` | Get/Set/Remove cache abstraction |
-| `IEncryptionService` | AES-256 for PII |
-| `IEmailService` | Email delivery abstraction |
-| `IStorageService` | File upload/download/delete abstraction |
-| `IDateTimeProvider` | Testable time source |
-| `IBackgroundJobService` | Enqueue and schedule background work |
-| `INotificationDispatcher` | SignalR notification abstraction |
-| `ITokenService` | Token generation and validation |
-| `IPasswordHasher` | Hash and verify passwords |
+**Common RepositoryInterfaces:**
+- `IUnitOfWork` — `SaveChangesAsync` and optional post-save event dispatch
+
+**Common ServiceInterfaces:**
+- `ICurrentUser`, `ICacheService`, `IEncryptionService`, `IEmailService`, `IStorageService`, `IDateTimeProvider`, `IBackgroundJobService`, `INotificationDispatcher`, `IModuleCatalogService`, `IModuleEntitlementService`, `ITenantContext`, `IDefaultRoleSeeder`
+
+**Feature ServiceInterfaces (examples):**
+- Auth/Login: `ITokenService`, `IPasswordHasher`, `IAuthTokenIssuer`, `IGoogleIdTokenValidator`, `ITotpService`
+- Auth/Permission: `IPermissionResolver`, `IPermissionVersionService`, `ITenantPermissionCatalogService`
 
 ## DependencyInjection.cs
 

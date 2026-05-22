@@ -5,7 +5,7 @@
 - **Source of Truth:** Always prioritize information found within this repository. If there's a conflict, the most recently updated file in `AI_CONTEXT/` takes precedence.
 - **Contextual Awareness:** Before performing any task, read these files in order:
     1. [[AI_CONTEXT/project-context|Project Context]] — What ONEVO is
-    2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 9 current / .NET 10 target, PostgreSQL, Redis, Vite + React, etc.
+    2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 9 current / .NET 10 target, PostgreSQL, Redis, Angular 21 two-app monorepo, etc.
     3. [[current-focus/README|Current Focus]] — Current sprint/week priorities
     4. [[AI_CONTEXT/known-issues|Known Issues]] — Gotchas and deprecated patterns
     5. The specific module doc in `modules/` for the module you're working on
@@ -22,12 +22,20 @@
 ### Architecture
 
 - **Clean Architecture + CQRS:** The backend is organized into Domain, Application, Infrastructure, and API host projects.
-- **Feature structure:** Features live under layer folders such as `ONEVO.Application/Features/{FeatureName}` and `ONEVO.Domain/Features/{FeatureName}`.
+- **Feature structure:** Features are organized as `{Feature}/{SubFeature}` under each layer.
+  - Application: `ONEVO.Application/Features/{Feature}/{SubFeature}/` — contains Commands, Queries, DTOs, RepositoryInterfaces, ServiceInterfaces
+  - Domain: `ONEVO.Domain/Features/{Feature}/{SubFeature}/` — contains Entities, ValueObjects, Events (optional)
+  - Infrastructure repos: `ONEVO.Infrastructure/Persistence/Repositories/{Feature}/{SubFeature}/`
+  - Infrastructure service implementations: `ONEVO.Infrastructure/Services/{Feature}/{SubFeature}/`
 - **Shared contracts:** Keep cross-cutting primitives in the appropriate layer; do not create separate module projects.
 - **Respect layer dependencies:** Domain has no external dependencies; Application depends on Domain; Infrastructure implements Application interfaces; API calls Application via MediatR.
 - **Use MediatR** for command/query dispatch.
 - **Use domain events only by exception** for justified post-save side effects. Clean Architecture and CQRS do not require events.
 - **Use repositories for persistence:** Command/query handlers, optional event handlers, application services, domain services, permission resolvers, tenant provisioning services, and module services must not inject EF Core, `ApplicationDbContext`, or `DbSet<T>`. Application must not expose an `IApplicationDbContext` abstraction. Database access belongs behind Application-owned repository/reader interfaces implemented in Infrastructure under `Persistence/Repositories/`. See [[backend/repository-persistence-boundary|Repository Persistence Boundary]].
+- **Repository interfaces:** `Application/Common/RepositoryInterfaces/` (common) or `Application/Features/{Feature}/{SubFeature}/RepositoryInterfaces/` (feature-specific). Do not use `Interfaces/`, `Repositories/`, or `Services/` as folder names for interfaces.
+- **Service interfaces:** `Application/Common/ServiceInterfaces/` (common) or `Application/Features/{Feature}/{SubFeature}/ServiceInterfaces/` (feature-specific). Do not use `Interfaces/`, `Repositories/`, or `Services/` as folder names for interfaces.
+- **DevPlatform naming:** `DevPlatform` is the Feature for all tenant management, subscription, provisioning, billing, and role template operations. Do not use `Tenancy` as a top-level Feature name. Tenancy is a SubFeature of DevPlatform.
+- **Infrastructure services:** Non-EF service implementations go in `Infrastructure/Services/{Feature}/{SubFeature}/`, not in a flat `Tenancy/` or generic folder.
 
 ### Naming Conventions
 
@@ -162,33 +170,39 @@ var sql = $"SELECT * FROM employees WHERE id = '{id}'"; // BAD
 
 ### RBAC Permissions — Full List
 
+Data scope for employee-record permissions (`employees:read`, `leave:read`, `attendance:read`, etc.) is controlled by the **access policy** configured on the role permission — not by separate `:read-team` codes. See [[Userflow/Auth-Access/access-policy|Access Policy Reference]].
+
 ```
 // HR Management
-employees:read, employees:write, employees:delete, employees:read-own, employees:read-team
+employees:read, employees:write, employees:delete, employees:read-own
 leave:read, leave:create, leave:approve, leave:manage, leave:read-own
-attendance:read, attendance:write, attendance:approve, attendance:read-own, attendance:read-team
+attendance:read, attendance:write, attendance:approve, attendance:read-own
 payroll:read, payroll:write, payroll:run, payroll:approve
-performance:read, performance:write, performance:manage, performance:read-team
+performance:read, performance:write, performance:manage
 skills:read, skills:write, skills:validate, skills:manage
 documents:read, documents:write, documents:manage
 grievance:read, grievance:write, grievance:manage
 expense:read, expense:create, expense:approve, expense:manage
-reports:read, reports:create, reports:create
+reports:read, reports:create, reports:export
 
 // Workforce Intelligence
 workforce:view, workforce:manage
-exceptions:view, exceptions:manage, exceptions:acknowledge
+monitoring:alerts:read, monitoring:alerts:resolve, exceptions:manage
 monitoring:configure, monitoring:view-settings
-agent:register, agent:manage, agent:view-health
-analytics:view, analytics:export
-verification:view, verification:configure
+agent:register, agent:manage, agent:view-health, agent:command
+analytics:view, analytics:export, analytics:read, analytics:write
+verification:view, verification:review, verification:configure
 
 // System
 notifications:read, notifications:manage
-settings:read, settings:admin
+settings:read, settings:admin, settings:alerts, settings:notifications, settings:system
+settings:billing, settings:branding, settings:integrations, settings:device, settings:device:configure
 billing:read, billing:manage
-roles:read, roles:manage
+roles:read, roles:create, roles:update, roles:delete, roles:assign, permissions:manage
 users:read, users:manage
+audit:read, audit:export
+org:read, org:manage
+workflows:read, workflows:create, workflows:update, workflows:delete, workflows:execute
 ```
 
 ---
@@ -271,7 +285,19 @@ The following modules are **Phase 2 deferred**. Workers MUST NOT build routes, p
 
 ---
 
-## 10. Frontend / Vite + React Rules
+## 10. Frontend / Angular 21 Rules
+
+ONEVO has two Angular apps in one workspace monorepo: `employee-app` (`app.{tenant}.onevo.com`) and `management-app` (`manage.{tenant}.onevo.com`), sharing a `shared` Angular library. See [[AI_CONTEXT/tech-stack|Tech Stack]] Section 3 for the full stack.
+
+### Angular 21 Mandatory Patterns
+
+- **Standalone components only** — every `@Component`, `@Directive`, `@Pipe` must have `standalone: true`. No NgModules.
+- **`inject()` for DI** — never constructor injection.
+- **New control flow** — `@if`, `@for`, `@switch` only. Never `*ngIf`, `*ngFor`, `*ngSwitch`.
+- **Signals for state** — `signal()`, `computed()`, `effect()`. Never `BehaviorSubject` or `Subject` for UI state.
+- **Functional guards** — `CanActivateFn`. Never class-based guards.
+- **Functional interceptors** — `HttpInterceptorFn`. Never class-based interceptors.
+- **Lazy loading** — `loadComponent` / `loadChildren` for all heavy feature routes.
 
 ### File & Component Conventions
 
@@ -279,145 +305,150 @@ The following modules are **Phase 2 deferred**. Workers MUST NOT build routes, p
 
 | Element | Convention | Example |
 |:--------|:-----------|:--------|
-| Files (components) | `kebab-case.tsx` | `employee-list.tsx`, `live-dashboard.tsx` |
-| Files (utilities) | `kebab-case.ts` | `use-employees.ts`, `format-date.ts` |
-| Components | `PascalCase` | `EmployeeList`, `LiveDashboard` |
-| Hooks | `useCamelCase` | `useEmployees`, `useSignalR` |
-| Stores (Zustand) | `useCamelCaseStore` | `useSidebarStore`, `useFilterStore` |
-| Types/Interfaces | `PascalCase` | `Employee`, `LeaveRequest`, `ActivitySnapshot` |
-| API query keys | `['resource', params]` | `['employees', { page: 1 }]` |
+| Component files | `kebab-case.component.ts` | `employee-list.component.ts` |
+| Service files | `kebab-case.service.ts` | `employee.service.ts` |
+| Guard files | `kebab-case.guard.ts` | `auth.guard.ts` |
+| Pipe files | `kebab-case.pipe.ts` | `format-date.pipe.ts` |
+| Signal store files | `kebab-case.store.ts` | `sidebar.store.ts` |
+| Component classes | `PascalCaseComponent` | `EmployeeListComponent` |
+| Services | `PascalCaseService` | `EmployeeService` |
+| Types/Interfaces | `PascalCase` | `Employee`, `LeaveRequest` |
 | Route segments | `kebab-case` | `/workforce/live`, `/hr/employees` |
 
-**Directory Structure:**
+**Directory Structure (per app):**
 
 ```
-src/
-├── main.tsx                # Entry point; mounts App into #root
-├── App.tsx                 # Provider stack + RouterProvider
-├── router.tsx              # React Router v7 route config
-├── pages/                  # Route page components
-├── components/
-│   ├── ui/                 # shadcn/ui primitives
-│   ├── shared/             # Shared composed components
-│   ├── hr/                 # Pillar 1 components
-│   ├── workforce/          # Pillar 2 components
-│   └── layout/             # NavRail, Topbar, Breadcrumbs
-├── hooks/                  # Custom React hooks
-├── lib/                    # Utilities, API client, constants
-│   ├── api/                # API client + endpoint definitions
-│   ├── signalr/            # SignalR connection manager
-│   └── utils/              # Formatting, validation helpers
-├── stores/                 # Zustand stores
-├── types/                  # TypeScript types mirroring backend DTOs
-└── styles/                 # Global CSS, Tailwind config
+projects/{app-name}/src/app/
+├── app.routes.ts           # Typed route definitions
+├── app.config.ts           # provideRouter, provideHttpClient, provideAnimations, etc.
+├── shell/
+│   ├── shell.component.ts  # Root shell (nav rail, topbar, router-outlet)
+│   ├── nav-rail/
+│   └── header/
+└── features/
+    ├── hr/                 # Pillar 1 feature components
+    ├── workforce/          # Pillar 2 feature components
+    └── worksync/           # Pillar 3 feature components (management-app only)
+
+projects/shared/src/lib/
+├── auth/                   # AuthService, auth.guard.ts, auth.interceptor.ts
+├── api/                    # Typed HttpClient services per domain
+├── realtime/               # SignalRService (shared hub management)
+├── ui/                     # Shared Angular Material + custom components
+├── models/                 # TypeScript interfaces/DTOs matching backend
+└── utils/                  # Date, formatting, validation helpers
 ```
 
 ### Component Patterns
 
-**SPA Components:**
-- **Default to interactive React components** - the app is CSR-only.
-- **Use React.lazy + Suspense** for heavy routes and widgets.
-- **Do not use Next.js-only APIs** such as `next/dynamic`, `next/image`, middleware, or `app/` file routing.
+**Standalone Component:**
 
-**Permission Gating:**
+```typescript
+@Component({
+  selector: 'app-employee-list',
+  standalone: true,
+  imports: [CommonModule, MatTableModule, HasPermissionDirective],
+  templateUrl: './employee-list.component.html',
+})
+export class EmployeeListComponent {
+  private employeeService = inject(EmployeeService);
 
-```tsx
-// Always gate features by permission
-<PermissionGate permission="workforce:view">
-  <WorkforceDashboard />
-</PermissionGate>
-
-// For conditional rendering within a component
-const { hasPermission } = useAuth();
-if (!hasPermission('exceptions:manage')) return null;
-```
-
-**Data Fetching (TanStack Query):**
-
-```tsx
-// Standard pattern for data fetching
-export function useEmployees(filters: EmployeeFilters) {
-  return useQuery({
-    queryKey: ['employees', filters],
-    queryFn: () => api.employees.list(filters),
-    staleTime: 30_000, // 30 seconds
-  });
-}
-
-// Mutation with optimistic update
-export function useApproveLeave() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => api.leave.approve(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
-    },
-  });
+  employees = toSignal(this.employeeService.getAll(), { initialValue: [] });
 }
 ```
 
-**Form Pattern:**
+**Permission Gating (template):**
 
-```tsx
-const schema = z.object({
-  firstName: z.string().min(1).max(100),
-  email: z.string().email(),
+```html
+<!-- Structural directive from shared lib -->
+<div *hasPermission="'workforce:view'">
+  <app-workforce-dashboard />
+</div>
+
+<!-- New control flow + permission signal -->
+@if (authService.hasPermission('exceptions:manage')) {
+  <app-exception-panel />
+}
+```
+
+**HTTP + Signals Data Fetching:**
+
+```typescript
+// Preferred: resource() for async data with signals
+employeesResource = resource({
+  request: () => this.filters(),
+  loader: ({ request }) => firstValueFrom(this.employeeService.list(request)),
 });
 
-type FormData = z.infer<typeof schema>;
+// Alternative: toSignal for simple observables
+employees = toSignal(this.employeeService.getAll(), { initialValue: [] });
+```
 
-export function CreateEmployeeForm() {
-  const form = useForm<FormData>({ resolver: zodResolver(schema) });
-  const mutation = useCreateEmployee();
-  
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(data => mutation.mutate(data))}>
-        {/* fields */}
-      </form>
-    </Form>
-  );
+**Reactive Form Pattern:**
+
+```typescript
+export class CreateEmployeeComponent {
+  private fb = inject(FormBuilder);
+  private employeeService = inject(EmployeeService);
+
+  form = this.fb.group({
+    firstName: ['', [Validators.required, Validators.maxLength(100)]],
+    email: ['', [Validators.required, Validators.email]],
+  });
+
+  // Zod schema for additional cross-field validation
+  private schema = z.object({
+    firstName: z.string().min(1).max(100),
+    email: z.string().email(),
+  });
+
+  submit() {
+    const result = this.schema.safeParse(this.form.value);
+    if (result.success) {
+      this.employeeService.create(result.data).subscribe();
+    }
+  }
 }
 ```
 
 ### Frontend API Integration Rules
 
-- **All API calls go through the typed API client** — never raw `fetch()`
-- **Use TanStack Query for ALL data fetching** — no `useEffect` + `useState` for API calls
+- **All API calls go through typed Angular services in `shared/api/`** — never raw `HttpClient` in components
+- **Use `resource()` or `toSignal()` for data fetching** — no manual subscribe/unsubscribe in components
 - **Handle loading, error, empty states** for every data-fetching component
-- **Pagination via React Router `useSearchParams`** — page/cursor in URL params
-- **Error display:** RFC 7807 Problem Details → user-friendly error toast
+- **Pagination via `ActivatedRoute.queryParams`** — page/cursor in URL params
+- **Error display:** RFC 7807 Problem Details → Angular Material snackbar/toast
 
 ### Frontend Real-time Rules
 
-- **SignalR for:** workforce-live, exception-alerts, notifications, agent-status
-- **Polling fallback:** 30s polling if SignalR connection fails
+- **SignalR for:** `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status`
+- **`SignalRService` in shared lib** — one connection shared across both apps via service injection
+- **Polling fallback:** 30 s polling if SignalR connection fails
 - **Reconnection:** Auto-reconnect with exponential backoff (1s, 2s, 4s, 8s, max 30s)
 - **Stale data indicator:** Show "Last updated X seconds ago" on live dashboards
 
 ### Frontend Styling Rules
 
 - **Tailwind utilities first** — avoid custom CSS unless absolutely necessary
-- **shadcn/ui for all base components** — don't build custom buttons, dialogs, etc.
-- **CSS Custom Properties for theming** — light/dark mode, tenant brand colors
+- **Angular Material for all base components** — buttons, dialogs, tables, forms, snackbars
+- **CSS Custom Properties for theming** — light/dark mode, tenant brand color tokens
 - **Responsive:** Desktop-first, but all pages must be usable on tablet (≥768px)
-- **No inline styles** — use Tailwind classes or CSS modules
+- **No inline styles** — use Tailwind classes or component SCSS
 
 ### Frontend Testing Rules
 
-- **Vitest for hooks and utilities** — pure logic tests
-- **React Testing Library for components** — test behavior, not implementation
+- **Jest + Angular Testing Library for components** — test behavior, not implementation
 - **Playwright for critical E2E flows** — login, leave request, exception management
 - **MSW for API mocking** — realistic API responses in tests
 - **No snapshot tests** — they break on every UI change
 
 ### Frontend Security Rules
 
-- **Never expose tenant JWTs to customer web JavaScript** - browser auth uses HttpOnly cookie sessions; no localStorage, sessionStorage, or in-memory access-token manager for customer web auth.
-- **Sanitize all user-generated content** before rendering (XSS prevention)
-- **RBAC check on every route** — redirect to 403 if unauthorized
+- **Never expose tenant JWTs to customer web JavaScript** — browser auth uses HttpOnly cookie sessions; no localStorage, sessionStorage, or in-memory token access for customer web
+- **Sanitize all user-generated content** — Angular's `DomSanitizer` for dynamic HTML
+- **RBAC check on every route guard** — redirect to 403 if unauthorized
 - **No sensitive data in URL params** — employee IDs are OK, PII is not
-- **CSP headers** configured at the hosting/API edge; there is no Next.js middleware in this app.
+- **CSP headers** configured at the hosting/API edge
 
 ---
 

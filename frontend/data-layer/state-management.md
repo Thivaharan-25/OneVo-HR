@@ -4,149 +4,240 @@
 
 | Type | Technology | Examples |
 |:-----|:-----------|:--------|
-| Server State | TanStack Query v5 | Employees, leave requests, activity data |
-| Client State | Zustand | Sidebar open/closed, filter preferences, theme |
-| URL State | React Router `useSearchParams` | Page number, search query, date range, filters |
+| Server / async state | Angular `resource()` + `toSignal()` | Employees, leave requests, activity data |
+| Client / UI state | Angular Signals (`signal()`) | Sidebar open/closed, filter preferences, theme |
+| URL state | Angular Router `queryParams` | Page number, search query, date range, filters |
 
-> **Note:** `nuqs` is a Next.js-only library and must NOT be used here. This project runs on Vite + React Router v7. All URL state uses React Router's built-in `useSearchParams`.
+No NgRx, no RxJS `BehaviorSubject` for component or service state in Phase 1. Angular 21 Signals cover all reactive state needs.
 
 ---
 
-## TanStack Query Patterns
+## Server State — `resource()` and `toSignal()`
 
-### Query Key Convention
+### `resource()` for parameterised async data
 
-```typescript
-// [resource, ...params]
-['employees']                            // all employees
-['employees', { page: 1, dept: 'eng' }] // filtered list
-['employee', employeeId]                 // single employee
-['activity-summary', employeeId, date]  // activity data
-['exception-alerts', { status: 'new' }] // filtered alerts
-```
-
-### Stale Time by Data Type
-
-| Data Type | Stale Time | Rationale |
-|:----------|:-----------|:----------|
-| Static data (countries, departments) | 5 min | Rarely changes |
-| Employee list | 30s | Moderate change |
-| Leave requests | 30s | Active workflow |
-| Activity summaries | 60s | Aggregated data |
-| Live workforce status | 0 (SignalR) | Real-time |
-| Exception alerts | 0 (SignalR) | Real-time |
-
-### Standard Hook Pattern
+Use when the request depends on a reactive signal (filters, pagination, IDs):
 
 ```typescript
-// hooks/hr/use-employees.ts
-export function useEmployees(filters: EmployeeFilters) {
-  return useQuery({
-    queryKey: ['employees', filters],
-    queryFn: () => api.employees.list(filters),
-    staleTime: 30_000,
-    placeholderData: keepPreviousData, // smooth pagination
+// employee-list.component.ts
+export class EmployeeListComponent {
+  private employeeService = inject(EmployeeService);
+
+  filters = signal<EmployeeFilters>({ page: 0, pageSize: 25, search: '' });
+
+  employeesResource = resource({
+    request: () => this.filters(),
+    loader: ({ request }) => firstValueFrom(this.employeeService.list(request)),
   });
+
+  // Usage in template:
+  // employeesResource.value()   — current data (undefined while loading)
+  // employeesResource.isLoading() — boolean signal
+  // employeesResource.error()   — error signal
+  // employeesResource.reload()  — manual refresh
+}
+```
+
+### `toSignal()` for simple one-shot streams
+
+```typescript
+// When you don't need parameterised requests or manual reload
+departments = toSignal(this.orgService.getDepartments(), { initialValue: [] });
+```
+
+### Stale Time / Refresh Strategy
+
+| Data Type | Refresh Strategy | Rationale |
+|:----------|:----------------|:----------|
+| Static data (countries, departments) | `toSignal` — fetched once on init | Rarely changes |
+| Employee list | `resource()` — reload on filter change | Moderate change |
+| Leave requests | `resource()` — reload + SignalR invalidation | Active workflow |
+| Activity summaries | `resource()` — 60 s timer effect | Aggregated |
+| Live workforce status | SignalR push → `resource.reload()` | Real-time |
+| Exception alerts | SignalR push → `resource.reload()` | Real-time |
+
+### SignalR as a cache invalidation trigger
+
+```typescript
+// workforce-live.component.ts
+export class WorkforceLiveComponent implements OnInit {
+  private signalR = inject(SignalRService);
+
+  presenceResource = resource({
+    loader: () => firstValueFrom(this.workforceService.getLiveStatus()),
+  });
+
+  ngOnInit() {
+    this.signalR.on('workforce-live', 'PresenceChanged', () => {
+      this.presenceResource.reload();
+    });
+  }
 }
 ```
 
 ---
 
-## Zustand Stores
+## Client State — Angular Signals
 
-### Auth Store
+Use `signal()` for all ephemeral UI state. Keep signals in services when state is shared across components; keep them local to the component when they're not.
+
+### Auth Service (shared, from `@onevo/shared`)
 
 ```typescript
-// stores/use-auth-store.ts
-interface AuthStore {
-  user: User | null;
-  activeEntityId: string | null;
-  permissions: string[];
-  hasPermission: (permission: string) => boolean;
-  setUser: (user: User, entityId: string, permissions: string[]) => void;
-  clear: () => void;
+// shared/src/lib/auth/auth.service.ts
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private _user = signal<User | null>(null);
+  private _permissions = signal<string[]>([]);
+  private _activeModules = signal<string[]>([]);
+
+  user = this._user.asReadonly();
+  isAuthenticated = computed(() => this._user() !== null);
+
+  hasPermission(permission: string): Signal<boolean> {
+    return computed(() => this._permissions().includes(permission));
+  }
+
+  hasFeature(feature: string): Signal<boolean> {
+    return computed(() => this._activeModules().includes(feature));
+  }
+
+  setSession(user: User, permissions: string[], modules: string[]) {
+    this._user.set(user);
+    this._permissions.set(permissions);
+    this._activeModules.set(modules);
+  }
+
+  clear() {
+    this._user.set(null);
+    this._permissions.set([]);
+    this._activeModules.set([]);
+  }
 }
 ```
 
-### Sidebar Store
+### Sidebar State (per-app service)
 
 ```typescript
-// stores/use-sidebar-store.ts
-interface SidebarStore {
-  isExpanded: boolean;
-  activePillar: string | null;
-  toggle: () => void;
-  setActivePillar: (pillar: string | null) => void;
+// shell/sidebar.service.ts (in each app)
+@Injectable({ providedIn: 'root' })
+export class SidebarService {
+  isExpanded = signal(true);
+  activePillar = signal<string | null>(null);
+
+  toggle() { this.isExpanded.update(v => !v); }
 }
 ```
 
-### Filter Store
+### Filter State (component-level signal)
+
+Prefer keeping filter signals local to the component that owns them. Only lift to a service if two sibling components genuinely need to share them.
 
 ```typescript
-// stores/use-filter-store.ts — persisted to localStorage
-interface FilterStore {
-  workforce: {
-    department: string | null;
-    dateRange: [Date, Date];
-    status: string[];
-  };
-  setWorkforceFilters: (filters: Partial<WorkforceFilters>) => void;
-  resetFilters: () => void;
+// employee-list.component.ts
+filters = signal<EmployeeFilters>({ page: 0, pageSize: 25, search: '', deptId: null });
+
+setSearch(search: string) {
+  this.filters.update(f => ({ ...f, search, page: 0 }));
+}
+
+setDept(deptId: string | null) {
+  this.filters.update(f => ({ ...f, deptId, page: 0 }));
 }
 ```
 
-### Theme Store
+### Theme State (persisted to localStorage)
 
 ```typescript
-// stores/use-theme-store.ts — persisted to localStorage
-interface ThemeStore {
-  theme: 'light' | 'dark' | 'system';
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
+// shared/src/lib/ui/theme/theme.service.ts
+@Injectable({ providedIn: 'root' })
+export class ThemeService {
+  theme = signal<'light' | 'dark' | 'system'>(
+    (localStorage.getItem('theme') as 'light' | 'dark' | 'system') ?? 'system'
+  );
+
+  constructor() {
+    effect(() => {
+      localStorage.setItem('theme', this.theme());
+      document.documentElement.setAttribute('data-theme', this.resolvedTheme());
+    });
+  }
+
+  resolvedTheme = computed(() => {
+    const t = this.theme();
+    if (t !== 'system') return t;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
+  setTheme(theme: 'light' | 'dark' | 'system') { this.theme.set(theme); }
 }
 ```
 
 ---
 
-## URL State (React Router useSearchParams)
+## URL State — Angular Router `queryParams`
 
 Use for any state that should be bookmarkable or shareable: pagination, search, filters, date ranges.
 
 ```typescript
-import { useSearchParams } from 'react-router-dom';
+// employee-list.component.ts
+export class EmployeeListComponent {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-function EmployeesPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  // Read URL state as signals
+  private queryParams = toSignal(this.route.queryParamMap, { requireSync: true });
 
-  // Read
-  const page   = Number(searchParams.get('page') ?? '1');
-  const search = searchParams.get('q') ?? '';
-  const dept   = searchParams.get('dept') ?? '';
+  page   = computed(() => Number(this.queryParams().get('page') ?? '0'));
+  search = computed(() => this.queryParams().get('q') ?? '');
+  deptId = computed(() => this.queryParams().get('dept') ?? null);
 
-  // Write — always spread prev to preserve other params
-  const setPage = (p: number) =>
-    setSearchParams(prev => { prev.set('page', String(p)); return prev; });
+  // Drive resource from URL state
+  employeesResource = resource({
+    request: () => ({ page: this.page(), search: this.search(), deptId: this.deptId() }),
+    loader: ({ request }) => firstValueFrom(this.employeeService.list(request)),
+  });
 
-  const setSearch = (q: string) =>
-    setSearchParams(prev => { prev.set('q', q); prev.delete('page'); return prev; });
+  // Write URL state
+  setSearch(q: string) {
+    this.router.navigate([], {
+      queryParams: { q: q || null, page: null },
+      queryParamsHandling: 'merge',
+    });
+  }
 
-  const setDept = (d: string) =>
-    setSearchParams(prev => { prev.set('dept', d); prev.delete('page'); return prev; });
+  setPage(page: number) {
+    this.router.navigate([], {
+      queryParams: { page: page || null },
+      queryParamsHandling: 'merge',
+    });
+  }
 }
 ```
 
-**When to use URL state vs Zustand:**
+**When to use URL state vs signal:**
 
 | Scenario | Use |
 |---|---|
-| Filter that should survive page refresh or be shareable | `useSearchParams` |
-| UI-only state (sidebar open, modal open) | Zustand |
-| User preference persisted across sessions | Zustand (with `persist` middleware) |
+| Filter that should survive page refresh or be shareable | Router `queryParams` |
+| UI-only state (sidebar open, drawer open) | Component or service signal |
+| User preference persisted across sessions | Service signal + `localStorage` effect |
+
+---
+
+## Rules
+
+- **No `BehaviorSubject` for UI state** — use `signal()` instead
+- **No `async` pipe** for component state — use `resource()` or `toSignal()` and read synchronously
+- **No duplicating server state** in a local signal — derive from the `resource` value directly
+- **No NgRx** in Phase 1 — Angular Signals cover all needs
+- **`effect()` for side effects only** (localStorage sync, DOM, analytics) — never for data transformation; use `computed()` for that
 
 ---
 
 ## Related
 
 - [[frontend/architecture/app-structure|App Structure]] — frontend architecture
-- [[frontend/data-layer/api-integration|API Integration]] — API integration patterns
-- [[frontend/data-layer/real-time|Real-Time Architecture]] — real-time data via SignalR
-- [[frontend/coding-standards|Frontend Coding Standards]] — coding conventions
+- [[frontend/data-layer/api-integration|API Integration]] — Angular HttpClient services
+- [[frontend/data-layer/real-time|Real-Time Architecture]] — SignalR integration
+- [[frontend/coding-standards|Coding Standards]] — Angular conventions

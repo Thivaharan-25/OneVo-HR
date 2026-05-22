@@ -31,13 +31,14 @@ All user-facing labels use simple, everyday language. When writing userflows, us
 
 | Permission Pattern | Scope |
 |:-------------------|:------|
-| `*:read` | View data |
+| `*:read` | View data (scope determined by access policy on the role, not the permission code) |
 | `*:write` | Create/edit data |
 | `*:delete` | Remove data |
 | `*:manage` | Full control (CRUD + config) |
 | `*:approve` | Approval workflow |
-| `*:read-own` | View own data only |
-| `*:read-team` | View team data |
+| `*:read-own` | View own data only (auto-grant, not role-assigned) |
+
+> **Access policy note:** Data scope (own vs team vs department vs organization) is set via the access policy field on the role permission — not via separate permission codes like `:read-team`. See [[Userflow/Auth-Access/access-policy|Access Policy Reference]].
 
 See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ permission list.
 
@@ -202,7 +203,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Discrepancy-Engine/discrepancy-review\|Discrepancy Review]] | Review mismatches between active time, WorkSync logs, and calendar context | Documented | MUST |
 
-### Exception Engine — `exceptions:view/manage/acknowledge`
+### Exception Engine — `monitoring:alerts:read/resolve`, `exceptions:manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|

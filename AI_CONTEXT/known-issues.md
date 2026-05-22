@@ -83,7 +83,7 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 - **Customer web auth is BFF-style cookie auth:** Browser JavaScript must not receive, store, decode, or send tenant JWTs. Use HttpOnly Secure cookies with `credentials: "include"` and CSRF headers on mutations.
 
 
-- **Permission array can be large** (90+ permissions). Cache in Zustand store, don't re-fetch on every route change.
+- **Permission array can be large** (90+ permissions). Cache in `AuthService` signals, don't re-fetch on every route change.
 
 - **Device JWT is NOT for frontend:** That is for the desktop agent. Customer web frontend uses cookie-backed sessions; IDE extension auth is separate and uses secure extension storage.
 

@@ -28,7 +28,7 @@ When approved: `employee_skills.proficiency_level` is updated to `to_level` and 
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/employees/{employeeId}/skills` | `skills:read` | Skills profile |
 | POST | `/api/v1/employees/me/skills` | `skills:write` | Employee self-declares a skill |
-| POST | `/api/v1/employees/{employeeId}/skills` | `skills:write-team` | Manager directly adds skill to employee (status → `validated`) |
+| POST | `/api/v1/employees/{employeeId}/skills` | `skills:write` | Manager directly adds skill to employee (status → `validated`) |
 | PUT | `/api/v1/employees/{employeeId}/skills/{skillId}/validate` | `skills:validate` | Manager validates a pending employee declaration |
 | GET | `/api/v1/skills/validation-requests` | `skills:validate` | List pending requests for manager's team |
 | PUT | `/api/v1/skills/validation-requests/{id}` | `skills:validate` | Approve or reject employee upgrade request |

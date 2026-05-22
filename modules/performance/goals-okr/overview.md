@@ -21,7 +21,7 @@ Key columns: `employee_id`, `parent_goal_id` (self-referencing), `title`, `goal_
 | GET | `/api/v1/performance/goals` | `performance:read` | List goals |
 | POST | `/api/v1/performance/goals` | `performance:write` | Create goal |
 | PUT | `/api/v1/performance/goals/{id}` | `performance:write` | Update progress |
-| GET | `/api/v1/performance/goals/me` | `performance:read-team` | Own goals |
+| GET | `/api/v1/performance/goals/me` | `performance:read` | Own goals |
 
 ## Related
 

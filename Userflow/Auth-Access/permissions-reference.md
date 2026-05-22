@@ -44,13 +44,34 @@ Derived permissions never appear in the role creation browser or override picker
 
 ---
 
+## Access Policies
+
+A permission answers **what action** is allowed. An access policy answers **whose data** the action can reach. The two are configured independently — the same permission (`leave:read`) assigned with policy `direct_reports` (manager) or `organization` (HR) operates on a completely different data set without needing separate permission codes.
+
+Access policy applies only to permissions that operate on employee records. Tenant-wide permissions (`settings:*`, `analytics:*`, `payroll:run`, `org:*`) are not scoped by access policy.
+
+| Policy | Data Scope |
+|:--|:--|
+| `self` | Own employee record only (default when no policy is set) |
+| `direct_reports` | Employees whose `reports_to_id` = current employee (depth = 1 in closure table) |
+| `reporting_tree` | All employees anywhere below this user in the org tree (depth ≥ 1) |
+| `department` | All active employees in the same department |
+| `department_tree` | All active employees in the department's full org subtree |
+| `org_unit_tree` | All active employees under this user's org unit |
+| `organization` | All active employees in the tenant |
+
+Access policies are assigned per-permission when configuring a role (in the permission browser). They can be overridden per employee in the per-employee override panel. The backend resolves the policy at query time — the frontend never sends employee ID lists.
+
+See [[Userflow/Auth-Access/access-policy|Access Policy Reference]] for full details including the employee hierarchy closure table and the `/api/v1/me/app-context` endpoint.
+
+---
+
 ## Explicitly Grantable Permissions
 
 ### Employees
 | #   | Permission            | Description                 |
 | :-- | :-------------------- | :-------------------------- |
-| 1   | `employees:read`      | View all employees in scope |
-| 2   | `employees:read-team` | View direct reports only    |
+| 1   | `employees:read`      | View employees within access policy scope |
 | 3   | `employees:write`     | Create, update employees    |
 | 4   | `employees:delete`    | Delete employee records     |
 | 4a  | `employees:import`    | Import employee records in bulk |
@@ -65,8 +86,7 @@ Derived permissions never appear in the role creation browser or override picker
 ### Leave
 | # | Permission | Description |
 |:--|:-----------|:------------|
-| 7 | `leave:read` | View leave records for all employees in scope |
-| 8 | `leave:read-team` | View leave records for direct reports only |
+| 7 | `leave:read` | View leave records within access policy scope |
 | 9 | `leave:create` | Apply for leave on behalf of others |
 | 10 | `leave:approve` | Approve or reject leave requests |
 | 11 | `leave:manage` | Manage leave types, policies, balances |
@@ -74,8 +94,7 @@ Derived permissions never appear in the role creation browser or override picker
 ### Attendance
 | # | Permission | Description |
 |:--|:-----------|:------------|
-| 12 | `attendance:read` | View attendance records for all employees in scope |
-| 13 | `attendance:read-team` | View attendance records for direct reports only |
+| 12 | `attendance:read` | View attendance records within access policy scope |
 | 14 | `attendance:approve` | Approve overtime and attendance corrections |
 | 15 | `attendance:write` | Correct attendance records for employees in scope |
 
@@ -90,18 +109,16 @@ Derived permissions never appear in the role creation browser or override picker
 ### Performance
 | # | Permission | Description |
 |:--|:-----------|:------------|
-| 20 | `performance:read` | View performance records for all employees in scope |
-| 21 | `performance:read-team` | View performance records for direct reports only |
-| 22 | `performance:write` | Submit and edit performance reviews |
+| 20 | `performance:read` | View performance records within access policy scope |
+| 22 | `performance:write` | Submit and edit performance reviews within access policy scope |
 | 23 | `performance:manage` | Manage review cycles, templates, goals |
 
 ### Skills
 | # | Permission | Description |
 |:--|:-----------|:------------|
-| 24 | `skills:read` | View skills profiles across employees |
-| 25 | `skills:write` | Update own skills profile |
-| 26 | `skills:write-team` | Update skills for direct reports |
-| 27 | `skills:validate` | Validate or endorse skills for employees |
+| 24 | `skills:read` | View skills profiles within access policy scope |
+| 25 | `skills:write` | Create and update skills profiles within access policy scope |
+| 27 | `skills:validate` | Validate or endorse skills within access policy scope |
 | 28 | `skills:manage` | Manage skill library and categories |
 
 ### Expense
@@ -373,6 +390,11 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `workforce:dashboard` | Module auto-grant (workforce module) |
 | `workforce:manage-biometric` | Renamed to `settings:device:configure` |
 | `workforce:read` | Renamed to `workforce:view` |
+| `employees:read-team` | Access policy model — use `employees:read` with policy `direct_reports` |
+| `leave:read-team` | Access policy model — use `leave:read` with policy `direct_reports` |
+| `attendance:read-team` | Access policy model — use `attendance:read` with policy `direct_reports` |
+| `performance:read-team` | Access policy model — use `performance:read` with policy `direct_reports` |
+| `skills:write-team` | Access policy model — use `skills:write` with policy `direct_reports` |
 ---
 
 ## Validation Rules

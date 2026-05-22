@@ -1,212 +1,312 @@
-﻿# Frontend Coding Standards
+# Frontend Coding Standards
 
 ## Project Structure
 
-This project runs on **Vite + React 19 + React Router v7**. It is not a Next.js app. There is no `app/` directory with file-based routing â€” routes are defined in `src/router.tsx`.
+Two Angular 21 standalone-component apps in one Angular workspace monorepo. No NgModules, no SSR, no file-based routing. All routes defined in `app.routes.ts`. See [[frontend/architecture/app-structure|App Structure]] for the full workspace layout.
 
 ```
-src/
-â”œâ”€â”€ main.tsx                # Entry point â€” mounts App into #root
-â”œâ”€â”€ App.tsx                 # Provider stack + RouterProvider
-â”œâ”€â”€ router.tsx              # React Router v7 full route config (all routes defined here)
-â”‚
-â”œâ”€â”€ pages/                  # Page components â€” thin, import features, pass data down
-â”‚   â”œâ”€â”€ auth/               # AuthLayout + Login, ForgotPassword, ResetPassword, Mfa
-â”‚   â”œâ”€â”€ dashboard/          # DashboardLayout + all authenticated pages (mirrors route tree)
-â”‚   â””â”€â”€ errors/             # NotFoundPage, ErrorPage, ForbiddenPage
-â”‚
-â”œâ”€â”€ components/
-â”‚   â”œâ”€â”€ ui/                 # shadcn/ui primitives (auto-generated, never edit)
-â”‚   â”œâ”€â”€ shared/             # Cross-module: DataTable, PageHeader, StatusBadge, PermissionGate,
-â”‚   â”‚                       #   EmptyState, TableSkeleton, ErrorState, Avatar
-â”‚   â”œâ”€â”€ layout/             # Shell: NavRail, ExpansionPanel, Topbar, EntitySwitcher, Breadcrumb
-â”‚   â”œâ”€â”€ hr/                 # Core HR feature components
-â”‚   â”œâ”€â”€ leave/              # Leave management components
-â”‚   â”œâ”€â”€ workforce/          # Workforce Intelligence (presence, activity, identity verification)
-â”‚   â”œâ”€â”€ exceptions/         # Exception Engine components
-â”‚   â”œâ”€â”€ org/                # Org Structure components
-â”‚   â”œâ”€â”€ calendar/           # Calendar, schedule, attendance components
-â”‚   â”œâ”€â”€ admin/              # Admin panel components
-â”‚   â”œâ”€â”€ settings/           # Settings components
-â”‚   â”œâ”€â”€ wms/                # WMS components (projects, tasks, planner, goals, docs, time, chat)
-â”‚   â”œâ”€â”€ performance/        # Phase 2
-â”‚   â”œâ”€â”€ payroll/            # Phase 2
-â”‚   â”œâ”€â”€ grievance/          # Phase 2
-â”‚   â””â”€â”€ expense/            # Phase 2
-â”‚
-â”œâ”€â”€ hooks/
-â”‚   â”œâ”€â”€ hr/                 # use-employees, use-leave, use-org
-â”‚   â”œâ”€â”€ workforce/          # use-presence, use-activity, use-exceptions
-â”‚   â”œâ”€â”€ wms/                # use-projects, use-tasks, use-goals, use-docs, use-time, use-chat
-â”‚   â”œâ”€â”€ admin/              # use-agents, use-audit
-â”‚   â””â”€â”€ shared/             # use-debounce, use-permissions
-â”‚
-â”œâ”€â”€ lib/
-â”‚   â”œâ”€â”€ api/
-â”‚   â”‚   â”œâ”€â”€ client.ts       # ApiClient class â€” runs requests through interceptor pipeline
-â”‚   â”‚   â”œâ”€â”€ index.ts        # Composed api object (api.employees, api.wms.projects, etc.)
-â”‚   â”‚   â”œâ”€â”€ errors.ts       # ApiError, AuthError, ProblemDetails, PagedResult
-â”‚   â”‚   â””â”€â”€ interceptors/
-â”‚   â”‚       â”œâ”€â”€ session.interceptor.ts     # Cookie-backed session refresh
-â”‚   â”‚       â”œâ”€â”€ tenant.interceptor.ts      # Attach X-Entity-Id header
-â”‚   â”‚       â”œâ”€â”€ correlation.interceptor.ts # X-Correlation-Id per request
-â”‚   â”‚       â””â”€â”€ error.interceptor.ts       # 401/403/429/5xx global handling
-â”‚   â”œâ”€â”€ security/
-â”‚   â”‚   â”œâ”€â”€ csrf.ts            # CSRF header helper for cookie-authenticated mutations
-â”‚   â”‚   â”œâ”€â”€ idle-timeout.ts    # Auto logout after N minutes inactivity
-â”‚   â”‚   â”œâ”€â”€ sanitizer.ts       # DOMPurify wrapper â€” use before rendering any user HTML
-â”‚   â”‚   â””â”€â”€ permission-guard.tsx # Route-level guard (redirects, not just hides)
-â”‚   â”œâ”€â”€ signalr/
-â”‚   â”‚   â””â”€â”€ client.ts          # SignalR connection manager
-â”‚   â””â”€â”€ utils/
-â”‚       â”œâ”€â”€ cn.ts              # shadcn/ui class merger
-â”‚       â”œâ”€â”€ format-date.ts     # Date formatting helpers
-â”‚       â””â”€â”€ to-params.ts       # URLSearchParams builder for query strings
-â”‚
-â”œâ”€â”€ stores/                 # Zustand stores â€” one store per file, named use-*-store.ts
-â”‚   â”œâ”€â”€ use-auth-store.ts
-â”‚   â”œâ”€â”€ use-sidebar-store.ts
-â”‚   â”œâ”€â”€ use-filter-store.ts
-â”‚   â””â”€â”€ use-theme-store.ts
-â”‚
-â”œâ”€â”€ types/                  # TypeScript interfaces mirroring backend DTOs
-â”‚   â”œâ”€â”€ auth.ts
-â”‚   â”œâ”€â”€ core-hr.ts
-â”‚   â”œâ”€â”€ org.ts
-â”‚   â”œâ”€â”€ workforce.ts
-â”‚   â”œâ”€â”€ notifications.ts
-â”‚   â”œâ”€â”€ settings.ts
-â”‚   â”œâ”€â”€ admin.ts
-â”‚   â””â”€â”€ wms/
-â”‚       â”œâ”€â”€ projects.ts
-â”‚       â”œâ”€â”€ tasks.ts
-â”‚       â”œâ”€â”€ goals.ts
-â”‚       â””â”€â”€ chat.ts
-â”‚
-â””â”€â”€ styles/
-    â”œâ”€â”€ globals.css         # Tailwind directives + resets
-    â””â”€â”€ tokens.css          # CSS custom properties (color tokens, spacing, typography)
+projects/shared/src/lib/        ← shared library (auth, api, realtime, ui, models, utils)
+projects/employee-app/src/app/
+├── app.routes.ts               ← all employee-app routes
+├── app.config.ts               ← ApplicationConfig (providers)
+├── shell/                      ← nav rail + topbar
+└── features/                   ← feature components (standalone, lazy-loaded)
+
+projects/management-app/src/app/
+├── app.routes.ts               ← all management-app routes
+├── app.config.ts
+├── shell/
+└── features/
 ```
 
 ## File Organization Rules
 
-1. **Page files (`pages/`)** should be thin â€” import components, pass data down
-2. **Feature components** follow a three-tier promotion path:
-   - Route-exclusive â†’ colocated near the route page under `pages/.../components/`
-   - Module-shared (2+ pages in same module) â†’ promoted to `components/{module}/` (delete colocated copy)
-   - Cross-module â†’ promoted to `components/shared/` (delete module copy)
-3. **One component per file** (except small private helpers used only in that file)
-4. **One hook per file** in `hooks/{module}/` â€” named `use-{resource}.ts` (e.g., `hooks/hr/use-employees.ts`, `hooks/wms/use-projects.ts`)
-5. **One store per file** in `stores/` â€” named `use-{name}-store.ts`
-6. **Types** mirroring a backend DTO go in `types/{module}.ts`
-7. **Route-local types** (form schemas, column defs, local UI state) go in `_types.ts` colocated in the route folder â€” never API response shapes there
+1. **Feature components are standalone** — `standalone: true` on every `@Component`, `@Directive`, `@Pipe`
+2. **One component per file** (except small private helpers only used in that file)
+3. **Colocate first, promote when shared:**
+   - Used by only one route → colocated in `features/{domain}/{page}/`
+   - Used by 2+ pages in the same domain → promoted to `features/{domain}/components/` (delete colocated copy)
+   - Used across both apps → promoted to `shared/src/lib/ui/` (delete app-level copy — never keep both)
+4. **API services** live in `shared/src/lib/api/endpoints/` — one service per backend module
+5. **Models** mirroring backend DTOs live in `shared/src/lib/models/` — one file per module
 
-## Component Template
+## Naming Conventions
 
-```tsx`r`nimport { useState } from 'react';
-import { useEmployees } from '@/hooks/use-employees';
-import { DataTable } from '@/components/shared/data-table';
-import { PermissionGate } from '@/components/shared/permission-gate';
+| Element | Convention | Example |
+|:--------|:-----------|:--------|
+| Component files | `kebab-case.component.ts` | `employee-list.component.ts` |
+| Component template | `kebab-case.component.html` | `employee-list.component.html` |
+| Component styles | `kebab-case.component.scss` | `employee-list.component.scss` |
+| Service files | `kebab-case.service.ts` | `employee-api.service.ts` |
+| Guard files | `kebab-case.guard.ts` | `auth.guard.ts` |
+| Pipe files | `kebab-case.pipe.ts` | `format-date.pipe.ts` |
+| Store service files | `kebab-case.store.ts` | `sidebar.store.ts` |
+| Component classes | `PascalCaseComponent` | `EmployeeListComponent` |
+| Service classes | `PascalCaseService` | `EmployeeApiService` |
+| Guard functions | `camelCaseGuard` | `authGuard`, `permissionGuard` |
+| Pipe classes | `PascalCasePipe` | `FormatDatePipe` |
+| Types / interfaces | `PascalCase` | `Employee`, `LeaveRequest` |
+| Route segments | `kebab-case` | `/workforce/live`, `/hr/employees` |
 
-interface EmployeeListProps {
-  departmentId?: string;
+## Angular 21 Mandatory Patterns
+
+### Standalone Components Only
+
+```typescript
+@Component({
+  selector: 'app-employee-list',
+  standalone: true,                          // ← always
+  imports: [MatTableModule, RouterLink, HasPermissionDirective],
+  templateUrl: './employee-list.component.html',
+  styleUrl: './employee-list.component.scss',
+})
+export class EmployeeListComponent { }
+```
+
+### inject() — Never Constructor Injection
+
+```typescript
+// ✅ Correct
+export class EmployeeListComponent {
+  private employeeService = inject(EmployeeApiService);
+  private router = inject(Router);
 }
 
-export function EmployeeList({ departmentId }: EmployeeListProps) {
-  const [searchParams, setSearchParams] = useSearchParams();`r`n  const search = searchParams.get('search') ?? '';
-  const { data, isLoading, error } = useEmployees({ departmentId, search });
-
-  if (isLoading) return <TableSkeleton rows={10} />;
-  if (error) return <ErrorState message="Failed to load employees" retry />;
-  if (!data?.items.length) return <EmptyState title="No employees found" />;
-
-  return (
-    <DataTable
-      data={data.items}
-      columns={columns}
-      pagination={data.pagination}
-    />
-  );
+// ❌ Wrong
+export class EmployeeListComponent {
+  constructor(
+    private employeeService: EmployeeApiService,
+    private router: Router,
+  ) {}
 }
 ```
 
-## API Hook Template
+### New Control Flow — Never Legacy Structural Directives
 
-```tsx
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api/client';
-import type { Employee, EmployeeFilters } from '@/types/core-hr';
-
-export function useEmployees(filters: EmployeeFilters) {
-  return useQuery({
-    queryKey: ['employees', filters],
-    queryFn: () => api.employees.list(filters),
-    staleTime: 30_000,
-  });
+```html
+<!-- ✅ Correct -->
+@if (employeesResource.isLoading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+@for (employee of employees(); track employee.id) {
+  <app-employee-row [employee]="employee" />
+}
+@switch (status()) {
+  @case ('active') { <mat-chip color="primary">Active</mat-chip> }
+  @case ('inactive') { <mat-chip>Inactive</mat-chip> }
 }
 
-export function useCreateEmployee() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: CreateEmployeeInput) => api.employees.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-    },
+<!-- ❌ Wrong -->
+<mat-progress-bar *ngIf="loading" />
+<app-employee-row *ngFor="let e of employees" [employee]="e" />
+```
+
+### Signals — Never BehaviorSubject for State
+
+```typescript
+// ✅ Correct
+export class SidebarService {
+  isExpanded = signal(true);
+  toggle() { this.isExpanded.update(v => !v); }
+}
+
+// ❌ Wrong
+export class SidebarService {
+  isExpanded$ = new BehaviorSubject(true);
+  toggle() { this.isExpanded$.next(!this.isExpanded$.value); }
+}
+```
+
+### resource() for Async Data
+
+```typescript
+// ✅ Correct — resource() driven by a filter signal
+export class EmployeeListComponent {
+  private employeeService = inject(EmployeeApiService);
+
+  filters = signal<EmployeeFilters>({ page: 0, pageSize: 25 });
+
+  employeesResource = resource({
+    request: () => this.filters(),
+    loader: ({ request }) => firstValueFrom(this.employeeService.list(request)),
   });
+}
+```
+
+```html
+<!-- Template reads synchronously from signals -->
+@if (employeesResource.isLoading()) { <mat-progress-bar /> }
+@if (employeesResource.hasValue()) {
+  <mat-table [dataSource]="employeesResource.value()!.items" />
+}
+@if (employeesResource.error()) {
+  <app-error-state [error]="employeesResource.error()" />
+}
+```
+
+### Functional Guards — Never Class-Based
+
+```typescript
+// ✅ Correct — functional guard
+export const authGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  return auth.isAuthenticated() ? true : router.createUrlTree(['/login']);
+};
+
+// ❌ Wrong — class-based guard (Angular 21 deprecated)
+@Injectable()
+export class AuthGuard implements CanActivate {
+  canActivate() { ... }
+}
+```
+
+### Functional Interceptors — Never Class-Based
+
+```typescript
+// ✅ Correct
+export const correlationInterceptor: HttpInterceptorFn = (req, next) =>
+  next(req.clone({ setHeaders: { 'X-Correlation-Id': crypto.randomUUID() } }));
+
+// ❌ Wrong
+@Injectable()
+export class CorrelationInterceptor implements HttpInterceptor {
+  intercept(req, next) { ... }
+}
+```
+
+## Component Template
+
+```typescript
+// features/employees/employee-list.component.ts
+@Component({
+  selector: 'app-employee-list',
+  standalone: true,
+  imports: [
+    MatTableModule,
+    MatPaginatorModule,
+    MatButtonModule,
+    MatInputModule,
+    HasPermissionDirective,
+    RouterLink,
+    EmployeeRowComponent,
+  ],
+  templateUrl: './employee-list.component.html',
+})
+export class EmployeeListComponent {
+  private employeeService = inject(EmployeeApiService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  // URL state → signals
+  private queryParams = toSignal(this.route.queryParamMap, { requireSync: true });
+  search = computed(() => this.queryParams().get('q') ?? '');
+  page   = computed(() => Number(this.queryParams().get('page') ?? '0'));
+
+  // Async data driven by URL state
+  employeesResource = resource({
+    request: () => ({ search: this.search(), page: this.page() }),
+    loader: ({ request }) => firstValueFrom(this.employeeService.list(request)),
+  });
+
+  setSearch(q: string) {
+    this.router.navigate([], {
+      queryParams: { q: q || null, page: null },
+      queryParamsHandling: 'merge',
+    });
+  }
+}
+```
+
+## Service Template
+
+```typescript
+// shared/src/lib/api/endpoints/employees.service.ts
+@Injectable({ providedIn: 'root' })
+export class EmployeeApiService {
+  private http = inject(HttpClient);
+
+  list(filters: EmployeeFilters): Observable<PagedResult<Employee>> {
+    return this.http.get<PagedResult<Employee>>('/api/v1/employees', {
+      params: toHttpParams(filters as Record<string, unknown>),
+    });
+  }
+
+  get(id: string): Observable<Employee> {
+    return this.http.get<Employee>(`/api/v1/employees/${id}`);
+  }
+
+  create(data: CreateEmployeeDto): Observable<Employee> {
+    return this.http.post<Employee>('/api/v1/employees', data);
+  }
+
+  update(id: string, data: Partial<CreateEmployeeDto>): Observable<Employee> {
+    return this.http.patch<Employee>(`/api/v1/employees/${id}`, data);
+  }
 }
 ```
 
 ## Import Order
 
-```tsx
-// 1. React and routing
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+```typescript
+// 1. Angular core + platform
+import { Component, inject, signal, computed } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
-// 2. Third-party libraries
-import { useQuery } from '@tanstack/react-query';
+// 2. Angular Material
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+
+// 3. Third-party libraries
+import { firstValueFrom } from 'rxjs';
 import { z } from 'zod';
 
-// 3. Internal shared components
-import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/shared/data-table';
+// 4. Shared library imports
+import { HasPermissionDirective, EmployeeApiService } from '@onevo/shared';
 
-// 4. Feature components (same pillar)
-import { ActivityTimeline } from '@/components/workforce/activity-timeline';
+// 5. Same-app shared components
+import { DataTableComponent } from '../../shared/data-table/data-table.component';
 
-// 5. Hooks, stores, utils
-import { useEmployees } from '@/hooks/use-employees';
-import { formatDate } from '@/lib/utils/format-date';
+// 6. Local feature components
+import { EmployeeRowComponent } from './employee-row/employee-row.component';
 
-// 6. Types
-import type { Employee } from '@/types/core-hr';
+// 7. Types / models
+import type { Employee, EmployeeFilters } from '@onevo/shared';
 ```
 
 ## Error Handling
 
-- **API errors:** Handled globally by ApiClient error interceptor â†’ toast notification
-- **Component errors:** Use React Error Boundaries around feature sections
-- **Permission errors:** Redirect to 403 page via PermissionGate fallback
-- **Network errors:** Show retry button, not just error message
+- **HTTP errors:** handled globally by `errorInterceptor` → `MatSnackBar` toast
+- **Component errors:** use Angular's `ErrorHandler` + error state template block
+- **Permission errors:** functional guard redirects to `/403`; `*hasPermission` directive hides elements
+- **Network errors:** show retry button, not just error message
 
 ## Accessibility
 
 - All interactive elements must be keyboard accessible
 - Use semantic HTML (`<nav>`, `<main>`, `<aside>`, `<table>`)
-- Color is never the only indicator â€” use icons + text alongside color
-- shadcn/ui components handle most a11y patterns (focus traps, ARIA)
+- Angular Material components handle most a11y patterns (focus traps, ARIA roles)
+- Colour is never the only indicator — use icons + text alongside colour
 
 ## Performance
 
-- **Lazy load** heavy components (charts, kanban boards, org charts) with `React.lazy()` + `<Suspense>` â€” never `next/dynamic()` (that is a Next.js API)
-- **Paginate** all lists â€” never load unbounded data
-- **Debounce** search inputs (300ms)
-- **Prefetch** on hover for navigation links with TanStack Query or route-level lazy imports
-- **Image optimization** via responsive image markup or the project image component; do not use Next.js `Image`
+- **Lazy load** all heavy feature routes via `loadComponent` / `loadChildren` — never eager-import route components in `app.routes.ts`
+- **`@defer`** for heavy in-page components (org charts, kanban boards, activity heatmaps)
+- **Paginate** all lists — never load unbounded data
+- **Debounce** search inputs (300 ms) before updating filter signal
+- **`OnPush` change detection** on pure display components when rendering large lists
+
+```typescript
+// For high-frequency update components — use OnPush
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  // ...
+})
+```
 
 ## Related
 
-- [[frontend/architecture/app-structure|App Structure]]
-- [[frontend/design-system/components/component-catalog|Component Catalog]]
-- [[AI_CONTEXT/rules|Rules]]
-
+- [[frontend/architecture/app-structure|App Structure]] — workspace structure
+- [[frontend/design-system/components/component-catalog|Component Catalog]] — Angular Material + shared components
+- [[AI_CONTEXT/rules|Rules]] — Angular 21 mandatory patterns (authoritative)

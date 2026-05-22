@@ -1,87 +1,119 @@
-﻿# Feature Flags
+# Feature Flags
 
 ## Two Types of Flags
 
 | Type | Source | Purpose | Examples |
 |:-----|:-------|:--------|:---------|
-| **Tenant Feature** | Tenant subscription / config | Module-level gating by plan | `workforceIntelligence`, `payroll`, `advancedReporting` |
+| **Tenant Feature** | Tenant subscription / module entitlement | Module-level gating by plan | `workforceIntelligence`, `payroll`, `advancedReporting` |
 | **Release Flag** | Feature flag service (PostHog/LaunchDarkly) | Gradual rollout, A/B tests | `newEmployeeWizard`, `redesignedDashboard` |
 
 ## Tenant Features
 
-Tenant features come from the JWT and tenant config API. They gate entire product modules.
+Tenant features come from the backend session metadata (`activeModules`). They gate entire product modules. The `AuthService` in `@onevo/shared` exposes them as signals.
 
-```tsx
-// stores/use-feature-store.ts
-interface FeatureState {
-  features: Set<string>;
-  hasFeature: (feature: string) => boolean;
-  setFeatures: (features: string[]) => void;
-}
-
-// Loaded from backend session metadata on login
-const tenantFeatures = decodedToken.features; // ['workforceIntelligence', 'payroll', 'advancedReporting']
+```typescript
+// AuthService.hasFeature() returns a computed signal
+const hasWorkforce = this.auth.hasFeature('workforceIntelligence');
+// hasWorkforce() → boolean (reactive)
 ```
 
-### FeatureGate Component
+### Template Gating
 
-```tsx
-interface FeatureGateProps {
-  feature: string;
-  fallback?: React.ReactNode;  // Default: upgrade banner
-  children: React.ReactNode;
-}
+```html
+<!-- Structural directive — hide entire section if feature not enabled -->
+<nav-section *hasFeature="'workforceIntelligence'" label="Workforce">
+  ...
+</nav-section>
 
-export function FeatureGate({ feature, fallback, children }: FeatureGateProps) {
-  const hasFeature = useFeatureStore(state => state.hasFeature(feature));
-
-  if (!hasFeature) {
-    return fallback ?? (
-      <UpgradeBanner
-        title={`${featureDisplayNames[feature]} is not included in your plan`}
-        description="Upgrade to access this feature."
-      />
-    );
-  }
-
-  return <>{children}</>;
+<!-- New control flow -->
+@if (auth.hasFeature('wms:projects')()) {
+  <a routerLink="/worksync/projects">Projects</a>
 }
 ```
 
-### Usage with Permission Gates
+### Composing Feature + Permission Gates
 
-Feature gates and permission gates compose:
+Both must pass — feature decides what the tenant has bought, permission decides what the user can do within it:
 
-```tsx
-// Must have the feature AND the permission
-<FeatureGate feature="workforceIntelligence">
-  <PermissionGate permission="workforce:view">
-    <LiveDashboard />
-  </PermissionGate>
-</FeatureGate>
+```html
+<!-- Must have the module AND the permission -->
+@if (auth.hasFeature('workforceIntelligence')() && auth.hasPermission('workforce:view')()) {
+  <app-live-dashboard />
+}
+
+<!-- Or with structural directive composition -->
+<ng-container *hasFeature="'workforceIntelligence'">
+  <app-live-dashboard *hasPermission="'workforce:view'" />
+</ng-container>
+```
+
+### Upgrade Banner
+
+When a tenant doesn't have a module, show an upgrade prompt instead of hiding silently:
+
+```typescript
+// shared/src/lib/ui/feedback/feature-gate.component.ts
+@Component({
+  selector: 'app-feature-gate',
+  standalone: true,
+  template: `
+    @if (auth.hasFeature(feature())()) {
+      <ng-content />
+    } @else {
+      @if (showUpgradeBanner()) {
+        <app-upgrade-banner [feature]="feature()" />
+      }
+    }
+  `,
+})
+export class FeatureGateComponent {
+  feature = input.required<string>();
+  showUpgradeBanner = input(true);
+  auth = inject(AuthService);
+}
+```
+
+```html
+<app-feature-gate feature="workforceIntelligence">
+  <app-live-dashboard />
+</app-feature-gate>
 ```
 
 ## Release Flags
 
-Release flags control gradual rollout of new features. Evaluated per-user or per-tenant.
+Release flags control gradual rollout of new features within an already-entitled module. Evaluated per-user or per-tenant by a flag service.
 
-```tsx
-// hooks/use-feature-flag.ts
-export function useFeatureFlag(flag: string): boolean {
-  // PostHog example
-  const posthog = usePostHog();
-  return posthog.isFeatureEnabled(flag) ?? false;
+```typescript
+// shared/src/lib/feature-flags/feature-flag.service.ts
+@Injectable({ providedIn: 'root' })
+export class FeatureFlagService {
+  private flags = signal<Record<string, boolean>>({});
+
+  isEnabled(flag: string): Signal<boolean> {
+    return computed(() => this.flags()[flag] ?? false);
+  }
+
+  loadFlags(userId: string) {
+    // Fetch from PostHog / LaunchDarkly / backend endpoint
+    this.flagsClient.getFlags(userId).then(flags => this.flags.set(flags));
+  }
 }
+```
 
-// Usage
-function EmployeeList() {
-  const useNewWizard = useFeatureFlag('new-employee-wizard');
+Usage in a component:
 
-  return (
-    <>
-      {useNewWizard ? <NewEmployeeWizard /> : <LegacyEmployeeForm />}
-    </>
-  );
+```typescript
+export class EmployeeListComponent {
+  private flagService = inject(FeatureFlagService);
+  useNewWizard = this.flagService.isEnabled('new-employee-wizard');
+}
+```
+
+```html
+@if (useNewWizard()) {
+  <app-new-employee-wizard />
+} @else {
+  <app-legacy-employee-form />
 }
 ```
 
@@ -92,15 +124,13 @@ function EmployeeList() {
 2. Enable for internal team (10%)
 3. Enable for beta tenants (25%)
 4. Enable for all (100%)
-5. Remove flag and dead code â€” flag cleanup PR
+5. Remove flag and dead code — flag cleanup PR
 ```
 
-### Stale Flag Detection
-
-Flags older than 30 days at 100% should be cleaned up. Track in a registry:
+Flags older than 30 days at 100% rollout must be cleaned up. Track them in a registry:
 
 ```typescript
-// lib/feature-flags/registry.ts
+// shared/src/lib/feature-flags/registry.ts
 export const FEATURE_FLAGS = {
   'new-employee-wizard': {
     description: 'Redesigned multi-step employee creation wizard',
@@ -108,18 +138,11 @@ export const FEATURE_FLAGS = {
     owner: 'hr-team',
     cleanupBy: '2026-04-30',
   },
-  'redesigned-dashboard': {
-    description: 'New overview dashboard layout',
-    createdAt: '2026-03-20',
-    owner: 'platform-team',
-    cleanupBy: '2026-05-15',
-  },
 } as const;
 ```
 
 ## Related
 
-- [[backend/module-boundaries|Module Boundaries]] â€” feature-gated modules
-- [[frontend/cross-cutting/authorization|Authorization]] â€” permission vs feature distinction
-- [[frontend/cross-cutting/analytics|Analytics]] â€” A/B test measurement
-
+- [[frontend/cross-cutting/authorization|Authorization]] — permission vs feature distinction
+- [[frontend/architecture/routing|Routing]] — `featureGuard` functional guard
+- [[frontend/cross-cutting/analytics|Analytics]] — A/B test measurement

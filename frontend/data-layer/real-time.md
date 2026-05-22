@@ -1,82 +1,89 @@
-﻿# Real-Time Architecture (SignalR)
+# Real-Time Architecture (SignalR)
 
 ## Overview
 
-ONEVO uses **SignalR** (WebSocket with fallbacks) for real-time push from the .NET backend. The frontend treats pushes as **cache invalidation signals** â€” when a push arrives, TanStack Query refetches the relevant data. The API remains the single source of truth.
+ONEVO uses **SignalR** (WebSocket with fallbacks) for real-time push from the .NET backend. The frontend treats pushes as **cache invalidation signals** — when a push arrives, the relevant `resource()` is reloaded. The API remains the single source of truth.
 
-## SignalR Client (`src/lib/signalr/client.ts`)
+## SignalR Service (`shared/src/lib/realtime/signalr.service.ts`)
 
 Package: `@microsoft/signalr`
 
-Builds and exports a shared `HubConnection` instance using `HubConnectionBuilder`. `SignalRProvider` (in `App.tsx`) manages connection lifecycle (start on auth, stop on logout).
+An Angular singleton service that builds and manages the `HubConnection`. Both apps inject this service from `@onevo/shared`. The connection starts on successful authentication and stops on logout.
 
 ## Connection Lifecycle
 
 ```
-App Mount â†’ SignalRProvider initializes
-    â”‚
-    â”œâ”€â”€ Build connection with cookie-backed session
-    â”œâ”€â”€ Start connection
-    â”‚
-    â”œâ”€â”€ On connected â†’ subscribe to tenant hub groups
-    â”‚   â”œâ”€â”€ tenant:{tenantId}              (tenant-wide broadcasts)
-    â”‚   â”œâ”€â”€ user:{userId}                  (personal notifications)
-    â”‚   â””â”€â”€ workforce:{tenantId}           (live workforce data â€” if feature enabled)
-    â”‚
-    â”œâ”€â”€ On message â†’ dispatch to registered handlers
-    â”‚   â”œâ”€â”€ TanStack Query invalidation
-    â”‚   â”œâ”€â”€ Toast notification
-    â”‚   â””â”€â”€ Zustand store update (notification count)
-    â”‚
-    â”œâ”€â”€ On disconnected â†’ auto-reconnect with exponential backoff
-    â”‚   â”œâ”€â”€ Attempt 1: immediate
-    â”‚   â”œâ”€â”€ Attempt 2: 2s
-    â”‚   â”œâ”€â”€ Attempt 3: 5s
-    â”‚   â”œâ”€â”€ Attempt 4: 10s
-    â”‚   â”œâ”€â”€ Attempt 5+: 30s
-    â”‚   â””â”€â”€ Show "Reconnecting..." banner after 5s disconnected
-    â”‚
-    â””â”€â”€ On auth expired â†’ stop connection, redirect to login
+AuthService.setSession() called
+    │
+    ├── SignalRService.connect() — builds HubConnection with cookie credentials
+    ├── connection.start()
+    │
+    ├── On connected → join tenant hub groups (server-side via hub method)
+    │   ├── tenant:{tenantId}              (tenant-wide broadcasts)
+    │   ├── user:{userId}                  (personal notifications)
+    │   └── workforce:{tenantId}           (live workforce — management-app only)
+    │
+    ├── On message → dispatch to registered handlers
+    │   ├── resource.reload()              (cache invalidation)
+    │   ├── MatSnackBar notification       (user-visible toast)
+    │   └── AuthService signal update      (permission changes)
+    │
+    ├── On disconnected → auto-reconnect with exponential backoff
+    │   ├── Attempt 1: immediate
+    │   ├── Attempt 2: 2 s
+    │   ├── Attempt 3: 5 s
+    │   ├── Attempt 4: 10 s
+    │   ├── Attempt 5+: 30 s
+    │   └── Show reconnecting banner after 5 s disconnected
+    │
+    └── On auth expired → stop connection, navigate to /login
 ```
 
-## SignalR Provider
+## SignalR Service Implementation
 
-```tsx
-// components/providers/signalr-provider.tsx
-export function SignalRProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const connectionRef = useRef<HubConnection | null>(null);
+```typescript
+// shared/src/lib/realtime/signalr.service.ts
+@Injectable({ providedIn: 'root' })
+export class SignalRService implements OnDestroy {
+  private connection: HubConnection | null = null;
+  private auth = inject(AuthService);
 
-  useEffect(() => {
-    if (!user) return;
+  connectionStatus = signal<'connected' | 'reconnecting' | 'disconnected'>('disconnected');
 
-    const connection = new HubConnectionBuilder()
-      .withUrl(`${import.meta.env.VITE_API_URL}/hubs/main`, {`r`n        withCredentials: true,`r`n      })
+  connect(hubUrl: string) {
+    this.connection = new HubConnectionBuilder()
+      .withUrl(hubUrl, { withCredentials: true })
       .withAutomaticReconnect({
-        nextRetryDelayInMilliseconds: (retryContext) => {
+        nextRetryDelayInMilliseconds: (ctx) => {
           const delays = [0, 2000, 5000, 10000, 30000];
-          return delays[Math.min(retryContext.previousRetryCount, delays.length - 1)];
+          return delays[Math.min(ctx.previousRetryCount, delays.length - 1)];
         },
       })
       .configureLogging(LogLevel.Warning)
       .build();
 
-    // Register handlers
-    registerHandlers(connection, queryClient);
+    this.connection.onreconnecting(() => this.connectionStatus.set('reconnecting'));
+    this.connection.onreconnected(() => this.connectionStatus.set('connected'));
+    this.connection.onclose(() => this.connectionStatus.set('disconnected'));
 
-    connection.start().catch(console.error);
-    connectionRef.current = connection;
+    this.connection.start().catch(console.error);
+  }
 
-    return () => { connection.stop(); };
-  }, [user?.id]);
+  on<T>(method: string, handler: (data: T) => void): void {
+    this.connection?.on(method, handler);
+  }
 
-  return (
-    <SignalRContext.Provider value={connectionRef}>
-      <ConnectionStatusBanner />
-      {children}
-    </SignalRContext.Provider>
-  );
+  off(method: string): void {
+    this.connection?.off(method);
+  }
+
+  disconnect() {
+    this.connection?.stop();
+    this.connection = null;
+    this.connectionStatus.set('disconnected');
+  }
+
+  ngOnDestroy() { this.disconnect(); }
 }
 ```
 
@@ -86,114 +93,110 @@ export function SignalRProvider({ children }: { children: React.ReactNode }) {
 
 | Event | Payload | Action |
 |:------|:--------|:-------|
-| `EmployeeCreated` | `{ employeeId }` | Invalidate `['employees']` queries |
-| `EmployeeUpdated` | `{ employeeId }` | Invalidate `['employee', id]` + `['employees']` |
-| `LeaveRequestSubmitted` | `{ requestId, employeeName }` | Invalidate `['leave-requests']`, toast to managers |
-| `LeaveRequestDecided` | `{ requestId, status }` | Invalidate `['leave-requests']`, toast to requester |
-| `PayrollRunCompleted` | `{ runId }` | Invalidate `['payroll-runs']`, toast |
-| `ExceptionAlertCreated` | `{ alertId, severity }` | Invalidate `['exception-alerts']`, bump notification count |
-| `ExceptionAlertResolved` | `{ alertId }` | Invalidate `['exception-alerts']` |
-| `ConfigurationChanged` | `{ settingKey }` | Invalidate `['tenant-config']`, may trigger feature flag refresh |
+| `EmployeeCreated` | `{ employeeId }` | Reload employee list resource |
+| `EmployeeUpdated` | `{ employeeId }` | Reload employee detail resource |
+| `LeaveRequestSubmitted` | `{ requestId, employeeName }` | Reload leave resources + toast to managers |
+| `LeaveRequestDecided` | `{ requestId, status }` | Reload leave resources + toast to requester |
+| `PayrollRunCompleted` | `{ runId }` | Reload payroll resource + toast |
+| `ExceptionAlertCreated` | `{ alertId, severity }` | Reload exceptions resource, bump notification count |
+| `ExceptionAlertResolved` | `{ alertId }` | Reload exceptions resource |
+| `ConfigurationChanged` | `{ settingKey }` | Reload tenant config + feature flags |
 
 ### User Hub (`user:{userId}`)
 
 | Event | Payload | Action |
 |:------|:--------|:-------|
-| `NotificationReceived` | `{ notification }` | Add to notification store, bump count, toast |
-| `SessionExpired` | â€” | Redirect to login |
-| `PermissionsChanged` | `{ permissions[] }` | Update auth store, may trigger UI re-render |
+| `NotificationReceived` | `{ notification }` | Add to notification signal, bump count, toast |
+| `SessionExpired` | — | `AuthService.clear()`, navigate to `/login` |
+| `PermissionsChanged` | `{ permissions[] }` | Update `AuthService` permissions signal |
 
-### Workforce Hub (`workforce:{tenantId}`)
+### Workforce Hub (`workforce:{tenantId}`) — management-app only
 
 | Event | Payload | Action |
 |:------|:--------|:-------|
-| `WorkforceStatusUpdate` | `{ snapshot }` | Update `['workforce-live']` cache directly (no refetch) |
-| `EmployeeStatusChanged` | `{ employeeId, status }` | Update individual employee in live dashboard |
-| `ActivityIntensityUpdate` | `{ departmentId, intensity }` | Update heatmap cell |
+| `WorkforceStatusUpdate` | `{ snapshot }` | `resource.set(snapshot)` directly (high frequency) |
+| `EmployeeStatusChanged` | `{ employeeId, status }` | Update individual card signal |
+| `ActivityIntensityUpdate` | `{ departmentId, intensity }` | Update heatmap signal |
 
-## Handler Registration
+## Handler Registration Pattern
 
-```tsx
-function registerHandlers(connection: HubConnection, queryClient: QueryClient) {
-  // Pattern: event â†’ invalidate relevant query keys
-  connection.on('EmployeeCreated', () => {
-    queryClient.invalidateQueries({ queryKey: ['employees'] });
+Register handlers in the component that owns the resource. Unregister in `ngOnDestroy`.
+
+```typescript
+// management-app: exception-list.component.ts
+export class ExceptionListComponent implements OnInit, OnDestroy {
+  private signalR = inject(SignalRService);
+
+  alertsResource = resource({
+    loader: () => firstValueFrom(this.exceptionService.getAlerts()),
   });
 
-  connection.on('EmployeeUpdated', ({ employeeId }) => {
-    queryClient.invalidateQueries({ queryKey: ['employees'] });
-    queryClient.invalidateQueries({ queryKey: ['employee', employeeId] });
+  ngOnInit() {
+    this.signalR.on('ExceptionAlertCreated', () => this.alertsResource.reload());
+    this.signalR.on('ExceptionAlertResolved', () => this.alertsResource.reload());
+  }
+
+  ngOnDestroy() {
+    this.signalR.off('ExceptionAlertCreated');
+    this.signalR.off('ExceptionAlertResolved');
+  }
+}
+```
+
+For high-frequency events, set the resource value directly to avoid refetch storms:
+
+```typescript
+// management-app: workforce-live.component.ts
+ngOnInit() {
+  // High-frequency: set directly
+  this.signalR.on<WorkforceSnapshot>('WorkforceStatusUpdate', (snapshot) => {
+    this.presenceResource.set(snapshot);
   });
 
-  connection.on('LeaveRequestSubmitted', ({ employeeName }) => {
-    queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
-    toast.info(`${employeeName} submitted a leave request`);
-  });
-
-  connection.on('ExceptionAlertCreated', ({ severity }) => {
-    queryClient.invalidateQueries({ queryKey: ['exception-alerts'] });
-    if (severity === 'critical') {
-      toast.error('Critical exception alert raised');
-    }
-  });
-
-  // Workforce: direct cache update (high frequency, avoid refetch)
-  connection.on('WorkforceStatusUpdate', ({ snapshot }) => {
-    queryClient.setQueryData(['workforce-live'], snapshot);
-  });
-
-  connection.on('NotificationReceived', ({ notification }) => {
-    useNotificationStore.getState().addNotification(notification);
-  });
+  // Low-frequency: invalidate and reload
+  this.signalR.on('EmployeeStatusChanged', () => this.presenceResource.reload());
 }
 ```
 
 ## Connection Status Banner
 
-```tsx
-function ConnectionStatusBanner() {
-  const connection = useSignalR();
-  const [status, setStatus] = useState<'connected' | 'reconnecting' | 'disconnected'>('connected');
+```typescript
+// shared/src/lib/ui/shell/connection-banner.component.ts
+@Component({
+  selector: 'app-connection-banner',
+  standalone: true,
+  imports: [MatButtonModule, NgClass],
+  template: `
+    @if (status() !== 'connected') {
+      <div class="connection-banner" [ngClass]="status()">
+        @if (status() === 'reconnecting') {
+          Connection lost. Reconnecting...
+        } @else {
+          Unable to connect. Some data may be stale.
+          <button mat-button (click)="retry()">Retry</button>
+        }
+      </div>
+    }
+  `,
+})
+export class ConnectionBannerComponent {
+  private signalR = inject(SignalRService);
+  status = this.signalR.connectionStatus;
 
-  useEffect(() => {
-    if (!connection.current) return;
-    connection.current.onreconnecting(() => setStatus('reconnecting'));
-    connection.current.onreconnected(() => {
-      setStatus('connected');
-      // Refetch all active queries to catch up on missed events
-      queryClient.invalidateQueries();
-    });
-    connection.current.onclose(() => setStatus('disconnected'));
-  }, [connection]);
-
-  if (status === 'connected') return null;
-
-  return (
-    <Banner variant={status === 'reconnecting' ? 'warning' : 'destructive'} sticky>
-      {status === 'reconnecting'
-        ? 'Connection lost. Reconnecting...'
-        : 'Unable to connect. Some data may be stale.'}
-      {status === 'disconnected' && (
-        <Button size="sm" variant="outline" onClick={() => connection.current?.start()}>
-          Retry
-        </Button>
-      )}
-    </Banner>
-  );
+  retry() { this.signalR.connect(inject(SIGNALR_HUB_URL)); }
 }
 ```
 
 ## Performance Considerations
 
-- **Workforce hub** is separate and only joined when the live dashboard is mounted (not app-wide)
-- High-frequency events (WorkforceStatusUpdate) use **direct cache updates** (`setQueryData`) instead of refetch
-- Low-frequency events (EmployeeCreated) use **invalidation** (triggers background refetch)
-- Batch invalidations with `queryClient.invalidateQueries({ predicate })` to avoid refetch storms
+- **Workforce hub** is only connected when the live dashboard component is active — not app-wide
+- High-frequency events (`WorkforceStatusUpdate`) use `resource.set()` to avoid HTTP refetch
+- Low-frequency events (`EmployeeCreated`) use `resource.reload()` to get authoritative server data
+- On reconnection: call `resource.reload()` on all active resources to catch missed events
 
 ## Related
 
-- [[frontend/data-layer/state-management|State Management]] â€” TanStack Query cache patterns
-- [[frontend/data-layer/api-integration|Api Integration]] â€” API client
-- [[frontend/data-layer/caching-strategy|Caching Strategy]] â€” cache invalidation rules
-- [[frontend/architecture/overview|Overview]] â€” real-time as overlay principle
-
+- [[frontend/data-layer/state-management|State Management]] — Angular Signals + resource() patterns
+- [[frontend/data-layer/api-integration|API Integration]] — HttpClient services
+- [[frontend/data-layer/caching-strategy|Caching Strategy]] — cache invalidation rules
+- [[frontend/architecture/overview|Overview]] — real-time as overlay principle

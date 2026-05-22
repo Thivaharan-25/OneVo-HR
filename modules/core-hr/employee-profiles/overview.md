@@ -35,7 +35,7 @@ Extensible custom fields: `field_name`, `field_value`, `field_type` (`text`, `nu
 | PUT | `/api/v1/employees/{id}` | `employees:write` | Update employee |
 | DELETE | `/api/v1/employees/{id}` | `employees:delete` | Soft delete |
 | GET | `/api/v1/employees/me` | `employees:read-own` | Get own profile |
-| GET | `/api/v1/employees/{id}/team` | `employees:read-team` | Get direct reports |
+| GET | `/api/v1/employees/{id}/team` | `employees:read` | Get direct reports (backend applies access policy) |
 
 ## Related
 

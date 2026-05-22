@@ -1,253 +1,311 @@
 # Routing Architecture
 
-> This app uses **React Router v7 in library mode** — routes are defined in `src/router.tsx` using `createBrowserRouter()`. There is no file-based routing, no middleware.ts, no Next.js `@modal`/`@panel` parallel routes, and no intercepting routes. All route guards are React components.
+> This app uses **Angular Router** with typed routes defined in `app.routes.ts`. There is no file-based routing, no middleware.ts, no parallel routes, and no intercepting routes. All route guards are functional (`CanActivateFn`).
 
 ## Route Groups
 
-| Group | Layout Component | Auth Required |
+| Group | Shell Component | Auth Required |
 |:------|:----------------|:--------------|
-| Auth | `AuthLayout` — centered card, no nav | No |
-| Dashboard | `DashboardLayout` — NavRail + ExpansionPanel + Topbar + `<Outlet />` | Yes |
+| Auth | `AuthLayoutComponent` — centered card, no nav | No |
+| App | App-specific shell (employee or management) — nav rail + topbar + `<router-outlet>` | Yes |
 
-> **No separate employee self-service group.** Employee self-service uses the same dashboard pages with permission-driven views. `/people/leave/` shows own leave with `leave:read-own` and team leave with `leave:read-team`.
+Both apps (`employee-app` and `management-app`) follow the same routing pattern. Guards and permission checks are shared from `@onevo/shared`.
 
-## Route Config Pattern
+## Functional Guards
 
-All routes defined in a single file:
+```typescript
+// projects/shared/src/lib/auth/auth.guard.ts
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from './auth.service';
 
-```tsx
-// src/router.tsx
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
-import { ProtectedRoute } from '@/lib/security/permission-guard';
+export const authGuard: CanActivateFn = (route, state) => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
 
-export const router = createBrowserRouter([
+  if (auth.isAuthenticated()) return true;
+
+  return router.createUrlTree(['/login'], {
+    queryParams: { redirect: state.url },
+  });
+};
+```
+
+```typescript
+// projects/shared/src/lib/auth/permission.guard.ts
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from './auth.service';
+
+export const permissionGuard = (permission: string): CanActivateFn =>
+  () => {
+    const auth = inject(AuthService);
+    const router = inject(Router);
+
+    if (auth.hasPermission(permission)()) return true;
+    return router.createUrlTree(['/403']);
+  };
+```
+
+## Route Config Pattern (`app.routes.ts`)
+
+All routes defined in a single file per app. Heavy routes use `loadComponent` for lazy loading.
+
+### Employee App
+
+```typescript
+// projects/employee-app/src/app/app.routes.ts
+import { Routes } from '@angular/router';
+import { authGuard, permissionGuard } from '@onevo/shared';
+
+export const routes: Routes = [
   // Auth — public
   {
-    element: <AuthLayout />,
+    path: '',
+    loadComponent: () =>
+      import('./features/auth/auth-layout.component').then(m => m.AuthLayoutComponent),
     children: [
-      { path: '/login',            element: <LoginPage /> },
-      { path: '/forgot-password',  element: <ForgotPasswordPage /> },
-      { path: '/reset-password',   element: <ResetPasswordPage /> },
-      { path: '/mfa',              element: <MfaPage /> },
+      { path: 'login',           loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent) },
+      { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) },
+      { path: 'reset-password',  loadComponent: () => import('./features/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },
+      { path: 'mfa',             loadComponent: () => import('./features/auth/mfa/mfa.component').then(m => m.MfaComponent) },
     ],
   },
 
-  // Dashboard — authenticated
+  // Authenticated — employee shell
   {
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
+    path: '',
+    loadComponent: () =>
+      import('./shell/employee-shell.component').then(m => m.EmployeeShellComponent),
+    canActivate: [authGuard],
     children: [
-      { index: true, element: <HomePage /> },
-      { path: '/inbox', element: <InboxPage /> },
-      { path: '/automation', element: <ProtectedRoute permission="automation:read"><AutomationCenterPage /></ProtectedRoute> },
+      { path: '',       redirectTo: 'home', pathMatch: 'full' },
+      { path: 'home',   loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent) },
+      {
+        path: 'leave',
+        canActivate: [permissionGuard('leave:create')],
+        loadComponent: () => import('./features/leave/leave-overview.component').then(m => m.LeaveOverviewComponent),
+      },
+      {
+        path: 'attendance',
+        canActivate: [permissionGuard('attendance:read-own')],
+        loadChildren: () => import('./features/attendance/attendance.routes').then(m => m.attendanceRoutes),
+      },
+      { path: 'profile',       loadComponent: () => import('./features/profile/my-profile.component').then(m => m.MyProfileComponent) },
+      { path: 'calendar',      loadComponent: () => import('./features/calendar/my-calendar.component').then(m => m.MyCalendarComponent) },
+      { path: 'my-work',       loadComponent: () => import('./features/my-work/my-work.component').then(m => m.MyWorkComponent) },
+      { path: 'notifications', loadComponent: () => import('./features/notifications/inbox.component').then(m => m.InboxComponent) },
+      { path: 'chat',          loadComponent: () => import('./features/chat/chat.component').then(m => m.ChatComponent) },
+    ],
+  },
 
-      // People
-      { path: '/people/employees',     element: <ProtectedRoute permission="employees:read"><EmployeesPage /></ProtectedRoute> },
-      { path: '/people/employees/new', element: <ProtectedRoute permission="employees:write"><EmployeeNewPage /></ProtectedRoute> },
-      { path: '/people/employees/:id', element: <ProtectedRoute permission="employees:read"><EmployeeDetailPage /></ProtectedRoute> },
-      { path: '/people/leave',         element: <ProtectedRoute permission="leave:read"><LeavePage /></ProtectedRoute> },
-      { path: '/people/leave/calendar',element: <ProtectedRoute permission="leave:read"><LeaveCalendarPage /></ProtectedRoute> },
-      { path: '/people/leave/balances',element: <ProtectedRoute permission="leave:read"><LeaveBalancesPage /></ProtectedRoute> },
-      { path: '/people/leave/policies',element: <ProtectedRoute permission="leave:manage"><LeavePoliciesPage /></ProtectedRoute> },
+  { path: '403', loadComponent: () => import('./features/errors/forbidden.component').then(m => m.ForbiddenComponent) },
+  { path: '**',  loadComponent: () => import('./features/errors/not-found.component').then(m => m.NotFoundComponent) },
+];
+```
 
-      // Workforce
-      { path: '/workforce',              element: <ProtectedRoute permission="workforce:view"><WorkforcePage /></ProtectedRoute> },
-      { path: '/workforce/:employeeId',  element: <ProtectedRoute permission="workforce:view"><WorkforceEmployeePage /></ProtectedRoute> },
-      { path: '/workforce/analytics',    element: <ProtectedRoute permission="analytics:read"><WorkforceAnalyticsPage /></ProtectedRoute> },
-      { path: '/workforce/projects',     element: <ProtectedRoute permission="projects:read"><ProjectsPage /></ProtectedRoute> },
-      { path: '/workforce/projects/new', element: <ProtectedRoute permission="projects:write"><ProjectNewPage /></ProtectedRoute> },
-      { path: '/workforce/projects/:id',         element: <ProtectedRoute permission="projects:read"><ProjectDetailPage /></ProtectedRoute> },
-      { path: '/workforce/projects/:id/board',   element: <ProtectedRoute permission="tasks:read"><ProjectBoardPage /></ProtectedRoute> },
-      { path: '/workforce/projects/:id/sprints', element: <ProtectedRoute permission="sprints:read"><ProjectSprintsPage /></ProtectedRoute> },
-      { path: '/workforce/projects/:id/roadmap', element: <ProtectedRoute permission="sprints:read"><ProjectRoadmapPage /></ProtectedRoute> },
-      { path: '/workforce/my-work',  element: <ProtectedRoute permission="tasks:read"><MyWorkPage /></ProtectedRoute> },
-      { path: '/workforce/planner',  element: <ProtectedRoute permission="sprints:read"><PlannerPage /></ProtectedRoute> },
-      { path: '/workforce/goals',    element: <ProtectedRoute permission="okr:read"><GoalsPage /></ProtectedRoute> },
-      { path: '/workforce/goals/:id',element: <ProtectedRoute permission="okr:read"><GoalDetailPage /></ProtectedRoute> },
-      { path: '/workforce/docs',     element: <ProtectedRoute permission="documents:read"><DocsPage /></ProtectedRoute> },
-      { path: '/workforce/docs/:id', element: <ProtectedRoute permission="documents:read"><DocDetailPage /></ProtectedRoute> },
-      { path: '/workforce/time',         element: <ProtectedRoute permission="time:read"><TimePage /></ProtectedRoute> },
-      { path: '/workforce/time/reports', element: <ProtectedRoute permission="time:read"><TimeReportsPage /></ProtectedRoute> },
-      { path: '/chat', element: <ProtectedRoute permission="chat:read"><ChatPage /></ProtectedRoute> },
+### Management App (key routes)
+
+```typescript
+// projects/management-app/src/app/app.routes.ts (excerpt)
+export const routes: Routes = [
+  // Auth — same pattern as employee-app
+  { path: '', loadComponent: () => import('./features/auth/auth-layout.component') /* ... */ },
+
+  // Authenticated — management shell
+  {
+    path: '',
+    loadComponent: () => import('./shell/management-shell.component').then(m => m.ManagementShellComponent),
+    canActivate: [authGuard],
+    children: [
+      { path: '',              redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard',     loadComponent: () => import('./features/home/dashboard.component').then(m => m.DashboardComponent) },
+
+      // Employees
+      { path: 'employees',     canActivate: [permissionGuard('employees:read')],  loadComponent: () => import('./features/employees/employee-list.component').then(m => m.EmployeeListComponent) },
+      { path: 'employees/new', canActivate: [permissionGuard('employees:write')], loadComponent: () => import('./features/employees/employee-new.component').then(m => m.EmployeeNewComponent) },
+      { path: 'employees/:id', canActivate: [permissionGuard('employees:read')],  loadComponent: () => import('./features/employees/employee-detail.component').then(m => m.EmployeeDetailComponent) },
+
+      // Leave
+      { path: 'leave',         canActivate: [permissionGuard('leave:read')],    loadChildren: () => import('./features/leave/leave.routes').then(m => m.leaveRoutes) },
+
+      // Workforce Intelligence
+      { path: 'workforce',           canActivate: [permissionGuard('workforce:view')],  loadComponent: () => import('./features/workforce/live-dashboard.component').then(m => m.LiveDashboardComponent) },
+      { path: 'workforce/:id',       canActivate: [permissionGuard('workforce:view')],  loadComponent: () => import('./features/workforce/employee-activity.component').then(m => m.EmployeeActivityComponent) },
+      { path: 'workforce/analytics', canActivate: [permissionGuard('analytics:view')],  loadComponent: () => import('./features/workforce/analytics.component').then(m => m.AnalyticsComponent) },
+      { path: 'exceptions',          canActivate: [permissionGuard('exceptions:view')], loadChildren: () => import('./features/exceptions/exceptions.routes').then(m => m.exceptionsRoutes) },
 
       // Org
-      { path: '/org',                       element: <ProtectedRoute permission="org:read"><OrgPage /></ProtectedRoute> },
-      { path: '/org/departments',           element: <ProtectedRoute permission="org:read"><DepartmentsPage /></ProtectedRoute> },
-      { path: '/org/teams',                 element: <ProtectedRoute permission="org:read"><TeamsPage /></ProtectedRoute> },
-      { path: '/org/job-families',          element: <ProtectedRoute permission="org:manage"><JobFamiliesPage /></ProtectedRoute> },
-      { path: '/org/job-families/:id',      element: <ProtectedRoute permission="org:manage"><JobFamilyDetailPage /></ProtectedRoute> },
-      { path: '/org/legal-entities',        element: <ProtectedRoute permission="org:manage"><LegalEntitiesPage /></ProtectedRoute> },
-      { path: '/org/legal-entities/:id',    element: <ProtectedRoute permission="org:manage"><LegalEntityDetailPage /></ProtectedRoute> },
+      { path: 'org', loadChildren: () => import('./features/org/org.routes').then(m => m.orgRoutes) },
 
-      // Calendar
-      { path: '/calendar',            element: <ProtectedRoute permission="calendar:read"><CalendarPage /></ProtectedRoute> },
-      { path: '/calendar/schedule',   element: <ProtectedRoute permission="calendar:read"><SchedulePage /></ProtectedRoute> },
-      { path: '/calendar/attendance', element: <ProtectedRoute permission="attendance:read"><AttendancePage /></ProtectedRoute> },
-      { path: '/calendar/overtime',   element: <ProtectedRoute permission="attendance:read"><OvertimePage /></ProtectedRoute> },
-
-      // Notifications
-      { path: '/notifications',             element: <NotificationsPage /> },
-      { path: '/notifications/preferences', element: <NotificationPreferencesPage /> },
+      // WorkSync
+      { path: 'worksync', loadChildren: () => import('./features/worksync/worksync.routes').then(m => m.worksyncRoutes) },
 
       // Admin
-      { path: '/admin/users',      element: <ProtectedRoute permission="users:manage"><UsersPage /></ProtectedRoute> },
-      { path: '/admin/roles',      element: <ProtectedRoute permission="roles:manage"><RolesPage /></ProtectedRoute> },
-      { path: '/admin/audit',      element: <ProtectedRoute permission="settings:system"><AuditPage /></ProtectedRoute> },
-      { path: '/admin/agents',     element: <ProtectedRoute permission="agent:manage"><AgentsPage /></ProtectedRoute> },
-      { path: '/admin/agents/:id', element: <ProtectedRoute permission="agent:manage"><AgentDetailPage /></ProtectedRoute> },
-      { path: '/admin/devices',    element: <ProtectedRoute permission="settings:device"><DevicesPage /></ProtectedRoute> },
-      { path: '/admin/compliance', element: <ProtectedRoute permission="settings:system"><CompliancePage /></ProtectedRoute> },
-
-      // Settings
-      { path: '/settings/general',       element: <ProtectedRoute permission="settings:read"><GeneralPage /></ProtectedRoute> },
-      { path: '/settings/system',        element: <ProtectedRoute permission="settings:system"><SystemPage /></ProtectedRoute> },
-      { path: '/settings/notifications', element: <ProtectedRoute permission="settings:notifications"><NotificationsSettingsPage /></ProtectedRoute> },
-      { path: '/settings/integrations',  element: <ProtectedRoute permission="settings:integrations"><IntegrationsPage /></ProtectedRoute> },
-      { path: '/settings/branding',      element: <ProtectedRoute permission="settings:branding"><BrandingPage /></ProtectedRoute> },
-      { path: '/settings/billing',       element: <ProtectedRoute permission="settings:billing"><BillingPage /></ProtectedRoute> },
-      { path: '/settings/alert-rules',   element: <ProtectedRoute permission="settings:alerts"><AlertsPage /></ProtectedRoute> },
+      { path: 'admin',    canActivate: [permissionGuard('users:manage')],    loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes) },
+      { path: 'settings', canActivate: [permissionGuard('settings:read')],   loadChildren: () => import('./features/settings/settings.routes').then(m => m.settingsRoutes) },
     ],
   },
 
-  // Errors
-  { path: '/403', element: <ForbiddenPage /> },
-  { path: '*',    element: <NotFoundPage /> },
-]);
+  { path: '403', loadComponent: () => import('./features/errors/forbidden.component').then(m => m.ForbiddenComponent) },
+  { path: '**',  loadComponent: () => import('./features/errors/not-found.component').then(m => m.NotFoundComponent) },
+];
 ```
 
-## Route Guard Architecture
+## Permission Gating
 
-### Layer 1: ProtectedRoute Component
+### Layer 1: Route Guard (functional)
 
-Replaces Next.js middleware. Runs in the browser at render time.
+Applied in `app.routes.ts` via `canActivate: [permissionGuard('resource:action')]`. Redirects to `/403`.
 
-```tsx
-// lib/security/permission-guard.tsx
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/stores/use-auth-store';
-
-interface Props {
-  permission?: string;
-  children: ReactNode;
-}
-
-export function ProtectedRoute({ permission, children }: Props) {
-  const { user, hasPermission } = useAuthStore();
-  const location = useLocation();
-
-  if (!user) {
-    // Preserve intended destination for redirect after login
-    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
-  }
-
-  if (permission && !hasPermission(permission)) {
-    return <Navigate to="/403" replace />;
-  }
-
-  return <>{children}</>;
-}
-```
-
-### Layer 2: PermissionGate (Component-Level)
+### Layer 2: `*hasPermission` Structural Directive (template-level)
 
 Fine-grained UI hiding within pages — does NOT replace route guards:
 
-```tsx
-// Only show "Approve" button if user has leave:approve
-<PermissionGate permission="leave:approve">
-  <Button onClick={handleApprove}>Approve</Button>
-</PermissionGate>
+```html
+<!-- Only show "Approve" button if user has leave:approve -->
+<button *hasPermission="'leave:approve'" mat-button (click)="approve()">
+  Approve
+</button>
 
-// Render different content based on permission
-<PermissionGate
-  permission="payroll:read"
-  fallback={<RestrictedField label="Salary" />}
->
-  <SalaryDisplay amount={employee.salary} />
-</PermissionGate>
+<!-- Render different content based on permission -->
+<ng-container *hasPermission="'payroll:read'; else restricted">
+  <app-salary-display [amount]="employee.salary" />
+</ng-container>
+<ng-template #restricted>
+  <app-restricted-field label="Salary" />
+</ng-template>
 ```
 
-### Layer 3: Feature Gates (Tenant Feature Flags)
+### Layer 3: Feature / Tenant Module Gates
 
-WMS routes only render when the tenant has the feature enabled:
+WorkSync routes only render when the tenant has the module enabled:
 
-```tsx
-// Sidebar hides WMS items when feature is off
-const { hasFeature } = useAuthStore();
-
-// WMS sub-routes redirect when feature is not enabled
-{ path: '/workforce/projects', element: (
-  <ProtectedRoute permission="projects:read">
-    {hasFeature('wms:projects') ? <ProjectsPage /> : <Navigate to="/workforce" replace />}
-  </ProtectedRoute>
-)}
+```typescript
+// In app.routes.ts — canActivate with combined guard
+{
+  path: 'worksync/projects',
+  canActivate: [authGuard, permissionGuard('projects:read'), featureGuard('wms:projects')],
+  loadComponent: () => import('./features/worksync/projects/project-list.component')
+    .then(m => m.ProjectListComponent),
+},
 ```
 
-## Edit Panels and Modals
+```typescript
+// projects/shared/src/lib/auth/feature.guard.ts
+export const featureGuard = (feature: string): CanActivateFn =>
+  () => {
+    const auth = inject(AuthService);
+    const router = inject(Router);
+    if (auth.hasFeature(feature)()) return true;
+    return router.createUrlTree(['/403']);
+  };
+```
 
-Replacing Next.js parallel routes (`@panel`, `@modal`). Use local state or a URL query param:
+## Edit Panels and Slide-Overs
 
-```tsx
-// EmployeeDetailPage.tsx — edit panel via local state
-const [editSection, setEditSection] = useState<string | null>(null);
+Angular Router does not use parallel routes. Edit panels open via component-level signal state:
 
-return (
-  <>
-    <EmployeeDetailSections onEdit={setEditSection} />
-    {editSection && (
-      <SlideOverPanel open onClose={() => setEditSection(null)}>
-        <EditEmployeeSection section={editSection} />
-      </SlideOverPanel>
-    )}
-  </>
+```typescript
+// employee-detail.component.ts
+editSection = signal<string | null>(null);
+```
+
+```html
+<!-- employee-detail.component.html -->
+<app-employee-detail-sections (edit)="editSection.set($event)" />
+
+@if (editSection()) {
+  <app-slide-over-panel (close)="editSection.set(null)">
+    <app-edit-employee-section [section]="editSection()!" />
+  </app-slide-over-panel>
+}
+```
+
+For bookmarkable modals, use query params:
+
+```typescript
+// employee-list.component.ts
+private router = inject(Router);
+private route = inject(ActivatedRoute);
+
+showCreate = toSignal(
+  this.route.queryParamMap.pipe(map(p => p.get('action') === 'new')),
+  { initialValue: false }
 );
 
-// EmployeesPage.tsx — create modal via URL param (preserves bookmarkability)
-const [searchParams, setSearchParams] = useSearchParams();
-const showCreate = searchParams.get('action') === 'new';
+openCreate() {
+  this.router.navigate([], { queryParams: { action: 'new' }, queryParamsHandling: 'merge' });
+}
+closeCreate() {
+  this.router.navigate([], { queryParams: { action: null }, queryParamsHandling: 'merge' });
+}
 ```
 
 ## Breadcrumb Generation
 
-Derived from `useLocation()` — no file-system magic needed:
+Derived from `ActivatedRoute` data — attach `title` / `breadcrumb` data to route definitions:
 
-```tsx
-// lib/utils/breadcrumbs.ts
-import { useLocation } from 'react-router-dom';
-
-const ROUTE_LABELS: Record<string, string> = {
-  people: 'People', employees: 'Employees', leave: 'Leave',
-  workforce: 'Workforce', automation: 'Automation Center', org: 'Organization', calendar: 'Calendar',
-  admin: 'Admin', settings: 'Settings', 'alert-rules': 'Alert Rules',
-};
-
-export function useBreadcrumbs() {
-  const { pathname } = useLocation();
-  const segments = pathname.split('/').filter(Boolean);
-
-  return segments.map((segment, i) => ({
-    label: ROUTE_LABELS[segment] ?? segment,
-    href: '/' + segments.slice(0, i + 1).join('/'),
-    isCurrent: i === segments.length - 1,
-  }));
+```typescript
+// In route config
+{
+  path: 'employees',
+  data: { breadcrumb: 'Employees' },
+  loadComponent: () => import('./features/employees/employee-list.component')
+    .then(m => m.EmployeeListComponent),
 }
 ```
 
-## Navigation State
+```typescript
+// projects/shared/src/lib/ui/breadcrumb/breadcrumb.service.ts
+@Injectable({ providedIn: 'root' })
+export class BreadcrumbService {
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
 
-```tsx
-import { useLocation } from 'react-router-dom';
+  breadcrumbs = toSignal(
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      map(() => this.buildBreadcrumbs(this.activatedRoute.root)),
+    ),
+    { initialValue: [] }
+  );
 
-const { pathname } = useLocation();
-const activePillar = pathname.split('/')[1]; // 'people' | 'workforce' | 'org' | etc.
-const activeItem  = pathname.split('/')[2];  // 'employees' | 'leave' | 'projects' | etc.
+  private buildBreadcrumbs(route: ActivatedRoute, url = '', crumbs: Breadcrumb[] = []): Breadcrumb[] {
+    const routeUrl = route.snapshot.url.map(s => s.path).join('/');
+    const fullUrl = routeUrl ? `${url}/${routeUrl}` : url;
+    const label = route.snapshot.data['breadcrumb'];
+    if (label) crumbs.push({ label, url: fullUrl });
+    return route.firstChild ? this.buildBreadcrumbs(route.firstChild, fullUrl, crumbs) : crumbs;
+  }
+}
+```
+
+## Navigation Active State
+
+```typescript
+// In shell component
+private router = inject(Router);
+
+activePillar = toSignal(
+  this.router.events.pipe(
+    filter(e => e instanceof NavigationEnd),
+    map(() => this.router.url.split('/')[1]),
+  ),
+  { initialValue: '' }
+);
+```
+
+Or use Angular Router's built-in `routerLinkActive` directive in templates:
+
+```html
+<a routerLink="/employees" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+  <mat-icon>people</mat-icon>
+</a>
 ```
 
 ## Related
 
-- [[frontend/architecture/app-structure|App Structure]] — full page file tree
+- [[frontend/architecture/app-structure|App Structure]] — full feature file tree
 - [[frontend/cross-cutting/authorization|Authorization]] — permission system details
-- [[frontend/lib/security/permission-guard|Permission Guard]] — route guard implementation
+- [[frontend/data-layer/state-management|State Management]] — Angular Signals

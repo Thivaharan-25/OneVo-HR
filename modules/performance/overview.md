@@ -223,7 +223,7 @@ OKR-style goals with parent-child hierarchy.
 | GET | `/api/v1/performance/goals` | `performance:read` | List goals |
 | POST | `/api/v1/performance/goals` | `performance:write` | Create goal |
 | PUT | `/api/v1/performance/goals/{id}` | `performance:write` | Update goal progress |
-| GET | `/api/v1/performance/goals/me` | `performance:read-team` | Own goals |
+| GET | `/api/v1/performance/goals/me` | `performance:read` | Own goals |
 | POST | `/api/v1/performance/recognitions` | `performance:write` | Give recognition |
 
 ## Features

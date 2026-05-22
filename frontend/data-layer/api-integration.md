@@ -1,138 +1,100 @@
 # API Integration
 
-## API Client
+## Angular HttpClient Services
 
-The ApiClient is a thin class that runs every request through an ordered interceptor pipeline. It uses `import.meta.env.VITE_API_URL`; this project uses Vite, not Next.js.
+API calls use Angular's `HttpClient` wrapped in typed services under `shared/src/lib/api/endpoints/`. Components never call `HttpClient` directly — they inject the service.
 
-Customer web API calls use a BFF-style HttpOnly cookie session. The browser frontend does not attach tenant JWTs to normal `/api/v1/*` requests.
+Customer web API calls use a BFF-style HttpOnly cookie session. The browser frontend does not attach tenant JWTs directly to `/api/v1/*` requests — the cookie carries the session.
 
 ```typescript
-// lib/api/client.ts
-import { sessionInterceptor } from './interceptors/session.interceptor';
-import { tenantInterceptor } from './interceptors/tenant.interceptor';
-import { correlationInterceptor } from './interceptors/correlation.interceptor';
-import { csrfInterceptor } from './interceptors/csrf.interceptor';
-import { errorInterceptor } from './interceptors/error.interceptor';
+// shared/src/lib/api/endpoints/employees.service.ts
+@Injectable({ providedIn: 'root' })
+export class EmployeeApiService {
+  private http = inject(HttpClient);
+  private baseUrl = inject(API_BASE_URL); // InjectionToken from environment
 
-class ApiClient {
-  private baseUrl = import.meta.env.VITE_API_URL;
+  list(filters: EmployeeFilters): Observable<PagedResult<Employee>> {
+    const params = toHttpParams(filters);
+    return this.http.get<PagedResult<Employee>>('/api/v1/employees', { params });
+  }
 
-  async fetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-    let request = new Request(`${this.baseUrl}${path}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      credentials: 'include',
-    });
+  get(id: string): Observable<Employee> {
+    return this.http.get<Employee>(`/api/v1/employees/${id}`);
+  }
 
-    request = await sessionInterceptor.onRequest(request);
-    request = tenantInterceptor.onRequest(request);
-    request = csrfInterceptor.onRequest(request);
-    request = correlationInterceptor.onRequest(request);
+  create(data: CreateEmployeeDto): Observable<Employee> {
+    return this.http.post<Employee>('/api/v1/employees', data);
+  }
 
-    const response = await fetch(request);
-
-    return errorInterceptor.onResponse<T>(response, () => this.fetch(path, options));
+  update(id: string, data: Partial<CreateEmployeeDto>): Observable<Employee> {
+    return this.http.patch<Employee>(`/api/v1/employees/${id}`, data);
   }
 }
-
-export const apiClient = new ApiClient();
 ```
 
 ---
 
-## Interceptors
+## Functional Interceptors
 
-Interceptors are located in `lib/api/interceptors/`.
+Interceptors are registered in `app.config.ts` via `withInterceptors([...])`. All are functional (`HttpInterceptorFn`).
 
 ```typescript
-// lib/api/interceptors/session.interceptor.ts
-import { refreshSessionIfNeeded } from '@/lib/api/endpoints/auth';
-
-export const sessionInterceptor = {
-  async onRequest(request: Request): Promise<Request> {
-    // Browser authentication is cookie-based. Do not attach
-    // Authorization: Bearer for customer web calls.
-    await refreshSessionIfNeeded();
-    return request;
-  },
+// shared/src/lib/api/interceptors/auth.interceptor.ts
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  // Cookie-based session — no Authorization header for customer web.
+  // withCredentials ensures cookies are sent cross-origin to the API.
+  return next(req.clone({ withCredentials: true }));
 };
 ```
 
 ```typescript
-// lib/api/interceptors/tenant.interceptor.ts
-import { useAuthStore } from '@/stores/use-auth-store';
+// shared/src/lib/api/interceptors/tenant.interceptor.ts
+export const tenantInterceptor: HttpInterceptorFn = (req, next) => {
+  const auth = inject(AuthService);
+  const tenantId = auth.user()?.tenantId;
 
-export const tenantInterceptor = {
-  onRequest(request: Request): Request {
-    const entityId = useAuthStore.getState().activeEntityId;
-    if (entityId) {
-      request.headers.set('X-Entity-Id', entityId);
-    }
-    return request;
-  },
+  if (tenantId) {
+    return next(req.clone({ setHeaders: { 'X-Tenant-Id': tenantId } }));
+  }
+  return next(req);
 };
 ```
 
 ```typescript
-// lib/api/interceptors/csrf.interceptor.ts
-import { getCsrfToken } from '@/lib/security/csrf';
-
-export const csrfInterceptor = {
-  onRequest(request: Request): Request {
-    if (request.method !== 'GET' && request.method !== 'HEAD') {
-      request.headers.set('X-CSRF-Token', getCsrfToken());
-    }
-    return request;
-  },
-};
+// shared/src/lib/api/interceptors/correlation.interceptor.ts
+export const correlationInterceptor: HttpInterceptorFn = (req, next) =>
+  next(req.clone({ setHeaders: { 'X-Correlation-Id': crypto.randomUUID() } }));
 ```
 
 ```typescript
-// lib/api/interceptors/correlation.interceptor.ts
-export const correlationInterceptor = {
-  onRequest(request: Request): Request {
-    request.headers.set('X-Correlation-Id', crypto.randomUUID());
-    return request;
-  },
-};
-```
+// shared/src/lib/api/interceptors/error.interceptor.ts
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  const snackBar = inject(MatSnackBar);
+  const router = inject(Router);
+  const auth = inject(AuthService);
 
-```typescript
-// lib/api/interceptors/error.interceptor.ts
-import { useAuthStore } from '@/stores/use-auth-store';
-import { ApiError, AuthError } from '@/lib/api/errors';
-import { toast } from 'sonner';
-
-export const errorInterceptor = {
-  async onResponse<T>(response: Response, retry: () => Promise<T>): Promise<T> {
-    if (response.ok) return response.json();
-
-    switch (response.status) {
-      case 401:
-        useAuthStore.getState().clear();
-        window.location.href = '/login';
-        throw new AuthError('Session expired');
-
-      case 403:
-        window.location.href = '/403';
-        throw new ApiError({ status: 403, title: 'Forbidden', detail: 'Access denied' });
-
-      case 429: {
-        const retryAfter = Number(response.headers.get('Retry-After') ?? 5);
-        await new Promise(r => setTimeout(r, retryAfter * 1000));
-        return retry();
+  return next(req).pipe(
+    catchError((err: HttpErrorResponse) => {
+      switch (err.status) {
+        case 401:
+          auth.clear();
+          router.navigate(['/login']);
+          break;
+        case 403:
+          router.navigate(['/403']);
+          break;
+        case 429: {
+          const retryAfter = Number(err.headers.get('Retry-After') ?? 5);
+          return timer(retryAfter * 1000).pipe(switchMap(() => next(req)));
+        }
+        default: {
+          const problem = err.error as ProblemDetails;
+          snackBar.open(problem?.detail ?? problem?.title ?? 'An error occurred', 'Dismiss', { duration: 5000 });
+        }
       }
-
-      default: {
-        const problem = await response.json();
-        toast.error(problem.detail ?? problem.title ?? 'An error occurred');
-        throw new ApiError(problem);
-      }
-    }
-  },
+      return throwError(() => err);
+    }),
+  );
 };
 ```
 
@@ -143,55 +105,40 @@ export const errorInterceptor = {
 Customer web sessions are stored only in HttpOnly Secure SameSite cookies set by the backend. Browser JavaScript cannot read those cookies and must not store tenant JWTs in memory, `localStorage`, or `sessionStorage`.
 
 ```typescript
-// lib/api/endpoints/auth.ts
-export async function refreshSession(): Promise<SessionDto | null> {
-  const response = await apiClient.fetch<SessionDto>('/api/v1/auth/refresh', {
-    method: 'POST',
-  });
-
-  useAuthStore.getState().setSession(
-    response.user,
-    response.permissions,
-    response.active_modules,
+// shared/src/lib/auth/auth.service.ts (session refresh)
+refreshSession(): Observable<SessionDto> {
+  return this.http.post<SessionDto>('/api/v1/auth/refresh', {}).pipe(
+    tap(session => {
+      this.setSession(session.user, session.permissions, session.activeModules);
+    }),
   );
-
-  return response;
 }
 ```
 
-Non-browser clients such as the IDE extension, desktop agent, and platform-admin server internals may still use Bearer tokens where their own contracts say so.
+Non-browser clients (IDE extension, WorkPulse Agent, platform-admin server) use Bearer tokens per their own contracts.
 
 ---
 
-## Endpoint Organization
-
-One file per module under `lib/api/endpoints/`. Each exports a typed object that calls `apiClient.fetch`.
+## Environment Configuration
 
 ```typescript
-// lib/api/endpoints/employees.ts
-import { apiClient } from '@/lib/api/client';
-import type { Employee, EmployeeFilters, CreateEmployeeDto } from '@/types/core-hr';
-import type { PagedResult } from '@/lib/api/errors';
-import { toParams } from '@/lib/utils/to-params';
+// projects/employee-app/src/environments/environment.ts
+export const environment = {
+  production: false,
+  apiBaseUrl: 'http://localhost:5000',
+  signalRUrl: 'http://localhost:5000/hubs',
+};
+```
 
-export const employeesApi = {
-  list: (filters: EmployeeFilters) =>
-    apiClient.fetch<PagedResult<Employee>>(`/api/v1/employees?${toParams(filters)}`),
+```typescript
+// projects/employee-app/src/app/app.config.ts
+import { environment } from '../environments/environment';
 
-  get: (id: string) =>
-    apiClient.fetch<Employee>(`/api/v1/employees/${id}`),
-
-  create: (data: CreateEmployeeDto) =>
-    apiClient.fetch<Employee>('/api/v1/employees', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-
-  update: (id: string, data: Partial<CreateEmployeeDto>) =>
-    apiClient.fetch<Employee>(`/api/v1/employees/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    }),
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(withInterceptors([authInterceptor, tenantInterceptor, correlationInterceptor, errorInterceptor])),
+    { provide: API_BASE_URL, useValue: environment.apiBaseUrl },
+  ],
 };
 ```
 
@@ -200,6 +147,7 @@ export const employeesApi = {
 ## Error Types
 
 ```typescript
+// shared/src/lib/api/models/problem-details.model.ts
 export interface ProblemDetails {
   type?: string;
   title: string;
@@ -213,14 +161,6 @@ export interface PagedResult<T> {
   nextCursor: string | null;
   hasMore: boolean;
 }
-
-export class ApiError extends Error {
-  constructor(public problem: ProblemDetails) {
-    super(problem.detail ?? problem.title);
-  }
-}
-
-export class AuthError extends Error {}
 ```
 
 ---
@@ -230,14 +170,42 @@ export class AuthError extends Error {}
 Cursor-based only; never offset pagination for high-volume tenant data.
 
 ```typescript
-export function useEmployeesInfinite(filters: EmployeeFilters) {
-  return useInfiniteQuery({
-    queryKey: ['employees', 'infinite', filters],
-    queryFn: ({ pageParam }) =>
-      api.employees.list({ ...filters, cursor: pageParam }),
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: undefined as string | undefined,
+// In a component using resource() with cursor pagination
+export class EmployeeListComponent {
+  private employeeService = inject(EmployeeApiService);
+
+  filters = signal<EmployeeFilters>({ pageSize: 25, cursor: null });
+
+  employeesResource = resource({
+    request: () => this.filters(),
+    loader: ({ request }) => firstValueFrom(this.employeeService.list(request)),
   });
+
+  loadNextPage() {
+    const cursor = this.employeesResource.value()?.nextCursor;
+    if (cursor) {
+      this.filters.update(f => ({ ...f, cursor }));
+    }
+  }
+}
+```
+
+---
+
+## Helper: `toHttpParams`
+
+```typescript
+// shared/src/lib/utils/to-params.ts
+import { HttpParams } from '@angular/common/http';
+
+export function toHttpParams(obj: Record<string, unknown>): HttpParams {
+  let params = new HttpParams();
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== null && value !== undefined && value !== '') {
+      params = params.set(key, String(value));
+    }
+  }
+  return params;
 }
 ```
 
@@ -245,7 +213,7 @@ export function useEmployeesInfinite(filters: EmployeeFilters) {
 
 ## Related
 
-- [[backend/api-conventions|Api Conventions]] - backend API conventions
-- [[frontend/architecture/app-structure|App Structure]] - frontend architecture
-- [[frontend/data-layer/state-management|State Management]] - state management patterns
-- [[frontend/coding-standards|Frontend Coding Standards]] - coding standards
+- [[backend/api-conventions|API Conventions]] — backend API contract
+- [[frontend/architecture/app-structure|App Structure]] — workspace structure
+- [[frontend/data-layer/state-management|State Management]] — Angular Signals + resource()
+- [[frontend/coding-standards|Coding Standards]] — Angular conventions

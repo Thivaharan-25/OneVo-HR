@@ -54,7 +54,7 @@ The set of employees a creator can add as members or team lead:
 
 ### Step 3: Assign Team Lead
 - **UI:** Search employee from resolved member pool → select as team lead
-- **Backend:** Team lead gains `*:read-team` scope for this team's members
+- **Backend:** Team lead's role is assigned `direct_reports` or `reporting_tree` access policy on relevant permissions (e.g., `employees:read`, `attendance:read`) — scope is enforced by the backend access policy resolver, not a separate permission code
 
 ### Step 4: Add Members
 - **UI:** Search employees from resolved member pool → add to team

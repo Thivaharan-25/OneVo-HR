@@ -3,7 +3,7 @@
 **Area:** Employee Management  
 **Trigger:** Employee or admin views/edits profile (user action — self-service or admin)
 **Required Permission(s):** `employees:read-own` (own profile) or `employees:read` (any employee)  
-**Related Permissions:** `employees:write` (edit), `employees:read-team` (team profiles)
+**Related Permissions:** `employees:write` (edit), `employees:read` with team access policy (team profiles)
 
 ---
 
@@ -41,8 +41,8 @@
 
 ## Variations
 
-### When viewing with `employees:read-team`
-- Can only see employees in own team/department — others hidden
+### When viewing with `employees:read` (team/reporting access policy)
+- Can only see employees in scope of their access policy — others hidden
 
 ### Own profile — limited editable fields
 - Employee can update: phone, address, emergency contacts, photo
