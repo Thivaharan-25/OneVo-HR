@@ -56,12 +56,13 @@ Global permission definitions — NOT tenant-scoped.
 
 ### `role_permissions`
 
-Permissions assigned to a role (template). When a role is assigned to a user, they get these permissions as a baseline.
+Permissions assigned to a role. When a role is assigned to a user, they get these permissions as a baseline.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `role_id` | `uuid` | FK → roles |
 | `permission_id` | `uuid` | FK → permissions |
+| `access_policy` | `varchar(50)` | NULL for tenant-wide permissions; one of `self` / `direct_reports` / `reporting_tree` / `department` / `department_tree` / `org_unit_tree` / `organization` for employee-data permissions |
 | PK: `(role_id, permission_id)` | | |
 
 ### `user_roles`
@@ -87,10 +88,23 @@ Which role an employee is assigned to. An employee can have one or more roles.
 | `user_id` | `uuid` | FK → users |
 | `permission_id` | `uuid` | FK → permissions |
 | `grant_type` | `varchar(10)` | `grant` or `revoke` |
+| `access_policy` | `varchar(50)` | NULL inherits role default; set to override the policy for this specific employee |
 | `reason` | `varchar(255)` | Why this override exists |
 | `granted_by` | `uuid` | FK → users (Super Admin who set this) |
 | `created_at` | `timestamptz` | |
 | UNIQUE: `(tenant_id, user_id, permission_id)` | | One override per permission per user |
+
+### `employee_hierarchy`
+
+Closure table for efficient org hierarchy queries. Rebuilt on `reports_to_id` changes.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `tenant_id` | `uuid` | FK → tenants |
+| `ancestor_employee_id` | `uuid` | FK → employees |
+| `descendant_employee_id` | `uuid` | FK → employees |
+| `depth` | `int` | 0 = self-row; 1 = direct report; ≥2 = skip-level |
+| PK: `(tenant_id, ancestor_employee_id, descendant_employee_id)` | | |
 
 ### `feature_access_grants`
 
@@ -121,30 +135,39 @@ EffectivePermissions(userId) =
   5. Return final permission set
 ```
 
-## Hierarchy Scoping
+## Access Policy Scoping
 
-Every data query is scoped to the employee's position in the org hierarchy:
+Every employee-data query is scoped by the **access policy** configured on the permission in `role_permissions`. The backend resolves the policy at query time using `IAccessPolicyResolver` and the `employee_hierarchy` closure table. The frontend never sends employee ID lists.
 
-- An employee with `leave:approve` can only approve leave for **employees reporting to them** (direct or indirect via the reporting chain in `employees.reports_to_id`)
-- A department owner can see all employees in their department and sub-departments when their permissions grant that scope
-- **Super Admin** bypasses hierarchy scoping entirely
-- The hierarchy is resolved from `employees.reports_to_id` — a recursive CTE walks the tree
+- An employee with `leave:approve` + policy `direct_reports` can only approve leave for employees at `depth = 1` below them in `employee_hierarchy`
+- An HR user with `leave:read` + policy `organization` sees all active employees in the tenant
+- **Tenant Super Admin** uses `organization` policy on all scoped permissions
 
-### Implementation — `HierarchyFilter`
+### Named Access Policies
 
-`IHierarchyScopeService.GetFilterAsync()` (Auth module public interface) returns a `HierarchyFilter` value object. Pass it to repository methods — **never materialize a list of IDs**.
+| Policy | SQL mechanism |
+|:-------|:-------------|
+| `self` | `WHERE employee_id = @currentEmployeeId` |
+| `direct_reports` | `employee_hierarchy WHERE ancestor = @me AND depth = 1` |
+| `reporting_tree` | `employee_hierarchy WHERE ancestor = @me AND depth >= 1` |
+| `department` | `employees WHERE department_id = @myDeptId` |
+| `department_tree` | Dept subtree via dept closure |
+| `org_unit_tree` | Org unit subtree |
+| `organization` | No additional filter — all active employees in tenant |
 
-| User type | Filter returned | SQL mechanism |
-|:----------|:----------------|:--------------|
-| Super Admin | `HierarchyFilter.All` | No additional filter — skip CTE entirely |
-| Manager (has `employees:read-team`) | `HierarchyFilter.SubordinatesOf(managerId)` | Recursive CTE in one query |
-| Employee | `HierarchyFilter.OwnOnly(employeeId)` | `WHERE id = @employeeId` |
+### Implementation — `IAccessPolicyResolver`
 
-The CTE includes the manager themselves + all employees below in the reporting chain — one DB round-trip, no `WHERE IN (...)` list regardless of org size.
+```csharp
+var policy = await _resolver.ResolveAsync(userId, "leave:approve", tenantId, ct);
+var inScope = await _hierarchyRepo.IsInScopeAsync(policy, targetEmployeeId, tenantId, ct);
+if (!inScope) return Result.Forbidden("Employee is outside your approval scope");
+```
 
-Supporting index: `idx_employees_reports_to_id ON employees(reports_to_id, tenant_id) WHERE is_deleted = false`
+The `employee_hierarchy` closure table is rebuilt when `employee.reports_to_id` changes (via `EmployeeManagerChangedEvent`).
 
-See [[backend/shared-kernel|Shared Kernel]] for `HierarchyFilter` definition and `BaseRepository.ApplyHierarchyFilter()`.
+Supporting index: `ix_employee_hierarchy_tenant_ancestor ON employee_hierarchy (tenant_id, ancestor_employee_id)`
+
+See [[Userflow/Auth-Access/access-policy|Access Policy Reference]] for full details and [[docs/superpowers/specs/2026-05-22-access-policy-hierarchy-model|Access Policy Spec]] for implementation steps.
 
 ## API Endpoints
 

@@ -80,7 +80,7 @@
 - Historical record retained for analytics
 
 ### When manager directly adds a skill to an employee's profile
-- Manager navigates to employee profile → Skills tab → "Add Skill" (only visible to users with `skills:write-team`)
+- Manager navigates to employee profile → Skills tab → "Add Skill" (only visible to users with `skills:write` and a team-scoped access policy)
 - Same modal as employee self-declaration but scoped to the employee
 - **API:** `POST /api/v1/employees/{employeeId}/skills`
   ```json

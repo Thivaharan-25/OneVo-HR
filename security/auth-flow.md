@@ -119,7 +119,7 @@ export default function DashboardLayout({ children }) {
 ```text
 1. POST /auth/logout with credentials: include
 2. Backend revokes session and clears HttpOnly cookie
-3. Frontend clears Zustand stores and TanStack Query cache
+3. Frontend clears AuthService signals and destroys active resources
 4. Frontend redirects to /login
 ```
 

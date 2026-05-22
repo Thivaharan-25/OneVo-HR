@@ -1,5 +1,7 @@
 # Clean Architecture Overview: ONEVO
 
+**Canonical folder structure source:** `ONEVO-backend-folder-structure.md` — when this file and the folder structure file conflict, the folder structure file wins.
+
 **Last Updated:** 2026-05-13
 
 Clean Architecture organises code into layers. The core rule is: dependencies point inward. Domain knows nothing about frameworks, databases, or the web.

@@ -378,7 +378,7 @@ Employee certification records with expiry tracking.
 | DELETE | `/api/v1/job-families/{familyId}/skill-requirements/{id}` | `skills:manage` | Remove skill requirement from job family |
 | GET    | `/api/v1/employees/{employeeId}/skills` | `skills:read` | Employee skills profile |
 | POST   | `/api/v1/employees/me/skills` | `skills:write` | Employee self-declares a skill |
-| POST   | `/api/v1/employees/{employeeId}/skills` | `skills:write-team` | Manager directly adds skill to employee profile |
+| POST   | `/api/v1/employees/{employeeId}/skills` | `skills:write` | Manager directly adds skill to employee profile |
 | PUT    | `/api/v1/employees/{employeeId}/skills/{skillId}/validate` | `skills:validate` | Manager validates employee skill |
 | GET    | `/api/v1/skills/gap-analysis/{employeeId}` | `skills:manage` | Skill gap vs job family requirements |
 | GET    | `/api/v1/skills/validation-requests` | `skills:validate` | Pending validation requests for team |

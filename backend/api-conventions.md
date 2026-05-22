@@ -23,7 +23,7 @@ Non-browser clients may use Bearer tokens only where explicitly documented, such
 
 #### Internal Module Authentication
 
-HR Management, Workforce Intelligence, and Work Management all live in the same backend and PostgreSQL database. The Vite + React frontend, IDE extension, and desktop agent call first-party ONEVO endpoints only.
+HR Management, Workforce Intelligence, and Work Management all live in the same backend and PostgreSQL database. The Angular frontend apps, IDE extension, and desktop agent call first-party ONEVO endpoints only.
 
 - Customer web clients use HttpOnly cookie sessions backed by server-side auth state for the normal user audience (`onevo-api`).
 - IDE clients use the normal user JWT audience (`onevo-api`) through IDE-specific secure storage.

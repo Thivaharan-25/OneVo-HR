@@ -9,7 +9,7 @@ CQRS does not require domain events. The default use-case shape is command/query
 ## Application Feature Structure
 
 ```text
-ONEVO.Application/Features/{Feature}/
+ONEVO.Application/Features/{Feature}/{SubFeature}/
 |-- Commands/
 |   `-- {UseCase}/
 |       |-- {UseCase}Command.cs
@@ -22,7 +22,15 @@ ONEVO.Application/Features/{Feature}/
 |-- DTOs/
 |   |-- Requests/
 |   `-- Responses/
-`-- Interfaces/
+|-- RepositoryInterfaces/
+|   `-- I{SubFeature}Repository.cs
+|-- ServiceInterfaces/
+|   `-- I{SubFeature}Service.cs
+|-- Mappings/                   # optional — manual entity→DTO mapping; only when non-trivial
+|   `-- {SubFeature}Mappings.cs
+|-- Helpers/                    # optional — SubFeature-scoped utility logic with no DI deps
+|   `-- {SubFeature}Helper.cs
+`-- EventHandlers/              # optional — only when a justified domain event exists
 ```
 
 No feature-level `Validators/` folder. A validator belongs beside the command it validates.
@@ -32,7 +40,7 @@ No feature-level `Validators/` folder. A validator belongs beside the command it
 A Command changes state. It returns `Result<TResponse>`.
 
 ```csharp
-// ONEVO.Application/Features/Leave/Commands/ApproveLeaveRequest/
+// ONEVO.Application/Features/Leave/Request/Commands/ApproveLeaveRequest/
 public record ApproveLeaveRequestCommand(
     Guid LeaveRequestId,
     Guid ApproverId
@@ -75,7 +83,7 @@ The command handler owns the use case. It may call domain methods, repositories,
 Every command that modifies state has a FluentValidation validator colocated with the command.
 
 ```csharp
-// ONEVO.Application/Features/Leave/Commands/ApproveLeaveRequest/
+// ONEVO.Application/Features/Leave/Request/Commands/ApproveLeaveRequest/
 public class ApproveLeaveRequestValidator
     : AbstractValidator<ApproveLeaveRequestCommand>
 {
@@ -94,7 +102,7 @@ public class ApproveLeaveRequestValidator
 A Query reads state. It never modifies data.
 
 ```csharp
-// ONEVO.Application/Features/Leave/Queries/GetLeaveBalance/
+// ONEVO.Application/Features/Leave/Request/Queries/GetLeaveBalance/
 public record GetLeaveBalanceQuery(
     Guid EmployeeId,
     int Year
@@ -127,7 +135,7 @@ Queries use repository or reader interfaces that return DTOs/read models. Querie
 ## DTOs
 
 ```text
-Application/Features/Leave/DTOs/
+Application/Features/Leave/Request/DTOs/
 |-- Requests/
 |   `-- CreateLeaveRequestDto.cs
 `-- Responses/
@@ -153,7 +161,7 @@ Poor uses:
 - Moving simple command logic into event handlers.
 - Using events because "CQRS needs them". It does not.
 
-If an event is justified, place it in `ONEVO.Domain/Features/{Feature}/Events/` and place handlers in `ONEVO.Application/Features/{Feature}/EventHandlers/`.
+If an event is justified, place it in `ONEVO.Domain/Features/{Feature}/{SubFeature}/Events/` and place handlers in `ONEVO.Application/Features/{Feature}/{SubFeature}/EventHandlers/`.
 
 ## Pipeline Behaviors
 

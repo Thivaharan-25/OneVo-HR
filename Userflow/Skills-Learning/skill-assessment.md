@@ -4,7 +4,7 @@
 **Phase:** Phase 1
 **Trigger:** Manager validates employee declared skills (reaction — triggered by skill declaration)
 **Required Permission(s):** `skills:validate`  
-**Related Permissions:** `skills:read` (to view skills), `employees:read-team` (to view team members)
+**Related Permissions:** `skills:read` (to view skills), `employees:read` with team access policy (to view team members)
 
 ---
 

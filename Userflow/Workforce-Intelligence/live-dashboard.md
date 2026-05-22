@@ -3,7 +3,7 @@
 **Area:** Workforce Intelligence  
 **Trigger:** Manager opens real-time workforce view (user action — view only)
 **Required Permission(s):** `workforce:view`  
-**Related Permissions:** `workforce:manage` (take actions), `attendance:read-team` (team-scoped)
+**Related Permissions:** `workforce:manage` (take actions), `attendance:read` (team-scoped via access policy)
 
 ---
 
@@ -56,7 +56,7 @@
 ## Variations
 
 ### Team-scoped view
-- With `attendance:read-team` only: sees only direct reports / team members
+- With `attendance:read` assigned with `direct_reports` or `reporting_tree` policy: sees only direct reports / team members
 
 ## Error Scenarios
 

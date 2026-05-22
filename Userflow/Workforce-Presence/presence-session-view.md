@@ -2,7 +2,7 @@
 
 **Area:** Workforce Presence  
 **Trigger:** Employee or manager views attendance log (user action — view only)
-**Required Permission(s):** `attendance:read-own` (own) or `attendance:read` (all) or `attendance:read-team` (team)  
+**Required Permission(s):** `attendance:read-own` (own) or `attendance:read` (others — backend applies access policy to scope results)  
 **Related Permissions:** `workforce:view` (live dashboard)
 
 ---

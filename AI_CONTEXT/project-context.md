@@ -313,48 +313,78 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 
 ## 10. Frontend
 
-The ONEVO Frontend is a Vite + React 19 SPA serving as the web interface for the full platform (both pillars).
+ONEVO has two customer-facing Angular apps in one monorepo workspace, plus the internal Developer Console.
 
-### Architecture Overview
+### Two-App Monorepo
+
+| App | URL | Persona | Bundle goal |
+|:----|:----|:--------|:------------|
+| `employee-app` | `app.{tenant}.onevo.com` | Employee self-service | Lean — only employee features |
+| `management-app` | `manage.{tenant}.onevo.com` | HR / Admin / Manager / Executive | Full — analytics, monitoring, configuration |
+| `shared` (library) | — | Auth, API services, design system, models | Built once, imported by both apps |
+
+Dual-role users (team leads, player-coaches) see a context-switcher in the header. Clicking it opens the other app — the JWT session cookie works on both since they share the same parent domain. No re-login required.
+
+### Workspace Structure
 
 ```
-Vite + React 19 + React Router v7
-├── src/router.tsx   - Route definitions and route guards
-├── src/pages/       - Route page components
-├── src/components/  - Shared and feature components
-├── src/lib/api/     - Typed API client
-├── src/stores/      - Zustand stores
-└── src/styles/      - Global CSS and Tailwind tokens
+onevo-frontend/  (Angular workspace — angular.json)
+├── projects/
+│   ├── employee-app/
+│   │   ├── src/app/
+│   │   │   ├── app.routes.ts        - Typed route definitions
+│   │   │   ├── app.config.ts        - provideRouter, provideHttpClient, etc.
+│   │   │   ├── features/            - Feature components (standalone)
+│   │   │   └── shell/               - Shell layout, nav rail, header
+│   │   └── src/environments/
+│   │
+│   ├── management-app/
+│   │   ├── src/app/
+│   │   │   ├── app.routes.ts
+│   │   │   ├── app.config.ts
+│   │   │   ├── features/
+│   │   │   └── shell/
+│   │   └── src/environments/
+│   │
+│   └── shared/                      - Angular library
+│       └── src/lib/
+│           ├── auth/                - AuthService, AuthGuard, token handling
+│           ├── api/                 - Typed HttpClient services per domain
+│           ├── realtime/            - SignalR service (shared hub management)
+│           ├── ui/                  - Shared Angular Material + custom components
+│           ├── models/              - TypeScript interfaces/DTOs matching backend
+│           └── utils/               - Date, formatting, validation helpers
 ```
 
 ### Key Design Principles
 
-1. **Permission-based rendering** — every feature gated by RBAC permissions
+1. **Permission-based rendering** — every feature gated by RBAC; use `*hasPermission` directive from shared lib
 2. **Real-time where it matters** — SignalR for live workforce dashboard, exception alerts
-3. **Polling where it's enough** — 30s polling for non-critical updates
-4. **Responsive but desktop-first** — monitoring dashboards are primarily desktop
+3. **Polling where it's enough** — 30 s polling for non-critical updates
+4. **Desktop-first** — monitoring dashboards and analytics are primarily desktop
 5. **Tenant-scoped everything** — all API calls include tenant context from JWT
-6. **Feature flag aware** — UI adapts to what features the tenant has enabled
+6. **Feature flag aware** — UI adapts to what modules the tenant has enabled; disabled modules are hidden
 
 ### Product Packaging Affects UI
 
 | Package | What is visible |
 |:--------|:----------------|
-| Foundation only | Tenant setup, auth/session surfaces, and role/permission use surfaces required to operate the tenant |
-| Package 1 | Profile, attendance/leave, monitoring views, productivity/performance analytics views, exception views, and overtime management |
-| Package 2 | Project management, agentic chat, third-party integrations, and IDE extension |
-| Package 1 + Package 2 | Union of Package 1 and Package 2 modules |
+| Foundation only | Tenant setup, auth/session surfaces, role/permission surfaces |
+| Package 1 | Profile, attendance/leave, monitoring views, productivity/performance analytics, exception views, overtime management |
+| Package 2 | Project management, agentic chat, third-party integrations, IDE extension |
+| Package 1 + Package 2 | Union of both |
 
-Every route, sidebar item, command menu item, API endpoint, and mobile/tablet responsive layout must check tenant module entitlements. Disabled modules are hidden in the React UI and rejected server-side with `403`.
+Every route, sidebar item, and API endpoint must check tenant module entitlements. Disabled modules are hidden in Angular UI and rejected server-side with `403`.
 
 ### Backend API Consumption
 
 The frontend consumes the ONEVO REST API at `/api/v1/*`.
 
-- **Auth:** BFF-style HttpOnly cookie session for customer web; tenant JWTs stay backend-side for browser sessions
+- **Auth:** BFF-style HttpOnly cookie session; tenant JWTs stay backend-side for browser sessions
+- **HTTP:** Angular `HttpClient` with functional interceptors for auth headers and error normalisation
 - **Pagination:** Cursor-based, max 100 items
 - **Errors:** RFC 7807 Problem Details
-- **Real-time:** SignalR hub at `/hubs/notifications`
+- **Real-time:** SignalR hub at `/hubs/notifications` — channels: `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status`
 
 ### Development Phase
 
@@ -365,7 +395,7 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 ## 11. AI Agent Instructions
 
 - **Prioritization:** Always read this file and [[AI_CONTEXT/rules|Rules]] before generating any code
-- **Tech Stack:** See [[AI_CONTEXT/tech-stack|Tech Stack]] for full details (.NET 9 current / .NET 10 target backend, Vite + React 19, Windows Service/MAUI agent)
+- **Tech Stack:** See [[AI_CONTEXT/tech-stack|Tech Stack]] for full details (.NET 9 current / .NET 10 target backend, Angular 21 two-app monorepo, Windows Service/MAUI agent)
 - **Module Boundaries:** Never violate module boundaries. See [[backend/module-boundaries|Module Boundaries]]
 - **Multi-Tenancy:** Every query must be tenant-scoped. See [[infrastructure/multi-tenancy|Multi Tenancy]]
 - **Module Details:** Each module has its own doc in `modules/`. Read the specific module doc before working on it.
@@ -374,7 +404,7 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 - **IDE Extension tag security:** All `@entity:action` permission checks happen server-side. Never trust client-side validation
 - **Monitoring Privacy:** Always check monitoring configuration before processing activity data
 - **No public signup:** Tenant provisioning is operator-only via `/admin/v1/*` inside `ONEVO.Api`. Never build a public signup/registration flow. See Section 2 (Sales Model) above.
-- **Module gating:** Every pillar-gated feature must check the tenant entitlement source: active subscription/commercial plan plus tenant module grants/feature grants. A tenant without Workforce Intelligence entitlement must never see `/workforce/*` routes or receive monitoring data.
+- **Module gating:** Every pillar-gated feature must check the tenant entitlement source: active subscription/commercial plan plus tenant module grants/feature grants. A tenant without Workforce Intelligence entitlement must never see `/workforce/*` routes or receive monitoring data. This applies to both Angular apps.
 - **Sales entitlement separation:** Billing/maintenance status decides what the tenant has commercially bought; RBAC decides what a user can do inside that tenant. Keep these concepts separate and combine them only in entitlement/authorization checks.
 
 ## Related

@@ -4,8 +4,7 @@
 
 | Tool | Purpose | Runs In |
 |:-----|:--------|:--------|
-| Vitest | Unit tests (hooks, utils, pure logic) | Node |
-| React Testing Library | Component behavior tests | jsdom |
+| Jest + Angular Testing Library | Unit + component behavior tests | jsdom |
 | MSW (Mock Service Worker) | API mocking for component + integration tests | jsdom / browser |
 | Playwright | E2E tests (critical user flows) | Real browser |
 
@@ -14,49 +13,71 @@
 Tests live next to the code they test:
 
 ```
-src/
-├── hooks/
-│   ├── use-employees.ts
-│   └── use-employees.test.ts          # Unit test
-├── components/
+projects/
+├── shared/src/lib/
+│   ├── api/endpoints/
+│   │   ├── employees.service.ts
+│   │   └── employees.service.spec.ts       # Service unit test
+│   └── utils/
+│       ├── format-date.ts
+│       └── format-date.spec.ts             # Utility unit test
+├── employee-app/src/app/features/
+│   ├── leave/
+│   │   ├── leave-overview.component.ts
+│   │   └── leave-overview.component.spec.ts # Component test
+├── management-app/src/app/features/
 │   ├── workforce/
-│   │   ├── live-dashboard.tsx
-│   │   └── live-dashboard.test.tsx     # Component test
-├── lib/
-│   ├── utils/
-│   │   ├── format-date.ts
-│   │   └── format-date.test.ts         # Unit test
+│   │   ├── live-dashboard.component.ts
+│   │   └── live-dashboard.component.spec.ts # Component test
 e2e/
-├── leave-request.spec.ts              # E2E test
-├── exception-management.spec.ts       # E2E test
-└── login.spec.ts                      # E2E test
+├── leave-request.spec.ts                    # E2E test
+├── exception-management.spec.ts
+└── login.spec.ts
 ```
 
-## Unit Tests (Vitest)
+## Unit Tests (Jest)
 
-For hooks, utilities, and pure functions.
+For services, utilities, and pure functions.
 
-```tsx
-// use-employees.test.ts
-import { renderHook, waitFor } from '@testing-library/react';
-import { useEmployees } from './use-employees';
-import { createWrapper } from '@/test/utils'; // provides QueryClientProvider
+```typescript
+// employees.service.spec.ts
+import { TestBed } from '@angular/core/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { EmployeeApiService } from './employees.service';
 
-describe('useEmployees', () => {
-  it('fetches employees with filters', async () => {
-    const { result } = renderHook(
-      () => useEmployees({ department: 'engineering' }),
-      { wrapper: createWrapper() }
-    );
+describe('EmployeeApiService', () => {
+  let service: EmployeeApiService;
+  let httpMock: HttpTestingController;
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.items).toHaveLength(5);
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        EmployeeApiService,
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    });
+    service = TestBed.inject(EmployeeApiService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('lists employees with filters', () => {
+    service.list({ page: 0, pageSize: 25, search: 'john' }).subscribe(result => {
+      expect(result.items).toHaveLength(2);
+    });
+
+    const req = httpMock.expectOne(r => r.url.includes('/api/v1/employees'));
+    expect(req.request.params.get('search')).toBe('john');
+    req.flush({ items: [mockEmployee1, mockEmployee2], nextCursor: null, hasMore: false });
   });
 });
 ```
 
-```tsx
-// format-date.test.ts
+```typescript
+// format-date.spec.ts
 import { formatDate, formatRelativeTime } from './format-date';
 
 describe('formatDate', () => {
@@ -73,67 +94,75 @@ describe('formatRelativeTime', () => {
 });
 ```
 
-## Component Tests (RTL)
+## Component Tests (Angular Testing Library)
 
-Test behavior, not implementation. Never test internal state or CSS classes.
+Test behavior from the user's perspective. Never test internal signals, private methods, or Angular lifecycle directly.
 
-```tsx
-// live-dashboard.test.tsx
-import { render, screen } from '@testing-library/react';
-import { LiveDashboard } from './live-dashboard';
-import { createWrapper } from '@/test/utils';
+```typescript
+// live-dashboard.component.spec.ts
+import { render, screen } from '@testing-library/angular';
+import { userEvent } from '@testing-library/user-event';
+import { LiveDashboardComponent } from './live-dashboard.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { setupServer } from 'msw/node';
+import { workforceHandlers, monitoringDisabledHandler } from '../../../../test/handlers/workforce';
 
-describe('LiveDashboard', () => {
+const server = setupServer(...workforceHandlers);
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+describe('LiveDashboardComponent', () => {
+  const renderComponent = () =>
+    render(LiveDashboardComponent, {
+      providers: [provideHttpClient(), provideRouter([])],
+    });
+
   it('shows employee count KPIs', async () => {
-    render(<LiveDashboard />, { wrapper: createWrapper() });
-    
+    await renderComponent();
     expect(await screen.findByText('487')).toBeInTheDocument(); // Total
     expect(screen.getByText('342')).toBeInTheDocument();        // Active
   });
 
   it('shows monitoring disabled message when monitoring is off', async () => {
-    // MSW handler returns monitoring disabled
     server.use(monitoringDisabledHandler);
-    
-    render(<LiveDashboard />, { wrapper: createWrapper() });
-    
+    await renderComponent();
     expect(await screen.findByText(/monitoring is not enabled/i)).toBeInTheDocument();
   });
 
   it('navigates to employee detail on row click', async () => {
-    render(<LiveDashboard />, { wrapper: createWrapper() });
-    
+    const user = userEvent.setup();
+    await renderComponent();
+
     const row = await screen.findByText('John Doe');
-    await userEvent.click(row);
-    
-    expect(mockRouter.push).toHaveBeenCalledWith('/workforce/activity/emp-123');
+    await user.click(row);
+
+    // Angular Router navigation assertion
+    expect(location.pathname).toBe('/workforce/emp-123');
   });
 });
 ```
 
 ## MSW Handlers
 
-Centralized mock API handlers:
+Centralised mock API handlers — shared across unit and E2E tests:
 
-```tsx
+```typescript
 // test/handlers/workforce.ts
 import { http, HttpResponse } from 'msw';
 
 export const workforceHandlers = [
-  http.get('/api/v1/workforce/presence/live', () => {
-    return HttpResponse.json({
-      total: 487,
-      active: 342,
-      idle: 89,
-      onLeave: 41,
-      absent: 15,
+  http.get('/api/v1/workforce/presence/live', () =>
+    HttpResponse.json({
+      total: 487, active: 342, idle: 89, onLeave: 41, absent: 15,
       departments: [
         { name: 'Engineering', activePercent: 82 },
         { name: 'Sales', activePercent: 71 },
       ],
-    });
-  }),
-  
+    })
+  ),
+
   http.get('/api/v1/exceptions/alerts', ({ request }) => {
     const url = new URL(request.url);
     const status = url.searchParams.get('status');
@@ -150,10 +179,38 @@ export const monitoringDisabledHandler = http.get(
 );
 ```
 
+## Permission Testing Helper
+
+Provide a mock `AuthService` with specific permissions to test gated UI:
+
+```typescript
+// test/mock-auth.service.ts
+export function provideMockAuth(permissions: string[] = [], modules: string[] = []) {
+  return {
+    provide: AuthService,
+    useValue: {
+      user: signal({ id: 'u1', name: 'Test User', tenantSlug: 'test-co' }),
+      isAuthenticated: signal(true),
+      hasPermission: (p: string) => computed(() => permissions.includes(p)),
+      hasFeature: (f: string) => computed(() => modules.includes(f)),
+      hasAnyPermission: (...ps: string[]) => computed(() => ps.some(p => permissions.includes(p))),
+      isSuperAdmin: computed(() => false),
+    } satisfies Partial<AuthService>,
+  };
+}
+
+// Usage in test
+render(EmployeeDetailComponent, {
+  providers: [
+    provideMockAuth(['employees:read', 'payroll:read']),
+    provideHttpClient(),
+  ],
+});
+```
 
 ## Responsive QA
 
-Responsive behavior is mandatory for Phase 1 and must be verified before a page is considered complete.
+Responsive behavior must be verified before any page is considered complete.
 
 ### Required Viewports
 
@@ -168,24 +225,23 @@ Responsive behavior is mandatory for Phase 1 and must be verified before a page 
 
 ### Checks
 
-- No horizontal page overflow.
-- Topbar actions remain reachable.
-- Navigation is usable through drawer, rail, or full panel depending on viewport.
-- Tables switch to reduced-column or card/list layouts where needed.
-- Forms remain readable, touch-safe, and completable.
-- Filters, row actions, bulk actions, and primary actions remain available.
-- Modals, drawers, popovers, and menus fit within the viewport and trap focus correctly.
+- No horizontal page overflow
+- Topbar actions remain reachable
+- Navigation usable through drawer, rail, or full panel depending on viewport
+- Tables switch to card/list layout on mobile
+- Forms remain readable, touch-safe, and completable
+- Modals, drawers, and menus fit within the viewport and trap focus correctly
 
-### Playwright Pattern
+### Playwright Viewport Pattern
 
-```tsx
+```typescript
 for (const width of [375, 430, 768, 1024, 1280, 1440]) {
   test(`dashboard is usable at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    await expect(page.locator('body')).toBeVisible();
-    await expect(page.locator('[data-testid="app-shell"]')).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await expect(page.locator('app-root')).toBeVisible();
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(width);
   });
 }
 ```
@@ -194,7 +250,7 @@ for (const width of [375, 430, 768, 1024, 1280, 1440]) {
 
 Critical user flows only — not exhaustive coverage.
 
-```tsx
+```typescript
 // e2e/leave-request.spec.ts
 import { test, expect } from '@playwright/test';
 
@@ -204,23 +260,15 @@ test.describe('Leave Request Flow', () => {
     await page.fill('[name=email]', 'hr@test.com');
     await page.fill('[name=password]', 'TestPass123!');
     await page.click('button[type=submit]');
-    await page.waitForURL('/overview');
+    await page.waitForURL('/home');
   });
 
   test('approve a leave request', async ({ page }) => {
-    await page.goto('/people/leave');
-    
-    // Click pending tab
+    await page.goto('/leave');
     await page.click('text=Pending');
-    
-    // Click first request
     await page.click('text=John Doe');
-    
-    // Approve
     await page.click('button:has-text("Approve")');
-    
-    // Verify toast
-    await expect(page.locator('.toast')).toContainText('Leave approved');
+    await expect(page.locator('mat-snack-bar-container')).toContainText('Leave approved');
   });
 });
 ```
@@ -229,52 +277,38 @@ test.describe('Leave Request Flow', () => {
 
 | Flow | File | What It Tests |
 |:-----|:-----|:-------------|
-| Login + MFA | `login.spec.ts` | Login, MFA verification, redirect to dashboard |
+| Login + MFA | `login.spec.ts` | Login, MFA verification, redirect to home |
 | Leave approval | `leave-request.spec.ts` | Submit, approve, reject leave |
 | Exception management | `exception-management.spec.ts` | View alerts, acknowledge, dismiss |
-| Payroll run | `payroll-run.spec.ts` | Create run, calculate, approve |
 | Employee CRUD | `employee-crud.spec.ts` | Create, edit, view employee |
-
-## Test Utilities
-
-```tsx
-// test/utils.tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/components/providers/auth-provider';
-
-export function createWrapper(options?: { permissions?: string[] }) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-
-  return function Wrapper({ children }: { children: React.ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider mockPermissions={options?.permissions}>
-          {children}
-        </AuthProvider>
-      </QueryClientProvider>
-    );
-  };
-}
-```
+| App context switch | `context-switch.spec.ts` | Switch between employee-app and management-app |
 
 ## What NOT to Test
 
-- shadcn/ui component internals (they're already tested)
-- CSS/styling (visual regression testing is a separate concern)
-- Implementation details (internal state, private methods)
-- Snapshot tests (they break on every UI change and catch nothing meaningful)
+- Angular Material component internals (already tested by Angular team)
+- CSS/styling (visual regression is a separate concern)
+- Implementation details (internal signals, private methods, lifecycle hooks)
+- Snapshot tests (break on every UI change, catch nothing meaningful)
 
 ## Coverage Targets
 
 | Layer | Target | Notes |
 |:------|:-------|:------|
-| Utils/hooks | 90%+ | Pure logic, easy to test |
-| Components | 70%+ | Key behaviors, not every variant |
-| E2E | Critical flows | ~10 flows covering the main user journeys |
+| Utils / pure functions | 90%+ | Pure logic, easy to test |
+| Services (API, auth) | 80%+ | Key behaviors with HttpTestingController |
+| Components | 70%+ | Key behaviors via Angular Testing Library |
+| E2E | Critical flows | ~10 flows covering main user journeys |
+
+## Run Commands
+
+```bash
+ng test employee-app          # Jest unit + component tests
+ng test management-app
+ng test shared
+ng e2e                        # Playwright E2E
+```
 
 ## Related
 
-- [[frontend/coding-standards|Frontend Coding Standards]]
+- [[frontend/coding-standards|Coding Standards]]
 - [[frontend/design-system/components/component-catalog|Component Catalog]]

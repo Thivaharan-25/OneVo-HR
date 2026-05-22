@@ -4,20 +4,93 @@
 
 1. Operator opens Platform Management -> Feature Management / Module Catalog.
 2. Frontend loads current modules, permission catalog, setup-service links, and pricing units.
-3. Operator enters module metadata, pricing, limits, and permission ownership.
+3. Operator fills in the create form (see field spec below).
 4. Frontend calls `POST /admin/v1/modules/catalog`.
 5. Backend verifies `platform.module_catalog.manage`.
-6. Backend validates permission ownership and price bracket shape.
+6. Backend validates permission ownership (no claimed permission can be owned by two modules) and price bracket shape.
 7. Backend writes `module_catalog` and price history where applicable.
 8. Backend writes an audit event.
 
+### Create Module — Full Field Specification
+
+**Trigger:** `+ Add Module` button (requires `platform.module_catalog.manage`)
+
+| Field | Label | Type | Required | Validation | Notes |
+|---|---|---|---|---|---|
+| Module Key | "Module Key (Slug)" | Text input | Yes | Lowercase, underscores only, unique, max 80 chars | Permanent — cannot change after any tenant is entitled. e.g. `leave`, `core_hr`, `activity_monitoring` |
+| Display Name | "Display Name" | Text input | Yes | 2–100 chars | Shown to operators in catalog lists and tenant provisioning. |
+| Description | "Description" | Textarea | No | Max 500 chars | Shown in module detail and tenant-facing module summaries. |
+| Pillar | "Pillar" | Dropdown | Yes | | `HR Management`, `Workforce Intelligence`, `WorkSync`, `Shared` — maps to `hr_management \| workforce_intelligence \| worksync \| shared` |
+| Pricing Unit | "Pricing Unit" | Dropdown | Yes | | `Per Employee`, `Per Device`, `Per User`, `Per Seat`, `Flat Rate`, `Per Event` |
+| Sellable | "Sellable" | Toggle | Yes | Default: On | Off = always-included module (Foundation). Non-sellable modules are auto-included in every plan and cannot be individually priced. |
+| Phase | "Phase" | Dropdown | Yes | | `Phase 1` or `Phase 2`. Phase 2 modules are saved with `is_active = false` and are hidden from all plan builders and tenant provisioning until promoted. |
+| Has AI Capability | "Includes AI Capability" | Toggle | No | Default: Off | When On, tenants entitled to this module require an `ai_token_limit_per_month` set on their subscription. |
+| Requires Storage | "Requires Tenant Storage" | Toggle | No | Default: Off | When On, this module draws from the tenant's storage pool allocation. |
+| Setup Service Keys | "Setup Services" | Multi-select from setup service registry | No | | Services that must run during tenant provisioning when this module is entitled (e.g. schema seeds, default config writes). |
+| Permission Ownership | "Module Permissions" | Permission picker (see rules below) | No | | Permission codes this module owns. See **Permission Picker Behaviour** section below. |
+| Default Permissions | "Default Owner Permissions" | Multi-select from owned permissions | No | Must be a subset of Permission Ownership | Permissions auto-granted to the tenant Owner role when this module is entitled. Only permissions selected in Permission Ownership appear here. |
+| Price Brackets | "Pricing Brackets" | Repeatable bracket rows | Yes if Sellable = On | At least one bracket required for sellable modules | Each bracket: `from_units` (int), `to_units` (int or unlimited), `unit_price` (decimal). Brackets must be contiguous and non-overlapping. |
+| Is Active | "Active" | Toggle | Yes | Default: On for Phase 1; Off for Phase 2 | Inactive modules are hidden from all plan builders and tenant provisioning. |
+
+**API:** `POST /admin/v1/modules/catalog`
+
+```json
+{
+  "module_key": "leave",
+  "name": "Leave Management",
+  "description": "Employee leave requests, approvals, balances, and accrual policies.",
+  "pillar": "hr_management",
+  "pricing_unit": "per_employee",
+  "is_sellable": true,
+  "phase": 1,
+  "has_ai_capability": false,
+  "requires_storage": false,
+  "setup_service_keys": ["leave_default_types_seed"],
+  "permission_codes": ["leave:read", "leave:apply", "leave:approve", "leave:manage"],
+  "default_permission_codes": ["leave:read", "leave:apply"],
+  "price_brackets": [
+    { "from_units": 1, "to_units": 50, "unit_price": 2.50 },
+    { "from_units": 51, "to_units": null, "unit_price": 2.00 }
+  ],
+  "is_active": true
+}
+```
+
+---
+
+### Permission Picker Behaviour
+
+The permission picker is used both when **creating** a module and when **editing permission ownership** on an existing module. The same rules apply in both contexts.
+
+**What is loaded:**
+Frontend calls `GET /admin/v1/modules/catalog/{moduleKey}/permissions/available` (or `GET /admin/v1/permission-catalog` on create) to load all known permission codes across the platform.
+
+**Display rules:**
+
+| Permission state | How it appears in the picker |
+|---|---|
+| Unclaimed — not owned by any module | Selectable checkbox, normal style |
+| Owned by this module (edit mode) | Already checked, selectable (can deselect to release) |
+| Owned by another module | Visible but **disabled** — greyed out, checkbox non-interactive. Tooltip: `"Owned by '{module_name}' — release it there first"` |
+
+**Key rules:**
+- All permissions are always shown — the picker never hides already-claimed ones. Operators must be able to see the full permission landscape.
+- An operator cannot claim a permission owned by another module without first going to that module and releasing it.
+- Backend enforces this as a hard validation error on `POST /admin/v1/modules/catalog` and `PUT /admin/v1/modules/catalog/{moduleKey}/permissions`: any submitted permission code already present in another module's `permission_codes_json` is rejected with a 422 listing the conflicting module key(s).
+- Permissions not yet registered in the platform permission catalog (new codes) can be freely claimed.
+
+---
+
 ## Update Permission Ownership
 
-1. Operator opens a module detail page.
-2. Operator adds or removes permission codes.
-3. Backend rejects any permission already owned by another module unless it was removed first through an explicit catalog update.
-4. Backend updates `module_catalog.permission_codes_json`.
-5. Backend invalidates affected tenant permission catalog caches.
+1. Operator opens a module detail page → **Permissions** tab.
+2. Frontend loads the permission picker pre-populated with this module's currently owned permissions checked. All other permissions are shown — unclaimed ones are selectable, already-owned-by-other-module ones are disabled (see **Permission Picker Behaviour** above).
+3. Operator checks or unchecks permission codes.
+4. Operator clicks Save.
+5. Backend rejects any submitted permission code already owned by another module (422 with conflicting module key listed).
+6. Backend updates `module_catalog.permission_codes_json`.
+7. Backend recomputes `default_permission_codes` — any default permissions that were deselected are removed from the default set automatically.
+8. Backend invalidates affected tenant permission catalog caches.
 
 ## Change Pricing
 

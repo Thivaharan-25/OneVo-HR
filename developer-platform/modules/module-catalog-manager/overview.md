@@ -9,16 +9,16 @@ It manages ONEVO product modules only. Developer Platform sidebar access is owne
 ## Phase 1 Modules in Catalog
 
 **Foundation (always included — not separately sellable):**
-`auth`, `configuration`, `roles`, `notifications`, `org`
+`auth`, `configuration`, `roles`, `notifications`, `org`, `workflow_engine`
 
 **Package 1 — HR Core:** `core_hr`, `leave`, `calendar`
 
 **Package 1 — Intelligence:** `monitoring`, `workforce`, `verification`, `exceptions`, `analytics`
 
-**Package 2 — Work Management:** `work_management`, `chat`, `chat_ai`, `documents`, `reports`, `integrations`
+**Package 2 — Work Management:** `work_management`, `chat`, `chat_ai`, `integrations`
 
 **Phase 2 (catalog entries exist but `is_active = false`, `phase = 2`):**
-`payroll`, `performance`, `skills`, `learning`, `recruitment`, `hr_docs`, `grievance`, `expense`
+`payroll`, `performance`, `skills`, `learning`, `recruitment`, `hr_docs`, `grievance`, `expense`, `documents`, `reports`
 
 ## Database Tables / Systems Controlled
 
@@ -35,10 +35,13 @@ It manages ONEVO product modules only. Developer Platform sidebar access is owne
 ## Capabilities
 
 ### Product Module Catalog
-- Create and update product module entries (metadata, pillar, phase, sellable state, pricing unit)
+- Create product module entries with full field spec: module key, display name, pillar, pricing unit, sellable state, phase, AI capability flag, storage flag, setup service keys, price brackets, permission ownership, default permissions, and active state
+- Update module metadata, limits, and pricing via the module detail page (separate tabs for Permissions and Pricing)
 - Maintain pricing brackets by company-size range — changes create immutable price history entries
 - Maintain full-license price and annual maintenance rate
-- Assign permission codes to exactly one module — permission ownership is exclusive
+- Assign permission codes to exactly one module via the permission picker — permission ownership is exclusive; the picker shows ALL platform permissions regardless of ownership state so operators can see the full landscape
+- `default_permission_codes` are auto-granted to the tenant Owner role during provisioning; changes apply to future tenants only, not existing roles
+- When a permission is removed from a module's owned set, it is automatically removed from `default_permission_codes` if present — no separate step required
 - Preview tenant impact before any catalog change (how many tenants/plans would be affected)
 - View per-module integration links
 
@@ -65,8 +68,13 @@ It manages ONEVO product modules only. Developer Platform sidebar access is owne
 ## Key Rules
 
 - Module key is permanent — cannot change after creation
-- Phase 2 modules cannot be added to Phase 1 subscription plans or tenant entitlements
-- A permission belongs to exactly one module — adding it to another requires removing it first
+- Phase 2 modules are always saved with `is_active = false` regardless of the submitted value — they cannot appear in plan builders or tenant provisioning until promoted to Phase 1
+- Sellable modules require at least one price bracket — the backend rejects creation or update if `is_sellable = true` and `price_brackets` is empty
+- A permission belongs to exactly one module — adding it to another requires removing it from the current owner first; the backend enforces this with a 422 on both `POST` (create) and `PUT` (update permissions)
+- The permission picker always shows ALL platform permissions — permissions already owned by another module are visible but disabled (greyed out, not selectable); operators can see the full ownership landscape without needing to navigate away
+- Removing a permission from a module's owned set automatically removes it from `default_permission_codes` — no separate cleanup step
+- `default_permission_codes` must always be a subset of the module's `permission_codes_json` — the backend rejects any submission where default codes include permissions not owned by this module
+- `default_permission_codes` changes apply to future tenant activations only — existing Owner roles in live tenants are not retroactively modified
 - Catalog price updates do NOT retroactively reprice existing tenant subscription snapshots
 - Integration catalog is fully operator-managed — no hardcoded entries in ONEVO application code
 - Changing an integration's `required_module_keys` immediately affects tenant integration access

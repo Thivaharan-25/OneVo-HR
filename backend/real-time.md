@@ -3,35 +3,33 @@
 ## SignalR Setup
 
 ```typescript
-// lib/signalr/connection.ts
+// shared/src/lib/realtime/signalr.service.ts
+import { Injectable, OnDestroy } from '@angular/core';
+import { inject } from '@angular/core';
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { signal } from '@angular/core';
 
-export function createSignalRConnection() {
-  return new HubConnectionBuilder()
-    .withUrl(`${import.meta.env.VITE_API_URL}/hubs/notifications`, {`r`n      withCredentials: true,`r`n    })
-    .withAutomaticReconnect([0, 1000, 2000, 5000, 10000, 30000]) // Backoff
+@Injectable({ providedIn: 'root' })
+export class SignalRService implements OnDestroy {
+  connectionStatus = signal<'connected' | 'reconnecting' | 'disconnected'>('disconnected');
+
+  private connection = new HubConnectionBuilder()
+    .withUrl(`${environment.apiBaseUrl}/hubs/notifications`, { withCredentials: true })
+    .withAutomaticReconnect([0, 1000, 2000, 5000, 10000, 30000])
     .configureLogging(LogLevel.Warning)
     .build();
-}
-```
 
-## SignalR Provider
+  connect() {
+    this.connection.onreconnecting(() => this.connectionStatus.set('reconnecting'));
+    this.connection.onreconnected(() => this.connectionStatus.set('connected'));
+    this.connection.onclose(() => this.connectionStatus.set('disconnected'));
+    this.connection.start().then(() => this.connectionStatus.set('connected')).catch(console.error);
+  }
 
-```tsx
-// providers/signalr-provider.tsx
-export function SignalRProvider({ children }: { children: React.ReactNode }) {
-  const connection = useRef(createSignalRConnection());
-  
-  useEffect(() => {
-    connection.current.start().catch(console.error);
-    return () => { connection.current.stop(); };
-  }, []);
-  
-  return (
-    <SignalRContext.Provider value={connection.current}>
-      {children}
-    </SignalRContext.Provider>
-  );
+  on<T>(method: string, handler: (data: T) => void) { this.connection.on(method, handler); }
+  off(method: string) { this.connection.off(method); }
+  disconnect() { this.connection.stop(); }
+  ngOnDestroy() { this.disconnect(); }
 }
 ```
 
@@ -45,38 +43,39 @@ export function SignalRProvider({ children }: { children: React.ReactNode }) {
 | `agent-status` | Agent online/offline | `agent:view-health` | Agent health indicator |
 | `notifications-{userId}` | Personal notifications | Authenticated | Bell icon badge |
 
-## Hook Pattern
+## Angular Pattern
 
 ```typescript
-// hooks/use-workforce-live.ts
-export function useWorkforceLive() {
-  const connection = useSignalR();
-  const queryClient = useQueryClient();
-  
-  useEffect(() => {
-    connection.on('workforce-live', (update: WorkforceUpdate) => {
-      // Update TanStack Query cache directly
-      queryClient.setQueryData(['workforce', 'live'], (old: WorkforceStatus) => ({
-        ...old,
-        ...update,
-      }));
+// management-app: workforce-live.component.ts
+export class WorkforceLiveComponent implements OnInit, OnDestroy {
+  private signalR = inject(SignalRService);
+
+  presenceResource = resource({
+    loader: () => firstValueFrom(this.workforceService.getLiveStatus()),
+  });
+
+  ngOnInit() {
+    // High-frequency: set resource value directly (avoids HTTP refetch)
+    this.signalR.on<WorkforceUpdate>('WorkforceStatusUpdate', (update) => {
+      this.presenceResource.set({ ...this.presenceResource.value()!, ...update });
     });
-    
-    return () => connection.off('workforce-live');
-  }, [connection, queryClient]);
+  }
+
+  ngOnDestroy() { this.signalR.off('WorkforceStatusUpdate'); }
 }
 
-// hooks/use-exception-alerts.ts
-export function useExceptionAlerts() {
-  const connection = useSignalR();
-  const queryClient = useQueryClient();
-  
-  useEffect(() => {
-    connection.on('exception-alerts', (alert: ExceptionAlert) => {
-      // Add to cache
-      queryClient.setQueryData(['exception-alerts', { status: 'new' }], 
-        (old: ExceptionAlert[]) => [alert, ...(old ?? [])]);
-      
+// management-app: exception-list.component.ts
+export class ExceptionListComponent implements OnInit, OnDestroy {
+  private signalR = inject(SignalRService);
+  private snackBar = inject(MatSnackBar);
+
+  alertsResource = resource({
+    loader: () => firstValueFrom(this.exceptionService.getAlerts({ status: 'new' })),
+  });
+
+  ngOnInit() {
+    this.signalR.on('ExceptionAlertCreated', (alert: ExceptionAlert) => {
+      this.alertsResource.reload();
       // Show toast
       toast.warning(`Exception: ${alert.summary}`, {
         description: alert.employeeName,

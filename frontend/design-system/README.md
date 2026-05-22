@@ -1,6 +1,6 @@
 # Design System
 
-**shadcn/ui + Radix + Tailwind CSS** — "Selective Drama" design language. Glassmorphism on hero surfaces (sidebar, stat cards, modals), flat on workhorse pages (tables, forms, detail sections). Violet Electric accent palette. Outfit + Geist typography.
+**Angular Material 21 + Tailwind CSS 4** — "Selective Drama" design language. Glassmorphism on hero surfaces (sidebar, stat cards, modals), flat on workhorse pages (tables, forms, detail sections). Violet Electric accent palette. Outfit + Geist typography.
 
 ## Foundations
 
@@ -11,7 +11,7 @@ Visual building blocks that every component inherits:
 - [[frontend/design-system/foundations/spacing|Spacing]] — 4px base unit, layout spacing rules, component internal spacing
 - [[frontend/design-system/foundations/elevation|Elevation]] — shadow scale, z-index layers, flat-by-default philosophy
 - [[frontend/design-system/foundations/motion|Motion]] — duration scale, easing curves, animation keyframes, reduced-motion
-- [[frontend/design-system/foundations/iconography|Iconography]] — Lucide React icon system, size scale, domain icon map
+- [[frontend/design-system/foundations/iconography|Iconography]] — Material Symbols icon system, size scale, domain icon map
 - [[frontend/design-system/naming-conventions|Naming Conventions]] — user-facing label rules, system-to-label mapping
 
 ## Components
@@ -23,7 +23,7 @@ Visual building blocks that every component inherits:
 Reusable interaction patterns with code examples:
 
 - [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — dashboard layout, page types (list, detail, dashboard), responsive breakpoints
-- [[frontend/design-system/patterns/form-patterns|Form Patterns]] — React Hook Form + Zod, multi-step wizards, inline editing, filter forms, validation
+- [[frontend/design-system/patterns/form-patterns|Form Patterns]] — Angular Reactive Forms + Zod, multi-step wizards, inline editing, filter forms, validation
 - [[frontend/design-system/patterns/table-patterns|Table Patterns]] — DataTable architecture, column types, sorting, pagination, bulk actions, export
 - [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — sidebar states, topbar, Quick Search, breadcrumbs, tab navigation
 - [[frontend/design-system/patterns/data-visualization|Data Visualization]] — chart library choice, chart types per page, custom components (timeline, heatmap)

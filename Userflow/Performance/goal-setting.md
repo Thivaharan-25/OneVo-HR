@@ -3,7 +3,7 @@
 **Area:** Performance  
 **Trigger:** Employee or manager creates goals or OKRs (user action)
 **Required Permission(s):** `performance:write` (own goals) or `performance:manage` (team goals)  
-**Related Permissions:** `performance:read-team` (view team goals)
+**Related Permissions:** `performance:read` (view team goals — backend applies access policy)
 
 ---
 

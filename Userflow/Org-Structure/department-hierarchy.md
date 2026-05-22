@@ -40,8 +40,8 @@
 - Change parent department → all sub-departments move with it
 - Employee reporting lines may need review
 
-### When user also has `employees:read-team`
-- Can see all employees within the department from the department view
+### When user also has `employees:read` with team/department policy
+- Can see employees within scope of their access policy from the department view
 
 ## Error Scenarios
 

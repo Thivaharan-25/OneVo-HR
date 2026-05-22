@@ -303,7 +303,7 @@ Audit trail for promotions, transfers, suspension, termination, and other employ
 | PUT | `/api/v1/employees/{id}` | `employees:write` | Update employee |
 | DELETE | `/api/v1/employees/{id}` | `employees:delete` | Soft delete |
 | GET | `/api/v1/employees/me` | `employees:read-own` | Get own profile |
-| GET | `/api/v1/employees/{id}/team` | `employees:read-team` | Get direct reports |
+| GET | `/api/v1/employees/{id}/team` | `employees:read` | Get direct reports (backend applies access policy) |
 | GET | `/api/v1/employees/{id}/lifecycle` | `employees:read` | Lifecycle events |
 | POST | `/api/v1/employees/{id}/onboarding` | `employees:write` | Start onboarding |
 | POST | `/api/v1/employees/{id}/offboarding` | `employees:write` | Start offboarding |

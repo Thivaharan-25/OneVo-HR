@@ -86,12 +86,12 @@ Use typed in-process Kernel Functions for Phase 1. OpenAPI import is allowed lat
 
 | Function | Required permission | Result |
 |---|---|---|
-| `GetEmployeeProfile` | `employees:read` or `employees:read-team` | Returns scoped employee summary. |
+| `GetEmployeeProfile` | `employees:read` (access policy scopes results to allowed employees) | Returns scoped employee summary. |
 | `GetLeaveBalance` | `leave:read` or own employee context | Returns leave balance. |
 | `CreateLeaveRequest` | `leave:write` | Creates leave request through Leave module. |
 | `ApproveLeaveRequest` | `leave:approve` | Approves through workflow API. |
-| `GetAttendanceStatus` | `attendance:read-team` or own context | Returns presence/activity summary. |
-| `ListExceptionAlerts` | `exceptions:view` | Returns visible exception alerts. |
+| `GetAttendanceStatus` | `attendance:read` (access policy scopes results to allowed employees) | Returns presence/activity summary. |
+| `ListExceptionAlerts` | `monitoring:alerts:read` | Returns visible exception alerts. |
 
 ### WorkSync Plugin
 
@@ -114,8 +114,8 @@ Use typed in-process Kernel Functions for Phase 1. OpenAPI import is allowed lat
 
 | Function | Required permission | Result |
 |---|---|---|
-| `GetActiveAlerts` | `exceptions:view` | Returns alert cards. |
-| `AcknowledgeAlert` | `exceptions:acknowledge` | Acknowledges through Exception Engine. |
+| `GetActiveAlerts` | `monitoring:alerts:read` | Returns alert cards. |
+| `AcknowledgeAlert` | `monitoring:alerts:resolve` | Acknowledges through Exception Engine. |
 | `RequestCaptureForAlert` | `agent:command` | Creates remote capture command through Agent Gateway. |
 
 ---

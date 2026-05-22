@@ -31,6 +31,12 @@ ONEVO.sln
 |   |   |-- Common/
 |   |   |   |-- Behaviors/
 |   |   |   |-- Models/
+|   |   |   |-- Mappings/
+|   |   |   |   `-- {Entity}MappingExtensions.cs    # static manual-mapping methods; no AutoMapper
+|   |   |   |-- Helpers/
+|   |   |   |   `-- {Domain}Helper.cs               # pure utility logic; no DI dependencies
+|   |   |   |-- Extensions/
+|   |   |   |   `-- QueryableExtensions.cs          # IQueryable / LINQ helpers used across features
 |   |   |   |-- RepositoryInterfaces/
 |   |   |   |   `-- IUnitOfWork.cs
 |   |   |   |
@@ -41,7 +47,12 @@ ONEVO.sln
 |   |   |       |-- IStorageService.cs
 |   |   |       |-- ICacheService.cs
 |   |   |       |-- IBackgroundJobService.cs
-|   |   |       `-- IEncryptionService.cs
+|   |   |       |-- IEncryptionService.cs
+|   |   |       |-- INotificationDispatcher.cs
+|   |   |       |-- IModuleCatalogService.cs
+|   |   |       |-- IModuleEntitlementService.cs
+|   |   |       |-- IDefaultRoleSeeder.cs
+|   |   |       `-- ITenantContext.cs
 |   |   |
 |   |   `-- Features/
 |   |       `-- {Feature}/
@@ -97,11 +108,11 @@ ONEVO.sln
 |   |   |   |   `-- SmtpEmailService.cs
 |   |   |   |
 |   |   |   |-- Storage/
-|   |   |   |   `-- R2StorageService.cs
+|   |   |   |   `-- R2StorageService.cs                     # future — not yet implemented
 |   |   |   |
-|   |   |   |-- Payments/
-|   |   |   |   |-- StripePaymentService.cs
-|   |   |   |   `-- PayHerePaymentService.cs
+|   |   |   |-- Payments/                               # future — not yet implemented
+|   |   |   |   |-- StripePaymentService.cs             # future
+|   |   |   |   `-- PayHerePaymentService.cs            # future
 |   |   |   |
 |   |   |   |-- Calendar/
 |   |   |   |   |-- GoogleCalendarService.cs
@@ -114,15 +125,42 @@ ONEVO.sln
 |   |   |   |-- Biometric/
 |   |   |   |   `-- BiometricTerminalClient.cs
 |   |   |   |
-|   |   |   `-- Payroll/
-|   |   |       |-- AdpPayrollClient.cs
-|   |   |       `-- OraclePayrollClient.cs
+|   |   |   `-- Payroll/                                # future — not yet implemented
+|   |   |       |-- AdpPayrollClient.cs                 # future
+|   |   |       `-- OraclePayrollClient.cs              # future
 |   |   |
 |   |   |-- Identity/
+|   |   |   |-- AuthTokenIssuer.cs
+|   |   |   |-- BCryptPasswordHasher.cs
+|   |   |   |-- GoogleIdTokenValidator.cs
+|   |   |   |-- JwtTokenService.cs
+|   |   |   |-- OtpNetTotpService.cs
+|   |   |   |-- CurrentUserService.cs
+|   |   |   |-- AnonymousCurrentUser.cs
+|   |   |   |-- HttpContextTenantContext.cs
+|   |   |   `-- SystemDateTimeProvider.cs
 |   |   |-- Caching/
+|   |   |   |-- InMemoryCacheService.cs           # current — Microsoft.Extensions.Caching.Memory
+|   |   |   `-- RedisCacheService.cs              # future — only if scaling to multi-instance/microservices
 |   |   |-- BackgroundJobs/
 |   |   |-- Security/
+|   |   |   |-- PermissionResolver.cs
+|   |   |   |-- PermissionVersionService.cs
+|   |   |   |-- TenantPermissionCatalogService.cs
+|   |   |   `-- NoOpEncryptionService.cs
 |   |   |-- RealTime/
+|   |   |
+|   |   |-- Services/
+|   |   |   |-- DevPlatform/
+|   |   |   |   |-- Tenancy/
+|   |   |   |   |   |-- DefaultRoleSeeder.cs
+|   |   |   |   |   |-- TenantRoleStatusReader.cs
+|   |   |   |   |   `-- NotConfiguredYetReaders.cs
+|   |   |   |   `-- Provisioning/
+|   |   |   |       `-- TenantOwnerInvitationService.cs
+|   |   |   `-- SharedPlatform/
+|   |   |       |-- ModuleCatalogService.cs
+|   |   |       `-- ModuleEntitlementService.cs
 |   |   |
 |   |   `-- DependencyInjection.cs
 |   |
@@ -131,6 +169,10 @@ ONEVO.sln
 |   |   |   |-- Admin/
 |   |   |   `-- {Feature}/
 |   |   |       `-- {SubFeature}/
+|   |   |
+|   |   |-- Extensions/
+|   |   |   |-- ServiceCollectionExtensions.cs          # groups DI registrations called from Program.cs
+|   |   |   `-- WebApplicationExtensions.cs             # middleware/pipeline helpers
 |   |   |
 |   |   |-- Hubs/
 |   |   |-- Middleware/
@@ -195,6 +237,12 @@ Domain -> Api
 | Customer API controller      | `ONEVO.Api/Controllers/{Feature}/{SubFeature}/`                           |
 | Developer Console controller | `ONEVO.Api/Controllers/Admin/`                                            |
 | DbContext                    | `ONEVO.Infrastructure/Persistence/ApplicationDbContext.cs` only           |
+| Service implementation           | `ONEVO.Infrastructure/Services/{Feature}/{SubFeature}/`                   |
+| Common mapping helpers           | `ONEVO.Application/Common/Mappings/`                                      |
+| Feature-level mapping            | `ONEVO.Application/Features/{Feature}/{SubFeature}/Mappings/`             |
+| Utility helpers                  | `ONEVO.Application/Common/Helpers/`                                       |
+| Application LINQ extensions      | `ONEVO.Application/Common/Extensions/`                                    |
+| API DI/pipeline extensions       | `ONEVO.Api/Extensions/`                                                   |
 
 ## Persistence Access Rule
 

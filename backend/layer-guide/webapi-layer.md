@@ -33,6 +33,15 @@ public class LeaveController : ControllerBase
 }
 ```
 
+### Controller folder structure
+
+```
+Controllers/
+|-- Admin/                          # Developer Console admin controllers
+`-- {Feature}/
+    `-- {SubFeature}/               # Customer-facing controllers
+```
+
 ### Middleware pipeline order (Program.cs)
 
 ```csharp

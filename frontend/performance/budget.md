@@ -5,7 +5,6 @@
 | Metric | Target | Threshold | Measurement |
 |:-------|:-------|:----------|:------------|
 | **LCP** (Largest Contentful Paint) | ≤1.5s | ≤2.5s | Dashboard page load |
-| **FID** (First Input Delay) | ≤50ms | ≤100ms | First interaction response |
 | **INP** (Interaction to Next Paint) | ≤100ms | ≤200ms | Any interaction |
 | **CLS** (Cumulative Layout Shift) | ≤0.05 | ≤0.1 | No layout shifts after skeleton |
 | **TTFB** (Time to First Byte) | ≤200ms | ≤500ms | Server response time |
@@ -13,68 +12,151 @@
 
 ## Bundle Size Budget
 
+Angular CLI (esbuild) produces separate named chunks per lazy route. Budgets are enforced in `angular.json`.
+
 | Chunk | Budget (gzipped) | Alert At | Action |
 |:------|:-----------------|:---------|:-------|
-| Framework (React + Vite runtime) | ≤90KB | >95KB | Audit imports, check for duplicates |
-| Shared UI (shadcn + shared components) | ≤40KB | >45KB | Review composed components |
-| Per-route chunk (largest) | ≤60KB | >70KB | Split heavy components, lazy load |
-| Charts (Recharts + Tremor) | ≤80KB | >90KB | Ensure charts are lazy loaded |
+| Framework (Angular runtime + common) | ≤120KB | >130KB | Audit barrel imports, check for duplicate providers |
+| Shared library (`@onevo/shared`) initial | ≤50KB | >60KB | Review what is eagerly imported |
+| Angular Material (initial) | ≤40KB | >50KB | Import only used Material modules |
+| Per-route chunk (largest) | ≤60KB | >70KB | Split heavy components, use `@defer` |
+| Charts (ng2-charts + Chart.js) | ≤80KB | >90KB | Always lazy-load chart components |
 | SignalR client | ≤20KB | >25KB | Only loaded on real-time pages |
-| Total initial JS (critical path) | ≤200KB | >220KB | Audit everything |
-| Total initial CSS | ≤30KB | >35KB | Purge unused Tailwind |
+| Total initial JS (critical path) | ≤220KB | >240KB | Audit everything |
+| Total initial CSS (Tailwind purged) | ≤30KB | >35KB | Check Tailwind content paths |
+
+### Enforcing in `angular.json`
+
+```json
+{
+  "budgets": [
+    { "type": "initial", "maximumWarning": "220kb", "maximumError": "280kb" },
+    { "type": "anyComponentStyle", "maximumWarning": "4kb", "maximumError": "8kb" },
+    { "type": "anyScript", "maximumWarning": "60kb", "maximumError": "80kb" }
+  ]
+}
+```
 
 ## Page Load Budgets
 
-| Page | Target Load Time | Max JS | Notes |
-|:-----|:----------------|:-------|:------|
-| Login | ≤1.0s | ≤80KB | Minimal JS and fast client render |
-| Dashboard Overview | ≤1.5s | ≤180KB | App shell + lazy dashboard cards |
-| Employee List | ≤1.2s | ≤150KB | App shell + client table |
-| Employee Detail | ≤1.5s | ≤160KB | Client header + tabs |
-| Workforce Live | ≤2.0s | ≤250KB | Charts + SignalR (heavier) |
-| Leave Calendar | ≤1.5s | ≤170KB | Calendar component |
-| Settings | ≤1.0s | ≤100KB | Mostly static |
-
+| Page | Target Load Time | Notes |
+|:-----|:----------------|:------|
+| Login | ≤1.0s | Minimal Angular shell, no charts |
+| Home (employee) | ≤1.5s | App shell + lazy dashboard cards |
+| Home (management dashboard) | ≤1.5s | App shell + pending actions widget |
+| Employee List | ≤1.2s | MatTable + lazy data |
+| Employee Detail | ≤1.5s | MatTabGroup + lazy section data |
+| Workforce Live | ≤2.0s | Charts + SignalR (heavier) |
+| Leave Calendar | ≤1.5s | Calendar component (lazy) |
+| Settings | ≤1.0s | Mostly static form |
 
 ## Responsive Performance Budget
 
-Phase 1 responsiveness includes mobile performance, not only visual resizing.
-
 | Concern | Requirement |
 |:--------|:------------|
-| Mobile initial JS | Keep critical mobile shell and first page under the same initial JS budget; lazy load charts, heavy tables, and non-visible panels. |
-| Dashboard cards | Render primary action cards first; defer lower-priority charts and analytics until visible. |
-| Navigation drawers | Drawer open/close must avoid layout shift and must not mount heavy page content. |
-| Data tables | Mobile card/list views should reuse loaded data and avoid loading desktop-only column renderers when hidden. |
-| Images and avatars | Use responsive image sizes and reserve dimensions to avoid CLS. |
-| Touch interactions | Keep INP within target for filters, drawer navigation, row actions, and form submission. |
+| Mobile initial JS | Keep critical mobile shell and first page under the same initial budget; `@defer` charts, heavy tables, non-visible panels |
+| Dashboard cards | Render primary action cards first; defer lower-priority analytics until visible |
+| Navigation drawers | Drawer open/close must avoid layout shift; do not mount heavy page content in drawer |
+| Data tables | Mobile card/list views reuse loaded data; avoid loading desktop-only column renderers when hidden |
+| Avatars / images | Use responsive image sizes and reserve dimensions (width/height attributes) to avoid CLS |
+| Touch interactions | Keep INP within target for filters, drawer navigation, row actions, and form submission |
 
 Rules:
-
 - Do not load chart libraries on mobile until the chart section is visible or explicitly opened.
 - Do not render hidden desktop panels on mobile/tablet if they contain expensive data or charts.
-- Use skeleton dimensions that match final mobile and desktop layouts to avoid layout shift.
+- Use skeleton dimensions that match final mobile and desktop layouts to avoid CLS.
+
+## Optimization Techniques
+
+### Lazy Loading (Angular Router)
+
+Every feature route must use `loadComponent` or `loadChildren`:
+
+```typescript
+// ✅ Correct — lazy loaded
+{ path: 'workforce', loadComponent: () => import('./features/workforce/live-dashboard.component').then(m => m.LiveDashboardComponent) }
+
+// ❌ Wrong — eager import kills initial bundle
+import { LiveDashboardComponent } from './features/workforce/live-dashboard.component';
+{ path: 'workforce', component: LiveDashboardComponent }
+```
+
+### `@defer` for Heavy In-Page Components
+
+```html
+<!-- Org chart only loads when the tab becomes visible -->
+@defer (on viewport) {
+  <app-org-chart [data]="orgData()" />
+} @placeholder {
+  <app-chart-skeleton height="400" />
+}
+
+<!-- Kanban board deferred until project board tab is active -->
+@defer (when boardTabActive()) {
+  <app-kanban-board [projectId]="projectId()" />
+} @loading (minimum 300ms) {
+  <app-board-skeleton />
+}
+```
+
+Apply `@defer` to: org charts, kanban boards, roadmap timelines, activity heatmaps, rich text editors, and any chart component.
+
+### `OnPush` Change Detection
+
+Use `ChangeDetectionStrategy.OnPush` on all display components that receive data via `@Input()` or signals:
+
+```typescript
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  // ...
+})
+export class EmployeeCardComponent {
+  employee = input.required<Employee>();
+}
+```
+
+### Font Optimization
+
+- Load fonts via `@font-face` in global CSS with `font-display: swap`
+- Use `<link rel="preconnect">` and `<link rel="preload">` for above-the-fold fonts
+
+### CSS Optimization
+
+- Tailwind CSS v4 purges unused classes at build time (typically 95%+ reduction)
+- Per-component SCSS is tree-shaken by Angular CLI — no runtime CSS-in-JS overhead
+
+### Import Cost Awareness
+
+```json
+// .eslintrc — flag heavy barrel imports
+{
+  "rules": {
+    "no-restricted-imports": ["error", {
+      "paths": [
+        { "name": "chart.js", "message": "Import only needed Chart.js modules" },
+        { "name": "date-fns", "message": "Import specific functions: date-fns/format" }
+      ]
+    }]
+  }
+}
+```
 
 ## Enforcement
 
-### CI Checks
+### CI — Angular Budget Check
 
-```yaml
-# In CI pipeline
-- name: Bundle size check
-  run: |
-    npm run build
-    npx vite-bundle-visualizer
-    # Fail if any chunk exceeds budget
-    node scripts/check-bundle-budget.js
+Angular CLI fails the build when budgets are exceeded:
+
+```bash
+ng build employee-app --configuration=production
+# Fails if any budget from angular.json is exceeded
 ```
 
 ### Lighthouse CI
 
 ```yaml
 - name: Lighthouse CI
-  run: |
-    npx lhci autorun
+  run: npx lhci autorun
   # Asserts:
   # - Performance score ≥ 90
   # - LCP ≤ 2.5s
@@ -82,47 +164,8 @@ Rules:
   # - Total blocking time ≤ 300ms
 ```
 
-### Import Cost Awareness
-
-Use `eslint-plugin-import` to flag heavy imports:
-
-```json
-{
-  "rules": {
-    "no-restricted-imports": ["error", {
-      "paths": [
-        { "name": "lodash", "message": "Import specific functions: lodash/debounce" },
-        { "name": "date-fns", "message": "Import specific functions: date-fns/format" },
-        { "name": "recharts", "message": "Use dynamic import for chart components" }
-      ]
-    }]
-  }
-}
-```
-
-## Optimization Techniques
-
-### Image Optimization
-- Use native responsive images or an app-level image component; do not use `next/image`
-- Avatar images: 64x64 and 128x128 variants generated server-side
-- Max upload size for profile photos: 5MB (resized server-side)
-
-### Font Optimization
-- Outfit, Geist, and JetBrains Mono loaded via CSS/font assets with preconnect/preload as needed
-- `font-display: swap` for fastest text render
-
-### CSS Optimization
-- Tailwind CSS purge removes unused classes (typically 95%+ reduction)
-- No CSS-in-JS runtime (Tailwind is build-time only)
-
-### Prefetch Strategy
-- React Router/TanStack Query prefetch: on hover or viewport intent for high-value links
-- TanStack Query prefetch: on hover for table rows → detail pages
-- Next page prefetch: prefetch page N+1 when viewing page N
-
 ## Related
 
-- Code Splitting — dynamic imports and lazy loading
-- [[frontend/performance/monitoring|Monitoring]] — runtime performance monitoring
-- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — CSR, Suspense, and route-level lazy loading
-- [[backend/module-boundaries|Module Boundaries]] — bundle composition
+- [[frontend/performance/monitoring|Performance Monitoring]] — runtime Web Vitals tracking
+- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — lazy loading, @defer, OnPush
+- [[frontend/architecture/module-boundaries|Module Boundaries]] — bundle composition

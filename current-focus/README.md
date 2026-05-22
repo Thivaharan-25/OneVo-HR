@@ -61,7 +61,7 @@ Two developers own the shared foundation files. All others build on top — they
 | Owner | Track | Protected areas |
 |---|---|---|
 | **Dev 1** | Backend | Auth/RBAC core, `ITenantContext`, `BaseRepository<T>`, `ApplicationDbContext` boot config, shared middleware pipeline, workflow engine internals |
-| **Dev 5** | Frontend | App shell, sidebar, `router.tsx`, global provider stack, shared UI primitives, TanStack Query defaults, Zustand store structure, API client base |
+| **Dev 5** | Frontend | App shell, nav rail, `app.routes.ts`, `app.config.ts`, shared Angular library primitives, `AuthService` signals, HttpClient interceptors, API service base |
 
 **Why this matters:** these files are touched by every developer indirectly. Without ownership enforcement, merge conflicts on shared kernel and shell layout become the most common blocker in the first two weeks.
 
@@ -80,7 +80,7 @@ The Developer Platform is a standalone internal control plane. It is not part of
 | Feature Flag backend | Dev 1 | global flags, per-tenant overrides, module toggles | [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md), [[developer-platform/userflow/feature-flags|Feature Flag Flows]] (developer-platform/userflow/feature-flags.md) |
 | Audit/System/App Catalog backend | Dev 1 | cross-tenant audit query, global config, catalog management contracts | [[developer-platform/modules/audit-console/overview|Audit Console]] (developer-platform/modules/audit-console/overview.md), [[developer-platform/modules/system-config/overview|System Config]] (developer-platform/modules/system-config/overview.md), [[developer-platform/modules/app-catalog-manager/overview|App Catalog Manager]] (developer-platform/modules/app-catalog-manager/overview.md) |
 | Agent release backend | Dev 4 | agent versions, deployment rings, tenant ring assignments, force-update dispatch via Agent Gateway | [[developer-platform/modules/agent-version-manager/overview|Agent Version Manager]] (developer-platform/modules/agent-version-manager/overview.md), [[developer-platform/userflow/agent-versions|Agent Version Flows]] (developer-platform/userflow/agent-versions.md) |
-| Dev Console frontend | Dev 5 | standalone Next.js console at `console.onevo.io` | [[developer-platform/frontend/overview|Developer Platform Frontend]] (developer-platform/frontend/overview.md), [[developer-platform/frontend/app-structure|Developer Platform App Structure]] (developer-platform/frontend/app-structure.md) |
+| Dev Console frontend | Dev 5 | standalone Angular app at `console.onevo.io` | [[developer-platform/frontend/overview|Developer Platform Frontend]] (developer-platform/frontend/overview.md), [[developer-platform/frontend/app-structure|Developer Platform App Structure]] (developer-platform/frontend/app-structure.md) |
 
 Required boundary:
 

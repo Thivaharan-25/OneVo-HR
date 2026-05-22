@@ -73,14 +73,13 @@ public interface IPermissionResolver
     Task<List<string>> ResolveAsync(Guid userId, Guid tenantId, CancellationToken ct);
 }
 
-public interface IHierarchyScopeService
+public interface IAccessPolicyResolver
 {
-    /// Returns a HierarchyFilter value object for the current user.
-    /// Tenant Super Admin -> HierarchyFilter.All inside enabled tenant modules only.
-    /// Manager (employees:read-team) â†’ HierarchyFilter.SubordinatesOf(managerId)
-    /// Employee â†’ HierarchyFilter.OwnOnly(employeeId)
-    /// Pass the filter into repository methods â€” never materialize a list of IDs.
-    Task<HierarchyFilter> GetFilterAsync(CancellationToken ct);
+    /// Resolves the effective access policy for a given (userId, permissionCode, tenantId).
+    /// Returns one of: self | direct_reports | reporting_tree | department |
+    ///                  department_tree | org_unit_tree | organization
+    /// Returns null for tenant-wide permissions that are not employee-record scoped.
+    Task<string?> ResolveAsync(Guid userId, string permissionCode, Guid tenantId, CancellationToken ct);
 }
 
 public interface IFeatureAccessService
@@ -169,8 +168,9 @@ Global permission definitions â€” NOT tenant-scoped.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
-| `role_id` | `uuid` | FK â†’ roles |
-| `permission_id` | `uuid` | FK â†’ permissions |
+| `role_id` | `uuid` | FK → roles |
+| `permission_id` | `uuid` | FK → permissions |
+| `access_policy` | `varchar(50)` | NULL for tenant-wide permissions; one of `self` / `direct_reports` / `reporting_tree` / `department` / `department_tree` / `org_unit_tree` / `organization` for employee-data permissions |
 | PK: `(role_id, permission_id)` | | |
 
 ### `user_roles`
@@ -191,12 +191,13 @@ Per-employee permission overrides. Tenant Super Admin can grant or revoke indivi
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK â†’ tenants |
-| `user_id` | `uuid` | FK â†’ users |
-| `permission_id` | `uuid` | FK â†’ permissions |
+| `tenant_id` | `uuid` | FK → tenants |
+| `user_id` | `uuid` | FK → users |
+| `permission_id` | `uuid` | FK → permissions |
 | `grant_type` | `varchar(10)` | `grant` or `revoke` |
+| `access_policy` | `varchar(50)` | NULL inherits role default; set to override the policy for this specific employee |
 | `reason` | `varchar(255)` | Why this override exists |
-| `granted_by` | `uuid` | FK â†’ users (Tenant Super Admin or delegated permission admin who set this) |
+| `granted_by` | `uuid` | FK → users (Tenant Super Admin or delegated permission admin who set this) |
 | `valid_from` | `timestamptz` | nullable; default active immediately |
 | `expires_at` | `timestamptz` | nullable; use for date/time-bound individual permission |
 | `created_at` | `timestamptz` | |
@@ -246,6 +247,20 @@ Module-level access grants. Tenant Super Admin can toggle tenant-enabled feature
 | `replaced_by_id` | `uuid` | Self-referencing â€” token rotation |
 | `revoked_at` | `timestamptz` | Nullable |
 | `created_at` | `timestamptz` | |
+
+### `employee_hierarchy`
+
+Closure table for org hierarchy. Rebuilt on `employee.reports_to_id` changes via `EmployeeManagerChangedEvent`.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `tenant_id` | `uuid` | FK → tenants |
+| `ancestor_employee_id` | `uuid` | FK → employees — manager or senior |
+| `descendant_employee_id` | `uuid` | FK → employees — report or subordinate |
+| `depth` | `int` | 0 = self-row; 1 = direct report; 2+ = skip-level |
+| PK: `(tenant_id, ancestor_employee_id, descendant_employee_id)` | | |
+
+Every employee has a self-row (`depth = 0`). Queries: `depth = 1` for `direct_reports`; `depth >= 1` for `reporting_tree`.
 
 ### `audit_logs`
 
@@ -310,7 +325,7 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 2. **Password hashing** - BCrypt with work factor 12. Do not use any other algorithm for user passwords.
 3. **Hybrid permission control** â€” commercial entitlement decides which module permissions exist for the tenant; RBAC decides who can use those permissions. Effective permissions = universal auto-grants + active role permissions + valid individual overrides; filtered by subscription/module entitlements and feature grants; scoped by org hierarchy.
 4. **Permission version counter** â€” Redis key `perm_version:{user_id}` (integer, 24h TTL). Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 â†’ frontend silently refreshes. Fails open if Redis unavailable.
-5. **Hierarchy scoping** â€” users only see/manage employees below them in the reporting chain (`employees.reports_to_id`). Tenant Super Admin bypasses hierarchy only inside enabled tenant modules. Non-admin exceptions use explicit hierarchy bypass grants with optional expiry.
+5. **Access policy scoping** — every employee-data permission has an `access_policy` field on `role_permissions`. The backend's `IAccessPolicyResolver` resolves the policy at query time and filters results using the `employee_hierarchy` closure table. The frontend never sends employee ID lists. Tenant Super Admin uses `organization` policy. Non-admin cross-tree exceptions use hierarchy bypass grants (Path C).
 6. **Never hardcode role names** â€” roles are custom, created by Tenant Super Admin or delegated permission admins. Always check permissions, never role names.
 7. **Role templates are provisioning blueprints** â€” Developer Platform templates can seed tenant roles, but tenant owners can later edit/create roles using only permissions exposed by their enabled modules.
 8. **Device JWT** for agents â€” contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
@@ -346,6 +361,7 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 | POST | `/api/v1/feature-access` | `roles:manage` | Grant feature to role/employee |
 | DELETE | `/api/v1/feature-access/{id}` | `roles:manage` | Revoke feature grant |
 | GET | `/api/v1/audit-logs` | `settings:admin` | Query audit logs |
+| GET | `/api/v1/me/app-context` | `employees:read-own` | Session context: capabilities (permission + access policy), navigation items, modules |
 
 ## Features
 

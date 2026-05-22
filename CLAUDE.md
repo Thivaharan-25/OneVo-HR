@@ -31,14 +31,25 @@ Before doing any work, read these files in order:
 
 ## Frontend Dev Commands
 
-All commands run from the `OneVo/` directory:
+All commands run from the `onevo-frontend/` workspace root:
 
 ```bash
-cd OneVo
-npm run dev       # Start dev server (Vite)
-npm run build     # Production build
-npm run lint      # ESLint
-npm run preview   # Preview production build
+# Employee app
+ng serve employee-app          # Dev server
+ng build employee-app          # Production build
+
+# Management app
+ng serve management-app        # Dev server
+ng build management-app        # Production build
+
+# Shared library
+ng build shared                # Build library (required before serving apps)
+
+# Lint / test
+ng lint                        # ESLint across workspace
+ng test employee-app           # Jest unit tests
+ng test management-app
+ng e2e                         # Playwright E2E
 ```
 
 ## Architecture Overview
@@ -69,24 +80,38 @@ ONEVO.Application/Features/{Feature}/{SubFeature}/Queries/{UseCase}/
 ONEVO.Application/Features/{Feature}/{SubFeature}/DTOs/{Requests,Responses}/
 ONEVO.Application/Features/{Feature}/{SubFeature}/RepositoryInterfaces/
 ONEVO.Application/Features/{Feature}/{SubFeature}/ServiceInterfaces/
+ONEVO.Application/Features/{Feature}/{SubFeature}/Mappings/           # optional — manual entity→DTO mapping
+ONEVO.Application/Features/{Feature}/{SubFeature}/Helpers/            # optional — pure utility logic, no DI
 ONEVO.Application/Features/{Feature}/{SubFeature}/EventHandlers/      # optional only when justified
+
+ONEVO.Application/Common/RepositoryInterfaces/    # cross-feature repo interfaces (e.g. IUnitOfWork)
+ONEVO.Application/Common/ServiceInterfaces/       # cross-feature service interfaces
+ONEVO.Application/Common/Mappings/               # cross-feature mapping helpers
+ONEVO.Application/Common/Helpers/                # cross-feature utility helpers
+ONEVO.Application/Common/Extensions/             # IQueryable / LINQ helpers
 
 ONEVO.Infrastructure/Persistence/Configurations/{Feature}/{SubFeature}/{Entity}Configuration.cs
 ONEVO.Infrastructure/Persistence/Repositories/{Feature}/{SubFeature}/
+ONEVO.Infrastructure/Services/{Feature}/{SubFeature}/                 # non-EF service implementations
 ONEVO.Infrastructure/ExternalServices/{ExternalSystem}/
 ```
 
 Default request flow: `Controller -> Command/Query -> Validator -> Handler -> Repository/Domain -> UnitOfWork -> Response`. Events are by exception, not a default template.
 
-### Frontend (`OneVo/`)
+### Frontend (`onevo-frontend/` — Angular workspace)
 
-- **Vite + React 19**, TypeScript strict mode, CSR SPA
-- **React Router v7** — route config in `src/router.tsx`
-- **TanStack Query v5** — all server state; `queryKey: ['resource', params]` pattern
-- **Zustand 4** — client state (sidebar, filters, UI preferences, monitoring config cache)
-- **shadcn/ui** (Radix primitives) + **Tailwind CSS** + **Framer Motion**
-- **SignalR** — channels: `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status`
-- Permission gating via `<PermissionGate permission="resource:action">` and `useAuth().hasPermission()`
+Two apps in one monorepo: `employee-app` (`app.{tenant}.onevo.com`) and `management-app` (`manage.{tenant}.onevo.com`), sharing a `shared` Angular library.
+
+- **Angular 21**, TypeScript strict mode, standalone components (no NgModules), CSR SPA
+- **Angular Router** — typed routes in `app.routes.ts`; functional guards (`CanActivateFn`)
+- **Angular HttpClient** — `toSignal()` / `resource()` for signal-integrated async data
+- **Angular Signals** — `signal()` / `computed()` / `effect()` for all reactive state (no NgRx, no RxJS BehaviorSubject for UI state)
+- **Angular Material 21** + **Tailwind CSS 4** — component library and utility CSS
+- **Angular Reactive Forms** + **Zod** — form state and schema validation
+- **@microsoft/signalr** wrapped in Angular services — channels: `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status`
+- Permission gating via `*hasPermission="'resource:action'"` structural directive (from shared lib) and `AuthService.hasPermission()`
+- New control flow: `@if`, `@for`, `@switch` — never use `*ngIf`, `*ngFor`
+- DI via `inject()` function — never constructor injection
 
 ### Desktop Agent (separate solution `ONEVO.Agent.sln`)
 
@@ -113,12 +138,19 @@ Default request flow: `Controller -> Command/Query -> Validator -> Handler -> Re
 - **Async all the way** — every async method takes `CancellationToken`
 - **snake_case in DB, PascalCase in C#** — EF Core maps automatically
 - All endpoints require `[Authorize]` + `[RequirePermission("resource:action")]`
+- **Interface folders**: use `RepositoryInterfaces/` and `ServiceInterfaces/` — never `Interfaces/`, `Repositories/`, or `Services/` as folder names for Application interfaces
+- **No AutoMapper** — all entity→DTO mapping via static manual methods in `Mappings/`
+- **DevPlatform is the Feature** for all tenant management, subscription, provisioning, billing, and role templates — `Tenancy` is a SubFeature of `DevPlatform`, not a top-level Feature
 
 ### Frontend
-- File names: `kebab-case.tsx` / `kebab-case.ts`; component names: `PascalCase`; hooks: `useCamelCase`; Zustand stores: `useCamelCaseStore`
-- Default to interactive React components — CSR only, no Next.js APIs
-- Use `React.lazy` + `Suspense` for heavy routes
-- Forms: React Hook Form + Zod (mirrors backend FluentValidation)
+- File names: `kebab-case.component.ts` / `kebab-case.service.ts` / `kebab-case.guard.ts` / `kebab-case.pipe.ts`
+- Component class names: `PascalCaseComponent`; services: `PascalCaseService`
+- Standalone components only — `standalone: true` on every `@Component`, `@Directive`, `@Pipe`
+- Use `inject()` — never constructor-inject dependencies
+- Use `@if` / `@for` / `@switch` — never `*ngIf` / `*ngFor`
+- Use `signal()` / `computed()` — never `BehaviorSubject` or `Subject` for component state
+- Lazy-load heavy feature routes via `loadComponent` / `loadChildren`
+- Forms: Angular Reactive Forms + Zod schema validation (mirrors backend FluentValidation)
 
 ### Desktop Agent
 - **Count only, never content** — keyboard/mouse event counts only, never keystrokes
@@ -152,9 +184,13 @@ Default request flow: `Controller -> Command/Query -> Validator -> Handler -> Re
 
 | What you need | Where to look |
 |:---|:---|
+| Canonical folder structure | `backend/folder-structure.md` |
 | All 38 modules + solution structure | `backend/module-catalog.md` |
 | Cross-cutting patterns (Result<T>, ITenantContext) | `backend/shared-kernel.md` |
 | Module boundary rules | `backend/module-boundaries.md` |
+| Backend layer guides (App/Infra/API) | `backend/layer-guide/` |
+| CQRS patterns + examples | `backend/cqrs-patterns.md` |
+| Backend coding standards | `code-standards/backend-standards.md` |
 | All ~288 tables | `database/schema-catalog.md` |
 | Foreign key map across pillars | `database/cross-module-relationships.md` |
 | Frontend component system | `frontend/design-system/` |

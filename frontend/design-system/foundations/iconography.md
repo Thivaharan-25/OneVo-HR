@@ -2,161 +2,174 @@
 
 ## Icon Library
 
-**Lucide React** — the icon set used by shadcn/ui. Consistent stroke weight, MIT licensed, tree-shakeable.
+**Material Symbols** (Google) — the icon set used alongside Angular Material. Variable font-based, single HTTP request for the full library, MIT licensed.
 
-```tsx
-import { Users, Calendar, BarChart3, AlertTriangle } from 'lucide-react';
+Add to `index.html`:
+
+```html
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+```
+
+Use in Angular templates via Angular Material's `<mat-icon>`:
+
+```html
+<mat-icon>people</mat-icon>
+<mat-icon fontVariation="FILL 1">favorite</mat-icon>
+```
+
+Or as a standalone component from `@angular/material/icon`:
+
+```typescript
+import { MatIconModule } from '@angular/material/icon';
 ```
 
 ## Size Scale
 
-| Size | Class | Pixels | Usage |
-|:-----|:------|:-------|:------|
-| `xs` | `h-3 w-3` | 12px | Inline with caption text, badge icons |
-| `sm` | `h-4 w-4` | 16px | Default — buttons, menu items, table actions, form labels |
-| `md` | `h-5 w-5` | 20px | Stat card icons, page feature icons |
-| `lg` | `h-6 w-6` | 24px | Page header icons, empty state illustrations |
-| `xl` | `h-8 w-8` | 32px | Feature cards, onboarding steps |
-| `2xl` | `h-12 w-12` | 48px | Empty state hero, error page |
+Use Tailwind size classes on the `<mat-icon>` element, or Angular Material's built-in `[inline]` variant:
 
-**Default size is `sm` (`h-4 w-4`)**. Use this unless there's a specific reason for larger.
+| Size | Tailwind class | Pixels | Usage |
+|:-----|:--------------|:-------|:------|
+| `xs` | `text-[12px]` | 12px | Inline with caption text, badge icons |
+| `sm` | `text-[16px]` | 16px | **Default** — buttons, menu items, table actions, form labels |
+| `md` | `text-[20px]` | 20px | Stat card icons, page feature icons |
+| `lg` | `text-[24px]` | 24px | Page header icons, empty state illustrations |
+| `xl` | `text-[32px]` | 32px | Feature cards, onboarding steps |
+| `2xl` | `text-[48px]` | 48px | Empty state hero, error page |
+
+**Default size is `sm` (16px).** Use this unless there's a specific reason for larger.
 
 ## Icon Map by Domain
 
 ### Navigation — Rail Pillar Icons
 
-Exact Lucide icon names for the 9 rail pillars, in display order:
+Exact Material Symbol names for the rail pillars, in display order:
 
-| Pillar | Lucide Import | Has Panel |
-|:-------|:-------------|:----------|
-| Home | `House` | No |
-| Inbox | `Inbox` | No |
-| People | `Users` | Yes |
-| Workforce | `LayoutDashboard` | Yes |
-| Org | `Network` | Yes |
-| Calendar | `Calendar` | Yes |
-| Chat | `MessageCircle` | No |
-| Admin | `Shield` | Yes |
-| Settings | `Settings` | Yes |
+| Pillar | Material Symbol | Has Panel |
+|:-------|:----------------|:----------|
+| Home | `home` | No |
+| Inbox | `inbox` | No |
+| People | `group` | Yes |
+| Workforce | `dashboard` | Yes |
+| Org | `account_tree` | Yes |
+| Calendar | `calendar_month` | Yes |
+| Chat | `chat` | No |
+| Admin | `shield` | Yes |
+| Settings | `settings` | Yes |
 
-Rail icon size: **16×16px**, stroke-width: **1.6** (fixed — does not change on active state).
+Rail icon size: **16px**, `font-variation-settings: 'FILL' 0, 'wght' 300`.
 
-### Navigation — Panel Sub-Item Icons
+### Status Icons
 
-See [[frontend/design-system/components/expansion-panel|Expansion Panel]] for the complete per-pillar icon map. Panel icons are **13×13px**, stroke-width **1.6**.
+| Icon | Material Symbol | Context |
+|:-----|:----------------|:--------|
+| Success | `check_circle` | Approved, completed, active |
+| Error | `cancel` | Rejected, failed, critical |
+| Warning | `warning` | Needs attention |
+| Info | `info` | Informational state |
+| Pending | `schedule` | Awaiting action |
+| Loading | `progress_activity` | Spinner (add CSS rotate animation) |
 
-### Status
-| Icon | Name | Context |
-|:-----|:-----|:--------|
-| `CheckCircle2` | Success | Approved, completed, active |
-| `XCircle` | Error | Rejected, failed, critical |
-| `AlertCircle` | Warning | Needs attention, approaching limit |
-| `Info` | Information | Informational state |
-| `Clock` | Pending | Awaiting action |
-| `Loader2` | Loading | Spinner (add `animate-spin`) |
-| `Circle` | Neutral | Status dot (filled with status color) |
+### Action Icons
 
-### Actions
-| Icon | Name | Context |
-|:-----|:-----|:--------|
-| `Plus` | Create | Add new item |
-| `Pencil` | Edit | Modify existing |
-| `Trash2` | Delete | Remove item |
-| `Download` | Export | Download file/report |
-| `Upload` | Import | Upload file |
-| `Search` | Search | Search input |
-| `Filter` | Filter | Filter controls |
-| `MoreHorizontal` | More | Row action menu |
-| `ChevronDown` | Expand | Dropdown/accordion |
-| `ExternalLink` | External | Links to external resource |
-| `Copy` | Copy | Copy to clipboard |
-| `Eye` | View | View/preview |
-| `EyeOff` | Hide | Hide/mask data |
-| `RefreshCw` | Refresh | Retry/refresh |
+| Icon | Material Symbol | Context |
+|:-----|:----------------|:--------|
+| Create | `add` | Add new item |
+| Edit | `edit` | Modify existing |
+| Delete | `delete` | Remove item |
+| Export | `download` | Download file/report |
+| Import | `upload` | Upload file |
+| Search | `search` | Search input |
+| Filter | `filter_list` | Filter controls |
+| More | `more_horiz` | Row action menu |
+| Expand | `expand_more` | Dropdown/accordion |
+| External link | `open_in_new` | Links to external resource |
+| Copy | `content_copy` | Copy to clipboard |
+| View | `visibility` | View/preview |
+| Hide | `visibility_off` | Hide/mask data |
+| Refresh | `refresh` | Retry/refresh |
 
 ## Usage Patterns
 
 ### Button with Icon
-```tsx
-// Icon before label (default)
-<Button>
-  <Plus className="h-4 w-4 mr-2" />
+
+```html
+<!-- Icon before label (default) -->
+<button mat-raised-button color="primary">
+  <mat-icon>add</mat-icon>
   Add Employee
-</Button>
+</button>
 
-// Icon-only button (use tooltip)
-<Tooltip>
-  <TooltipTrigger asChild>
-    <Button variant="ghost" size="icon">
-      <Pencil className="h-4 w-4" />
-    </Button>
-  </TooltipTrigger>
-  <TooltipContent>Edit</TooltipContent>
-</Tooltip>
-```
+<!-- Icon-only button — must have aria-label -->
+<button mat-icon-button aria-label="Edit employee" (click)="edit()">
+  <mat-icon>edit</mat-icon>
+</button>
 
-### Shell Navigation Icon Sizes by Zone
-
-| Zone | Icon size | Stroke-width | Notes |
-|:-----|:----------|:-------------|:------|
-| Rail pillar icon | **16×16px** | **1.6** | Never changes on active — no stroke-width toggle |
-| Rail item label | — | — | 9px text below icon, not an icon |
-| Expansion panel item | **13×13px** | **1.6** | Same in all states |
-| Panel head buttons (close/+) | 12px / 14px | 1.75 / 2 | Close is 12px, Plus is 14px |
-| Panel create dropdown items | **13×13px** | 1.75 | |
-| Topbar buttons (bell, help, theme) | **14×14px** | **1.75** | Right-side icon buttons |
-| Topbar entity chevron | 11×11px | 2 | |
-| Topbar search icon | 13×13px | 1.75 | |
-
-### Rail Item (Correct Implementation)
-```tsx
-// Rail icon — strokeWidth is ALWAYS 1.6, does not change on active
-<button className={cn(
-  'w-[42px] flex flex-col items-center justify-center gap-1 py-[7px] pb-[6px] rounded-[8px]',
-  'transition-[background,color] duration-[120ms]',
-  isActive
-    ? 'bg-white/10 text-white/95'
-    : 'text-white/[0.28] hover:bg-white/[0.07] hover:text-white/[0.72]'
-)}>
-  <Users size={16} strokeWidth={1.6} aria-hidden="true" />
-  <span className="text-[9px] font-medium leading-none">{label}</span>
+<!-- Icon-only with MatTooltip -->
+<button mat-icon-button matTooltip="Edit" (click)="edit()">
+  <mat-icon>edit</mat-icon>
 </button>
 ```
 
+### Nav Rail Item
+
+```html
+<!-- Rail icon — size and stroke controlled via CSS custom properties -->
+<button class="rail-item" [class.active]="isActive()" (click)="navigate()">
+  <mat-icon class="rail-icon">group</mat-icon>
+  <span class="rail-label">People</span>
+</button>
+```
+
+```scss
+.rail-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  font-variation-settings: 'FILL' 0, 'wght' 300;
+}
+
+.rail-item.active .rail-icon {
+  font-variation-settings: 'FILL' 1, 'wght' 400;
+}
+```
+
 ### Status with Icon
-```tsx
-<div className="flex items-center gap-1.5">
-  <CheckCircle2 className="h-4 w-4 text-green-600" />
-  <span className="text-sm">Approved</span>
+
+```html
+<div class="flex items-center gap-1.5">
+  <mat-icon class="text-[16px] text-green-600">check_circle</mat-icon>
+  <span class="text-sm">Approved</span>
 </div>
 ```
 
 ### Empty State
-```tsx
-<div className="flex flex-col items-center py-12">
-  <CalendarDays className="h-12 w-12 text-muted-foreground/50 mb-4" />
-  <p className="text-sm font-medium">No leave requests</p>
-  <p className="text-xs text-muted-foreground mt-1">Leave requests will appear here once submitted</p>
+
+```html
+<div class="flex flex-col items-center py-12">
+  <mat-icon class="text-[48px] text-gray-300 mb-4">calendar_month</mat-icon>
+  <p class="text-sm font-medium">No leave requests</p>
+  <p class="text-xs text-gray-500 mt-1">Leave requests will appear here once submitted</p>
 </div>
 ```
 
 ## Accessibility
 
-- Icon-only buttons **must** have `aria-label` or a `<Tooltip>`
+- Icon-only buttons **must** have `aria-label` or `matTooltip`
 - Decorative icons (next to text that says the same thing) get `aria-hidden="true"`
-- Status icons that convey meaning should have `role="img"` and `aria-label`
+- Status icons that convey meaning should have `aria-label`
 
-```tsx
-// Decorative (label already says "Approved")
-<CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+```html
+<!-- Decorative — label already says "Approved" -->
+<mat-icon aria-hidden="true">check_circle</mat-icon>
 <span>Approved</span>
 
-// Meaningful (no text label)
-<AlertTriangle className="h-4 w-4 text-yellow-600" role="img" aria-label="Warning" />
+<!-- Meaningful — no text label -->
+<mat-icon aria-label="Warning" role="img">warning</mat-icon>
 ```
 
 ## Related
 
-- [[frontend/design-system/components/component-catalog|Primitive Components]] — button icon placement
-- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — sidebar icons
-- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — status icon colors
+- [[frontend/design-system/components/component-catalog|Component Catalog]] — button icon placement
+- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — rail icon spec
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — status icon colours

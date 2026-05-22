@@ -34,7 +34,7 @@
 ### Step 4: Assign Default Role Per Level (CRITICAL for RBAC)
 - **UI:** For each level → select a role from existing roles → this role's permissions become the default for employees at this level
 - **Backend:** JobFamilyService.CreateAsync() → [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
-- **Example:** Junior Engineer → "Employee" role (basic permissions), Engineering Lead → "Team Lead" role (includes `performance:read-team`, `attendance:read-team`)
+- **Example:** Junior Engineer → "Employee" role (basic permissions), Engineering Lead → "Team Lead" role (includes `performance:read` with policy `reporting_tree`, `attendance:read` with policy `reporting_tree`)
 
 ### Step 5: Save
 - **API:** `POST /api/v1/org/job-families`

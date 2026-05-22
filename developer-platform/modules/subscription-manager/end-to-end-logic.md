@@ -114,8 +114,6 @@ Module checklist grouped by ONEVO product pillar. Each module row shows:
 | `work_management` | Project Management (WorkSync — projects, tasks, sprints, OKR, roadmaps, GitHub integration) | Per active user | No |
 | `chat` | Chat (no AI — basic messaging, channels, threads) | Per active user | No |
 | `chat_ai` | Agentic Chat (AI-powered — requires AI provider config to be set) | Per active user + AI token limit | Yes |
-| `documents` | Documents (file storage, collaborative editing) | Per active user + storage | No |
-| `reports` | Reports | Flat rate | No |
 | `integrations` | Third Party Integrations (Microsoft 365, Teams, Slack, Google Workspace) | Flat rate | No |
 
 > **Chat independence rule:** `chat` and `chat_ai` are separate sellable modules. A plan can include one, both, or neither:
@@ -129,7 +127,7 @@ Module checklist grouped by ONEVO product pillar. Each module row shows:
 > A subscription plan that includes `chat_ai` automatically requires the operator to set an AI token limit during Step 3 of the provisioning wizard.
 
 > **Phase 2 Modules — NOT available in Phase 1:**
-> The following modules are out of scope for Phase 1 and must NOT appear in plans, the module catalog sellable list, or tenant provisioning options: `payroll`, `performance` (standalone), `skills`, `learning`, `recruitment`, `hr_docs`, `grievance`, `expense`.
+> The following modules are out of scope for Phase 1 and must NOT appear in plans, the module catalog sellable list, or tenant provisioning options: `payroll`, `performance` (standalone), `skills`, `learning`, `recruitment`, `hr_docs`, `grievance`, `expense`, `documents`, `reports`.
 > They exist in the module catalog with `is_active = false` and `phase = 2`. Do not seed them as sellable options.
 
 **AI Capability toggle:**
@@ -877,7 +875,7 @@ See [Dunning Sequence](#dunning-sequence--full-specification) for full retry sch
 | 409 | `gateway_in_use` | Cannot deactivate gateway with active tenant assignments |
 | 409 | `plan_in_use` | Cannot delete plan with active tenant assignments |
 | 422 | `no_modules_selected` | Plan must include at least one module |
-| 422 | `phase2_modules_rejected` | Phase 2 module keys (`payroll`, `performance`, etc.) not allowed in Phase 1 plans |
+| 422 | `phase2_modules_rejected` | Phase 2 module keys (`payroll`, `performance`, `documents`, `reports`, etc.) not allowed in Phase 1 plans |
 | 422 | `missing_price_brackets` | Bracket required per selected size range |
 | 422 | `invoice_already_paid` | Cannot void a paid invoice |
 | 422 | `invoice_not_open` | Can only mark open/overdue invoices as paid |

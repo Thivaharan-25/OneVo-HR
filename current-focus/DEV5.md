@@ -1,8 +1,8 @@
 # DEV5: Frontend App Foundation + Developer Platform Console
 
 **Track:** Frontend
-**Primary ownership:** main Vite app foundation, auth UI, shared frontend architecture, standalone Developer Platform console
-**Current Unfinished Task:** Task 1 - Vite app foundation
+**Primary ownership:** Angular monorepo foundation (employee-app + management-app + shared library), auth UI, shared Angular architecture, standalone Developer Platform console
+**Current Unfinished Task:** Task 1 - Angular app foundation
 **Blocked By:** none for scaffold; DEV1 auth contracts for live auth
 
 ---
@@ -13,16 +13,16 @@ When Dev 5 asks to continue, start with the first unchecked item in **Current Un
 
 ---
 
-## Task 1: Vite App Foundation
+## Task 1: Angular App Foundation
 
-**Goal:** create the main customer-facing frontend foundation all app screens use.
+**Goal:** create the main customer-facing Angular monorepo workspace that all app screens use.
 
 ### Acceptance Criteria
 
-- [ ] Vite + React + TypeScript app runs locally.
-- [ ] React Router route tree exists for auth, dashboard, HR, workforce, admin, and error pages.
-- [ ] Provider stack includes query client, auth state, theme, toast, and permission context.
-- [ ] App shell includes sidebar, topbar, command palette placeholder, and responsive content area.
+- [ ] Angular workspace with `employee-app`, `management-app`, and `shared` library builds locally.
+- [ ] Angular Router route trees exist in each app for auth, dashboard, feature areas, and error pages.
+- [ ] `app.config.ts` in each app includes `provideRouter`, `provideHttpClient` with interceptors, `provideAnimationsAsync`, and `APP_INITIALIZER` for session init.
+- [ ] App shell (nav rail, topbar, `<router-outlet>`) exists in both apps via `@onevo/shared` shell components.
 - [ ] Shared layout supports loading, empty, error, and forbidden states.
 - [ ] Baseline tests render app shell and protected route behavior.
 
@@ -36,9 +36,11 @@ When Dev 5 asks to continue, start with the first unchecked item in **Current Un
 ### Verification
 
 ```bash
-npm run lint
-npm run test
-npm run build
+ng build shared
+ng build employee-app
+ng build management-app
+ng lint
+ng test shared
 ```
 
 ---
@@ -52,10 +54,10 @@ npm run build
 ### Acceptance Criteria
 
 - [ ] API client uses `credentials: "include"` for the HttpOnly customer web session, attaches tenant/entity context and correlation ID, and never attaches tenant JWTs from browser JavaScript.
-- [ ] API client maps validation, auth, forbidden, not found, rate limit, and server errors.
-- [ ] TanStack Query defaults are configured.
-- [ ] Cursor pagination helper exists.
-- [ ] Zustand stores exist for auth, shell, theme, and active tenant/workspace.
+- [ ] HttpClient interceptors handle auth (withCredentials), tenant header, correlation ID, and error normalisation.
+- [ ] `resource()` and `toHttpParams()` patterns are documented in shared lib.
+- [ ] Cursor pagination helper (`toHttpParams`) exists in shared utils.
+- [ ] Angular Signal services exist for auth, sidebar state, theme, and active tenant.
 - [ ] MSW is configured for local contract mocks.
 - [ ] Tests cover API error mapping and auth header behavior.
 
@@ -117,7 +119,7 @@ npm run build
 ### Acceptance Criteria
 
 - [ ] Data table wrapper supports loading, empty, sorting, filtering, and cursor paging.
-- [ ] Form field primitives work with React Hook Form and Zod.
+- [ ] Form field primitives work with Angular Reactive Forms and Zod.
 - [ ] Status badge supports success, warning, danger, neutral, pending, and offline states.
 - [ ] Permission gate component hides or disables UI based on permissions.
 - [ ] Confirm dialog and destructive action patterns exist.
@@ -147,7 +149,7 @@ npm run build
 
 ### Frontend App Location
 
-- App type: separate Next.js 15 App Router application
+- App type: separate Angular 21 standalone application
 - Domain: `console.onevo.io`
 - API prefix: `/admin/v1/*`
 - Auth: Google OAuth exchanged for platform-admin JWT
@@ -155,7 +157,7 @@ npm run build
 
 ### Acceptance Criteria
 
-- [ ] Standalone Next.js console app exists separately from the main Vite app.
+- [ ] Standalone Angular console app exists separately from the main customer Angular apps.
 - [ ] Directory structure follows [[developer-platform/frontend/app-structure|Developer Platform App Structure]] (developer-platform/frontend/app-structure.md).
 - [ ] Login page starts Google OAuth flow.
 - [ ] OAuth callback exchanges Google identity for platform-admin session through `/admin/v1/auth/google-callback`.

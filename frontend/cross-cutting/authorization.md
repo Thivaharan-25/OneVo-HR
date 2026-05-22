@@ -1,23 +1,10 @@
-﻿# Authorization (Hybrid Permission Control in Frontend)
+# Authorization (Hybrid Permission Control in Frontend)
 
 ## Permission Model
 
-Permissions flow from the backend JWT as **effective permissions** â€” already resolved from the user's roles + individual overrides + feature grants. The frontend uses them for **UI gating only** â€” the API enforces authorization and hierarchy scoping server-side. Frontend authorization is a UX concern: don't show things the user can't access.
+Permissions flow from the backend session as **effective permissions** — already resolved from the user's roles + individual overrides + feature grants. The frontend uses them for **UI gating only** — the API enforces authorization server-side. Frontend authorization is a UX concern: don't show things the user can't access.
 
-### How Effective Permissions Work
-
-The JWT contains the **final resolved permission set** for the user. The frontend does NOT need to know about roles, overrides, or feature grants â€” it just checks the permission codes in the token.
-
-```
-Backend session permission metadata:
-{
-  "permissions": ["employees:read", "leave:approve", "leave:read"],
-  "granted_modules": ["core-hr", "leave"],
-  "hierarchy_scope": "subordinates",  // "all" for Super Admin
-  "sub": "user-uuid",
-  "tenant_id": "tenant-uuid"
-}
-```
+The `AuthService` in `@onevo/shared` exposes signals for all permission checks. Components never decode JWT claims directly.
 
 ### Permission Format
 
@@ -28,240 +15,215 @@ Backend session permission metadata:
 
 Examples:
 ```
-employees:read            - Can view employee list (scoped to subordinates)
-employees:write           - Can create or edit employees
-employees:delete          - Can delete employees
-leave:approve             - Can approve leave requests (scoped to subordinates)
-payroll:read              - Can view payroll data
-payroll:run               - Can execute payroll runs
-workforce:view            - Can view workforce intelligence
-exceptions:view           - Can view exception alerts
-exceptions:acknowledge    - Can acknowledge/dismiss alerts
-exceptions:manage         - Can configure exception rules
-monitoring:view-settings  - Can view monitoring configuration
-monitoring:configure      - Can change monitoring settings
-settings:read             - Can view tenant settings
-billing:read              - Can view billing
+employees:read            — view employee list (scoped to subordinates by server)
+employees:write           — create or edit employees
+leave:approve             — approve leave requests
+payroll:read              — view payroll data
+workforce:view            — view workforce intelligence
+exceptions:view           — view exception alerts
+exceptions:manage         — configure exception rules
+monitoring:configure      — change monitoring settings
+settings:read             — view tenant settings
 ```
 
 ## Gating Levels
 
-### Level 1: Module-Level (Feature Grants)
+### Level 1: Route Guard (Module + Permission)
 
-Entire module routes gated based on `granted_modules` from JWT. If a module isn't granted, the entire section is hidden:
+Functional guards in `app.routes.ts` — combines module entitlement and permission check:
 
-```tsx
-// middleware.ts
-function isModuleGranted(module: string): boolean {
-  const { grantedModules } = useAuthStore.getState();
-  return grantedModules.includes(module);
+```typescript
+// Route with permission guard
+{
+  path: 'workforce',
+  canActivate: [authGuard, permissionGuard('workforce:view')],
+  loadComponent: () => import('./features/workforce/live-dashboard.component')
+    .then(m => m.LiveDashboardComponent),
 }
 
-// Route groups only accessible if module is granted
-const MODULE_ROUTES: Record<string, string> = {
-  '/hr': 'core-hr',
-  '/leave': 'leave',
-  '/payroll': 'payroll',
-  '/workforce': 'workforce',
-  '/performance': 'performance',
-  '/settings': 'settings',
-};
+// Route with feature + permission guard
+{
+  path: 'worksync/projects',
+  canActivate: [authGuard, featureGuard('wms:projects'), permissionGuard('projects:read')],
+  loadComponent: () => import('./features/worksync/projects/project-list.component')
+    .then(m => m.ProjectListComponent),
+}
 ```
 
-### Level 2: Route-Level (Permission Check)
+### Level 2: Nav Rail Items
 
-Within a granted module, specific routes require specific permissions:
+Sections and items hidden when the user lacks the module or permission:
 
-```tsx
-const ROUTE_PERMISSIONS: Record<string, string> = {
-  '/people/employees': 'employees:read',
-  '/leave/requests': 'leave:read',
-  '/payroll/runs': 'payroll:read',
-  '/settings/admin': 'settings:admin',
-};
-```
+```typescript
+// shell/nav-rail.component.ts
+export class NavRailComponent {
+  private auth = inject(AuthService);
 
-### Level 3: Sidebar Navigation
-
-Sections and items hidden if user lacks permission or module access:
-
-```tsx
-{sidebarConfig.map(section => {
-  // Module-level gate
-  if (section.module && !isModuleGranted(section.module)) return null;
-  // Permission-level gate
-  if (section.permission && !hasPermission(section.permission)) return null;
-
-  const visibleItems = section.items.filter(item =>
-    (!item.module || isModuleGranted(item.module)) &&
-    (!item.permission || hasPermission(item.permission))
+  navItems = computed(() => NAV_CONFIG
+    .filter(item => {
+      if (item.feature && !this.auth.hasFeature(item.feature)()) return false;
+      if (item.permission && !this.auth.hasPermission(item.permission)()) return false;
+      return true;
+    })
   );
-
-  if (visibleItems.length === 0) return null;
-
-  return <SidebarSection key={section.label} {...section} items={visibleItems} />;
-})}
+}
 ```
 
-### Level 4: Page Content
+### Level 3: Page Sections
 
-Within a page, gate specific sections:
+Within a page, gate tabs or sections using the `*hasPermission` structural directive:
 
-```tsx
-<Tabs>
-  <TabsTrigger value="overview">Overview</TabsTrigger>
-  <TabsTrigger value="employment">Employment</TabsTrigger>
-  <PermissionGate permission="payroll:read">
-    <TabsTrigger value="compensation">Compensation</TabsTrigger>
-  </PermissionGate>
-</Tabs>
+```html
+<!-- employee-detail.component.html -->
+<mat-tab-group>
+  <mat-tab label="Overview">...</mat-tab>
+  <mat-tab label="Employment">...</mat-tab>
+  <ng-container *hasPermission="'payroll:read'">
+    <mat-tab label="Compensation">
+      <app-compensation-section [employeeId]="employeeId()" />
+    </mat-tab>
+  </ng-container>
+</mat-tab-group>
 ```
 
-### Level 5: Component Actions
+Or with new control flow and a permission signal:
 
-Individual buttons, links, and actions:
-
-```tsx
-<PermissionGate permission="leave:approve">
-  <Button onClick={handleApprove}>Approve</Button>
-</PermissionGate>
+```html
+@if (auth.hasPermission('payroll:read')()) {
+  <mat-tab label="Compensation">
+    <app-compensation-section />
+  </mat-tab>
+}
 ```
 
-### Level 6: Field-Level
+### Level 4: Component Actions (Buttons, Links)
+
+```html
+<!-- Only show Approve button if user has leave:approve -->
+<button *hasPermission="'leave:approve'"
+        mat-raised-button color="primary"
+        (click)="approve()">
+  Approve
+</button>
+```
+
+### Level 5: Field-Level
 
 Sensitive fields masked or hidden:
 
-```tsx
-<PermissionGate
-  permission="payroll:read"
-  fallback={<span className="text-muted-foreground">Restricted</span>}
->
-  <span className="font-mono tabular-nums">{formatCurrency(salary)}</span>
-</PermissionGate>
-```
-
-## Route Guard (`src/lib/security/permission-guard.tsx`)
-
-`<ProtectedRoute>` wraps any route that requires auth or a specific permission:
-
-```tsx
-// Auth-only (no permission key required)
-<ProtectedRoute><DashboardLayout /></ProtectedRoute>
-
-// Permission-gated
-<ProtectedRoute permission="employees:read"><EmployeesPage /></ProtectedRoute>
-```
-
-Behavior:
-- Not authenticated â†’ redirect to `/login`
-- Authenticated but missing permission â†’ redirect to `/403`
-
-## PermissionGate Component
-
-```tsx
-interface PermissionGateProps {
-  permission?: string | string[];  // Single or any-of
-  module?: string;                 // Module-level gate
-  requireAll?: boolean;            // All permissions required (default: any)
-  fallback?: React.ReactNode;      // Shown when denied (default: null)
-  children: React.ReactNode;
+```html
+<!-- payroll:read gates salary display -->
+@if (auth.hasPermission('payroll:read')()) {
+  <span class="font-mono">{{ employee.salary | currency }}</span>
+} @else {
+  <span class="text-muted">Restricted</span>
 }
+```
 
-export function PermissionGate({ permission, module, requireAll = false, fallback = null, children }: PermissionGateProps) {
-  const { hasPermission, hasAnyPermission, hasAllPermissions, isModuleGranted } = useAuthStore();
+## `HasPermissionDirective` (from `@onevo/shared`)
 
-  // Module gate
-  if (module && !isModuleGranted(module)) return <>{fallback}</>;
+Structural directive for template-level gating. Supports single permission, multiple permissions (any-of), and `fallback` template:
 
-  // Permission gate
-  if (permission) {
+```typescript
+// shared/src/lib/auth/has-permission.directive.ts
+@Directive({
+  selector: '[hasPermission]',
+  standalone: true,
+})
+export class HasPermissionDirective {
+  private auth = inject(AuthService);
+  private vcr = inject(ViewContainerRef);
+  private tmpl = inject(TemplateRef);
+
+  @Input() set hasPermission(permission: string | string[]) {
     const permissions = Array.isArray(permission) ? permission : [permission];
-    const hasAccess = requireAll
-      ? hasAllPermissions(...permissions)
-      : hasAnyPermission(...permissions);
-    if (!hasAccess) return <>{fallback}</>;
+    const granted = computed(() => permissions.some(p => this.auth.hasPermission(p)()));
+
+    effect(() => {
+      this.vcr.clear();
+      if (granted()) this.vcr.createEmbeddedView(this.tmpl);
+    });
+  }
+}
+```
+
+Usage:
+
+```html
+<!-- Single permission -->
+<button *hasPermission="'employees:write'" mat-button>Edit</button>
+
+<!-- Any-of (array) -->
+<div *hasPermission="['employees:write', 'employees:delete']">
+  Admin actions
+</div>
+```
+
+## `AuthService` Permission API
+
+```typescript
+// shared/src/lib/auth/auth.service.ts
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private _permissions = signal<string[]>([]);
+  private _grantedModules = signal<string[]>([]);
+  private _hierarchyScope = signal<'all' | 'subordinates'>('subordinates');
+
+  // Permission check — returns a computed signal (reactive)
+  hasPermission(code: string): Signal<boolean> {
+    return computed(() => this._permissions().includes(code));
   }
 
-  return <>{children}</>;
+  hasAnyPermission(...codes: string[]): Signal<boolean> {
+    return computed(() => codes.some(c => this._permissions().includes(c)));
+  }
+
+  hasAllPermissions(...codes: string[]): Signal<boolean> {
+    return computed(() => codes.every(c => this._permissions().includes(c)));
+  }
+
+  // Module / feature check
+  hasFeature(feature: string): Signal<boolean> {
+    return computed(() => this._grantedModules().includes(feature));
+  }
+
+  hierarchyScope = this._hierarchyScope.asReadonly();
+  isSuperAdmin = computed(() => this._hierarchyScope() === 'all');
 }
 ```
-
-## useHasPermission Hook
-
-For programmatic permission checks:
-
-```tsx
-export function useHasPermission(permission: string): boolean {
-  return useAuthStore((state) => state.hasPermission(permission));
-}
-
-export function useIsModuleGranted(module: string): boolean {
-  return useAuthStore((state) => state.isModuleGranted(module));
-}
-```
-
-## usePermissions Hook
-
-Provided by `PermissionProvider` in `App.tsx`. Evaluates **both** role permissions and per-employee overrides in a single call:
-
-```tsx
-const { hasPermission } = usePermissions();
-const canApprove = hasPermission('leave:approve');
-```
-
-Never read raw role names from the auth store for permission checks.
 
 ## Data Scoping (Hierarchy)
 
-The **API handles all hierarchy scoping server-side**. The frontend does NOT filter data by hierarchy. However, the frontend should be aware of the user's scope to adjust the UI:
+The **API handles all hierarchy scoping server-side** — it only returns data the user can see. The frontend adapts the UI based on scope but never filters data client-side:
 
-```tsx
-// The API already returns only employees the user can see (subordinates)
-const { data: employees } = useEmployees(filters);
+```typescript
+// Adjust filter UI based on scope
+export class EmployeeListComponent {
+  private auth = inject(AuthService);
 
-// Hide "All Departments" filter if user is hierarchy-scoped
-const { hierarchyScope } = useAuthStore();
-{hierarchyScope === 'all' && <DepartmentFilter showAll />}
-{hierarchyScope === 'subordinates' && <DepartmentFilter showOwnOnly />}
-```
-
-## Auth Store Shape
-
-```tsx
-interface AuthState {
-  // From JWT
-  permissions: string[];        // Effective permissions (already resolved)
-  grantedModules: string[];     // Modules this user has access to
-  hierarchyScope: 'all' | 'subordinates';  // Super Admin = 'all'
-
-  // Derived helpers
-  hasPermission: (code: string) => boolean;
-  hasAnyPermission: (...codes: string[]) => boolean;
-  hasAllPermissions: (...codes: string[]) => boolean;
-  isModuleGranted: (module: string) => boolean;
-  isSuperAdmin: () => boolean;
+  // Show "All Departments" filter only to Super Admins
+  showAllDepartments = this.auth.isSuperAdmin;
 }
 ```
 
-## Important: No Hardcoded Roles
+## No Hardcoded Role Names
 
-The frontend must NEVER hardcode role names (e.g., "HR Manager", "Team Lead"). Roles are custom â€” the Super Admin creates them. Always check **permissions** and **module grants**, never role names.
+The frontend must NEVER hardcode role names (e.g., "HR Manager", "Team Lead"). Roles are custom — tenants create them. Always check **permissions** and **module grants**, never role names.
 
-```tsx
-// WRONG - never do this
-if (user.role === 'HR Manager') { ... }
+```typescript
+// ❌ Wrong — never check role name
+if (auth.user()?.role === 'HR Manager') { ... }
 
-// RIGHT - check the permission
-if (hasPermission('employees:write')) { ... }
+// ✅ Correct — check the permission signal
+if (auth.hasPermission('employees:write')()) { ... }
 
-// RIGHT - check module access
-if (isModuleGranted('leave')) { ... }
+// ✅ Correct — check module access
+if (auth.hasFeature('leave')()) { ... }
 ```
 
 ## Related
 
-- [[frontend/cross-cutting/authentication|Authentication]] â€” auth flow, token management
-- [[frontend/architecture/routing|Routing]] â€” route guards
-- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] â€” sidebar gating
-- [[frontend/design-system/patterns/table-patterns|Table Patterns]] â€” column-level gating
-
+- [[frontend/cross-cutting/authentication|Authentication]] — auth flow, session management
+- [[frontend/architecture/routing|Routing]] — functional route guards
+- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — nav rail gating
+- [[frontend/design-system/patterns/table-patterns|Table Patterns]] — column-level gating

@@ -1,418 +1,485 @@
-﻿# Frontend App Structure
+# Frontend App Structure
 
-> **Note:** A second frontend app (`dev-console`) exists for platform administration â€” see `developer-platform/frontend/app-structure.md` for details. This document covers the primary ONEVO tenant-facing app only.
+> **Stack:** Angular 21 standalone components, two-app monorepo workspace. No NgModules, no SSR, no file-based routing. All routes are defined in `app.routes.ts`. Feature components live in `features/`. Loading states use Angular's `@defer` or `resource.isLoading()` signals.
 
-> **Stack:** This app runs on **Vite + React 19 + React Router v7** â€” not Next.js. There is no file-based routing, no `app/` directory, no `page.tsx`/`layout.tsx` conventions, no parallel routes (`@panel`, `@modal`), and no intercepting routes (`(.)edit`). All routes are defined in `src/router.tsx`. Page components live in `src/pages/`. Loading states use React Suspense. Edit panels and create modals use React Router nested routes with `<Outlet />` or controlled modal state.
+> **Two apps, one backend:** `employee-app` (`app.{tenant}.onevo.com`) for employee self-service; `management-app` (`manage.{tenant}.onevo.com`) for HR/Admin/Manager/Executive workflows. Both consume the same `/api/v1/*` backend and share a `shared` Angular library.
 
-## Route Tree
+## Monorepo Workspace Structure
 
-All 22 backend modules + 9 WMS modules mapped to ~63 frontend pages. Single route tree with permission-driven views (no separate employee self-service group).
-
-### Authorization Model
-
-**Hybrid permissions â€” not traditional fixed-role RBAC:**
-1. **Custom roles** â€” tenants create roles with custom names and assign granular permissions
-2. **Per-employee overrides** â€” individual employees can be granted/revoked specific module/feature access independent of their role
-
-**Never hardcode role names.** Always check permission keys (e.g., `leave:read`, `leave:approve`, `payroll:write`).
-
-```tsx
-// Permission check evaluates BOTH role permissions AND employee-level overrides
-const { hasPermission } = usePermissions();
-
-const canViewTeam = hasPermission('leave:read:team');
-const canApprove = hasPermission('leave:approve');
-const canManagePolicies = hasPermission('leave:manage');
+```
+onevo-frontend/                        ← Angular workspace root
+├── angular.json                       ← Workspace config (defines all three projects)
+├── tsconfig.json                      ← Root TypeScript config
+├── package.json                       ← Shared dependencies
+│
+├── projects/
+│   ├── employee-app/                  ← Employee self-service SPA
+│   ├── management-app/                ← HR / Admin / Manager / Executive SPA
+│   └── shared/                        ← Angular library (shared across both apps)
+│
+└── e2e/                               ← Playwright E2E tests (cross-app)
 ```
 
 ---
 
+## Shared Library (`projects/shared/`)
+
+Built once with `ng build shared`. Both apps import from `@onevo/shared`.
+
 ```
-src/
-â”œâ”€â”€ main.tsx                           # Entry: React 19, StrictMode, mount <App />
-â”œâ”€â”€ App.tsx                            # Provider stack + <RouterProvider router={router} />
-â”œâ”€â”€ router.tsx                         # ALL routes defined here using createBrowserRouter()
-â”‚
-â”œâ”€â”€ lib/
-â”‚   â”œâ”€â”€ api/
-â”‚   â”‚   â”œâ”€â”€ client.ts                         # Fetch wrapper â€” runs interceptor chain
-â”‚   â”‚   â”œâ”€â”€ index.ts                          # Re-exports apiClient + all endpoint modules
-â”‚   â”‚   â”œâ”€â”€ errors.ts                         # ApiError, AuthError, ProblemDetails type
-â”‚   â”‚   â”œâ”€â”€ interceptors/
-â”‚   â”‚   â”‚   â”œâ”€â”€ session.interceptor.ts        # Ensures cookie-backed session is fresh
-â”‚   â”‚   â”‚   â”œâ”€â”€ tenant.interceptor.ts         # Injects X-Entity-Id from active entity in authStore
-â”‚   â”‚   â”‚   â”œâ”€â”€ correlation.interceptor.ts    # Injects X-Correlation-Id (crypto.randomUUID)
-â”‚   â”‚   â”‚   â””â”€â”€ error.interceptor.ts          # 401 retry after refresh; toast on 4xx/5xx
-â”‚   â”‚   â””â”€â”€ endpoints/
-â”‚   â”‚       â”œâ”€â”€ auth.ts
-â”‚   â”‚       â”œâ”€â”€ employees.ts
-â”‚   â”‚       â”œâ”€â”€ leave.ts
-â”‚   â”‚       â”œâ”€â”€ org.ts
-â”‚   â”‚       â”œâ”€â”€ workforce.ts
-â”‚   â”‚       â”œâ”€â”€ calendar.ts
-â”‚   â”‚       â”œâ”€â”€ notifications.ts
-â”‚   â”‚       â”œâ”€â”€ settings.ts
-â”‚   â”‚       â”œâ”€â”€ admin.ts
-â”‚   â”‚       â”œâ”€â”€ agents.ts
-â”‚   â”‚       â”œâ”€â”€ identity.ts
-â”‚   â”‚       â””â”€â”€ wms/
-â”‚   â”‚           â”œâ”€â”€ projects.ts
-â”‚   â”‚           â”œâ”€â”€ tasks.ts
-â”‚   â”‚           â”œâ”€â”€ planner.ts
-â”‚   â”‚           â”œâ”€â”€ goals.ts
-â”‚   â”‚           â”œâ”€â”€ docs.ts
-â”‚   â”‚           â”œâ”€â”€ time.ts
-â”‚   â”‚           â””â”€â”€ chat.ts
-â”‚   â”œâ”€â”€ security/
-â”‚   â”‚   â”œâ”€â”€ csrf.ts                           # CSRF header helper for cookie-authenticated mutations
-â”‚   â”‚   â”œâ”€â”€ idle-timeout.ts                   # Auto-logout after inactivity
-â”‚   â”‚   â”œâ”€â”€ sanitizer.ts                      # DOMPurify wrapper â€” used on all user-generated HTML
-â”‚   â”‚   â””â”€â”€ permission-guard.tsx              # <ProtectedRoute> component + redirect to /403
-â”‚   â”œâ”€â”€ signalr/
-â”‚   â”‚   â””â”€â”€ client.ts                         # HubConnectionBuilder setup; re-export hub instance
-â”‚   â”œâ”€â”€ i18n.ts                               # i18next init (browser language detector + HTTP backend)
-â”‚   â””â”€â”€ utils/
-â”‚       â”œâ”€â”€ cn.ts                             # clsx + tailwind-merge shorthand
-â”‚       â”œâ”€â”€ format-date.ts                    # date-fns wrappers
-â”‚       â””â”€â”€ to-params.ts                      # Object â†’ URLSearchParams
-â”‚
-â”œâ”€â”€ stores/
-â”‚   â”œâ”€â”€ use-auth-store.ts                     # Zustand: current user, activeEntityId, token expiry
-â”‚   â”œâ”€â”€ use-sidebar-store.ts                  # Zustand: expanded pillar, active item
-â”‚   â””â”€â”€ use-filter-store.ts                   # Zustand: per-module filter state
-â”‚
-â”‚â”€â”€ â”€â”€â”€ AUTH PAGES (public, no nav) â”€â”€â”€â”€
-â”‚
-â”œâ”€â”€ pages/auth/
-â”‚   â”œâ”€â”€ AuthLayout.tsx                 # Centered card, brand logo â€” wraps auth pages via <Outlet />
-â”‚   â”œâ”€â”€ LoginPage.tsx                  # Email + password
-â”‚   â”œâ”€â”€ ForgotPasswordPage.tsx         # Password reset request
-â”‚   â”œâ”€â”€ ResetPasswordPage.tsx          # Token-based reset
-â”‚   â””â”€â”€ MfaPage.tsx                    # TOTP verification
-â”‚
-â”‚â”€â”€ â”€â”€â”€ DASHBOARD PAGES (authenticated, sidebar + topbar) â”€â”€â”€â”€
-â”‚
-â”œâ”€â”€ pages/dashboard/
-â”‚   â”œâ”€â”€ DashboardLayout.tsx            # NavRail + ExpansionPanel + Topbar + <Outlet />
-â”‚   â”œâ”€â”€ HomePage.tsx                   # Permission-aware landing dashboard
-â”‚   â”œâ”€â”€ InboxPage.tsx                  # Unified approvals, tasks, mentions, exception alerts
-â”‚   â”‚
-â”‚   â”‚â”€â”€ â”€â”€â”€ PILLAR 1: PEOPLE â”€â”€â”€â”€
-â”‚   â”‚
-â”‚   â”œâ”€â”€ people/employees/
-â”‚   â”‚   â”œâ”€â”€ EmployeesPage.tsx          # Employee directory (DataTable + search + filters)
-â”‚   â”‚   â”œâ”€â”€ EmployeeNewPage.tsx        # Create employee â€” multi-step wizard
-â”‚   â”‚   â””â”€â”€ EmployeeDetailPage.tsx     # Employee detail â€” scrollable sections + slide-over edit panel
-â”‚   â”‚                                  # (edit panel = <EditEmployeeModal /> opened via state, not route)
-â”‚   â”‚
-â”‚   â”œâ”€â”€ people/leave/
-â”‚   â”‚   â”œâ”€â”€ LeavePage.tsx              # Leave requests (own or team view)
-â”‚   â”‚   â”œâ”€â”€ LeaveCalendarPage.tsx      # Team leave calendar
-â”‚   â”‚   â”œâ”€â”€ LeaveBalancesPage.tsx      # Per-type balance cards
-â”‚   â”‚   â””â”€â”€ LeavePoliciesPage.tsx      # Policy CRUD
-â”‚   â”‚
-â”‚   â”‚â”€â”€ â”€â”€â”€ PILLAR 2: WORKFORCE + WMS â”€â”€â”€â”€
-â”‚   â”‚
-â”‚   â”œâ”€â”€ workforce/
-â”‚   â”‚   â”œâ”€â”€ WorkforcePage.tsx          # Presence â€” live employee card grid
-â”‚   â”‚   â”œâ”€â”€ WorkforceEmployeePage.tsx  # /workforce/:employeeId â€” activity detail
-â”‚   â”‚   â”œâ”€â”€ WorkforceAnalyticsPage.tsx # Productivity scores + capacity analytics
-â”‚   â”‚   â”‚
-â”‚   â”‚   â”œâ”€â”€ projects/
-â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectsPage.tsx       # All projects in company tenant scope
-â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectNewPage.tsx     # Create project
-â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectDetailPage.tsx  # /workforce/projects/:id â€” overview (epics, milestones, members)
-â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectBoardPage.tsx   # Kanban / list view of tasks
-â”‚   â”‚   â”‚   â”œâ”€â”€ ProjectSprintsPage.tsx # Sprint management
-â”‚   â”‚   â”‚   â””â”€â”€ ProjectRoadmapPage.tsx # Timeline view of epics and milestones
-â”‚   â”‚   â”‚
-â”‚   â”‚   â”œâ”€â”€ MyWorkPage.tsx             # My assigned tasks across all projects
-â”‚   â”‚   â”œâ”€â”€ PlannerPage.tsx            # Workspace-level sprints, boards, roadmap
-â”‚   â”‚   â”‚
-â”‚   â”‚   â”œâ”€â”€ goals/
-â”‚   â”‚   â”‚   â”œâ”€â”€ GoalsPage.tsx          # OKR overview â€” objectives and key results
-â”‚   â”‚   â”‚   â””â”€â”€ GoalDetailPage.tsx     # /workforce/goals/:id â€” key results + check-ins
-â”‚   â”‚   â”‚
-â”‚   â”‚   â”œâ”€â”€ docs/
-â”‚   â”‚   â”‚   â”œâ”€â”€ DocsPage.tsx           # Documents + Wiki list
-â”‚   â”‚   â”‚   â””â”€â”€ DocDetailPage.tsx      # /workforce/docs/:id â€” document/wiki page (sanitized HTML)
-â”‚   â”‚   â”‚
-â”‚   â”‚   â”œâ”€â”€ time/
-â”‚   â”‚   â”‚   â”œâ”€â”€ TimePage.tsx           # My timesheet
-â”‚   â”‚   â”‚   â””â”€â”€ TimeReportsPage.tsx    # Time reports (personal and team)
-â”‚   â”‚   â”‚
-â”‚   â”‚   â””â”€â”€ ChatPage.tsx               # Channels, DMs, message threads (real-time SignalR)
-â”‚   â”‚
-â”‚   â”‚â”€â”€ â”€â”€â”€ CROSS-CUTTING â”€â”€â”€â”€
-â”‚   â”‚
-â”‚   â”œâ”€â”€ calendar/
-â”‚   â”‚   â”œâ”€â”€ CalendarPage.tsx           # Unified calendar (leave, holidays, review cycles)
-â”‚   â”‚   â”œâ”€â”€ SchedulePage.tsx           # Shift schedules
-â”‚   â”‚   â”œâ”€â”€ AttendancePage.tsx         # Attendance corrections
-â”‚   â”‚   â””â”€â”€ OvertimePage.tsx           # Overtime requests and approvals
-â”‚   â”‚
-â”‚   â”œâ”€â”€ notifications/
-â”‚   â”‚   â”œâ”€â”€ NotificationsPage.tsx      # Notification inbox
-â”‚   â”‚   â””â”€â”€ NotificationPreferencesPage.tsx # Channel preferences
-â”‚   â”‚
-â”‚   â”‚â”€â”€ â”€â”€â”€ PILLAR 3: ORGANIZATION â”€â”€â”€â”€
-â”‚   â”‚
-â”‚   â”œâ”€â”€ org/
-â”‚   â”‚   â”œâ”€â”€ OrgPage.tsx                # Org chart
-â”‚   â”‚   â”œâ”€â”€ DepartmentsPage.tsx        # Department management
-â”‚   â”‚   â”œâ”€â”€ TeamsPage.tsx              # Team management
-â”‚   â”‚   â”œâ”€â”€ job-families/
-â”‚   â”‚   â”‚   â”œâ”€â”€ JobFamiliesPage.tsx    # Job family list
-â”‚   â”‚   â”‚   â””â”€â”€ JobFamilyDetailPage.tsx # /org/job-families/:id + associated roles
-â”‚   â”‚   â””â”€â”€ legal-entities/
-â”‚   â”‚       â”œâ”€â”€ LegalEntitiesPage.tsx  # Legal entity list + hierarchy view
-â”‚   â”‚       â””â”€â”€ LegalEntityDetailPage.tsx # /org/legal-entities/:id + settings
-â”‚   â”‚
-â”‚   â”‚â”€â”€ â”€â”€â”€ PILLAR 4: ADMIN â”€â”€â”€â”€
-â”‚   â”‚
-â”‚   â”œâ”€â”€ admin/
-â”‚   â”‚   â”œâ”€â”€ UsersPage.tsx              # People Access â€” user management + role assignment
-â”‚   â”‚   â”œâ”€â”€ RolesPage.tsx              # Permissions â€” role and permission management
-â”‚   â”‚   â”œâ”€â”€ AuditPage.tsx              # Activity Trail â€” audit log viewer
-â”‚   â”‚   â”œâ”€â”€ agents/
-â”‚   â”‚   â”‚   â”œâ”€â”€ AgentsPage.tsx         # Desktop agent fleet
-â”‚   â”‚   â”‚   â””â”€â”€ AgentDetailPage.tsx    # /admin/agents/:id â€” agent detail + commands
-â”‚   â”‚   â”œâ”€â”€ DevicesPage.tsx            # Hardware terminals
-â”‚   â”‚   â””â”€â”€ CompliancePage.tsx         # Data & Privacy â€” GDPR, data governance
-â”‚   â”‚
-â”‚   â”‚â”€â”€ â”€â”€â”€ PILLAR 5: SETTINGS â”€â”€â”€â”€
-â”‚   â”‚
-â”‚   â””â”€â”€ settings/
-â”‚       â”œâ”€â”€ GeneralPage.tsx            # Tenant settings
-â”‚       â”œâ”€â”€ SystemPage.tsx             # Monitoring feature toggles + feature flags (merged)
-â”‚       â”œâ”€â”€ NotificationsSettingsPage.tsx # Channel config (org-level)
-â”‚       â”œâ”€â”€ IntegrationsPage.tsx       # SSO, LMS, payroll providers
-â”‚       â”œâ”€â”€ BrandingPage.tsx           # Logo, colors, domain
-â”‚       â”œâ”€â”€ BillingPage.tsx            # Subscription & plan
-â”‚       â””â”€â”€ AlertsPage.tsx             # Alert rule configuration
-â”‚
-â””â”€â”€ pages/errors/
-    â”œâ”€â”€ NotFoundPage.tsx               # 404
-    â”œâ”€â”€ ForbiddenPage.tsx              # 403
-    â””â”€â”€ ErrorPage.tsx                  # Global error boundary fallback
+projects/shared/src/lib/
+├── auth/
+│   ├── auth.service.ts               # AuthService: session state signals, login/logout
+│   ├── auth.guard.ts                 # Functional CanActivateFn — redirects to /login
+│   ├── permission.guard.ts           # Functional CanActivateFn — redirects to /403
+│   ├── auth.interceptor.ts           # HttpInterceptorFn: session cookie + refresh
+│   ├── has-permission.directive.ts   # *hasPermission="'resource:action'" structural directive
+│   └── models/
+│       └── session.model.ts          # Session, UserProfile, TenantInfo
+│
+├── api/
+│   ├── base-api.service.ts           # Base class with HttpClient + error normalisation
+│   ├── interceptors/
+│   │   ├── tenant.interceptor.ts     # Injects X-Tenant-Id from AuthService
+│   │   ├── correlation.interceptor.ts# Injects X-Correlation-Id (crypto.randomUUID)
+│   │   └── error.interceptor.ts     # RFC 7807 → MatSnackBar toast on 4xx/5xx
+│   └── endpoints/
+│       ├── employees.service.ts
+│       ├── leave.service.ts
+│       ├── attendance.service.ts
+│       ├── workforce.service.ts
+│       ├── notifications.service.ts
+│       ├── calendar.service.ts
+│       ├── settings.service.ts
+│       ├── agents.service.ts
+│       ├── identity.service.ts
+│       └── worksync/
+│           ├── projects.service.ts
+│           ├── tasks.service.ts
+│           ├── goals.service.ts
+│           ├── docs.service.ts
+│           ├── time.service.ts
+│           └── chat.service.ts
+│
+├── realtime/
+│   └── signalr.service.ts            # HubConnectionBuilder; exposes typed observables per channel
+│
+├── ui/
+│   ├── shell/
+│   │   ├── shell-layout.component.ts # Root shell: nav rail + topbar + router-outlet
+│   │   ├── nav-rail.component.ts     # Icon rail (52px floating dark card)
+│   │   ├── topbar.component.ts       # 40px topbar with context switcher
+│   │   └── context-switcher.component.ts # Switches between employee-app and management-app
+│   ├── data-display/
+│   │   ├── data-table.component.ts   # MatTable wrapper with sorting/pagination/export
+│   │   ├── stat-card.component.ts    # KPI card
+│   │   └── empty-state.component.ts
+│   └── feedback/
+│       ├── loading-bar.component.ts
+│       └── error-state.component.ts
+│
+├── models/
+│   ├── employee.model.ts
+│   ├── leave.model.ts
+│   ├── attendance.model.ts
+│   ├── workforce.model.ts
+│   ├── notification.model.ts
+│   └── pagination.model.ts
+│
+└── utils/
+    ├── format-date.ts                # date-fns wrappers
+    ├── to-params.ts                  # Object → HttpParams
+    └── validators.ts                 # Custom Angular Validators
 ```
 
-**Route config pattern in `router.tsx`:**
+---
 
-```tsx
-// src/router.tsx
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { ProtectedRoute } from '@/lib/security/permission-guard';
+## Employee App (`projects/employee-app/`)
 
-export const router = createBrowserRouter([
+### Authorization Model
+
+**Hybrid permissions — not traditional fixed-role RBAC:**
+1. **Custom roles** — tenants create roles with custom names and assign granular permissions
+2. **Per-employee overrides** — individual employees can be granted/revoked specific access independent of their role
+
+**Never hardcode role names.** Always check permission keys (e.g., `leave:read`, `attendance:read-own`).
+
+```typescript
+// AuthService.hasPermission() checks BOTH role permissions AND employee-level overrides
+private authService = inject(AuthService);
+
+canViewTeam = this.authService.hasPermission('leave:read');      // signal<boolean>
+canRequestLeave = this.authService.hasPermission('leave:create');
+```
+
+### Directory Structure
+
+```
+projects/employee-app/src/
+├── main.ts                            # bootstrapApplication(AppComponent, appConfig)
+├── app/
+│   ├── app.component.ts               # Root component (router-outlet only)
+│   ├── app.config.ts                  # provideRouter, provideHttpClient, provideAnimations,
+│   │                                  # withInterceptors([authInterceptor, tenantInterceptor, ...])
+│   ├── app.routes.ts                  # ALL employee-app routes defined here
+│   │
+│   ├── shell/
+│   │   └── employee-shell.component.ts # Shell with employee nav rail + topbar
+│   │
+│   └── features/
+│       │
+│       │── ── AUTH (public, no nav) ────
+│       │
+│       ├── auth/
+│       │   ├── login/
+│       │   │   └── login.component.ts
+│       │   ├── forgot-password/
+│       │   │   └── forgot-password.component.ts
+│       │   ├── reset-password/
+│       │   │   └── reset-password.component.ts
+│       │   └── mfa/
+│       │       └── mfa.component.ts
+│       │
+│       │── ── DASHBOARD (authenticated) ────
+│       │
+│       ├── home/
+│       │   └── home.component.ts      # Employee landing: my tasks, upcoming leave, status
+│       │
+│       ├── my-work/
+│       │   ├── my-work.component.ts   # Tasks assigned to me across all projects
+│       │   └── my-space.component.ts  # Personal workspace / My Space
+│       │
+│       ├── leave/
+│       │   ├── leave-overview.component.ts   # My leave requests + balance cards
+│       │   ├── leave-request.component.ts    # Submit new leave request
+│       │   └── leave-calendar.component.ts   # My leave calendar view
+│       │
+│       ├── attendance/
+│       │   ├── my-attendance.component.ts    # My attendance records
+│       │   └── my-shifts.component.ts        # My shift schedule
+│       │
+│       ├── profile/
+│       │   ├── my-profile.component.ts       # Personal profile, dependents, documents
+│       │   └── my-skills.component.ts        # My skill profile + validation requests
+│       │
+│       ├── calendar/
+│       │   └── my-calendar.component.ts      # Personal calendar (leave, shifts, events)
+│       │
+│       ├── notifications/
+│       │   ├── inbox.component.ts            # Notification inbox
+│       │   └── preferences.component.ts     # Notification preferences
+│       │
+│       ├── chat/                             # WorkSync chat (Package 2)
+│       │   └── chat.component.ts
+│       │
+│       └── errors/
+│           ├── not-found.component.ts        # 404
+│           ├── forbidden.component.ts        # 403
+│           └── error.component.ts            # Global error fallback
+└── environments/
+    ├── environment.ts
+    └── environment.prod.ts
+```
+
+### Route Config Pattern (`app.routes.ts`)
+
+```typescript
+// projects/employee-app/src/app/app.routes.ts
+import { Routes } from '@angular/router';
+import { authGuard } from '@onevo/shared';
+import { permissionGuard } from '@onevo/shared';
+
+export const routes: Routes = [
   // Auth routes (public)
   {
-    element: <AuthLayout />,
+    path: '',
+    loadComponent: () => import('./features/auth/auth-layout.component'),
     children: [
-      { path: '/login', element: <LoginPage /> },
-      { path: '/forgot-password', element: <ForgotPasswordPage /> },
-      { path: '/reset-password', element: <ResetPasswordPage /> },
-      { path: '/mfa', element: <MfaPage /> },
+      { path: 'login', loadComponent: () => import('./features/auth/login/login.component') },
+      { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password/forgot-password.component') },
+      { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password/reset-password.component') },
+      { path: 'mfa', loadComponent: () => import('./features/auth/mfa/mfa.component') },
     ],
   },
-  // Dashboard routes (authenticated)
+  // Authenticated routes
   {
-    element: <ProtectedRoute><DashboardLayout /></ProtectedRoute>,
+    path: '',
+    loadComponent: () => import('./shell/employee-shell.component'),
+    canActivate: [authGuard],
     children: [
-      { path: '/', element: <HomePage /> },
-      { path: '/inbox', element: <InboxPage /> },
-      // People
-      { path: '/people/employees', element: <ProtectedRoute permission="employees:read"><EmployeesPage /></ProtectedRoute> },
-      { path: '/people/employees/new', element: <ProtectedRoute permission="employees:write"><EmployeeNewPage /></ProtectedRoute> },
-      { path: '/people/employees/:id', element: <ProtectedRoute permission="employees:read"><EmployeeDetailPage /></ProtectedRoute> },
-      // ... all other routes
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'home', loadComponent: () => import('./features/home/home.component') },
+      {
+        path: 'leave',
+        canActivate: [permissionGuard('leave:create')],
+        loadComponent: () => import('./features/leave/leave-overview.component'),
+      },
+      {
+        path: 'attendance',
+        canActivate: [permissionGuard('attendance:read-own')],
+        loadComponent: () => import('./features/attendance/my-attendance.component'),
+      },
+      { path: 'profile', loadComponent: () => import('./features/profile/my-profile.component') },
+      { path: 'calendar', loadComponent: () => import('./features/calendar/my-calendar.component') },
+      { path: 'chat', loadComponent: () => import('./features/chat/chat.component') },
+      { path: 'notifications', loadComponent: () => import('./features/notifications/inbox.component') },
     ],
   },
-  { path: '/403', element: <ForbiddenPage /> },
-  { path: '*', element: <NotFoundPage /> },
-]);
+  { path: '403', loadComponent: () => import('./features/errors/forbidden.component') },
+  { path: '**', loadComponent: () => import('./features/errors/not-found.component') },
+];
 ```
 
-**Edit panels / modals (replacing Next.js parallel routes):**
-In Vite + React Router, edit panels are opened via local state or a URL query param â€” not intercepting routes.
+---
 
-```tsx
-// EmployeeDetailPage.tsx
-const [editSection, setEditSection] = useState<string | null>(null);
+## Management App (`projects/management-app/`)
 
-return (
-  <>
-    <EmployeeDetailSections onEdit={setEditSection} />
-    {editSection && (
-      <EditEmployeePanel section={editSection} onClose={() => setEditSection(null)} />
-    )}
-  </>
-);
+### Directory Structure
+
+```
+projects/management-app/src/
+├── main.ts
+├── app/
+│   ├── app.component.ts
+│   ├── app.config.ts
+│   ├── app.routes.ts                  # ALL management-app routes
+│   │
+│   ├── shell/
+│   │   └── management-shell.component.ts # Shell with management nav rail + topbar
+│   │
+│   └── features/
+│       │
+│       ├── auth/                      # Same auth pages (shared login endpoint)
+│       │
+│       ├── home/
+│       │   └── dashboard.component.ts # Management dashboard: pending approvals, alerts
+│       │
+│       │── ── HR MANAGEMENT ────
+│       │
+│       ├── employees/
+│       │   ├── employee-list.component.ts     # Directory (MatTable + search + filters)
+│       │   ├── employee-new.component.ts      # Create employee — multi-step wizard
+│       │   └── employee-detail.component.ts   # Detail — sections + slide-over edit panel
+│       │
+│       ├── leave/
+│       │   ├── leave-management.component.ts  # All leave requests (approve/reject)
+│       │   ├── leave-calendar.component.ts    # Team leave calendar
+│       │   ├── leave-balances.component.ts    # Per-type balance overview
+│       │   └── leave-policies.component.ts    # Policy CRUD
+│       │
+│       ├── attendance/
+│       │   ├── attendance-overview.component.ts  # Team attendance records
+│       │   ├── attendance-corrections.component.ts
+│       │   ├── shifts.component.ts               # Shift schedule management
+│       │   └── overtime.component.ts             # Overtime approvals
+│       │
+│       │── ── WORKFORCE INTELLIGENCE ────
+│       │
+│       ├── workforce/
+│       │   ├── live-dashboard.component.ts    # Live presence card grid
+│       │   ├── employee-activity.component.ts # /workforce/:id — activity detail
+│       │   └── analytics.component.ts         # Productivity scores + capacity analytics
+│       │
+│       ├── exceptions/
+│       │   ├── exception-dashboard.component.ts  # Exception alerts + escalations
+│       │   └── exception-rules.component.ts      # Rule configuration
+│       │
+│       ├── identity-verification/
+│       │   └── verification-review.component.ts  # Photo verification review queue
+│       │
+│       │── ── WORKSYNC OVERSIGHT ────
+│       │
+│       ├── worksync/
+│       │   ├── projects/
+│       │   │   ├── project-list.component.ts
+│       │   │   ├── project-detail.component.ts
+│       │   │   ├── project-board.component.ts
+│       │   │   └── project-roadmap.component.ts
+│       │   ├── goals/
+│       │   │   ├── goals-overview.component.ts
+│       │   │   └── goal-detail.component.ts
+│       │   ├── time/
+│       │   │   └── time-reports.component.ts
+│       │   └── chat/
+│       │       └── chat.component.ts
+│       │
+│       │── ── ORG STRUCTURE ────
+│       │
+│       ├── org/
+│       │   ├── org-chart.component.ts
+│       │   ├── departments.component.ts
+│       │   ├── teams.component.ts
+│       │   ├── job-families.component.ts
+│       │   └── legal-entities.component.ts
+│       │
+│       │── ── CALENDAR & PLANNING ────
+│       │
+│       ├── calendar/
+│       │   └── calendar.component.ts          # Unified calendar (leave, holidays, reviews)
+│       │
+│       │── ── ADMIN ────
+│       │
+│       ├── admin/
+│       │   ├── users.component.ts             # User management + role assignment
+│       │   ├── roles.component.ts             # Role + permission management
+│       │   ├── audit.component.ts             # Audit log viewer
+│       │   ├── agents/
+│       │   │   ├── agents-list.component.ts   # Desktop agent fleet
+│       │   │   └── agent-detail.component.ts
+│       │   ├── devices.component.ts           # Hardware terminals
+│       │   └── compliance.component.ts        # GDPR / data governance
+│       │
+│       │── ── SETTINGS ────
+│       │
+│       ├── settings/
+│       │   ├── general.component.ts           # Tenant settings
+│       │   ├── monitoring.component.ts        # Monitoring toggles + feature flags
+│       │   ├── notifications.component.ts     # Org-level notification channel config
+│       │   ├── integrations.component.ts      # SSO, LMS, payroll providers
+│       │   ├── branding.component.ts          # Logo, colours, domain
+│       │   ├── billing.component.ts           # Subscription & plan
+│       │   └── alerts.component.ts            # Alert rule configuration
+│       │
+│       ├── notifications/
+│       │   └── inbox.component.ts
+│       │
+│       └── errors/
+│           ├── not-found.component.ts
+│           ├── forbidden.component.ts
+│           └── error.component.ts
+└── environments/
+    ├── environment.ts
+    └── environment.prod.ts
 ```
 
-**Loading states (replacing Next.js `loading.tsx`):**
-Use React Suspense boundaries around async data components.
+## Angular Bootstrap Pattern (`app.config.ts`)
 
-```tsx
-<Suspense fallback={<TableSkeleton rows={10} />}>
-  <EmployeeDetailSections employeeId={id} />
-</Suspense>
+```typescript
+// projects/{app}/src/app/app.config.ts
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import {
+  authInterceptor,
+  tenantInterceptor,
+  correlationInterceptor,
+  errorInterceptor,
+} from '@onevo/shared';
+import { routes } from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes, withComponentInputBinding()),
+    provideHttpClient(
+      withInterceptors([authInterceptor, tenantInterceptor, correlationInterceptor, errorInterceptor])
+    ),
+    provideAnimationsAsync(),
+  ],
+};
 ```
 
-## Module â†’ Route Mapping
+## Standalone Component Pattern
 
-| # | Backend Module | Route(s) | Notes |
-|---|---|---|-------|
-| 1 | activity-monitoring | `/workforce` (card productivity data), `/workforce/[employeeId]` (activity detail) | Replaces Activity tab |
-| 2 | agent-gateway | `/admin/agents/` | Fleet overview, agent detail |
-| 3 | auth | `(auth)/`, `/admin/users/`, `/admin/roles/` | Login/MFA + user/role management |
-| 4 | calendar | `/calendar` | Unified (leave, holidays, reviews) |
-| 5 | configuration | `/settings/general`, `/settings/monitoring` | Tenant config + overrides |
-| 6 | core-hr | `/people/employees/` | Profile + lifecycle |
-| 7 | documents | Employee detail `#documents` section | Permission-gated section in employee profile |
-| 8 | exception-engine | `/settings/alert-rules`, escalated cards on `/workforce` | Rule config in settings; alerts surface as card escalation |
-| 9 | expense | Employee detail section | Phase 2 |
-| 10 | grievance | Employee detail section | Phase 2 |
-| 11 | identity-verification | `/workforce` (online status dot on cards) | Replaces Online Status tab |
-| 12 | infrastructure | No pages | Backend-only |
-| 13 | leave | `/people/leave/` | Requests, calendar, balances, policies |
-| 14 | notifications | `/notifications/`, `/settings/notifications` | Inbox + preferences + org config |
-| 15 | org-structure | `/org/` | Departments, teams, org chart, job families, company profile |
-| 16 | payroll | Employee detail `#pay-benefits` section | Phase 2 |
-| 17 | performance | Employee detail section | Phase 2 |
-| 18 | productivity-analytics | `/workforce` (card score), `/workforce/analytics` | Card score + dedicated analytics page |
-| 19 | reporting-engine | Accessible via Quick Search (âŒ˜K) | No dedicated route |
-| 20 | shared-platform | `/admin/`, `/settings/` | Spread across admin + settings |
-| 21 | skills | `/org/job-families/`, Employee detail section | Job family taxonomy + employee skill records |
-| 22 | workforce-presence | `/workforce` (presence cards) | Replaces Online Status tab |
-| WMS | project | `/workforce/projects/` | Project management |
-| WMS | task | `/workforce/projects/[id]/board`, `/workforce/my-work` | Task management |
-| WMS | planning | `/workforce/planner`, `/workforce/projects/[id]/sprints`, `/workforce/projects/[id]/roadmap` | Sprints, boards, roadmap |
-| WMS | okr | `/workforce/goals/` | Goals and OKRs |
-| WMS | collab (docs/wiki) | `/workforce/docs/` | Documents and Wiki |
-| WMS | collab (comments) | Embedded within tasks, projects, docs | Contextual, not a nav item |
-| WMS | time | `/workforce/time/` | Timesheets and time logs |
-| WMS | resource | `/workforce/analytics` (capacity section) | Capacity and allocation |
-| WMS | chat | `/chat` | Channels, DMs, messages |
+```typescript
+// projects/management-app/src/app/features/employees/employee-list.component.ts
+@Component({
+  selector: 'app-employee-list',
+  standalone: true,
+  imports: [
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatInputModule,
+    MatButtonModule,
+    HasPermissionDirective,   // from @onevo/shared
+    RouterLink,
+  ],
+  templateUrl: './employee-list.component.html',
+})
+export class EmployeeListComponent {
+  private employeeService = inject(EmployeeService);
 
-## Layout System
+  filters = signal<EmployeeFilters>({ page: 0, pageSize: 25 });
 
-
-### Responsive Layout Components
-
-Responsive behavior is centralized in shared shell primitives instead of repeated page-level viewport checks:
-
-```text
-src/components/layout/
-|-- ShellLayout.tsx             # Responsive shell wrapper: topbar, rail, panel, drawer, content
-|-- Topbar.tsx                  # Responsive entity/search/actions header
-|-- NavRail.tsx                 # Laptop/desktop rail navigation
-|-- ExpansionPanel.tsx          # Desktop/laptop secondary navigation panel
-|-- MobileNavDrawer.tsx         # Mobile/tablet drawer using the same pillar config
-|-- ResponsivePage.tsx          # Page padding, width, overflow, and header slots
-`-- BreakpointProvider.tsx      # Shared breakpoint state for shell/page adaptations
-```
-
-Pages may adjust their own content density, but the shell, navigation, topbar, drawer, and base page spacing should come from these shared components.
-
-### Dashboard Layout (`src/pages/dashboard/DashboardLayout.tsx`)
-
-The shell uses a **floating-cards** layout â€” every element is a separate rounded card with `8px` body padding and `6px` gaps between cards. See [[frontend/design-system/components/shell-layout|Shell Layout]] for the full implementation pattern.
-
-- **Icon Rail:** **52px** floating dark card (`#17181F`, radius 12px). Permission-gated; visible on laptop/desktop and replaced by `MobileNavDrawer` on mobile/tablet. See [[frontend/design-system/components/nav-rail|Nav Rail]].
-- **Topbar:** **40px** height, floating white/dark card (radius 10px) with compact mobile/tablet variants. See [[frontend/architecture/topbar|Topbar Architecture]] for pixel-precise spec.
-- **Expansion Panel:** **210px** floating card, width+opacity animation (220ms ease-out); hidden/collapsed below desktop. See [[frontend/design-system/components/expansion-panel|Expansion Panel]].
-- **Pillar visibility:** Permission-gated via `hasPermission()` â€” never hardcode role names
-- Renders `<Outlet />` from React Router for all child pages
-
-### Auth Layout (`src/pages/auth/AuthLayout.tsx`)
-- Centered card, brand logo, no navigation, renders `<Outlet />`
-
-## Provider Stack (App.tsx)
-
-```tsx
-// src/App.tsx
-import { RouterProvider } from 'react-router-dom';
-import { router } from './router';
-
-export function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <PermissionProvider>     {/* Loads role + employee-level permissions */}
-          <SignalRProvider>
-            <ThemeProvider>
-              <ToastProvider>
-                <RouterProvider router={router} />
-              </ToastProvider>
-            </ThemeProvider>
-          </SignalRProvider>
-        </PermissionProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  );
+  employeesResource = resource({
+    request: () => this.filters(),
+    loader: ({ request }) => firstValueFrom(this.employeeService.list(request)),
+  });
 }
 ```
 
-> `PermissionProvider` loads both role-level and per-employee-override permissions on mount and exposes them via `usePermissions()`. `usePermissions().hasPermission(key)` is the only correct way to gate UI â€” never read role names directly.
+```html
+<!-- employee-list.component.html -->
+@if (employeesResource.isLoading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
 
-## Colocated Component Pattern
+@if (employeesResource.hasValue()) {
+  <mat-table [dataSource]="employeesResource.value()!.items">
+    <!-- column definitions -->
+  </mat-table>
+}
 
-Feature components start colocated in the route's `components/` folder, then get promoted when reused.
-
-**Three-tier hierarchy â€” one location at a time:**
-
-| Scope | Location |
-|---|---|
-| Used by only one route | `app/(dashboard)/.../components/` (colocated) |
-| Used by 2+ pages within the same module | `components/{module}/` â€” e.g. `components/hr/`, `components/org/`, `components/wms/` |
-| Used across different modules | `components/shared/` |
-
-> **WMS boundary:** Components for WMS routes (`/workforce/projects`, `/workforce/goals`, `/workforce/docs`, etc.) go in `components/wms/`, not `components/workforce/`. Workforce Intelligence (presence cards, activity monitoring, identity verification) lives in `components/workforce/`. The two share the `/workforce/` URL prefix but are distinct product domains â€” never mix their component directories.
-
-**Promotion rule:** when a component moves to a higher tier, **delete the colocated copy**. Never keep both. Duplicating causes them to diverge silently.
-
-**`_types.ts` scope:**
-- âœ… Form schemas, column definitions, local UI state shapes
-- âŒ API response shapes â€” those belong in `types/{module}.ts`, not here
-
-**Heavy components use `React.lazy()` + `<Suspense>`:**
-
-```tsx
-import { lazy, Suspense } from 'react';
-
-const OrgChart    = lazy(() => import('@/components/org/org-chart'));
-const KanbanBoard = lazy(() => import('@/components/wms/kanban-board'));
-
-// Usage:
-<Suspense fallback={<ChartSkeleton height={600} />}>
-  <OrgChart data={orgData} />
-</Suspense>
+@if (employeesResource.error()) {
+  <app-error-state [error]="employeesResource.error()" />
+}
 ```
 
-Apply to: org charts, kanban boards, roadmap timelines, activity heatmaps, rich text editors, drag-and-drop widgets. Never use `next/dynamic()` â€” that is a Next.js API.
+## Module → Route Mapping
+
+| # | Backend Module | Employee App | Management App |
+|---|---|---|---|
+| 1 | auth | `/login`, `/mfa`, `/reset-password` | Same auth pages |
+| 2 | core-hr | My profile (`/profile`) | Employee directory + detail (`/employees`) |
+| 3 | leave | My leave (`/leave`) | Leave management (`/leave`) |
+| 4 | attendance | My attendance (`/attendance`) | Attendance overview + corrections |
+| 5 | workforce-presence | My shifts (`/attendance/shifts`) | Shift management + live dashboard |
+| 6 | activity-monitoring | — | Workforce live + employee activity detail |
+| 7 | productivity-analytics | — | Workforce analytics |
+| 8 | exception-engine | — | Exception dashboard + rule config |
+| 9 | identity-verification | — | Verification review queue |
+| 10 | notifications | Inbox (`/notifications`) | Inbox + org config |
+| 11 | calendar | My calendar (`/calendar`) | Unified calendar |
+| 12 | org-structure | — | Departments, teams, org chart |
+| 13 | work-management (WMS) | My work (`/my-work`), chat | Projects, goals, docs, time, chat |
+| 14 | configuration | — | Settings + monitoring toggles |
+| 15 | auth (admin) | — | Users, roles, audit, compliance |
+| 16 | agent-gateway | — | Agent fleet + device management |
+
+## Layout System
+
+### Shell Layout
+
+Responsive behaviour is centralised in shared shell primitives from `@onevo/shared`:
+
+```
+shared/src/lib/ui/shell/
+├── shell-layout.component.ts   # Responsive wrapper: topbar + nav rail + router-outlet
+├── nav-rail.component.ts       # 52px floating dark card (icon rail)
+├── topbar.component.ts         # 40px topbar with context switcher for dual-role users
+└── context-switcher.component.ts # App switcher (employee ↔ management)
+```
+
+- **Nav Rail:** 52px floating dark card (`#17181F`, radius 12px). Permission-gated; collapses on mobile.
+- **Topbar:** 40px height, floating card (radius 10px). Includes context switcher visible only to users with management permissions.
+- **Floating-cards layout:** Every element is a separate rounded card with `8px` body padding and `6px` gaps.
 
 ## Page Count
 
-| Section | Pages |
-|---------|-------|
-| Auth | 4 |
-| People (Employees + Leave) | ~12 |
-| Workforce Presence | ~2 |
-| Workforce WMS (Projects, My Work, Planner, Goals, Docs, Time, Analytics) | ~18 |
-| Org (Chart, Departments, Teams, Job Families, Company Profile) | ~8 |
-| Calendar (Calendar, Schedules, Attendance, Overtime) | ~4 |
-| Chat | ~1 |
-| Inbox | 1 |
-| Admin | ~6 |
-| Settings | ~7 |
-| **Total** | **~63** |
+| App | Section | Pages |
+|-----|---------|-------|
+| employee-app | Auth | 4 |
+| employee-app | Home, My Work, Leave, Attendance, Profile, Calendar, Chat, Notifications | ~12 |
+| management-app | Auth | 4 (shared login endpoint) |
+| management-app | Dashboard, Employees, Leave, Attendance, Workforce, Exceptions, WorkSync | ~35 |
+| management-app | Org, Calendar, Admin, Settings, Notifications | ~20 |
+| **Total** | | **~75** |
 
 ## Related
 
-- [[frontend/architecture/routing|Routing]] â€” Route guards, middleware, breadcrumbs
-- [[frontend/architecture/module-boundaries|Module Boundaries]] â€” Code splitting, import rules, component promotion path
-- [[frontend/architecture/rendering-strategy|Rendering Strategy]] â€” SSR vs CSR per route
-- [[frontend/cross-cutting/authorization|Authorization]] â€” Permission system details
-- [[frontend/data-layer/state-management|State Management]] â€” TanStack Query + Zustand
-
+- [[frontend/architecture/routing|Routing]] — typed routes, functional guards, breadcrumbs
+- [[frontend/architecture/module-boundaries|Module Boundaries]] — code splitting, import rules
+- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — lazy loading, deferred views
+- [[frontend/cross-cutting/authorization|Authorization]] — permission system details
+- [[frontend/data-layer/state-management|State Management]] — Angular Signals

@@ -34,18 +34,20 @@
 ### Step 3: Browse and Select Permissions
 - **UI:** Permission categories (accordions):
   - **Universal auto-grants (read-only):** `inbox:read`, `notifications:read`, `employees:read-own`, `leave:read-own`, `attendance:read-own`, `payroll:read-own`, `performance:read-own`, `documents:read-own`, `calendar:read`, `activity:read:self`, `workforce:dashboard`
-  - **Employees:** `employees:read`, `employees:read-team`, `employees:write`, `employees:delete`
+  - **Employees:** `employees:read`, `employees:write`, `employees:delete`
   - **Organization:** `org:read`, `org:manage`
-  - **Leave:** `leave:read`, `leave:read-team`, `leave:create`, `leave:approve`, `leave:manage`
-  - **Attendance:** `attendance:read`, `attendance:read-team`, `attendance:approve`, `attendance:write`
+  - **Leave:** `leave:read`, `leave:create`, `leave:approve`, `leave:manage`
+  - **Attendance:** `attendance:read`, `attendance:approve`, `attendance:write`
   - **Payroll:** `payroll:read`, `payroll:write`, `payroll:run`, `payroll:approve`
-  - **Performance:** `performance:read`, `performance:read-team`, `performance:write`, `performance:manage`
+  - **Performance:** `performance:read`, `performance:write`, `performance:manage`
   - **Documents:** `documents:read`, `documents:write`, `documents:approve`, `documents:manage`, `documents:admin`
   - **Workforce Intelligence:** `workforce:view`, `workforce:manage`, `monitoring:configure`, `monitoring:view-settings`
   - **Exceptions:** `exceptions:view`, `exceptions:manage`, `exceptions:acknowledge`
   - **Analytics:** `analytics:read`, `analytics:view`, `analytics:export`, `analytics:write`
   - **Reporting:** `reports:read`, `reports:create`
   - **Skills:** `skills:read`, `skills:write`, `skills:validate`, `skills:manage`
+  
+  For **employee-data permissions** (those with a data scope, e.g. `leave:read`, `attendance:read`, `employees:read`): an **access policy picker** appears inline next to the checkbox. Options: `self` / `direct_reports` / `reporting_tree` / `department` / `department_tree` / `org_unit_tree` / `organization`. Defaults to `self` if not explicitly set. This determines whose data this role can access for that permission.
   - **Grievance:** `grievance:read`, `grievance:write`, `grievance:manage`
   - **Expense:** `expense:read`, `expense:create`, `expense:approve`, `expense:manage`
   - **Calendar:** `calendar:write`
@@ -63,7 +65,7 @@
   - **Projects:** `projects:read`, `projects:write`, `projects:create`
   - **Work Management:** `okr:read`, `okr:write`, `wiki:read`, `wiki:write`, `sprints:read`, `sprints:manage`, `workspaces:read`, `workspaces:create`, `workspaces:manage`, `resources:read`, `resources:manage`, `roadmaps:read`, `roadmaps:write`
   
-  Each explicitly grantable permission has: checkbox, permission code, human-readable description, module badge. "Select All" per category. Search/filter across assignable permissions. Selected count shown: "23 of 106 permissions selected". Universal auto-grants are shown without checkboxes.
+  Each explicitly grantable permission has: checkbox, permission code, human-readable description, module badge. Employee-data permissions additionally show an access policy picker. "Select All" per category. Search/filter across assignable permissions. Universal auto-grants are shown without checkboxes.
 - **API:** N/A (client-side selection)
 - **Backend:** N/A
 - **Validation:** At least one explicitly grantable permission must be selected. Universal permissions cannot be selected, submitted, added, or removed.
@@ -76,9 +78,14 @@
   {
     "name": "HR Business Partner",
     "description": "Can manage employees in assigned departments",
-    "permissionIds": ["uuid1", "uuid2", "uuid3"]
+    "permissionIds": ["uuid1", "uuid2", "uuid3"],
+    "permissionPolicies": {
+      "uuid1": "organization",
+      "uuid2": "organization"
+    }
   }
   ```
+  `permissionPolicies` is a map of permissionId → access policy. Only required for employee-data permissions; omit for tenant-wide permissions. Omitted entries default to `self`.
 - **Backend:** `RoleService.CreateRoleAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
   1. Validate role name is unique within tenant
   2. Create `roles` record
