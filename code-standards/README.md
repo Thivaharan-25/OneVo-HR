@@ -4,7 +4,7 @@ Cross-stack coding guidelines for ONEVO development.
 
 ## Quick Links
 
-- [[code-standards/backend-standards|Backend Standards]] — .NET 9 current naming, folder structure, patterns
+- [[code-standards/backend-standards|Backend Standards]] — .NET 10 naming, folder structure, patterns
 - [[frontend/coding-standards|Coding Standards]] — Frontend component patterns, styling
 - [[code-standards/git-workflow|Git Workflow]] — Commit messages, branch naming, PR process
 - [[code-standards/logging-standards|Logging Standards]] — Serilog structured logging, PII scrubbing

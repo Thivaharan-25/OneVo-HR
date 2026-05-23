@@ -223,4 +223,4 @@ These existing docs describe photo verification as Phase 2 — they must be upda
 - `modules/identity-verification/photo-verification/overview.md` — existing verification overview
 - `infrastructure/file-storage.md` — blob storage interface
 - `modules/agent-gateway/agent-overview.md` — WorkPulse Agent architecture
-- `AI_CONTEXT/tech-stack.md` — backend stack (.NET 9, Polly, EF Core)
+- `AI_CONTEXT/tech-stack.md` — backend stack (.NET 10, Polly, EF Core)

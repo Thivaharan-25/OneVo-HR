@@ -4,7 +4,7 @@
 
 ## Architecture Overview
 
-ONEVO follows **Clean Architecture + CQRS**. The current implemented backend targets **.NET 9 / C# 13**; .NET 10 / C# 14 is a future upgrade target. All features are **feature folders** within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`.
+ONEVO follows **Clean Architecture + CQRS**. The backend targets **.NET 10 / C# 14**. All features are **feature folders** within `ONEVO.Application/Features/` and `ONEVO.Domain/Features/`.
 
 There are **no separate module `.csproj` files**. The canonical database catalog currently lists **252 unique schema tables**, all served by a single `ApplicationDbContext`.
 
@@ -19,7 +19,7 @@ ONEVO PLATFORM
   ┌─────────────────────────────────────────────────────┐
   │  ONEVO Frontend (Vite + React 19)                           │
   │    HR Sidebar ──────┐                               │
-  │    Work Management Sidebar─┼──→  ONEVO.Api (.NET 9 current)│
+  │    Work Management Sidebar─┼──→  ONEVO.Api (.NET 10)│
   │    IDE Extension ───┘      single host, all pillars  │
   └─────────────────────────────────────────────────────┘
                                ↕ ApplicationDbContext

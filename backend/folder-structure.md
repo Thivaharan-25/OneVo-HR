@@ -104,8 +104,10 @@ ONEVO.sln
 |   |   |
 |   |   |-- ExternalServices/
 |   |   |   |-- Email/
-|   |   |   |   |-- ResendEmailService.cs
-|   |   |   |   `-- SmtpEmailService.cs
+|   |   |   |   |-- ResendSmtpEmailService.cs
+|   |   |   |   |-- NoOpEmailService.cs
+|   |   |   |   |-- EmailOptions.cs
+|   |   |   |   `-- EmailTemplateRenderer.cs
 |   |   |   |
 |   |   |   |-- Storage/
 |   |   |   |   `-- R2StorageService.cs                     # future — not yet implemented

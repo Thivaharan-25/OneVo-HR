@@ -81,7 +81,7 @@ SignalR pushes are **invalidation signals**, not primary data sources. When a pu
                                │
                                ▼
 ┌──────────────────────────────────────────┐
-│  .NET 9 API (single ONEVO.Api host)      │
+│  .NET 10 API (single ONEVO.Api host)      │
 │  /api/v1/*  (customer)                   │
 │  /hubs/*    (SignalR)                    │
 └──────────────────────────────────────────┘

@@ -2,7 +2,7 @@
 
 > Status: backend implementation exists in `../Onevo_Backend`. This folder is the architecture and implementation blueprint, and should stay aligned with the actual solution.
 
-**.NET 9 / C# 13 Clean Architecture + CQRS** - feature folders, single `ApplicationDbContext`, strict layer boundaries. .NET 10 / C# 14 is a future upgrade target, not the current implemented runtime.
+**.NET 10 / C# 14 Clean Architecture + CQRS** - feature folders, single `ApplicationDbContext`, strict layer boundaries.
 
 ## Quick Links
 
