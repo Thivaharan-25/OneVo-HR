@@ -26,8 +26,8 @@ Plus an **IDE Extension** — a full chat sidebar and tag-based automation surfa
 
 | Layer | Technology |
 |:------|:-----------|
-| **Backend** | .NET 9 / C# 13 current; .NET 10 / C# 14 target after migration |
-| **Database** | PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation + EF Core 9 current / EF Core 10 target — single `ApplicationDbContext`, ~288 tables |
+| **Backend** | .NET 10 / C# 14 |
+| **Database** | PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation + EF Core 10 — single `ApplicationDbContext`, ~288 tables |
 | **Frontend** | Angular 21, TypeScript, Angular Router, Angular Material, Angular Signals — two-app monorepo (`employee-app` + `management-app` + `shared` library) |
 | **Real-time** | SignalR — agent↔server bidirectional; server→browser for WorkSync live updates and IDE extension |
 | **Background Jobs** | Hangfire |

@@ -21,7 +21,7 @@ Platform shape: `OneVo frontend → OneVo unified backend → single PostgreSQL 
 Before doing any work, read these files in order:
 
 1. `AI_CONTEXT/project-context.md` — what ONEVO is, three-pillar architecture
-2. `AI_CONTEXT/tech-stack.md` — .NET 9 current / .NET 10 target, PostgreSQL, Vite + React 19, all dependencies
+2. `AI_CONTEXT/tech-stack.md` — .NET 10 / C# 14, PostgreSQL, Angular 21 two-app monorepo, all dependencies
 3. `AI_CONTEXT/rules.md` — AI agent rules (backend + frontend + desktop agent)
 4. `current-focus/README.md` — active sprint, 8-developer delivery plan
 5. `AI_CONTEXT/known-issues.md` — gotchas, deprecated patterns, monitoring data quirks
@@ -56,7 +56,7 @@ ng e2e                         # Playwright E2E
 
 ### Backend (implemented in sibling `../Onevo_Backend`)
 
-- **.NET 9 / C# 13 current** — Clean Architecture, single deployable monolith (`ONEVO.Api`); .NET 10 / C# 14 is a future migration target
+- **.NET 10 / C# 14** — Clean Architecture, single deployable monolith (`ONEVO.Api`)
 - **38 modules** in one solution, strict namespace boundaries
 - **CQRS via MediatR** — every use case is a Command or Query handler
 - **4-layer multi-tenancy**: JWT claim → `BaseRepository<T>` auto-filter → PostgreSQL RLS → ArchUnit boundary tests
@@ -123,7 +123,7 @@ Two apps in one monorepo: `employee-app` (`app.{tenant}.onevo.com`) and `managem
 ### Database
 
 - **PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation**, ~288 tables across 38 modules, single schema
-- **EF Core 9 current / EF Core 10 target** code-first, snake_case naming convention (EF handles C# ↔ DB mapping)
+- **EF Core 10** code-first, snake_case naming convention (EF handles C# ↔ DB mapping)
 - `DateTimeOffset` for timestamps, `DateOnly` for dates, `Guid` for all PKs
 - Encrypted fields via `IEncryptionService` (AES-256)
 - Activity tables (`activity_snapshots`, `application_usage`, `activity_raw_buffer`) are **append-only** — never UPDATE them

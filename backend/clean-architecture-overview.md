@@ -22,7 +22,7 @@ ONEVO.Domain
   -> no project dependencies
 ```
 
-Current implementation target: .NET 9 / C# 13. .NET 10 / C# 14 is a future upgrade target and must not be treated as already implemented until the backend projects move to `net10.0`.
+Current implementation target: .NET 10 / C# 14.
 
 Domain events are optional. They are not required by Clean Architecture or CQRS.
 

@@ -18,7 +18,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 - **Pillar 3: WorkSync** — Projects, tasks, sprints, OKR, chat, documents, roadmaps, GitHub integration — built as internal modules in the same backend and database as HR
 - **IDE Extension** — Full WorkSync chat sidebar + tag-based automation for every OneVo feature the user has permission to use, embedded in VS Code
 - **~288 database tables** across **38 modules**
-- **.NET 9 / C# 13 current** backend (Clean Architecture + CQRS, single deployable monolith); .NET 10 / C# 14 is a future migration target
+- **.NET 10 / C# 14** backend (Clean Architecture + CQRS, single deployable monolith)
 - **.NET MAUI + Windows Service** desktop monitoring agent (separate solution `ONEVO.Agent.sln`, independent release cycle)
 - **Angular 21** frontend — two-app monorepo: `employee-app` (`app.{tenant}.onevo.com`) and `management-app` (`manage.{tenant}.onevo.com`), sharing a `shared` Angular library
 - **PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation** — single unified database, no bridge APIs, no external WMS backend
@@ -58,7 +58,7 @@ ONEVO uses two sellable packages plus always-included Foundation modules. Each t
 onevo-hr-brain/
 ├── AI_CONTEXT/                  # AI context — read FIRST
 │   ├── project-context.md       # Three-pillar architecture, business logic
-│   ├── tech-stack.md            # .NET 9 current / .NET 10 target, PostgreSQL, Angular 21 two-app monorepo
+│   ├── tech-stack.md            # .NET 10 / C# 14, PostgreSQL, Angular 21 two-app monorepo
 │   ├── rules.md                 # AI agent rules (backend + frontend + agent)
 │   ├── known-issues.md          # Gotchas, monitoring data, agent auth
 │   └── changelog/               # Knowledge base update log (one file per change)
@@ -68,7 +68,7 @@ onevo-hr-brain/
 │   ├── {hr-module}/             # HR + monitoring module specs
 │   ├── work-management/         # WorkSync internal modules (W1–W13)
 │   └── ide-extension/           # IDE extension full build spec
-├── backend/                     # .NET 9 current backend architecture
+├── backend/                     # .NET 10 backend architecture
 │   ├── module-catalog.md        # Module index — all 38 modules + solution structure
 │   ├── module-boundaries.md     # Boundary rules and enforcement
 │   ├── shared-kernel.md         # Cross-cutting code (Result<T>, ITenantContext)

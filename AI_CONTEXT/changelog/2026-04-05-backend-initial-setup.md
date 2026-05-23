@@ -11,4 +11,4 @@
 - **Added:** Guide docs: [[frontend/coding-standards|Coding Standards]], [[code-standards/git-workflow|Git Workflow]], [[code-standards/logging-standards|Logging Standards]]
 - **Added:** 4-week delivery plan with developer assignments
 - **Added:** Cursor rules for AI agent guidance
-- **Why:** Initial project setup — establishing the complete secondary brain for ONEVO backend development with .NET 9
+- **Why:** Initial project setup — establishing the complete secondary brain for ONEVO backend development with .NET 10

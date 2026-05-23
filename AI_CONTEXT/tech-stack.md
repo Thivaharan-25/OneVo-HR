@@ -4,7 +4,7 @@
 
 | Language | Version | Key Usage Areas |
 |:---------|:--------|:----------------|
-| C# | 13 current (.NET 9); 14 target after .NET 10 migration | Backend API, business logic, background jobs; desktop agent upgrade is a separate validation track |
+| C# | 14 (.NET 10) | Backend API, business logic, background jobs |
 | SQL | PostgreSQL 16.13 baseline; PostgreSQL 18 target after environment approval | Database queries, RLS policies, migrations |
 | TypeScript | ES2024 / 5.x | Frontend (Vite + React 19) |
 | XAML | .NET MAUI | Desktop agent tray app UI |
@@ -15,14 +15,14 @@
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
-| Runtime | .NET | 9 current; 10 LTS target after migration | Clean Architecture + CQRS backend |
-| Web Framework | ASP.NET Core | 9.x current; 10.x target | Controllers with admin endpoints under `/admin/v1/*` in `ONEVO.Api` |
-| ORM | Entity Framework Core | 9.0.4 current; 10.x target | Code-first migrations, `xmin` optimistic concurrency |
+| Runtime | .NET | 10 | Clean Architecture + CQRS backend |
+| Web Framework | ASP.NET Core | 10.x | Controllers with admin endpoints under `/admin/v1/*` in `ONEVO.Api` |
+| ORM | Entity Framework Core | 10.x | Code-first migrations, `xmin` optimistic concurrency |
 | Authentication | BFF cookie sessions + backend-held JWT | - | Browser uses HttpOnly session cookies; backend owns JWT/refresh state |
 | Authorization | Custom RBAC | - | `RequirePermission` attribute, 90+ permissions |
 | Background Jobs | Hangfire | 1.8.23 | 5-queue priority system (Critical/High/Default/Low/Batch) |
 | CQRS / Mediator | MediatR | 12.4.1 current | In-process command/query dispatch; optional domain events by exception |
-| Real-time | SignalR | ASP.NET Core 9 current; 10.x target | WebSocket connections, presence tracking, live dashboards |
+| Real-time | SignalR | ASP.NET Core 10.x | WebSocket connections, presence tracking, live dashboards |
 | API Documentation | Swagger/OpenAPI | 3.0 | Auto-generated, Kiota SDK generation |
 | Validation | FluentValidation | 11.11.0 current | Request validation |
 | Mapping | Mapster or AutoMapper | Latest | DTO ↔ Entity mapping |
@@ -115,9 +115,9 @@ The WorkPulse Agent is the ONEVO activity monitoring package distributed as an *
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
-| Background Service | .NET Windows Service | 9.0 current; 10 target pending device validation | `Microsoft.Extensions.Hosting.WindowsServices` — always-on data collector |
-| Tray App UI | .NET MAUI | 9.0 current; MAUI 10 target pending device validation | System tray icon, photo capture, employee login, break toggle |
-| Language | C# | 13 current; 14 target with .NET 10 agent validation | Same language family as backend |
+| Background Service | .NET Windows Service | 10 | `Microsoft.Extensions.Hosting.WindowsServices` — always-on data collector |
+| Tray App UI | .NET MAUI | 10 | System tray icon, photo capture, employee login, break toggle |
+| Language | C# | 14 | Same language family as backend |
 | Local Storage | SQLite | via `Microsoft.Data.Sqlite` | Offline buffer for activity data |
 | Activity Capture | Win32 APIs (user32.dll) | - | `SetWindowsHookEx` for keyboard/mouse event COUNTS (not keystrokes) |
 | App Detection | Win32 APIs | - | `GetForegroundWindow`, `GetWindowText`, process enumeration |
@@ -235,7 +235,7 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 
 | Category | Technology | Notes |
 |:---------|:-----------|:------|
-| Backend Hosting | Azure | .NET 9 current deployment; .NET 10 LTS after migration through the selected Azure hosting service |
+| Backend Hosting | Azure | .NET 10 deployment through the selected Azure hosting service |
 | Frontend Hosting | Azure | Vite build output served through the selected Azure hosting/static delivery path |
 | DNS / Edge | Cloudflare DNS + optional Cloudflare proxy | `onevo.com`, wildcard `*.onevo.com`, DDoS/WAF/CDN if proxy mode is enabled |
 | Tenant URLs | Cloudflare wildcard DNS -> Azure | Default tenant URL pattern: `{tenantSlug}.onevo.com` |

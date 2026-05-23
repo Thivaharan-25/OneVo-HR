@@ -64,4 +64,4 @@ Context-switcher in the topbar lets users with both employee and management role
 ## Unchanged
 - Desktop agent (WorkPulse Agent): Windows Service + .NET MAUI tray app — confirmed correct as documented
 - Developer Platform console: remains a separate Angular app at `console.onevo.io` (was Next.js, now Angular)
-- Backend (.NET 9), database (PostgreSQL), SignalR hub channels — unchanged
+- Backend (.NET 10), database (PostgreSQL), SignalR hub channels — unchanged

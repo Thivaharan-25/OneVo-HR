@@ -9,9 +9,9 @@ alwaysApply: true
 You are working on **ONEVO**, a multi-tenant SaaS platform with two pillars: **HR Management** + **Workforce Intelligence**.
 
 ## Key Facts
-- **Backend:** .NET 9, C#, ASP.NET Core (Monolithic + Service-Oriented)
+- **Backend:** .NET 10, C# 14, ASP.NET Core (Monolithic + Service-Oriented)
 - **Database:** PostgreSQL 16 with Row-Level Security
-- **ORM:** Entity Framework Core 9 (code-first, snake_case naming convention)
+- **ORM:** Entity Framework Core 10 (code-first, snake_case naming convention)
 - **Cache:** Redis 7
 - **Background Jobs:** Hangfire (5-queue priority system)
 - **Real-time:** SignalR

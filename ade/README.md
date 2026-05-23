@@ -13,7 +13,7 @@ The orchestrator lives in this brain repo. It reads task definitions, injects co
 | Repo | Purpose | ADE Access |
 |:-----|:--------|:-----------|
 | **Brain repo** (this vault) | Knowledge base, task definitions, rules, specs | Read context + update checkboxes |
-| **Backend repo** (.NET 9 current / .NET 10 target) | Backend code | Write code (Step 1) |
+| **Backend repo** (.NET 10 / C# 14) | Backend code | Write code (Step 1) |
 | **Frontend repo** (Vite + React 19 responsive SPA) | Frontend code | Write code (Step 2) |
 | **Desktop Agent repo** (.NET MAUI) | Desktop agent code | Write code (DEV4 agent tasks only) |
 
@@ -120,7 +120,7 @@ $ ade run --dev {N} --brain ./onevo-hr-brain --backend ./onevo-backend --fronten
 Where:
 - `--dev {N}` — Developer number (1-4)
 - `--brain` — Path to this brain repo
-- `--backend` — Path to the .NET 9 current / .NET 10 target backend repo
+- `--backend` — Path to the .NET 10 backend repo
 - `--frontend` — Path to the Vite + React 19 frontend repo
 - `--agent` — Path to the .NET MAUI desktop agent repo (optional, only needed for DEV4)
 

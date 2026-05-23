@@ -42,7 +42,7 @@ ONEVO.Agent.Shared (Class Library)
 ```
 
 ## Key Tech
-- **.NET 9** — C# 13
+- **.NET 10** — C# 14
 - **Windows Service** — `Microsoft.Extensions.Hosting.WindowsServices`
 - **MAUI** — tray app UI (system tray, camera, login)
 - **SQLite** — local offline buffer (`Microsoft.Data.Sqlite`)

@@ -109,14 +109,14 @@ Do not create or buy a new domain per tenant. Tenant access uses ONEVO-owned sub
 
 ### Architecture Style
 
-- **Clean Architecture + CQRS** — single deployable .NET 9 / C# 13 application with 4-layer structure; .NET 10 / C# 14 is a future upgrade target
+- **Clean Architecture + CQRS** — single deployable .NET 10 / C# 14 application with 4-layer structure
 - Strict layer and feature separation enforced via namespaces and dependency rules
 - Inter-module communication: Application-owned interfaces/services for normal cross-feature work; optional in-process domain events only for justified post-save side effects
 - See [[backend/folder-structure|Folder Structure]] for complete solution tree
 
 ## Solution Structure
 
-ONEVO follows **Clean Architecture + CQRS** (.NET 9 current, .NET 10 target). See [[backend/folder-structure|Folder Structure]] for the complete solution tree.
+ONEVO follows **Clean Architecture + CQRS** (.NET 10 / C# 14). See [[backend/folder-structure|Folder Structure]] for the complete solution tree.
 
 **Layers:**
 - `ONEVO.Domain` - entities, value objects, business rules, optional domain events (zero external dependencies)
@@ -395,7 +395,7 @@ The frontend is built AFTER the backend foundation is complete. See [[current-fo
 ## 11. AI Agent Instructions
 
 - **Prioritization:** Always read this file and [[AI_CONTEXT/rules|Rules]] before generating any code
-- **Tech Stack:** See [[AI_CONTEXT/tech-stack|Tech Stack]] for full details (.NET 9 current / .NET 10 target backend, Angular 21 two-app monorepo, Windows Service/MAUI agent)
+- **Tech Stack:** See [[AI_CONTEXT/tech-stack|Tech Stack]] for full details (.NET 10 / C# 14 backend, Angular 21 two-app monorepo, Windows Service/MAUI agent)
 - **Module Boundaries:** Never violate module boundaries. See [[backend/module-boundaries|Module Boundaries]]
 - **Multi-Tenancy:** Every query must be tenant-scoped. See [[infrastructure/multi-tenancy|Multi Tenancy]]
 - **Module Details:** Each module has its own doc in `modules/`. Read the specific module doc before working on it.
