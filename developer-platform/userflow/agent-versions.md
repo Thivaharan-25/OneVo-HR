@@ -109,7 +109,7 @@ Shows each ring with the list of tenants assigned to it.
 
 **From the tenant detail page:**
 
-1. Navigate to `/tenants/{id}` → **Overview** tab
+1. Navigate to `/platform/tenants/{id}` -> **Overview** tab
 2. Current ring is shown in the agent section
 3. Click **Change Ring** → same dropdown and confirm flow as above
 
@@ -125,7 +125,7 @@ Rollback force-pins a tenant's agents to a previous stable version, overriding t
 
 **Steps:**
 
-1. Navigate to `/tenants/{id}` → **Overview** tab → agent section
+1. Navigate to `/platform/tenants/{id}` -> **Overview** tab -> agent section
 2. Click **Rollback Agent Version**
 3. A dropdown of previous `stable`-channel versions appears
 4. Select the target version

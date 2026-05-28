@@ -38,9 +38,9 @@ See [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]].
 
 ### 1. Payment Gateways (Billing & Subscriptions)
 
-ONEVO Phase 1 primarily supports **Stripe** and **PayHere** for payment collection.
+ONEVO supports **Stripe**, **Paddle**, and **PayHere** for payment collection.
 
-Use `gateway_provider = "stripe"` for Stripe-backed recurring subscriptions, invoices, and payment methods. Use `gateway_provider = "payhere"` for PayHere-backed recurring subscriptions, local Sri Lankan payment collection, and gateway callbacks.
+Use `gateway_provider = "stripe"` for direct Stripe-backed recurring subscriptions, invoices, and payment methods. Use `gateway_provider = "paddle"` when Paddle is the merchant of record for international SaaS billing and tax handling. Use `gateway_provider = "payhere"` for Sri Lanka/local payment collection and gateway callbacks. The provider is selected by the ONEVO operator during tenant creation/commercial setup; tenant owners do not choose the gateway.
 
 Full-license customers may pay the one-time license manually/offline, but recurring maintenance/support fees should still use one of the configured payment gateways when possible.
 
@@ -54,10 +54,25 @@ Full-license customers may pay the one-time license manually/offline, but recurr
 | **Tables** | `subscription_plans`, `tenant_subscriptions`, `payment_gateway_configs`, `subscription_invoices`, `payment_methods` |
 
 **Key Flows:**
-- Trial-to-paid conversion (14-day trial)
+- Subscription checkout/payment confirmation
 - Mid-cycle upgrade/downgrade
 - Webhook events: `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`
 - Dunning: 4 retries + grace period
+
+#### Paddle
+
+| Property | Value |
+|:---------|:------|
+| **Module** | SharedPlatform |
+| **Auth** | API Key (server-side) + Webhooks (signature verification) |
+| **Purpose** | Merchant-of-record subscription billing, tax handling, hosted invoice PDFs |
+| **Tables** | `payment_gateway_configs`, `tenant_subscriptions`, `subscription_invoices`, `payment_methods` |
+
+**Key Flows:**
+- Operator-selected gateway for tenants where Paddle is the commercial/payment route
+- Hosted checkout/payment confirmation
+- Webhook events update invoice and subscription state
+- Paddle invoice URL stored for tenant invoice download
 
 #### PayHere
 
@@ -69,7 +84,7 @@ Full-license customers may pay the one-time license manually/offline, but recurr
 | **Tables** | `payment_gateway_configs`, `tenant_subscriptions`, `subscription_invoices`, `payment_methods` |
 
 **Key Flows:**
-- Tenant subscription checkout through PayHere when selected by operator or tenant billing flow
+- Tenant subscription checkout through PayHere when selected by operator
 - Full-license maintenance collection through PayHere recurring/payment flow
 - Webhook/notify callbacks update invoice and subscription state
 - Gateway references stored in `gateway_customer_ref`, `gateway_subscription_ref`, and invoice/payment provider refs
@@ -80,10 +95,10 @@ Payment gateway credentials must not be hardcoded. Store gateway configuration i
 
 Required config concepts:
 
-- `provider`: `stripe` or `payhere`
+- `provider`: `stripe`, `paddle`, or `payhere`
 - `mode`: `test` or `live`
-- encrypted credentials: Stripe secret/webhook secret; PayHere merchant secret
-- public identifiers: Stripe publishable key or PayHere merchant ID
+- encrypted credentials: Stripe secret/webhook secret; Paddle API/webhook secret; PayHere merchant secret
+- public identifiers: Stripe publishable key, Paddle seller/account identifier, or PayHere merchant ID
 - webhook/notify URL and active state
 - environment-specific separation between staging and production
 

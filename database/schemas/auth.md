@@ -34,16 +34,21 @@
 | `tenant_id` | `uuid` | FK → tenants |
 | `grantee_type` | `varchar(10)` | `role` or `employee` |
 | `grantee_id` | `uuid` | FK → roles.id OR users.id (polymorphic, depends on grantee_type) |
-| `module` | `varchar(50)` | Module code: `leave`, `payroll`, `performance`, etc. |
+| `module` | `varchar(50)` | Module key, e.g. `core_hr`, `leave`, `work_management` |
+| `feature_key` | `varchar(120)` | Optional feature key inside the module, e.g. `leave.requests` |
 | `is_enabled` | `boolean` |  |
 | `granted_by` | `uuid` | FK → users |
+| `valid_from` | `timestamptz` | Nullable; defaults to active immediately |
+| `expires_at` | `timestamptz` | Nullable; use for temporary role/employee module or feature visibility |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
-| UNIQUE: `(tenant_id, grantee_type, grantee_id, module)` | | |
+| UNIQUE: `(tenant_id, grantee_type, grantee_id, module, feature_key)` | | |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `granted_by` → [[database/schemas/infrastructure#`users`|users]]
 
 > **Polymorphic FK — enforced at application layer:** when `grantee_type = 'role'`, `grantee_id` references [[#`roles`|roles]]; when `grantee_type = 'employee'`, `grantee_id` references [[database/schemas/infrastructure#`users`|users]]. No DB-level FK constraint on `grantee_id`.
+
+This table is not a billing or subscription table. It can only narrow or expose role/employee visibility inside a module/feature that is already commercially included for the tenant.
 
 ---
 

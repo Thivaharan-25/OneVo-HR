@@ -9,8 +9,11 @@ Billing or platform operator with subscription permissions.
 1. Operator opens Platform Management -> Subscriptions.
 2. Console loads subscription plans and product modules.
 3. Operator creates or edits a reusable plan.
-4. Backend calculates prices from Module Catalog price brackets.
-5. Operator saves plan; overrides require audit reason.
+4. Operator selects included modules and the commercial features included inside each selected module.
+5. Backend calculates prices from Module Catalog price brackets.
+6. Operator saves plan; overrides require audit reason.
+
+Commercial feature inclusion is part of the plan/custom contract. Feature flags can only control runtime rollout for features already included here; disabling features with Feature Flag Manager does not reduce the tenant's price.
 
 ## Payment Gateway Journey
 

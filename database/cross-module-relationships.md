@@ -213,7 +213,6 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `compliance_exports` | `target_user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `escalation_rules` | `escalate_to_role_id` | [[database/schemas/auth#`roles`\|roles]] | Auth & Security |
 | `escalation_rules` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
-| `feature_flags` | `toggled_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `legal_holds` | `placed_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `legal_holds` | `released_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `notification_channels` | `configured_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
@@ -229,7 +228,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `system_settings` | `updated_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `tenant_branding` | `logo_file_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
 | `tenant_branding` | `updated_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
-| `tenant_feature_flags` | `overridden_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `feature_flag_overrides` | `granted_by_id` | [[developer-platform/database/schema#dev_platform_accounts|dev_platform_accounts]] | DevPlatform |
 | `tenant_subscriptions` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `user_preferences` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `webhook_endpoints` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |

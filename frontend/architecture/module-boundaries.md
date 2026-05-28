@@ -145,13 +145,13 @@ Heavy libraries should only load with the components that need them:
 
 ## Feature-Gated Modules
 
-Some modules are gated by tenant subscription. Gating happens in the route config via `useAuthStore`:
+Some modules and module features are gated by tenant subscription. Module sections use active module keys; feature screens use active feature keys that already include commercial inclusion and runtime flag evaluation.
 
 ```tsx
 // src/router.tsx — feature-gated route
 { path: '/workforce/projects', element: (
   <ProtectedRoute permission="projects:read">
-    {useAuthStore.getState().hasFeature('wms:projects')
+    {useAuthStore.getState().hasFeature('work_management.projects')
       ? <ProjectsPage />
       : <Navigate to="/workforce" replace />
     }

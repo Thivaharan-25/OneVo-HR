@@ -13,7 +13,7 @@ The OneVo IDE Extension is a VS Code extension that turns every developer's edit
 This spec covers:
 - The `@` tag picker — a searchable, permission-filtered action launcher in chat
 - Full WMS tag engine — all Work Management actions via `@entity:action` syntax
-- HR automation tags — gated by tenant `active_modules`, filtered by user permissions
+- HR automation tags — gated by tenant `active_modules` and `active_features`, filtered by user permissions
 - NLP via Semantic Kernel — natural language maps to tag actions with confirmation
 - Chat integration — same channels/messages as the web app, real-time via SignalR
 - Context engine — branch→task linking, file context, time tracking
@@ -26,14 +26,16 @@ This spec covers:
 ## 2. Tenant Module Check — How It Works
 
 The extension calls `GET /api/v1/ide/entitlements` on startup. The backend derives entitlements from:
-- `feature_access_grants.module` — active modules per tenant
-- `subscription_plans.features_json` — plan-level gates
+- `tenant_module_entitlements` — active modules per tenant
+- `tenant_subscriptions.selected_feature_keys` — commercial feature inclusion snapshot
+- `feature_flags` + tenant overrides — runtime feature availability
 - User's `permissions` (tenant-level RBAC) and `workspace_roles` (WMS-level RBAC)
 
 **Extended `IDEEntitlementsDto`:**
 ```json
 {
-  "active_modules": ["hr_management", "worksync", "workforce_intelligence"],
+  "active_modules": ["core_hr", "work_management", "monitoring"],
+  "active_features": ["core_hr.employee_profiles", "work_management.projects"],
   "permitted_tag_actions": ["task:new", "task:view", "task:status", "task:assign", "task:comment", "task:link", "task:move", "sprint:add", "sprint:start", "time:log", "time:start", "time:stop", "leave:request", "leave:view", "leave:cancel", "clockin", "break:start", "break:end", "clockout"],
   "has_monitoring_entitlement": true,
   "workspace_id": "uuid",
@@ -42,9 +44,9 @@ The extension calls `GET /api/v1/ide/entitlements` on startup. The backend deriv
 ```
 
 **Rules:**
-- `active_modules` is resolved server-side — the client never guesses
+- `active_modules` and `active_features` are resolved server-side — the client never guesses
 - The `@` picker is built entirely from `permitted_tag_actions[]` — only actions in this list are shown
-- HR section in picker is shown only when `active_modules.includes("hr_management")`
+- HR section in picker is shown only when `active_modules` includes at least one HR module such as `core_hr`, `leave`, or `calendar`
 - `permitted_tag_actions[]` is re-fetched on reconnect and cached for the session
 - Backend still validates every action on execute (403 if permission changed)
 
@@ -62,7 +64,7 @@ A small `@` button sits in the chat message composer. Clicking it opens a **sear
 ┌─────────────────────────────────┐
 │ 🔍 Search actions or describe…  │
 ├─────────────────────────────────┤
-│ HR AUTOMATION        [tenant]   │  ← only if active_modules includes hr_management
+│ HR AUTOMATION        [tenant]   │  ← only if active_modules includes an HR module
 │   🟢 @clockin        start shift (instant)
 │   ☕ @break:start    take a break (instant)
 │   🔴 @break:end      end break (instant)
@@ -301,7 +303,7 @@ The IDE extension login does not replace TrayApp enrollment. IDE login creates a
 **Week 1**
 
 **Backend:**
-- [ ] Extend `GET /api/v1/ide/entitlements` → return `active_modules[]` and `permitted_tag_actions[]` derived from `feature_access_grants` + `subscription_plans.features_json` + user permissions
+- [ ] Extend `GET /api/v1/ide/entitlements` → return `active_modules[]`, `active_features[]`, and `permitted_tag_actions[]` derived from tenant module entitlements + selected commercial feature keys + runtime feature flags + user permissions
 - [ ] `POST /api/v1/ide/register` — register install, upsert `ide_extension_installs`
 - [ ] `POST /api/v1/ide/sessions` / `PUT /api/v1/ide/sessions/{id}/end` — session lifecycle
 - [ ] `IDEHub` SignalR hub — connect with JWT, join `user:{userId}` and `workspace:{workspaceId}` groups
@@ -319,7 +321,7 @@ The IDE extension login does not replace TrayApp enrollment. IDE login creates a
 **Acceptance Criteria:**
 - Extension activates silently if token exists — no login prompt shown
 - Extension shows login WebView if no token, completes PKCE flow, stores token
-- `permitted_tag_actions[]` and `active_modules[]` cached in memory for the session
+- `permitted_tag_actions[]`, `active_modules[]`, and `active_features[]` cached in memory for the session
 - SignalR connects within 500ms of activation
 - Total startup time < 1.5 seconds
 
@@ -406,7 +408,7 @@ The IDE extension login does not replace TrayApp enrollment. IDE login creates a
 - [ ] All HR tag actions are included in `permitted_tag_actions[]` only if user has the relevant HR permission
 
 **VS Code Extension:**
-- [ ] On entitlements load: if `active_modules.includes("hr_management")` → show HR AUTOMATION section in picker
+- [ ] On entitlements load: if `active_modules` includes `core_hr`, `leave`, or `calendar` → show HR AUTOMATION section in picker
 - [ ] If HR not in `active_modules` → HR section hidden entirely, no hint shown
 - [ ] Instant-fire HR tags: `@clockin`, `@break:start`, `@break:end`, `@clockout` — execute immediately, bot card in chat
 - [ ] Mini form for `@leave:request`: Leave Type (from `GET /api/v1/leave/types`), From, To, Reason. Shows balance.
@@ -415,7 +417,7 @@ The IDE extension login does not replace TrayApp enrollment. IDE login creates a
 - [ ] View tags (`@leave:view`, `@payslip:view`, `@timesheet:view`, `@shift:view`, `@calendar:view`) → open detail in WebviewPanel
 
 **Acceptance Criteria:**
-- HR section visible in picker when `active_modules` includes `hr_management`; absent otherwise
+- HR section visible in picker when `active_modules` includes `core_hr`, `leave`, or `calendar`; absent otherwise
 - HR section absent for tenants without HR — no empty group shown
 - `@clockin` fires and bot card shows in chat: "Arun clocked in at 09:02 AM"
 - `@leave:request` form shows remaining balance for selected leave type
@@ -429,7 +431,7 @@ The IDE extension login does not replace TrayApp enrollment. IDE login creates a
 
 **Backend (`WorkSync.ChatAI` module):**
 - [ ] Add SK intent detection pipeline — runs on every `POST /api/v1/chat/messages` before message is stored
-- [ ] SK receives: message text + user context (permitted_tag_actions[], active_modules[], branch context, active task)
+- [ ] SK receives: message text + user context (permitted_tag_actions[], active_modules[], active_features[], branch context, active task)
 - [ ] SK maps intent to tag action if confidence ≥ 0.8
 - [ ] If intent detected: do not store message yet — return `ai.suggestion` event via SignalR with parsed action + params
 - [ ] If intent not detected (confidence < 0.8): store message normally, return message to chat
@@ -518,7 +520,7 @@ The IDE extension login does not replace TrayApp enrollment. IDE login creates a
 
 | Change | Module | Notes |
 |---|---|---|
-| Extend `IDEEntitlementsDto` | IDEExtension | Add `active_modules[]`, `permitted_tag_actions[]` |
+| Extend `IDEEntitlementsDto` | IDEExtension | Add `active_modules[]`, `active_features[]`, `permitted_tag_actions[]` |
 | SK intent pipeline | WorkSync.ChatAI | On every message send, before storage |
 | HR tag routing | IDEExtension tag executor | Routes to WorkforcePresence + Leave endpoints |
 | `GET /api/v1/leave/types` | Leave | Return tenant leave types for form dropdown |
@@ -574,7 +576,7 @@ src/
 ## 12. Key Business Rules (ADE Must Follow)
 
 1. **Permission is always server-side.** `permitted_tag_actions[]` tells the client what to show. Backend validates on every execute. 403 = inline error in extension.
-2. **HR section only when `active_modules` includes `hr_management`.** No HR UI for non-HR tenants — not even a hint.
+2. **HR section only when `active_modules` includes an HR module such as `core_hr`, `leave`, or `calendar`.** No HR UI for non-HR tenants — not even a hint.
 3. **Instant-fire HR actions have no undo window.** Clock-in/out/break fire immediately. No countdown. This is intentional — they reflect real-world time events.
 4. **SK confidence threshold is 0.8.** Below threshold = plain chat message, no suggestion card shown.
 5. **Agent install is never silent.** Always requires explicit user action. Entitlement is validated server-side on every install request.

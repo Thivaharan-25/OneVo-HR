@@ -4,7 +4,7 @@
 
 Template Manager is the single operator-facing module for all reusable provisioning and configuration presets. It is organized into four tabs. This document covers the full end-to-end logic for each tab.
 
-**Route:** `/platform/templates`
+**Route:** `/platform/role-templates`
 **Permission:** `platform.role_templates.read`
 
 > **Out of scope:** App Allowlist templates and Monitoring Policy templates are managed by the Device Management / Agent Version Manager operator role — they are monitoring agent policy artifacts, not provisioning presets.

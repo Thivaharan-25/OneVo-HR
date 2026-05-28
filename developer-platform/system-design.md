@@ -132,13 +132,13 @@ No module gains a direct dependency on `ONEVO.Admin.Api/`. The dependency flows 
 
 | Property | Value |
 |:---|:---|
-| Framework | Next.js (App Router) |
+| Framework | Angular 21 |
 | Domain | `console.onevo.io` |
 | Auth provider | Google OAuth via NextAuth.js |
 | API calls | All go to `[backend]/admin/v1/*`, passing platform-admin JWT in `Authorization: Bearer` header |
 | Session storage | Server-side session (NextAuth), platform-admin JWT stored in httpOnly cookie |
 
-The dev console is a **completely separate Next.js project** from the main `app.onevo.io` frontend. It shares no code, no session infrastructure, and no deployment pipeline with the main product.
+The dev console is a **completely separate Angular 21 project** from the main `app.onevo.io` frontend. It shares no code, no session infrastructure, and no deployment pipeline with the main product.
 
 ---
 
@@ -152,7 +152,7 @@ The dev console is a **completely separate Next.js project** from the main `app.
                                    │
                     ┌──────────────▼───────────────┐
                     │     console.onevo.io          │
-                    │   Next.js — Dev Console       │
+                    │   Angular — Dev Console       │
                     │   Deployed independently      │
                     └──────────────┬───────────────┘
                                    │ HTTPS + Admin JWT

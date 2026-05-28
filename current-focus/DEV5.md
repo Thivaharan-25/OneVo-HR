@@ -209,7 +209,7 @@ npm run build
 - [ ] Impersonation flow requires `super_admin`, warning confirmation, opens main app in a new tab, and surfaces token expiry.
 - [ ] `/tenants/new` implements seven-step provisioning wizard: account setup, plan assignment, module selection, role template setup, initial configuration, admin invite, review/confirm.
 - [ ] Provisioning wizard is draft-safe after Step 1 and can resume from a `provisioning` tenant.
-- [ ] Step 3 module selection writes the same module grants consumed by main app and IDE extension.
+- [ ] Step 3 module selection writes the same module entitlements and selected feature keys consumed by main app and IDE extension.
 - [ ] Step 4 role template setup uses the tenant's module-filtered permission catalog and applies/materializes selected templates.
 - [ ] Step 7 activation flips tenant from provisioning to active and updates the tenant list badge.
 - [ ] Tests cover tenant list filters, tenant detail tabs, suspend role gate, subscription override validation, impersonation role gate, provisioning draft resume, and activation.

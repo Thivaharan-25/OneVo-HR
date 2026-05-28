@@ -33,7 +33,7 @@ HR Management, Workforce Intelligence, and Work Management all live in the same 
 
 ### Authorization (Hybrid Permission Control)
 
-Every endpoint must specify required permission. Permissions are checked against the user's **effective permissions** (role + individual overrides, filtered by feature grants). Data is automatically scoped to the user's **org hierarchy** (they only see employees below them).
+Every endpoint must specify required permission. Permissions are checked against the user's **effective permissions** after tenant module entitlement, commercial feature inclusion, runtime feature flags, roles, individual overrides, and optional role/employee feature visibility grants are resolved. Data is automatically scoped to the user's **org hierarchy**.
 
 ```csharp
 [HttpGet]
@@ -45,7 +45,7 @@ public async Task<IResult> GetEmployees([AsParameters] PagedRequest request, Can
 }
 ```
 
-**Never hardcode role names.** Roles are custom — always check permissions or module grants:
+**Never hardcode role names.** Roles are custom — always check permissions, module entitlement, and active feature keys:
 
 ```csharp
 // WRONG
@@ -54,6 +54,8 @@ if (currentUser.RoleName == "HR Manager") { ... }
 // RIGHT
 if (currentUser.HasPermission("employees:write")) { ... }
 ```
+
+For feature-specific behavior, also validate the tenant's active module and active feature key server-side. A user permission alone must not unlock a commercially excluded feature.
 
 ### Request/Response Format
 
@@ -154,7 +156,7 @@ GET    /admin/v1/tenants/{id}             # Get tenant (operator-controlled Deve
 PATCH  /admin/v1/tenants/{id}/subscription # Assign subscription/commercial terms
 PUT    /admin/v1/tenants/{id}/modules      # Assign module entitlements and sales states
 PATCH  /admin/v1/tenants/{id}/settings     # Assign required tenant settings
-GET    /admin/v1/tenants/{id}/permissions/catalog # Module-filtered permission catalog
+GET    /admin/v1/tenants/{id}/permissions/catalog # Module + feature filtered permission catalog
 POST   /admin/v1/tenants/{id}/role-templates/{templateId}/apply # Apply starter roles
 POST   /admin/v1/tenants/{id}/invite-admin # Send tenant-owner set-password invite
 PATCH  /admin/v1/tenants/{id}/provision/confirm # Activate completed provisioning draft
@@ -299,7 +301,7 @@ CRUD   /api/v1/documents
 CRUD   /api/v1/repositories
 ```
 
-Work Management is an internal ONEVO pillar. In the customer web app it uses the same cookie-backed user session and the same tenant/module entitlement checks as HR.
+Work Management is an internal ONEVO pillar. In the customer web app it uses the same cookie-backed user session and the same tenant module entitlement, commercial feature inclusion, runtime feature flag, and permission checks as HR.
 
 ## Rate Limiting
 

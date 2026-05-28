@@ -73,6 +73,7 @@ interface SubscriptionPlanDto {
   name: string
   tier: string
   included_modules: string[]
+  included_feature_keys: Record<string, string[]>
   company_size_range: string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
   calculated_monthly_price: number
@@ -91,7 +92,7 @@ interface SubscriptionPlanListResponseDto {
 }
 ```
 
-`effective_*_price` is derived as `override_*_price ?? calculated_*_price`. The backend calculates `calculated_*_price` from `module_catalog.price_brackets` for `included_modules` and `company_size_range`.
+`effective_*_price` is derived as `override_*_price ?? calculated_*_price`. The backend calculates `calculated_*_price` from `module_catalog.price_brackets` for `included_modules` and `company_size_range`. `included_feature_keys` is the commercial feature package inside those modules.
 
 ## POST `/admin/v1/subscription-plans`
 
@@ -103,6 +104,7 @@ interface CreateSubscriptionPlanDto {
   name: string
   tier: string
   included_modules: string[]
+  included_feature_keys: Record<string, string[]>
   company_size_range: string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
   override_monthly_price?: number | null
@@ -117,13 +119,14 @@ interface CreateSubscriptionPlanDto {
 
 ## PATCH `/admin/v1/subscription-plans/{id}`
 
-Updates reusable plan metadata, included modules, and base prices. Existing tenant subscriptions keep their stored commercial terms unless product explicitly runs a migration/reprice operation.
+Updates reusable plan metadata, included modules, included feature keys, and base prices. Existing tenant subscriptions keep their stored commercial terms unless product explicitly runs a migration/reprice operation.
 
 ```ts
 interface UpdateSubscriptionPlanDto {
   name?: string
   tier?: string
   included_modules?: string[]
+  included_feature_keys?: Record<string, string[]>
   company_size_range?: string
   pricing_unit?: "per_employee" | "per_device" | "flat" | "custom"
   override_monthly_price?: number | null
@@ -430,6 +433,7 @@ interface SubscriptionOverrideDto {
   contract_end_date?: string | null
   company_size_range: string
   selected_modules: string[]
+  selected_feature_keys: Record<string, string[]>
   calculated_monthly_price: number
   calculated_annual_price: number
   override_monthly_price?: number | null
@@ -469,7 +473,8 @@ interface SubscriptionOverrideDto {
 Rules:
 
 - Subscription tenants normally use `subscription_collection_mode = "gateway"` and `gateway_provider` so recurring plan/module fees are charged by the payment gateway.
-- `company_size_range` uses the same option set as tenant creation. `selected_modules` plus `company_size_range` must be recalculated from `module_catalog.price_brackets`; the calculated values supplied by the UI are display echoes and the backend remains authoritative.
+- `company_size_range` uses the same option set as tenant creation. `selected_modules`, `selected_feature_keys`, and `company_size_range` must be validated against Module Catalog. Price calculation comes from `module_catalog.price_brackets`; the calculated values supplied by the UI are display echoes and the backend remains authoritative.
+- `selected_feature_keys` is the tenant's commercial feature snapshot. Runtime feature flags cannot add keys that are absent from this object.
 - `override_monthly_price` and `override_annual_price` are negotiated/effective prices when present. They must not replace `calculated_monthly_price` and `calculated_annual_price` in storage.
 - `ai_token_limit_per_month` is required and positive when the selected module set includes an AI capability such as `chat_ai`; it is omitted/null for non-AI plans.
 - Full-license tenants can use `license_payment_mode = "manual"` for the one-time license sale. The operator records `full_license_amount`, `license_paid_at`, and `license_reference`.
@@ -502,9 +507,11 @@ interface TenantModuleSelectionDto {
 interface TenantPermissionCatalogDto {
   tenant_id: string
   enabled_modules: string[]
+  enabled_features: string[]
   modules: Array<{
     module_key: string
     display_name: string
+    included_feature_keys: string[]
     permissions: Array<{
       id: string
       code: string
@@ -515,7 +522,7 @@ interface TenantPermissionCatalogDto {
 }
 ```
 
-Only permissions from enabled tenant modules plus universal permissions are returned.
+Only permissions from enabled tenant modules plus universal permissions are returned. If a permission is bound to a feature key, that feature key must be present in `enabled_features`; otherwise the permission is excluded.
 
 ## GET `/admin/v1/role-templates`
 
@@ -864,9 +871,123 @@ interface UpdateTenantAppRolePermissionsResponseDto {
 interface FeatureFlagListItemDto {
   key: string
   description: string
+  module_key: string
+  feature_key: string | null
   global_default: boolean
   rollout_percentage: number
   tenant_override_count: number
+  is_active: boolean
+}
+```
+
+## POST `/admin/v1/feature-flags`
+
+```ts
+interface CreateFeatureFlagRequest {
+  key: string
+  description: string
+  module_key: string | null   // required for tenant-facing product flags; null only for platform operational flags
+  feature_key: string | null  // required for tenant-facing product flags; null only for platform operational flags
+  default_value: boolean
+  rollout_percentage: number
+  is_active: boolean
+}
+```
+
+## GET `/admin/v1/feature-flags/{flagKey}`
+
+```ts
+interface FeatureFlagDetailDto extends FeatureFlagListItemDto {
+  tenant_overrides: FeatureFlagTenantOverrideDto[]
+}
+
+interface FeatureFlagTenantOverrideDto {
+  tenant_id: string
+  tenant_name: string
+  value: boolean
+  granted_by_id: string
+  granted_at: string
+  reason: string | null
+}
+```
+
+## PATCH `/admin/v1/feature-flags/{flagKey}`
+
+```ts
+interface UpdateFeatureFlagRequest {
+  description?: string
+  module_key?: string | null
+  feature_key?: string | null
+  default_value?: boolean
+  rollout_percentage?: number
+  is_active?: boolean
+  reason?: string
+}
+```
+
+Tenant-facing product flags must provide both `module_key` and `feature_key`. The `feature_key` must exist in `module_features` and belong to the selected `module_key`. Only platform operational flags that are not sold as tenant features may set both fields to null.
+
+## DELETE `/admin/v1/feature-flags/{flagKey}`
+
+Soft-deactivates the flag by setting `is_active = false`. Evaluation returns `false` for inactive flags.
+
+## GET `/admin/v1/feature-flags/tenant-overrides`
+
+Returns `FeatureFlagTenantOverrideDto[]`.
+
+## GET `/admin/v1/tenants/{id}/feature-flags`
+
+```ts
+interface TenantFeatureFlagValueDto {
+  key: string
+  module_key: string
+  feature_key: string | null
+  effective_value: boolean
+  source: "inactive" | "override" | "default" | "rollout" | "commercially_unavailable"
+  override_value: boolean | null
+}
+```
+
+## PUT `/admin/v1/tenants/{id}/feature-flags`
+
+```ts
+interface ReplaceTenantFeatureFlagOverridesRequest {
+  overrides: Record<string, boolean>
+  reason: string
+}
+```
+
+## PATCH `/admin/v1/tenants/{id}/feature-flags/{flagKey}`
+
+```ts
+interface SetTenantFeatureFlagOverrideRequest {
+  value: boolean
+  reason: string
+}
+```
+
+## DELETE `/admin/v1/tenants/{id}/feature-flags/{flagKey}`
+
+Removes the tenant override. The tenant returns to global default plus rollout evaluation.
+
+## GET `/admin/v1/tenants/{id}/modules/runtime-status`
+
+```ts
+interface TenantModuleRuntimeStatusDto {
+  module_key: string
+  sales_state: string
+  commercially_entitled: boolean
+  runtime_override: boolean | null
+  runtime_enabled: boolean
+}
+```
+
+## PATCH `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status`
+
+```ts
+interface SetTenantModuleRuntimeStatusRequest {
+  enabled: boolean
+  reason: string
 }
 ```
 

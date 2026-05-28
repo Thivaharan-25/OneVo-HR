@@ -142,16 +142,16 @@ Full PeopleHR migration also uses the staging and audit tables defined in [[modu
 
 ## Wizard Steps
 
-| Step | Name | Frontend Component | Description |
-|:-----|:-----|:------------------|:------------|
-| 1 | Choose Method | `Step1ChooseMethod` | Select CSV, Excel, or PeopleHR. |
-| 2a | Upload File | `Step2aUploadFile` | Drag-drop upload; PUT directly to pre-signed S3 URL. |
-| 2b | Connect PeopleHR | `Step2bConnectPeopleHR` | API key entry with masked display and API permission preflight. |
-| 3 | Map Fields | `Step3FieldMapping` / `FieldMappingTable` | Editable dropdowns; source fields/custom screens -> canonical HR fields. |
-| 4 | Job Grouping | `Step4JobGrouping` | Assign department, legal entity, job family, and location to row groups. |
-| 5 | Validate | `Step5Validation` | Review ETL errors/warnings; skip, fix, or accept raw archive. |
-| 6 | Confirm | `Step6ConfirmImport` | Summary counts; triggers dry-run or import job. |
-| 7 | Done | `Step7Done` | Reconciliation spot-check list, final counts, and audit report. |
+| Step | Name             | Frontend Component                        | Description                                                              |
+| :--- | :--------------- | :---------------------------------------- | :----------------------------------------------------------------------- |
+| 1    | Choose Method    | `Step1ChooseMethod`                       | Select CSV, Excel, or PeopleHR.                                          |
+| 2a   | Upload File      | `Step2aUploadFile`                        | Drag-drop upload; PUT directly to pre-signed S3 URL.                     |
+| 2b   | Connect PeopleHR | `Step2bConnectPeopleHR`                   | API key entry with masked display and API permission preflight.          |
+| 3    | Map Fields       | `Step3FieldMapping` / `FieldMappingTable` | Editable dropdowns; source fields/custom screens -> canonical HR fields. |
+| 4    | Job Grouping     | `Step4JobGrouping`                        | Assign department, legal entity, job family, and location to row groups. |
+| 5    | Validate         | `Step5Validation`                         | Review ETL errors/warnings; skip, fix, or accept raw archive.            |
+| 6    | Confirm          | `Step6ConfirmImport`                      | Summary counts; triggers dry-run or import job.                          |
+| 7    | Done             | `Step7Done`                               | Reconciliation spot-check list, final counts, and audit report.          |
 
 PeopleHR full migration extends these steps with dry-run reconciliation, admin approval, commit, rollback, resume, and final audit report as defined in [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]].
 

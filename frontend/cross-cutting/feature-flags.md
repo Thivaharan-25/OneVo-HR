@@ -1,148 +1,97 @@
-# Feature Flags
+# Feature Flags And Feature Gates
 
-## Two Types of Flags
+## Purpose
 
-| Type | Source | Purpose | Examples |
-|:-----|:-------|:--------|:---------|
-| **Tenant Feature** | Tenant subscription / module entitlement | Module-level gating by plan | `workforceIntelligence`, `payroll`, `advancedReporting` |
-| **Release Flag** | Feature flag service (PostHog/LaunchDarkly) | Gradual rollout, A/B tests | `newEmployeeWizard`, `redesignedDashboard` |
+Frontend gating mirrors the backend access order. The frontend is only a UX layer; the API remains the security boundary.
 
-## Tenant Features
+The access order is:
 
-Tenant features come from the backend session metadata (`activeModules`). They gate entire product modules. The `AuthService` in `@onevo/shared` exposes them as signals.
-
-```typescript
-// AuthService.hasFeature() returns a computed signal
-const hasWorkforce = this.auth.hasFeature('workforceIntelligence');
-// hasWorkforce() → boolean (reactive)
+```text
+active module entitlement
+AND commercial feature inclusion
+AND runtime feature flag, when one exists
+AND user permission
 ```
 
-### Template Gating
+## Three Concepts
+
+| Concept | Source | Purpose | Example |
+|:--------|:-------|:--------|:--------|
+| Module entitlement | `tenant_module_entitlements` | Tenant has access to a product module | `work_management` |
+| Commercial feature inclusion | `tenant_subscriptions.selected_feature_keys` | Tenant bought this feature inside a module/package | `work_management.projects` |
+| Runtime feature flag | `feature_flags` + tenant overrides | Beta rollout, emergency disable, privacy/AI controls | `chat_ai.streaming_responses` |
+
+Feature flags are not the commercial source of truth. They cannot grant features outside the tenant's plan/custom contract.
+
+## Session Metadata
+
+The backend session response should expose both module and feature metadata:
+
+```ts
+interface SessionAuthorizationDto {
+  permissions: string[]
+  active_modules: string[]
+  active_features: string[]
+}
+```
+
+`active_features` contains feature keys that are commercially included and runtime-enabled. It should not contain feature keys excluded from the tenant's subscription/custom contract, even if a runtime flag is ON.
+
+## Frontend Helpers
+
+```ts
+hasModule(moduleKey: string): Signal<boolean>
+hasFeature(featureKey: string): Signal<boolean>
+hasPermission(permission: string): Signal<boolean>
+```
+
+Use module keys for broad navigation sections and feature keys for screens/actions inside a module.
 
 ```html
-<!-- Structural directive — hide entire section if feature not enabled -->
-<nav-section *hasFeature="'workforceIntelligence'" label="Workforce">
-  ...
-</nav-section>
+@if (auth.hasModule('work_management')()) {
+  <a routerLink="/worksync">WorkSync</a>
+}
 
-<!-- New control flow -->
-@if (auth.hasFeature('wms:projects')()) {
+@if (auth.hasFeature('work_management.projects')() && auth.hasPermission('projects:read')()) {
   <a routerLink="/worksync/projects">Projects</a>
 }
-```
 
-### Composing Feature + Permission Gates
-
-Both must pass — feature decides what the tenant has bought, permission decides what the user can do within it:
-
-```html
-<!-- Must have the module AND the permission -->
-@if (auth.hasFeature('workforceIntelligence')() && auth.hasPermission('workforce:view')()) {
-  <app-live-dashboard />
-}
-
-<!-- Or with structural directive composition -->
-<ng-container *hasFeature="'workforceIntelligence'">
-  <app-live-dashboard *hasPermission="'workforce:view'" />
-</ng-container>
-```
-
-### Upgrade Banner
-
-When a tenant doesn't have a module, show an upgrade prompt instead of hiding silently:
-
-```typescript
-// shared/src/lib/ui/feedback/feature-gate.component.ts
-@Component({
-  selector: 'app-feature-gate',
-  standalone: true,
-  template: `
-    @if (auth.hasFeature(feature())()) {
-      <ng-content />
-    } @else {
-      @if (showUpgradeBanner()) {
-        <app-upgrade-banner [feature]="feature()" />
-      }
-    }
-  `,
-})
-export class FeatureGateComponent {
-  feature = input.required<string>();
-  showUpgradeBanner = input(true);
-  auth = inject(AuthService);
+@if (auth.hasFeature('chat_ai.streaming_responses')() && auth.hasPermission('chat:use_ai')()) {
+  <app-streaming-chat />
 }
 ```
 
-```html
-<app-feature-gate feature="workforceIntelligence">
-  <app-live-dashboard />
-</app-feature-gate>
-```
+## Upgrade And Disabled States
 
-## Release Flags
+When a tenant lacks a module or commercial feature, show an upgrade prompt only where product wants upsell visibility. Do not show controls that imply the user can self-enable a paid feature.
 
-Release flags control gradual rollout of new features within an already-entitled module. Evaluated per-user or per-tenant by a flag service.
+When a runtime flag disables an included feature, show an unavailable/temporarily disabled state only where the user already has the commercial feature.
 
-```typescript
-// shared/src/lib/feature-flags/feature-flag.service.ts
-@Injectable({ providedIn: 'root' })
-export class FeatureFlagService {
-  private flags = signal<Record<string, boolean>>({});
+## Runtime Flag Lifecycle
 
-  isEnabled(flag: string): Signal<boolean> {
-    return computed(() => this.flags()[flag] ?? false);
-  }
+Use runtime flags only for:
 
-  loadFlags(userId: string) {
-    // Fetch from PostHog / LaunchDarkly / backend endpoint
-    this.flagsClient.getFlags(userId).then(flags => this.flags.set(flags));
-  }
-}
-```
+- beta rollout
+- risky backend behavior
+- AI/provider-dependent features
+- privacy-sensitive monitoring features
+- emergency disable
+- per-tenant temporary support override
 
-Usage in a component:
+Do not create runtime flags for every normal CRUD feature.
 
-```typescript
-export class EmployeeListComponent {
-  private flagService = inject(FeatureFlagService);
-  useNewWizard = this.flagService.isEnabled('new-employee-wizard');
-}
-```
+Lifecycle:
 
-```html
-@if (useNewWizard()) {
-  <app-new-employee-wizard />
-} @else {
-  <app-legacy-employee-form />
-}
-```
-
-### Flag Lifecycle
-
-```
-1. Create flag (default: off)
-2. Enable for internal team (10%)
-3. Enable for beta tenants (25%)
-4. Enable for all (100%)
-5. Remove flag and dead code — flag cleanup PR
-```
-
-Flags older than 30 days at 100% rollout must be cleaned up. Track them in a registry:
-
-```typescript
-// shared/src/lib/feature-flags/registry.ts
-export const FEATURE_FLAGS = {
-  'new-employee-wizard': {
-    description: 'Redesigned multi-step employee creation wizard',
-    createdAt: '2026-03-15',
-    owner: 'hr-team',
-    cleanupBy: '2026-04-30',
-  },
-} as const;
+```text
+1. Create flag with default OFF unless the feature is already stable.
+2. Enable for internal or beta tenants.
+3. Roll out by tenant percentage or explicit tenant overrides.
+4. Move to 100% when stable.
+5. Remove flag and dead code when it is no longer operationally useful.
 ```
 
 ## Related
 
-- [[frontend/cross-cutting/authorization|Authorization]] — permission vs feature distinction
-- [[frontend/architecture/routing|Routing]] — `featureGuard` functional guard
-- [[frontend/cross-cutting/analytics|Analytics]] — A/B test measurement
+- [[frontend/cross-cutting/authorization|Authorization]]
+- [[developer-platform/modules/module-catalog-manager/end-to-end-logic|Module Catalog Feature Registry]]
+- [[developer-platform/modules/feature-flag-manager/end-to-end-logic|Feature Flag Seed List]]

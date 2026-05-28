@@ -82,7 +82,8 @@
       "email": "jane@acme.com"
     },
     "permissions": ["employees:read", "leave:create"],
-    "active_modules": ["hr_management"]
+    "active_modules": ["core_hr", "leave"],
+    "active_features": ["core_hr.employee_profiles", "leave.requests"]
   }
   ```
 - **Backend:** `AuthSessionService.CreateSessionAsync()` -> [[frontend/cross-cutting/authentication|Authentication]]
@@ -91,7 +92,7 @@
   3. Create session record in `sessions` table
   4. Store refresh/session rotation state server-side
   5. Set HttpOnly Secure SameSite session cookie
-  6. Return user, permissions, and active module metadata in the response body
+  6. Return user, permissions, active module keys, and active feature keys in the response body
 - **Validation:** N/A
 - **DB:** `sessions` (created), `refresh_tokens` or session rotation records (created), `user_roles`, `role_permissions`, `user_permission_overrides`
 ### Step 6: Redirect to Dashboard

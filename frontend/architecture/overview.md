@@ -54,7 +54,7 @@ SignalR pushes are **invalidation signals**, not primary data sources. When a pu
 - API requests include `X-Tenant-Id` header (set by `TenantInterceptor` from auth state)
 - Signal resource keys include `tenantId` to prevent cross-tenant data leakage
 - Theming tokens are tenant-configurable (logo, primary colour, accent)
-- Feature flags are tenant-scoped
+- Feature flag evaluation is tenant-scoped; flag definitions are global and tenant exceptions come from overrides
 
 ## High-Level Data Flow
 

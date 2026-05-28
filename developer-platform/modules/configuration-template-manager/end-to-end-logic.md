@@ -15,7 +15,7 @@ Full field specifications, payload schemas, apply behaviour, reapply rules, and 
 
 ```
 Developer Platform
-└── Template Manager  (/platform/templates)
+└── Template Manager  (/platform/role-templates)
     ├── Role Templates     ← Role Template Manager (separate module)
     ├── Configuration      ← This module
     ├── Job Family         ← This module

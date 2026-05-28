@@ -109,7 +109,7 @@ Customer web sessions are stored only in HttpOnly Secure SameSite cookies set by
 refreshSession(): Observable<SessionDto> {
   return this.http.post<SessionDto>('/api/v1/auth/refresh', {}).pipe(
     tap(session => {
-      this.setSession(session.user, session.permissions, session.activeModules);
+      this.setSession(session.user, session.permissions, session.activeModules, session.activeFeatures);
     }),
   );
 }

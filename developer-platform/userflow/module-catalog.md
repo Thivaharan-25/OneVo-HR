@@ -8,25 +8,32 @@ Module Catalog Manager or Platform Super Admin.
 
 ### Create Module
 
-1. Operator opens Platform Management → Feature Management / Module Catalog.
+1. Operator opens Platform Management -> Feature Management / Module Catalog.
 2. Operator clicks **+ Add Module**.
-3. Operator fills in the create form: module key, display name, pillar, pricing unit, sellable toggle, phase, AI capability flag, storage flag, setup service keys, price brackets (required if sellable), permission ownership, default permissions, and active state.
-4. In the **Permission Ownership** field, the permission picker loads all platform permissions. Permissions already owned by another module are shown greyed out and disabled — operator cannot select them without first releasing them from the owning module. Unclaimed permissions are freely selectable.
-5. Operator selects `default_permission_codes` from the subset of permissions they have already selected in step 4.
+3. Operator fills in the create form: module key, display name, pillar, pricing unit, sellable toggle, phase, AI capability flag, storage flag, setup service keys, commercial feature list, price brackets (required if sellable), permission ownership, default permissions, and active state.
+4. In the **Permission Ownership** field, the permission picker loads seeded tenant-facing permission codes from the permission catalog. Permissions already owned by another module are shown greyed out and disabled; the operator cannot select them without first releasing them from the owning module. Unclaimed permissions are freely selectable.
+5. Operator marks default permissions from the subset of permissions selected in step 4.
 6. Operator submits. Backend validates: module key unique, price brackets present if sellable, no permission conflicts, default permissions are a subset of owned permissions, Phase 2 forces `is_active = false`.
-7. Backend writes `module_catalog` row and price history. Audit log entry created.
+7. Backend writes `module_catalog`, `module_features`, `module_permission_ownership`, and price history. Audit log entry created.
+
+### Update Commercial Features
+
+1. Operator opens a module detail page -> **Features** tab.
+2. Operator adds, edits, deactivates, or marks default-included feature keys for the module.
+3. Backend validates feature keys use `{module_key}.{feature_name}` and are unique.
+4. Plans and custom contracts can include a subset of these features. Feature flags can only control runtime access after this commercial inclusion exists.
 
 ### Update Permission Ownership
 
-1. Operator opens a module detail page → **Permissions** tab.
-2. Permission picker loads pre-populated with this module's currently owned permissions checked. All platform permissions are shown — permissions owned by other modules are visible but greyed out and disabled (tooltip: "Owned by `{module_name}` — release it there first"). Unclaimed permissions are selectable.
-3. Operator checks or unchecks permission codes.
-4. Operator saves. Backend rejects any permission already owned by another module (422 listing the conflicting module key). On success, `permission_codes_json` is updated and any deselected permissions are automatically removed from `default_permission_codes`.
+1. Operator opens a module detail page -> **Permissions** tab.
+2. Permission picker loads pre-populated with this module's currently owned permissions checked. All seeded tenant-facing permissions are shown: permissions owned by other modules are visible but greyed out and disabled (tooltip: "Owned by `{module_name}` - release it there first"). Unclaimed permissions are selectable.
+3. Operator checks or unchecks permission codes and marks which owned permissions are default permissions for future tenant Owner role materialization.
+4. Operator saves. Backend rejects any permission already owned by another module (422 listing the conflicting module key). On success, `module_permission_ownership` is updated and any deselected permissions are automatically removed from the default permission set.
 5. Backend invalidates affected tenant permission catalog caches.
 
 ### Update Pricing
 
-1. Operator opens a module detail page → **Pricing** tab.
+1. Operator opens a module detail page -> **Pricing** tab.
 2. Operator updates price brackets or rates.
 3. Backend writes updated brackets and a `module_catalog_price_history` entry. Existing tenant subscription snapshots are not repriced.
 
@@ -45,6 +52,8 @@ Module Catalog Manager or Platform Super Admin.
 - `GET /admin/v1/modules/catalog/{moduleKey}/permissions`
 - `GET /admin/v1/modules/catalog/{moduleKey}/permissions/available`
 - `PUT /admin/v1/modules/catalog/{moduleKey}/permissions`
+- `GET /admin/v1/modules/catalog/{moduleKey}/features`
+- `PUT /admin/v1/modules/catalog/{moduleKey}/features`
 - `GET /admin/v1/modules/catalog/{moduleKey}/pricing`
 - `PATCH /admin/v1/modules/catalog/{moduleKey}/pricing`
 - `GET /admin/v1/modules/catalog/{moduleKey}/tenant-impact`
@@ -56,11 +65,13 @@ Module Catalog Manager or Platform Super Admin.
 | Module key unique, lowercase, underscores only, max 80 chars | Create |
 | Module key permanent after creation | Update |
 | Sellable modules require at least one price bracket | Create + Update |
+| Sellable modules require at least one commercial feature | Create + Update features |
+| Commercial feature keys must use `{module_key}.{feature_name}` | Create + Update features |
 | Phase 2 modules forced to `is_active = false` | Create |
 | Permission codes cannot be owned by two modules simultaneously | Create + Update permissions |
-| `default_permission_codes` must be a subset of `permission_codes_json` | Create + Update permissions |
-| Deselecting an owned permission auto-removes it from `default_permission_codes` | Update permissions |
+| Default permissions must be a subset of permissions owned by the same module | Create + Update permissions |
+| Deselecting an owned permission auto-removes it from the default permission set | Update permissions |
 
 ## Boundary
 
-Module Catalog manages ONEVO product modules only. Developer Platform screen access is managed by Platform Access.
+Module Catalog manages ONEVO product modules, commercial feature lists, and module-to-permission ownership. Permission codes themselves are seeded/version-controlled by the backend permission catalog. Developer Platform screen access is managed by Platform Access. Feature Flag Manager handles runtime rollout only; it does not define commercial inclusion or pricing.

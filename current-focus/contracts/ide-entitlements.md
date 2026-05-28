@@ -11,7 +11,8 @@
 ```ts
 interface IDEEntitlementsDto {
   workspace_id: string
-  active_modules: string[]           // e.g. ["hr_management", "work_sync", "workforce_intelligence"]
+  active_modules: string[]           // active module keys, e.g. ["core_hr", "work_management", "monitoring"]
+  active_features: string[]          // commercially included and runtime-enabled feature keys
   permitted_tag_actions: string[]    // e.g. ["leave:request", "clockin", "task:view"]
   has_monitoring_entitlement: boolean
   agent_installed: boolean
@@ -52,6 +53,8 @@ DEV8 gets a working endpoint immediately; `has_monitoring_entitlement` becomes a
 
 ## Notes
 
+- `active_modules` gates module sections.
+- `active_features` gates feature-specific IDE affordances. It must be resolved from active module entitlement, selected commercial feature keys, and runtime feature flags.
 - `permitted_tag_actions` is the canonical list for picker rendering; never hard-code tag names client-side
 - `agent_installed: true` suppresses the install prompt regardless of `has_monitoring_entitlement`
 - Undo window is server-enforced; `undo_expires_at` is the client display deadline

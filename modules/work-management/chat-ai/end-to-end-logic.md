@@ -62,7 +62,8 @@ Message received
     "content": "Create a task to review payroll before Friday"
   },
   "permissions": ["chat:write", "tasks:write"],
-  "enabled_modules": ["work_management", "agentic_chat", "core_hr"],
+  "active_modules": ["work_management", "core_hr"],
+  "active_features": ["work_management.tasks", "chat_ai.agentic_chat", "core_hr.employee_profiles"],
   "timezone": "Asia/Colombo"
 }
 ```

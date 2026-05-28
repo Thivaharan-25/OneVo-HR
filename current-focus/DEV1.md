@@ -357,7 +357,7 @@ Delivered the foundational RBAC slice that the Tenant Creation API (and every ot
 ### Acceptance Criteria
 
 - [x] Tenant provisioning creates baseline tenant, legal entity, admin user, and subscription record.
-- [x] Module entitlement service resolves active modules from subscription, feature grants, and module registry.
+- [x] Module entitlement service resolves active modules from subscription, tenant module entitlements, selected feature keys, and module registry.
 - [x] Permissions service can return effective permissions for a user and tenant.
 - [x] Entitlement DTO supports web and IDE consumers.
 - [x] Tests cover active module resolution and focused entitlement reads.
@@ -611,7 +611,7 @@ dotnet test ONEVO.sln --filter AdminApi
 - [ ] `GET /admin/v1/tenants/{id}` returns overview, plan, billing dates, status, users summary, agent summary, flags summary, settings summary, and audit summary links.
 - [ ] `PATCH /admin/v1/tenants/{id}/status` supports suspend, unsuspend, and activate with role checks.
 - [ ] `PATCH /admin/v1/tenants/{id}/subscription` supports provisioning commercial terms and post-activation exception subscription override with selected packages/modules, company-size range, calculated price snapshot, override prices, AI monthly token limit, required reason, and audit log.
-- [ ] `PUT /admin/v1/tenants/{id}/modules` sets active module grants, module sales state, and module-level pricing override metadata for provisioning and post-provisioning changes.
+- [ ] `PUT /admin/v1/tenants/{id}/modules` sets tenant module entitlements, selected feature keys, module sales state, and module-level pricing override metadata for provisioning and post-provisioning changes.
 - [ ] `GET /admin/v1/tenants/{id}/permissions/catalog` returns only permissions exposed by the tenant's active modules plus universal permissions.
 - [ ] `GET /admin/v1/role-templates` lists global/default role templates with module and permission coverage.
 - [ ] `POST /admin/v1/role-templates` creates an operator-managed role template from a module-filtered permission set.
@@ -666,7 +666,7 @@ dotnet test ONEVO.sln --filter Impersonation
 
 ### Backend Module References
 
-- Feature flags/module grants: `Features/SharedPlatform` and `Features/Configuration`
+- Feature flags/runtime overrides and module entitlements: `Features/SharedPlatform` and `Features/Configuration`
 - Audit reader: shared audit foundation from Task 4
 - App catalog: SharedPlatform public catalog interface plus Configuration observed-app reader
 - Admin host: `ONEVO.Api` `/admin/v1/*`
@@ -677,7 +677,7 @@ dotnet test ONEVO.sln --filter Impersonation
 - [ ] `GET /admin/v1/feature-flags/{flag}` returns flag detail and per-tenant overrides.
 - [ ] `PATCH /admin/v1/feature-flags/{flag}` updates global default or rollout configuration with audit log.
 - [ ] `PUT /admin/v1/tenants/{id}/feature-flags` replaces a tenant's flag overrides.
-- [ ] `PATCH /admin/v1/tenants/{id}/feature-flags/{flag}` sets or clears one tenant override.
+- [ ] `PATCH /admin/v1/tenants/{id}/feature-flags/{flag}` sets one tenant override with `value`; `DELETE /admin/v1/tenants/{id}/feature-flags/{flag}` clears it.
 - [ ] Module enable/disable uses the same module entitlement registry consumed by tenant app and IDE extension.
 - [ ] `GET /admin/v1/audit-logs` supports tenant, actor, action, resource, and date filters.
 - [ ] Audit log export endpoint returns filtered CSV without allowing mutation or deletion.

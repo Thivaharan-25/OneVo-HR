@@ -8,7 +8,7 @@
 
 ## Purpose
 
-The Configuration Template Manager is the **Configuration, Job Family, and Leave Policy tabs** of the unified **Template Manager** (`/platform/templates`). It lets platform operators create, version, and apply reusable setup presets to tenants. Each template encodes the full payload for a specific configuration domain — job hierarchy, leave rules, or tenant settings. Applying a template seeds the corresponding module tables without requiring the operator to fill every field manually for each new tenant.
+The Configuration Template Manager is the **Configuration, Job Family, and Leave Policy tabs** of the unified **Template Manager** (`/platform/role-templates`). It lets platform operators create, version, and apply reusable setup presets to tenants. Each template encodes the full payload for a specific configuration domain — job hierarchy, leave rules, or tenant settings. Applying a template seeds the corresponding module tables without requiring the operator to fill every field manually for each new tenant.
 
 Templates are global (not tenant-scoped). Applying a template creates tenant-specific records; the global template is never mutated by tenant customisations.
 
@@ -102,7 +102,7 @@ Read-only operator accounts (`platform.config_templates.read` only) can browse t
 
 ## Navigation
 
-Developer Platform → **Template Manager** (`/platform/templates`)
+Developer Platform -> **Template Manager** (`/platform/role-templates`)
 
 The Template Manager has six tabs. This module covers the last five:
 - **Role Templates** — managed by [[developer-platform/modules/role-template-manager/overview|Role Template Manager]]

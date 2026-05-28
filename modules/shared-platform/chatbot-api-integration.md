@@ -138,7 +138,8 @@ Use typed in-process Kernel Functions for Phase 1. OpenAPI import is allowed lat
     "created_at": "2026-05-20T10:30:00Z"
   },
   "permissions": ["chat:write", "tasks:write"],
-  "enabled_modules": ["work_management", "agentic_chat", "core_hr"],
+  "active_modules": ["work_management", "chat_ai", "core_hr"],
+  "active_features": ["work_management.tasks", "chat_ai.agentic_chat", "core_hr.employee_profiles"],
   "locale": "en-LK",
   "timezone": "Asia/Colombo"
 }

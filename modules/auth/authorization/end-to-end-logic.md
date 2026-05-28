@@ -1,315 +1,146 @@
-﻿# Authorization â€” End-to-End Logic
+# Authorization - End-to-End Logic
 
 **Module:** Auth
-**Feature:** Authorization (Hybrid Permission Control)
+**Feature:** Authorization
 
 ---
 
-## Permission Check (Every Protected Endpoint)
+## Permission Check
 
-### Flow
+Every tenant-facing protected endpoint must evaluate access in this order:
 
-```
+```text
 Any protected API endpoint
-  -> [RequirePermission("module:action")] attribute
-    -> HybridPermissionFilter.OnActionExecutionAsync(context, next)
-      -> 1. Extract user claims from JWT
-      -> 2. Get effective_permissions[] from JWT (resolved at login time)
-      -> 3. Resolve required permission's module from the permission catalog
-      -> 4. Check tenant enabled module catalog
-         -> enabled = subscription plan modules + paid add-ons + trial modules + approved feature grants - disabled modules
-         -> If module is not enabled for tenant -> Return 403 Forbidden
-      -> 5. Check tenant Super Admin scoped bypass
-         -> If user is tenant owner / tenant Super Admin and module is enabled -> continue
-         -> Tenant Super Admin never bypasses disabled or unpurchased modules
-      -> 6. Check if required permission exists in effective_permissions[]
-         -> If yes -> continue to controller action
-         -> If no -> Return 403 Forbidden
-      -> 7. Apply hierarchy scoping via IHierarchyScope
-         -> Inject hierarchy filter into the request context
-         -> Controller queries automatically scoped to subordinates
+  -> [RequirePermission("module:action")]
+    -> Authorization pipeline
+      -> 1. Resolve current user and tenant from backend-held session/JWT
+      -> 2. Resolve required permission metadata:
+            - permission code
+            - owning module_key
+            - optional feature_key
+      -> 3. Check module entitlement:
+            - tenant_module_entitlements must grant active/trial/purchased/subscription_included/maintenance_included access
+            - disabled, available, quoted, expired modules do not grant access
+      -> 4. If permission has feature_key:
+            - current tenant_subscriptions.selected_feature_keys must include it
+            - if a runtime feature flag exists for the feature_key, it must evaluate enabled for this tenant
+      -> 5. Check effective permission code for the user
+      -> 6. Apply hierarchy/access-policy scope for employee-data reads/writes
+      -> 7. Continue to controller/action
 ```
 
-Platform Super Admin is separate from Tenant Super Admin. Platform Super Admin can operate on Developer Platform / operator routes, but platform bypass must not leak into tenant-facing customer routes.
+Platform Super Admin is separate from Tenant Super Admin. Platform Super Admin can operate on Developer Platform `/admin/v1/*` routes only. Platform bypass must never leak into tenant-facing `/api/v1/*` routes.
 
-## Resolve Effective Permissions (At Login / Token Refresh)
+Tenant Super Admin may receive every permission inside enabled tenant modules, but never bypasses disabled, unpurchased, or commercially excluded features.
 
-### Flow
+## Resolve Effective Permissions
 
-```
-User logs in or refreshes token
-    -> AuthSessionService.RefreshPermissionSnapshotAsync(userId, tenantId, ct)
+```text
+User logs in or refreshes session
+  -> AuthSessionService.RefreshPermissionSnapshotAsync(userId, tenantId, ct)
     -> PermissionResolver.ResolveAsync(userId, tenantId, ct)
-      -> 1. Resolve tenant enabled modules from module catalog + subscription/add-ons/trials/approved feature grants - disabled modules
-      -> 2. Start with universal auto-grants
-      -> 3. If user is tenant owner / tenant Super Admin:
-         -> Add all assignable permissions whose module is enabled for this tenant
-         -> Do not add permissions from disabled or unpurchased modules
-      -> 4. Get user's active roles from user_roles
-         -> Include only rows where expires_at IS NULL OR expires_at > NOW()
-      -> 5. Collect all permission codes from role_permissions for active roles
-      -> 6. Query valid user_permission_overrides for this user
-         -> Include only rows where valid_from IS NULL OR valid_from <= NOW()
-         -> Include only rows where expires_at IS NULL OR expires_at > NOW()
-         -> Add permissions where grant_type = 'grant'
-         -> Remove permissions where grant_type = 'revoke'
-      -> 7. Query valid feature_access_grants for this user (both employee-level and role-level)
-         -> Build set of modules granted to the role or employee
-         -> Include only rows inside the tenant enabled module catalog
-      -> 8. Filter permissions: keep only universal permissions or permissions whose module is enabled for tenant and granted to the user
-      -> 9. Return final List<string> of permission codes
-    -> Store permissions in backend-held auth state and return permission metadata to the web frontend
-    -> Refresh backend-held permission snapshot and return session metadata
+      -> 1. Resolve tenant active modules from tenant_module_entitlements
+      -> 2. Resolve current selected_feature_keys from tenant_subscriptions
+      -> 3. Resolve runtime feature flag values for selected feature keys
+      -> 4. Start with universal auto-grants
+      -> 5. If user is tenant owner / Tenant Super Admin:
+            add all permissions whose module is active and whose feature_key, if any, is included + runtime-enabled
+      -> 6. Add permission codes from active roles
+      -> 7. Apply valid user_permission_overrides:
+            grant adds permission
+            revoke removes permission
+      -> 8. Filter final set:
+            keep universal permissions
+            keep module permissions only when module is active
+            keep feature-bound permissions only when feature is commercially included and runtime-enabled
+      -> 9. Apply feature_access_grants only as role/employee visibility filtering inside the already-valid boundary
+      -> 10. Return final List<string>
 ```
 
-Do not use raw `*` as an unrestricted tenant-user shortcut. If a wildcard is retained for implementation convenience, it must be interpreted as "all permissions from enabled tenant modules" for tenant sessions. Only platform-admin routes may use platform-wide bypass behavior.
+Do not use raw `*` as an unrestricted tenant-user shortcut. If a wildcard is retained for implementation convenience, it must mean "all permissions from active tenant modules and included/runtime-enabled feature keys." Only platform-admin routes may use platform-wide bypass behavior.
 
-## Hierarchy Scoping (Data Filtering)
+## Grant Role/Employee Feature Visibility
 
-### Flow
+`feature_access_grants` is optional role/employee visibility inside the commercial boundary. It cannot create commercial access.
 
-```
-Any endpoint returning employee-related data
-  -> Controller calls service with IHierarchyScope and optional featureContext
-    -> HierarchyScopeService.GetSubordinateIdsAsync(currentUserId, featureContext?, ct)
-      -> Returns HierarchyScopeResult { subordinateIds: Set<Guid>, bypassIds: Set<Guid> }
-
-      SUBORDINATE RESOLUTION (unchanged):
-      -> 1. If current user is Tenant Super Admin -> subordinateIds = ALL employee IDs inside enabled tenant modules
-      -> 2. Otherwise: recursive CTE on reports_to_id
-           WITH RECURSIVE subordinates AS (
-             SELECT id FROM employees WHERE reports_to_id = @currentEmployeeId
-             UNION ALL
-             SELECT e.id FROM employees e
-             INNER JOIN subordinates s ON e.reports_to_id = s.id
-           )
-           SELECT id FROM subordinates
-      -> 3. Cache in Redis (key: `hierarchy:{tenantId}:{userId}`, TTL: 5 min)
-
-      BYPASS RESOLUTION (new):
-      -> 4. If featureContext IS PROVIDED:
-           SELECT * FROM hierarchy_scope_exceptions
-           WHERE tenant_id = @tenantId
-             AND granted_to_employee_id = @currentUserId
-             AND (applies_to IS NULL OR applies_to = @featureContext)
-             AND (expires_at IS NULL OR expires_at > NOW())
-         If featureContext IS NULL:
-           SELECT * FROM hierarchy_scope_exceptions
-           WHERE tenant_id = @tenantId
-             AND granted_to_employee_id = @currentUserId
-             AND applies_to IS NULL
-             AND (expires_at IS NULL OR expires_at > NOW())
-         NOTE: applies_to = NULL comparison is always false in SQL â€”
-               the two branches MUST remain separate.
-      -> 5. For each exception record, expand scope_id into employee IDs:
-           - scope_type = 'department': SELECT id FROM employees WHERE department_id = scope_id
-           - scope_type = 'people':     { scope_id }
-           - scope_type = 'role':       SELECT employee_id FROM user_roles WHERE role_id = scope_id
-
-      CALLER CONTRACT:
-      -> Services apply WHERE employee_id IN (@subordinateIds) to base queries
-      -> bypassIds are ALWAYS appended after any additional filters
-         (e.g. team creation dept filter applies to subordinateIds only, not bypassIds)
-      -> Flows NOT passing featureContext only receive applies_to IS NULL bypasses (safe default)
-```
-
-## Bypass Grant Management
-
-### Create Bypass Grant
-
-```
-POST /api/v1/employees/{employeeId}/bypass-grants
-  -> Requires roles:manage
-  -> BypassGrantService.CreateAsync(grantorId, targetEmployeeId, dto)
-    -> 1. Validate dto.scopeId is not null/empty â€” return 422 if missing
-    -> 2. Validate dto.scopeId references an existing entity matching dto.scopeType:
-           - scope_type = 'department': SELECT 1 FROM departments WHERE id = dto.scopeId
-           - scope_type = 'people':     SELECT 1 FROM employees WHERE id = dto.scopeId
-           - scope_type = 'role':       SELECT 1 FROM roles WHERE id = dto.scopeId
-           Return 422 if entity not found
-    -> 3. Resolve granter's accessible scope via IHierarchyScope (featureContext = null)
-           For 'people' scope: verify dto.scopeId is within subordinateIds OR broadBypassIds
-           For 'department' scope: verify granter can access that dept (tier check)
-           For 'role' scope: verify granter is Tenant Super Admin or has that role in accessible scope
-           Return 403 if outside accessible scope (ceiling rule)
-    -> 4. If granter has permission_delegation_scopes record:
-           - Verify dto.appliesTo is within module_scope
-           - Block dto.appliesTo = null (All Features) for delegated granters
-    -> 5. Insert hierarchy_scope_exceptions record
-    -> 6. Invalidate bypass cache for targetEmployeeId
-    -> 7. Audit log entry
-
-NOTE: For 'people' scope, the accessible pool uses featureContext = null (broad bypasses only).
-A granter who has calendar-scoped access to an employee cannot re-delegate that access
-as a bypass grant â€” they can only grant from their own null-context or subordinate scope.
-```
-
-### Permission Delegation Scope
-
-```
-Created atomically when roles:manage is granted (Path A or Path B in permission assignment)
-  -> PermissionDelegationService.CreateAsync(grantorId, recipientId, moduleScope[])
-    -> 1. Resolve granter's own module_scope (from permission_delegation_scopes)
-           If no record: granter is Tenant Super Admin, any enabled tenant modules allowed
-    -> 2. Verify moduleScope is strict subset of granter's own module_scope
-    -> 3. Insert permission_delegation_scopes record
-    -> 4. Audit log entry
-```
-
-## Grant Feature Access to Role or Employee
-
-### Flow
-
-```
+```text
 POST /api/v1/feature-access
-  -> FeatureAccessController.Grant(GrantFeatureAccessCommand)
-    -> [RequirePermission("roles:manage")]
-    -> Caller must be Tenant Super Admin OR hold roles:manage with a permission_delegation_scopes record covering the target module (enforced in service layer)
-    -> FeatureAccessService.GrantAsync(command, ct)
-      -> 1. Validate grantee exists (role or employee depending on grantee_type)
-      -> 2. Validate module code is valid
-      -> 3. Validate module is enabled for the tenant through subscription/add-on/trial/approved entitlement
-         -> Return 403 if the module is not in the tenant enabled module catalog
-      -> 4. Validate optional valid_from/expires_at
-         -> expires_at must be null or greater than valid_from/current time
-      -> 5. UPSERT into feature_access_grants
-         -> ON CONFLICT (tenant_id, grantee_type, grantee_id, module) DO UPDATE is_enabled, valid_from, expires_at
-      -> 6. If grantee_type = 'employee':
-         -> Invalidate that user's permission cache
-         -> Force token refresh on next request
-      -> 7. If grantee_type = 'role':
-         -> Invalidate permission cache for ALL users with this role
-      -> 8. Log to audit_logs: action = "feature_access.granted"
-      -> Return Result.Success()
+  -> Requires roles:manage
+  -> FeatureAccessService.GrantAsync(command, ct)
+    -> 1. Validate grantee exists
+    -> 2. Validate module_key exists
+    -> 3. Validate tenant has active module entitlement
+    -> 4. If feature_key is provided:
+          validate feature_key belongs to the module
+          validate current tenant subscription/custom contract includes feature_key
+          validate runtime flag is not hard-disabled for the tenant
+    -> 5. Validate caller may manage permissions for that module/feature
+    -> 6. Upsert feature_access_grants
+    -> 7. Invalidate affected permission snapshots
+    -> 8. Audit log: feature_access.granted or feature_access.revoked
 ```
 
-## Grant/Revoke Individual Permission Override for Employee
+## Permission Override
 
-### Flow
-
-```
+```text
 POST /api/v1/users/{id}/permission-overrides
-  -> PermissionOverrideController.Set(SetPermissionOverrideCommand)
-  -> [RequirePermission("roles:manage")]
-  -> Caller must be Tenant Super Admin OR hold roles:manage with a permission_delegation_scopes record covering the target permission's module (enforced in service layer)
+  -> Requires roles:manage
   -> PermissionOverrideService.SetAsync(userId, command, ct)
-      -> 1. Validate employee exists and belongs to same tenant
-      -> 2. Validate permission_id exists
-      -> 3. Validate permission's module is enabled for this tenant
-         -> Return 403 if the module is disabled or unpurchased
-      -> 4. Validate optional valid_from/expires_at
-         -> Use for temporary permission grants such as "grant reports:create until 2026-05-22"
-         -> expires_at must be null or greater than valid_from/current time
-      -> 5. UPSERT into user_permission_overrides
-         -> ON CONFLICT (tenant_id, user_id, permission_id) DO UPDATE grant_type, reason, valid_from, expires_at
-      -> 6. Invalidate user's permission cache
-      -> 7. Force token refresh on next request
-      -> 8. Log to audit_logs: action = "permission_override.set"
-      -> Return Result.Success()
+    -> 1. Validate employee belongs to tenant
+    -> 2. Validate permission exists
+    -> 3. Validate permission's module is active for the tenant
+    -> 4. If permission has feature_key:
+          validate feature is commercially included and runtime-enabled
+    -> 5. Validate optional valid_from/expires_at
+    -> 6. Upsert user_permission_overrides
+    -> 7. Invalidate user's permission snapshot
+    -> 8. Audit log: permission_override.set
 ```
 
-## Assign Role to Employee
+## Hierarchy Scoping
 
-### Flow
+Employee-data endpoints must apply hierarchy/access-policy scope after permission checks. The frontend never sends employee ID lists.
 
-```
-POST /api/v1/users/{userId}/roles
-  -> RoleController.AssignRole(AssignRoleCommand)
-    -> [RequirePermission("roles:manage")]
-    -> RoleService.AssignRoleAsync(userId, roleId, ct)
-      -> 1. Validate role exists and belongs to same tenant
-      -> 2. Check if user already has this role
-         -> If yes -> Return failure("Role already assigned")
-      -> 3. INSERT into user_roles (user_id, role_id, assigned_at, assigned_by)
-      -> 4. Invalidate user's permission cache
-      -> 5. Force token refresh on next request
-      -> 6. Log to audit_logs: action = "role.assigned"
-      -> Return Result.Success()
+```text
+IHierarchyScope.Resolve(userId, permissionCode, tenantId)
+  -> returns scope predicate based on access_policy:
+     self | direct_reports | reporting_tree | department | department_tree | org_unit_tree | organization
 ```
 
-## Create Custom Role
+## Cache Invalidation
 
-### Flow
+Any change to these records invalidates affected permission/session snapshots:
 
-```
-POST /api/v1/roles
-  -> RoleController.Create(CreateRoleCommand)
-    -> [RequirePermission("roles:manage")]
-    -> RoleService.CreateRoleAsync(command, ct)
-      -> 1. Validate name is unique within tenant
-      -> 2. Validate all permission IDs exist in permissions table
-      -> 3. INSERT into roles (is_system = false)
-      -> 4. INSERT into role_permissions for each permission
-      -> 5. Log to audit_logs
-      -> Return Result.Success(roleDto)
-```
-
-## Auto Role Assignment on Promotion
-
-### Flow
-
-```
-EmployeePromoted domain event fires
-  -> PromotionRoleAssignmentHandler.Handle(EmployeePromoted, ct)
-    -> 1. Load new job_title_id from event payload
-    -> 2. Query: SELECT jl.default_role_id
-               FROM job_titles jt
-               JOIN job_levels jl ON jl.id = jt.job_level_id
-               WHERE jt.id = @newJobTitleId
-    -> 3. If default_role_id IS NULL -> skip (admin assigns manually)
-    -> 4. If default_role_id IS NOT NULL:
-         -> Check if user already has this role in user_roles
-         -> If not: INSERT into user_roles (user_id, role_id, assigned_at, assigned_by = SYSTEM)
-         -> Invalidate user's permission cache
-         -> Force token refresh on next request
-         -> Log to audit_logs: action = "role.auto_assigned", reason = "promotion"
-    -> 5. Invalidate Redis hierarchy cache: hierarchy:{tenantId}:{userId}
-```
-
-NOTE: The old role is NOT automatically removed. If the previous job level's default role
-should be revoked on promotion, Tenant Super Admin must do so explicitly. Auto-assign is additive only.
-
-## Cache Invalidation Rules
-
-Any change to roles, overrides, or feature grants must invalidate affected caches:
-
-| Change | Cache Keys Invalidated |
-|:-------|:----------------------|
+| Change | Cache Invalidated |
+|:-------|:------------------|
 | Role permissions updated | All users with that role |
 | User role assigned/removed | That user |
-| User role expires | That user on next permission snapshot; optional scheduled cache invalidation at expiry |
-| User permission override set | That user |
-| User permission override expires | That user on next permission snapshot; optional scheduled cache invalidation at expiry |
-| Feature access granted/revoked for role | All users with that role |
-| Feature access granted/revoked for employee | That employee |
-| Feature access grant expires | Affected role users or employee on next permission snapshot; optional scheduled cache invalidation at expiry |
-| Employee `reports_to_id` changed | All employees in affected subtree |
+| User permission override set/expired | That user |
+| Feature access grant changed | Affected role users or employee |
+| Tenant module entitlement changed | All tenant users |
+| Tenant selected feature keys changed | All tenant users |
+| Feature flag affecting a tenant changed | Users in affected tenant or feature-flag cache |
+| Employee reporting line changed | Affected hierarchy scopes |
 
-### Error Scenarios
+## Error Scenarios
 
 | Error | Handling |
 |:------|:---------|
-| Permission not in effective permissions | Return 403 Forbidden |
-| Module not in tenant enabled module catalog | Return 403 Forbidden |
-| Tenant Super Admin tries to use disabled/unpurchased module | Return 403 Forbidden |
-| Platform Super Admin token used on tenant-facing customer route | Return 403 Forbidden |
-| Temporary permission grant expired | Treat as absent permission |
-| Role not found | Return 404 |
-| Duplicate role name | Return 409 Conflict |
-| Cannot delete system role | Return 400 |
-| Invalid grantee_type | Return 422 |
-| Permission override for nonexistent permission | Return 422 |
+| Missing permission | 403 Forbidden |
+| Module not active for tenant | 403 Forbidden |
+| Feature not commercially included | 403 Forbidden |
+| Runtime feature flag disabled | 403 Forbidden |
+| Tenant Super Admin tries disabled/unpurchased feature | 403 Forbidden |
+| Platform Super Admin token used on tenant-facing route | 403 Forbidden |
+| Temporary permission grant expired | Treat as absent |
+| Role not found | 404 |
+| Duplicate role name | 409 |
+| Invalid grantee_type | 422 |
 
 ## Related
 
-- [[frontend/cross-cutting/authorization|Overview]]
-- [[frontend/cross-cutting/authentication|Authentication]]
-- [[modules/auth/session-management/overview|Session Management]]
-- [[modules/auth/audit-logging/overview|Audit Logging]]
-- [[backend/messaging/event-catalog|Event Catalog]]
-- [[backend/messaging/error-handling|Error Handling]]
-- [[backend/shared-kernel|Shared Kernel]]
-- [[frontend/architecture/overview|Teams]] â€” team membership for scoping
-- [[frontend/architecture/overview|Departments]] â€” department hierarchy for scoping
-
-
+- [[modules/auth/authorization/overview|Authorization Overview]]
+- [[frontend/cross-cutting/authorization|Frontend Authorization]]
+- [[frontend/cross-cutting/feature-flags|Feature Flags]]
+- [[developer-platform/modules/module-catalog-manager/end-to-end-logic|Module Catalog Feature Registry]]
+- [[developer-platform/modules/feature-flag-manager/end-to-end-logic|Feature Flag Seed List]]

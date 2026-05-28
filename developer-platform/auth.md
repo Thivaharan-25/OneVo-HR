@@ -92,20 +92,23 @@ The inverse also applies: a tenant JWT presented at `/admin/v1/*` is rejected by
 
 ## Platform Permissions
 
-Developer Platform authorization is permission-based. Built-in roles are presets, not the complete security model.
+Developer Platform authorization is permission-based. Built-in roles are seeded presets, not authorization rules. Custom roles are unlimited, and a platform account may have multiple active roles.
 
-| Preset Role | Typical Permissions |
+| Seed Role | Initial Permission Scope |
 |:---|:---|
 | Platform Super Admin | All platform permissions, including platform account management and impersonation |
 | Tenant Operations Manager | Tenant read/create/manage/activate, provisioning, role-template apply; no impersonation unless explicitly granted |
 | Billing Manager | Subscription plans, payment gateways, invoices, commercial read/manage |
 | Security Auditor | Security, audit, compliance, and retention read-only |
-| Module Catalog Manager | Product module catalog and role-template read/manage |
+| Module Catalog Manager | Product module catalog, integration catalog, role-template, and configuration-template read/manage |
 | Operations Engineer | Platform health, services, devices, infrastructure, jobs, agent versions |
+| Read-Only Viewer | Dashboard and broad read-only visibility without mutation permissions |
 
-Effective access is resolved from `dev_platform_account_roles`, `dev_platform_roles`, `dev_platform_role_permissions`, and `dev_platform_permissions`.
+Effective access is the union of permissions resolved from `dev_platform_account_roles`, `dev_platform_roles`, `dev_platform_role_permissions`, and `dev_platform_permissions`.
 
-The platform-admin JWT includes account identity and either effective permission claims or a permission version reference. Authorization checks at the controller or policy level enforce permission boundaries. Frontend route filtering is not the security boundary.
+The platform-admin JWT includes account identity and either effective permission claims or a permission version reference. Authorization checks at the controller or policy level enforce permission boundaries. Frontend route filtering is not the security boundary. Backend and frontend code must check permission codes, never role names.
+
+The canonical access and rendering contract is `developer-platform/access-control-contract.md`.
 
 High-risk permissions include:
 
@@ -117,6 +120,12 @@ High-risk permissions include:
 | `platform.tenants.suspend` | Suspend or unsuspend tenants |
 | `platform.tenants.activate` | Activate provisioning tenants |
 | `platform.agent_versions.force_update` | Push force-update commands to agent rings |
+
+### Recoverable Admin Guard
+
+The backend must reject any account, role, or permission change that would leave zero active recoverable admins. A recoverable admin is an active platform account whose effective permissions include both `platform.accounts.manage` and `platform.roles.manage`.
+
+This guard applies to role permission replacement, account role assignment changes, account deactivation, role deactivation, and session/account changes that would remove the last recoverable admin's ability to fix access. Failed requests return `recoverable_admin_required`.
 
 ---
 

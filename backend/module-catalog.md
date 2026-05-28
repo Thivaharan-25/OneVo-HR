@@ -66,7 +66,7 @@ Phase 2 modules (Payroll, Performance, HR Documents, Governance, Skill & Talent 
 
 ### Module Pricing Brackets
 
-Module catalog pricing is bracketed by company size and must be read from `module_catalog.price_brackets`, not hardcoded. The company-size values are the same values used by the tenant creation dropdown. Plan creation sums the selected modules' matching bracket prices, then stores both the calculated price and any operator override.
+Module catalog pricing is bracketed by employee-count pricing tiers and must be read from `module_catalog.price_brackets`, not hardcoded. Company size is not part of module configuration and is not a separate subscription plan identity. Plan creation stores reusable feature/module bundles and pricing rules; the tenant owner's confirmed employee count selects the applicable tier for first-invoice calculation, and both calculated price and any operator override are stored for audit.
 
 Example: for the `51-200` employee range, Package 1 plus Package 2 displays the summed calculated price for the tenant before any operator-negotiated override.
 

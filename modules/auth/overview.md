@@ -67,9 +67,11 @@ public interface IRoleTemplateService
 
 public interface IPermissionResolver
 {
-    /// Resolves effective permissions from tenant enabled modules, universal auto-grants,
-    /// active roles, valid individual overrides, feature grants, and tenant-owner expansion.
-    /// Commercial entitlement is evaluated before RBAC; tenant Super Admin cannot access disabled modules.
+    /// Resolves effective permissions from active tenant modules, selected commercial feature keys,
+    /// runtime feature flags, universal auto-grants, active roles, valid individual overrides,
+    /// optional role/employee feature visibility grants, and tenant-owner expansion.
+    /// Commercial entitlement is evaluated before RBAC; Tenant Super Admin cannot access disabled modules
+    /// or commercially excluded features.
     Task<List<string>> ResolveAsync(Guid userId, Guid tenantId, CancellationToken ct);
 }
 
@@ -205,7 +207,7 @@ Per-employee permission overrides. Tenant Super Admin can grant or revoke indivi
 
 ### `feature_access_grants`
 
-Module-level access grants. Tenant Super Admin can toggle tenant-enabled feature modules for a role or individual employee. These grants cannot enable a module the tenant has not purchased, trialed, or otherwise received through an approved tenant entitlement.
+Role/employee feature visibility grants inside the tenant's already-commercially-included boundary. These grants cannot enable a module the tenant has not purchased, trialed, or otherwise received through an approved tenant entitlement, and cannot enable a feature absent from the tenant's current subscription/custom contract.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -213,14 +215,15 @@ Module-level access grants. Tenant Super Admin can toggle tenant-enabled feature
 | `tenant_id` | `uuid` | FK â†’ tenants |
 | `grantee_type` | `varchar(10)` | `role` or `employee` |
 | `grantee_id` | `uuid` | FK â†’ roles.id OR users.id |
-| `module` | `varchar(50)` | Module code: `leave`, `payroll`, `performance`, etc. |
+| `module` | `varchar(80)` | Module code: `leave`, `work_management`, `chat_ai`, etc. |
+| `feature_key` | `varchar(120)` | Nullable commercial feature key; null means module-level visibility |
 | `is_enabled` | `boolean` | |
 | `granted_by` | `uuid` | FK â†’ users |
 | `valid_from` | `timestamptz` | nullable; default active immediately |
-| `expires_at` | `timestamptz` | nullable; use for temporary role/employee module grant |
+| `expires_at` | `timestamptz` | nullable; use for temporary role/employee module or feature visibility |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
-| UNIQUE: `(tenant_id, grantee_type, grantee_id, module)` | | |
+| UNIQUE: `(tenant_id, grantee_type, grantee_id, module, feature_key)` | | |
 
 ### `sessions`
 
@@ -323,7 +326,7 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 
 1. **Customer web BFF sessions** â€” HttpOnly session cookies with backend-held tenant auth state/JWT and `perm_ver` for real-time permission staleness checks.
 2. **Password hashing** - BCrypt with work factor 12. Do not use any other algorithm for user passwords.
-3. **Hybrid permission control** â€” commercial entitlement decides which module permissions exist for the tenant; RBAC decides who can use those permissions. Effective permissions = universal auto-grants + active role permissions + valid individual overrides; filtered by subscription/module entitlements and feature grants; scoped by org hierarchy.
+3. **Hybrid permission control** â€” commercial entitlement decides which modules and feature keys exist for the tenant; runtime flags decide which included features are active; RBAC decides who can use them. Effective permissions = universal auto-grants + active role permissions + valid individual overrides; filtered by subscription/module entitlements, selected feature keys, runtime flags, and optional role/employee feature visibility grants; scoped by org hierarchy.
 4. **Permission version counter** â€” Redis key `perm_version:{user_id}` (integer, 24h TTL). Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 â†’ frontend silently refreshes. Fails open if Redis unavailable.
 5. **Access policy scoping** — every employee-data permission has an `access_policy` field on `role_permissions`. The backend's `IAccessPolicyResolver` resolves the policy at query time and filters results using the `employee_hierarchy` closure table. The frontend never sends employee ID lists. Tenant Super Admin uses `organization` policy. Non-admin cross-tree exceptions use hierarchy bypass grants (Path C).
 6. **Never hardcode role names** â€” roles are custom, created by Tenant Super Admin or delegated permission admins. Always check permissions, never role names.
@@ -352,21 +355,21 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 | POST | `/api/v1/roles` | `roles:manage` | Create role |
 | PUT | `/api/v1/roles/{id}` | `roles:manage` | Update role |
 | POST | `/api/v1/roles/{id}/permissions` | `roles:manage` | Set role permissions |
-| GET | `/api/v1/permissions/catalog` | `roles:manage` | List assignable permissions filtered by enabled tenant modules |
+| GET | `/api/v1/permissions/catalog` | `roles:manage` | List assignable permissions filtered by active tenant modules and included/runtime-enabled feature keys |
 | POST | `/api/v1/users/{id}/roles` | `roles:manage` | Assign role to employee |
 | GET | `/api/v1/users/{id}/permissions` | `roles:manage` | Get effective permissions |
 | POST | `/api/v1/users/{id}/permission-overrides` | `roles:manage` | Grant/revoke permission override |
 | DELETE | `/api/v1/users/{id}/permission-overrides/{permId}` | `roles:manage` | Remove override |
-| GET | `/api/v1/feature-access` | `roles:manage` | List feature grants |
-| POST | `/api/v1/feature-access` | `roles:manage` | Grant feature to role/employee |
-| DELETE | `/api/v1/feature-access/{id}` | `roles:manage` | Revoke feature grant |
+| GET | `/api/v1/feature-access` | `roles:manage` | List role/employee feature visibility grants |
+| POST | `/api/v1/feature-access` | `roles:manage` | Grant role/employee visibility inside commercial boundary |
+| DELETE | `/api/v1/feature-access/{id}` | `roles:manage` | Revoke role/employee visibility grant |
 | GET | `/api/v1/audit-logs` | `settings:admin` | Query audit logs |
 | GET | `/api/v1/me/app-context` | `employees:read-own` | Session context: capabilities (permission + access policy), navigation items, modules |
 
 ## Features
 
 - [[frontend/cross-cutting/authentication|Authentication]] â€” BFF web sessions, backend-held auth state, refresh/session rotation
-- [[frontend/cross-cutting/authorization|Authorization]] â€” Hybrid permission control: roles + per-employee overrides + feature grants + hierarchy scoping
+- [[frontend/cross-cutting/authorization|Authorization]] â€” Hybrid permission control: commercial module/feature boundary + runtime flags + roles + per-employee overrides + hierarchy scoping
 - [[modules/auth/session-management/overview|Session Management]] â€” Session tracking, revocation, expiry
 - [[modules/auth/mfa/overview|MFA]] â€” Multi-factor authentication (TOTP primary, email OTP fallback)
 - [[modules/auth/audit-logging/overview|Audit Logging]] â€” Append-only audit trail, partitioned by month

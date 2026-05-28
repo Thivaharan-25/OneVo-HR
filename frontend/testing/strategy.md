@@ -185,14 +185,15 @@ Provide a mock `AuthService` with specific permissions to test gated UI:
 
 ```typescript
 // test/mock-auth.service.ts
-export function provideMockAuth(permissions: string[] = [], modules: string[] = []) {
+export function provideMockAuth(permissions: string[] = [], modules: string[] = [], features: string[] = []) {
   return {
     provide: AuthService,
     useValue: {
       user: signal({ id: 'u1', name: 'Test User', tenantSlug: 'test-co' }),
       isAuthenticated: signal(true),
       hasPermission: (p: string) => computed(() => permissions.includes(p)),
-      hasFeature: (f: string) => computed(() => modules.includes(f)),
+      hasModule: (m: string) => computed(() => modules.includes(m)),
+      hasFeature: (f: string) => computed(() => features.includes(f)),
       hasAnyPermission: (...ps: string[]) => computed(() => ps.some(p => permissions.includes(p))),
       isSuperAdmin: computed(() => false),
     } satisfies Partial<AuthService>,
