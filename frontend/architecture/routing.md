@@ -193,6 +193,8 @@ WorkSync routes only render when the tenant has the module enabled:
 
 ```typescript
 // projects/shared/src/lib/auth/feature.guard.ts
+// `feature` is a commercial feature key that has already passed runtime flag evaluation
+// in the backend session metadata, e.g. `work_management.projects`.
 export const featureGuard = (feature: string): CanActivateFn =>
   () => {
     const auth = inject(AuthService);

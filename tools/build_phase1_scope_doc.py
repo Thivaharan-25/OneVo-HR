@@ -248,7 +248,7 @@ MODULES = [
             "payment_methods", "plan_features", "rate_limit_rules", "refresh_tokens",
             "retention_policies", "scheduled_tasks", "signalr_connections", "sso_providers",
             "subscription_invoices", "subscription_plans", "system_settings", "tenant_branding",
-            "tenant_feature_flags", "tenant_subscriptions", "user_preferences", "webhook_deliveries",
+            "feature_flag_overrides", "tenant_subscriptions", "user_preferences", "webhook_deliveries",
             "webhook_endpoints", "workflow_definitions", "workflow_instances",
             "workflow_step_instances", "workflow_steps", "bridge_api_keys", "wms_role_mappings",
             "wms_tenant_links",
@@ -417,7 +417,7 @@ SIMPLE_WORKFLOWS = [
         "system": [
             "Create user identity record.",
             "Create user_roles records for assigned roles.",
-            "Resolve effective permissions from roles, feature grants, and overrides.",
+            "Resolve effective permissions from commercial entitlements, roles, runtime flags, and overrides.",
             "Create a session and issue tenant JWT.",
             "Refresh permissions when the access token is refreshed.",
             "Log login and security events in audit logs.",
@@ -442,7 +442,7 @@ SIMPLE_WORKFLOWS = [
             "Store role permissions in role_permissions.",
             "Store assigned roles in user_roles.",
             "Store employee-specific grants/revokes in user_permission_overrides.",
-            "Store module-level grants in feature_access_grants.",
+            "Resolve module entitlements and selected feature keys from tenant commercial state.",
             "Calculate effective permissions as role permissions plus grants minus revokes.",
             "Apply hierarchy scope when returning employee or workforce data.",
         ],
@@ -1338,21 +1338,21 @@ def build():
         bullets(doc, m["scope"])
 
     h(doc, "Tenant Access, RBAC, and Hierarchy Scoping", 1)
-    p(doc, "OneVo does not rely on hard-coded tenant roles for access. Roles are configurable templates, and the actual authorization result is the effective permission set after role permissions, individual grants, individual revocations, feature/module grants, and hierarchy filters are applied.")
+    p(doc, "OneVo does not rely on hard-coded tenant roles for access. Roles are configurable templates, and the actual authorization result is the effective permission set after commercial module entitlement, selected feature keys, runtime flags, role permissions, individual grants, individual revocations, and hierarchy filters are applied.")
     number(doc, [
         "A Super Admin creates tenant-specific custom roles.",
         "Permissions are assigned to roles as templates.",
         "Users receive one or more roles.",
         "The system adds any employee-level grant overrides.",
         "The system removes any employee-level revoke overrides.",
-        "The system filters permissions by feature_access_grants for role-level or employee-level feature/module access.",
+        "The system applies feature_access_grants only as role-level or employee-level visibility filtering inside already-included modules/features.",
         "The system applies hierarchy scope to data queries, such as own record only, subordinate records, department/subdepartment records, or all records for Super Admin.",
     ])
     add_table(doc, ["Scope type", "Meaning"], [
         ["Own only", "Employee sees only their own profile, leave, activity, or related records."],
         ["Team/subordinate scope", "Manager sees direct and indirect reports through reporting-line hierarchy."],
         ["Department scope", "Department head sees employees in their department and subdepartments."],
-        ["All tenant scope", "Tenant Super Admin/Org Owner sees all tenant records subject to permission and feature grants."],
+        ["All tenant scope", "Tenant Super Admin/Org Owner sees all tenant records subject to permissions, commercial entitlements, runtime flags, and hierarchy policy."],
         ["Platform scope", "Developer Platform operators are not tenant users; they use platform-admin identity and admin endpoints."],
     ], widths=[2.0, 5.3])
 
@@ -1369,8 +1369,8 @@ def build():
         ["Auth/Permissions", "GET /api/v1/users/{id}/permissions", "roles:manage", "Get effective permissions."],
         ["Auth/Permissions", "POST /api/v1/users/{id}/permission-overrides", "roles:manage", "Grant/revoke individual permission."],
         ["Auth/Permissions", "DELETE /api/v1/users/{id}/permission-overrides/{permId}", "roles:manage", "Remove override."],
-        ["Feature Access", "GET /api/v1/feature-access", "roles:manage", "List feature/module grants."],
-        ["Feature Access", "POST /api/v1/feature-access", "roles:manage", "Grant feature access."],
+        ["Feature Access", "GET /api/v1/feature-access", "roles:manage", "List role/employee feature visibility grants."],
+        ["Feature Access", "POST /api/v1/feature-access", "roles:manage", "Grant role/employee feature visibility inside commercial entitlement."],
         ["Feature Access", "DELETE /api/v1/feature-access/{id}", "roles:manage", "Revoke feature access."],
         ["Agent", "POST /api/v1/agent/register", "Tenant API key", "Register new device and receive device JWT."],
         ["Agent", "POST /api/v1/agent/heartbeat", "Device JWT", "Update heartbeat and health."],

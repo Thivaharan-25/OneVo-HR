@@ -19,7 +19,8 @@ User                 Angular App                   Backend API
  |                       |<-- 200/202 ------------------|
  |                       |   Set-Cookie: onevo_session  |
  |                       |   Body: user, permissions,   |
- |                       |         activeModules        |
+ |                       |         activeModules,       |
+ |                       |         activeFeatures       |
  |<-- navigate() --------|                              |
 ```
 
@@ -49,6 +50,7 @@ export class AuthService {
   private _user = signal<User | null>(null);
   private _permissions = signal<string[]>([]);
   private _activeModules = signal<string[]>([]);
+  private _activeFeatures = signal<string[]>([]);
   private _initialized = signal(false);
 
   user = this._user.asReadonly();
@@ -71,17 +73,19 @@ export class AuthService {
     this._user.set(session.user);
     this._permissions.set(session.permissions);
     this._activeModules.set(session.activeModules);
+    this._activeFeatures.set(session.activeFeatures);
   }
 
   clear() {
     this._user.set(null);
     this._permissions.set([]);
     this._activeModules.set([]);
+    this._activeFeatures.set([]);
   }
 }
 ```
 
-The browser never parses JWT claims. Permissions, module entitlements, and user display data come from backend session endpoints only.
+The browser never parses JWT claims. Permissions, active module entitlements, active feature keys, and user display data come from backend session endpoints only.
 
 ## App Bootstrap (APP_INITIALIZER)
 

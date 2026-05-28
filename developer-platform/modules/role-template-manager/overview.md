@@ -4,7 +4,7 @@
 
 Template Manager is the single operator-facing module for all reusable provisioning and configuration presets. Operators use it to define, version, and apply templates to tenants during provisioning or post-activation. All template types are managed here — organized into tabs.
 
-Customers do not access this module. All interactions are operator-only via the Developer Console at `/platform/templates`.
+Customers do not access this module. All interactions are operator-only via the Developer Console at `/platform/role-templates`.
 
 ## Tab Structure
 
@@ -63,7 +63,7 @@ The template's `module_scope` controls which permissions appear in the editor. W
 
 | Route | Permission |
 |---|---|
-| `/platform/templates` | `platform.role_templates.read` |
+| `/platform/role-templates` | `platform.role_templates.read` |
 | Role template write operations | `platform.role_templates.manage` |
 | Apply role template to tenant | `platform.tenants.manage` |
 | Configuration template write operations | `platform.configuration_templates.manage` |

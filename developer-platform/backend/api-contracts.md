@@ -132,10 +132,10 @@ Full tenant lifecycle: 4-step creation wizard, post-activation management, statu
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/subscription-plans` | List reusable plans with price brackets and module lists | `platform.subscriptions.read` |
-| `POST` | `/admin/v1/subscription-plans` | Create reusable plan from selected Phase 1 modules and company-size brackets | `platform.subscriptions.manage` |
-| `GET` | `/admin/v1/subscription-plans/{id}` | Plan detail with full price bracket breakdown | `platform.subscriptions.read` |
-| `PATCH` | `/admin/v1/subscription-plans/{id}` | Update plan metadata, modules, or pricing | `platform.subscriptions.manage` |
+| `GET` | `/admin/v1/subscription-plans` | List reusable plans with price brackets, module lists, and included feature keys | `platform.subscriptions.read` |
+| `POST` | `/admin/v1/subscription-plans` | Create reusable plan from selected Phase 1 modules, included feature keys, and employee-count pricing tiers | `platform.subscriptions.manage` |
+| `GET` | `/admin/v1/subscription-plans/{id}` | Plan detail with full price bracket and feature inclusion breakdown | `platform.subscriptions.read` |
+| `PATCH` | `/admin/v1/subscription-plans/{id}` | Update plan metadata, modules, included features, or pricing | `platform.subscriptions.manage` |
 | `POST` | `/admin/v1/subscription-plans/{id}/clone` | Clone plan with new name | `platform.subscriptions.manage` |
 | `DELETE` | `/admin/v1/subscription-plans/{id}` | Deactivate plan — blocks new assignments, preserves existing | `platform.subscriptions.manage` |
 | `GET` | `/admin/v1/payment-gateways` | List gateway configs — no secrets returned | `platform.payment_gateways.read` |
@@ -173,7 +173,8 @@ Tenant users access their own billing information. All routes require a valid te
 | `GET` | `/api/v1/billing/invoices` | List invoices for this tenant (paginated, filterable by status/date) | `billing:read` |
 | `GET` | `/api/v1/billing/invoices/{id}` | Invoice detail with line items | `billing:read` |
 | `GET` | `/api/v1/billing/invoices/{id}/pdf` | Download invoice PDF — PayHere: QuestPDF stream; Paddle: redirect to Paddle-hosted URL | `billing:read` |
-| `GET` | `/api/v1/billing/subscription` | Current subscription plan, status, billing dates, next renewal amount | `billing:read` |
+| `GET` | `/api/v1/billing/subscription` | Current subscription plan, allowed plans before confirmation, status, billing dates, next renewal amount | `billing:read` |
+| `POST` | `/api/v1/billing/subscription/confirm` | Tenant owner selects allowed plan, chooses billing cycle, confirms total employee count, and triggers first invoice/payment flow | `billing:manage` |
 | `POST` | `/api/v1/billing/subscription/cancel` | Request subscription cancellation — takes effect at end of current billing period | `billing:manage` |
 | `POST` | `/api/v1/billing/modules/{moduleId}/add` | Add a module pack (validates payment method on file; charges proration) | `billing:manage` |
 
@@ -204,6 +205,8 @@ Tenant users access their own billing information. All routes require a valid te
 | `PATCH` | `/admin/v1/modules/catalog/{moduleKey}` | Update module metadata and limits | `platform.module_catalog.manage` |
 | `GET` | `/admin/v1/modules/catalog/{moduleKey}/permissions` | Permission codes owned by this module | `platform.module_catalog.read` |
 | `PUT` | `/admin/v1/modules/catalog/{moduleKey}/permissions` | Replace module permission ownership | `platform.module_catalog.manage` |
+| `GET` | `/admin/v1/modules/catalog/{moduleKey}/features` | Commercial feature list for this module | `platform.module_catalog.read` |
+| `PUT` | `/admin/v1/modules/catalog/{moduleKey}/features` | Replace commercial feature list for this module | `platform.module_catalog.manage` |
 | `GET` | `/admin/v1/modules/catalog/{moduleKey}/pricing` | Pricing brackets and price history | `platform.module_catalog.read` |
 | `PATCH` | `/admin/v1/modules/catalog/{moduleKey}/pricing` | Update pricing — creates price history entry | `platform.module_catalog.manage` |
 | `GET` | `/admin/v1/modules/catalog/{moduleKey}/tenant-impact` | Tenants and plans affected by a pending change | `platform.module_catalog.read` |
@@ -236,10 +239,13 @@ Tenant users access their own billing information. All routes require a valid te
 | `DELETE` | `/admin/v1/feature-flags/{flagKey}` | Deactivate flag | `platform.feature_flags.manage` |
 | `GET` | `/admin/v1/feature-flags/tenant-overrides` | All overrides across all flags and all tenants | `platform.feature_flags.read` |
 | `GET` | `/admin/v1/tenants/{id}/feature-flags` | Effective flag values for a specific tenant | `platform.feature_flags.read` |
-| `PATCH` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Set per-tenant override | `platform.feature_flags.manage` |
+| `PUT` | `/admin/v1/tenants/{id}/feature-flags` | Replace all tenant overrides with an `overrides` value map | `platform.feature_flags.manage` |
+| `PATCH` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Set per-tenant override with `value` after module entitlement and commercial feature inclusion validation | `platform.feature_flags.manage` |
 | `DELETE` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Remove per-tenant override | `platform.feature_flags.manage` |
 | `GET` | `/admin/v1/tenants/{id}/modules/runtime-status` | All module runtime enable/disable statuses for a tenant | `platform.feature_flags.read` |
 | `PATCH` | `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status` | Toggle module runtime status — does not change billing | `platform.feature_flags.manage` |
+
+Tenant-facing product flags must provide both `module_key` and `feature_key`, with `feature_key` owned by the selected module in `module_features`. Only platform operational flags may omit both fields.
 
 ---
 

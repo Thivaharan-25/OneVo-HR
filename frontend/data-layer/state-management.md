@@ -90,6 +90,7 @@ export class AuthService {
   private _user = signal<User | null>(null);
   private _permissions = signal<string[]>([]);
   private _activeModules = signal<string[]>([]);
+  private _activeFeatures = signal<string[]>([]);
 
   user = this._user.asReadonly();
   isAuthenticated = computed(() => this._user() !== null);
@@ -98,20 +99,26 @@ export class AuthService {
     return computed(() => this._permissions().includes(permission));
   }
 
-  hasFeature(feature: string): Signal<boolean> {
-    return computed(() => this._activeModules().includes(feature));
+  hasModule(moduleKey: string): Signal<boolean> {
+    return computed(() => this._activeModules().includes(moduleKey));
   }
 
-  setSession(user: User, permissions: string[], modules: string[]) {
+  hasFeature(featureKey: string): Signal<boolean> {
+    return computed(() => this._activeFeatures().includes(featureKey));
+  }
+
+  setSession(user: User, permissions: string[], modules: string[], features: string[]) {
     this._user.set(user);
     this._permissions.set(permissions);
     this._activeModules.set(modules);
+    this._activeFeatures.set(features);
   }
 
   clear() {
     this._user.set(null);
     this._permissions.set([]);
     this._activeModules.set([]);
+    this._activeFeatures.set([]);
   }
 }
 ```

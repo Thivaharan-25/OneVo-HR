@@ -1,4 +1,4 @@
-# Feature Flags — End-to-End Logic
+# Feature Flags - End-to-End Logic
 
 **Module:** Shared Platform
 **Feature:** Feature Flags
@@ -7,37 +7,46 @@
 
 ## Check Feature Flag
 
-### Flow
+Feature flag checks never bypass commercial entitlement.
 
-```
+Tenant-facing product feature flags must be linked to a real module feature: `module_key` and `feature_key` are required, and `feature_key` must belong to `module_key`. Platform operational flags that are not sold as tenant features may omit both fields.
+
+```text
 Internal call from any module:
-  -> IFeatureFlagService.IsEnabledAsync(flagKey, ct)
-    -> 1. Check Redis cache first
-    -> 2. If cache miss: query feature_flags WHERE flag_key AND tenant_id
-    -> 3. Evaluate conditions (percentage rollout, user segment)
-    -> 4. Cache result (TTL: 5 min)
+  -> IFeatureFlagService.IsEnabledAsync(flagKey, tenantId, ct)
+    -> 1. Load flag definition by key
+    -> 2. If feature_flags.is_active = false, return false
+    -> 3. If flag has module_key, validate tenant has active module entitlement and runtime_override is not false
+    -> 4. If flag has feature_key, validate tenant subscription/custom contract includes that feature key
+    -> 5. Check per-tenant override
+    -> 6. If no override, evaluate default_value + rollout_percentage
+    -> 7. Cache result briefly by tenant + flag key
     -> Return true/false
 ```
 
 ## Toggle Feature Flag
 
-### Flow
+Tenant-facing APIs do not toggle flags. Developer Platform admin APIs manage global defaults and tenant overrides.
 
-```
-PUT /api/v1/feature-flags/{key}
-  -> FeatureFlagController.Toggle(key, ToggleCommand)
-    -> [RequirePermission("settings:admin")]
-    -> FeatureFlagService.ToggleAsync(key, isEnabled, ct)
-      -> UPDATE feature_flags SET is_enabled = @value
-      -> Invalidate Redis cache for this flag
-      -> Return Result.Success()
+```text
+PATCH /admin/v1/feature-flags/{flagKey}
+  -> requires platform.feature_flags.manage
+  -> update default_value / rollout_percentage / description
+  -> invalidate tenant flag cache
 
+PATCH /admin/v1/tenants/{id}/feature-flags/{flagKey}
+  -> requires platform.feature_flags.manage
+  -> validate tenant has module entitlement and commercial feature inclusion before allowing value = true
+  -> set per-tenant override
+  -> invalidate tenant flag cache
+
+DELETE /admin/v1/tenants/{id}/feature-flags/{flagKey}
+  -> requires platform.feature_flags.manage
+  -> remove per-tenant override
+  -> invalidate tenant flag cache
 ```
 
 ## Related
 
-- [[frontend/cross-cutting/feature-flags|Overview]]
-- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
-- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
-- [[backend/messaging/event-catalog|Event Catalog]]
-- [[backend/messaging/error-handling|Error Handling]]
+- [[developer-platform/modules/feature-flag-manager/end-to-end-logic|Developer Platform Feature Flag Logic]]
+- [[frontend/cross-cutting/feature-flags|Frontend Feature Flags]]

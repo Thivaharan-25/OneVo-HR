@@ -9,13 +9,18 @@ Feature Flag Manager controls two things that affect tenant feature availability
 
 It is the tool for gradual rollouts, beta access grants, emergency disables, and support-driven temporary access changes.
 
+Feature Flag Manager is not the commercial packaging source of truth. If a module has ten features and a paid plan includes only five, that inclusion is defined in Module Catalog / Subscription Manager as plan feature inclusion. Feature flags can only turn an already-included feature on or off at runtime. They must not be used to silently change what the tenant bought or how much the tenant pays.
+
+The authoritative Phase 1 runtime flag seed list is in [[developer-platform/modules/feature-flag-manager/end-to-end-logic|Feature Flag Manager End-to-End Logic]] under "Phase 1 Runtime Flag Seed List". Do not create runtime flags for every normal CRUD feature.
+
 ## Database Tables / Systems Controlled
 
 | Table / System | Role |
 |---|---|
 | `feature_flags` | Read + write — global flag definitions, default values, rollout percentages |
-| `feature_access_grants` | Read + write — per-tenant flag overrides |
+| `feature_flag_overrides` | Read + write - per-tenant flag overrides |
 | `tenant_module_entitlements` | Write `runtime_override` — module enable/disable without changing commercial state |
+| Commercial plan feature inclusion | Read-only validation — confirms the tenant bought the module feature before a flag can grant runtime access |
 | `tenant_integration_credentials` | Write `status = 'disabled'` when connected integration's required module is disabled |
 | Audit log | Write every flag change, override, and module toggle |
 
@@ -31,6 +36,7 @@ It is the tool for gradual rollouts, beta access grants, emergency disables, and
 - Force a specific tenant ON or OFF regardless of global default and rollout percentage
 - Remove override to let the tenant fall back to global evaluation
 - All overrides require a reason and are audit-logged
+- Overrides cannot grant access to a feature that is not included in the tenant's commercial plan or custom contract
 
 ### Module Runtime Enable/Disable
 - Toggle a module ON or OFF for a specific tenant after activation
@@ -43,13 +49,15 @@ It is the tool for gradual rollouts, beta access grants, emergency disables, and
 
 | Route | Permission |
 |---|---|
-| `/platform/feature-management` | `platform.feature_flags.read` |
+| `/platform/feature-flags` | `platform.feature_flags.read` |
 | Write operations | `platform.feature_flags.manage` |
 
 ## Key Rules
 
 - Flag keys are permanent — cannot change after any tenant has a value set
 - Per-tenant override wins unconditionally over global default and rollout %
+- Commercial feature inclusion is checked before runtime flags. A feature is available only when the tenant has the module entitlement, the plan/custom contract includes the feature, and the runtime flag evaluates to enabled.
+- Disabling features by flag does not reduce price. Pricing changes require Subscription Manager or Tenant Console subscription override.
 - Phase 2 flags cannot be enabled for Phase 1-only tenants
 - Module runtime disable does not affect billing; commercial module changes require Subscription Manager
 - Integration disconnect on module disable is reversible — re-enabling restores `connected` status automatically

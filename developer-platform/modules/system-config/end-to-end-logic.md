@@ -1,17 +1,17 @@
-# System Config — End-to-End Logic
+﻿# System Config â€” End-to-End Logic
 
 ## Purpose
 
 System Config manages four categories of encrypted external credential storage plus platform-wide defaults:
 
-1. **AI Provider Configs** — LLM API keys with live model fetch from provider
-2. **Payment Gateway Configs** — Stripe/PayHere credentials with live account verification
-3. **Platform OAuth App Registrations** — ONEVO's developer app credentials for customer-facing integrations (GitHub, Microsoft, Google, Slack)
-4. **Platform Service Keys** — ONEVO's own service keys that the platform uses internally (Resend email, etc.)
+1. **AI Provider Configs** â€” LLM API keys with live model fetch from provider
+2. **Payment Gateway Configs** â€” Stripe/PayHere credentials with live account verification
+3. **Platform OAuth App Registrations** â€” ONEVO's developer app credentials for customer-facing integrations (GitHub, Microsoft, Google, Slack)
+4. **Platform Service Keys** â€” ONEVO's own service keys that the platform uses internally (Resend email, etc.)
 
 Plus: Global Defaults and Per-Tenant Overrides for all system settings.
 
-**Route:** `/platform/settings`
+**Route:** `/settings/system`
 **Permission:** `platform.system_config.read`
 
 ---
@@ -21,9 +21,9 @@ Plus: Global Defaults and Per-Tenant Overrides for all system settings.
 - Global Defaults
 - Per-Tenant Overrides
 - AI Provider Configuration
-- Payment Gateways ← links to Subscription Manager for global catalog; adds per-tenant overrides here
-- Platform OAuth Apps ← ONEVO's OAuth app registrations for customer integrations
-- Platform Service Keys ← Resend and other internal platform services
+- Payment Gateways â† links to Subscription Manager for global catalog; adds per-tenant overrides here
+- Platform OAuth Apps â† ONEVO's OAuth app registrations for customer integrations
+- Platform Service Keys â† Resend and other internal platform services
 - Email / SMTP
 - Storage Configuration
 - Agent Policy Defaults
@@ -34,23 +34,23 @@ Plus: Global Defaults and Per-Tenant Overrides for all system settings.
 
 ### Design
 
-The operator enters an API key, then the system **fetches the available models directly from that provider** and presents them as a dropdown. The operator selects from real models — nothing is hardcoded in ONEVO.
+The operator enters an API key, then the system **fetches the available models directly from that provider** and presents them as a dropdown. The operator selects from real models â€” nothing is hardcoded in ONEVO.
 
 **Why model fetch instead of free text:**
 - Prevents typos in model names that cause silent failures
 - Reflects what the operator's API key actually has access to (some keys are restricted to certain models)
-- Automatically shows new models when the provider adds them — no ONEVO release needed
+- Automatically shows new models when the provider adds them â€” no ONEVO release needed
 
 **Why per-purpose, not per-provider:**
 - Different ONEVO features may use different providers or models
-- Agentic Chat may use OpenAI while AI Insights uses Anthropic — or both use OpenAI with different models
+- Agentic Chat may use OpenAI while AI Insights uses Anthropic â€” or both use OpenAI with different models
 - A tenant can override one purpose without affecting others
 
 ### AI Purpose Registry
 
 | Purpose Key | Label | Used By |
 |---|---|---|
-| `agentic_chat` | "Agentic Chat" | Chat module — tenant user AI conversations |
+| `agentic_chat` | "Agentic Chat" | Chat module â€” tenant user AI conversations |
 | `ai_insights` | "AI Insights Engine" | Exception explanations, analytics summaries |
 | `report_generation` | "AI Report Generation" | AI-generated report content |
 
@@ -61,25 +61,25 @@ IAiProviderResolver.ResolveAsync(tenantId, purpose)
 
 Step 1: tenant_ai_provider_overrides WHERE tenant_id = T AND purpose = P AND is_active = true
 Step 2: ai_provider_configs (global) WHERE purpose = P AND is_active = true
-Step 3: 503 — feature unavailable for this tenant
+Step 3: 503 â€” feature unavailable for this tenant
 ```
 
 ---
 
-### AI Provider Config — Create / Edit Flow
+### AI Provider Config â€” Create / Edit Flow
 
 #### Step 1: Provider Type, Base URL, and API Key
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Config Name | "Configuration Name" | Text input | Yes | e.g. "Primary Chat Provider", "Analytics AI" — operator names it freely |
-| Logo | "Provider Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Upload via `POST /admin/v1/uploads/ai-provider-logo` → returns `logo_url`. Shown in the AI Provider list in System Config. Helps operators distinguish configs at a glance when multiple providers are configured. |
+| Config Name | "Configuration Name" | Text input | Yes | e.g. "Primary Chat Provider", "Analytics AI" â€” operator names it freely |
+| Logo | "Provider Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Upload via `POST /admin/v1/uploads/ai-provider-logo` â†’ returns `logo_url`. Shown in the AI Provider list in System Config. Helps operators distinguish configs at a glance when multiple providers are configured. |
 | Purpose | "Purpose" | Dropdown from purpose registry | Yes | Which ONEVO feature this powers |
-| Provider API Format | "Provider API Format" | Dropdown | Yes | `openai_compatible` or `anthropic` — determines the HTTP request/response shape only, not the provider |
-| API Base URL | "API Base URL" | Text input | **Yes — required** | The full base URL for this provider's API. No default, no fallback. Examples: `https://api.openai.com`, `https://api.anthropic.com`, `https://your-resource.openai.azure.com/openai`, `https://api.mistral.ai`, `http://localhost:11434` |
-| API Key | "API Key" | Password input | Yes | Paste whatever the provider gives you. No format validation — the fetch step will tell you if it's wrong. |
+| Provider API Format | "Provider API Format" | Dropdown | Yes | `openai_compatible` or `anthropic` â€” determines the HTTP request/response shape only, not the provider |
+| API Base URL | "API Base URL" | Text input | **Yes â€” required** | The full base URL for this provider's API. No default, no fallback. Examples: `https://api.openai.com`, `https://api.anthropic.com`, `https://your-resource.openai.azure.com/openai`, `https://api.mistral.ai`, `http://localhost:11434` |
+| API Key | "API Key" | Password input | Yes | Paste whatever the provider gives you. No format validation â€” the fetch step will tell you if it's wrong. |
 
-**After entering base URL and key → click "Fetch Available Models" button.**
+**After entering base URL and key â†’ click "Fetch Available Models" button.**
 
 #### Step 2: Fetch Available Models
 
@@ -93,11 +93,11 @@ Step 3: 503 — feature unavailable for this tenant
 }
 ```
 
-**Backend does — determined entirely by `provider_format` and the operator-supplied `api_base_url`:**
+**Backend does â€” determined entirely by `provider_format` and the operator-supplied `api_base_url`:**
 - `openai_compatible`: `GET {api_base_url}/v1/models` with header `Authorization: Bearer {api_key}`
 - `anthropic`: `GET {api_base_url}/v1/models` with headers `x-api-key: {api_key}` and `anthropic-version: 2023-06-01`
 
-The `api_base_url` is always the operator's input — never defaulted by ONEVO. This means the same `openai_compatible` format works for any provider that follows the OpenAI API spec (OpenAI, Azure OpenAI, Mistral, Groq, local Ollama, or any other compatible endpoint).
+The `api_base_url` is always the operator's input â€” never defaulted by ONEVO. This means the same `openai_compatible` format works for any provider that follows the OpenAI API spec (OpenAI, Azure OpenAI, Mistral, Groq, local Ollama, or any other compatible endpoint).
 
 - Returns the provider's model list
 
@@ -127,13 +127,13 @@ The `api_base_url` is always the operator's input — never defaulted by ONEVO. 
 **UI behaviour:**
 - Success: Model dropdown populates with fetched list. Account info shown as a green confirmation badge.
 - Failure: Error callout shown below the API Key field. Operator must fix the key before proceeding.
-- The API key is NOT saved at this point — it is only used for the fetch. Save happens in Step 3.
+- The API key is NOT saved at this point â€” it is only used for the fetch. Save happens in Step 3.
 
 #### Step 3: Select Model and Remaining Fields
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Model | "Model" | Dropdown (populated from fetch) | Yes | Options come from the fetch result — operator selects, not types |
+| Model | "Model" | Dropdown (populated from fetch) | Yes | Options come from the fetch result â€” operator selects, not types |
 | Request Timeout | "Request Timeout (seconds)" | Number | Yes | Default: 60 |
 | Max Retries | "Max Retries on Failure" | Number | Yes | Default: 2 |
 | Is Active | "Active" | Toggle | Yes | |
@@ -147,14 +147,14 @@ The `api_base_url` is always the operator's input — never defaulted by ONEVO. 
   "provider_format": "openai_compatible",
   "api_base_url": "https://api.example-provider.com",
   "model": "<selected from fetch result>",
-  "api_key": "<encrypted — never returned>",
+  "api_key": "<encrypted â€” never returned>",
   "request_timeout_seconds": 60,
   "max_retries": 2,
   "is_active": true
 }
 ```
 
-**`api_base_url` is always required — no default, no fallback. The operator must enter the provider's URL. `model` is always set from the fetch result dropdown, never typed free-form.**
+**`api_base_url` is always required â€” no default, no fallback. The operator must enter the provider's URL. `model` is always set from the fetch result dropdown, never typed free-form.**
 
 `api_key` is AES-256 encrypted before writing. Never returned by any GET response.
 
@@ -162,21 +162,21 @@ The `api_base_url` is always the operator's input — never defaulted by ONEVO. 
 
 #### Rotate Key (change API key, keep model)
 
-Click "Rotate Key" on existing config row → opens a panel with only the API Key field and a new "Fetch Models" button to re-verify the new key. Model selection only shown if the new key's available models differ from the saved model (e.g., downgraded key no longer has access to the saved model — forces re-selection).
+Click "Rotate Key" on existing config row â†’ opens a panel with only the API Key field and a new "Fetch Models" button to re-verify the new key. Model selection only shown if the new key's available models differ from the saved model (e.g., downgraded key no longer has access to the saved model â€” forces re-selection).
 
 ---
 
 ### Per-Tenant AI Override
 
 Same step-by-step flow as global config. Entry from:
-1. System Config → Per-Tenant Overrides → AI tab → select tenant → Add Override
-2. Tenant Detail → Settings → AI Configuration → Set Override
+1. System Config â†’ Per-Tenant Overrides â†’ AI tab â†’ select tenant â†’ Add Override
+2. Tenant Detail â†’ Settings â†’ AI Configuration â†’ Set Override
 
 **Set:** `PUT /admin/v1/tenants/{id}/ai-provider-override/{purpose}`
 
 Same request body as global. Lookup chain applies immediately on next AI call.
 
-**Remove:** `DELETE /admin/v1/tenants/{id}/ai-provider-override/{purpose}` — falls back to global.
+**Remove:** `DELETE /admin/v1/tenants/{id}/ai-provider-override/{purpose}` â€” falls back to global.
 
 ---
 
@@ -184,7 +184,7 @@ Same request body as global. Lookup chain applies immediately on next AI call.
 
 ### Design
 
-Payment gateways are configured at global level in Subscription Manager → Payment Gateways. System Config adds:
+Payment gateways are configured at global level in Subscription Manager â†’ Payment Gateways. System Config adds:
 - A live **account verification + capabilities fetch** on credential entry (same principle as AI model fetch)
 - **Per-tenant gateway override** for tenants using their own Stripe/PayHere account
 
@@ -201,11 +201,11 @@ A tenant may use their own gateway when:
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Logo | "Gateway Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Recommended: 256×256px. Upload via `POST /admin/v1/uploads/gateway-logo` → returns `logo_url` → submitted with the form. Shown in the gateway selection dropdown during tenant provisioning Step 3, in the Subscription Manager gateway list, and in the Tenant Detail → Subscriptions tab. |
-| Provider | "Payment Provider" | Dropdown: Paddle / PayHere | Yes | Determines which credential fields appear below |
+| Logo | "Gateway Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Recommended: 256Ã—256px. Upload via `POST /admin/v1/uploads/gateway-logo` â†’ returns `logo_url` â†’ submitted with the form. Shown in the gateway selection dropdown during tenant provisioning Step 3, in the Subscription Manager gateway list, and in the Tenant Detail â†’ Subscriptions tab. |
+| Provider | "Payment Provider" | Dropdown: Stripe / Paddle / PayHere | Yes | Determines which credential fields appear below |
 | Display Name | "Configuration Label" | Text input | Yes | e.g. "Paddle Global Production", "PayHere Sri Lanka" |
 | Environment | "Environment" | Radio: Sandbox / Production | Yes | |
-| Country Codes | "Applicable Countries" | Multi-select tag | Yes | ISO codes — used to filter gateway options when creating tenants (only gateways matching the tenant's country are shown) |
+| Country Codes | "Applicable Countries" | Multi-select tag | Yes | ISO codes â€” used to filter gateway options when creating tenants (only gateways matching the tenant's country are shown) |
 
 **Paddle credentials:**
 
@@ -213,7 +213,7 @@ A tenant may use their own gateway when:
 |---|---|---|---|---|
 | API Key | "Paddle API Key" | Password input | Yes | AES-256 encrypted |
 | Seller ID | "Paddle Seller ID" | Text input | Yes | Numeric seller ID from Paddle dashboard |
-| Webhook Secret | "Paddle Webhook Secret" | Password input | Yes | `pdl_ntfset_...` — validates `Paddle-Signature` header (HMAC-SHA256) |
+| Webhook Secret | "Paddle Webhook Secret" | Password input | Yes | `pdl_ntfset_...` â€” validates `Paddle-Signature` header (HMAC-SHA256) |
 
 **PayHere credentials:**
 
@@ -225,7 +225,7 @@ A tenant may use their own gateway when:
 
 #### Step 2: Verify Account
 
-After entering credentials → click "Verify Account" button.
+After entering credentials â†’ click "Verify Account" button.
 
 **API:** `POST /admin/v1/system-config/payment-gateways/verify`
 
@@ -240,7 +240,7 @@ After entering credentials → click "Verify Account" button.
 }
 ```
 
-**Backend does:** Calls the provider's account verification endpoint using the entered credentials. The backend knows which endpoint and request format to use based on the `provider` field — the URL is not entered by the operator, it is part of the provider's integration implementation in the backend. Returns account name, country, default currency, and enabled payment methods.
+**Backend does:** Calls the provider's account verification endpoint using the entered credentials. The backend knows which endpoint and request format to use based on the `provider` field â€” the URL is not entered by the operator, it is part of the provider's integration implementation in the backend. Returns account name, country, default currency, and enabled payment methods.
 
 **Response (success):**
 ```json
@@ -281,7 +281,7 @@ So a tenant in `LK` (Sri Lanka) only sees PayHere gateways; a tenant in `GB` onl
 
 ### What This Section Is
 
-When a tenant wants to connect GitHub, Microsoft Teams, Google Calendar, or Slack, they click "Connect" in the ONEVO app and go through an OAuth flow. That OAuth flow uses **ONEVO's registered OAuth app** with each provider — ONEVO is the app developer, the tenant is the user authorising access.
+When a tenant wants to connect GitHub, Microsoft Teams, Google Calendar, or Slack, they click "Connect" in the ONEVO app and go through an OAuth flow. That OAuth flow uses **ONEVO's registered OAuth app** with each provider â€” ONEVO is the app developer, the tenant is the user authorising access.
 
 This section stores ONEVO's OAuth app credentials (client ID, client secret) for each integration provider. These are **ONEVO's developer credentials**, not the tenant's.
 
@@ -289,7 +289,7 @@ This section stores ONEVO's OAuth app credentials (client ID, client secret) for
 
 ### Platform OAuth App List Screen
 
-**Route:** `/platform/settings/oauth-apps`
+**Route:** `/settings/system/oauth-apps`
 
 | Column | Description |
 |---|---|
@@ -300,15 +300,15 @@ This section stores ONEVO's OAuth app credentials (client ID, client secret) for
 | Last Verified | Timestamp |
 | Actions | Edit, Test, Rotate Secret |
 
-### Configure Platform OAuth App — Fields
+### Configure Platform OAuth App â€” Fields
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Provider Key | "Provider Key (Slug)" | Text input | Yes | Lowercase, hyphens only, unique — operator-set identifier used to link this OAuth app to integration catalog entries. e.g. `github`, `microsoft`, `google`, `slack`. Permanent after integrations use it. |
-| Logo | "Provider Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Recommended: 256×256px. Upload via `POST /admin/v1/uploads/oauth-app-logo` → returns `logo_url`. Shown in the Platform OAuth Apps list, in System Config, and wherever this provider appears in the developer console UI. |
+| Provider Key | "Provider Key (Slug)" | Text input | Yes | Lowercase, hyphens only, unique â€” operator-set identifier used to link this OAuth app to integration catalog entries. e.g. `github`, `microsoft`, `google`, `slack`. Permanent after integrations use it. |
+| Logo | "Provider Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Recommended: 256Ã—256px. Upload via `POST /admin/v1/uploads/oauth-app-logo` â†’ returns `logo_url`. Shown in the Platform OAuth Apps list, in System Config, and wherever this provider appears in the developer console UI. |
 | App Name | "ONEVO App Name at Provider" | Text input | Yes | The name shown to customers on the OAuth consent screen when they authorise ONEVO's app. e.g. "ONEVO Workspace" |
-| Client ID | "OAuth Client ID" | Text input | Yes | Public identifier for ONEVO's registered app — not encrypted, used in OAuth redirect URLs |
-| Client Secret | "OAuth Client Secret" | Password input | Yes | AES-256 encrypted — never returned by API after save |
+| Client ID | "OAuth Client ID" | Text input | Yes | Public identifier for ONEVO's registered app â€” not encrypted, used in OAuth redirect URLs |
+| Client Secret | "OAuth Client Secret" | Password input | Yes | AES-256 encrypted â€” never returned by API after save |
 | Authorization URL | "Authorization URL" | Text input | Yes | Full URL where customers are redirected to log in and authorise. e.g. `https://github.com/login/oauth/authorize` |
 | Token URL | "Token Exchange URL" | Text input | Yes | Full URL ONEVO calls to exchange the OAuth code for tokens. e.g. `https://github.com/login/oauth/access_token` |
 | Default Scopes | "OAuth Scopes" | Tag input (space-separated) | Yes | Scopes requested from the customer's account during OAuth. e.g. `repo read:org` for GitHub, `openid profile email` for Google |
@@ -320,7 +320,7 @@ This section stores ONEVO's OAuth app credentials (client ID, client secret) for
 | Field | Label | Type |
 |---|---|---|
 | App ID | "GitHub App ID" | Text input |
-| Private Key | "GitHub App Private Key (PEM)" | Password textarea — AES-256 encrypted |
+| Private Key | "GitHub App Private Key (PEM)" | Password textarea â€” AES-256 encrypted |
 | Installation URL | "GitHub App Installation URL" | Text input |
 
 **Save:** `PUT /admin/v1/system-config/oauth-apps/{provider}`
@@ -336,12 +336,12 @@ Validates the stored credentials by calling the provider's app verification endp
 ### How Customer OAuth Flow Uses This
 
 When a tenant user clicks "Connect GitHub" in the main ONEVO app:
-1. ONEVO backend reads `platform_oauth_apps.client_id` for GitHub (not encrypted — safe to use in redirect URL)
+1. ONEVO backend reads `platform_oauth_apps.client_id` for GitHub (not encrypted â€” safe to use in redirect URL)
 2. Redirects user to `github.com/login/oauth/authorize?client_id={client_id}&scope={scopes}&state={csrf_token}`
 3. Customer authorises access in their GitHub account
 4. GitHub redirects back to ONEVO callback with `code`
 5. ONEVO exchanges `code` for tokens using `client_secret` (decrypted in-memory for this request only)
-6. Tokens stored in `tenant_integration_credentials` for this tenant — the platform OAuth app credentials are NOT stored per-tenant
+6. Tokens stored in `tenant_integration_credentials` for this tenant â€” the platform OAuth app credentials are NOT stored per-tenant
 
 ---
 
@@ -349,13 +349,13 @@ When a tenant user clicks "Connect GitHub" in the main ONEVO app:
 
 ### What This Section Is
 
-ONEVO uses some third-party services where ONEVO holds the API key and calls the service on behalf of all tenants. These are not provider-specific integrations — they are ONEVO's own infrastructure.
+ONEVO uses some third-party services where ONEVO holds the API key and calls the service on behalf of all tenants. These are not provider-specific integrations â€” they are ONEVO's own infrastructure.
 
-**Route:** `/platform/settings/service-keys`
+**Route:** `/settings/system/service-keys`
 
 | Service Key | Service Name | Used For | Managed Here |
 |---|---|---|---|
-| `resend` | Resend | All system emails — invites, password reset, notifications | Yes |
+| `resend` | Resend | All system emails â€” invites, password reset, notifications | Yes |
 | `cloudflare` | Cloudflare | Tenant domain routing, DNS, CDN | Yes |
 | `azure_blob` | Azure Blob Storage | Document and file storage | Yes |
 | `sentry` | Sentry | Error monitoring | Yes |
@@ -364,21 +364,21 @@ ONEVO uses some third-party services where ONEVO holds the API key and calls the
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Service | Read-only display | — | — | |
+| Service | Read-only display | â€” | â€” | |
 | API Key / Connection String | "API Key" or "Connection String" | Password input | Yes | AES-256 encrypted |
 | Is Active | "Active" | Toggle | Yes | |
 
 **Save:** `PUT /admin/v1/system-config/service-keys/{serviceKey}`
 
-**Test:** `POST /admin/v1/system-config/service-keys/{serviceKey}/test` — sends a ping to the service API; returns healthy/error with raw provider message.
+**Test:** `POST /admin/v1/system-config/service-keys/{serviceKey}/test` â€” sends a ping to the service API; returns healthy/error with raw provider message.
 
 ---
 
-## Integration → Module Catalog Link
+## Integration â†’ Module Catalog Link
 
 ### How Integrations Are Gated by Module Entitlements
 
-Every integration in ONEVO is linked to one or more module keys in the module catalog. If a tenant is not entitled to any of the required modules, the integration is not available to them — it does not appear in their Integrations tab in the main app.
+Every integration in ONEVO is linked to one or more module keys in the module catalog. If a tenant is not entitled to any of the required modules, the integration is not available to them â€” it does not appear in their Integrations tab in the main app.
 
 **This link is managed in Module Catalog Manager**, not here. System Config shows the integration catalog read-only for reference.
 
@@ -386,19 +386,19 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 
 | Integration Key | Integration Name | Type | Required Module Keys | Auth Type |
 |---|---|---|---|---|
-| `github` | GitHub | Customer OAuth | `worksync_github` | OAuth2 — uses `github` platform OAuth app |
-| `microsoft_365` | Microsoft 365 | Customer OAuth | `integrations` | OAuth2 — uses `microsoft` platform OAuth app |
-| `microsoft_teams` | Microsoft Teams | Customer OAuth | `worksync_chat` OR `integrations` | OAuth2 — uses `microsoft` platform OAuth app |
-| `google_calendar` | Google Calendar | Customer OAuth | `calendar` | OAuth2 — uses `google` platform OAuth app |
-| `google_workspace` | Google Workspace | Customer OAuth | `integrations` | OAuth2 — uses `google` platform OAuth app |
-| `slack` | Slack | Customer OAuth | `worksync_chat` OR `integrations` | OAuth2 — uses `slack` platform OAuth app |
-| `outlook_calendar` | Outlook Calendar | Customer OAuth | `calendar` | OAuth2 — uses `microsoft` platform OAuth app |
-| `biometric_terminal` | Biometric Terminal | Platform-managed | `workforce_presence` | Webhook — no customer OAuth |
+| `github` | GitHub | Customer OAuth | `worksync_github` | OAuth2 â€” uses `github` platform OAuth app |
+| `microsoft_365` | Microsoft 365 | Customer OAuth | `integrations` | OAuth2 â€” uses `microsoft` platform OAuth app |
+| `microsoft_teams` | Microsoft Teams | Customer OAuth | `worksync_chat` OR `integrations` | OAuth2 â€” uses `microsoft` platform OAuth app |
+| `google_calendar` | Google Calendar | Customer OAuth | `calendar` | OAuth2 â€” uses `google` platform OAuth app |
+| `google_workspace` | Google Workspace | Customer OAuth | `integrations` | OAuth2 â€” uses `google` platform OAuth app |
+| `slack` | Slack | Customer OAuth | `worksync_chat` OR `integrations` | OAuth2 â€” uses `slack` platform OAuth app |
+| `outlook_calendar` | Outlook Calendar | Customer OAuth | `calendar` | OAuth2 â€” uses `microsoft` platform OAuth app |
+| `biometric_terminal` | Biometric Terminal | Platform-managed | `workforce_presence` | Webhook â€” no customer OAuth |
 | `mdm_intune` | Microsoft Intune / MDM | Platform-managed | `agent_gateway` | Platform credential |
 | `sso_azure_ad` | Azure AD SSO | Customer OAuth | `auth` (always included) | OAuth2 / SAML |
 | `sso_google` | Google SSO | Customer OAuth | `auth` (always included) | OAuth2 |
 
-**Rule:** A tenant gains access to an integration when ALL of its `required_module_keys` are in `active` or `trial` state in `tenant_module_entitlements`. If any required module is `disabled`, `quoted`, or `available`, the integration is hidden.
+**Rule:** A tenant gains access to an integration when ALL of its `required_module_keys` are in `active or purchased/subscription-included state in `tenant_module_entitlements`. If any required module is `disabled`, `quoted`, or `available`, the integration is hidden.
 
 **Rule for Module Catalog Manager operators:** When disabling a module for a tenant, the system must warn: "Disabling [module] will also disconnect [integration list]" and require confirmation.
 
@@ -413,16 +413,16 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | `id` | uuid | PRIMARY KEY |
 | `config_name` | varchar(80) | NOT NULL |
 | `purpose` | varchar(40) | UNIQUE NOT NULL |
-| `provider_type` | varchar(30) | NOT NULL — `'openai_compatible' \| 'anthropic'` |
+| `provider_type` | varchar(30) | NOT NULL â€” `'openai_compatible' \| 'anthropic'` |
 | `api_base_url` | varchar(500) | Nullable |
-| `model` | varchar(120) | NOT NULL — set from fetched model list |
-| `api_key_encrypted` | text | NOT NULL — AES-256 |
+| `model` | varchar(120) | NOT NULL â€” set from fetched model list |
+| `api_key_encrypted` | text | NOT NULL â€” AES-256 |
 | `request_timeout_seconds` | int | NOT NULL |
 | `max_retries` | int | NOT NULL |
 | `is_active` | boolean | NOT NULL |
 | `last_verified_at` | timestamptz | Nullable |
 | `last_verification_status` | varchar(20) | Nullable |
-| `updated_by_id` | uuid | FK → dev_platform_accounts |
+| `updated_by_id` | uuid | FK â†’ dev_platform_accounts |
 | `updated_at` | timestamptz | NOT NULL |
 
 **Index:** `UNIQUE(purpose)`
@@ -432,7 +432,7 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PRIMARY KEY |
-| `tenant_id` | uuid | FK → tenants |
+| `tenant_id` | uuid | FK â†’ tenants |
 | `purpose` | varchar(40) | NOT NULL |
 | `config_name` | varchar(80) | NOT NULL |
 | `provider_type` | varchar(30) | NOT NULL |
@@ -442,7 +442,7 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | `request_timeout_seconds` | int | NOT NULL |
 | `max_retries` | int | NOT NULL |
 | `is_active` | boolean | NOT NULL |
-| `set_by_id` | uuid | FK → dev_platform_accounts |
+| `set_by_id` | uuid | FK â†’ dev_platform_accounts |
 | `set_at` | timestamptz | NOT NULL |
 
 **Unique:** `(tenant_id, purpose)`
@@ -452,17 +452,17 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PRIMARY KEY |
-| `provider` | varchar(30) | UNIQUE NOT NULL — `'github' \| 'microsoft' \| 'google' \| 'slack'` |
-| `app_name` | varchar(100) | NOT NULL — shown in OAuth consent screen |
-| `client_id` | varchar(200) | NOT NULL — not encrypted (used in redirect URLs) |
-| `client_secret_encrypted` | text | NOT NULL — AES-256 |
-| `additional_config_encrypted` | text | Nullable — GitHub App private key, etc. |
+| `provider` | varchar(30) | UNIQUE NOT NULL â€” `'github' \| 'microsoft' \| 'google' \| 'slack'` |
+| `app_name` | varchar(100) | NOT NULL â€” shown in OAuth consent screen |
+| `client_id` | varchar(200) | NOT NULL â€” not encrypted (used in redirect URLs) |
+| `client_secret_encrypted` | text | NOT NULL â€” AES-256 |
+| `additional_config_encrypted` | text | Nullable â€” GitHub App private key, etc. |
 | `authorization_url` | varchar(500) | NOT NULL |
 | `token_url` | varchar(500) | NOT NULL |
 | `default_scopes` | text[] | NOT NULL |
 | `is_active` | boolean | NOT NULL |
 | `last_verified_at` | timestamptz | Nullable |
-| `updated_by_id` | uuid | FK → dev_platform_accounts |
+| `updated_by_id` | uuid | FK â†’ dev_platform_accounts |
 | `updated_at` | timestamptz | NOT NULL |
 
 **Index:** `UNIQUE(provider)`
@@ -472,12 +472,12 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PRIMARY KEY |
-| `service_key` | varchar(50) | UNIQUE NOT NULL — e.g. `'resend'`, `'cloudflare'` |
+| `service_key` | varchar(50) | UNIQUE NOT NULL â€” e.g. `'resend'`, `'cloudflare'` |
 | `display_name` | varchar(80) | NOT NULL |
-| `api_key_encrypted` | text | NOT NULL — AES-256 |
+| `api_key_encrypted` | text | NOT NULL â€” AES-256 |
 | `is_active` | boolean | NOT NULL |
 | `last_verified_at` | timestamptz | Nullable |
-| `updated_by_id` | uuid | FK → dev_platform_accounts |
+| `updated_by_id` | uuid | FK â†’ dev_platform_accounts |
 | `updated_at` | timestamptz | NOT NULL |
 
 ### integration_catalog
@@ -486,10 +486,10 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 |---|---|---|
 | `integration_key` | varchar(50) | PRIMARY KEY |
 | `display_name` | varchar(100) | NOT NULL |
-| `category` | varchar(30) | NOT NULL — `'customer_oauth' \| 'platform_managed'` |
-| `required_module_keys` | text[] | NOT NULL — ALL must be entitled for integration to be available |
-| `auth_type` | varchar(30) | NOT NULL — `'oauth2' \| 'webhook' \| 'platform_credential' \| 'saml'` |
-| `oauth_provider_key` | varchar(30) | Nullable FK → platform_oauth_apps(provider) |
+| `category` | varchar(30) | NOT NULL â€” `'customer_oauth' \| 'platform_managed'` |
+| `required_module_keys` | text[] | NOT NULL â€” ALL must be entitled for integration to be available |
+| `auth_type` | varchar(30) | NOT NULL â€” `'oauth2' \| 'webhook' \| 'platform_credential' \| 'saml'` |
+| `oauth_provider_key` | varchar(30) | Nullable FK â†’ platform_oauth_apps(provider) |
 | `is_active` | boolean | NOT NULL |
 
 ### tenant_integration_credentials
@@ -499,26 +499,26 @@ Stores per-tenant OAuth tokens and connection state for customer-managed integra
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PRIMARY KEY |
-| `tenant_id` | uuid | FK → tenants, NOT NULL |
-| `integration_key` | varchar(50) | FK → integration_catalog, NOT NULL |
-| `access_token_encrypted` | text | Nullable — AES-256; refreshed automatically before expiry |
-| `refresh_token_encrypted` | text | Nullable — AES-256 |
+| `tenant_id` | uuid | FK â†’ tenants, NOT NULL |
+| `integration_key` | varchar(50) | FK â†’ integration_catalog, NOT NULL |
+| `access_token_encrypted` | text | Nullable â€” AES-256; refreshed automatically before expiry |
+| `refresh_token_encrypted` | text | Nullable â€” AES-256 |
 | `token_expires_at` | timestamptz | Nullable |
 | `scopes_granted` | text[] | Scopes the customer actually granted during OAuth |
-| `external_account_id` | varchar(200) | Nullable — GitHub org ID, Microsoft tenant ID, etc. |
-| `external_account_name` | varchar(200) | Nullable — human-readable account name |
-| `status` | varchar(20) | NOT NULL — `'connected' \| 'error' \| 'expired' \| 'disconnected'` |
+| `external_account_id` | varchar(200) | Nullable â€” GitHub org ID, Microsoft tenant ID, etc. |
+| `external_account_name` | varchar(200) | Nullable â€” human-readable account name |
+| `status` | varchar(20) | NOT NULL â€” `'connected' \| 'error' \| 'expired' \| 'disconnected'` |
 | `last_sync_at` | timestamptz | Nullable |
 | `error_message` | text | Nullable |
 | `connected_at` | timestamptz | NOT NULL |
-| `connected_by_user_id` | uuid | FK → users — which tenant user connected it |
+| `connected_by_user_id` | uuid | FK â†’ users â€” which tenant user connected it |
 | `disconnected_at` | timestamptz | Nullable |
 
 **Unique:** `(tenant_id, integration_key)`
 
 ---
 
-## APIs — Full Catalog
+## APIs â€” Full Catalog
 
 | Method | Route | Purpose | Permission |
 |---|---|---|---|
@@ -544,3 +544,6 @@ Stores per-tenant OAuth tokens and connection state for customer-managed integra
 | GET | `/admin/v1/tenants/{id}/settings-override` | Tenant setting overrides | `platform.system_config.read` |
 | PATCH | `/admin/v1/tenants/{id}/settings-override` | Set tenant setting override | `platform.system_config.manage` |
 | DELETE | `/admin/v1/tenants/{id}/settings-override/{key}` | Clear tenant setting override | `platform.system_config.manage` |
+
+
+

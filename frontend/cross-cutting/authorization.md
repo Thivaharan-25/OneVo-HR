@@ -2,7 +2,7 @@
 
 ## Permission Model
 
-Permissions flow from the backend session as **effective permissions** — already resolved from the user's roles + individual overrides + feature grants. The frontend uses them for **UI gating only** — the API enforces authorization server-side. Frontend authorization is a UX concern: don't show things the user can't access.
+Permissions flow from the backend session as **effective permissions** — already resolved from the tenant's active modules, included feature keys, runtime feature flags, user's roles, individual overrides, and hierarchy policies. The frontend uses them for **UI gating only** — the API enforces authorization server-side. Frontend authorization is a UX concern: don't show things the user can't access.
 
 The `AuthService` in `@onevo/shared` exposes signals for all permission checks. Components never decode JWT claims directly.
 
@@ -28,9 +28,9 @@ settings:read             — view tenant settings
 
 ## Gating Levels
 
-### Level 1: Route Guard (Module + Permission)
+### Level 1: Route Guard (Module/Feature + Permission)
 
-Functional guards in `app.routes.ts` — combines module entitlement and permission check:
+Functional guards in `app.routes.ts` combine active module, included/runtime-enabled feature key, and permission checks:
 
 ```typescript
 // Route with permission guard
@@ -44,7 +44,7 @@ Functional guards in `app.routes.ts` — combines module entitlement and permiss
 // Route with feature + permission guard
 {
   path: 'worksync/projects',
-  canActivate: [authGuard, featureGuard('wms:projects'), permissionGuard('projects:read')],
+  canActivate: [authGuard, featureGuard('work_management.projects'), permissionGuard('projects:read')],
   loadComponent: () => import('./features/worksync/projects/project-list.component')
     .then(m => m.ProjectListComponent),
 }
@@ -166,7 +166,8 @@ Usage:
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private _permissions = signal<string[]>([]);
-  private _grantedModules = signal<string[]>([]);
+  private _activeModules = signal<string[]>([]);
+  private _activeFeatures = signal<string[]>([]);
   private _hierarchyScope = signal<'all' | 'subordinates'>('subordinates');
 
   // Permission check — returns a computed signal (reactive)
@@ -182,9 +183,14 @@ export class AuthService {
     return computed(() => codes.every(c => this._permissions().includes(c)));
   }
 
-  // Module / feature check
-  hasFeature(feature: string): Signal<boolean> {
-    return computed(() => this._grantedModules().includes(feature));
+  // Module check
+  hasModule(moduleKey: string): Signal<boolean> {
+    return computed(() => this._activeModules().includes(moduleKey));
+  }
+
+  // Commercially included and runtime-enabled feature check
+  hasFeature(featureKey: string): Signal<boolean> {
+    return computed(() => this._activeFeatures().includes(featureKey));
   }
 
   hierarchyScope = this._hierarchyScope.asReadonly();
@@ -208,7 +214,7 @@ export class EmployeeListComponent {
 
 ## No Hardcoded Role Names
 
-The frontend must NEVER hardcode role names (e.g., "HR Manager", "Team Lead"). Roles are custom — tenants create them. Always check **permissions** and **module grants**, never role names.
+The frontend must NEVER hardcode role names (e.g., "HR Manager", "Team Lead"). Roles are custom — tenants create them. Always check **permissions**, **active modules**, and **active feature keys**, never role names.
 
 ```typescript
 // ❌ Wrong — never check role name
@@ -218,7 +224,8 @@ if (auth.user()?.role === 'HR Manager') { ... }
 if (auth.hasPermission('employees:write')()) { ... }
 
 // ✅ Correct — check module access
-if (auth.hasFeature('leave')()) { ... }
+if (auth.hasModule('leave')()) { ... }
+if (auth.hasFeature('leave.requests')()) { ... }
 ```
 
 ## Related

@@ -1,4 +1,4 @@
-# Company Connections - End-to-End Logic
+﻿# Company Connections - End-to-End Logic
 
 **Module:** Shared Platform  
 **Feature:** Company Connections
@@ -10,7 +10,7 @@
 ```text
 GET /admin/v1/company-connections/eligible?ownerEmail=owner@example.com
   -> Normalize email
-  -> Find active/trial/provisioning tenants with verified owner email
+  -> Find active/provisioning/pending_confirmation/pending_payment tenants with verified owner email
   -> Return eligible tenant pairs and existing connection state
 
 POST /admin/v1/tenants/{tenantId}/company-connections
@@ -131,3 +131,4 @@ GET /api/v1/cross-company/views/{viewKey}
 - [[modules/shared-platform/company-connections/overview|Company Connections]]
 - [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
 - [[Userflow/Employee-Management/employee-transfer|Employee Transfer]]
+

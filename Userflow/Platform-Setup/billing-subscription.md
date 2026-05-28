@@ -1,4 +1,4 @@
-# Billing & Subscription Management
+﻿# Billing & Subscription Management
 
 **Area:** Platform Setup
 **Trigger:** Admin navigates to billing settings (user action)
@@ -9,7 +9,7 @@
 
 ## Billing Model
 
-ONEVO uses **active-user-based billing**. There is no self-service signup or checkout on the ONEVO website. Tenants are acquired via a sales conversation and provisioned by an ONEVO operator. Once active, tenant admins can request or add new packs/add-ons according to their commercial model and contract rules. Subscription tenants can use self-service upgrades only when payment policy allows it; full-license tenants route module purchases or maintenance-included upgrades through ONEVO sales/operator approval.
+ONEVO uses **employee-count-based first billing** followed by snapshot-based recurring billing. There is no self-service signup or public checkout on the ONEVO website. Tenants are acquired through a sales conversation and provisioned by an ONEVO operator. The operator decides the allowed plans, payment gateway or manual collection method, setup charges, and negotiated commercial terms. The tenant owner later chooses a subscription plan from the allowed list, chooses the billing cycle, confirms total employee count, and pays the generated invoice.
 
 
 ### Commercial Models
@@ -18,8 +18,8 @@ ONEVO supports both commercial models:
 
 | Model | Meaning | Access Rule |
 |------|---------|-------------|
-| `subscription` | Tenant pays recurring SaaS fees for selected plans/modules. Billing can be monthly or annual. | Enabled modules come from plan-included modules plus paid add-ons and trial modules, minus disabled modules. |
-| `full_license_maintenance` | Tenant buys an agreed license up front, then pays recurring maintenance/support. | Enabled modules come from owned license modules plus maintenance-included modules, purchased add-ons, and trial modules, minus disabled modules. |
+| `subscription` | Tenant pays recurring SaaS fees for the selected plan. Billing cycle is selected by the tenant owner during onboarding. | Enabled modules come from the selected plan plus paid add-ons, minus disabled modules. |
+| `full_license_maintenance` | Tenant buys an agreed license up front, then pays recurring maintenance/support when applicable. | Enabled modules come from owned license modules plus maintenance-included modules and purchased add-ons, minus disabled modules. |
 
 For full-license tenants, expired maintenance may block support, updates, or new module access according to the contract. It should not automatically disable already-owned core access unless the signed agreement explicitly says so.
 
@@ -29,19 +29,18 @@ Pricing is configurable in Developer Platform and must not be hardcoded. Operato
 
 | Pricing Area | Example |
 |--------------|---------|
-| Plan calculated price | Package 1 + Package 2 for the selected company-size range = calculated package total before override |
+| Plan calculated price | Plan rate table selected by confirmed employee count = calculated recurring total before override |
 | Plan override price | Sales-approved override = 7.00/employee/month |
 | Package price bracket | Package 1 = 3.50/employee/month for `51-200` employees |
 | Per employee/device price | Package-specific employee/device pricing configured by operator |
 | Full license purchase price | Agreed ONEVO package license = 10,000 one-time |
 | Maintenance price | 18% of license value yearly |
 | AI token limit | Package 2 agentic chat includes 500,000 tokens/month |
-| Trial terms | Free for 30 days |
 | Custom enterprise price | Manually entered contract amount |
 
 Module entitlement and pricing decide what the tenant has access to. RBAC decides which users inside the tenant can use those capabilities. These concerns must remain separate.
 
-Reusable plan prices are calculated from selected package/module price brackets and the selected company-size range. The company-size range uses the same values as the operator tenant-creation dropdown. Tenant subscriptions store the calculated price and any override as a snapshot so future catalog price changes do not rewrite old contracts.
+Reusable subscription plans define feature/module bundles and pricing rules. Company-size/employee-count tiers live inside the subscription plan pricing table; they are not module configuration and not separate plan identities. The tenant owner's confirmed total employee count determines the first invoice quantity and selects the applicable pricing tier. Tenant subscriptions store the selected plan, billing cycle, employee-count snapshot, calculated price, and any override so future catalog price changes do not rewrite old contracts.
 
 AI-capable plans must carry a positive monthly token cap. Non-AI plans leave the token cap empty.
 ### Pricing Packs
@@ -58,14 +57,16 @@ Future modules (Governance, Skill & Talent Development, Payroll, Performance, et
 
 | Item | Rule |
 |------|------|
-| Package 1 billing unit | Active users with monitoring enabled. **Users for whom monitoring is fully disabled are excluded from the billable count.** No device-based billing. |
-| Package 2 billing unit | Active WorkSync workspace members at end-of-month snapshot |
+| First invoice billing unit | Tenant-owner-confirmed total employee count |
+| Recurring Package 1 billing unit | Active employees in ONEVO at the billing snapshot. No device-based billing. |
+| Recurring Package 2 billing unit | Active WorkSync workspace members at end-of-month snapshot, if Package 2 uses separate usage-based pricing |
 | AI token billing | Consumed tokens tracked against the agreed monthly limit. Overages are a Phase 2 concern. |
-| Billing cycle | Calendar month (1st to last day) |
-| Invoice generation | ONEVO generates and sends invoice by 3rd of the following month |
+| Billing cycle | Tenant owner selects monthly or annual during subscription confirmation |
+| First invoice generation | After tenant owner confirms selected plan, billing cycle, total employee count, and billing contact |
+| Recurring invoice generation | ONEVO generates and sends invoices from billing snapshots by the 3rd of the following month, unless annual prepaid terms apply |
 | Proration | Packages added mid-cycle are prorated for remaining days. Removals take effect from the next billing cycle. |
 
-**Monitoring-disabled exclusion:** If an employee has all monitoring features disabled (either via the tenant default policy or an employee-specific override), they are excluded from the Package 1 billable seat count at the monthly snapshot. This is evaluated per-employee at snapshot time — it is not a bulk toggle.
+**First invoice rule:** Do not ask the tenant owner to classify users by monitoring, WorkSync, or internal package usage in the invoice email. The first payable invoice uses the tenant-owner-confirmed total employee count. More detailed recurring billing quantities can be calculated later from system data after onboarding/import.
 
 ---
 
@@ -76,8 +77,8 @@ One-time setup charges are fees billed once per tenant for initial ONEVO operato
 ### Key rules
 
 - Setup charges are priced and managed by the ONEVO operator via `/admin/v1/tenants/{tenantId}/billing/one-time-charges`.
-- They are billed **once** — not monthly or annually. They cover one-off operator labour such as job family creation, employee invites, or role and permission configuration.
-- The first invoice a tenant receives **may include both** recurring subscription line items and one-time setup line items together. The customer is NOT required to make two separate payments — both charge types appear as distinct line items on the same invoice and are settled in a single payment.
+- They are billed **once** â€” not monthly or annually. They cover one-off operator labour such as job family creation, employee invites, or role and permission configuration.
+- The first invoice a tenant receives **should include both** the first subscription charge and one-time setup line items together unless the signed contract explicitly requires setup-only prepayment. The customer is not required to make two separate payments by default.
 - Setup charges can be tied to the specific `setup_options` selected during tenant creation.
 
 ### Setup charge lifecycle
@@ -104,16 +105,24 @@ One-time setup charges are fees billed once per tenant for initial ONEVO operato
 
 - Tenant provisioned via [[developer-platform/userflow/provisioning-flow|Provisioning Flow]]
 - User has `billing:manage` permission
+- ONEVO operator selected payment gateway/collection method in Developer Platform. Tenant owner cannot choose Stripe, Paddle, PayHere, or Manual.
 
 ---
 
 ## Flow Steps
-
 ### Step 1: Navigate to Billing
 
-- **UI:** Settings sidebar > Billing & Subscription. Dashboard shows:
+- **UI:** Settings sidebar > Billing & Subscription. Before first invoice, dashboard shows:
+  - Allowed subscription plans
+  - Recommended plan, if set by ONEVO
+  - Total employee count confirmation
+  - Monthly/annual billing cycle choice
+  - Billing contact details
+  - Estimated first invoice amount
+
+After activation/payment, dashboard shows:
   - Active packs and add-ons with their current rates
-  - Active employee count and enrolled device count (billing basis)
+  - Active employee count used by the latest billing snapshot
   - Current billing cycle dates
   - Next invoice date and estimated amount
   - Invoice history (view / download)
@@ -122,43 +131,40 @@ One-time setup charges are fees billed once per tenant for initial ONEVO operato
 - **Backend:** `BillingService.GetCurrentSubscriptionAsync()`
 - **DB:** `tenant_subscriptions`, `subscription_plans`
 
-### Step 2: View Active Billable User Count
+### Step 2: Confirm Plan, Billing Cycle, And Employee Count
 
-- **UI:** Expandable breakdown — billable users by department (users with monitoring enabled). Read-only. Helps the tenant understand how their invoice is calculated.
-- **Note:** Users with monitoring fully disabled are shown separately as "Monitoring disabled — not billed" so the tenant can audit the exclusion.
-- **API:** `GET /api/v1/billing/active-users`
-- **Backend:** `BillingService.GetBillableUserCountAsync()` — filters to active employees with at least one monitoring feature enabled
-- **DB:** `employees` (status filter), `monitoring_feature_toggles` (per-employee override check), `billing_snapshots`
+- **UI:** Tenant owner selects one plan from the operator-allowed list, chooses monthly or annual billing, confirms total employee count, and confirms billing contact details.
+- **Copy rule:** Do not ask for "monitoring employees", "WorkSync employees", or similar internal billing classifications in the invoice email or first-billing confirmation screen.
+- **API:** `POST /api/v1/billing/subscription/confirm`
+- **Backend:** Validates the selected plan is allowed for the tenant, validates the billing cycle is supported, snapshots confirmed employee count, calculates first invoice, and initiates the operator-selected payment flow.
+- **DB:** `tenant_subscriptions`, `subscription_invoices`, `tenant_one_time_charges`
 
-### Step 3: View Invoice History and Download PDFs
+### Step 3: First Invoice And Payment
 
-- **UI:** Table of past invoices — date, billing basis (user/device count), rate, total, status (paid/pending). Each row has a **Download PDF** button.
-- **API:** `GET /api/v1/billing/invoices` — list; `GET /api/v1/billing/invoices/{id}/pdf` — download
-- **Backend:** PayHere tenants: QuestPDF generates the PDF server-side on demand and streams it directly. Paddle tenants: redirect `302` to `paddle_invoice_url` (Paddle-hosted PDF).
+- **UI:** Tenant owner receives one first invoice/payment request showing selected plan, billing cycle, confirmed employee count, subscription amount, one-time setup charges, discounts/overrides, taxes, total, due date, and payment action.
+- **Calculation:** `first_invoice_total = selected_plan_rate_for_confirmed_employee_count * confirmed_employee_count * billing_cycle_multiplier + one_time_setup_charges - discounts_or_overrides + tax`.
+- **Payment:** Uses the gateway or manual collection method selected by the ONEVO operator during tenant creation.
+- **DB:** `subscription_invoices`, `tenant_subscriptions`, `tenant_one_time_charges`
+
+### Step 4: View Invoice History and Download PDFs
+
+- **UI:** Table of past invoices - date, billing basis, rate, total, status (paid/pending). Each row has a **Download PDF** button.
+- **API:** `GET /api/v1/billing/invoices` - list; `GET /api/v1/billing/invoices/{id}/pdf` - download
+- **Backend:** Stripe/PayHere tenants: ONEVO can generate or stream the invoice PDF server-side. Paddle tenants: redirect `302` to the Paddle-hosted invoice URL when Paddle is the merchant of record.
 - **DB:** `subscription_invoices`
 
-### Step 4: Add a New Pack or Add-on (Self-Service Upgrade)
+### Step 5: Add a New Pack or Add-on (Self-Service Upgrade)
 
-Tenant admins can add packs and the Chat AI add-on directly when their commercial model and payment policy allow self-service upgrades. Subscription tenants use the configured payment gateway (`paddle` or `payhere`). Full-license tenants route new purchases through ONEVO sales/operator approval unless the contract explicitly allows gateway-collected add-ons.
+Tenant admins can add packs and the Chat AI add-on directly when their commercial model and payment policy allow self-service upgrades. Subscription tenants use the operator-configured payment gateway (`stripe`, `paddle`, or `payhere`). Full-license tenants route new purchases through ONEVO sales/operator approval unless the contract explicitly allows gateway-collected add-ons.
 
-- **UI:** "Available Add-ons" section shows all packs and add-ons the tenant has not purchased. Each card shows:
-  - Pack / add-on name and modules included
-  - Price per user or per device per month
-  - Estimated monthly cost based on current active user / device count
-  - Proration amount if adding mid-cycle
-  - **"Add [Pack Name]"** button
+- **UI:** "Available Add-ons" section shows all packs and add-ons the tenant has not purchased.
 - **API:** `POST /api/v1/billing/modules/{moduleId}/add`
-- **Backend:**
-  1. Validates a payment method is on file for the configured gateway (`paddle` or `payhere`)
-  2. Charges proration through the selected gateway
-  3. Updates the tenant module entitlement registry through module interfaces
-  4. Publishes `SubscriptionChangedEvent` → feature flag service activates new modules immediately
-  5. Writes audit log entry
-- **DB:** `tenant_feature_flags`, `tenant_subscriptions`
+- **Backend:** Validates the configured gateway/payment method, charges any required proration, updates module entitlements, publishes `SubscriptionChangedEvent`, and writes an audit log entry.
+- **DB:** `tenant_module_entitlements`, `tenant_subscriptions`, `feature_flag_overrides`
 
-**Note:** Pack removal (downgrade) is not self-service — tenant contacts ONEVO. This prevents accidental data access loss.
+**Note:** Pack removal (downgrade) is not self-service â€” tenant contacts ONEVO. This prevents accidental data access loss.
 
-### Step 5: Cancel Subscription
+### Step 6: Cancel Subscription
 
 Tenant admins with `billing:manage` permission can request cancellation of their subscription.
 
@@ -172,23 +178,23 @@ Tenant admins with `billing:manage` permission can request cancellation of their
 - **Backend:**
   1. Sets `tenant_subscriptions.cancellation_requested_at = now()`, `cancel_at_period_end = true`
   2. For Paddle tenants: calls Paddle API to cancel subscription at period end
-  3. For PayHere tenants: no gateway call needed — `DunningJob` will not generate next invoice
+  3. For PayHere tenants: no gateway call needed â€” `DunningJob` will not generate next invoice
   4. Creates `billing_audit_logs` entry: `action = 'subscription.cancel_requested'`
   5. Platform admin notified via Info alert: `billing.cancellation_requested`
   6. Tenant retains full access until `billing_period_end`
 - **DB:** `tenant_subscriptions`, `billing_audit_logs`, `platform_alerts`
 
 **Rules:**
-- Cancellation takes effect at end of current billing period — never immediate
+- Cancellation takes effect at end of current billing period â€” never immediate
 - Once requested, cancellation can only be reversed by a platform admin (not tenant self-service)
 - Tenant status transitions to `cancelled` after `billing_period_end` passes (handled by background job)
 
-### Step 6: Upgrade Nudge (In-App)
+### Step 7: Upgrade Nudge (In-App)
 
 Locked features across the app surface an upgrade prompt to guide tenant admins to the billing section.
 
-- **UI:** Lock icon on any feature from an unpurchased pack. Tooltip: "Available in [Pack Name] — from $X/user/month. **Add it in Billing.**" Clicking the lock navigates to the billing section with that pack pre-highlighted in the Available Add-ons section.
-- No API call from the lock icon itself — it is a frontend navigation cue only.
+- **UI:** Lock icon on any feature from an unpurchased pack. Tooltip: "Available in [Pack Name] â€” from $X/user/month. **Add it in Billing.**" Clicking the lock navigates to the billing section with that pack pre-highlighted in the Available Add-ons section.
+- No API call from the lock icon itself â€” it is a frontend navigation cue only.
 
 ---
 
@@ -199,8 +205,8 @@ Locked features across the app surface an upgrade prompt to guide tenant admins 
 An employee counts as a **billable Package 1 seat** at the monthly snapshot when ALL of the following are true:
 
 1. `employees.status = 'active'`
-2. `users.status ≠ 'deactivated'` (associated user account exists and is not deactivated)
-3. Monitoring is **not** fully disabled for this employee — at least one monitoring feature toggle is enabled (from tenant default or employee-specific override)
+2. `users.status â‰  'deactivated'` (associated user account exists and is not deactivated)
+3. Monitoring is **not** fully disabled for this employee â€” at least one monitoring feature toggle is enabled (from tenant default or employee-specific override)
 
 **Excluded from billing:**
 - Employees with monitoring fully disabled
@@ -223,18 +229,18 @@ An employee/user counts as a **billable WorkSync seat** when they are an active 
 |:---|:---|
 | Operator adds a module | Effective immediately; module entitlement activated |
 | Proration | Prorated charge for remaining days in current cycle included on next invoice |
-| Gateway subscription update | Paddle/PayHere subscription updated via gateway API |
+| Gateway subscription update | Stripe/Paddle/PayHere subscription updated via gateway API |
 | Manual collection | Operator records new commercial terms; next manual invoice reflects updated amount |
 
 ### Downgrade / Removing Modules
 
 | Scenario | Rule |
 |:---|:---|
-| Operator removes a module | Effective at end of current billing period — never immediate |
+| Operator removes a module | Effective at end of current billing period â€” never immediate |
 | Data preservation | Configuration and data preserved until period end |
 | No proration credit | No credit issued for removed modules mid-cycle |
 | Downgrade restrictions | Cannot remove modules that other active modules depend on (e.g. cannot remove Core HR while Leave is active) |
-| Self-service | Pack removal is NOT self-service — tenant contacts ONEVO |
+| Self-service | Pack removal is NOT self-service â€” tenant contacts ONEVO |
 
 ### Cancellation
 
@@ -242,7 +248,7 @@ An employee/user counts as a **billable WorkSync seat** when they are an active 
 |:---|:---|
 | Tenant requests cancellation | `cancel_at_period_end = true`; full access until `billing_period_end` |
 | Timing | Always at end of current billing period |
-| Reversal | Platform admin only — not tenant self-service |
+| Reversal | Platform admin only â€” not tenant self-service |
 | Data retention | All tenant data retained for **90 days** after `billing_period_end` |
 | After 90 days | Permanent deletion job runs; data cannot be recovered |
 | Status | `tenants.status = 'cancelled'`; all module entitlements set to `disabled` |
@@ -290,20 +296,21 @@ An employee/user counts as a **billable WorkSync seat** when they are an active 
 
 ## Events Triggered
 
-- `BillingSnapshotTakenEvent` — end-of-month background job, triggers invoice generation
-- `SubscriptionChangedEvent` → feature flag service updates active modules for the tenant
-- `AuditLogEntry` (action: `billing.module_added`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `BillingSnapshotTakenEvent` â€” end-of-month background job, triggers invoice generation
+- `SubscriptionChangedEvent` â†’ feature flag service updates active modules for the tenant
+- `AuditLogEntry` (action: `billing.module_added`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ---
 
 ## Related Flows
 
-- [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] — initial pack assignment by ONEVO operator
-- [[developer-platform/userflow/tenant-management|Tenant Management]] — operator changes plan or removes packs via Developer Console
-- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — billing contact email
+- [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] â€” initial pack assignment by ONEVO operator
+- [[developer-platform/userflow/tenant-management|Tenant Management]] â€” operator changes plan or removes packs via Developer Console
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] â€” billing contact email
 
 ## Module References
 
 - [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
-- [[backend/module-catalog|Module Catalog]] — full pack and add-on definitions
-- [[modules/notifications/overview|Notifications]] — invoice and billing event emails
+- [[backend/module-catalog|Module Catalog]] â€” full pack and add-on definitions
+- [[modules/notifications/overview|Notifications]] â€” invoice and billing event emails
+

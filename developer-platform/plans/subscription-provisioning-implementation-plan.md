@@ -1,6 +1,6 @@
-# Developer Platform Subscription Provisioning — Implementation Plan (v2)
+﻿# Developer Platform Subscription Provisioning â€” Implementation Plan (v2)
 
-> **Revision: 2026-05-11 — full rewrite.** Resolves all architectural flaws found in v1 review.
+> **Revision: 2026-05-11 â€” full rewrite.** Resolves all architectural flaws found in v1 review.
 > **For agentic workers:** Phase 0 is a hard gate. Do not begin Phase 1 until every Phase 0 task is resolved or explicitly accepted as deferred technical debt with a written note.
 
 ---
@@ -19,7 +19,7 @@ The provisioning backend has exactly two core write steps to create a tenant:
 | Step | Endpoint                                    | What it holds                                                                                                                 |
 | ---- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 1    | `POST /admin/v1/tenants`                    | Account details, setup configuration selections (one-time charges), optional inline owner invite                              |
-| 2    | `PATCH /admin/v1/tenants/{id}/subscription` | Plan selection, commercial model, billing terms, pricing, payment config — auto-syncs module entitlements in same transaction |
+| 2    | `PATCH /admin/v1/tenants/{id}/subscription` | Plan selection, commercial model, billing terms, pricing, payment config â€” auto-syncs module entitlements in same transaction |
 
 
 Additional provisioning endpoints (modules override, roles, settings, activation) follow after Step 2. The 7-step wizard in `provisioning-flow.md` is a UX concern. The backend enforces only these two required write steps before activation is possible.
@@ -33,17 +33,17 @@ Additional provisioning endpoints (modules override, roles, settings, activation
 These were listed as open in v1. All are now decided:
 
 1. **Plan selection placement:** `plan_id` is required in `PATCH .../subscription`, not in `POST /admin/v1/tenants`. Tenant creation produces a bare `provisioning` draft.
-2. **Module entitlement sync rule:** `PATCH .../subscription` upserts `TenantModuleEntitlement` records from the plan's `default_module_keys` in the same database transaction. `PUT .../modules` allows post-sync manual per-module override. The entitlement table is always the runtime source of truth. The subscription snapshot's `snapshot_module_keys` is a historical audit field only — it is never read for access checks.
+2. **Module entitlement sync rule:** `PATCH .../subscription` upserts `TenantModuleEntitlement` records from the plan's `default_module_keys` in the same database transaction. `PUT .../modules` allows post-sync manual per-module override. The entitlement table is always the runtime source of truth. The subscription snapshot's `snapshot_module_keys` is a historical audit field only â€” it is never read for access checks.
 3. **Full-license payment evidence:** Payment evidence fields (`payment_method`, `payment_reference`) are stored as nullable and are only required to be filled before activation when `license_payment_status = paid`. An operator may create a tenant, save commercial terms with `payment_status = pending`, and record evidence later via another `PATCH .../subscription` call before or after activation. Evidence fields are only relevant when `collection_mode = manual`; the frontend should conditionally show them, but the backend stores them as nullable regardless.
 4. **Payment statuses and modes:**
-  - `collection_mode: manual | gateway` — applies separately to subscription recurring, license one-time, and maintenance recurring
-  - `payment_status: pending | paid | waived | failed` — applies separately to each payment type
+  - `collection_mode: manual | gateway` â€” applies separately to subscription recurring, license one-time, and maintenance recurring
+  - `payment_status: pending | paid | waived | failed` â€” applies separately to each payment type
   - `manual` mode enables `payment_method` (e.g., `manual_bank_transfer`, `manual_cheque`) and `payment_reference` fields
   - `gateway` mode requires a `gateway_id` FK to a configured payment gateway record
 5. **Invite-admin idempotency:** `POST /admin/v1/tenants/{id}/invite-admin` checks for an existing active non-expired invite. If one exists, returns its metadata without re-sending. Caller must pass `"resend": true` to replace and resend. Endpoint is blocked after activation unless it becomes a general tenant-user invitation path.
-6. **Activation status:** `tenant.status` transitions `provisioning → active`. Trial state is carried in `tenant_subscription.trial_ends_at` (set to `activation_date + trial_days` if `trial_days > 0`, else null). `tenant_subscription.status` carries `active | trial | grace_period | suspended | cancelled` separately from tenant status.
-7. **Module permissions (configurable catalog-driven):** `ModuleCatalogItem` declares `default_permission_codes: string[]`. When a module entitlement becomes access-granting, the tenant's permission catalog is built from those codes. At provisioning time, the Owner role receives all permission codes from all access-granting modules. This replaces all hardcoded permission-to-module mappings in `DefaultRoleSeeder` — the seeder reads from catalog data, not from code constants.
-8. **Payment gateways:** Phase 1 supports `paddle` (UK/EU) and `payhere` (Sri Lanka). Gateway is selectable per tenant subscription. Config stored as an encrypted JSON blob per provider. Admin API never returns secrets.
+6. **Activation status:** `tenant.status` transitions `provisioning -> pending_confirmation -> pending_payment -> active`. No trial is created during tenant creation. `tenant_subscription.status` carries `pending_confirmation | pending_payment | active | grace_period | suspended | cancelled` separately from tenant status.
+7. **Module permissions (catalog-owned, seeded-code driven):** permission codes are seeded/version-controlled by the backend permission catalog. Module Catalog assigns those existing codes to modules through `module_permission_ownership`, with `is_default_permission` marking codes for future tenant Owner role materialization. When a module entitlement becomes access-granting, the tenant permission catalog is built from ownership rows for active modules.
+8. **Payment gateways:** Phase 1 supports `stripe`, `paddle`, and `payhere`. Gateway is selected by the ONEVO operator per tenant subscription/commercial setup. Tenant owners do not choose the gateway. Config is stored as an encrypted JSON blob per provider. Admin API never returns secrets.
 
 ---
 
@@ -54,32 +54,30 @@ These were listed as open in v1. All are now decided:
 
 | Field                                      | Notes                                                                             |
 | ------------------------------------------ | --------------------------------------------------------------------------------- |
-| `plan_id`                                  | FK → `subscription_plans`                                                         |
+| `plan_id`                                  | FK â†’ `subscription_plans`                                                         |
 | `commercial_model`                         | `subscription | full_license_maintenance`                                         |
-| `billing_cycle`                            | `monthly | annual` — applies to subscription recurrence or maintenance recurrence |
-| `calculated_price_monthly`                 | Sum from module catalog brackets at selected company-size range                   |
+| `billing_cycle`                            | `monthly | annual` â€” applies to subscription recurrence or maintenance recurrence |
+| `calculated_price_monthly`                 | Sum from subscription plan employee-count pricing tier selected by confirmed employee count                   |
 | `calculated_price_annual`                  | Calculated annual equivalent                                                      |
 | `override_price_monthly`                   | Operator override; preserves calculated for audit                                 |
 | `override_price_annual`                    | Operator override                                                                 |
 | `ai_token_limit_per_month`                 | Positive for AI-enabled plans; null otherwise                                     |
-| `snapshot_module_keys`                     | JSON array — historical audit only, never used for access checks                  |
+| `snapshot_module_keys`                     | JSON array â€” historical audit only, never used for access checks                  |
 | `contract_start_date`, `contract_end_date` | Contract window                                                                   |
-| `trial_days`                               | From plan at time of snapshot                                                     |
-| `trial_ends_at`                            | Set on activation: `activation_date + trial_days`                                 |
 | `unpaid_grace_days`                        | From plan at time of snapshot                                                     |
 | `subscription_collection_mode`             | `manual | gateway`                                                                |
-| `subscription_gateway_id`                  | FK → `payment_gateway_configs` when gateway mode                                  |
+| `subscription_gateway_id`                  | FK â†’ `payment_gateway_configs` when gateway mode                                  |
 | `subscription_payment_status`              | `pending | paid | waived | failed`                                                |
 | `license_amount`                           | Full-license only                                                                 |
 | `license_currency`                         | Full-license only                                                                 |
-| `license_collection_mode`                  | `manual | gateway` — full-license only                                            |
-| `license_gateway_id`                       | FK → `payment_gateway_configs` when gateway — full-license only                   |
-| `license_payment_status`                   | `pending | paid | waived | failed` — full-license only                            |
-| `license_payment_method`                   | e.g. `manual_bank_transfer` — only when `license_collection_mode = manual`        |
-| `license_payment_reference`                | Bank ref, cheque number, etc. — only when manual                                  |
+| `license_collection_mode`                  | `manual | gateway` â€” full-license only                                            |
+| `license_gateway_id`                       | FK â†’ `payment_gateway_configs` when gateway â€” full-license only                   |
+| `license_payment_status`                   | `pending | paid | waived | failed` â€” full-license only                            |
+| `license_payment_method`                   | e.g. `manual_bank_transfer` â€” only when `license_collection_mode = manual`        |
+| `license_payment_reference`                | Bank ref, cheque number, etc. â€” only when manual                                  |
 | `license_payment_evidence_url`             | Optional even when manual                                                         |
 | `license_paid_date`                        | Date of confirmed payment                                                         |
-| `maintenance_collection_mode`              | `manual | gateway | waived` — full-license only                                   |
+| `maintenance_collection_mode`              | `manual | gateway | waived` â€” full-license only                                   |
 | `maintenance_gateway_id`                   | FK when gateway                                                                   |
 | `maintenance_payment_status`               | `pending | paid | waived | failed`                                                |
 | `maintenance_renewal_date`                 |                                                                                   |
@@ -94,14 +92,13 @@ These were listed as open in v1. All are now decided:
 | Field                | Notes                                                                                                     |
 | -------------------- | --------------------------------------------------------------------------------------------------------- |
 | `module_key`         |                                                                                                           |
-| `state`              | `available | quoted | trial | purchased | subscription_included | maintenance_included | disabled`        |
+| `state`              | `available | quoted | purchased | subscription_included | maintenance_included | disabled`        |
 | `source`             | `plan_sync` (auto-upserted from subscription patch) or `manual_override` (operator via PUT modules)       |
 | `started_at`         | When entitlement began                                                                                    |
 | `expires_at`         | End date; null = no expiry                                                                                |
-| `trial_expires_at`   | For trial state only                                                                                      |
 | `price_override`     | Tenant-specific price for this module                                                                     |
 | `currency`           |                                                                                                           |
-| `is_access_granting` | Computed: state ∈ {`trial`, `purchased`, `subscription_included`, `maintenance_included`} AND not expired |
+| `is_access_granting` | Computed: state in {`purchased`, `subscription_included`, `maintenance_included`} AND not expired |
 
 
 ### PaymentGateway
@@ -109,7 +106,7 @@ These were listed as open in v1. All are now decided:
 
 | Field              | Notes                                                |
 | ------------------ | ---------------------------------------------------- |
-| `provider`         | `paddle | payhere`                                   |
+| `provider`         | `stripe`, `paddle`, or `payhere`                          |
 | `name`             | Display name e.g. `Paddle UK`, `PayHere Sri Lanka`   |
 | `country_codes`    | JSON array e.g. `["GB"]`, `["LK"]`                   |
 | `environment`      | `sandbox | production`                               |
@@ -121,15 +118,15 @@ Paddle config blob keys: `api_key`, `client_token`, `seller_id`, `webhook_secret
 PayHere config blob keys: `merchant_id`, `merchant_secret`, `webhook_secret`.
 Admin API never returns any secret fields.
 
-### ModuleCatalogItem additions
+### ModulePermissionOwnership
 
+| Field | Notes |
+|---|---|
+| `module_key` | FK to `module_catalog` |
+| `permission_code` | FK to the seeded tenant-facing permission catalog |
+| `is_default_permission` | Included in the tenant Owner role during future tenant activation |
 
-| Field                      | Notes                                                         |
-| -------------------------- | ------------------------------------------------------------- |
-| `default_permission_codes` | JSON array of permission code strings declared by this module |
-
-
-These codes populate the tenant permission catalog when a module entitlement is access-granting. The `DefaultRoleSeeder` reads these from catalog data — no hardcoded permission lists in application code.
+These rows populate the tenant permission catalog when a module entitlement is access-granting. The `DefaultRoleSeeder` reads default permissions from `module_permission_ownership` for active modules. Permission codes themselves remain seeded/version-controlled and are not created by Module Catalog.
 
 ---
 
@@ -142,7 +139,7 @@ These codes populate the tenant permission catalog when a module entitlement is 
 - Changing module catalog base pricing does not rewrite existing tenant subscription snapshots.
 - Changing plan catalog data does not silently update tenant snapshots.
 - Payment secrets are never returned from any admin API response.
-- `DefaultRoleSeeder` reads permission codes from `ModuleCatalogItem.default_permission_codes` — zero hardcoded permission constants.
+- `DefaultRoleSeeder` reads default permission ownership rows from `module_permission_ownership` for active modules.
 - RBAC is downstream of entitlements: module entitlements decide what permissions can exist; roles decide who gets them.
 
 ---
@@ -157,35 +154,35 @@ These codes populate the tenant permission catalog when a module entitlement is 
 
 ```
 ONEVO.Application/
-└── Features/
-    ├── Tenancy/
-    │   ├── Commands/
-    │   ├── Queries/
-    │   ├── DTOs/
-    │   │   ├── Requests/
-    │   │   └── Responses/
-    │   ├── Provisioning/
-    │   └── Repositories/
-    ├── SharedPlatform/
-    │   ├── SubscriptionPlans/
-    │   │   ├── Commands/
-    │   │   ├── Queries/
-    │   │   ├── DTOs/
-    │   │   └── Repositories/
-    │   ├── ModuleCatalog/
-    │   │   ├── Commands/
-    │   │   ├── Queries/
-    │   │   ├── DTOs/
-    │   │   └── Repositories/
-    │   └── Billing/
-    │       ├── Commands/
-    │       ├── Queries/
-    │       └── DTOs/
-    └── Auth/
-        ├── Commands/
-        ├── Queries/
-        ├── DTOs/
-        └── Repositories/
+â””â”€â”€ Features/
+    â”œâ”€â”€ Tenancy/
+    â”‚   â”œâ”€â”€ Commands/
+    â”‚   â”œâ”€â”€ Queries/
+    â”‚   â”œâ”€â”€ DTOs/
+    â”‚   â”‚   â”œâ”€â”€ Requests/
+    â”‚   â”‚   â””â”€â”€ Responses/
+    â”‚   â”œâ”€â”€ Provisioning/
+    â”‚   â””â”€â”€ Repositories/
+    â”œâ”€â”€ SharedPlatform/
+    â”‚   â”œâ”€â”€ SubscriptionPlans/
+    â”‚   â”‚   â”œâ”€â”€ Commands/
+    â”‚   â”‚   â”œâ”€â”€ Queries/
+    â”‚   â”‚   â”œâ”€â”€ DTOs/
+    â”‚   â”‚   â””â”€â”€ Repositories/
+    â”‚   â”œâ”€â”€ ModuleCatalog/
+    â”‚   â”‚   â”œâ”€â”€ Commands/
+    â”‚   â”‚   â”œâ”€â”€ Queries/
+    â”‚   â”‚   â”œâ”€â”€ DTOs/
+    â”‚   â”‚   â””â”€â”€ Repositories/
+    â”‚   â””â”€â”€ Billing/
+    â”‚       â”œâ”€â”€ Commands/
+    â”‚       â”œâ”€â”€ Queries/
+    â”‚       â””â”€â”€ DTOs/
+    â””â”€â”€ Auth/
+        â”œâ”€â”€ Commands/
+        â”œâ”€â”€ Queries/
+        â”œâ”€â”€ DTOs/
+        â””â”€â”€ Repositories/
 ```
 
 **Files to inspect first:**
@@ -196,7 +193,7 @@ ONEVO.Application/
 - `src/ONEVO.Application/Features/Auth/Commands/RefreshToken/*`
 - Rename all `ONEVO.Application.Features.DevPlatform.*` namespaces in Tenancy files to `ONEVO.Application.Features.Tenancy.*`
 - Move any Tenancy DTOs currently in `DevPlatform.DTOs` to `Features.Tenancy.DTOs`
-- Fix `Commands/RefreshToken` namespace mismatch (`Commands.RefreshTokens` → `Commands.RefreshToken`)
+- Fix `Commands/RefreshToken` namespace mismatch (`Commands.RefreshTokens` â†’ `Commands.RefreshToken`)
 - Update all controller, handler, validator, and test `using` statements
 - Add or update an architecture test asserting `ONEVO.Application.Features.<Feature>` namespaces match physical folder paths
 - Build after namespace cleanup before proceeding
@@ -221,7 +218,7 @@ ONEVO.Application/
 **Known example:**
 
 - `src/ONEVO.Application/Features/Auth/Repositories/AuthRepositoryInterfaces.cs`
-- One repository interface per file — do not add to catch-all files
+- One repository interface per file â€” do not add to catch-all files
 - New interfaces to create individually: `ISubscriptionPlanRepository.cs`, `IModuleCatalogRepository.cs`, `ITenantSubscriptionRepository.cs`, `ITenantModuleEntitlementRepository.cs`, `IPaymentGatewayRepository.cs`
 - Keep interfaces in the feature that owns the aggregate
 - Repository names must match aggregate ownership; no duplicate concepts across `DevPlatform`, `Tenancy`, and `SharedPlatform`
@@ -265,7 +262,7 @@ ONEVO.Application/
 - Remove `SubscriptionInfo` record from `CreateTenantCommand.cs`
 - Remove the `Subscription` parameter from `CreateTenantCommand`
 - Remove subscription wiring from `TenantsController.Create`
-- Remove subscription handling from `CreateTenantCommandHandler` — it no longer creates a `TenantSubscription` row; that happens exclusively in `PATCH .../subscription`
+- Remove subscription handling from `CreateTenantCommandHandler` â€” it no longer creates a `TenantSubscription` row; that happens exclusively in `PATCH .../subscription`
 - Keep `TenantConfigurationSetup` and `OwnerInvite` in `CreateTenantRequest`
 - Keep `TenantConfigurationSetup` and `OwnerInvite` handling in the handler
 - Update validator: `CompanySizeRange` no longer needs to validate against plan pricing
@@ -274,7 +271,7 @@ ONEVO.Application/
 
 ### Task G: Update Plan File Paths After Namespace Cleanup
 
-- Replace every file path in Phases 1–5 with the exact resolved folder and namespace after Tasks A–E are done
+- Replace every file path in Phases 1â€“5 with the exact resolved folder and namespace after Tasks Aâ€“E are done
 - Confirm every file reference below resolves to a real file or is marked as "create new"
 
 ---
@@ -283,7 +280,7 @@ ONEVO.Application/
 
 ### Task 1: Module Catalog with Configurable Permissions
 
-**Purpose:** Implement module catalog CRUD and add `default_permission_codes` to `ModuleCatalogItem`. This data drives both the tenant permission catalog and the `DefaultRoleSeeder` — replacing all hardcoded permission constants.
+**Purpose:** Implement module catalog CRUD plus `module_permission_ownership`. Permission codes stay seeded/version-controlled; Module Catalog owns the mapping from modules to permission codes and default Owner-role markers.
 
 **Existing files:**
 
@@ -307,13 +304,13 @@ ONEVO.Application/
 
 **Controller:** `src/ONEVO.Api/Controllers/Admin/ModuleCatalogController.cs`
 
-- Add `default_permission_codes` (JSON string array) to `ModuleCatalogItem` domain entity and EF configuration
+- Add `module_permission_ownership` entity/table with `module_key`, `permission_code`, and `is_default_permission`
 - Add `phase`, `pillar`, `pricing_unit`, `price_brackets` (JSON), `full_license_price`, `maintenance_rate`, `is_sellable`, `is_active` to entity if not present
-- Implement `GET /admin/v1/modules/catalog` — list all modules, include `default_permission_codes`, pricing, sellable state
-- Implement `POST /admin/v1/modules/catalog` — create module with price brackets and `default_permission_codes`
-- Implement `PATCH /admin/v1/modules/catalog/{moduleKey}` — update metadata, pricing, permissions, sellable/active state
-- Validate company-size bracket overlap, missing open-ended bracket, invalid currency, duplicate module keys
-- Update `DefaultRoleSeeder` to read permission codes from `ModuleCatalogItem.default_permission_codes` for each access-granting module — remove all hardcoded permission constant lists
+- Implement `GET /admin/v1/modules/catalog` â€” list all modules, include pricing, sellable state, and permission ownership summary
+- Implement `POST /admin/v1/modules/catalog` â€” create module with price brackets and permission ownership rows
+- Implement `PATCH /admin/v1/modules/catalog/{moduleKey}` â€” update metadata, pricing, permissions, sellable/active state
+- Validate employee-count pricing tier overlap, missing open-ended bracket, invalid currency, duplicate module keys
+- Update `DefaultRoleSeeder` to read default permission rows from `module_permission_ownership` for each access-granting module.
 - Update `IModuleEntitlementService` tenant permission catalog builder to use catalog data
 - Ensure changing module base pricing never rewrites existing `TenantSubscription` snapshots
 - Add unit tests for `ModulePricingCalculator` edge cases (missing bracket, open-ended fallback, empty module set)
@@ -330,13 +327,13 @@ ONEVO.Application/
 
 **New files:** Follow the same pattern as Task 1 under `Features/SharedPlatform/SubscriptionPlans/`.
 
-- Implement `GET /admin/v1/subscription-plans` — list with calculated/override prices, included modules, AI token limit, trial/grace days, active state
-- Implement `POST /admin/v1/subscription-plans` — create from module keys + company-size range; auto-calculate monthly/annual price from module catalog brackets; store calculated and override prices separately
-- Implement `PATCH /admin/v1/subscription-plans/{id}` — update metadata, modules, pricing bands, active state, AI token limit, trial days, grace days
+- Implement `GET /admin/v1/subscription-plans` â€” list with calculated/override prices, included modules, AI token limit, active state
+- Implement `POST /admin/v1/subscription-plans` â€” create from module keys + employee-count pricing tiers; auto-calculate monthly/annual rates from the plan tier table; store calculated and override prices separately
+- Implement `PATCH /admin/v1/subscription-plans/{id}` â€” update metadata, modules, pricing bands, active state, AI token limit and active state
 - Validate: AI-enabled plans require positive `ai_token_limit_per_month`; non-AI plans store null
 - Prevent deactivating a plan if active tenant subscriptions reference it (return a blocker response listing affected tenants)
 - Add integration tests for list/create/update plan APIs
-- Add unit tests for plan price calculation (multi-module sum, override preservation, company-size lookup)
+- Add unit tests for plan price calculation (multi-module sum, override preservation, employee-count tier lookup)
 
 ### Task 3: Payment Gateway Config APIs
 
@@ -355,15 +352,16 @@ ONEVO.Application/
 
 **Controller:** add to `src/ONEVO.Api/Controllers/Admin/PaymentGatewaysController.cs`
 
-Gateway domain entity fields: `id`, `provider` (`paddle | payhere`), `name`, `country_codes` (JSON), `environment` (`sandbox | production`), `config_encrypted` (AES-256 JSON blob), `is_active`, `created_at`, `updated_at`.
+Gateway domain entity fields: `id`, `provider` (`stripe`, `paddle`, or `payhere`), `name`, `country_codes` (JSON), `environment` (`sandbox | production`), `config_encrypted` (AES-256 JSON blob), `is_active`, `created_at`, `updated_at`.
 
+Stripe config blob: `secret_key`, `publishable_key`, `webhook_secret`.
 Paddle config blob: `api_key`, `client_token`, `seller_id`, `webhook_secret`.
 PayHere config blob: `merchant_id`, `merchant_secret`, `webhook_secret`.
 
-- Implement `GET /admin/v1/payment-gateways` — list metadata only; never return secret fields
-- Implement `POST /admin/v1/payment-gateways` — accept plaintext secrets in request body, encrypt with `IEncryptionService` before storing
-- Implement `PATCH /admin/v1/payment-gateways/{id}` — update metadata or rotate secrets (re-encrypt on write)
-- Validate `provider` is `paddle` or `payhere`; validate required config keys per provider
+- Implement `GET /admin/v1/payment-gateways` â€” list metadata only; never return secret fields
+- Implement `POST /admin/v1/payment-gateways` â€” accept plaintext secrets in request body, encrypt with `IEncryptionService` before storing
+- Implement `PATCH /admin/v1/payment-gateways/{id}` â€” update metadata or rotate secrets (re-encrypt on write)
+- Validate `provider` is `stripe`, `paddle`, or `payhere`; validate required config keys per provider
 - Response DTO must omit all encrypted/secret fields; include only `id`, `provider`, `name`, `country_codes`, `environment`, `is_active`
 - Add unit tests for encryption roundtrip and missing-key validation per provider
 - Add integration tests for list/create/update gateway APIs
@@ -390,7 +388,7 @@ PayHere config blob: `merchant_id`, `merchant_secret`, `webhook_secret`.
 company_name (required)
 slug (required, unique)
 industry_profile (required)
-company_size_range (required)
+estimated_employee_count (optional profile estimate; not used as final invoice quantity)
 legal_entity_name (required)
 registration_number (optional)
 country (required)
@@ -405,7 +403,7 @@ State written by handler: `tenants` row (`status = provisioning`), `legal_entiti
 
 - Confirm `SubscriptionInfoRequest` and `SubscriptionInfo` are fully removed (Phase 0 Task F prerequisite)
 - Confirm `TenantConfigurationSetup` and `OwnerInvite` are present and correctly handled
-- Validator: validate `company_size_range` against allowed enum values only (no plan pricing check)
+- Validator: validate estimated employee count is positive when supplied; final invoice pricing waits for tenant-owner-confirmed employee count
 - Validator: validate `setup_options` values are known setup keys, not module keys
 - Owner invite: assign auto-seeded Owner role; do not accept operator-provided `role_id`
 - Handler must not create any `TenantSubscription` row
@@ -441,8 +439,8 @@ Shared (all commercial models):
 ```
 plan_id (required)
 commercial_model: subscription | full_license_maintenance (required)
-company_size_range (required — for price calculation snapshot)
-selected_module_keys (required — drives auto-sync)
+confirmed_employee_count (required during tenant-owner subscription confirmation for first invoice pricing tier and quantity)
+selected_module_keys (required â€” drives auto-sync)
 override_price_monthly (optional)
 override_price_annual (optional)
 ai_token_limit_per_month (required when plan is AI-enabled)
@@ -470,7 +468,7 @@ license_currency (required)
 license_collection_mode: manual | gateway (required)
 license_gateway_id (required when gateway)
 license_payment_status: pending | paid | waived | failed (required)
-license_payment_method (optional; relevant when manual — e.g. manual_bank_transfer)
+license_payment_method (optional; relevant when manual â€” e.g. manual_bank_transfer)
 license_payment_reference (optional; relevant when manual)
 license_payment_evidence_url (optional)
 license_paid_date (optional)
@@ -484,7 +482,7 @@ maintenance_renewal_date (required unless waived)
 
 1. Validate plan exists and is active
 2. Validate gateway refs exist and match provider
-3. Calculate `calculated_price_monthly` and `calculated_price_annual` from module catalog brackets for `selected_module_keys` + `company_size_range`
+3. Calculate `calculated_price_monthly` and `calculated_price_annual` from the selected subscription plan employee-count tier using tenant-owner-confirmed employee count
 4. Upsert `TenantSubscription` row with full snapshot
 5. Set `snapshot_module_keys` = `selected_module_keys` (historical audit only)
 6. Load plan's `default_module_keys` from `SubscriptionPlan`
@@ -518,18 +516,18 @@ This endpoint allows operators to override or extend individual entitlements aft
 
 **Controller action:** add to `TenantsController`
 
-Request body: array of module entitlement records, each with `module_key`, `state`, `started_at`, `expires_at`, `trial_expires_at`, `price_override`, `currency`.
+Request body: array of module entitlement records, each with `module_key`, `state`, `started_at`, `expires_at`, `price_override`, `currency`.
 
 Handler logic:
 
 1. For each record in request: upsert `TenantModuleEntitlement` with `source = manual_override`
-2. Recompute tenant permission catalog from all access-granting entitlements using `ModuleCatalogItem.default_permission_codes`
+2. Recompute tenant permission catalog from all access-granting entitlements using `module_permission_ownership`
 3. For any tenant role that has permissions outside the new module boundary: remove out-of-boundary permissions and record an audit event
 4. Commit transaction
 
 - Implement all above
-- `is_access_granting` computed from state + expiry — implement as a computed property or DB check constraint
-- Only access-granting states grant permissions: `trial`, `purchased`, `subscription_included`, `maintenance_included`
+- `is_access_granting` computed from state + expiry â€” implement as a computed property or DB check constraint
+- Only access-granting states grant permissions: `purchased`, `subscription_included`, `maintenance_included`
 - `available` and `quoted` are visible in console but do not appear in the permission catalog
 - Add activation checklist blocker for zero access-granting modules at activation time
 - Add tests: manual state override, expiry-based access revocation, permission boundary enforcement after module removal
@@ -570,18 +568,17 @@ Verify this endpoint exists. If not, implement it in this task.
 Handler logic:
 
 1. Run full activation checklist (see Task 9 blockers below)
-2. If any blocker is present, return `422` with checklist response — do not activate
+2. If any blocker is present, return `422` with checklist response â€” do not activate
 3. Set `tenant.status = active`
-4. If `tenant_subscription.trial_days > 0`, set `tenant_subscription.trial_ends_at = now + trial_days`, set `tenant_subscription.status = trial`
-5. Else set `tenant_subscription.status = active`, `trial_ends_at = null`
+4. Set `tenant_subscription.status = pending_confirmation` until the tenant owner selects plan, billing cycle, and confirms employee count. After first invoice is paid or manually approved, set `tenant_subscription.status = active`.
 6. Emit activation audit event
 7. Commit
 
 - Implement or verify endpoint exists
-- Implement activation status logic (trial vs active) per resolved decision 6
+- Implement activation status logic (`pending_confirmation` -> `pending_payment` -> `active`) per resolved decision 6
 - Ensure tenant becomes visible to the main OneVo app after status = active
 - Ensure the invited admin can set their password before activation but cannot log in until status = active
-- Add tests: activation succeeds with all prerequisites met, activation blocked per each individual missing prerequisite, trial_ends_at set correctly, direct active when no trial
+- Add tests: activation succeeds with all prerequisites met, activation blocked per each individual missing prerequisite, pending confirmation set correctly, pending payment after first invoice generation, active after payment confirmation
 
 ### Task 9: Provisioning Summary + Activation Checklist
 
@@ -637,10 +634,10 @@ Handler logic:
 - State clearly that `TenantModuleEntitlement` is the runtime access source of truth; `snapshot_module_keys` is historical audit only
 - Document `payment_status` and `collection_mode` fields with allowed values; document that evidence fields are only relevant when `collection_mode = manual`
 - Document `paddle` and `payhere` as Phase 1 gateway providers; document gateway config API
-- Document `ModuleCatalogItem.default_permission_codes` and how it drives the permission catalog and Owner role seeding
+- Document `module_permission_ownership` and how it drives the permission catalog and Owner role seeding
 - Update provisioning wizard UX steps to match the resolved 2-step backend contract:
-  - Step 1: account details + setup configuration selections + optional owner invite → `POST /admin/v1/tenants`
-  - Step 2: plan selection + commercial terms → `PATCH .../subscription`
+  - Step 1: account details + setup configuration selections + optional owner invite â†’ `POST /admin/v1/tenants`
+  - Step 2: plan selection + commercial terms â†’ `PATCH .../subscription`
   - Remaining steps: modules override, roles, settings, activation
 - Document `POST /admin/v1/tenants/{id}/invite-admin` as deferred/resend only; Step 1 inline invite is the happy-path
 - Remove all contradictions where docs describe subscription plan creation as part of tenant creation
@@ -654,26 +651,27 @@ Handler logic:
 
 - Run unit tests: tenancy, billing, module catalog, module pricing, DefaultRoleSeeder permissions-from-catalog
 - Run integration tests covering:
-  - Create module catalog item with `default_permission_codes`
+  - Create module catalog item with permission ownership rows
   - Create subscription plan
   - Create payment gateways (Paddle, PayHere)
-  - Create tenant — no plan fields in body, confirm no `TenantSubscription` row created
-  - PATCH subscription monthly — confirm `TenantModuleEntitlement` rows auto-created with `plan_sync` source
+  - Create tenant â€” no plan fields in body, confirm no `TenantSubscription` row created
+  - PATCH subscription monthly â€” confirm `TenantModuleEntitlement` rows auto-created with `plan_sync` source
   - PATCH subscription annual
   - PATCH subscription full-license-maintenance with manual payment
   - PATCH subscription full-license-maintenance with gateway payment
-  - PUT modules — confirm `manual_override` source, plan_sync rows untouched
-  - GET permissions catalog — returns only permissions from access-granting modules
+  - PUT modules â€” confirm `manual_override` source, plan_sync rows untouched
+  - GET permissions catalog â€” returns only permissions from access-granting modules
   - Inline owner invite during tenant creation
   - Deferred invite via invite-admin endpoint
   - Resend invite with `resend: true`
   - Duplicate invite returns existing without resend
   - Activation blocked per each individual blocker
-  - Successful activation sets `trial_ends_at` when `trial_days > 0`
-  - Successful activation sets `status = active` with no trial when `trial_days = 0`
-  - `DefaultRoleSeeder` permissions match `ModuleCatalogItem.default_permission_codes` for active modules
+  - Successful activation sets `status = pending_confirmation`; subscription confirmation creates first invoice and moves to `pending_payment`; payment confirmation moves to `active`
+  - `DefaultRoleSeeder` permissions match `module_permission_ownership` defaults for active modules
 - Build `ONEVO.sln`
 - Update API examples in docs after tests pass
-- Confirm no hardcoded permission constants remain in `DefaultRoleSeeder`
+- Confirm `DefaultRoleSeeder` reads `module_permission_ownership` rather than hardcoded permission constants
 - Confirm no `NoOpEncryptionService` registered in non-development environments
+
+
 

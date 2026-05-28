@@ -10,8 +10,8 @@
 ## Preconditions
 
 - ONEVO operator account with developer console access.
-- Sales agreement confirmed: commercial model, modules, setup services, payment terms, and templates needed.
-- Customer profile details confirmed: company name, slug, primary contact email, country, industry, registration/profile name, registration number, company size, timezone, and currency.
+- Sales agreement confirmed: allowed subscription plans, setup services, payment gateway/collection method, negotiated discounts or overrides, and templates needed.
+- Customer profile details confirmed: company name, slug, primary contact email, country, industry, registration/profile name, registration number, estimated total employee count, timezone, and currency.
 
 ## Core Rules
 
@@ -25,24 +25,32 @@
 
 ### Step 1: Customer Profile
 
-- **UI:** Company Name, Slug, Primary Contact Email, Country, Industry, Registration/Profile Name, Registration Number, Company Size, Timezone, Currency.
+- **UI:** Company Name, Slug, Primary Contact Email, Country, Industry, Registration/Profile Name, Registration Number, Estimated Total Employee Count, Timezone, Currency.
 - **API helper:** `GET /admin/v1/reference/countries/{countryCode}/defaults` returns default timezone/currency and supported timezone/currency choices after country selection.
 - **API:** `POST /admin/v1/tenants`
 - **Backend:** Creates `tenants.status = provisioning`, stores profile/contact metadata, and creates provisioning state.
-- **Validation:** unique slug/company where required, valid email, valid country/timezone/currency, valid industry/company size, and registration/profile validation where product requires it.
+- **Validation:** unique slug/company where required, valid email, valid country/timezone/currency, valid industry, positive estimated employee count when supplied, and registration/profile validation where product requires it.
 - **DB:** `tenants`, provisioning state/checklist records.
 
-### Step 2: Commercial Selection
+### Step 2: Operator Commercial Boundary
 
-- **UI:** Pick reusable subscription/commercial plan, company-size band, commercial model (`subscription` or `full_license_maintenance`), billing cycle, payment method, gateway/manual collection mode, manual billing evidence/reference, payment exception/grace dates, AI token limit, and Work Management storage limit when required.
+- **UI:** Select the subscription plans the tenant owner is allowed to choose from, optionally mark one as recommended/default, select payment gateway or manual collection method, add one-time setup charges, set negotiated discounts/overrides when applicable, and set AI token / Work Management storage limits when required.
 - **API:** `PATCH /admin/v1/tenants/{tenantId}/subscription`
-- **Backend:** Stores tenant commercial terms, selected modules snapshot, calculated monthly/annual/full-license/maintenance snapshots, overrides, gateway/manual payment state, billing evidence, payment exceptions, and commercial limits.
-- **Validation:** plan exists, selected modules valid, AI modules have token limit, Work Management storage-backed modules have storage limit, manual payment has evidence/reference and audit reason.
+- **Backend:** Stores tenant commercial boundaries: allowed plan ids, optional recommended plan id, gateway/manual payment state, one-time setup charges, negotiated overrides/discounts, and commercial limits. It does not finalize billing cycle or first invoice quantity.
+- **Validation:** allowed plans exist and are active, recommended plan is in the allowed set, AI modules have token limit, Work Management storage-backed modules have storage limit, manual collection has operator reason, and gateway/manual collection is selected by the ONEVO operator.
 - **DB:** `tenant_subscriptions`, payment/evidence file references where applicable.
+
+Tenant owner choice rule:
+
+- Tenant owner may choose only from the operator-allowed plans.
+- Tenant owner chooses billing cycle (`monthly` or `annual`) during onboarding/plan confirmation.
+- Tenant owner confirms total employee count before the first real invoice is generated.
+- Tenant owner does not choose Stripe, Paddle, PayHere, or manual collection. Payment gateway/collection is an operator decision from Developer Platform.
+- Tenant creation does not create a trial. Activation and billing are driven by the confirmed subscription and invoice/payment state.
 
 ### Step 3: Module Entitlements
 
-- **UI:** Confirm active modules, sales states, trial dates, module-level pricing overrides, and setup-service needs for the selected modules.
+- **UI:** Confirm active modules, sales states, module-level pricing overrides, and setup-service needs for the allowed/selected modules.
 - **API:** `PUT /admin/v1/tenants/{tenantId}/modules`
 - **Backend:** Writes tenant module entitlement records and module pricing/sales state.
 - **Validation:** `available` and `quoted` do not grant tenant-facing access; only valid active commercial states expose permissions.
@@ -85,8 +93,9 @@ Setup service rule:
 
 ## Module Entitlement And Permission Rules
 
-- Module entitlement is resolved from `tenant_subscriptions`, plan allowed modules, tenant module grants, and tenant feature grants.
-- Permission catalogs include only universal permissions and permissions from enabled/entitled modules.
+- Module entitlement is resolved from `tenant_module_entitlements` and the current `tenant_subscriptions` record.
+- Feature availability is resolved from `tenant_subscriptions.selected_feature_keys` plus runtime feature flags.
+- Permission catalogs include only universal permissions and permissions from enabled/entitled modules and selected feature keys.
 - Each permission belongs to exactly one module. Reassigning a permission to another module requires an explicit Module Catalog ownership change.
 - Roles do not require job levels. Job levels and hierarchy affect scoped access, workflow approver resolution, escalation, and organisation-aware policies.
 

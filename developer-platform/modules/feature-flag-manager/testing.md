@@ -7,6 +7,7 @@
 - At least 2 active tenants in `active` status
 - At least 1 active module in `module_catalog`
 - Clean `feature_flags` table (no pre-existing flags) for creation tests
+- Seeded `module_features` rows for any tenant-facing product flags under test
 
 ---
 
@@ -74,7 +75,7 @@
 **Setup:** Flag `default_value: false`, `rollout_percentage: 0` (all tenants get OFF by default)
 **Action:** `PATCH /admin/v1/tenants/{tenantId}/feature-flags/{flagKey}` `{"value": true, "reason": "Beta partner"}`
 **Expected:**
-- `feature_access_grants` row created: `value = true`, `tenant_id`, `granted_by_id`, `reason`
+- `feature_flag_overrides` row created: `value = true`, `tenant_id`, `granted_by_id`, `reason`
 - `GET /admin/v1/tenants/{tenantId}/feature-flags/{flagKey}` returns `value: true` — override wins
 - Other tenants without override still get `false`
 
@@ -82,7 +83,7 @@
 **Setup:** Tenant has explicit override `value: true` for a flag with `default_value: false`
 **Action:** `DELETE /admin/v1/tenants/{tenantId}/feature-flags/{flagKey}`
 **Expected:**
-- `feature_access_grants` row deleted
+- `feature_flag_overrides` row deleted
 - Tenant now evaluates flag via rollout % hash — if hash puts them in OFF segment, they get `false`
 - Audit log: `action = 'feature_flag.tenant_override_removed'`
 

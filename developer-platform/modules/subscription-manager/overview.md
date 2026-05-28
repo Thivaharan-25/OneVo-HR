@@ -1,4 +1,4 @@
-# Subscription Manager
+﻿# Subscription Manager
 
 ## Purpose
 
@@ -8,14 +8,14 @@ Subscription Manager maintains the global commercial catalog: reusable subscript
 
 | Table / System | Role |
 |---|---|
-| `subscription_plans` | Read + write — reusable global plan definitions |
-| `subscription_plan_price_brackets` | Read + write — per-plan, per-size-range pricing |
-| `subscription_plan_price_history` | Write — immutable price change audit trail |
-| `payment_gateways` | Read + write — Paddle/PayHere gateway configs with encrypted secrets |
-| `tenant_subscriptions` | Read — current tenant commercial state; write through tenant subscription APIs only |
-| `subscription_invoices` | Read + write — invoice lifecycle management |
-| `webhook_event_queue` | Read — webhook processing status |
-| `module_catalog` | Read — module pricing for plan price calculation |
+| `subscription_plans` | Read + write â€” reusable global plan definitions |
+| `subscription_plan_price_brackets` | Read + write â€” per-plan, per-size-range pricing |
+| `subscription_plan_price_history` | Write â€” immutable price change audit trail |
+| `payment_gateways` | Read + write - Stripe/Paddle/PayHere gateway configs with encrypted secrets |
+| `tenant_subscriptions` | Read â€” current tenant commercial state; write through tenant subscription APIs only |
+| `subscription_invoices` | Read + write â€” invoice lifecycle management |
+| `webhook_event_queue` | Read â€” webhook processing status |
+| `module_catalog` | Read â€” module pricing and module feature registry for plan price calculation |
 | Audit log | Write every billing action |
 
 ## Phase 1 Sellable Modules (for plan creation)
@@ -27,21 +27,22 @@ Plans are built from Phase 1 modules only. Phase 2 modules (`payroll`, `performa
 | HR Core (Package 1) | `core_hr`, `leave`, `calendar` | |
 | Intelligence (Package 1) | `monitoring`, `workforce`, `verification`, `exceptions`, `analytics` | |
 | WorkSync (Package 2) | `work_management`, `chat`, `chat_ai`, `documents`, `reports`, `integrations` | `chat` and `chat_ai` are separately sellable |
-| Foundation (always included) | `auth`, `configuration`, `roles`, `notifications`, `org`, `workflow_engine` | Not selectable in plans — auto-included |
+| Foundation (always included) | `auth`, `configuration`, `roles`, `notifications`, `org`, `workflow_engine` | Not selectable in plans â€” auto-included |
 
-`chat` and `chat_ai` are **separately sellable** — a plan can include one, both, or neither. `chat_ai` requires a positive `ai_token_limit_per_month`.
+`chat` and `chat_ai` are **separately sellable** â€” a plan can include one, both, or neither. `chat_ai` requires a positive `ai_token_limit_per_month`.
 
 ## Capabilities
 
 ### Subscription Plans
-- Create reusable plans from Phase 1 modules with company-size bracket pricing
-- Select modules → set unit price per module per size range → calculated monthly total shown live
+- Create reusable plans from Phase 1 modules with employee-count pricing tiers. Company-size/employee-count tiers live inside the subscription plan pricing table; they are not module configuration and not separate plan identities.
+- Select modules -> set unit price per module per employee-count tier -> calculated monthly/annual rate shown live
+- Select which commercial features inside each selected module are included in the plan. This controls what the tenant bought; feature flags only control runtime rollout after this check.
 - Store calculated price and operator override separately for audit
-- Set commercial model support (Subscription, Full License + Maintenance), billing cycles, collection modes, trial terms
+- Set commercial model support, supported billing cycles, and allowed collection modes. Tenant owner chooses monthly or annual during subscription confirmation, not during tenant creation.
 - Clone plans; deactivate plans without affecting existing tenant assignments
 
 ### Payment Gateway Configuration
-- Configure Paddle or PayHere gateway credentials with encrypted secrets (AES-256)
+- Configure Stripe, Paddle, or PayHere gateway credentials with encrypted secrets (AES-256)
 - Verify account credentials against provider before saving
 - Upload gateway logo for display in provisioning Step 3 dropdown
 - Rotate secrets atomically
@@ -54,12 +55,13 @@ Plans are built from Phase 1 modules only. Phase 2 modules (`payroll`, `performa
 - Download invoice PDFs
 
 ### Dunning
-- Paddle/PayHere payment failures trigger automatic retry schedule (3 retries over ~17 days)
+- Stripe/Paddle/PayHere payment failures trigger automatic retry schedule (3 retries over ~17 days)
 - After final retry fails: Critical alert raised; 7-day grace period before auto-suspension
 - Payment exceptions halt dunning for tenants in approved grace periods
 
 ### Webhook Processing
-- Paddle: `transaction.completed`, `transaction.payment_failed`, `subscription.past_due`, `subscription.canceled`, `transaction.refunded`, `dispute.created` — HMAC-SHA256 signature verification
+- Stripe: `invoice.payment_succeeded`, `invoice.payment_failed`, `customer.subscription.updated`, `customer.subscription.deleted` - Stripe signature verification
+- Paddle: `transaction.completed`, `transaction.payment_failed`, `subscription.past_due`, `subscription.canceled`, `transaction.refunded`, `dispute.created` - HMAC-SHA256 signature verification
 - PayHere: notify callback with MD5 signature verification
 - All events processed asynchronously via `webhook_event_queue` with at-least-once delivery and dead-letter handling
 
@@ -75,7 +77,8 @@ Plans are built from Phase 1 modules only. Phase 2 modules (`payroll`, `performa
 ## Key Rules
 
 - Updating a plan's pricing does NOT rewrite existing tenant subscription snapshots
-- Gateway secrets are AES-256 encrypted — never returned by any API response
+- If a plan includes only part of a module, that partial feature inclusion must be recorded in the plan/custom contract. Disabling features through Feature Flag Manager does not reduce price or change billing.
+- Gateway secrets are AES-256 encrypted â€” never returned by any API response
 - Manual collection requires billing evidence/reference and an audit reason
 - `chat_ai` module in a plan requires the operator to set an AI token limit during tenant provisioning
 - Dunning auto-suspension is logged as a system action; platform admins can halt it via payment exception
@@ -83,6 +86,7 @@ Plans are built from Phase 1 modules only. Phase 2 modules (`payroll`, `performa
 ## Related
 
 - [[developer-platform/modules/subscription-manager/end-to-end-logic|Subscription Manager End-to-End Logic]]
-- [[developer-platform/modules/tenant-console/overview|Tenant Console]] — applies plans to tenants
-- [[developer-platform/modules/module-catalog-manager/overview|Module Catalog Manager]] — module pricing used in plan calculation
-- [[developer-platform/modules/system-config/overview|System Config]] — payment gateway credential management
+- [[developer-platform/modules/tenant-console/overview|Tenant Console]] â€” applies plans to tenants
+- [[developer-platform/modules/module-catalog-manager/overview|Module Catalog Manager]] â€” module pricing used in plan calculation
+- [[developer-platform/modules/system-config/overview|System Config]] â€” payment gateway credential management
+

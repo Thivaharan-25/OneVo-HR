@@ -12,7 +12,7 @@
 ## Preconditions
 
 - Tenant is active
-- Tenant enabled module catalog is resolved from subscription plan modules, paid add-ons, trial modules, approved feature grants, and disabled-module exclusions
+- Tenant enabled module/feature catalog is resolved from active module entitlements, selected commercial feature keys, runtime flags, and disabled-module exclusions
 - Roles exist (system or custom via [[Userflow/Auth-Access/role-creation|Role Creation Flow]])
 - Explicit permissions are seeded (106 assignable permissions during [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]). Universal permissions are resolved automatically by the auth layer.
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]] (recursive: an admin who already has `roles:manage`)
@@ -216,13 +216,13 @@ Triggered automatically when granting `roles:manage` to an employee via role ass
 
 The system resolves effective permissions in this order:
 
-1. **Tenant enabled catalog:** subscription plan modules + paid add-ons + trial modules + approved feature grants - disabled modules
+1. **Tenant enabled catalog:** active module entitlements + selected commercial feature keys + runtime-enabled feature flags - runtime-disabled modules/features
 2. **Module auto-grants:** self-service permissions for every active employee, gated by active modules (e.g. `leave:read-own` only if `leave` module is active)
 3. **Tenant owner expansion:** tenant owner / Tenant Super Admin receives all assignable permissions from enabled tenant modules only
 4. **Base:** Explicit permissions from the user's active assigned role (via `role_permissions`; ignore expired `user_roles`)
 5. **Add:** Explicit permissions in active `user_permission_overrides` with type `grant`
 6. **Remove:** Explicit permissions in active `user_permission_overrides` with type `revoke` (cannot remove module auto-grants)
-7. **Filter:** Remove any permission whose module is not enabled for the tenant
+7. **Filter:** Remove any permission whose module is not enabled for the tenant or whose feature key is not commercially included/runtime-enabled
 8. **Derived:** `inbox:read` added if effective set contains any inbox-triggering permission; `notifications:read` added if effective set contains any notification-triggering permission
 8a. **Access Policy Resolution:** For each employee-data permission in the effective set, resolve its assigned access policy from `role_permissions.access_policy` (role default) or `user_permission_overrides.access_policy` (per-employee override; takes precedence). Permissions with no assigned policy default to `self`. The result is a `(permission, policy)` capability pair set.
 9. **Result:** `Module auto-grants + enabled-module role permissions + active grants - active revokes + derived = Effective Permission Set`. Access policy pairs are included in the `/api/v1/me/app-context` response as `capabilities`.

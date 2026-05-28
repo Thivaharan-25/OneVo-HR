@@ -26,7 +26,7 @@ All users must authenticate via **Google OAuth** using an approved `@onevo.io` e
 ┌─────────────────────────────────────────────────┐
 │           OneVo Dev Console                     │
 │      (console.onevo.io — internal only)         │
-│   Separate Next.js app, separate domain         │
+│   Separate Angular app, separate domain         │
 └────────────────┬────────────────────────────────┘
                  │  HTTPS + Admin JWT
                  ▼
@@ -70,9 +70,9 @@ Developer Platform modules follow the same KB shape as ONEVO product modules: ea
 | Subscription Manager | Reusable plans, payment gateways, invoices, and commercial rules |
 | Platform Access | Platform account invites, platform roles, platform permissions, and session revocation |
 | Global Policies | Platform policy defaults and explicit tenant-impact propagation |
-| Module Catalog Manager | ONEVO product module catalog: pricing, package inclusion, permission ownership, limits, and setup links |
+| Module Catalog Manager | ONEVO product module catalog: pricing, commercial feature inclusion, permission ownership, limits, and setup links |
 | Role Template Manager | Module-filtered tenant role templates and tenant role materialization |
-| Feature Flag Manager | Global flags and per-tenant overrides |
+| Feature Flag Manager | Runtime rollout flags and per-tenant overrides for commercially included features |
 | Platform Health | Overall health status and dependency summary |
 | Services Monitor | Detailed service/component health and safe service actions |
 | Device Management | Cross-tenant agent/device visibility and approved agent commands |
@@ -99,7 +99,7 @@ Module Catalog Manager manages ONEVO product modules only. It does not manage De
 |:---|:---|
 | A customer developer portal | No — customers never access this. No customer API keys here. |
 | A second backend service | No — the admin API layer lives inside the existing OneVo backend. |
-| A `/platform-admin` route in the main frontend | No — it is a completely separate Next.js application on a separate domain. |
+| A `/platform-admin` route in the main frontend | No — it is a completely separate Angular application on a separate domain. |
 | A duplicate of existing data stores | No — feature flags, settings, and tenant data live in the existing schema. The console reads/writes those through the admin API. |
 | Phase 2 customer webhook/API infrastructure | No — customer-facing developer APIs are a Phase 2 concept, entirely separate. |
 

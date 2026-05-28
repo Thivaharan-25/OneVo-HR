@@ -27,6 +27,7 @@ interface AuthResponseDto {
   user: CurrentUserDto | null
   permissions: string[]
   active_modules: string[]
+  active_features: string[]
   must_change_password: boolean
   mfa_required: boolean       // true -> client must complete TOTP MFA before session is established
 }
@@ -99,7 +100,8 @@ interface PermissionsDto {
   tenant_id: string           // uuid
   roles: string[]             // e.g. ["super_admin", "hr_manager"]
   permissions: string[]       // "resource:action" keys, e.g. ["employee:read", "leave:approve"]
-  active_modules: string[]    // e.g. ["hr_management", "work_sync", "workforce_intelligence"]
+  active_modules: string[]    // module keys from active tenant entitlements, e.g. ["core_hr", "leave", "work_management"]
+  active_features: string[]   // feature keys that are commercially included and runtime-enabled, e.g. ["work_management.projects"]
 }
 ```
 
@@ -110,4 +112,6 @@ interface PermissionsDto {
 - Tenant JWTs are backend-internal for browser sessions and are rejected by `/admin/v1/*`.
 - IDE extension stores its own user tokens in `SecretStorage`, not `localStorage`; this is separate from browser web auth.
 - `permissions` is the definitive source for `<PermissionGate>` and `useAuth().hasPermission()`
+- `active_modules` is the definitive source for module-level navigation gates.
+- `active_features` is the definitive source for feature-level UI gates. It must include only feature keys that pass commercial inclusion and runtime flag evaluation.
 

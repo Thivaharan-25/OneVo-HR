@@ -93,7 +93,7 @@ npm run compile
 - [ ] `TagParser` parses action name, named params, mentions, and quoted values.
 - [ ] `TagExecutor` calls `POST /api/v1/ide/tags/execute`.
 - [ ] Tag picker is built from `permitted_tag_actions`.
-- [ ] HR group appears only when `active_modules` contains `hr_management`.
+- [ ] HR group appears only when `active_modules` contains at least one Phase 1 HR module key such as `core_hr`, `leave`, or `calendar`.
 - [ ] Missing actions are hidden.
 - [ ] Instant actions execute immediately.
 - [ ] Form actions open mini forms.

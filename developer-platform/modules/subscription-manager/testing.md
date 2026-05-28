@@ -1,4 +1,4 @@
-# Subscription Manager — Testing
+﻿# Subscription Manager â€” Testing
 
 ## Test Fixtures Required
 
@@ -11,15 +11,15 @@
 
 ## Plan Creation
 
-### TC-S-001: Create plan — happy path
+### TC-S-001: Create plan â€” happy path
 **Input:**
 ```json
 {
   "name": "Business Plan Q2",
   "tier": "business",
   "included_module_keys": ["core_hr", "leave", "monitoring", "workforce"],
-  "target_company_size_ranges": ["51-200"],
-  "price_brackets": [{ "company_size_range": "51-200", "module_prices": { "core_hr": 8.00, "leave": 3.00, "monitoring": 6.00, "workforce": 4.00 }, "calculated_monthly_total": 2625.00 }],
+  "employee_count_tiers": ["51-200"],
+  "price_tiers": [{ "employee_count_tier": "51-200", "module_prices": { "core_hr": 8.00, "leave": 3.00, "monitoring": 6.00, "workforce": 4.00 }, "calculated_monthly_total": 2625.00 }],
   "supported_commercial_models": ["subscription"],
   "supported_billing_cycles": ["monthly","annual"],
   "is_active": true
@@ -29,7 +29,7 @@
 **Expected:**
 - HTTP 201
 - `subscription_plans` row created
-- `subscription_plan_price_brackets` row created for `51-200`
+- `subscription_plan_price_tiers` row created for `51-200`
 - `calculated_monthly_total` stored; `override_monthly_total = null`
 
 ### TC-S-002: Duplicate plan name rejected
@@ -42,16 +42,16 @@
 **Expected:** HTTP 422, `code: "no_modules_selected"`
 
 ### TC-S-004: Plan missing price bracket for selected size range rejected
-**Input:** `target_company_size_ranges: ["51-200","201-500"]` but `price_brackets` only contains `51-200`
-**Expected:** HTTP 422, `code: "missing_price_brackets"` — bracket required for each selected range
+**Input:** `target_employee_count_tiers: ["51-200","201-500"]` but `price_tiers` only contains `51-200`
+**Expected:** HTTP 422, `code: "missing_price_tiers"` â€” bracket required for each selected range
 
 ### TC-S-005: Phase 2 modules cannot be included in Phase 1 plans
-**Input:** `included_module_keys: ["core_hr", "payroll"]` — payroll is Phase 2
+**Input:** `included_module_keys: ["core_hr", "payroll"]` â€” payroll is Phase 2
 **Expected:** HTTP 422, `code: "phase2_modules_rejected"`, error body lists the rejected keys
 
 **Phase 2 keys that must all be rejected:** `payroll`, `performance`, `skills`, `learning`, `recruitment`, `hr_docs`, `grievance`, `expense`
 
-Repeat this test individually for each Phase 2 key — each must be rejected, not silently dropped.
+Repeat this test individually for each Phase 2 key â€” each must be rejected, not silently dropped.
 
 ### TC-S-006: Plan creation requires manage permission
 **Setup:** Account with `platform.subscriptions.read` only
@@ -65,9 +65,9 @@ Repeat this test individually for each Phase 2 key — each must be rejected, no
 ### TC-S-007: Calculated price and override price stored separately
 **Action:** `POST /admin/v1/subscription-plans` with `calculated_monthly_total: 2625.00` and `override_monthly_total: 2500.00`, `override_reason: "Launch discount for Q2."`
 **Expected:**
-- `subscription_plan_price_brackets.calculated_monthly_total = 2625.00`
-- `subscription_plan_price_brackets.override_monthly_total = 2500.00`
-- `override_monthly_total` is stored — `calculated_monthly_total` is NOT overwritten or deleted
+- `subscription_plan_price_tiers.calculated_monthly_total = 2625.00`
+- `subscription_plan_price_tiers.override_monthly_total = 2500.00`
+- `override_monthly_total` is stored â€” `calculated_monthly_total` is NOT overwritten or deleted
 
 ### TC-S-008: Override without reason rejected
 **Action:** `PATCH /admin/v1/subscription-plans/{id}` with `override_monthly_total: 2000.00`, `override_reason: null`
@@ -88,7 +88,7 @@ Repeat this test individually for each Phase 2 key — each must be rejected, no
 
 ## Payment Gateway Configuration
 
-### TC-S-011: Gateway creation encrypts secrets — never returned in response
+### TC-S-011: Gateway creation encrypts secrets â€” never returned in response
 **Action:** `POST /admin/v1/payment-gateways` with `provider: "paddle"`, `credentials.api_key: "pdl_test_abc123"`, `credentials.webhook_secret: "pdl_ntfset_xyz"`
 **Expected:**
 - HTTP 201
@@ -97,7 +97,7 @@ Repeat this test individually for each Phase 2 key — each must be rejected, no
 
 ### TC-S-012: Gateway GET response never returns secrets
 **Action:** `GET /admin/v1/payment-gateways/{id}`
-**Expected:** Response contains `provider`, `name`, `country_codes`, `environment`, `is_active` — no `api_key`, `merchant_secret`, or `webhook_secret`
+**Expected:** Response contains `provider`, `name`, `country_codes`, `environment`, `is_active` â€” no `api_key`, `merchant_secret`, or `webhook_secret`
 
 ### TC-S-013: Paddle fields validate by provider
 **Action:** `POST /admin/v1/payment-gateways` with `provider: "paddle"` but omitting `credentials.api_key`
@@ -124,7 +124,7 @@ Repeat this test individually for each Phase 2 key — each must be rejected, no
 
 ### TC-S-017: Webhook with invalid signature is rejected
 **Action:** `POST /webhooks/paddle` with forged or mismatched `Paddle-Signature` header
-**Expected:** HTTP 400 — no processing, no DB changes
+**Expected:** HTTP 400 â€” no processing, no DB changes
 
 ### TC-S-018: transaction.completed marks invoice Paid
 **Setup:** Invoice with `status = 'open'`, `paddle_transaction_id = 'txn_test_abc'`
@@ -217,7 +217,7 @@ Repeat this test individually for each Phase 2 key — each must be rejected, no
 ### TC-S-030: Billing snapshot is idempotent
 **Setup:** Billing snapshot already exists for `tenant_id + billing_period_start`
 **Action:** Billing snapshot job runs again for same period
-**Expected:** No duplicate `billing_snapshots` row — existing row is upserted; `billable_user_count_p1` reflects current state
+**Expected:** No duplicate `billing_snapshots` row â€” existing row is upserted; `billable_user_count_p1` reflects current state
 
 ---
 
@@ -249,7 +249,7 @@ Repeat this test individually for each Phase 2 key — each must be rejected, no
 
 ## Plan Change Rules
 
-### TC-S-035: Module added — entitlement effective immediately
+### TC-S-035: Module added â€” entitlement effective immediately
 **Setup:** Active tenant without `chat` module
 **Action:** `PUT /admin/v1/tenants/{id}/modules` with `{ "module_key": "chat", "state": "subscription_included", "source": "manual_override" }`
 **Expected:**
@@ -257,7 +257,7 @@ Repeat this test individually for each Phase 2 key — each must be rejected, no
 - Tenant permission catalog updated to include chat permissions immediately
 - No billing period delay
 
-### TC-S-036: Module removed — entitlement disabled at end of billing period, not immediately
+### TC-S-036: Module removed â€” entitlement disabled at end of billing period, not immediately
 **Setup:** Active tenant with `chat` module, `billing_period_end = 2025-06-30`
 **Action:** Operator sets `chat` module state to `disabled` via `PUT /admin/v1/tenants/{id}/modules`
 **Expected:**
@@ -265,27 +265,27 @@ Repeat this test individually for each Phase 2 key — each must be rejected, no
 - Tenant retains chat access until `billing_period_end`
 - Data and configuration preserved until that date
 
-### TC-S-037: Cancellation — cancel_at_period_end set; tenant retains access
+### TC-S-037: Cancellation â€” cancel_at_period_end set; tenant retains access
 **Setup:** Active subscription tenant
 **Action:** `POST /api/v1/billing/subscription/cancel` with `{ "reason": "No longer needed." }`
 **Expected:**
 - `tenant_subscriptions.cancel_at_period_end = true`
 - `tenant_subscriptions.cancellation_requested_at` set to now
-- `tenants.status` remains `'active'` — NOT immediately changed
+- `tenants.status` remains `'active'` â€” NOT immediately changed
 - Tenant retains full module access until `billing_period_end`
 - Info alert raised: `billing.cancellation_requested`
 
 ### TC-S-038: Cancellation cannot be reversed by tenant
 **Setup:** Tenant subscription with `cancel_at_period_end = true`
 **Action:** Tenant user calls `DELETE /api/v1/billing/subscription/cancel` (or equivalent reversal endpoint)
-**Expected:** HTTP 403 or 422 — reversal requires platform admin action only
+**Expected:** HTTP 403 or 422 â€” reversal requires platform admin action only
 
 ### TC-S-039: Data retained 90 days after billing_period_end
 **Setup:** Tenant with `tenants.status = 'cancelled'`; `billing_period_end` was 91 days ago
 **Action:** Data retention / cleanup job runs
 **Expected:** Tenant data deletion job queued or executed; after completion all tenant records soft-deleted or purged per retention policy
 
-### TC-S-040: Restart within 90-day window — data intact
+### TC-S-040: Restart within 90-day window â€” data intact
 **Setup:** Tenant with `tenants.status = 'cancelled'`; `billing_period_end` was 45 days ago; data still present
 **Action:** Platform admin re-activates tenant via `PATCH /admin/v1/tenants/{id}/unsuspend` (or reactivation endpoint)
 **Expected:**
@@ -297,20 +297,21 @@ Repeat this test individually for each Phase 2 key — each must be rejected, no
 
 ## Usage Limits
 
-### TC-S-041: AI token limit — warning at 80%
+### TC-S-041: AI token limit â€” warning at 80%
 **Setup:** `tenant_subscriptions.ai_token_limit_per_month = 1000000`; tenant has consumed 800,000 tokens this month
 **Action:** AI token consumption check runs (triggered on token use or background sweep)
 **Expected:** Warning alert raised: `code = 'ai_tokens.limit_approaching'`, `severity = 'warning'`; AI features NOT blocked yet
 
-### TC-S-042: AI token limit — features blocked at 100%
+### TC-S-042: AI token limit â€” features blocked at 100%
 **Setup:** Tenant has consumed 1,000,000 of 1,000,000 tokens
 **Action:** Tenant user attempts to use Chat AI
 **Expected:** HTTP 402 or 429, `code: "ai_token_limit_exceeded"`; Chat AI returns user-facing message; platform admin alert raised: `code = 'ai_tokens.limit_exceeded'`, `severity = 'critical'`
 
-### TC-S-043: No device-based billing — device count not used in billing snapshot
+### TC-S-043: No device-based billing â€” device count not used in billing snapshot
 **Setup:** Tenant with 10 registered agents (`registered_agents`) and 5 active employees with monitoring enabled
 **Action:** Billing snapshot job runs
 **Expected:**
 - `billing_snapshots.billable_user_count_p1 = 5` (employee-based)
 - No `billable_device_count` column written or used
 - Invoice line items reference user quantity, not device quantity
+
