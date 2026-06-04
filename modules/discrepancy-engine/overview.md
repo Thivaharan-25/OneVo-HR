@@ -45,7 +45,7 @@ public interface IDiscrepancyEngineService
         Guid employeeId, DateOnly from, DateOnly to, CancellationToken ct);
 
     Task<Result<IReadOnlyList<DiscrepancyEventDto>>> GetTeamDiscrepanciesAsync(
-        Guid managerId, DateOnly date, CancellationToken ct);
+        Guid anchorEmployeeId, DateOnly date, CancellationToken ct); // resolves direct reports via employee_hierarchy_closure
 }
 ```
 

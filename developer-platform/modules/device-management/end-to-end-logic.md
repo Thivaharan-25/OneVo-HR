@@ -1,5 +1,7 @@
 # Device Management End-to-End Logic
 
+> Phase 2 only. Do not implement these routes or commands in Phase 1.
+
 ## View Devices
 
 1. Operator opens System Operations -> Device Management.

@@ -30,10 +30,10 @@ MODULES = [
         "name": "Auth and Security",
         "phase": "Phase 1",
         "tables": [
-            "audit_logs", "feature_access_grants", "gdpr_consent_records", "permissions",
+            "audit_logs", "feature_access_grants", "legal_acceptance_records", "permissions",
             "role_permissions", "roles", "sessions", "user_permission_overrides", "user_roles",
         ],
-        "purpose": "Login, MFA, SSO, sessions, audit logging, GDPR consent, and hybrid permission control.",
+        "purpose": "Login, MFA, SSO, sessions, audit logging, Legal & Privacy acceptance, and hybrid permission control.",
         "scope": [
             "JWT login with refresh/session tracking and revocation.",
             "TOTP MFA and tenant/role-level MFA enforcement.",
@@ -51,7 +51,7 @@ MODULES = [
         "phase": "Phase 1",
         "tables": [
             "departments", "job_families", "job_levels", "job_titles",
-            "legal_entities", "office_locations", "team_members", "teams",
+            "company_registration_profiles", "office_locations", "team_members", "teams",
         ],
         "purpose": "Company hierarchy, legal entities, departments, jobs, teams, and offices.",
         "scope": [
@@ -473,7 +473,7 @@ SIMPLE_WORKFLOWS = [
         "edge": [
             ["Department has children", "Keep hierarchy intact; do not delete without reassignment."],
             ["Employee outside manager scope", "Do not allow assignment unless user has required scope or bypass."],
-            ["Legal entity missing", "Block employee/legal setup that depends on it."],
+            ["Company registration profile missing", "Block employee/legal setup that depends on it."],
         ],
     },
     {
@@ -481,7 +481,7 @@ SIMPLE_WORKFLOWS = [
         "user": [
             "Create the employee profile after hiring decision.",
             "Enter personal details, work email, employee number, phone, DOB, gender, and nationality.",
-            "Assign department, job title, manager, legal entity, office, employment type, work mode, hire date, and probation date.",
+            "Assign department, job title, manager, company registration profile, office, employment type, work mode, hire date, and probation date.",
             "Upload employee photo/avatar if available.",
             "Add addresses, emergency contacts, dependents, bank details, and work history.",
         ],
@@ -561,16 +561,16 @@ SIMPLE_WORKFLOWS = [
         "user": [
             "Open employee profile.",
             "Choose transfer action.",
-            "Select new department, team, manager, office, or legal entity as needed.",
+            "Select new department, team, manager, office, or company registration profile as needed.",
             "Set effective date and reason.",
             "Submit transfer.",
         ],
         "system": [
             "Validate employee exists and is active.",
-            "Validate target department/team/manager/legal entity are accessible and valid.",
+            "Validate target department/team/manager/company registration profile are accessible and valid.",
             "Update employee department/team/manager/location fields.",
             "Create employee_lifecycle_events record with event_type transferred.",
-            "Notify old and new managers where configured.",
+            "Notify old and new position-resolved managers where configured.",
             "Downstream modules can update shift, leave policy, monitoring office context, and reporting scope.",
         ],
         "edge": [
@@ -625,7 +625,7 @@ SIMPLE_WORKFLOWS = [
         "title": "Leave Type and Leave Policy Setup",
         "user": [
             "Create leave types such as annual, sick, maternity, unpaid, or custom types.",
-            "Create leave policies by country, legal entity, job level, or tenant rule.",
+            "Create leave policies by country, company registration profile, job level, or tenant rule.",
             "Set entitlement amount, accrual rule, carry-forward rule, approval rule, and document requirement.",
             "Assign entitlements to employees.",
         ],
@@ -1550,7 +1550,7 @@ def build():
             "Shift/schedule is assigned by Workforce Presence.",
             "Onboarding tasks are generated from the department template.",
             "Monitoring agent is installed and registered if workforce intelligence is enabled.",
-            "Employee gives required consent before monitoring/biometric processing.",
+            "Employee completes required WorkPulse notice/consent before monitoring or photo/biometric collection.",
             "Monitoring policy activates and welcome notification is sent.",
         ]),
         ("Leave Request and Approval", [

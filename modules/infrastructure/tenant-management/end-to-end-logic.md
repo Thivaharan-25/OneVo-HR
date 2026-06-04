@@ -50,13 +50,15 @@ create or handle the tenant owner's final password.
 
 Tenant profile creation collects country, registration/profile name, registration
 number, timezone, and currency as tenant profile fields, but it does not create
-`legal_entities` rows. Separate operating companies are separate tenants. The
-same owner email can accept invitations for multiple isolated tenants without
-merging tenant data or granting cross-company access.
+deprecated registration-profile rows. Activation/setup seeding
+creates one primary legal entity. Additional operating companies under the same customer
+account are added as legal entities inside the tenant. Separate tenants are used only
+for separate customer accounts that must remain isolated.
 
 Roles are independent tenant-scoped permission containers. They do not require
-job levels. Job levels and hierarchy are used later for scoped permissions,
-approval routing, escalation, and organisation-aware access.
+job levels. Job levels can suggest role assignments for admin confirmation, but
+they must not auto-assign permissions. Hierarchy is used later for scoped
+access, approval routing, escalation, and organisation-aware access.
 
 ### Error Scenarios
 
@@ -77,3 +79,4 @@ approval routing, escalation, and organisation-aware access.
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
+

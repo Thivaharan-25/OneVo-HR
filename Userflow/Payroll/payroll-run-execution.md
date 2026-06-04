@@ -18,12 +18,12 @@
 ## Flow Steps
 
 ### Step 1: Create Payroll Run
-- **UI:** Payroll → Runs → "Create Run" → select pay period (e.g., March 2026) → select legal entity → click "Calculate"
+- **UI:** Payroll -> Runs -> "Create Run" -> select pay period (e.g., March 2026) -> select legal entity -> click "Calculate"
 - **API:** `POST /api/v1/payroll/runs`
 - **Backend:** PayrollRunService.InitiateAsync() → [[modules/payroll/payroll-execution/overview|Payroll Execution]]
 
 ### Step 2: System Calculates (Automated via Hangfire)
-- **Backend:** For each employee in legal entity:
+- **Backend:** For each employee in selected legal entity:
   1. **Gross Salary** = base salary (prorated if mid-month join/leave)
   2. **+ Allowances** = housing + transport + meal + other → [[modules/payroll/allowances/overview|Allowances]]
   3. **+ Overtime** = approved overtime hours × overtime rate → [[Userflow/Workforce-Presence/overtime-management|Overtime Management]]
@@ -99,3 +99,4 @@
 - [[modules/payroll/allowances/overview|Allowances]]
 - [[modules/payroll/pensions/overview|Pensions]]
 - [[backend/notification-system|Notification System]]
+

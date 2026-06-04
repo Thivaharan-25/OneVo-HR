@@ -1,52 +1,53 @@
-# GDPR Consent — End-to-End Logic
+# Legal & Privacy Acceptance - End-to-End Logic
 
 **Module:** Auth
-**Feature:** GDPR Consent Tracking
+**Feature:** Legal & Privacy Acceptance Tracking
 
 ---
 
-## Record Consent
+## Record Legal Decision
 
 ### Flow
 
-```
-POST /api/v1/auth/consent
-  -> ConsentController.RecordConsent(RecordConsentCommand)
+```text
+POST /api/v1/legal/acceptances
+  -> LegalAcceptanceController.Record(RecordLegalAcceptanceCommand)
     -> [Authenticated]
-    -> ConsentService.RecordAsync(command, ct)
-      -> 1. Validate consent_type: data_processing, biometric, monitoring, marketing
-      -> 2. UPSERT into gdpr_consent_records
-         -> ON CONFLICT (tenant_id, user_id, consent_type) DO UPDATE
-         -> SET consented = @value, consented_at = now, ip_address = @ip
-      -> 3. If consent_type = "monitoring" AND consented = true:
-         -> Monitoring features can now activate for this employee
-      -> 4. If consent_type = "monitoring" AND consented = false:
-         -> Disable all monitoring for this employee via IConfigurationService
-      -> 5. Log to audit_logs: action = "consent.recorded"
+    -> LegalAcceptanceService.RecordAsync(command, ct)
+      -> 1. Validate document_type, document_version, decision, required flag, and source
+      -> 2. UPSERT into legal_acceptance_records
+      -> 3. If item is platform-required and accepted/acknowledged:
+         -> Dashboard/account gate may proceed
+      -> 4. If item is collection-required and accepted/acknowledged:
+         -> Affected collector may activate for this employee
+      -> 5. If item is collection-required and declined/withdrawn:
+         -> Disable only the affected collection category via IConfigurationService
+      -> 6. Log to audit_logs: action = "legal_acceptance.recorded"
       -> Return Result.Success()
 ```
 
-## Check Consent
+## Check Legal Gate
 
 ### Flow
 
-```
-Internal call (e.g., before activating monitoring):
-  -> ConsentService.HasConsentAsync(userId, consentType, ct)
-    -> Query gdpr_consent_records WHERE user_id AND consent_type
-    -> Return consented = true/false
+```text
+Internal call before dashboard access or activating a collector:
+  -> LegalAcceptanceService.CheckGateAsync(userId, gateType, category, ct)
+    -> Query legal_acceptance_records WHERE user_id, document_type, version
+    -> Return allowed/block reason
 ```
 
 ### Key Rules
 
-- **Monitoring consent is mandatory** before any monitoring features activate.
-- **Biometric consent is mandatory** before fingerprint enrollment (GDPR/PDPA requirement).
-- **Consent records include IP address** for legal compliance.
-- **Withdrawing monitoring consent** immediately disables all monitoring for that employee.
+- **Terms and Privacy Notice acknowledgement are mandatory** before account activation or dashboard access.
+- **WorkPulse monitoring/screenshot/biometric-photo notices are mandatory only before the affected collection category activates.**
+- **Photo/biometric notice or consent is mandatory** before WorkPulse photo/biometric verification starts.
+- **Acceptance records include IP address, user agent, source, document type, and version** for legal compliance.
+- **Withdrawing optional collection consent, or missing a required notice,** immediately disables only the affected collection category for that employee.
 
 ## Related
 
-- [[Userflow/Auth-Access/gdpr-consent|Overview]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - [[frontend/cross-cutting/authentication|Authentication]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[frontend/cross-cutting/authorization|Authorization]]

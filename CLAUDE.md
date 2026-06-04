@@ -21,7 +21,7 @@ Platform shape: `OneVo frontend → OneVo unified backend → single PostgreSQL 
 Before doing any work, read these files in order:
 
 1. `AI_CONTEXT/project-context.md` — what ONEVO is, three-pillar architecture
-2. `AI_CONTEXT/tech-stack.md` — .NET 10 / C# 14, PostgreSQL, Angular 21 two-app monorepo, all dependencies
+2. `AI_CONTEXT/tech-stack.md` — .NET 10 / C# 14, PostgreSQL, Angular 21 three-app monorepo, all dependencies
 3. `AI_CONTEXT/rules.md` — AI agent rules (backend + frontend + desktop agent)
 4. `current-focus/README.md` — active sprint, 8-developer delivery plan
 5. `AI_CONTEXT/known-issues.md` — gotchas, deprecated patterns, monitoring data quirks
@@ -34,21 +34,26 @@ Before doing any work, read these files in order:
 All commands run from the `onevo-frontend/` workspace root:
 
 ```bash
-# Employee app
-ng serve employee-app          # Dev server
-ng build employee-app          # Production build
+# Setup / Control app
+ng serve setup-control-app          # Dev server
+ng build setup-control-app          # Production build
 
-# Management app
-ng serve management-app        # Dev server
-ng build management-app        # Production build
+# Operations / Lifecycle app
+ng serve operations-lifecycle-app   # Dev server
+ng build operations-lifecycle-app   # Production build
+
+# Developer Platform console
+ng serve dev-console                # Dev server
+ng build dev-console                # Production build
 
 # Shared library
 ng build shared                # Build library (required before serving apps)
 
 # Lint / test
 ng lint                        # ESLint across workspace
-ng test employee-app           # Jest unit tests
-ng test management-app
+ng test setup-control-app
+ng test operations-lifecycle-app
+ng test dev-console
 ng e2e                         # Playwright E2E
 ```
 
@@ -100,7 +105,7 @@ Default request flow: `Controller -> Command/Query -> Validator -> Handler -> Re
 
 ### Frontend (`onevo-frontend/` — Angular workspace)
 
-Two apps in one monorepo: `employee-app` (`app.{tenant}.onevo.com`) and `management-app` (`manage.{tenant}.onevo.com`), sharing a `shared` Angular library.
+Three apps in one monorepo: `setup-control-app` for tenant/company setup and configuration, `operations-lifecycle-app` for daily employee/manager/HR/workforce operations, and internal `dev-console` for ONEVO platform operators. All three share a `shared` Angular library.
 
 - **Angular 21**, TypeScript strict mode, standalone components (no NgModules), CSR SPA
 - **Angular Router** — typed routes in `app.routes.ts`; functional guards (`CanActivateFn`)

@@ -5,6 +5,10 @@
 
 ---
 
+## Phase Rule
+
+Certification endpoints and expiry jobs are Phase 2. Do not build these as Phase 1 routes, pages, jobs, or API integrations.
+
 ## Add Certification
 
 ### Flow

@@ -1,4 +1,4 @@
-# Developer Platform Access Control Contract
+﻿# Developer Platform Access Control Contract
 
 ## Purpose
 
@@ -28,7 +28,7 @@ Developer Platform access is permission-based. Role names are never authorizatio
 | Billing Manager | Subscription plans, invoices, payment gateways, billing reports, and commercial read/manage actions |
 | Security Auditor | Security, audit, compliance, and retention read-only permissions |
 | Module Catalog Manager | Product module catalog, integration catalog, role templates, and configuration templates |
-| Operations Engineer | Platform health, services monitor, devices, infrastructure, background jobs, and agent versions |
+| Operations Engineer | Platform health, services monitor, feature flags, and system configuration review |
 | Read-Only Viewer | Dashboard and broad read-only visibility without mutation permissions |
 
 Seeded role names are convenience presets. If a seeded role is edited, its current permission set is the source of truth.
@@ -69,14 +69,14 @@ If the guard blocks a request, return:
 | Platform Roles | `/platform/platform-roles` | `platform.roles.read` | Hide nav item; direct URL shows 403 |
 | Global Policies | `/platform/global-policies` | `platform.policies.read` | Hide nav item; direct URL shows 403 |
 | Module Catalog | `/platform/module-catalog` | `platform.module_catalog.read` | Hide nav item; direct URL shows 403 |
-| Role Templates | `/platform/role-templates` | `platform.role_templates.read` | Hide nav item; direct URL shows 403 |
+| Templates | `/platform/templates` | `platform.role_templates.read` or `platform.config_templates.read` | Hide nav item; direct URL shows 403 |
 | Feature Flags | `/platform/feature-flags` | `platform.feature_flags.read` | Hide nav item; direct URL shows 403 |
 | Platform Health | `/operations/platform-health` | `platform.health.read` | Hide nav item; direct URL shows 403 |
 | Services Monitor | `/operations/services` | `platform.health.read` | Hide nav item; direct URL shows 403 |
-| Device Management | `/operations/devices` | `platform.health.read` | Hide nav item; direct URL shows 403 |
-| Infrastructure | `/operations/infrastructure` | `platform.health.read` | Hide nav item; direct URL shows 403 |
-| Background Jobs | `/operations/background-jobs` | `platform.health.read` | Hide nav item; direct URL shows 403 |
-| Agent Versions | `/operations/agent-versions` | `platform.agent_versions.read` | Hide nav item; direct URL shows 403 |
+| Device Management | `/operations/devices` | Phase 2 permission contract | Hidden in Phase 1; direct URL shows 404 |
+| Infrastructure | `/operations/infrastructure` | Phase 2 permission contract | Hidden in Phase 1; direct URL shows 404 |
+| Background Jobs | `/operations/background-jobs` | Phase 2 permission contract | Hidden in Phase 1; direct URL shows 404 |
+| Agent Versions | `/operations/agent-versions` | Phase 2 permission contract | Hidden in Phase 1; direct URL shows 404 |
 | Security Center | `/security/security-center` | `platform.security.read` | Hide nav item; direct URL shows 403 |
 | Audit Logs | `/security/audit-logs` | `platform.audit.read` | Hide nav item; direct URL shows 403 |
 | Compliance Center | `/security/compliance` | `platform.compliance.read` | Hide nav item; direct URL shows 403 |
@@ -124,3 +124,4 @@ Backend permission failures should use:
 ```
 
 Tenant JWTs presented to `/admin/v1/*` return 401. Platform-admin JWTs missing a required permission return 403.
+

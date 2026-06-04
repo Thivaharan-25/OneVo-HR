@@ -10,7 +10,7 @@
 ## Preconditions
 
 - Tenant provisioned -> [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
-- GDPR consent policy configured -> [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- Legal & Privacy document versions configured -> [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
@@ -50,13 +50,13 @@
 
 ### Employee-level override
 - Navigate to employee -> Monitoring -> override specific settings -> [[Userflow/Configuration/employee-override|Employee Override]]
-- Employee consent required -> [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- Employee notice/consent required before affected collection starts -> [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| No GDPR consent policy | Warning | "Configure consent policy before enabling monitoring" |
+| No Legal & Privacy document version | Warning | "Configure the monitoring notice before enabling monitoring" |
 | Agent not deployed | Info | "12 employees have no desktop agent installed" |
 | Work-location verification enabled without workplace profile | Warning | "Add at least one approved work location before enforcing this policy" |
 
@@ -67,7 +67,7 @@
 
 ## Related Flows
 
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
 - [[Userflow/Configuration/employee-override|Employee Override]]
 - [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]]

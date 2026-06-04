@@ -9,13 +9,13 @@
 
 ## Preconditions
 
-- Legal entity with country set → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- Legal entity with country set -> [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Tax Config
-- **UI:** Payroll → Tax Configuration → select country/legal entity
+- **UI:** Payroll -> Tax Configuration -> select legal entity/country
 - **API:** `GET /api/v1/payroll/tax?legal_entity_id={id}`
 
 ### Step 2: Configure Tax Brackets
@@ -24,7 +24,7 @@
 
 ### Step 3: Set Employer Contributions
 - **UI:** Social security rate (employer %), health insurance (employer %), other statutory contributions → rates applied per employee on payroll run
-- **DB:** `tax_configurations` — records per legal entity per year
+- **DB:** `tax_configurations` - records per legal entity per year
 
 ### Step 4: Set Employee Deductions
 - **UI:** Income tax (auto from brackets), social security (employee %), pension (from [[Userflow/Payroll/pension-configuration|Pension Configuration]]) → tax-free allowance threshold
@@ -55,3 +55,6 @@
 
 - [[Userflow/Payroll/tax-configuration|Tax Configuration]]
 - [[modules/payroll/overview|Payroll]]
+
+
+

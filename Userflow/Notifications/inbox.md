@@ -1,4 +1,4 @@
-# Inbox
+﻿# Inbox
 
 The personal action center - everything waiting for YOUR decision in one place. Inbox is also the fallback delivery surface for workflow action cards when WorkSync Chat is not enabled.
 
@@ -29,7 +29,7 @@ The personal action center - everything waiting for YOUR decision in one place. 
   - Automation follow-ups -> Review / Resolve / Escalate
 
 ### Step 2a: Skill Validation Request
-- **Trigger:** Employee declares a skill from My Profile -> Skills.
+- **Trigger:** Employee requests an existing tenant skill from My Profile -> Skills.
 - **Route:** Direct manager receives the Inbox item if they have `skills:validate`.
 - **UI:** Item shows employee name, skill name, category, self-rated proficiency, years of experience, and employee notes.
 - **Actions:** Validate, Adjust & Validate, Reject. Reject requires a reason.
@@ -69,3 +69,4 @@ If WorkSync Chat is enabled, workflow action cards should normally appear in Cha
 ## Module References
 
 - [[modules/notifications/overview|Notifications Module]]
+

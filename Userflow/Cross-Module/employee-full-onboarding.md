@@ -25,12 +25,12 @@ When a new employee is onboarded, the action doesn't stop at creating a profile.
 | Order | Module | What Happens | Triggered By | Event Published |
 |:------|:-------|:-------------|:-------------|:----------------|
 | 1 | **Employee-Management** | Employee profile created, status set to "Onboarding" | Admin submits form | `EmployeeCreated`, `EmployeeOnboardingStarted` |
-| 2 | **Auth-Access** | User account created with temporary password, invitation email sent | `EmployeeCreated` | `UserAccountCreated` |
+| 2 | **Auth-Access** | User account created and email invitation sent; employee completes password setup or uses SSO if enabled | `EmployeeCreated` | `UserAccountCreated` |
 | 3 | **Leave** | Leave entitlements auto-assigned based on employee's country, entity, and employment type. Pro-rated if mid-year start | `EmployeeCreated` | `LeaveEntitlementsAssigned` |
 | 4 | **Workforce-Presence** | Default shift schedule assigned based on department/location. Work calendar initialized | `EmployeeCreated` | `ShiftScheduleAssigned` |
 | 5 | **Payroll** | Salary structure created from compensation details entered during onboarding. Tax config applied based on country. Added to next payroll run | `EmployeeCreated` + compensation data | `PayrollProfileCreated` |
 | 6 | **Documents** | Employment contract generated from template. Pending employee signature. Other required docs (NDA, handbook acknowledgement) queued | `EmployeeCreated` | `DocumentsPendingSignature` |
-| 7 | **Workforce-Intelligence** | *(Only if monitoring enabled for tenant)* GDPR consent queued for employee's first login. Agent deployment instructions generated | `EmployeeCreated` + tenant monitoring config | `ConsentRequired` |
+| 7 | **Workforce-Intelligence** | *(Only if monitoring enabled for tenant)* Required Legal & Privacy monitoring/screenshot/biometric items queued for invite acceptance or first login. Agent deployment instructions generated | `EmployeeCreated` + tenant monitoring config | `LegalPrivacyRequired` |
 
 ---
 
@@ -43,7 +43,7 @@ Employee Created (Step 1)
 ├── Shift schedule (Step 4) — independent
 ├── Payroll profile (Step 5) — needs compensation data from Step 1
 ├── Documents (Step 6) — needs employee details from Step 1
-└── Monitoring consent (Step 7) — needs user account from Step 2
+└── Legal & Privacy monitoring gate (Step 7) — needs user account from Step 2
 ```
 
 Steps 2-6 can run in parallel except Step 7 which depends on Step 2.
@@ -59,7 +59,7 @@ Steps 2-6 can run in parallel except Step 7 which depends on Step 2.
 | Shift schedule not assigned | Employee not tracked in attendance | Admin assigns manually via [[Userflow/Workforce-Presence/shift-schedule-setup\|Shift Schedule Setup]] |
 | Payroll profile missing | Employee excluded from next payroll run | HR Admin sets up via [[Userflow/Employee-Management/compensation-setup\|Compensation Setup]] |
 | Document generation fails | Employee doesn't receive contract | Admin re-triggers from [[Userflow/Documents/template-management\|Template Management]] |
-| Consent not queued | Monitoring cannot start for this employee | Auto-retries on next login; admin can trigger manually |
+| Legal & Privacy item not queued | Affected monitoring collection cannot start for this employee | Auto-retries on invite acceptance, next login, or agent startup; admin can trigger manually |
 
 **Critical rule:** An employee can reach "Active" status even if Steps 3-7 partially fail. The onboarding checklist (Step 1) tracks completion of downstream setup. Employee status should NOT move to "Active" until all MUST steps are confirmed.
 
@@ -76,7 +76,7 @@ These are the checklist items generated at Step 1 that track cross-module comple
 - [ ] Salary structure configured (Payroll)
 - [ ] Employment contract signed (Documents)
 - [ ] Required policy documents acknowledged (Documents)
-- [ ] GDPR consent collected *(if monitoring enabled)* (Workforce-Intelligence)
+- [ ] Required Legal & Privacy items completed *(if monitoring/screenshot/biometric enabled)* (Workforce-Intelligence)
 - [ ] IT equipment provisioned *(external — tracked but not automated)*
 - [ ] Manager welcome meeting scheduled *(external — tracked but not automated)*
 
@@ -90,7 +90,7 @@ These are the checklist items generated at Step 1 that track cross-module comple
 - [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]] — schedule assignment detail
 - [[Userflow/Employee-Management/compensation-setup|Compensation Setup]] — payroll setup detail
 - [[Userflow/Documents/document-upload|Document Upload]] — contract generation detail
-- [[Userflow/Auth-Access/gdpr-consent|GDPR Consent]] — consent collection detail
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]] - terms, notices, and consent detail
 - [[Userflow/Cross-Module/employee-full-offboarding|Employee Full Offboarding]] — the reverse chain
 
 ## Module References

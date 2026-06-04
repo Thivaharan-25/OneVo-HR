@@ -46,7 +46,7 @@ Used only when `audience_type = individual`. For `department`, `team`, and `tena
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/calendar` | Authenticated | Calendar events for date range (filtered by `IHierarchyScope`) |
-| GET | `/api/v1/calendar/holiday-settings` | `calendar:admin` | Get legal-entity holiday sync settings |
+| GET | `/api/v1/calendar/holiday-settings` | `calendar:admin` | Get legal entity holiday sync settings |
 | PUT | `/api/v1/calendar/holiday-settings/{id}` | `calendar:admin` | Enable/disable country holiday sync or override calendar country |
 | POST | `/api/v1/calendar/holiday-settings/{id}/sync` | `calendar:admin` | Import holidays from configured provider |
 | GET | `/api/v1/calendar/connections` | Authenticated | List user's Google/Outlook calendar connections |
@@ -65,3 +65,4 @@ Used only when `audience_type = individual`. For `department`, `team`, and `tena
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]]
+

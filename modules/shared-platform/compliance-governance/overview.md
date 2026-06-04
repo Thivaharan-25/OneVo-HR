@@ -26,7 +26,7 @@ GDPR requests: `export_type` (`subject_access`, `data_portability`, `erasure`), 
 - [[frontend/cross-cutting/feature-flags|Feature Flags]]
 - [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
 - [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[security/compliance|Compliance]]
 - [[security/data-classification|Data Classification]]

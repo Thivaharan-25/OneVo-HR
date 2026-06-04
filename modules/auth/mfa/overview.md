@@ -35,7 +35,7 @@ Optional MFA support for enhanced security. MFA uses authenticator-app TOTP as t
 - [[frontend/cross-cutting/authorization|Authorization]]
 - [[modules/auth/session-management/overview|Session Management]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - [[security/auth-architecture|Auth Architecture]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 - [[backend/messaging/error-handling|Error Handling]]

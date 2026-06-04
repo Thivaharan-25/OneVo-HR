@@ -22,7 +22,7 @@ Permissions come from backend session endpoints such as `/api/v1/auth/session` o
 }
 ```
 
-This comes from `GET /api/v1/me/app-context` on session start. `capabilities` replaces the flat permission array — each entry carries the permission code and its resolved access policy. `navigation` is computed by the backend and rendered by Angular exactly as returned. `AuthService` caches capabilities and navigation signals and refreshes them when the session is refreshed.
+This comes from `GET /api/v1/me/app-context` on session start. `capabilities` replaces the flat permission array; each entry carries the permission code and its resolved assignment scope. `navigation` is computed by the backend and rendered by Angular exactly as returned. `AuthService` caches capabilities and navigation signals and refreshes them when the session is refreshed.
 
 ## `*hasPermission` Structural Directive
 
@@ -117,7 +117,7 @@ Items where the user lacks permission are **hidden entirely** (not greyed out).
 
 ## Access-Policy-Driven Data Scoping
 
-The frontend does not enforce data scoping — the backend resolves the access policy for each permission and filters queries accordingly. The frontend adapts the UI based on what `capabilities` the backend returned in `app-context`:
+The frontend does not enforce data scoping. The backend resolves the assignment scope for each permission from `user_roles` and `user_permission_overrides`, then filters queries accordingly. The frontend adapts the UI based on what `capabilities` the backend returned in `app-context`:
 
 | Effective capability | What the frontend shows |
 |:---------------------|:------------------------|
@@ -214,4 +214,4 @@ if (auth.hasPermission('employees:write')()) { ... }
 
 - [[frontend/cross-cutting/authorization|Authorization]] — full permission system
 - [[security/auth-flow|Auth Flow]] — session and token architecture
-- [[frontend/architecture/app-structure|App Structure]] — two-app monorepo
+- [[frontend/architecture/app-structure|App Structure]] — three-app monorepo

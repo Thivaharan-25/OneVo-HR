@@ -7,7 +7,7 @@
 
 ---
 
-> **This is the KEY flow in the ONEVO RBAC system.** All other flows depend on permissions being correctly assigned. Explicit permissions can be assigned at two levels: (1) to a Role (affects all users with that role), or (2) as per-employee overrides (adds or removes specific permissions for one user). Module auto-grant permissions are given to every active employee based on the tenant's active modules and are never assigned or revoked here. Derived permissions (inbox:read, notifications:read) are computed automatically from the effective permission set. Tenant Super Admin can manage permissions only from the tenant's enabled module catalog; commercial entitlement is never bypassed by role power.
+> **This is the KEY flow in the ONEVO permission system.** Security role permissions are assigned to Security Roles and affect users with those roles. Team role permissions are assigned to standard Team Roles and apply only inside team/workspace context after the role is assigned through team membership. Per-employee overrides add or remove specific security permissions for one user. Module auto-grant permissions are given to every active employee based on the tenant's active modules and are never assigned or revoked here. Derived permissions (inbox:read, notifications:read) are computed automatically from the effective permission set. Tenant Super Admin can manage permissions only from the tenant's enabled module catalog; commercial entitlement is never bypassed by role power.
 
 ## Preconditions
 
@@ -19,10 +19,20 @@
 
 ## Flow Steps
 
-### Path A: Assign Permissions to a Role
+### Role Surface Split
+
+Roles & Permissions has two separate configuration surfaces:
+
+- **Security Roles:** tenant/module authority. Stored in `roles`, `role_permissions`, and `user_roles`. Assigned to user/employee accounts.
+- **Team Roles:** scoped team/workspace authority. Stored in `team_roles`, `team_role_permissions`, and `team_member_roles`. Assigned only inside team membership.
+
+The UI must keep these surfaces separate. Team creation and team editing can show only Team Roles from `team_roles`: `Admin / Lead`, `Member`, and `Viewer / Reviewer`. They must not show security-role records from `roles`.
+
+
+### Path A: Assign Permissions to a Security Role
 
 #### Step A1: Navigate to Role Detail
-- **UI:** Administration > Roles & Permissions > click on a role name. Role detail page shows: Name, Description, User Count, and a full permission grid
+- **UI:** Administration > Roles & Permissions > Security Roles > click on a security role name. Role detail page shows: Name, Description, User Count, and a full permission grid
 - **API:** `GET /api/v1/roles/{roleId}`
 - **Backend:** `RoleService.GetRoleWithPermissionsAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** Permission check for `roles:manage`. System roles can be viewed but not modified
@@ -36,7 +46,7 @@
   - Currently assigned permissions pre-checked
   - Search bar to filter permissions
   - "Select All" / "Deselect All" per category
-  - For employee-data permissions (e.g. `leave:read`, `attendance:read`, `employees:read`): an **access policy picker** appears inline next to the checkbox — dropdown with options: `self`, `direct_reports`, `reporting_tree`, `department`, `department_tree`, `org_unit_tree`, `organization`. Defaults to `self` if not explicitly set.
+  - Employee-data permissions are selected as permission codes only. Scope is not stored on `role_permissions`; it is stored on the `user_roles` assignment through `scope_type` and `scope_id`.
   - Change summary panel: "Adding 3, Removing 1"
 - **API:** N/A (client-side selection)
 - **Backend:** N/A
@@ -68,21 +78,43 @@
 - **Validation:** N/A
 - **DB:** None
 
-### Path B: Per-Employee Permission Override
 
-#### Step B1: Navigate to Employee Profile
-- **UI:** Employees > search for employee > click profile > Security tab. Shows: Assigned Role (from job family or manual assignment), Effective Permissions list (universal auto-grants + role permissions + overrides), "Override Permissions" button
+### Path B: Configure Team Role Permission Sets
+
+#### Step B1: Navigate to Team Roles
+- **UI:** Administration > Roles & Permissions > Team Roles
+- **Standard Team Roles:** `Admin / Lead`, `Member`, `Viewer / Reviewer`
+- **API:** `GET /api/v1/team-roles`
+- **DB:** `team_roles`, `team_role_permissions`, `permissions`
+
+#### Step B2: Manage Team Role Permissions
+- **UI:** Select one team role -> Manage Permissions. The permission browser shows only scoped team/workspace permissions.
+- **Allowed permission scope:** workspace/team-context permissions such as task assignment, sprint planning, availability viewing, workspace reporting, and workspace member invitation.
+- **Blocked permission scope:** tenant security, HR admin, payroll, billing, system settings, security role management, and project visibility permissions.
+- **API:** `PUT /api/v1/team-roles/{teamRoleId}/permissions`
+- **Backend:** Replaces `team_role_permissions` transactionally, validates every permission against the team-scoped permission catalog, invalidates affected workspace/team permission cache, and writes audit log.
+- **Validation:** Reject security-role permissions and any permission outside the tenant commercial/module boundary. Reject custom team role names outside `Admin / Lead`, `Member`, and `Viewer / Reviewer`.
+
+#### Step B3: Assignment Boundary
+- Team role permissions are not assigned directly to users.
+- Org Structure > Teams assigns `team_member_roles` when adding or editing team members.
+- Team creation must show only team roles and must not show `roles` security-role records.
+
+### Path C: Per-Employee Permission Override
+
+#### Step C1: Navigate to Employee Profile
+- **UI:** Employees > search for employee > click profile > Security tab. Shows confirmed security roles, effective permissions list (universal auto-grants + role permissions + overrides), and "Override Permissions" button
 - **API:** `GET /api/v1/users/{id}/permissions`
 - **Backend:** `PermissionService.GetEffectivePermissionsAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
   - Computes: Universal auto-grants + role permissions + added overrides - removed overrides = effective permissions
 - **Validation:** Permission check for `roles:manage` AND (`users:manage` OR `employees:write`)
 - **DB:** `user_roles`, `role_permissions`, `user_permission_overrides`, `permissions`
 
-#### Step B2: Add or Remove Permission Overrides
+#### Step C2: Add or Remove Permission Overrides
 - **UI:** Permission override panel shows three columns:
   1. **Universal:** Auto-granted permissions inherited by every active employee (read-only, no checkboxes)
-  2. **From Role:** Explicit permissions inherited from the assigned role; for employee-data permissions, the role's access policy is shown as a badge (e.g. `reporting_tree`). Read-only checkboxes, but access policy can be overridden individually — click the policy badge to reveal a dropdown and select a different policy for this employee only.
-  3. **Added Overrides:** Extra explicit permissions granted to this specific employee (green highlight); access policy picker shown for employee-data permissions
+  2. **From Role:** Explicit permissions inherited from assigned roles. Each assigned role row shows its `scope_type` and `scope_id` from `user_roles`.
+  3. **Added Overrides:** Extra explicit permissions granted to this specific employee (green highlight); scoped overrides can set `scope_type` and `scope_id` for employee-data permissions
   4. **Removed Overrides:** Explicit role permissions revoked for this specific employee (red strikethrough)
   
   To add an override: click "+" next to any unassigned permission â†’ moves to "Added Overrides"
@@ -93,13 +125,15 @@
 - **Validation:** Cannot override universal permissions such as `employees:read-own`, `leave:read-own`, or `workforce:dashboard`.
 - **DB:** None
 
-#### Step B3: Save Employee Overrides
+#### Step C3: Save Employee Overrides
 - **UI:** Click "Save Overrides". Summary shown: "Adding 2 permissions, removing 1 permission for Jane Doe"
 - **API:** `PUT /api/v1/users/{id}/permission-overrides`
   ```json
   {
     "addedPermissionIds": ["uuid1", "uuid2"],
     "removedPermissionIds": ["uuid3"],
+    "scopeType": "Department",
+    "scopeId": "uuid",
     "validFrom": "2026-05-20T00:00:00Z",
     "expiresAt": "2026-05-22T23:59:59Z"
   }
@@ -114,28 +148,28 @@
 - **Validation:** Cannot create circular situations (e.g., removing `roles:manage` from the last admin). Reject any universal permission ID in `addedPermissionIds` or `removedPermissionIds`. Reject permissions from disabled or unpurchased modules. `expiresAt` must be empty or greater than `validFrom` / current time.
 - **DB:** `user_permission_overrides`, `audit_logs`
 
-#### Step B4: Immediate Effect
+#### Step C4: Immediate Effect
 - **UI:** Toast: "Permission overrides saved. Changes take effect on Jane's next login or within 15 minutes"
 - **API:** N/A
 - **Backend:** If user has an active SignalR connection, a `force-token-refresh` message is sent, prompting immediate token refresh with new permissions
 - **Validation:** N/A
 - **DB:** None
 
-### Path C: Grant Hierarchy Bypass to an Employee
+### Path D: Grant Hierarchy Bypass to an Employee
 
-#### Step C1: Navigate to Employee Security Tab
+#### Step D1: Navigate to Employee Security Tab
 - **UI:** Employees > search employee > click profile > Security tab > scroll to **"Bypass Grants"** section (below Override Permissions panel)
 - **API:** `GET /api/v1/employees/{employeeId}/bypass-grants`
 - **Backend:** `BypassGrantService.GetByEmployeeAsync()` â†’ [[modules/auth/authorization/end-to-end-logic|Authorization]]
 - **Validation:** Permission check for `roles:manage`. Granter must have an active `permission_delegation_scopes` record or be Tenant Super Admin. Tenant Super Admin can grant bypasses only inside enabled tenant modules.
 - **DB:** `hierarchy_scope_exceptions`, `permission_delegation_scopes`
 
-#### Step C2: Add a Bypass Grant
+#### Step D2: Add a Bypass Grant
 - **UI:** Click **"Add Bypass Grant"**. A panel appears with three fields:
   1. **Scope Type** â€” dropdown: `Department` / `Person` / `Role`
   2. **Scope Target** â€” searchable picker (required â€” Save is blocked until a target is selected):
      - Department: dept tree filtered to granter's accessible depts
-     - Person: employee search filtered to granter's accessible employee pool â€” all employees below the granter in the `reports_to_id` chain **plus** employees reachable via the granter's own broad (`applies_to IS NULL`) bypass grants. Feature-scoped bypasses (e.g. `applies_to = 'calendar'`) are excluded from this pool â€” a granter cannot re-delegate access they only have via a feature-specific bypass.
+     - Person: employee search filtered to granter's accessible employee pool â€” all employees below the granter in `employee_hierarchy_closure` **plus** employees reachable via the granter's own broad (`applies_to IS NULL`) bypass grants. Feature-scoped bypasses (e.g. `applies_to = 'calendar'`) are excluded from this pool â€” a granter cannot re-delegate access they only have via a feature-specific bypass.
      - Role: role list (picker not yet implemented in v1 â€” the Role option is visible in the Scope Type dropdown but selecting it leaves Scope Target empty, so the Save button remains disabled until a role picker is implemented)
   3. **Applies To** â€” dropdown:
      - Root admin sees: `All Features` + individual feature names (e.g., `Calendar`, `Teams`)
@@ -148,7 +182,7 @@
   - For Person scope: selected employee must be in granter's subordinate chain or reachable via a broad (`applies_to IS NULL`) bypass grant. Feature-scoped bypasses do not extend the Person picker pool.
 - **DB:** None (client-side selection)
 
-#### Step C3: Save Bypass Grant
+#### Step D3: Save Bypass Grant
 - **UI:** Click "Save Grant"
 - **API:** `POST /api/v1/employees/{employeeId}/bypass-grants`
   ```json
@@ -165,7 +199,7 @@
   4. Audit log entry
 - **DB:** `hierarchy_scope_exceptions`, `audit_logs`
 
-#### Step C4: Confirmation
+#### Step D4: Confirmation
 - **UI:** Toast: "Bypass grant saved. [Employee] can now include [target] in [applies_to] operations."
 - Bypass Grants section refreshes showing the new grant with scope type, target name, applies to, and expiry
 
@@ -224,8 +258,8 @@ The system resolves effective permissions in this order:
 6. **Remove:** Explicit permissions in active `user_permission_overrides` with type `revoke` (cannot remove module auto-grants)
 7. **Filter:** Remove any permission whose module is not enabled for the tenant or whose feature key is not commercially included/runtime-enabled
 8. **Derived:** `inbox:read` added if effective set contains any inbox-triggering permission; `notifications:read` added if effective set contains any notification-triggering permission
-8a. **Access Policy Resolution:** For each employee-data permission in the effective set, resolve its assigned access policy from `role_permissions.access_policy` (role default) or `user_permission_overrides.access_policy` (per-employee override; takes precedence). Permissions with no assigned policy default to `self`. The result is a `(permission, policy)` capability pair set.
-9. **Result:** `Module auto-grants + enabled-module role permissions + active grants - active revokes + derived = Effective Permission Set`. Access policy pairs are included in the `/api/v1/me/app-context` response as `capabilities`.
+8a. **Access Scope Resolution:** For each employee-data permission in the effective set, resolve scope from `user_roles.scope_type` / `user_roles.scope_id` or from `user_permission_overrides.scope_type` / `user_permission_overrides.scope_id` when an individual override applies. Permissions with no explicit scope default to `Own`. The result is a `(permission, scope)` capability pair set.
+9. **Result:** `Module auto-grants + enabled-module role permissions + active grants - active revokes + derived = Effective Permission Set`. Scope pairs are included in the `/api/v1/me/app-context` response as `capabilities`.
 
 For customer web sessions, this effective permission set is stored in backend-held auth state and returned to the frontend as permission metadata. Browser JavaScript does not receive or decode the tenant JWT.
 
@@ -236,19 +270,18 @@ For customer web sessions, this effective permission set is stored in backend-he
 `GET /api/v1/me/app-context` is called on session start and after any permission refresh signal. It returns:
 
 - `modules` — active modules for this tenant
-- `capabilities` — effective `(permission, policy)` pairs for this employee
+- `capabilities` — effective `(permission, scope)` pairs for this employee
 - `navigation` — the list of nav items the user is allowed to see, computed by the backend from capabilities
 
 Angular renders `navigation` exactly as returned. No navigation item is shown or hidden based on role name, title, or any frontend inference. See [[Userflow/Auth-Access/access-policy|Access Policy Reference]] for the full response shape and navigation resolution rules.
 
 ## Variations
 
-### When permissions change via Job Family Level change
+### When job family level changes suggest role changes
 - Employee is promoted/transferred to a new [[Userflow/Org-Structure/job-family-setup|Job Family Level]]
-- New level has a different default role â†’ user's role changes automatically
-- Existing per-employee overrides are preserved (they layer on top of the new role)
-- Admin is warned: "This employee has 3 permission overrides that will carry over to the new role"
-
+- New level may suggest a different role; the user's role changes only after an authorized admin confirms it
+- Existing per-employee overrides are preserved unless the admin explicitly changes them
+- Admin is warned: "This employee has 3 permission overrides that will carry over if you confirm this role change"
 ### When viewing permission audit trail
 - From employee's Security tab, click "Permission History"
 - Shows timeline of all permission changes: role assignments, overrides added/removed, role permission changes that affected this user
@@ -291,7 +324,7 @@ Angular renders `navigation` exactly as returned. No navigation item is shown or
 ## Related Flows
 
 - [[Userflow/Auth-Access/role-creation|Role Creation]] â€” create roles before assigning permissions
-- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] â€” automatic role assignment via job family levels
+- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] â€” suggested role prefill via job family levels; admin confirmation is required
 - [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] â€” initial permission assignment during onboarding
 - [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] â€” permission changes when promoted to new job family level
 - [[Userflow/Auth-Access/login-flow|Login Flow]] â€” JWT contains effective permissions
@@ -304,3 +337,5 @@ Angular renders `navigation` exactly as returned. No navigation item is shown or
 - [[modules/auth/session-management/overview|Session Management]] â€” token refresh for permission propagation
 - [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] â€” job family to role mapping
 - [[modules/auth/audit-logging/overview|Audit Logging]] â€” permission change audit trail
+
+

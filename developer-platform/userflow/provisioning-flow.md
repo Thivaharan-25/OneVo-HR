@@ -103,7 +103,6 @@ The wizard collects four categories of information in sequence. After the wizard
 | Editable | No |
 
 #### Estimated Employee Count
-#### Estimated Employee Count
 | Property | Value |
 |---|---|
 | Label | "Estimated Employee Count" |
@@ -599,17 +598,17 @@ Pre-filled when a Configuration Template is selected above. All fields are indiv
 | Camera Photo Capture | "Enable Camera Photo Verification" | Toggle | Yes | On / Off | Default Off â€” requires explicit opt-in. WorkPulse tray captures a photo for identity verification events (clock-in, absence spot-check). Subject to biometric consent and retention policy. |
 | Input Counting | "Enable Keyboard/Mouse Activity Counting" | Toggle | Yes | On / Off | Counts only â€” never captures content |
 
-### Section: Job Family (shown only if Core HR selected)
+### Section: Position Templates (shown only if Core HR selected)
 
 | Field | Label | Type | Required | Options | Notes |
 |---|---|---|---|---|---|
-| Job Family Template | "Job Family Template" | Multi-select dropdown | No | Loaded from `GET /admin/v1/configuration-templates?type=job_family` | Each selected template seeds one `job_families` + its `job_levels`. Role links are resolved immediately if the matching role template was already applied in this provisioning session; otherwise `pending_role_template_id` is set and resolved when roles are applied |
+| Position Template Pack | "Position Template Pack" | Dropdown | No | Loaded from `GET /admin/v1/configuration-templates?type=position_template`; auto-suggested by mapping `estimated_employee_count` to `1-10`, `11-50`, `51-100`, `101-500`, `501-1000`, or `1001+` | Seeds departments and concrete positions. Each position may link to one role template; linked role permissions are filtered by tenant module entitlements when materialized. Operator can override the suggestion. |
 
 ### Section: Leave Policy (shown only if Leave Management selected)
 
 | Field | Label | Type | Required | Options | Notes |
 |---|---|---|---|---|---|
-| Leave Policy Template | "Leave Policy Template" | Dropdown | No | Loaded from `GET /admin/v1/configuration-templates?type=leave_policy` | Seeds `leave_types` and `leave_policies`. If a rule references a job level rank that doesn't exist yet, a warning is returned but apply succeeds |
+| Leave Policy Template | "Leave Policy Template" | Dropdown | No | Loaded from `GET /admin/v1/configuration-templates?type=leave_policy` | Seeds `leave_types` and `leave_policies`; assignment is configured as tenant, department, or position scope |
 | Leave Year Start | "Leave Year Start Month" | Dropdown | Yes | Januaryâ€“December | Defines when annual leave entitlement resets |
 | Leave Approval | "Leave Approval Flow" | Radio | Yes | Manager Approval Required, Auto-Approved | Default for new employees |
 | Carry-Forward Policy | "Leave Carry-Forward" | Radio | Yes | No carry-forward, Limited (max days input), Unlimited | |
@@ -619,7 +618,7 @@ Pre-filled when a Configuration Template is selected above. All fields are indiv
 
 | Field | Label | Type | Required | Options | Notes |
 |---|---|---|---|---|---|
-| App Allowlist Template | "App Allowlist Template" | Dropdown | No | Loaded from `GET /admin/v1/configuration-templates?type=app_allowlist` | Seeds `app_allowlists` at tenant scope; entries can be edited after apply |
+| App Allowlist Template | "App Allowlist Template" | Dropdown | No | Loaded from `GET /admin/v1/configuration-templates?type=app_allowlist` | Seeds `app_allowlists`; assignment is configured as tenant, department, or position scope |
 
 ### Section: Data Import (shown only if Data Import module selected)
 
@@ -633,12 +632,11 @@ Pre-filled when a Configuration Template is selected above. All fields are indiv
 | Field | Label | Type | Required | Options | Notes |
 |---|---|---|---|---|---|
 | Onboarding Template | "Onboarding Checklist Template" | Dropdown | No | Loaded from `GET /admin/v1/configuration-templates?type=onboarding` | Seeds onboarding task template; tasks are instantiated per new hire at onboarding time, not immediately |
-| Target Role Template | "Target Role" | Dropdown | No | Global role templates | Optional scope. Null = all roles |
-| Target Job Family Template | "Target Job Family" | Dropdown | No | Loaded from selected/applied `job_family` templates | Optional scope. Null = all job families |
-| Target Job Level | "Target Job Level" | Dropdown / rank selector | No | Levels from selected Target Job Family Template | Optional scope. Requires Target Job Family Template when selected |
-| Target Department | "Target Department" | Text / dropdown when departments already exist | No | Existing or future department name | Optional scope. Null = all departments |
+| Applies To | "Applies To" | Radio | Yes | Entire tenant, Departments, Positions | Determines assignment scope |
+| Departments | "Departments" | Multi-select | Required if Applies To = Departments | Existing or template-created department names | |
+| Positions | "Positions" | Multi-select | Required if Applies To = Positions | Existing or template-created position keys | |
 
-**Onboarding targeting rule:** The onboarding template applies to a new hire only when all non-empty targeting fields match. Target Job Level cannot be selected without Target Job Family Template, because level rank/name is only meaningful inside a job family.
+**Assignment rule:** Monitoring Policy, App Allowlist, Onboarding, and Leave Policy templates can apply to the entire tenant, selected departments, or selected positions. If multiple templates match an employee, resolve in this order: position-specific, department-specific, tenant-global, system default.
 
 ### Section: Setup Services
 
@@ -691,7 +689,7 @@ Setup services are module-connected tasks. Free/global services are auto-listed 
   ],
   "configuration_template_id": "uuid-or-null",
   "monitoring_policy_template_id": "uuid-or-null",
-  "job_family_template_ids": [],
+  "position_template_pack_id": "uuid-or-null",
   "leave_policy_template_id": "uuid-or-null",
   "app_allowlist_template_id": "uuid-or-null",
   "data_import_mapping_template_id": "uuid-or-null",
@@ -702,9 +700,9 @@ Setup services are module-connected tasks. Free/global services are auto-listed 
 **Template application order (server-enforced):**
 1. Configuration template â†’ writes `tenant_settings`
 2. Monitoring policy template â†’ writes `monitoring_feature_toggles`
-3. Job family templates â†’ writes `job_families` + `job_levels`; resolves role links where possible
-4. Leave policy template â†’ writes `leave_types` + `leave_policies`; matches job levels by rank
-5. App allowlist template â†’ writes `app_allowlists`
+3. Position template pack â†’ writes departments + positions; materializes linked role templates with tenant-entitlement-filtered permissions
+4. Leave policy template â†’ writes `leave_types` + `leave_policies` and assignment rows
+5. App allowlist template â†’ writes `app_allowlists` and assignment rows
 6. Data import mapping template â†’ writes `data_import_mapping_templates`
 7. Onboarding template â†’ writes `onboarding_templates` + `onboarding_template_tasks`
 
@@ -718,7 +716,7 @@ Each template generates a row in `tenant_configuration_template_applications`. W
   "setup_services_added": 2,
   "template_applications": [
     { "template_id": "uuid", "type": "configuration", "status": "applied", "warnings": [] },
-    { "template_id": "uuid", "type": "job_family", "status": "applied", "warnings": ["Level 'Senior' role link is pending â€” apply role template 'team-lead' to resolve."] }
+    { "template_id": "uuid", "type": "position_template", "status": "applied", "warnings": ["Role template 'engineering-manager' excluded 4 permissions because the tenant is not entitled to Work Management."] }
   ]
 }
 ```
@@ -726,7 +724,7 @@ Each template generates a row in `tenant_configuration_template_applications`. W
 **State written:**
 - `tenant_settings` rows for work_mode, monitoring config, org defaults
 - `monitoring_feature_toggles` row (if monitoring policy template applied)
-- `job_families` + `job_levels` rows (if job family templates applied)
+- department + `positions` rows (if position template pack applied)
 - `leave_types` + `leave_policies` rows (if leave policy template applied)
 - `app_allowlists` rows (if app allowlist template applied)
 - `data_import_mapping_templates` rows (if data import template applied)
@@ -841,5 +839,7 @@ When an operator closes the wizard after Step 1 but before activation:
 - [[developer-platform/modules/module-catalog-manager/end-to-end-logic|Module Catalog Manager]] â€” ONEVO product module pricing and permission ownership
 - [[developer-platform/modules/role-template-manager/end-to-end-logic|Role Template Manager]] â€” role templates applied during Manage/Configure
 - [[developer-platform/auth|Authentication & Authorization]] â€” platform-admin JWT and impersonation model
+
+
 
 

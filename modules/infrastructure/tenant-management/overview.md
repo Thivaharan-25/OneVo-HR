@@ -17,7 +17,7 @@ Key columns: `name`, `slug` (UNIQUE), `primary_contact_email`, `country_code`, `
 ## Key Business Rules
 
 1. Tenant creation flow: Operator creates customer profile draft -> assigns commercial plan/payment terms in Step 2 -> uses the tenant card Manage/Configure action to confirm entitled modules, apply roles/templates/settings, configure required module setup services, optionally invite owner, and activate.
-2. Tenant profile creation collects company/profile details, country, timezone, currency, and registration/profile data, but it does not create `legal_entities` records. Separate companies are separate tenants; the same owner email can accept invitations for more than one tenant without merging tenant data.
+2. Tenant profile creation collects company/profile details, country, timezone, currency, and registration/profile data, but it does not create deprecated registration-profile records. Activation/setup seeding creates one primary legal entity. Additional operating companies under the same customer account are added as legal entities inside the tenant.
 
 ## API Endpoints
 
@@ -38,3 +38,4 @@ Key columns: `name`, `slug` (UNIQUE), `primary_contact_email`, `country_code`, `
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV1-infrastructure-setup|DEV1: Infrastructure]]
+

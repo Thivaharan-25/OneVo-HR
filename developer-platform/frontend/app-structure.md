@@ -1,4 +1,4 @@
-# App Structure
+﻿# App Structure
 
 ## Canonical Navigation
 
@@ -7,8 +7,8 @@ The Developer Platform frontend is an Angular 21 application. It uses a sidebar 
 | Rail Area | Default Route | Has Panel | Panel Items |
 |---|---|---:|---|
 | Dashboard | `/` | No | None |
-| Platform Management | `/platform/tenants` | Yes | Tenants, Subscriptions, Platform Users, Platform Roles, Global Policies, Module Catalog, Role Templates, Feature Flags |
-| System Operations | `/operations/platform-health` | Yes | Platform Health, Services Monitor, Device Management, Infrastructure, Background Jobs, Agent Versions |
+| Platform Management | `/platform/tenants` | Yes | Tenants, Subscriptions, Platform Users, Platform Roles, Global Policies, Module Catalog, Templates, Feature Flags |
+| System Operations | `/operations/platform-health` | Yes | Platform Health, Services Monitor; Device Management, Infrastructure, Background Jobs, and Agent Versions are Phase 2 |
 | Security & Compliance | `/security/security-center` | Yes | Security Center, Audit Logs, Compliance Center, Data Retention |
 | Analytics & Reports | `/analytics/platform` | Yes | Platform Analytics, Reports |
 | Settings | `/settings/system` | Yes | System Settings, App Catalog, API Keys *(Phase 2)* |
@@ -49,15 +49,15 @@ src/app/
 |   |   |-- platform-roles/
 |   |   |-- global-policies/
 |   |   |-- module-catalog/
-|   |   |-- role-templates/
+|   |   |-- templates/
 |   |   `-- feature-flags/
 |   |-- operations/
 |   |   |-- platform-health/
 |   |   |-- services/
-|   |   |-- devices/
-|   |   |-- infrastructure/
-|   |   |-- background-jobs/
-|   |   `-- agent-versions/
+|   |   |-- devices/          # Phase 2
+|   |   |-- infrastructure/   # Phase 2
+|   |   |-- background-jobs/   # Phase 2
+|   |   `-- agent-versions/   # Phase 2
 |   |-- security/
 |   |   |-- security-center/
 |   |   |-- audit-logs/
@@ -124,4 +124,5 @@ Components must not check role names. They must use `PermissionService` or a sha
 
 ## Phase 2 Note
 
-The `/settings/api-keys` route is Phase 2. Keep it hidden in Phase 1 unless the Phase 2 permission contract is implemented.
+The `/settings/api-keys`, `/operations/devices`, `/operations/infrastructure`, `/operations/background-jobs`, and `/operations/agent-versions` routes are Phase 2. Keep them hidden in Phase 1 unless the Phase 2 permission contract is implemented.
+

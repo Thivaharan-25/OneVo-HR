@@ -3,7 +3,7 @@
 **Area:** Alerts  
 **Trigger:** Customer configures escalation paths  
 **Required Permission(s):** `exceptions:manage`  
-**Related Permissions:** `automation:manage`, `employees:read`, `org:read`
+**Related Permissions:** `workflows:manage`, `employees:read`, `org:read`
 
 ---
 

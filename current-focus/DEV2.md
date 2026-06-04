@@ -22,9 +22,9 @@ When Dev 2 asks to continue, start with the first unchecked item in **Current Un
 ### Acceptance Criteria
 
 - [ ] Legal entities, departments, teams, job families, jobs, locations, cost centers, and reporting lines exist.
-- [ ] Company registration profile country changes publish `CompanyProfileCountrySet` so Calendar can seed default holiday settings.
+- [ ] Legal entity country changes publish `LegalEntityCountrySet` so Calendar can seed default holiday settings.
 - [ ] Team permission stacking tables exist for `team_roles`, `team_role_permissions`, and `team_member_roles`.
-- [ ] Employee aggregate supports personal, contact, employment, manager, department, and team fields.
+- [ ] Employee aggregate supports personal, contact, employment, position assignment, department, and team fields. Manager is resolved from position hierarchy — not stored on the employee record.
 - [ ] Employee create/update/list/detail APIs exist.
 - [ ] Employee lifecycle supports onboarding, transfer, promotion, and offboarding state changes.
 - [ ] Employee offboarding publishes `EmployeeOffboarded` with `employee_id`, `user_id`, and tenant context so Work Management can deactivate memberships, watchers, and future assignability.
@@ -105,7 +105,7 @@ dotnet test ONEVO.sln --filter Skills
 - [ ] Leave request API validates balance, dates, overlap, and approval routing.
 - [ ] Calendar APIs return holidays, shifts, leaves, and company events in one feed.
 - [ ] Calendar supports Phase 1 country holiday sync through `holiday_calendar_settings`, defaulting to company country.
-- [ ] Calendar admins can disable country holiday sync or override the holiday calendar country without changing the company registration profile.
+- [ ] Calendar admins can disable country holiday sync or override the holiday calendar country without changing the legal entity.
 - [ ] Google Calendar and Outlook Calendar connections support OAuth callback, encrypted token storage, pull/push/two-way sync direction, and idempotent event links.
 - [ ] IDE-ready endpoints exist for leave types, leave balance, and leave request creation.
 - [ ] Notifications are emitted for leave submitted, approved, rejected, and cancelled.
@@ -206,4 +206,6 @@ After DEV2 Tasks 1–5 are complete, Dev 2 picks up **DEV1 Task 8 — Developer 
 
 **Requires:** DEV1 Tasks 3, 5, and 7 complete before starting (Dev 1 will have T3/T5 done; Dev 3 will have T7 done).  
 **Acceptance criteria and verification:** see `current-focus/DEV1.md` Task 8.
+
+
 

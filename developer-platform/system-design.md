@@ -11,7 +11,7 @@ The dev console does **not** get its own microservice. It talks to the existing 
 **Consequences:**
 - No new database schemas for core platform data
 - No duplicate business logic — no parallel data structures or shadow copies
-- Feature flags, tenant settings, agent version data, and audit logs all remain in their canonical tables
+- Feature flags, tenant settings, and audit logs remain in their canonical tables. Agent version data is Phase 2 and remains in its canonical tables when that module is introduced.
 - The admin layer calls module interfaces via dependency injection — it does not reach into module internals
 - All data reads and writes go through existing module interfaces (no direct table access)
 

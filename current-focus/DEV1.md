@@ -256,7 +256,7 @@ dotnet test ONEVO.sln --filter "Auth|LayerDependency"
 - [ ] Authenticator-app TOTP is the default Phase 1 MFA flow.
 - [x] Password reset flow exists.
 - [x] Password reset email can use a temporary logger-only stub during DEV1 Task 2; Phase 1 release requires DEV2 Task 5 to route password reset and account setup emails through the Resend-backed notification/email dispatcher.
-- [x] Forced password change flow exists using `must_change_password`, `password_set_by_admin`, and `temporary_password_expires_at`.
+- [x] Forced password change flow exists using `must_change_password` and a scoped change-password token. Account setup uses email invite/reset links, not admin-set credentials.
 - [x] Permission keys are seeded.
 - [x] API authorization can enforce explicit permission claims on protected endpoints.
 - [x] Tenant JWT issuer is rejected by `/admin/v1/*`.
@@ -356,7 +356,7 @@ Delivered the foundational RBAC slice that the Tenant Creation API (and every ot
 
 ### Acceptance Criteria
 
-- [x] Tenant provisioning creates baseline tenant, legal entity, admin user, and subscription record.
+- [x] Tenant provisioning creates baseline tenant, primary legal entity, admin user, and subscription record.
 - [x] Module entitlement service resolves active modules from subscription, tenant module entitlements, selected feature keys, and module registry.
 - [x] Permissions service can return effective permissions for a user and tenant.
 - [x] Entitlement DTO supports web and IDE consumers.
@@ -452,7 +452,7 @@ dotnet test ONEVO.sln --filter Audit
 - [ ] Workflow engine resolves approvers through dynamic resolvers, including reporting manager, team lead, department owner, selected permission, selected department, selected team, selected job level, specific employee, configured escalation owner, previous approver, and case conversation participants.
 - [ ] Workflow approval steps support multiple-approver modes: only one approval is required, all assigned approvers must approve, and approve in order.
 - [ ] Workflow engine supports approve, reject, delegate, request info, condition steps, SLA deadline, and timeout action.
-- [ ] Workflow engine publishes `WorkflowStepCompleted` and `WorkflowCompleted` events.
+- [ ] Workflow engine publishes step events (`WorkflowStepAssigned`, `WorkflowStepApproved`, `WorkflowStepRejected`) and final outcome events (`WorkflowApproved`, `WorkflowRejected`, `WorkflowCancelled`).
 - [ ] Leave approval can use the workflow engine rather than a hard-coded approval path.
 - [ ] Overtime approval can use the workflow engine rather than a hard-coded approval path.
 - [ ] Workflow status endpoint exists for resource lookup.
@@ -707,3 +707,4 @@ dotnet test ONEVO.sln --filter Audit
 dotnet test ONEVO.sln --filter SystemConfig
 dotnet test ONEVO.sln --filter AppCatalog
 ```
+

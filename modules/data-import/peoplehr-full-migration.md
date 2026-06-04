@@ -29,15 +29,15 @@ No PeopleHR field may be discarded without a migration result row explaining why
 | Employees | Core HR: `employees`, employee profile tables | Supported | Primary identity source. |
 | Departments | Org Structure: `departments` | Supported | Create or resolve during org grouping. |
 | Job titles / roles | Org Structure: `job_titles`, job families/levels | Supported with review | HR admin confirms job family and level mapping. |
-| Managers | Core HR: `employees.manager_id` | Supported with second pass | Manager links are applied after all employees are staged. |
-| Locations / legal entities | Org Structure: locations/legal entities | Supported with review | Unknown values require admin resolution. |
+| Reporting hierarchy | Org Structure: `positions`, `position_reporting_history`, `position_assignments`, `employee_hierarchy_closure` | Supported with org review | Source reporting relationships are converted into effective-dated position reporting rows after employees and positions are staged. |
+| Legal entities / locations | Org Structure: legal entities and locations | Supported with review | Unknown legal entity values require admin resolution. Single-company tenants can default unresolved company values to the tenant's only legal entity when the admin confirms. |
 | Salary / compensation | Core HR / Payroll: compensation, salary history, payroll profile | Supported with review | Currency, salary amount, pay frequency, and effective date must validate. |
 | Holiday / leave balances | Leave: `leave_entitlements`, `leave_balances_audit` | Supported with review | Balance import depends on tenant leave policy mapping. |
 | Holiday / leave bookings | Leave: `leave_requests`; Calendar feed side effects | Supported with review | Imported as historical or approved leave depending on source status. |
 | Absence / sickness | Leave or absence records | Supported with review | Absence type mapping is required. |
 | Timesheets / lateness | Time / Workforce Presence: attendance, timesheets, presence sessions | Partial | Stored raw if ONEVO cannot preserve exact PeopleHR semantics. |
 | Documents | Documents: `documents`, `document_versions` | Partial | Metadata imports first; binary download failures remain retryable. |
-| Training / CPD / qualifications | Skills: qualifications, certifications, course enrollments | Supported with review | Course taxonomy may need admin mapping. |
+| Training / CPD / qualifications | Skills staging/raw archive; Phase 1 may map existing skills only | Staged with review | Phase 1 can map existing tenant skills to employee skill requests. Certifications, course enrollments, CPD, and learning records are archived/staged until Phase 2 canonical tables are enabled. |
 | Benefits / perks | Payroll / Benefits extension tables | Raw archive first | Canonical mapping depends on benefits module maturity. |
 | Appraisals / performance | Performance: reviews, feedback, goals where applicable | Partial | Preserve raw appraisal forms if ONEVO review template differs. |
 | Vehicles / driving | Core HR custom fields or future assets module | Raw archive first | Imported to custom fields only when mapped. |
@@ -74,7 +74,7 @@ The adapter must fetch raw PeopleHR records before any transformation. Mapping a
 |:----------|:---------------|
 | `PeopleHrAdapter` | Coordinates PeopleHR API calls and exposes module-level fetchers. |
 | `PeopleHrPreflightService` | Tests API key access for every selected PeopleHR area before migration. |
-| `PeopleHrEmployeeFetcher` | Fetches employee identity, contact, job, manager, status, and custom field data. |
+| `PeopleHrEmployeeFetcher` | Fetches employee identity, contact, job, source reporting relationship, status, and custom field data. |
 | `PeopleHrOrgFetcher` | Fetches departments, job titles, locations, work patterns, and reporting relationships where available. |
 | `PeopleHrSalaryFetcher` | Fetches salary, compensation, payroll identifier, and pay history data where the API key allows it. |
 | `PeopleHrLeaveFetcher` | Fetches leave balances, holidays, absence, sickness, maternity, and paternity records. |
@@ -237,9 +237,9 @@ The migration cannot be labelled "full" unless every selected area passes prefli
 
 PeopleHR data must commit in dependency order:
 
-1. Org structure: departments, locations, job titles, legal entities, work patterns.
+1. Org structure: legal entities, departments, positions, job titles, locations, work patterns.
 2. Employees and identity links.
-3. Manager hierarchy second pass.
+3. Position reporting history and position assignment second pass.
 4. User/auth invitation settings.
 5. Salary, compensation, payroll profile.
 6. Leave balances, holidays, absence, sickness, maternity, paternity.
@@ -261,8 +261,8 @@ Blocking examples:
 
 - Employee has no usable identity key.
 - Duplicate employee match cannot be resolved.
-- Manager relationship points to an unknown employee after employee staging.
-- Required department/job/legal entity cannot be resolved and admin chose not to create it.
+- Reporting relationship points to an unknown employee or unresolved position after staging.
+- Required legal entity, department, or position cannot be resolved and admin chose not to create or map it.
 - Salary amount or currency is invalid.
 - Leave record has invalid date order.
 - Document metadata has no employee link.
@@ -370,7 +370,7 @@ Each completed run produces an audit report containing:
 
 ## Relationship to Onboarding
 
-PeopleHR full migration feeds the existing onboarding chain by creating or updating canonical employee records first. Once an employee is committed, the normal cross-module onboarding reactions can assign leave entitlements, shift schedules, payroll profiles, documents, auth invitations, and monitoring consent.
+PeopleHR full migration feeds the onboarding chain by creating or updating canonical employee records first. Once an employee is committed, the normal cross-module onboarding reactions can assign leave entitlements, shift schedules, payroll profiles, documents, auth invitations, and WorkPulse legal/privacy gates.
 
 PeopleHR source records remain the audit trail; ONEVO canonical tables remain the operating source of truth after commit.
 

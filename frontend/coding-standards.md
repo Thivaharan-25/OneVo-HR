@@ -2,18 +2,24 @@
 
 ## Project Structure
 
-Two Angular 21 standalone-component apps in one Angular workspace monorepo. No NgModules, no SSR, no file-based routing. All routes defined in `app.routes.ts`. See [[frontend/architecture/app-structure|App Structure]] for the full workspace layout.
+Three Angular 21 standalone-component apps in one Angular workspace monorepo. No NgModules, no SSR, no file-based routing. All routes defined in `app.routes.ts`. See [[frontend/architecture/app-structure|App Structure]] for the full workspace layout.
 
 ```
 projects/shared/src/lib/        ← shared library (auth, api, realtime, ui, models, utils)
-projects/employee-app/src/app/
-├── app.routes.ts               ← all employee-app routes
+projects/setup-control-app/src/app/
+├── app.routes.ts               ← setup/configuration routes
 ├── app.config.ts               ← ApplicationConfig (providers)
 ├── shell/                      ← nav rail + topbar
 └── features/                   ← feature components (standalone, lazy-loaded)
 
-projects/management-app/src/app/
-├── app.routes.ts               ← all management-app routes
+projects/operations-lifecycle-app/src/app/
+├── app.routes.ts               ← daily operations/lifecycle routes
+├── app.config.ts
+├── shell/
+└── features/
+
+projects/dev-console/src/app/
+├── app.routes.ts               ← internal Developer Platform routes
 ├── app.config.ts
 ├── shell/
 └── features/
@@ -26,7 +32,7 @@ projects/management-app/src/app/
 3. **Colocate first, promote when shared:**
    - Used by only one route → colocated in `features/{domain}/{page}/`
    - Used by 2+ pages in the same domain → promoted to `features/{domain}/components/` (delete colocated copy)
-   - Used across both apps → promoted to `shared/src/lib/ui/` (delete app-level copy — never keep both)
+   - Used across 2+ apps → promoted to `shared/src/lib/ui/` (delete app-level copy — never keep both)
 4. **API services** live in `shared/src/lib/api/endpoints/` — one service per backend module
 5. **Models** mirroring backend DTOs live in `shared/src/lib/models/` — one file per module
 

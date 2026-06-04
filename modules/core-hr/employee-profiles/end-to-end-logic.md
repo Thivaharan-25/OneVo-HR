@@ -7,7 +7,7 @@
 
 ## Flow Overview
 
-Employee Profiles is the central hub entity for all HR data. Every employee record is linked 1:1 to a `users` row via `user_id`, and self-references via `manager_id` to form the reporting hierarchy. The feature supports full CRUD with soft delete, plus sub-resources for addresses, emergency contacts, and custom fields.
+Employee Profiles is the central hub entity for all HR data. Every employee record is linked 1:1 to a `users` row via `user_id`. Reporting hierarchy is resolved from active position assignments and the position reporting tree; employee records do not store manager references. The feature supports full CRUD with soft delete, plus sub-resources for addresses, emergency contacts, and custom fields.
 
 ---
 
@@ -20,7 +20,7 @@ POST /api/v1/employees
   â†’ EmployeesController.Create(CreateEmployeeRequest)
     â†’ IEmployeeService.CreateAsync(dto, tenantId, performedById)
       â†’ Validate: email uniqueness (per tenant), employee_number uniqueness
-      â†’ Validate: department_id, job_title_id, manager_id exist
+      â†’ Validate: department_id and selected position exist when provided
       â†’ Validate: legal_entity_id belongs to tenant
       â†’ Map DTO â†’ Employee entity
       â†’ _dbContext.Employees.Add(employee)
@@ -37,7 +37,7 @@ PUT /api/v1/employees/{id}
     â†’ IEmployeeService.UpdateAsync(id, dto, tenantId, performedById)
       â†’ Fetch employee by id + tenant_id (throw 404 if not found or is_deleted)
       â†’ Validate: if email changed, check uniqueness
-      â†’ Validate: if manager_id changed, prevent circular hierarchy
+      â†’ Validate: employee profile updates do not accept manager changes; position hierarchy cycle checks happen in Org Structure
       â†’ Detect changes for lifecycle events (department change â†’ EmployeeTransferred)
       â†’ Apply changes to entity
       â†’ _dbContext.SaveChangesAsync()
@@ -76,7 +76,7 @@ GET /api/v1/employees/me
 GET /api/v1/employees/{id}/team
   â†’ EmployeesController.GetTeam(id)
     â†’ IEmployeeService.GetDirectReportsAsync(id, tenantId)
-      â†’ Query employees WHERE manager_id = @id AND tenant_id = @tenantId AND is_deleted = false
+      â†’ Query employee_hierarchy_closure WHERE ancestor_employee_id = @id AND depth = 1, then load active employees by descendant ids
       â†’ Return List<EmployeeSummaryResponse> (200 OK)
 ```
 
@@ -102,7 +102,7 @@ sequenceDiagram
     Controller->>Service: CreateAsync(dto, tenantId, userId)
     Service->>DB: Check email uniqueness
     Service->>DB: Check employee_number uniqueness
-    Service->>DB: Verify FK references (dept, job title, manager)
+    Service->>DB: Verify FK references (dept, job title, position)
     Service->>DB: INSERT INTO employees
     Service->>Bus: Publish EmployeeCreated
     Bus->>Bus: NotificationHandler â†’ queue welcome email
@@ -122,7 +122,7 @@ sequenceDiagram
 | Uniqueness | Duplicate email within tenant | 409 | Service checks before insert, returns ConflictException |
 | Uniqueness | Duplicate employee_number within tenant | 409 | Service checks before insert |
 | FK reference | department_id does not exist | 422 | Service validates FK, returns UnprocessableEntityException |
-| FK reference | manager_id creates circular hierarchy | 422 | Recursive CTE check on manager chain |
+| Position hierarchy | selected position creates unresolved or invalid reporting chain | 422 | Org Structure validates position reporting and occupancy before assignment |
 | Soft delete | Employee already deleted | 404 | Global query filter on is_deleted = false |
 | Concurrency | Optimistic concurrency conflict | 409 | EF Core concurrency token on row version |
 | Auth | Missing `employees:write` permission | 403 | Permission middleware rejects |
@@ -131,7 +131,7 @@ sequenceDiagram
 
 ## Edge Cases
 
-1. **Self-referencing manager_id**: An employee cannot be their own manager. The service must walk the manager chain to prevent cycles (A manages B, B manages A).
+1. **Position-derived reporting:** Employee profile commands must not accept manager fields. Position hierarchy cycle validation belongs to Org Structure, and employee scope queries use `employee_hierarchy_closure`.
 2. **Soft delete cascading**: Soft-deleting an employee does NOT cascade to dependents, addresses, or emergency contacts. Those remain for audit purposes. However, the employee no longer appears in active queries.
 3. **Employee number generation**: If `employee_number` is not provided, the system auto-generates it using a tenant-scoped sequence: `{tenant_prefix}-{padded_sequence}`.
 4. **Avatar file**: `avatar_file_id` references the documents module. If the referenced file is deleted, the avatar shows a default placeholder.
@@ -147,4 +147,5 @@ sequenceDiagram
 - [[modules/core-hr/compensation/overview|Compensation]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
+
 

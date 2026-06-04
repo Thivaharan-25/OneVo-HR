@@ -1,4 +1,4 @@
-# Project Management — Testing
+# Project Management - Testing
 
 **Module:** WorkSync
 **Feature:** Project Management
@@ -14,37 +14,46 @@ public class ProjectServiceTests
     [Fact]
     public async Task CreateProject_DuplicateIdentifier_ReturnsFailure()
     {
-        SetupExistingIdentifier("TASK", _workspaceId);
+        SetupExistingIdentifier("TASK", _tenantId);
         var result = await _sut.CreateAsync(_commandWithIdentifier("TASK"), default);
         result.IsSuccess.Should().BeFalse();
         result.Error!.Code.Should().Be("IDENTIFIER_TAKEN");
     }
 
     [Fact]
-    public async Task ArchiveProject_WithActiveSprint_ReturnsFailure()
+    public async Task CreateProject_AddsCreatorAsAdmin()
     {
-        SetupActiveSprintInProject(_projectId);
-        var result = await _sut.ArchiveAsync(_projectId, default);
-        result.IsSuccess.Should().BeFalse();
-        result.Error!.Message.Should().Contain("Complete active sprint first");
+        var result = await _sut.CreateAsync(_validCommand, default);
+        result.IsSuccess.Should().BeTrue();
+        _memberRepoMock.Verify(r => r.AddAsync(
+            It.Is<ProjectMember>(m => m.UserId == _callerId && m.Role == "admin"),
+            default),
+            Times.Once);
     }
 
     [Fact]
-    public async Task TransferOwnership_UpdatesBothMemberships()
+    public async Task LinkWorkspace_DoesNotAddWorkspaceMembersAsProjectMembers()
     {
-        SetupOwner(_projectId, _currentOwnerId);
-        await _sut.TransferOwnershipAsync(_projectId, _newOwnerId, default);
-        _memberRepoMock.Verify(r => r.UpdateRoleAsync(_projectId, _currentOwnerId, "Admin", default), Times.Once);
-        _memberRepoMock.Verify(r => r.UpdateRoleAsync(_projectId, _newOwnerId, "Owner", default), Times.Once);
+        SetupWorkspaceMembers(_workspaceId, _workspaceUserIds);
+        await _sut.LinkWorkspaceAsync(_projectId, _workspaceId, default);
+        _memberRepoMock.Verify(r => r.AddRangeAsync(It.IsAny<IEnumerable<ProjectMember>>(), default), Times.Never);
     }
 
     [Fact]
-    public async Task AddMember_NotWorkspaceMember_ReturnsFailure()
+    public async Task AddMember_ActiveTenantEmployee_SucceedsWithoutWorkspaceMembership()
     {
-        SetupUserNotInWorkspace(_userId, _workspaceId);
-        var result = await _sut.AddMemberAsync(_projectId, _userId, "Member", default);
+        SetupActiveEmployee(_userId, _employeeId, _tenantId);
+        var result = await _sut.AddMemberAsync(_projectId, _userId, "member", default);
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RemoveLastAdmin_ReturnsFailure()
+    {
+        SetupOnlyAdmin(_projectId, _adminId);
+        var result = await _sut.RemoveMemberAsync(_projectId, _adminId, default);
         result.IsSuccess.Should().BeFalse();
-        result.Error!.Message.Should().Contain("workspace member");
+        result.Error!.Message.Should().Contain("at least one active admin");
     }
 }
 ```
@@ -55,11 +64,11 @@ public class ProjectServiceTests
 public class ProjectEndpointTests : IClassFixture<ONEVOWebFactory>
 {
     [Fact]
-    public async Task CreateProject_OwnerAutomaticallyAdded()
+    public async Task CreateProject_AdminAutomaticallyAdded()
     {
         var project = await CreateProjectAsync("Payroll App");
         var members = await GetMembersAsync(project.Id);
-        members.Should().Contain(m => m.UserId == _callerId && m.Role == "Owner");
+        members.Should().Contain(m => m.UserId == _callerId && m.Role == "admin");
     }
 
     [Fact]
@@ -76,11 +85,12 @@ public class ProjectEndpointTests : IClassFixture<ONEVOWebFactory>
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| Duplicate project identifier | Unit | IDENTIFIER_TAKEN |
-| Archive with active sprint | Unit | Failure |
-| Transfer ownership swaps roles | Unit | Both membership rows updated |
-| Add non-workspace member | Unit | Failure |
-| Creator auto-added as Owner | Integration | Owner member present |
+| Duplicate project identifier in tenant | Unit | IDENTIFIER_TAKEN |
+| Creator auto-added as admin | Unit/Integration | Admin member present |
+| Link workspace | Unit | `project_workspaces` row added |
+| Link workspace does not auto-add members | Unit | No bulk `project_members` insert |
+| Add active tenant employee without workspace membership | Unit | Success |
+| Remove last project admin | Unit | Failure |
 | Tenant isolation | Integration | 404 for foreign project |
 
 ## Related

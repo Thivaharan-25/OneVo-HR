@@ -1,5 +1,7 @@
 # Agent Version Manager End-to-End Logic
 
+> Phase 2 only. Do not implement these routes or commands in Phase 1.
+
 ## Publish Agent Version
 
 1. Operator opens System Operations -> Agent Versions.

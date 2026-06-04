@@ -1,5 +1,7 @@
 # Device Management — Testing
 
+> Phase 2 only. In Phase 1, verify these routes are hidden and unavailable rather than testing full device operations.
+
 ## Test Fixtures Required
 
 - Platform account with `platform.health.manage`

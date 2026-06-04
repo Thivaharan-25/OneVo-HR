@@ -101,7 +101,7 @@ Developer Platform authorization is permission-based. Built-in roles are seeded 
 | Billing Manager | Subscription plans, payment gateways, invoices, commercial read/manage |
 | Security Auditor | Security, audit, compliance, and retention read-only |
 | Module Catalog Manager | Product module catalog, integration catalog, role-template, and configuration-template read/manage |
-| Operations Engineer | Platform health, services, devices, infrastructure, jobs, agent versions |
+| Operations Engineer | Platform health, services, feature flags, and system configuration review |
 | Read-Only Viewer | Dashboard and broad read-only visibility without mutation permissions |
 
 Effective access is the union of permissions resolved from `dev_platform_account_roles`, `dev_platform_roles`, `dev_platform_role_permissions`, and `dev_platform_permissions`.
@@ -119,7 +119,7 @@ High-risk permissions include:
 | `platform.roles.manage` | Change platform role permission sets |
 | `platform.tenants.suspend` | Suspend or unsuspend tenants |
 | `platform.tenants.activate` | Activate provisioning tenants |
-| `platform.agent_versions.force_update` | Push force-update commands to agent rings |
+| `platform.agent_versions.force_update` | *(Phase 2)* Push force-update commands to agent rings |
 
 ### Recoverable Admin Guard
 

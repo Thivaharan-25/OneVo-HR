@@ -157,7 +157,7 @@ HTTP 200 OK
 { "rules": [...] }
 ```
 
-The management app hides the "Exceptions" navigation section for non-entitled tenants.
+The Operations / Lifecycle app hides the "Exceptions" navigation section for non-entitled tenants.
 
 ---
 

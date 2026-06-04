@@ -34,7 +34,7 @@ These tables are referenced by many others — design changes here have wide imp
 | `registered_agents` | Agent Gateway | 8 tables |
 | `skills` | Skills & Learning | 6 tables |
 | `departments` | Org Structure | 5 tables |
-| `company_registration_profiles` | Org Structure | Tenant registration profile |
+| `legal_entities` | Org Structure | Company/legal entity context inside a tenant |
 | `roles` | Auth & Security | 5 tables |
 | `leave_types` | Leave | 4 tables |
 | `subscription_plans` | Shared Platform | 3 tables |
@@ -50,13 +50,13 @@ These tables are referenced by many others — design changes here have wide imp
 | `countries` | 5 | — |
 | `file_records` | 8 | — |
 | `tenants` | 10 | subscription_plan_id→subscription_plans |
-| `users` | 12 | — (includes must_change_password, password_set_by_admin, temporary_password_expires_at) |
+| `users` | 12 | — (includes must_change_password, password_setup_required, password_setup_expires_at) |
 
 > `tenants.status` has five valid values: `provisioning`, `trial`, `active`, `suspended`, and `cancelled`. `provisioning` is an admin-only draft state used by the Developer Platform provisioning wizard; tenant-facing APIs must exclude it until activation.
 
 > `tenants.company_size_range` stores the employee-count range selected during Developer Platform provisioning. Legal entity registration fields do not live on `tenants`.
 
-> `users` gains 3 temporary-password fields: `must_change_password boolean`, `password_set_by_admin boolean`, `temporary_password_expires_at timestamptz`. Backend returns `403 MUST_CHANGE_PASSWORD` on login when `must_change_password = true`.
+> `users` tracks account setup and security reset state: `must_change_password boolean`, `password_setup_required boolean`, `password_setup_expires_at timestamptz`. Backend returns `403 MUST_CHANGE_PASSWORD` only for explicit security reset flows.
 
 ### [[database/schemas/auth|Auth & Security]] (10 tables)
 
@@ -64,36 +64,40 @@ These tables are referenced by many others — design changes here have wide imp
 |:------|:--------|:--------|
 | `audit_logs` | 11 | tenant_id→tenants, user_id→users |
 | `feature_access_grants` | 12 | tenant_id→tenants, granted_by→users |
-| `gdpr_consent_records` | 7 | tenant_id→tenants, user_id→users |
+| `legal_acceptance_records` | 11 | tenant_id→tenants, user_id→users |
 | `permissions` | 4 | — |
 | `role_permissions` | 2 | — |
 | `role_templates` | 10 | global/operator-managed template; materializes into tenant roles |
 | `roles` | 6 | tenant_id→tenants |
-| `job_levels` | 6 | tenant_id→tenants, default_role_id→roles |
+| `job_levels` | 6 | tenant_id→tenants, suggested_role_id→roles |
 | `sessions` | 9 | user_id→users, tenant_id→tenants |
 | `user_permission_overrides` | 8 | tenant_id→tenants, user_id→users, granted_by→users |
-| `user_roles` | 4 | user_id→users, assigned_by→users |
+| `user_roles` | 8 | tenant_id->tenants, user_id->users, role_id->roles, assigned_by->users |
 
-### [[database/schemas/org-structure|Org Structure]] (12 tables)
+### [[database/schemas/org-structure|Org Structure]] (16 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
+| `legal_entities` | 10 | tenant_id->tenants, parent_legal_entity_id->legal_entities, country_id->countries |
 | `department_cost_centers` | 6 | tenant_id→tenants |
-| `departments` | 9 | tenant_id→tenants, head_employee_id→employees |
+| `departments` | 10 | tenant_id→tenants, legal_entity_id->legal_entities, head_position_id→positions (unique type only, nullable) |
 | `job_families` | 5 | tenant_id→tenants |
 | `job_levels` | 5 | tenant_id→tenants |
-| `job_titles` | 7 | tenant_id→tenants |
-| `company_registration_profiles` | 9 | tenant_id->tenants, country_id->countries |
+| `job_titles` | 7 | tenant_id->tenants |
+| `positions` | 11 | tenant_id->tenants, legal_entity_id->legal_entities, reports_to_position_id->positions, department_id->departments |
+| `position_reporting_history` | 7 | tenant_id->tenants, position_id->positions, reports_to_position_id->positions |
+| `position_assignments` | 9 | tenant_id->tenants, employee_id->employees, position_id->positions |
+| `employee_hierarchy_closure` | 6 | tenant_id->tenants, ancestor_employee_id->employees, descendant_employee_id->employees, source_position_assignment_id->position_assignments |
 | `office_locations` | 7 | tenant_id->tenants |
 | `team_members` | 3 | employee_id→employees |
-| `team_member_roles` | 4 | team_id→teams, employee_id→employees, team_role_id→team_roles |
-| `team_role_permissions` | 3 | team_role_id→team_roles, permission_id→permissions |
-| `team_roles` | 5 | team_id→teams |
-| `teams` | 7 | tenant_id→tenants, team_lead_id→employees |
+| `team_member_roles` | 5 | team_id->teams, employee_id->employees, team_role_id->team_roles |
+| `team_role_permissions` | 2 | team_role_id->team_roles, permission_id->permissions |
+| `team_roles` | 6 | tenant_id->tenants |
+| `teams` | 6 | tenant_id->tenants |
 
-> `company_registration_profiles.currency_code` stores the ISO 4217 currency for the tenant registration profile. Currency defaults from the selected country during provisioning, but the saved value belongs to the company registration profile, not `tenants`.
+> `legal_entities.currency_code` stores the ISO 4217 currency for each legal entity. Currency defaults from the selected country during setup, but the saved value belongs to the legal entity, not `tenants`.
 
-### [[database/schemas/core-hr|Core HR]] (13 tables)
+### [[database/schemas/core-hr|Core HR]] (15 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
@@ -106,7 +110,9 @@ These tables are referenced by many others — design changes here have wide imp
 | `employee_qualifications` | 9 | document_file_id→file_records |
 | `employee_salary_history` | 8 | approved_by_id→users |
 | `employee_work_history` | 8 | — |
-| `employees` | 25 | tenant_id→tenants, user_id→users, nationality_id→countries |
+| `employees` | 26 | tenant_id->tenants, user_id->users, nationality_id->countries |
+| `employee_assignment_history` | 10 | tenant_id->tenants, employee_id->employees, position_id->positions |
+| `employee_transfers` | 18 | tenant_id->tenants, employee_id->employees, from_position_id->positions, to_position_id->positions |
 | `offboarding_records` | 10 | — |
 | `onboarding_tasks` | 9 | assigned_to_id→users |
 | `onboarding_templates` | 5 | department_id→departments |
@@ -127,7 +133,7 @@ These tables are referenced by many others — design changes here have wide imp
 |:------|:--------|:--------|
 | `leave_balances_audit` | 9 | employee_id→employees |
 | `leave_entitlements` | 9 | employee_id→employees |
-| `leave_policies` | 13 | tenant_id→tenants, country_id→countries, job_level_id→job_levels |
+| `leave_policies` | 12 | tenant_id→tenants, country_id→countries |
 | `leave_requests` | 14 | employee_id→employees, approved_by_id→users, document_file_id→file_records |
 | `leave_types` | 9 | tenant_id→tenants |
 
@@ -137,7 +143,7 @@ These tables are referenced by many others — design changes here have wide imp
 |:------|:--------|:--------|
 | `calendar_events` | 18 | tenant_id→tenants, created_by_id->users |
 | `calendar_event_participants` | 2 | event_id→calendar_events, employee_id→employees |
-| `holiday_calendar_settings` | 13 | tenant_id->tenants, registration_profile_id->company_registration_profiles, updated_by_id->users |
+| `holiday_calendar_settings` | 13 | tenant_id->tenants, legal_entity_id->legal_entities, updated_by_id->users |
 | `external_calendar_connections` | 15 | tenant_id→tenants, user_id→users |
 | `external_calendar_event_links` | 14 | tenant_id→tenants, calendar_event_id→calendar_events, external_calendar_connection_id→external_calendar_connections |
 
@@ -248,13 +254,14 @@ Optional Phase 1 Microsoft Teams workspace sync additions (optional integration,
 | `workspace_roles` | 4 | workspace_id->workspaces |
 | `workspace_members` | 11 | workspace_id->workspaces, user_id->users, employee_id->employees, workspace_role_id->workspace_roles |
 | `workspace_hr_team_links` | 10 | tenant_id->tenants, workspace_id->workspaces, hr_team_id->teams |
-| `projects` | 14 | workspace_id->workspaces, tenant_id->tenants, lead_id->users |
+| `projects` | 13 | tenant_id->tenants, lead_id->users |
+| `project_workspaces` | 8 | project_id->projects, workspace_id->workspaces, tenant_id->tenants, linked_by_id->users |
 | `project_members` | 9 | project_id->projects, user_id->users, employee_id->employees |
 | `epics` | 9 | project_id->projects, created_by_id->users |
 | `milestones` | 8 | project_id→projects |
 | `versions` | 7 | project_id->projects |
 | `release_calendar` | 7 | project_id→projects, version_id→versions |
-| `labels` | 6 | workspace_id→workspaces |
+| `labels` | 6 | project_id->projects nullable, tenant_id->tenants |
 
 ### [[database/schemas/wms-task-management|Task Management]] (13 tables)
 
@@ -456,9 +463,9 @@ Optional Phase 1 Microsoft Teams integration additions (optional integration, no
 | `employee_pension_enrollments` | 6 | employee_id→employees |
 | `payroll_adjustments` | 7 | employee_id→employees |
 | `payroll_audit_trail` | 7 | — |
-| `payroll_connections` | 5 | tenant_id->tenants, company_registration_profile_id->company_registration_profiles |
+| `payroll_connections` | 5 | tenant_id->tenants, legal_entity_id->legal_entities |
 | `payroll_providers` | 6 | — |
-| `payroll_runs` | 13 | company_registration_profile_id->company_registration_profiles, executed_by_id->users |
+| `payroll_runs` | 13 | legal_entity_id->legal_entities, executed_by_id->users |
 | `payslips` | 20 | employee_id→employees |
 | `pension_plans` | 6 | tenant_id→tenants |
 | `tax_configurations` | 5 | country_id→countries |
@@ -473,7 +480,7 @@ Optional Phase 1 Microsoft Teams integration additions (optional integration, no
 | `recognitions` | 8 | tenant_id→tenants, from_employee_id→employees, to_employee_id→employees |
 | `review_cycles` | 9 | tenant_id→tenants |
 | `reviews` | 11 | employee_id→employees, reviewer_id→employees |
-| `succession_plans` | 8 | position_id→job_titles, current_holder_id→employees, successor_id→employees |
+| `succession_plans` | 8 | position_id->positions, current_holder_id->employees, successor_id->employees |
 
 ### [[database/schemas/skills|Skills & Learning]] (10 tables — Phase 2 remainder)
 
@@ -565,7 +572,3 @@ Optional Phase 1 Microsoft Teams integration additions (optional integration, no
 - [[database/cross-module-relationships|Cross-Module Relationships]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[database/performance|Performance]]
-
-
-
-

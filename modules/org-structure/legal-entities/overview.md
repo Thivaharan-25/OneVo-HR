@@ -1,44 +1,57 @@
-# Company Registration Profile
+# Legal Entities
 
 **Module:** Org Structure  
-**Feature:** Company Registration Profile
+**Feature:** Legal Entities  
+**Phase:** 1
 
 ---
 
 ## Purpose
 
-The company registration profile stores the current tenant's registration, country, currency, and address information. It is not a way to model multiple operating companies inside one tenant. Separate operating companies must be provisioned as separate tenants and linked through [[modules/shared-platform/company-connections/overview|Company Connections]] when cross-company workflows are needed.
+Legal entities model the companies inside a tenant. ONEVO Phase 1 supports both:
 
-When the company country is set, Calendar creates a Phase 1 holiday calendar setting that defaults to the company country. Calendar admins can later disable holiday sync or choose a different calendar country from the Calendar screen without changing the registration profile country.
+- Single-company tenant: one tenant with one legal entity.
+- Multi-company tenant: one tenant with multiple legal entities.
 
-## Database Tables
+Legal entity is the boundary for departments, positions, employee primary employment context, leave policy assignment, attendance policy assignment, and payroll/legal setup where enabled.
 
-### `company_registration_profiles`
-Fields: `name`, `registration_number`, `country_id`, `currency_code`, `address_json`, `is_active`.
+## Phase 1 Rules
 
-`currency_code` is the company's ISO 4217 operating currency. It defaults from the selected country during provisioning, but operators can override it when the legal/commercial setup requires a different currency.
+- Departments belong to one legal entity.
+- Positions belong to one legal entity.
+- Positions cannot be shared across legal entities.
+- A position can report only to another position inside the same legal entity.
+- Job titles can be shared across the tenant.
+- A person can hold assignments in more than one legal entity when needed, but each assignment points to a legal-entity-specific position.
+- Root positions with no reporting manager are allowed.
+
+## Database Table
+
+### `legal_entities`
+
+Key fields:
+
+- `tenant_id`
+- `parent_legal_entity_id`
+- `name`
+- `registration_number`
+- `tax_identifier`
+- `country_id`
+- `currency_code`
+- `address_json`
+- `is_active`
 
 ## API Endpoints
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/org/company-profile` | `org:manage` | Get current tenant registration profile |
-| PUT | `/api/v1/org/company-profile` | `org:manage` | Update current tenant registration profile |
-
-## Calendar Integration
-
-Updating the company country publishes `CompanyProfileCountrySet` with the tenant ID and selected country. The Calendar module consumes it to create or update `holiday_calendar_settings` and queue country holiday import.
+| GET | `/api/v1/org/legal-entities` | `org:read` | List legal entities |
+| POST | `/api/v1/org/legal-entities` | `org:manage` | Create legal entity |
+| PUT | `/api/v1/org/legal-entities/{id}` | `org:manage` | Update legal entity |
 
 ## Related
 
-- [[modules/org-structure/overview|Org Structure Module]]
+- [[modules/org-structure/overview|Org Structure]]
 - [[modules/org-structure/departments/overview|Departments]]
-- [[modules/org-structure/cost-centers/overview|Cost Centers]]
 - [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
-- [[modules/org-structure/teams/overview|Teams]]
-- [[modules/shared-platform/company-connections/overview|Company Connections]]
-- [[infrastructure/multi-tenancy|Multi Tenancy]]
-- [[frontend/cross-cutting/authorization|Authorization]]
-- [[backend/shared-kernel|Shared Kernel]]
-- [[database/migration-patterns|Migration Patterns]]
-- [[current-focus/DEV3-org-structure|DEV3: Org Structure]]
+- [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]

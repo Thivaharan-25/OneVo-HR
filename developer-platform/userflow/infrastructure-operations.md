@@ -1,5 +1,7 @@
 # Infrastructure Operations Userflow
 
+> Phase 2 only as a standalone userflow. Phase 1 exposes only basic read-only dependency status through Platform Health.
+
 ## Actor
 
 Operations user.

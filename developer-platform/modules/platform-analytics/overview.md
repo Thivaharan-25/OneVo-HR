@@ -1,8 +1,8 @@
-﻿# Platform Analytics
+# Platform Analytics
 
 ## Purpose
 
-Platform Analytics provides cross-tenant operational and commercial analytics for ONEVO operators. It surfaces aggregate trends on tenant growth, subscription distribution, product module adoption, and device rollout â€” enabling data-driven decisions about the platform's commercial and operational health.
+Platform Analytics provides cross-tenant operational and commercial analytics for ONEVO operators. It surfaces aggregate trends on tenant growth, subscription distribution, product module adoption, and Phase 1 health summaries - enabling data-driven decisions about the platform's commercial and operational health.
 
 ## Data / Systems Read
 
@@ -16,11 +16,11 @@ Platform Analytics provides cross-tenant operational and commercial analytics fo
 
 ## Capabilities
 
-- **Platform overview:** Total active tenants, DAU, device counts, module adoption summary
+- **Platform overview:** Total active tenants, DAU, aggregate device health counts, module adoption summary
 - **Tenant analytics:** Tenant growth over time, churn rate, status distribution, activation funnel
 - **Subscription analytics:** Plan tier distribution, commercial model breakdown, revenue trends (aggregate)
 - **Module analytics:** Module adoption count per module (active/pending_payment/disabled), adoption trends over time
-- **Device analytics:** Registered device count by ring, agent version distribution, update adoption rate
+- **Device health summary:** Aggregate registered/active/offline device counts only. Ring, agent version distribution, and update adoption analytics are Phase 2.
 - Export aggregate analytics as CSV/PDF
 
 ## Navigation
@@ -32,14 +32,14 @@ Platform Analytics provides cross-tenant operational and commercial analytics fo
 
 ## Key Rules
 
-- All analytics are aggregate by default â€” no individual employee names, individual user activity, or per-user breakdowns
+- All analytics are aggregate by default - no individual employee names, individual user activity, or per-user breakdowns
 - Commercial analytics (subscription revenue, plan pricing) require `platform.subscriptions.read` in addition to `platform.reports.read`
-- Module adoption counts are sourced from `tenant_module_entitlements` â€” the authoritative entitlement state â€” not from subscription plan data alone
+- Module adoption counts are sourced from `tenant_module_entitlements` - the authoritative entitlement state - not from subscription plan data alone
 - Tenant JWT is rejected
 
 ## Related
 
 - [[developer-platform/modules/platform-analytics/end-to-end-logic|Platform Analytics End-to-End Logic]]
-- [[developer-platform/modules/report-manager/overview|Report Manager]] â€” export specific reports
-- [[developer-platform/modules/subscription-manager/overview|Subscription Manager]] â€” commercial detail
+- [[developer-platform/modules/report-manager/overview|Report Manager]] - export specific reports
+- [[developer-platform/modules/subscription-manager/overview|Subscription Manager]] - commercial detail
 

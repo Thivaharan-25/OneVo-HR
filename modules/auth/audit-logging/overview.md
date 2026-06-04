@@ -40,7 +40,7 @@ Append-only audit trail for all significant actions. Partitioned by month via `p
 - [[frontend/cross-cutting/authorization|Authorization]]
 - [[modules/auth/session-management/overview|Session Management]]
 - [[modules/auth/mfa/overview|MFA]]
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - [[security/auth-architecture|Auth Architecture]]
 - [[security/compliance|Compliance]]
 - [[security/data-classification|Data Classification]]

@@ -10,7 +10,7 @@
 ## Preconditions
 
 - Leave policies have been created and assigned to legal entities: [[Userflow/Leave/leave-policy-setup|Leave Policy Setup Flow]]
-- Employees exist and are assigned to a legal entity
+- Employees exist and are assigned to a primary legal entity
 - User has `leave:manage` permission assigned via their Job Family role
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
@@ -24,7 +24,7 @@
 - **DB:** `leave_entitlements` (filtered by `tenant_id`, `year`)
 
 ### Step 2a: Auto-Generate Entitlements (Bulk)
-- **UI:** Click "Auto-Generate Entitlements" → select year → select legal entity (or All) → preview shows: number of employees affected, entitlements per leave type based on policy → click "Generate"
+- **UI:** Click "Auto-Generate Entitlements" -> select year -> select legal entity (or All) -> preview shows: number of employees affected, entitlements per leave type based on policy -> click "Generate"
 - **API:** `POST /api/v1/leave/entitlements/generate`
 - **Backend:** `LeaveEntitlementService.GenerateBulkAsync()` → [[modules/leave/overview|Leave]]
   1. Fetches all active employees in selected legal entity
@@ -112,3 +112,4 @@
 - [[modules/leave/overview|Leave]] — leave module overview and architecture
 - [[modules/leave/leave-entitlements/overview|Leave Entitlements]] — entitlement data model and calculation logic
 - [[modules/leave/leave-policies/overview|Leave Policies]] — policy rules driving entitlement amounts
+

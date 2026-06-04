@@ -1,13 +1,13 @@
-# Template Manager — End-to-End Logic
+﻿# Template Manager â€” End-to-End Logic
 
 ## Purpose
 
-Template Manager is the single operator-facing module for all reusable provisioning and configuration presets. It is organized into four tabs. This document covers the full end-to-end logic for each tab.
+Template Manager is the single operator-facing module for all reusable provisioning and configuration presets. It is organized into eight tabs. This document covers the Role Templates tab in detail and links to the Configuration Template Manager logic for the non-role tabs.
 
-**Route:** `/platform/role-templates`
+**Route:** `/platform/templates`
 **Permission:** `platform.role_templates.read`
 
-> **Out of scope:** App Allowlist templates and Monitoring Policy templates are managed by the Device Management / Agent Version Manager operator role — they are monitoring agent policy artifacts, not provisioning presets.
+> **Phase 1 scope:** App Allowlist templates and Monitoring Policy templates are provisioning presets managed by the Template Manager.
 
 ---
 
@@ -16,8 +16,12 @@ Template Manager is the single operator-facing module for all reusable provision
 Left tab navigation:
 - Role Templates (default)
 - Configuration
-- Job Family
+- Position Templates
 - Leave Policy
+- Monitoring Policy
+- App Allowlist
+- Onboarding
+- Data Import
 
 ---
 
@@ -29,7 +33,7 @@ Left tab navigation:
 |---|---|
 | Title | "Template Manager" |
 | Subtitle | "Manage reusable role blueprints for tenant provisioning." |
-| Create Template button | `+ Create Template` — requires `platform.role_templates.manage` |
+| Create Template button | `+ Create Template` â€” requires `platform.role_templates.manage` |
 
 ### Templates Table
 
@@ -40,18 +44,18 @@ Left tab navigation:
 | Template Name | Display name | Yes |
 | Description | Short description | No |
 | Type | System (blue badge) / Custom (gray badge) | Yes |
-| Module Scope | Module keys this template scopes to — shown as badges | No |
+| Module Scope | Module keys this template scopes to â€” shown as badges | No |
 | Permission Count | Number of permission codes in this template | No |
 | Applied To | Count of tenants that have applied this template | No |
-| Version | Integer version number — increments on every edit | Yes |
+| Version | Integer version number â€” increments on every edit | Yes |
 | Last Modified | Date | Yes |
 | Actions | Edit, Clone, Apply to Tenant, Deactivate |
 
-**System templates** are pre-seeded by ONEVO and cannot be deleted or directly edited — only cloned. Clone creates a new editable custom template starting from the system template's permissions.
+**System templates** are pre-seeded by ONEVO and cannot be deleted or directly edited â€” only cloned. Clone creates a new editable custom template starting from the system template's permissions.
 
 ---
 
-## Create Role Template — Full Field Specification
+## Create Role Template â€” Full Field Specification
 
 **Trigger:** `+ Create Template` button
 
@@ -59,21 +63,21 @@ Left tab navigation:
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Template Name | "Template Name" | Text input | Yes | 2–80 chars, unique among active templates | e.g. "HR Admin", "Workforce Supervisor", "Leave Manager" |
-| Description | "Description" | Textarea | Yes | 10–300 chars | Explains who this role is for and what they can do |
+| Template Name | "Template Name" | Text input | Yes | 2â€“80 chars, unique among active templates | e.g. "HR Admin", "Workforce Supervisor", "Leave Manager" |
+| Description | "Description" | Textarea | Yes | 10â€“300 chars | Explains who this role is for and what they can do |
 | Is Global Template | "Save as Reusable Global Template" | Toggle | Yes | Default: On | Off = this template is created only for a specific tenant (only available when creating from the Apply to Tenant screen) |
 
 ### Section 2: Module Scope Filter
 
-**This section determines the permission boundary.** Permissions are owned by modules. The operator first selects which modules this template draws permissions from — only permissions owned by selected modules appear in the permission picker below.
+**This section determines the permission boundary.** Permissions are owned by modules. The operator first selects which modules this template draws permissions from â€” only permissions owned by selected modules appear in the permission picker below.
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Module Scope | "Include Permissions From Modules" | Multi-select from module catalog (Phase 1 modules only) | Yes | At least one module required. Foundation modules (`auth`, `configuration`, `roles`, `notifications`, `org`) are always included and cannot be deselected — their permissions appear regardless. |
+| Module Scope | "Include Permissions From Modules" | Multi-select from module catalog (Phase 1 modules only) | Yes | At least one module required. Foundation modules (`auth`, `configuration`, `roles`, `notifications`, `org`) are always included and cannot be deselected â€” their permissions appear regardless. |
 
 **Foundation module permissions are always shown** in the permission picker because they apply to every tenant. Additional permissions appear only for selected modules.
 
-**Important rule:** The module scope here is the template's design scope — it limits which permissions are shown when building the template. When the template is applied to a specific tenant, the system ADDITIONALLY filters to only permissions from modules the tenant is entitled to. A template scoped to `leave + monitoring` applied to a tenant with only `leave` will only grant leave permissions — monitoring permissions are silently skipped.
+**Important rule:** The module scope here is the template's design scope â€” it limits which permissions are shown when building the template. When the template is applied to a specific tenant, the system ADDITIONALLY filters to only permissions from modules the tenant is entitled to. A template scoped to `leave + monitoring` applied to a tenant with only `leave` will only grant leave permissions â€” monitoring permissions are silently skipped.
 
 ### Section 3: Permission Picker
 
@@ -82,27 +86,27 @@ After selecting module scope, the full permission picker appears. Permissions ar
 **Layout per module group:**
 
 ```
-▼ Core HR (core_hr)                    [Select All] [Clear]
-  ☑ employees:read          View employee profiles
-  ☑ employees:manage        Create and edit employee profiles
-  ☐ employees:delete        Delete employee records (irreversible)
-  ☑ org:read                View org structure
-  ☐ org:manage              Edit org structure
+â–¼ Core HR (core_hr)                    [Select All] [Clear]
+  â˜‘ employees:read          View employee profiles
+  â˜‘ employees:manage        Create and edit employee profiles
+  â˜ employees:delete        Delete employee records (irreversible)
+  â˜‘ org:read                View org structure
+  â˜ org:manage              Edit org structure
   ...
 
-▼ Leave Management (leave)             [Select All] [Clear]
-  ☑ leave:read              View leave requests
-  ☑ leave:apply             Submit leave requests
-  ☑ leave:approve           Approve/reject leave
-  ☐ leave:policy:manage     Edit leave policies (usually admin only)
+â–¼ Leave Management (leave)             [Select All] [Clear]
+  â˜‘ leave:read              View leave requests
+  â˜‘ leave:apply             Submit leave requests
+  â˜‘ leave:approve           Approve/reject leave
+  â˜ leave:policy:manage     Edit leave policies (usually admin only)
   ...
 ```
 
 **Each permission row shows:**
-- Checkbox — selected/unselected
-- Permission code — machine-readable, e.g. `leave:approve`
-- Display name — human-readable
-- Risk indicator — `⚠ High Risk` badge on permissions that grant irreversible or sensitive access (deletion, financial, impersonation)
+- Checkbox â€” selected/unselected
+- Permission code â€” machine-readable, e.g. `leave:approve`
+- Display name â€” human-readable
+- Risk indicator â€” `âš  High Risk` badge on permissions that grant irreversible or sensitive access (deletion, financial, impersonation)
 
 **Select All / Clear** per module group.
 
@@ -113,7 +117,7 @@ After selecting module scope, the full permission picker appears. Permissions ar
 Read-only summary at the bottom of the form showing:
 - Module groups included
 - Total permission count
-- High-risk permission count (if any) — shown in orange with a warning
+- High-risk permission count (if any) â€” shown in orange with a warning
 
 ### Save Template
 
@@ -140,11 +144,11 @@ Read-only summary at the bottom of the form showing:
 }
 ```
 
-**Validation — server-side:**
+**Validation â€” server-side:**
 - All `permission_codes` must exist in `permissions` table
 - All `permission_codes` must be owned by a module in `module_scope` OR owned by a foundation module
-- Unknown permission codes → HTTP 422 with list of invalid codes
-- Permissions from modules not in `module_scope` and not foundation → HTTP 422
+- Unknown permission codes â†’ HTTP 422 with list of invalid codes
+- Permissions from modules not in `module_scope` and not foundation â†’ HTTP 422
 
 **Response (201 Created):**
 ```json
@@ -161,7 +165,7 @@ Read-only summary at the bottom of the form showing:
 
 ---
 
-## Edit Template — Versioning Behaviour
+## Edit Template â€” Versioning Behaviour
 
 Editing a template creates a new version. Previous version is preserved for audit.
 
@@ -175,7 +179,7 @@ Editing a template creates a new version. Previous version is preserved for audi
 **Effect on tenants that previously applied this template:**
 - Applying a template materializes **independent** tenant-scoped roles in the Auth module. Those materialized roles are NOT updated when the template is edited.
 - The template version at time of application is recorded in `tenant_role_template_applications.template_version`.
-- If a template has been updated, the Apply to Tenant screen shows a "Template updated — re-apply to get latest permissions" warning on tenants still using an older version.
+- If a template has been updated, the Apply to Tenant screen shows a "Template updated â€” re-apply to get latest permissions" warning on tenants still using an older version.
 
 ---
 
@@ -190,13 +194,13 @@ System templates (`is_system = true`) cannot be edited directly. Clone creates a
 | Field | Label | Type | Required |
 |---|---|---|---|
 | New Template Name | "New Template Name" | Text input | Yes |
-| Description | "Description" | Textarea — pre-filled from source | Yes |
+| Description | "Description" | Textarea â€” pre-filled from source | Yes |
 
 **API:** `POST /admin/v1/role-templates/{sourceId}/clone`
 
 ```json
 {
-  "name": "HR Admin — Custom",
+  "name": "HR Admin â€” Custom",
   "description": "Cloned from system HR Admin template. Customised for enterprise clients."
 }
 ```
@@ -205,12 +209,12 @@ System templates (`is_system = true`) cannot be edited directly. Clone creates a
 
 ---
 
-## Apply Template to Tenant — Full Flow
+## Apply Template to Tenant â€” Full Flow
 
 ### Entry Points
 
-1. Role Template Manager → Apply to Tenant tab → select tenant → select template
-2. Tenant Console → Tenant Detail → Subscriptions tab → "Manage Roles" → Apply Template
+1. Role Template Manager â†’ Apply to Tenant tab â†’ select tenant â†’ select template
+2. Tenant Console â†’ Tenant Detail â†’ Subscriptions tab â†’ "Manage Roles" â†’ Apply Template
 
 ### Permission Boundary Filtering
 
@@ -218,15 +222,15 @@ Before showing the permission picker or confirming an apply, the system filters 
 
 ```
 template.permission_codes
-    ↓ filter: keep only permissions owned by modules in tenant.entitled_module_keys
+    â†“ filter: keep only permissions owned by modules in tenant.entitled_module_keys
 tenant_filtered_permissions
 ```
 
 Permissions from modules the tenant is NOT entitled to are silently excluded. The operator sees a warning showing which permissions were excluded and why.
 
-**Example:** Template "HR Admin" includes `monitoring:read` (owned by `monitoring` module). Tenant is not entitled to `monitoring`. Result: role is applied without `monitoring:read`. Warning shown: "2 permissions excluded — tenant not entitled to: monitoring (monitoring:read, monitoring:sessions:read)."
+**Example:** Template "HR Admin" includes `monitoring:read` (owned by `monitoring` module). Tenant is not entitled to `monitoring`. Result: role is applied without `monitoring:read`. Warning shown: "2 permissions excluded â€” tenant not entitled to: monitoring (monitoring:read, monitoring:sessions:read)."
 
-### Apply Flow — Step by Step
+### Apply Flow â€” Step by Step
 
 **Screen: Apply Template to Tenant**
 
@@ -242,10 +246,10 @@ Permissions from modules the tenant is NOT entitled to are silently excluded. Th
 **Step 3: Preview**
 
 System shows:
-- **Effective permissions** — template permissions filtered to tenant's entitled modules
-- **Excluded permissions** — permissions from modules the tenant doesn't have (grayed out with reason)
-- **Role name** — pre-filled as template name, editable
-- **Existing role check** — if a role with the same name already exists for this tenant, shows the idempotency warning (see below)
+- **Effective permissions** â€” template permissions filtered to tenant's entitled modules
+- **Excluded permissions** â€” permissions from modules the tenant doesn't have (grayed out with reason)
+- **Role name** â€” pre-filled as template name, editable
+- **Existing role check** â€” if a role with the same name already exists for this tenant, shows the idempotency warning (see below)
 
 **Step 4: Idempotency Decision**
 
@@ -263,15 +267,15 @@ If a role with the same name already exists for this tenant from a previous temp
 
 | Field | Label | Type | Required |
 |---|---|---|---|
-| Reason | "Reason for applying" | Textarea | No — optional for apply |
+| Reason | "Reason for applying" | Textarea | No â€” optional for apply |
 
-**API:** `POST /admin/v1/tenants/{tenantId}/role-templates/{templateId}/apply`
+**API:** `POST /admin/v1/tenants/{tenantId}/templates/{templateId}/apply`
 
 ```json
 {
   "role_name_override": null,
   "on_duplicate": "update",
-  "reason": "Initial provisioning — applying standard HR Admin role."
+  "reason": "Initial provisioning â€” applying standard HR Admin role."
 }
 ```
 
@@ -300,7 +304,7 @@ If a role with the same name already exists for this tenant from a previous temp
 
 When a tenant needs a role that is unique to them and should NOT become a global template, operators create it directly.
 
-**Entry:** Apply to Tenant tab → "Create Custom Role" option instead of selecting a template.
+**Entry:** Apply to Tenant tab â†’ "Create Custom Role" option instead of selecting a template.
 
 **Fields:** Same as Create Template but `is_global = false` and forced to the selected tenant.
 
@@ -308,7 +312,7 @@ When a tenant needs a role that is unique to them and should NOT become a global
 
 ```json
 {
-  "name": "Regional HR Manager — APAC",
+  "name": "Regional HR Manager â€” APAC",
   "description": "Custom role for TechNova's APAC HR team with leave approval for APAC org units only.",
   "permission_codes": ["leave:approve", "employees:read", "org:read"]
 }
@@ -326,13 +330,13 @@ Before the tenant activation guard allows the "Send Owner Invite" action, it che
 
 If no role satisfies this, activation fails with:
 ```
-blocker: "no_owner_role" — No tenant role has the minimum owner permissions required.
+blocker: "no_owner_role" â€” No tenant role has the minimum owner permissions required.
 Apply the "Tenant Owner" role template or create a role with roles:manage, users:invite, settings:manage, and billing:read.
 ```
 
 ---
 
-## APIs — Full Catalog
+## APIs â€” Full Catalog
 
 | Method | Route | Purpose | Permission |
 |---|---|---|---|
@@ -347,15 +351,15 @@ Apply the "Tenant Owner" role template or create a role with roles:manage, users
 | POST | `/admin/v1/tenants/{id}/roles` | Create tenant-specific role | `platform.tenants.manage` |
 | PUT | `/admin/v1/tenants/{id}/roles/{roleId}/permissions` | Replace role permission set | `platform.tenants.manage` |
 | DELETE | `/admin/v1/tenants/{id}/roles/{roleId}` | Delete tenant role | `platform.tenants.manage` |
-| POST | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Apply template to tenant | `platform.tenants.manage` |
+| POST | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Apply role template to tenant | `platform.tenants.manage` |
 | GET | `/admin/v1/tenants/{id}/role-template-applications` | History of template applications | `platform.tenants.read` |
 
 ---
 
-## Configuration, Job Family, and Leave Policy Tabs
+## Non-role Template Tabs
 
-> Full end-to-end logic for these three tabs — field specs, payload schemas, apply flows, reapply rules, module entitlement guards, and API catalog — is documented in the authoritative spec:
-> **[[developer-platform/modules/configuration-template-manager/end-to-end-logic|Configuration Template Manager End-to-End Logic]]**
+> Full end-to-end logic for these three tabs â€” field specs, payload schemas, apply flows, reapply rules, module entitlement guards, and API catalog â€” is documented in the authoritative spec:
+> **[[developer-platform/modules/configuration-template-manager/end-to-end-logic|Configuration Template Manager End-to-End Logic]]** covers Configuration, Position Templates, Leave Policy, Monitoring Policy, App Allowlist, Onboarding, and Data Import payloads, apply rules, and APIs.
 
 The sections below are a summary only.
 
@@ -369,7 +373,7 @@ Manages reusable `configuration` type templates that pre-fill `tenant_settings` 
 |---|---|
 | Title | "Configuration Templates" |
 | Subtitle | "Reusable tenant settings presets applied during provisioning." |
-| Create button | `+ New Configuration Template` — requires `platform.configuration_templates.manage` |
+| Create button | `+ New Configuration Template` â€” requires `platform.config_templates.manage` |
 
 ### Configuration Templates Table
 
@@ -381,23 +385,23 @@ Manages reusable `configuration` type templates that pre-fill `tenant_settings` 
 | Description | Short description | No |
 | Applied To | Count of tenants that have applied this template | Yes |
 | Last Modified | Date | Yes |
-| Actions | Edit, Duplicate, Deactivate | — |
+| Actions | Edit, Duplicate, Deactivate | â€” |
 
 Search filters by name. Inactive (deactivated) templates are hidden by default; toggle "Show inactive" to include them.
 
 ---
 
-### Create Configuration Template — Full Field Specification
+### Create Configuration Template â€” Full Field Specification
 
 **Trigger:** `+ New Configuration Template` button
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Template Name | "Template Name" | Text input | Yes | 2–80 chars, unique among active `configuration` type templates | e.g. "Standard APAC", "Enterprise EU" |
-| Description | "Description" | Textarea | Yes | 10–300 chars | Explain the target tenant profile for this preset |
+| Template Name | "Template Name" | Text input | Yes | 2â€“80 chars, unique among active `configuration` type templates | e.g. "Standard APAC", "Enterprise EU" |
+| Description | "Description" | Textarea | Yes | 10â€“300 chars | Explain the target tenant profile for this preset |
 | Timezone | "Default Timezone" | Dropdown (IANA tz list) | Yes | Must be a valid IANA tz string | e.g. `Asia/Colombo`, `Europe/London` |
 | Currency | "Currency" | Dropdown (ISO 4217) | Yes | 3-letter code | e.g. `LKR`, `USD`, `EUR` |
-| Work Week | "Work Week" | Multi-select (Mon–Sun) | Yes | At least 1 day selected | Defaults Mon–Fri |
+| Work Week | "Work Week" | Multi-select (Monâ€“Sun) | Yes | At least 1 day selected | Defaults Monâ€“Fri |
 | Work Day Start | "Work Day Start" | Time picker | Yes | HH:MM | e.g. `08:30` |
 | Work Day End | "Work Day End" | Time picker | Yes | HH:MM, must be after start | e.g. `17:30` |
 | Privacy Mode | "Privacy Mode" | Toggle | No | Default: off | When on: monitoring data blurred by default for this tenant |
@@ -445,9 +449,9 @@ Search filters by name. Inactive (deactivated) templates are hidden by default; 
 
 **API:** `PATCH /admin/v1/configuration-templates/{id}`
 
-All payload fields are replaceable. Every successful PATCH increments `version`. Previous payload is not preserved separately — version number is the audit trail (full payload is logged to audit at time of change).
+All payload fields are replaceable. Every successful PATCH increments `version`. Previous payload is not preserved separately â€” version number is the audit trail (full payload is logged to audit at time of change).
 
-**What cannot change:** `type` — a configuration template cannot become a job_family template.
+**What cannot change:** `type` - a configuration template cannot change from one template type to another.
 
 ---
 
@@ -455,12 +459,12 @@ All payload fields are replaceable. Every successful PATCH increments `version`.
 
 **Trigger:** "Duplicate" action on any template row.
 
-Creates a new template pre-filled from the source, with name `{original} — Copy`. Operator edits name and fields before saving.
+Creates a new template pre-filled from the source, with name `{original} â€” Copy`. Operator edits name and fields before saving.
 
 **API:** `POST /admin/v1/configuration-templates/{sourceId}/duplicate`
 
 ```json
-{ "name": "Standard APAC — Copy" }
+{ "name": "Standard APAC â€” Copy" }
 ```
 
 ---
@@ -468,8 +472,8 @@ Creates a new template pre-filled from the source, with name `{original} — Cop
 ### Apply Configuration Template to Tenant
 
 **Entry points:**
-1. Configuration tab → row Actions → "Apply to Tenant"
-2. Provisioning wizard → Step 4 → Configuration Template dropdown
+1. Configuration tab â†’ row Actions â†’ "Apply to Tenant"
+2. Provisioning wizard â†’ Step 4 â†’ Configuration Template dropdown
 
 **Apply flow:**
 
@@ -491,7 +495,7 @@ Creates a new template pre-filled from the source, with name `{original} — Cop
 **API:** `POST /admin/v1/tenants/{tenantId}/configuration-templates/{templateId}/apply`
 
 ```json
-{ "reason": "Initial provisioning — APAC standard settings." }
+{ "reason": "Initial provisioning â€” APAC standard settings." }
 ```
 
 **Response (200 OK):**
@@ -512,235 +516,101 @@ Creates a new template pre-filled from the source, with name `{original} — Cop
 - `tenant_configuration_template_applications` row created: `(tenant_id, template_id, template_version, type, applied_by_id, applied_at, reason)`
 - Audit log: `action = 'configuration_template.applied'`, actor, tenant, template name, version
 
-**Re-apply rule:** A configuration template can be re-applied to the same tenant at any time — it overwrites `tenant_settings` fields with the template's current payload. No idempotency conflict check; each apply creates a new `tenant_configuration_template_applications` row.
-
+**Re-apply rule:** Applying a configuration template again updates tenant settings according to the current payload.
 ---
 
 ### Deactivate Configuration Template
 
 **Trigger:** "Deactivate" action on a template row.
 
-Deactivation sets `is_active = false`. The template no longer appears in provisioning wizard dropdowns. Tenants that previously applied it are unaffected — their `tenant_settings` values remain.
+Deactivation sets `is_active = false`. The template no longer appears in provisioning wizard dropdowns. Tenants that previously applied it are unaffected â€” their `tenant_settings` values remain.
 
-**Blocked if:** The template is referenced in any in-progress provisioning wizard (`wizard_state.step4.configuration_template_id`). Operator must either complete or cancel those wizards first.
-
+**Blocked if:** active tenant positions or assignment rows still reference this template in a way that would orphan resolution.
 **API:** `DELETE /admin/v1/configuration-templates/{id}`
 
 ---
 
-## Job Family Tab
+## Position Templates Tab
 
-Manages reusable `job_family` type templates that seed org hierarchy during provisioning.
+Manages reusable `position_template` packs that seed tenant departments and concrete positions during provisioning. Each position may link to one global role template. Monitoring, app allowlist, onboarding, and leave assignment are managed from their own template screens, not from the position form.
 
 ### Page Header
 
 | Element | Value |
 |---|---|
-| Title | "Job Family Templates" |
-| Subtitle | "Reusable org hierarchy presets — job families, levels, and titles." |
-| Create button | `+ New Job Family Template` — requires `platform.configuration_templates.manage` |
+| Title | "Position Templates" |
+| Subtitle | "Reusable position packs by employee count range and industry." |
+| Create button | `+ New Position Template Pack` - requires `platform.config_templates.manage` |
 
-### Job Family Templates Table
+### Position Template Packs Table
 
-**API:** `GET /admin/v1/configuration-templates?type=job_family&search={q}`
+**API:** `GET /admin/v1/configuration-templates?type=position_template&search={q}`
 
 | Column | Description | Sortable |
 |---|---|---|
 | Template Name | Display name | Yes |
-| Families | Count of job families defined in this template | No |
-| Levels | Total count of job levels across all families | No |
-| Pending Role Links | Count of job levels with `pending_role_template_id` across all tenants that applied this template | No |
+| Employee Count Range | `1-10`, `11-50`, `51-100`, `101-500`, `501-1000`, `1001+` | Yes |
+| Industry | Optional recommendation tag | Yes |
+| Positions | Count of positions in the pack | No |
 | Applied To | Count of tenants that have applied this template | Yes |
 | Last Modified | Date | Yes |
-| Actions | Edit, Duplicate, Deactivate | — |
+| Actions | Edit, Clone, Apply to Tenant, Deactivate | - |
 
----
-
-### Create Job Family Template — Full Field Specification
-
-**Trigger:** `+ New Job Family Template` button
-
-A template is a named container holding one or more **job families**. Each family holds one or more **job levels** in ranked order.
-
-#### Section 1: Template Identity
-
-| Field | Label | Type | Required | Validation |
-|---|---|---|---|---|
-| Template Name | "Template Name" | Text input | Yes | 2–80 chars, unique among active `job_family` templates |
-| Description | "Description" | Textarea | Yes | 10–300 chars |
-
-#### Section 2: Job Family Builder
-
-The operator builds families interactively. UI shows a collapsible card per family.
-
-**Per Family:**
-
-| Field | Label | Type | Required | Notes |
-|---|---|---|---|---|
-| Family Name | "Family Name" | Text | Yes | e.g. "Engineering", "HR", "Finance", "Operations" |
-| Family Code | "Family Code" | Text | Yes | Slug, e.g. `engineering` — must be unique within the template |
-
-**Per Level within family** (ordered list, drag to reorder):
-
-| Field | Label | Type | Required | Notes |
-|---|---|---|---|---|
-| Level Name | "Level Name" | Text | Yes | e.g. "Junior Engineer", "Mid Engineer", "Senior Engineer" |
-| Rank | Auto-assigned | Integer | — | 1 = lowest, increments per level in display order. Operator reorders by dragging; ranks update automatically |
-| Level Code | "Level Code" | Text | Yes | Slug, unique within the family, e.g. `junior`, `mid`, `senior` |
-| Default Role Template | "Default Role Template" | Dropdown — global role templates | No | If set: when this job family template is applied to a tenant, the system tries to link this level to the named materialized role. If the role doesn't exist yet for the tenant, stored as `pending_role_template_id` until resolved |
-
-**Visual layout:**
-
-```
-▼ Engineering                                       [+ Add Level] [Remove Family]
-  ┌─────────────────────────────────────────────────────────────────┐
-  │ ≡  Junior Engineer   rank: 1   code: junior   Role: IC Contributor  │
-  │ ≡  Mid Engineer      rank: 2   code: mid       Role: IC Contributor  │
-  │ ≡  Senior Engineer   rank: 3   code: senior    Role: Senior IC       │
-  │ ≡  Staff Engineer    rank: 4   code: staff     Role: Lead            │
-  └─────────────────────────────────────────────────────────────────┘
-
-▼ HR                                                [+ Add Level] [Remove Family]
-  ┌─────────────────────────────────────────────────────────────────┐
-  │ ≡  HR Coordinator    rank: 1   code: coordinator  Role: HR Staff     │
-  │ ≡  HR Manager        rank: 2   code: manager      Role: HR Manager   │
-  └─────────────────────────────────────────────────────────────────┘
-
-[+ Add Family]
-```
-
-**Save API:** `POST /admin/v1/configuration-templates`
+### Payload Shape
 
 ```json
 {
-  "name": "Standard 3-Tier Org",
-  "description": "Standard org hierarchy for mid-size companies. 3 families (Engineering, HR, Operations) with 3-4 levels each.",
-  "type": "job_family",
+  "type": "position_template",
   "payload": {
-    "families": [
+    "pack_name": "Small Software Company Positions",
+    "employee_count_range_key": "101-500",
+    "employee_count_min": 101,
+    "employee_count_max": 500,
+    "industry": "software",
+    "positions": [
       {
-        "name": "Engineering",
-        "code": "engineering",
-        "levels": [
-          { "name": "Junior Engineer", "code": "junior", "rank": 1, "default_role_template_name": "IC Contributor" },
-          { "name": "Mid Engineer", "code": "mid", "rank": 2, "default_role_template_name": "IC Contributor" },
-          { "name": "Senior Engineer", "code": "senior", "rank": 3, "default_role_template_name": "Senior IC" },
-          { "name": "Staff Engineer", "code": "staff", "rank": 4, "default_role_template_name": "Lead" }
-        ]
+        "position_key": "managing-director",
+        "position_name": "Managing Director",
+        "department_name": "Leadership",
+        "reports_to_position_key": null,
+        "linked_role_template_id": "uuid-of-tenant-owner-role-template"
       },
       {
-        "name": "HR",
-        "code": "hr",
-        "levels": [
-          { "name": "HR Coordinator", "code": "coordinator", "rank": 1, "default_role_template_name": "HR Staff" },
-          { "name": "HR Manager", "code": "manager", "rank": 2, "default_role_template_name": "HR Manager" }
-        ]
+        "position_key": "software-engineer",
+        "position_name": "Software Engineer",
+        "department_name": "Engineering",
+        "reports_to_position_key": "engineering-manager",
+        "linked_role_template_id": "uuid-of-employee-role-template"
       }
     ]
   }
 }
 ```
 
-**Response (201 Created):**
-```json
-{
-  "template_id": "ctmpl-uuid",
-  "name": "Standard 3-Tier Org",
-  "type": "job_family",
-  "family_count": 2,
-  "level_count": 6,
-  "version": 1,
-  "created_at": "2026-05-18T09:00:00Z"
-}
-```
+### Validation
 
-**Validation — server-side:**
-- At least one family required
-- At least one level per family required
-- Family codes must be unique within the template
-- Level codes must be unique within their family
-- Ranks must be positive integers; duplicate ranks within a family → HTTP 422
-- `default_role_template_name` values are not validated at create time — they are resolved lazily at apply time
+- At least one position is required.
+- `employee_count_range_key` must be one of `1-10`, `11-50`, `51-100`, `101-500`, `501-1000`, `1001+`.
+- `employee_count_min` and `employee_count_max` must match the selected range; `employee_count_max` is null for `1001+`.
+- `position_key` values must be unique within the pack.
+- `reports_to_position_key` must reference another position in the same pack or be null.
+- Reports-to links must not create cycles.
+- `linked_role_template_id` is optional and must reference an active global role template when present.
 
-**State written:** `configuration_templates` row with `type = 'job_family'`, `payload` JSON, `version = 1`. Audit log: `action = 'job_family_template.created'`.
-
----
-
-### Edit Job Family Template
-
-**API:** `PATCH /admin/v1/configuration-templates/{id}`
-
-Full payload replacement — operator edits the family/level structure and saves. Every successful PATCH increments `version`.
-
-**Blocked if:** Any tenant has applied this template AND `deactivate_blocked_if_pending_links = true` is set — because editing levels would invalidate pending role links. In this case, the operator must first resolve all pending role links on tenant job levels before editing.
-
-Re-applying after an edit overwrites the tenant's job families and levels with the new payload.
-
----
-
-### Apply Job Family Template to Tenant
-
-**Entry points:**
-1. Job Family tab → row Actions → "Apply to Tenant"
-2. Provisioning wizard → Step 4 → Job Family Template multi-select
-
-**Apply flow:**
-
-**Step 1: Select Tenant** (when entering from Template Manager)
-- Shows tenant name, plan, status, and whether job families already exist for this tenant
-- If job families already exist: warning shown — "This tenant already has {N} job families. Applying will add families from this template; existing families are not removed."
-
-**Step 2: Preview**
-- Lists all families and levels that will be created
-- For each level: shows the `default_role_template_name` and whether it will resolve immediately (green check — role exists for this tenant) or remain pending (amber — role not yet applied)
-
-**Step 3: Confirm**
+### Apply To Tenant
 
 **API:** `POST /admin/v1/tenants/{tenantId}/configuration-templates/{templateId}/apply`
 
-```json
-{ "reason": "Initial provisioning — standard 3-tier org structure." }
-```
+Apply creates tenant departments and positions. For each position with `linked_role_template_id`, the linked role template is materialized for the tenant. Role permissions are filtered by tenant module entitlements before the tenant role is created or linked.
 
-**Response (200 OK):**
-```json
-{
-  "application_id": "ctapp-uuid",
-  "families_created": 2,
-  "levels_created": 6,
-  "role_links_resolved": 3,
-  "role_links_pending": 3,
-  "pending_details": [
-    { "level": "Senior Engineer", "pending_role_template_name": "Senior IC" },
-    { "level": "Staff Engineer", "pending_role_template_name": "Lead" },
-    { "level": "HR Manager", "pending_role_template_name": "HR Manager" }
-  ],
-  "applied_at": "2026-05-18T09:15:00Z"
-}
-```
+During provisioning, the tenant's real `estimated_employee_count` maps to one employee count range. Example: `150` maps to `101-500`. The wizard suggests the active position template pack with the same range and closest industry match, and the operator can override it.
 
-**State written:**
-- `job_families` rows created for tenant (scoped to `tenant_id`)
-- `job_levels` rows created; for each: if a `roles` row named `default_role_template_name` exists for this tenant → `default_role_id` set; otherwise `pending_role_template_id` set to the named global role template's ID
-- `tenant_configuration_template_applications` row created
-- Audit log: `action = 'job_family_template.applied'`, families/levels count, pending links count
-
-**Pending role link resolution:** When the operator later applies a Role Template to this tenant (via Role Templates tab), the `ApplyRoleTemplateCommandHandler` scans `job_levels` for rows with `pending_role_template_id = this_template_id` and sets `default_role_id` on each, clearing the pending flag.
-
-**Re-apply rule:** Applying the same job family template again to a tenant that already has those families is additive — families with the same `code` are skipped (not duplicated); new families/levels in the template are created. A warning is returned listing which families were skipped.
+**Response warnings include:**
+- Permissions excluded because the tenant is not entitled to the owning module.
+- Positions skipped because a position with the same key already exists and `force_update = false`.
+- Non-destructive updates only for positions that already have assigned employees.
 
 ---
-
-### Deactivate Job Family Template
-
-**Blocked if:** Any active tenant has `job_levels.pending_role_template_id` referencing a role template that is linked to this job family template. Operator must resolve or nullify those pending links first.
-
-**API:** `DELETE /admin/v1/configuration-templates/{id}`
-
-Deactivation sets `is_active = false`. Existing tenant job families/levels are unaffected.
-
----
-
 ## Leave Policy Tab
 
 Manages reusable `leave_policy` type templates that seed leave configuration during provisioning.
@@ -751,7 +621,7 @@ Manages reusable `leave_policy` type templates that seed leave configuration dur
 |---|---|
 | Title | "Leave Policy Templates" |
 | Subtitle | "Reusable leave type and policy presets for tenant provisioning." |
-| Create button | `+ New Leave Policy Template` — requires `platform.configuration_templates.manage` |
+| Create button | `+ New Leave Policy Template` â€” requires `platform.config_templates.manage` |
 
 ### Leave Policy Templates Table
 
@@ -764,11 +634,11 @@ Manages reusable `leave_policy` type templates that seed leave configuration dur
 | Policies | Count of leave policies defined | No |
 | Applied To | Count of tenants that have applied this template | Yes |
 | Last Modified | Date | Yes |
-| Actions | Edit, Duplicate, Deactivate | — |
+| Actions | Edit, Duplicate, Deactivate | â€” |
 
 ---
 
-### Create Leave Policy Template — Full Field Specification
+### Create Leave Policy Template â€” Full Field Specification
 
 **Trigger:** `+ New Leave Policy Template` button
 
@@ -778,14 +648,14 @@ A template defines one or more **leave types** and the **leave policy** that gov
 
 | Field | Label | Type | Required | Validation |
 |---|---|---|---|---|
-| Template Name | "Template Name" | Text input | Yes | 2–80 chars, unique among active `leave_policy` templates |
-| Description | "Description" | Textarea | Yes | 10–300 chars |
+| Template Name | "Template Name" | Text input | Yes | 2â€“80 chars, unique among active `leave_policy` templates |
+| Description | "Description" | Textarea | Yes | 10â€“300 chars |
 
 #### Section 2: Leave Type Builder
 
 One collapsible card per leave type. Operator adds as many types as needed.
 
-**Per Leave Type — Identity fields:**
+**Per Leave Type â€” Identity fields:**
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
@@ -797,7 +667,7 @@ One collapsible card per leave type. Operator adds as many types as needed.
 | Applicable Gender | "Applicable To" | Dropdown: All / Male / Female | No | Default: All. Use for maternity/paternity leave |
 | Color | "Calendar Color" | Color picker | No | Used in leave calendar display |
 
-**Per Leave Type — Entitlement fields:**
+**Per Leave Type â€” Entitlement fields:**
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
@@ -808,7 +678,7 @@ One collapsible card per leave type. Operator adds as many types as needed.
 | Carry Forward Cap | "Carry Forward Cap (days)" | Number | No | Required if Carry Forward = on. Max days that can roll to next year |
 | Carry Forward Expiry (months) | "Carried Forward Balance Expires After (months)" | Number | No | If set: carried-forward balance expires N months into the new leave year |
 
-**Per Leave Type — Accrual Policy:**
+**Per Leave Type â€” Accrual Policy:**
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
@@ -817,32 +687,32 @@ One collapsible card per leave type. Operator adds as many types as needed.
 | Accrual Amount | "Accrual Amount (days)" | Number | Yes if accrual | Days added per accrual cycle |
 | Accrual Start From | "Start Accruing From" | Dropdown | No | `joining_date` / `probation_end` / `leave_year_start` |
 
-**Per Leave Type — Eligibility Rules:**
+**Per Leave Type - Eligibility Rules:**
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
 | Exclude During Probation | "Exclude During Probation Period" | Toggle | No | Default: off. When on: employees on probation cannot apply for this leave type |
 | Min Service Days | "Minimum Service (days)" | Number | No | Employee must have been active for at least N days before they can apply |
-| Eligible Min Job Level Rank | "Eligible From Job Level Rank" | Number | No | If set: only employees at or above this job level rank are eligible. Resolved against tenant's job levels at apply time |
+| Assignment Scope | "Applies To" | Radio | Yes | `tenant`, `department`, or `position`. Determines where this leave policy applies |
 
 **Visual layout per leave type card:**
 
 ```
-▼ Annual Leave                                              [Remove]
-  ┌──────────────────────────────────────────────────────┐
-  │ Code: annual   Paid: Yes   Approval: Required         │
-  │ Max 21 days/year   Carry forward: up to 5 days        │
-  │ Accrual: monthly 1.75 days   Start: joining_date      │
-  │ Probation: excluded   Min service: 90 days            │
-  └──────────────────────────────────────────────────────┘
+â–¼ Annual Leave                                              [Remove]
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ Code: annual   Paid: Yes   Approval: Required         â”‚
+  â”‚ Max 21 days/year   Carry forward: up to 5 days        â”‚
+  â”‚ Accrual: monthly 1.75 days   Start: joining_date      â”‚
+  â”‚ Probation: excluded   Min service: 90 days            â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
-▼ Sick Leave                                               [Remove]
-  ┌──────────────────────────────────────────────────────┐
-  │ Code: sick   Paid: Yes   Approval: Required           │
-  │ Max 14 days/year   No carry forward                   │
-  │ Accrual: upfront                                      │
-  │ Medical cert required after 3 consecutive days        │
-  └──────────────────────────────────────────────────────┘
+â–¼ Sick Leave                                               [Remove]
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ Code: sick   Paid: Yes   Approval: Required           â”‚
+  â”‚ Max 14 days/year   No carry forward                   â”‚
+  â”‚ Accrual: upfront                                      â”‚
+  â”‚ Medical cert required after 3 consecutive days        â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 [+ Add Leave Type]
 ```
@@ -851,7 +721,7 @@ One collapsible card per leave type. Operator adds as many types as needed.
 
 ```json
 {
-  "name": "Standard Leave Pack — APAC",
+  "name": "Standard Leave Pack â€” APAC",
   "description": "Standard leave types for APAC tenants: Annual, Sick, Casual, Maternity/Paternity.",
   "type": "leave_policy",
   "payload": {
@@ -874,7 +744,7 @@ One collapsible card per leave type. Operator adds as many types as needed.
         "accrual_start_from": "joining_date",
         "exclude_during_probation": true,
         "min_service_days": 90,
-        "eligible_min_job_level_rank": null
+        "assignment_scope": "tenant"
       },
       {
         "name": "Sick Leave",
@@ -888,7 +758,7 @@ One collapsible card per leave type. Operator adds as many types as needed.
         "accrual_type": "upfront",
         "exclude_during_probation": false,
         "min_service_days": 0,
-        "eligible_min_job_level_rank": null
+        "assignment_scope": "tenant"
       },
       {
         "name": "Casual Leave",
@@ -901,7 +771,8 @@ One collapsible card per leave type. Operator adds as many types as needed.
         "carry_forward": false,
         "accrual_type": "upfront",
         "exclude_during_probation": true,
-        "min_service_days": 0
+        "min_service_days": 0,
+        "assignment_scope": "tenant"
       }
     ]
   }
@@ -912,7 +783,7 @@ One collapsible card per leave type. Operator adds as many types as needed.
 ```json
 {
   "template_id": "ctmpl-uuid",
-  "name": "Standard Leave Pack — APAC",
+  "name": "Standard Leave Pack â€” APAC",
   "type": "leave_policy",
   "leave_type_count": 3,
   "version": 1,
@@ -920,12 +791,12 @@ One collapsible card per leave type. Operator adds as many types as needed.
 }
 ```
 
-**Validation — server-side:**
+**Validation â€” server-side:**
 - At least one leave type required
 - Leave type codes must be unique within the template
 - `carry_forward_cap` required if `carry_forward = true`
 - `accrual_frequency` and `accrual_amount` required if `accrual_type = 'accrual'`
-- `max_days_per_year` must be ≥ `carry_forward_cap` if carry forward is on
+- `max_days_per_year` must be â‰¥ `carry_forward_cap` if carry forward is on
 - `applicable_gender` must be `all`, `male`, or `female`
 
 **State written:** `configuration_templates` row with `type = 'leave_policy'`, `payload` JSON, `version = 1`. Audit log: `action = 'leave_policy_template.created'`.
@@ -936,33 +807,33 @@ One collapsible card per leave type. Operator adds as many types as needed.
 
 **API:** `PATCH /admin/v1/configuration-templates/{id}`
 
-Full payload replacement. Every successful PATCH increments `version`. Editing a template does NOT update previously applied tenant leave types/policies — re-apply is required.
+Full payload replacement. Every successful PATCH increments `version`. Editing a template does NOT update previously applied tenant leave types/policies â€” re-apply is required.
 
 ---
 
 ### Apply Leave Policy Template to Tenant
 
 **Entry points:**
-1. Leave Policy tab → row Actions → "Apply to Tenant"
-2. Provisioning wizard → Step 4 → Leave Policy Template dropdown
+1. Leave Policy tab â†’ row Actions â†’ "Apply to Tenant"
+2. Provisioning wizard â†’ Step 4 â†’ Leave Policy Template dropdown
 
 **Apply flow:**
 
 **Step 1: Select Tenant** (when entering from Template Manager)
 - Shows tenant name, plan, status
-- If leave types already exist for this tenant: warning — "This tenant already has {N} leave types. Leave types with matching codes will be skipped; new types will be added."
-- If `eligible_min_job_level_rank` is set on any leave type: checks whether tenant has job levels. If not: info notice — "Job level eligibility rules will be stored but cannot be resolved until job families are applied."
+- If leave types already exist for this tenant: warning â€” "This tenant already has {N} leave types. Leave types with matching codes will be skipped; new types will be added."
+- If `assignment_scope` is `department` or `position`: checks that the selected departments or positions exist or were created by the selected position template pack.
 
 **Step 2: Preview**
 - Lists all leave types with their key entitlement fields
-- For types with `eligible_min_job_level_rank` set: shows which job level rank the rule maps to (if job families exist for tenant) or shows "pending job level resolution" (amber)
+- Shows whether each leave type applies to the full tenant, selected departments, or selected positions.
 
 **Step 3: Confirm**
 
 **API:** `POST /admin/v1/tenants/{tenantId}/configuration-templates/{templateId}/apply`
 
 ```json
-{ "reason": "Initial provisioning — standard APAC leave pack." }
+{ "reason": "Initial provisioning â€” standard APAC leave pack." }
 ```
 
 **Response (200 OK):**
@@ -973,19 +844,18 @@ Full payload replacement. Every successful PATCH increments `version`. Editing a
   "leave_types_skipped": 0,
   "skipped_codes": [],
   "policies_created": 3,
-  "job_level_rank_warnings": [],
+  "assignment_warnings": [],
   "applied_at": "2026-05-18T09:15:00Z"
 }
 ```
 
 **State written:**
 - `leave_types` rows created scoped to `tenant_id` for each leave type in payload (skip if `code` already exists for tenant)
-- `leave_policies` rows created for each leave type: entitlement + accrual rules persisted; `eligible_min_job_level_rank` stored as-is (resolved by Leave module at request time against live job levels)
+- `leave_policies` rows created for each leave type: entitlement + accrual rules persisted; assignment rows target tenant, departments, or positions
 - `tenant_configuration_template_applications` row created
 - Audit log: `action = 'leave_policy_template.applied'`, leave types count, skipped count
 
-**Re-apply rule:** Applying the same template again is additive — leave types with matching `code` are skipped (not overwritten); new types in the template are created. To update existing leave type settings, the operator must edit the tenant's leave types directly via Tenant Console → Leave Management tab.
-
+**Re-apply rule:** Applying the same leave policy template again upserts leave types and policies by code, and updates assignment rows according to the current payload.
 ---
 
 ### Deactivate Leave Policy Template
@@ -996,7 +866,7 @@ Deactivation sets `is_active = false`. Template no longer appears in provisionin
 
 ---
 
-## APIs — Full Catalog
+## APIs â€” Full Catalog
 
 ### Role Template APIs
 
@@ -1013,18 +883,18 @@ Deactivation sets `is_active = false`. Template no longer appears in provisionin
 | POST | `/admin/v1/tenants/{id}/roles` | Create tenant-specific role | `platform.tenants.manage` |
 | PUT | `/admin/v1/tenants/{id}/roles/{roleId}/permissions` | Replace role permission set | `platform.tenants.manage` |
 | DELETE | `/admin/v1/tenants/{id}/roles/{roleId}` | Delete tenant role | `platform.tenants.manage` |
-| POST | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Apply template to tenant | `platform.tenants.manage` |
+| POST | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Apply role template to tenant | `platform.tenants.manage` |
 | GET | `/admin/v1/tenants/{id}/role-template-applications` | History of template applications | `platform.tenants.read` |
 
 ### Configuration Template APIs
 
 | Method | Route | Purpose | Permission |
 |---|---|---|---|
-| GET | `/admin/v1/configuration-templates` | List templates (filter by `?type=`) | `platform.configuration_templates.read` |
-| POST | `/admin/v1/configuration-templates` | Create template | `platform.configuration_templates.manage` |
-| GET | `/admin/v1/configuration-templates/{id}` | Template detail | `platform.configuration_templates.read` |
-| PATCH | `/admin/v1/configuration-templates/{id}` | Update template | `platform.configuration_templates.manage` |
-| DELETE | `/admin/v1/configuration-templates/{id}` | Deactivate template | `platform.configuration_templates.manage` |
+| GET | `/admin/v1/configuration-templates` | List templates (filter by `?type=`) | `platform.config_templates.read` |
+| POST | `/admin/v1/configuration-templates` | Create template | `platform.config_templates.manage` |
+| GET | `/admin/v1/configuration-templates/{id}` | Template detail | `platform.config_templates.read` |
+| PATCH | `/admin/v1/configuration-templates/{id}` | Update template | `platform.config_templates.manage` |
+| DELETE | `/admin/v1/configuration-templates/{id}` | Deactivate template | `platform.config_templates.manage` |
 | POST | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply template to tenant | `platform.tenants.manage` |
 | GET | `/admin/v1/tenants/{id}/configuration-template-applications` | History of configuration template applications | `platform.tenants.read` |
 
@@ -1037,9 +907,19 @@ Deactivation sets `is_active = false`. Template no longer appears in provisionin
 | 404 | `template_not_found` | Template ID does not exist |
 | 409 | `template_name_taken` | Active template with same name exists |
 | 409 | `role_name_duplicate` | Role with this name exists and `on_duplicate` not specified |
-| 422 | `unknown_permission_codes` | One or more codes not in permissions table — lists the invalid codes |
+| 422 | `unknown_permission_codes` | One or more codes not in permissions table â€” lists the invalid codes |
 | 422 | `permissions_not_in_module_scope` | Codes owned by modules not in template's module_scope |
-| 422 | `all_permissions_excluded` | Every permission in template is excluded by tenant entitlement filter — nothing to apply |
-| 422 | `system_template_not_editable` | Attempt to PATCH a system template directly — must clone |
-| 422 | `invalid_template_type` | `type` value not one of: `configuration`, `job_family`, `leave_policy` |
+| 422 | `all_permissions_excluded` | Every permission in template is excluded by tenant entitlement filter â€” nothing to apply |
+| 422 | `system_template_not_editable` | Attempt to PATCH a system template directly â€” must clone |
+| 422 | `invalid_template_type` | `type` value not one of the supported template types: `configuration`, `position_template`, `leave_policy`, `monitoring_policy`, `app_allowlist`, `onboarding`, `data_import_mapping` |
 | 403 | `permission_denied` | Missing required platform permission |
+
+
+
+
+
+
+
+
+
+

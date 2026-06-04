@@ -91,3 +91,4 @@ File attachments use the existing `attachments` table — `task_documents` is fo
 - [[modules/work-management/tasks/overview|Task Management]] — task_documents FK
 - [[database/schemas/wms-collaboration|WMS Collaboration Schema]]
 - [[current-focus/DEV8-documents-github-ide|DEV8 Task 1]]
+

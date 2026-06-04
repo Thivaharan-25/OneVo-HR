@@ -1,5 +1,7 @@
 # Agent Version Manager — Testing
 
+> Phase 2 only. In Phase 1, verify these routes are hidden and unavailable rather than testing version/ring operations.
+
 ## Test Fixtures Required
 
 - Platform account with `platform.agent_versions.manage` + `platform.agent_versions.force_update`

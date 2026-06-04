@@ -6,7 +6,7 @@ Platform operator with role-template permissions.
 
 ## Global Template Journey
 
-1. Operator opens Role Templates.
+1. Operator opens Developer Platform -> Templates -> Template Manager -> Role Templates.
 2. Console loads available product-module permissions and existing templates.
 3. Operator creates or edits a template.
 4. Backend validates permission ownership.

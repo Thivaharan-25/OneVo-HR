@@ -47,8 +47,20 @@ Tenant and employee identity are resolved after the user signs in through the Tr
 ### Step 5: Policy Distribution
 - **API:** `GET /api/v1/agent/policy`
 - **Backend:** Sends effective monitoring policy from tenant toggles + role policies + employee overrides
-- **Device:** Shows "Monitoring active" only when policy, GDPR consent, and Workforce Presence lifecycle allow collection
+- **Device:** If required WorkPulse notices/consents are missing, shows the desktop collection notice before any affected collection starts. Shows "Monitoring active" only when policy, required Legal & Privacy notice/consent, and Workforce Presence lifecycle allow collection
 - Links: [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]]
+
+Desktop notice example:
+
+```text
+Your company has enabled WorkPulse for this device.
+
+[ ] I acknowledge that activity monitoring is enabled.
+[ ] I acknowledge that screenshots may be captured.
+[ ] I consent to photo/biometric verification.
+```
+
+Only show the items enabled for this tenant/user. Store decisions centrally with `source = desktop-agent`.
 
 ### Step 6: Monitor Health
 - **UI:** Agent -> Health Dashboard -> see all agents: online/offline status, last heartbeat, version, data sync status
@@ -74,7 +86,7 @@ Tenant and employee identity are resolved after the user signs in through the Tr
 |:---------|:-------------|:----------|
 | Sign-in fails | Enrollment does not complete | "Sign in failed. Please try again." |
 | Device credential revoked | Agent stops syncing and returns to sign-in/enrollment | "Device access revoked. Sign in again or contact admin." |
-| Consent missing | Ingest rejected, collectors pause | "Monitoring paused - consent required." |
+| Required Legal & Privacy item missing | Ingest rejected for affected category, collector pauses | "Monitoring paused - consent required." |
 | Policy blocks collection | Agent remains enrolled but does not collect | "Monitoring paused by policy." |
 | Agent goes offline | Dashboard shows offline | "Agent offline since [time] - check machine." |
 | Duplicate device ID | Existing registration is updated or admin warning shown | "Device already registered." |

@@ -1,7 +1,7 @@
-# Employee Transfer — Cross-Module Chain
+﻿# Employee Transfer â€” Cross-Module Chain
 
 **Area:** Cross-Module Scenario  
-**Trigger:** HR Admin or Manager initiates department/team/location transfer (user action)  
+**Trigger:** HR Admin or Manager initiates an assignment or legal entity transfer (user action)  
 **Required Permission(s):** `employees:write`, `org:manage`, `attendance:write`, `leave:manage`  
 **Modules Involved:** Employee-Management, Org-Structure, Workforce-Presence, Leave, Payroll, Auth-Access, Notifications
 
@@ -9,12 +9,14 @@
 
 ## Context
 
-Transferring an employee isn't just updating a department field. It can change their reporting line (affecting approvals), shift schedule, leave policy (if changing country/entity), payroll tax rules, cost center allocation, and access permissions. This doc ensures nothing gets missed during a transfer.
+Transferring an employee isn't just updating a department field. It can change their legal entity, reporting line, job title, shift schedule, leave policy, payroll/legal context where enabled, and access permissions. Team membership changes are handled separately through Org Structure > Teams.
 
 ## Preconditions
 
-- Target department/team exists → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]], [[Userflow/Org-Structure/team-creation|Team Creation]]
-- Target position has capacity (if headcount tracking enabled)
+- Target legal entity exists when changing company.
+- Target position exists inside the selected legal entity; department and job title are derived from the position where configured â†’ [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Position occupancy capacity must be validated for the target position; broader headcount planning remains out of scope unless a future headcount-planning module is enabled
+- Target position must not report to a position in another legal entity.
 - Transfer effective date set (can be future-dated)
 
 ---
@@ -23,14 +25,14 @@ Transferring an employee isn't just updating a department field. It can change t
 
 | Order | Module | What Happens | Triggered By | Event Published |
 |:------|:-------|:-------------|:-------------|:----------------|
-| 1 | **Employee-Management** | Transfer record created: old dept/team → new dept/team, effective date, reason. Employee status temporarily set to "Transferring" | HR Admin submits transfer | `EmployeeTransferInitiated` |
-| 2 | **Org-Structure** | Reporting line updated: old manager removed, new manager assigned. Org chart reflects change on effective date | `EmployeeTransferInitiated` | `ReportingLineChanged` |
-| 3 | **Auth-Access** | Approval routing updated: new manager becomes approver for leave, expense, attendance. Old manager loses approval authority for this employee | `ReportingLineChanged` | `ApprovalRoutingUpdated` |
+| 1 | **Employee-Management** | Transfer record created with old/new legal entity where applicable, old/new position, derived department/job title snapshots, effective date, and reason. Employee status temporarily set to "Transferring" | HR Admin submits transfer | `EmployeeTransferInitiated` |
+| 2 | **Org-Structure** | Position assignment and derived reporting context updated. Org chart reflects change on effective date | `EmployeeTransferInitiated` | `ReportingLineChanged` |
+| 3 | **Auth-Access** | Position-linked access impact is applied after admin confirmation. Approval routing updated: new position-resolved manager becomes approver for leave, expense, attendance. Old position-resolved manager loses approval authority for this employee | `ReportingLineChanged` | `ApprovalRoutingUpdated` |
 | 4 | **Workforce-Presence** | Shift schedule reassigned if new department has different shift pattern. Old schedule ends on transfer date, new schedule starts | `EmployeeTransferInitiated` | `ShiftScheduleReassigned` |
-| 5 | **Leave** | If transferring to different entity/country: leave policy re-evaluated. Balance may be recalculated (carry-over rules). If same entity: no change | `EmployeeTransferInitiated` + location change flag | `LeavePolicyReassigned` (if applicable) |
-| 6 | **Payroll** | Cost center allocation updated. If cross-country transfer: tax rules updated, salary may be restructured for new jurisdiction | `EmployeeTransferInitiated` | `PayrollAllocationUpdated` |
-| 7 | **Notifications** | Old manager notified (team member leaving). New manager notified (team member joining). Employee notified of transfer details | `EmployeeTransferInitiated` | `NotificationSent` |
-| 8 | **Employee-Management** | On effective date: transfer completed, employee status returns to "Active" under new department | Scheduled on effective date | `EmployeeTransferCompleted` |
+| 5 | **Leave** | If transferring to a different legal entity/country: leave policy re-evaluated. Balance may be recalculated (carry-over rules). If same legal entity: no change | `EmployeeTransferInitiated` + legal entity change flag | `LeavePolicyReassigned` (if applicable) |
+| 6 | **Payroll** | If payroll is enabled and the legal entity changes, payroll/legal context is re-evaluated for the new jurisdiction | `EmployeeTransferInitiated` | `PayrollAllocationUpdated` |
+| 7 | **Notifications** | Old position-resolved manager notified. New position-resolved manager notified. Employee notified of transfer details | `EmployeeTransferInitiated` | `NotificationSent` |
+| 8 | **Employee-Management** | On effective date: transfer completed, old assignment history row closes, new assignment history row is created, and employee status returns to "Active" | Scheduled on effective date | `EmployeeTransferCompleted` |
 
 ---
 
@@ -38,14 +40,14 @@ Transferring an employee isn't just updating a department field. It can change t
 
 ```
 Transfer Initiated (Step 1)
-├── Reporting line update (Step 2) — independent
-│   └── Approval routing (Step 3) — needs Step 2
-├── Shift reassignment (Step 4) — independent
-├── Leave policy check (Step 5) — independent
-├── Payroll allocation (Step 6) — independent
-├── Notifications (Step 7) — independent
-│
-Effective Date Reached (Step 8) — scheduled, runs after all above
+â”œâ”€â”€ Position reporting update (Step 2) â€” independent
+â”‚   â””â”€â”€ Approval routing (Step 3) â€” needs Step 2
+â”œâ”€â”€ Shift reassignment (Step 4) â€” independent
+â”œâ”€â”€ Leave policy check (Step 5) â€” independent
+â”œâ”€â”€ Payroll allocation (Step 6) â€” independent
+â”œâ”€â”€ Notifications (Step 7) â€” independent
+â”‚
+Effective Date Reached (Step 8) â€” scheduled, runs after all above
 ```
 
 ---
@@ -54,36 +56,36 @@ Effective Date Reached (Step 8) — scheduled, runs after all above
 
 | Failed Step | Impact | Recovery |
 |:------------|:-------|:---------|
-| Reporting line not updated | Old manager still receives approvals for transferred employee | HR Admin manually updates via Org-Structure |
-| Approval routing stale | Leave/expense requests go to wrong manager | System detects on next approval attempt; HR corrects |
+| Position reporting context not updated | Old position-resolved manager still receives approvals for transferred employee | HR Admin manually updates via Org-Structure |
+| Approval routing stale | Leave/expense requests go to wrong position-resolved manager | System detects on next approval attempt; HR corrects |
 | Shift schedule not reassigned | Employee tracked against old shift | Admin assigns manually via [[Userflow/Workforce-Presence/shift-schedule-setup\|Shift Schedule Setup]] |
-| Leave policy not re-evaluated | Employee may have wrong entitlements for new location | HR manually reassigns via [[Userflow/Leave/leave-entitlement-assignment\|Leave Entitlement Assignment]] |
-| Payroll allocation not updated | Salary charged to old cost center | Finance corrects via [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] |
+| Leave policy not re-evaluated | Employee may have wrong entitlements for new legal entity | HR manually reassigns via [[Userflow/Leave/leave-entitlement-assignment\|Leave Entitlement Assignment]] |
+| Payroll context not updated | Payroll may use old legal entity context | Finance corrects via [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] |
 
 ---
 
 ## Special Cases
 
-### Cross-Country Transfer
-- Triggers additional steps: tax re-registration, benefits re-enrollment, new employment contract generation
-- May require offboarding from old entity and onboarding into new entity (two separate employment records)
-- Links to: [[Userflow/Cross-Module/employee-full-offboarding|Offboarding]] + [[Userflow/Cross-Module/employee-full-onboarding|Onboarding]]
+### Legal Entity / Country Transfer
+- Triggers additional review: leave policy, attendance policy, payroll/legal context where enabled, and access impact.
+- Uses a new legal-entity-scoped position assignment inside the same tenant.
+- Does not allow the target position to report to a position in another legal entity.
 
 ### Future-Dated Transfer
 - All changes are staged but not applied until effective date
-- Approval routing stays with old manager until effective date
+- Approval routing stays with the old position-resolved manager until effective date
 - Employee's current view shows "Transfer pending" badge
 
 ---
 
 ## Related Individual Flows
 
-- [[Userflow/Employee-Management/employee-transfer|Employee Transfer]] — detailed transfer form and process
-- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] — often paired with transfer
-- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]] — org structure changes
-- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]] — schedule reassignment
-- [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment]] — policy changes
-- [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]] — cost center corrections
+- [[Userflow/Employee-Management/employee-transfer|Employee Transfer]] â€” detailed transfer form and process
+- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] â€” often paired with transfer
+- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]] â€” org structure changes
+- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]] â€” schedule reassignment
+- [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment]] â€” policy changes
+- [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]] â€” cost center corrections
 
 ## Module References
 

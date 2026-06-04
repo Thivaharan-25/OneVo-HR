@@ -39,6 +39,8 @@
 
 **Seeded on workspace creation:** Admin, Member, Viewer
 
+**Rule:** Workspace roles are local access levels for a workspace. They are not tenant security roles and must not grant tenant-wide HR, payroll, security, or system administration authority.
+
 ---
 
 ## `workspace_members` - Phase 1
@@ -84,6 +86,8 @@ Maps an HR Org Structure team to a Work Management workspace for Phase 1 members
 **Unique:** `(tenant_id, workspace_id, hr_team_id)`
 
 **Rule:** When `team_members` changes, `HrTeamWorkspaceSyncHandler` adds/removes `workspace_members` with `membership_source = hr_team_sync`. Removed HR team members are deactivated, not hard-deleted.
+
+Synced members inherit scoped workspace authority from their HR team roles and team role permissions. The sync must not assign tenant security roles and must not create project membership. Employees who need project access are added through `project_members` with Admin, Member, or Viewer access.
 
 ---
 
@@ -138,7 +142,6 @@ Per-member Teams readiness and membership sync state for a linked workspace.
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
-| `workspace_id` | uuid | FK -> workspaces |
 | `tenant_id` | uuid | FK -> tenants |
 | `name` | varchar(200) | |
 | `description` | text | nullable |
@@ -152,7 +155,30 @@ Per-member Teams readiness and membership sync state for a linked workspace.
 | `created_at` | timestamptz | |
 | `updated_at` | timestamptz | |
 
-**Indexes:** `(workspace_id)`, `(tenant_id)`
+**Indexes:** `(tenant_id)`, `(tenant_id, status)`
+
+**Rule:** Projects are tenant-scoped business/work containers. A project can involve multiple team workspaces through `project_workspaces`; it is not owned by exactly one workspace.
+
+---
+
+## `project_workspaces` - Phase 1
+
+Links a project to one or more team workspaces that are participating in the project.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `project_id` | uuid | FK -> projects |
+| `workspace_id` | uuid | FK -> workspaces |
+| `tenant_id` | uuid | FK -> tenants |
+| `linked_by_id` | uuid | FK -> users |
+| `linked_at` | timestamptz | |
+| `is_active` | boolean | false when the workspace is removed from the project context |
+
+**Unique:** `(project_id, workspace_id)`
+**Indexes:** `(workspace_id, is_active)`, `(tenant_id, project_id)`
+
+**Rule:** `project_workspaces` is context, not access. It shows which team workspaces are involved, supports filtering/grouping/reporting, and provides a source pool when adding project members. It must not make every workspace member a project member or expose project data to every workspace member.
 
 ---
 
@@ -164,8 +190,8 @@ Per-member Teams readiness and membership sync state for a linked workspace.
 | `project_id` | uuid | FK -> projects |
 | `user_id` | uuid | FK -> users |
 | `employee_id` | uuid | FK -> employees; required for tenant employees |
-| `role` | varchar(20) | owner / member / viewer |
-| `membership_source` | varchar(20) | `manual`, `workspace_inheritance`, `hr_team_sync`, `system` |
+| `role` | varchar(20) | admin / member / viewer |
+| `membership_source` | varchar(20) | `manual`, `project_invite`, `hr_team_suggestion`, `system` |
 | `is_active` | boolean | false when employee is offboarded or removed |
 | `joined_at` | timestamptz | |
 | `removed_at` | timestamptz | nullable |
@@ -173,7 +199,11 @@ Per-member Teams readiness and membership sync state for a linked workspace.
 **Unique:** `(project_id, user_id)`
 **Indexes:** `(project_id, employee_id)`, `(employee_id, is_active)`
 
-**Rule:** Project membership must be limited to active workspace members. Offboarding deactivates project membership through `EmployeeOffboarded` handling.
+**Rule:** Project membership is the source of truth for project visibility and access. Offboarding deactivates project membership through `EmployeeOffboarded` handling.
+
+Project membership is the correct place to add project managers, tech leads, reviewers, or observers who are not members of the synced HR team. Use `viewer` for read-only project visibility. Project `admin` is scoped to that project and does not imply tenant-level Project Admin, HR Admin, or System Admin authority.
+
+Adding a project member does not grant access to every workspace linked to the project. If the UI needs workspace-shell navigation for a direct project invite, create only the minimum workspace shell access for the relevant linked workspace and keep project data authorization tied to `project_members`.
 
 ---
 
@@ -243,4 +273,4 @@ Per-member Teams readiness and membership sync state for a linked workspace.
 | `color` | varchar(20) | |
 | `created_at` | timestamptz | |
 
-**Note:** Labels are project-scoped. For cross-project personal board label reuse, use a workspace-level label convention enforced by the team, not a separate table in Phase 1.
+**Note:** Labels are project-scoped by default. If reusable labels are needed across projects, use tenant-level label conventions or add explicit reusable label support later; do not infer label visibility from workspace membership.

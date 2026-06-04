@@ -11,7 +11,7 @@
 
 ## Sweep Execution
 
-1. Scheduled retention sweep runs through Background Jobs.
+1. Scheduled retention sweep runs in the backend scheduler. Phase 1 surfaces only read-only sweep health/status through Platform Health; standalone Background Jobs operations are Phase 2.
 2. Sweep reads active policies.
 3. Sweep skips records covered by legal holds.
 4. Sweep deletes or anonymizes records according to policy.

@@ -11,7 +11,7 @@
 
 - Monitoring enabled -> [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
 - Desktop agent deployed -> [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]]
-- Employee GDPR/PDPA consent for monitoring and biometric/face reference processing -> [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- Employee Legal & Privacy notice/consent for monitoring and biometric/face reference processing -> [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - Required permissions -> [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
@@ -29,7 +29,7 @@
 
 ### Step 3: Assign Scope
 
-- **UI:** Apply to all employees, specific roles/departments/teams, or individual employees. Employees without required consent are automatically excluded.
+- **UI:** Apply to all employees, specific roles/departments/teams, or individual employees. Employees without required WorkPulse photo/biometric notice or consent are automatically excluded until completed in the desktop app.
 
 ### Step 4: Save
 
@@ -58,7 +58,7 @@ The first captured photo is enrollment, not verification. It must not trigger a 
 | No approved reference photo | First agent sign-in starts reference enrollment; verification is skipped until approved | "Reference photo enrollment required" |
 | Reference photo pending review | Verification skipped; no failed-verification alert | "Reference photo pending review" |
 | Reference photo rejected | Employee prompted to recapture or HR handles manually | "Reference photo rejected - recapture required" |
-| Consent not given | Excluded | Employee auto-excluded from verification |
+| Required Legal & Privacy item incomplete | Excluded | Employee auto-excluded from verification |
 
 ## Events Triggered
 
@@ -71,7 +71,7 @@ The first captured photo is enrollment, not verification. It must not trigger a 
 
 - [[Userflow/Workforce-Intelligence/identity-verification-review|Identity Verification Review]]
 - [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 
 ## Module References
 

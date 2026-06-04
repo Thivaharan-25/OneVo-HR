@@ -14,7 +14,6 @@ interface EmployeeListItemDto {
   employee_number: string
   full_name: string
   email: string
-  job_title: string
   department_name: string
   status: "active" | "onboarding" | "on_leave" | "offboarded"
   avatar_url: string | null
@@ -30,12 +29,13 @@ interface EmployeeDto {
   full_name: string
   email: string
   phone: string | null
-  job_title: string
-  job_family: string
   department: { id: string; name: string }
   team: { id: string; name: string } | null
   location: { id: string; name: string } | null
-  manager: { id: string; full_name: string } | null
+  position: { id: string; name: string; code: string; type: "unique" | "pooled" } | null
+  reports_to_position: { id: string; name: string; code: string } | null
+  resolved_manager: { id: string; full_name: string } | null
+  manager_status: "resolved" | "vacant" | "unassigned"
   employment_start_date: string   // ISO date
   status: "active" | "onboarding" | "on_leave" | "offboarded"
   avatar_url: string | null

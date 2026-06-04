@@ -9,13 +9,13 @@
 
 ## Preconditions
 
-- Legal entity exists → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- Legal entity exists -> [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Configure Pension Scheme
-- **UI:** Payroll → Pension → select legal entity → "Configure Scheme"
+- **UI:** Payroll -> Pension -> select legal entity -> "Configure Scheme"
 - **API:** `POST /api/v1/payroll/pension`
 
 ### Step 2: Set Contribution Rates
@@ -31,7 +31,7 @@
 - **UI:** Vesting schedule: immediate, 1 year cliff, graded over 3 years → determines when employer contributions belong to employee
 
 ### Step 5: Save & Assign
-- **UI:** Assign to legal entity → all employees under entity auto-enrolled → effective from next payroll run
+- **UI:** Assign to legal entity -> all employees under entity auto-enrolled -> effective from next payroll run
 - **Result:** Pension deductions appear in payroll calculations
 
 ## Error Scenarios
@@ -55,3 +55,6 @@
 
 - [[modules/payroll/pensions/overview|Pensions]]
 - [[modules/payroll/overview|Payroll]]
+
+
+

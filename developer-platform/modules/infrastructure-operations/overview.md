@@ -1,8 +1,10 @@
 # Infrastructure Operations
 
+> Phase 2 only as a standalone operations module. Phase 1 may show basic read-only dependency status inside Platform Health, but it must not expose a dedicated Infrastructure Operations screen.
+
 ## Purpose
 
-Infrastructure Operations shows platform-level infrastructure capacity and dependency state — database, storage, queue depth, cloud provider metrics, and external service availability. It is read-only in Phase 1 and serves as a capacity-awareness dashboard for the operations team.
+Infrastructure Operations shows platform-level infrastructure capacity and dependency state — database, storage, queue depth, cloud provider metrics, and external service availability.
 
 ## Data / Systems Read
 
@@ -26,11 +28,11 @@ Infrastructure Operations shows platform-level infrastructure capacity and depen
 
 | Route | Permission |
 |---|---|
-| `/operations/infrastructure` | `platform.health.read` |
+| `/operations/infrastructure` | Phase 2 permission contract |
 
 ## Key Rules
 
-- Phase 1 is read-only — no infrastructure mutations from this screen
+- Phase 1 has no standalone Infrastructure Operations screen
 - Responses must never contain connection strings, API keys, cloud credentials, or internal IP addresses
 - A single unavailable metric shows `status = "unknown"` rather than failing the whole response
 - Degraded dependency entries always include `detected_at` — not just current state

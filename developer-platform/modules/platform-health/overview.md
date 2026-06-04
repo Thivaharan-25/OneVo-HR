@@ -34,7 +34,7 @@ Platform Health shows the current operational state of all ONEVO services in one
 - Per-service: status badge (Healthy / Degraded / Down / Unknown), uptime %, latency, error rate
 - Dependency health: database, external services, payment gateways, email provider
 - Link to Services Monitor for deeper investigation of a specific service
-- Link to Background Jobs for queue health issues
+- Show read-only background job and dependency health summaries; standalone Background Jobs and Infrastructure Operations screens are Phase 2
 
 ## Navigation
 
@@ -59,5 +59,5 @@ Platform Health shows the current operational state of all ONEVO services in one
 - [[developer-platform/modules/platform-health/health-registry|Platform Health Registry and Rules]]
 - [[developer-platform/modules/platform-health/contract-validation|Platform Health Contract Validation]]
 - [[developer-platform/modules/services-monitor/overview|Services Monitor]] - detailed per-service metrics
-- [[developer-platform/modules/background-jobs/overview|Background Jobs]] - job queue health
+- [[developer-platform/modules/background-jobs/overview|Background Jobs]] - Phase 2 standalone job operations; Phase 1 shows summary health only
 - [[developer-platform/modules/dashboard/overview|Dashboard]] - platform health widget (summary)

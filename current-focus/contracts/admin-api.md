@@ -276,7 +276,7 @@ interface UpdatePaymentGatewayConfigDto {
 
 ## GET `/admin/v1/reference/countries/{countryCode}/defaults`
 
-Reference endpoint used by tenant profile setup after the operator selects a country. The response supplies default timezone and currency choices for the tenant/company profile. These values are profile data and must not create or update `legal_entities`.
+Reference endpoint used by tenant profile setup after the operator selects a country. The response supplies default timezone and currency choices for the tenant profile. These values are profile data and must not create or update legal entities.
 
 ```ts
 interface CountryDefaultsDto {
@@ -358,7 +358,7 @@ interface CreateTenantDraftResponseDto {
 }
 ```
 
-Persistence rule: company name, slug, primary contact email, country, industry, registration/profile name, registration number, company size, timezone, and currency are stored as tenant profile/provisioning data. Tenant draft creation does not create legal-entity records and does not write `legal_entities`.
+Persistence rule: company name, slug, primary contact email, country, industry, registration/profile name, registration number, company size, timezone, and currency are stored as tenant profile/provisioning data. Tenant draft creation does not create deprecated registration-profile records. Activation/setup seeding creates the primary legal entity.
 
 **Invite rule:** `POST /admin/v1/tenants` must not send the tenant owner invitation. The dedicated `POST /admin/v1/tenants/{id}/invite-admin` endpoint is the explicit send action.
 
@@ -581,7 +581,7 @@ interface UpdateRoleTemplateDto {
 
 Applying or editing a role template must validate the permission list against `GET /admin/v1/tenants/{id}/permissions/catalog`.
 
-Operators use global templates for reusable patterns and tenant-specific roles for one-customer needs. Role creation does not require job levels. Job levels only affect scoped permissions, hierarchy, and workflow routing later.
+Operators use global templates for reusable patterns and tenant-specific roles for one-customer needs. Role creation does not require job levels. Job levels must not auto-assign permissions; they can only suggest assignments that an authorized admin confirms. Hierarchy affects scoped access and workflow routing later.
 
 ## POST `/admin/v1/tenants/{id}/role-templates/{templateId}/apply`
 
@@ -1025,3 +1025,5 @@ interface AgentRingDto {
 - `platform_role` claim is required on every admin endpoint; `viewer` role cannot mutate
 - Impersonation token is non-renewable (15 min) and writes an audit log regardless of outcome
 - Provisioning tenants (`status: "provisioning"`) are visible here but excluded from `/api/v1/*`
+
+

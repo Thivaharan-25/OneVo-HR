@@ -5,6 +5,12 @@
 
 ---
 
+## Phase Rule
+
+The standalone skill taxonomy endpoints in this file are Phase 2. Do not build these as Phase 1 routes, pages, sidebar items, or API integrations.
+
+Phase 1 only supports embedded skill search/create from `Org Structure -> Job Families -> Required Skills` through the job-family skill-requirements endpoint. Inline-created skills are simple tenant-scoped records used to attach required skills to a job family.
+
 ## Create Skill Category
 
 ### Flow

@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Core workspace infrastructure for Work Management. Every Work Management entity is scoped to a workspace. Workspaces are tenant-level containers for projects, members, and roles. A tenant can have multiple workspaces.
+Core workspace infrastructure for Work Management. Workspaces are team/work-area containers for workspace members, chat, workspace-level resources, and integration context. A tenant can have multiple workspaces. Projects are tenant-scoped and can link to multiple workspaces through `project_workspaces`; a project is not owned by exactly one workspace.
 
 Phase 1 workspace membership is employee-backed. `workspace_members` stores both `user_id` for auth and `employee_id` for HR joins, availability, offboarding, department/team reporting, and company tenant checks. Microsoft Teams group sync is an optional Phase 1 integration and is separate from HR team-to-workspace sync.
 
@@ -50,11 +50,11 @@ When enabled, changes in `team_members` add or deactivate `workspace_members` re
 
 1. Workspace creation seeds 3 system roles (Admin/Member/Viewer) in the same transaction.
 2. If tenant has Work Management enabled, a default workspace is created on tenant provisioning.
-3. Global query filters enforce both `tenant_id` and `workspace_id` on all workspace-scoped entities.
-4. Active workspace carried in backend-held session metadata or `X-Workspace-Id` header; every Work Management request resolves workspace context.
+3. Global query filters enforce `tenant_id` on all Work Management entities and `workspace_id` on workspace-scoped entities.
+4. Active workspace can be carried in backend-held session metadata or `X-Workspace-Id` header for workspace-scoped screens. Project-scoped requests resolve access from `project_members` and use `project_workspaces` only as workspace/team context.
 5. Workspace visibility is tenant-local by default. Cross-company workspace collaboration requires an active company connection and explicit member/data-sharing scope.
-6. Workspace and project members must carry `employee_id`; querying by department, team, job, company tenant, and employment status must not require application-only joins.
-7. Offboarding or `employees.is_deleted = true` deactivates workspace/project memberships and prevents new task assignment.
+6. Workspace members and project members must carry `employee_id`; querying by department, team, job, company tenant, and employment status must not require application-only joins.
+7. Offboarding or `employees.is_deleted = true` deactivates `workspace_members` and `project_members` access and prevents new task assignment.
 8. HR team-to-workspace sync is Phase 1 through `workspace_hr_team_links`.
 9. Microsoft Teams group creation/linking is an optional Phase 1 integration and must not be treated as SSO.
 
@@ -66,7 +66,7 @@ When enabled, changes in `team_members` add or deactivate `workspace_members` re
 |:------|:---------------|:----------|
 | `WorkspaceCreatedEvent` | New workspace created | Seeds default roles, notifies admin |
 | `WorkspaceMemberAddedEvent` | User added to workspace | Notifications |
-| `WorkspaceMemberRemovedEvent` | User removed | Revoke project access cascade |
+| `WorkspaceMemberRemovedEvent` | User removed | Re-evaluate workspace-scoped access; do not remove project membership unless a project policy explicitly depends on that workspace membership |
 | `WorkspaceHrTeamLinkedEvent` | HR team linked to workspace | Syncs team members into workspace |
 | `EmployeeOffboardedEvent` | Employee is offboarded | Deactivates Work Management memberships |
 

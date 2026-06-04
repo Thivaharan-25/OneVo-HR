@@ -1,4 +1,4 @@
-﻿# Billing & Subscription Management
+# Billing & Subscription Management
 
 **Area:** Platform Setup
 **Trigger:** Admin navigates to billing settings (user action)
@@ -77,7 +77,7 @@ One-time setup charges are fees billed once per tenant for initial ONEVO operato
 ### Key rules
 
 - Setup charges are priced and managed by the ONEVO operator via `/admin/v1/tenants/{tenantId}/billing/one-time-charges`.
-- They are billed **once** â€” not monthly or annually. They cover one-off operator labour such as job family creation, employee invites, or role and permission configuration.
+- They are billed **once** - not monthly or annually. They cover one-off operator labour such as job family creation, employee invites, or role and permission configuration.
 - The first invoice a tenant receives **should include both** the first subscription charge and one-time setup line items together unless the signed contract explicitly requires setup-only prepayment. The customer is not required to make two separate payments by default.
 - Setup charges can be tied to the specific `setup_options` selected during tenant creation.
 
@@ -162,7 +162,7 @@ Tenant admins can add packs and the Chat AI add-on directly when their commercia
 - **Backend:** Validates the configured gateway/payment method, charges any required proration, updates module entitlements, publishes `SubscriptionChangedEvent`, and writes an audit log entry.
 - **DB:** `tenant_module_entitlements`, `tenant_subscriptions`, `feature_flag_overrides`
 
-**Note:** Pack removal (downgrade) is not self-service â€” tenant contacts ONEVO. This prevents accidental data access loss.
+**Note:** Pack removal (downgrade) is not self-service - tenant contacts ONEVO. This prevents accidental data access loss.
 
 ### Step 6: Cancel Subscription
 
@@ -178,14 +178,14 @@ Tenant admins with `billing:manage` permission can request cancellation of their
 - **Backend:**
   1. Sets `tenant_subscriptions.cancellation_requested_at = now()`, `cancel_at_period_end = true`
   2. For Paddle tenants: calls Paddle API to cancel subscription at period end
-  3. For PayHere tenants: no gateway call needed â€” `DunningJob` will not generate next invoice
+  3. For PayHere tenants: no gateway call needed - `DunningJob` will not generate next invoice
   4. Creates `billing_audit_logs` entry: `action = 'subscription.cancel_requested'`
   5. Platform admin notified via Info alert: `billing.cancellation_requested`
   6. Tenant retains full access until `billing_period_end`
 - **DB:** `tenant_subscriptions`, `billing_audit_logs`, `platform_alerts`
 
 **Rules:**
-- Cancellation takes effect at end of current billing period â€” never immediate
+- Cancellation takes effect at end of current billing period - never immediate
 - Once requested, cancellation can only be reversed by a platform admin (not tenant self-service)
 - Tenant status transitions to `cancelled` after `billing_period_end` passes (handled by background job)
 
@@ -193,8 +193,8 @@ Tenant admins with `billing:manage` permission can request cancellation of their
 
 Locked features across the app surface an upgrade prompt to guide tenant admins to the billing section.
 
-- **UI:** Lock icon on any feature from an unpurchased pack. Tooltip: "Available in [Pack Name] â€” from $X/user/month. **Add it in Billing.**" Clicking the lock navigates to the billing section with that pack pre-highlighted in the Available Add-ons section.
-- No API call from the lock icon itself â€” it is a frontend navigation cue only.
+- **UI:** Lock icon on any feature from an unpurchased pack. Tooltip: "Available in [Pack Name] - from $X/user/month. **Add it in Billing.**" Clicking the lock navigates to the billing section with that pack pre-highlighted in the Available Add-ons section.
+- No API call from the lock icon itself - it is a frontend navigation cue only.
 
 ---
 
@@ -205,8 +205,8 @@ Locked features across the app surface an upgrade prompt to guide tenant admins 
 An employee counts as a **billable Package 1 seat** at the monthly snapshot when ALL of the following are true:
 
 1. `employees.status = 'active'`
-2. `users.status â‰  'deactivated'` (associated user account exists and is not deactivated)
-3. Monitoring is **not** fully disabled for this employee â€” at least one monitoring feature toggle is enabled (from tenant default or employee-specific override)
+2. `users.status != 'deactivated'` (associated user account exists and is not deactivated)
+3. Monitoring is **not** fully disabled for this employee - at least one monitoring feature toggle is enabled (from tenant default or employee-specific override)
 
 **Excluded from billing:**
 - Employees with monitoring fully disabled
@@ -236,11 +236,11 @@ An employee/user counts as a **billable WorkSync seat** when they are an active 
 
 | Scenario | Rule |
 |:---|:---|
-| Operator removes a module | Effective at end of current billing period â€” never immediate |
+| Operator removes a module | Effective at end of current billing period - never immediate |
 | Data preservation | Configuration and data preserved until period end |
 | No proration credit | No credit issued for removed modules mid-cycle |
 | Downgrade restrictions | Cannot remove modules that other active modules depend on (e.g. cannot remove Core HR while Leave is active) |
-| Self-service | Pack removal is NOT self-service â€” tenant contacts ONEVO |
+| Self-service | Pack removal is NOT self-service - tenant contacts ONEVO |
 
 ### Cancellation
 
@@ -248,7 +248,7 @@ An employee/user counts as a **billable WorkSync seat** when they are an active 
 |:---|:---|
 | Tenant requests cancellation | `cancel_at_period_end = true`; full access until `billing_period_end` |
 | Timing | Always at end of current billing period |
-| Reversal | Platform admin only â€” not tenant self-service |
+| Reversal | Platform admin only - not tenant self-service |
 | Data retention | All tenant data retained for **90 days** after `billing_period_end` |
 | After 90 days | Permanent deletion job runs; data cannot be recovered |
 | Status | `tenants.status = 'cancelled'`; all module entitlements set to `disabled` |
@@ -296,21 +296,21 @@ An employee/user counts as a **billable WorkSync seat** when they are an active 
 
 ## Events Triggered
 
-- `BillingSnapshotTakenEvent` â€” end-of-month background job, triggers invoice generation
-- `SubscriptionChangedEvent` â†’ feature flag service updates active modules for the tenant
-- `AuditLogEntry` (action: `billing.module_added`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
+- `BillingSnapshotTakenEvent` - end-of-month background job, triggers invoice generation
+- `SubscriptionChangedEvent` -> feature flag service updates active modules for the tenant
+- `AuditLogEntry` (action: `billing.module_added`) -> [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ---
 
 ## Related Flows
 
-- [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] â€” initial pack assignment by ONEVO operator
-- [[developer-platform/userflow/tenant-management|Tenant Management]] â€” operator changes plan or removes packs via Developer Console
-- [[Userflow/Configuration/tenant-settings|Tenant Settings]] â€” billing contact email
+- [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] - initial pack assignment by ONEVO operator
+- [[developer-platform/userflow/tenant-management|Tenant Management]] - operator changes plan or removes packs via Developer Console
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] - billing contact email
 
 ## Module References
 
 - [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]]
-- [[backend/module-catalog|Module Catalog]] â€” full pack and add-on definitions
-- [[modules/notifications/overview|Notifications]] â€” invoice and billing event emails
+- [[backend/module-catalog|Module Catalog]] - full pack and add-on definitions
+- [[modules/notifications/overview|Notifications]] - invoice and billing event emails
 

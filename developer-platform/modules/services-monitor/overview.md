@@ -42,4 +42,4 @@ Services Monitor provides detailed operational visibility for individual ONEVO s
 - [[developer-platform/modules/services-monitor/end-to-end-logic|Services Monitor End-to-End Logic]]
 - [[developer-platform/modules/platform-health/overview|Platform Health]] - high-level health overview
 - [[developer-platform/modules/platform-health/health-registry|Platform Health Registry and Rules]] - registry schema shared with Services Monitor
-- [[developer-platform/modules/background-jobs/overview|Background Jobs]] - job-level observability
+- [[developer-platform/modules/background-jobs/overview|Background Jobs]] - Phase 2 job-level observability

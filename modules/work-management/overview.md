@@ -1,9 +1,9 @@
-﻿# Module Family: WorkSync (Work Management)
+# Module Family: WorkSync (Work Management)
 
-**Pillar:** 3 â€” WorkSync
+**Pillar:** 3 — WorkSync
 **Phase:** 1
 **Solution namespace:** `ONEVO.Modules.WorkSync.*`
-**Database:** Same `ApplicationDbContext` as all other ONEVO modules â€” no separate database, no bridge APIs.
+**Database:** Same `ApplicationDbContext` as all other ONEVO modules — no separate database, no bridge APIs.
 
 ---
 
@@ -11,7 +11,7 @@
 
 WorkSync is ONEVO's internal work management pillar. It is not an external system. All WorkSync tables live in the same EF Core `ApplicationDbContext`, the same PostgreSQL database, and the same deployment unit as HR and Workforce Intelligence.
 
-WorkSync provides projects, tasks, sprints, boards, OKR, chat, AI chat assistance, documents, roadmaps, GitHub integration, and analytics â€” all accessible via the same JWT that authenticates users in the HR pillar.
+WorkSync provides projects, tasks, sprints, boards, OKR, chat, AI chat assistance, documents, roadmaps, GitHub integration, and analytics — all accessible via the same JWT that authenticates users in the HR pillar.
 
 Microsoft Teams workspace/group and chat sync is handled by the separate [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]] module. WorkSync owns workspace and chat behavior; the integration module owns Graph account linking, tokens, webhooks, and delta sync.
 
@@ -22,7 +22,7 @@ Microsoft Teams workspace/group and chat sync is handled by the separate [[modul
 | Module | Namespace | Owner | Tables | Spec |
 |:-------|:----------|:------|:-------|:-----|
 | Foundation | `WorkSync.Foundation` | DEV5 | workspaces, workspace_members, workspace_roles, workspace_teams_links, teams_member_sync_status | [[modules/work-management/foundation\|Foundation]] |
-| Project Management | `WorkSync.Projects` | DEV5 | projects, project_members, epics, milestones, versions, release_calendar, labels | [[modules/work-management/projects\|Projects]] |
+| Project Management | `WorkSync.Projects` | DEV5 | projects, project_workspaces, project_members, epics, milestones, versions, release_calendar, labels | [[modules/work-management/projects\|Projects]] |
 | Task Management | `WorkSync.Tasks` | DEV6 | tasks, task_assignments, task_checklists, task_checklist_items, task_tags, task_approvals, task_watchers, task_links, custom_fields, custom_field_values | [[modules/work-management/tasks\|Tasks]] |
 | Planning | `WorkSync.Planning` | DEV6 | sprints, sprint_backlog_items, sprint_daily_snapshots, sprint_reports, boards, board_columns, board_task_positions, roadmaps, roadmap_items, baselines | [[modules/work-management/planning\|Planning]] |
 | OKR | `WorkSync.OKR` | DEV5 | objectives, key_results, okr_check_ins | [[modules/work-management/okr\|OKR]] |
@@ -40,65 +40,72 @@ Microsoft Teams workspace/group and chat sync is handled by the separate [[modul
 ## Cross-Module Data Flow
 
 ```
-tenants (HR) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€>â”
-legal_entities (HR Org Structure) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€>â”‚
-                                                                         â–¼
+tenants (HR) ──────────────────────────────────────────────────────────>┐
+legal_entities (HR Org Structure) ─────────────────────────────────────────────────────>│
+                                                                         ▼
                                                               workspaces (Foundation)
-                                                                         â”‚
-                              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-                              â–¼                                          â–¼
-                         projects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ workspace_members
-                              â”‚
-               â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-               â–¼                             â–¼
-            tasks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ sprints (Planning)
-               â”‚                             â”‚
-      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”              sprint_backlog_items
-      â–¼              â–¼                       â”‚
+                                                                         │
+                              ┌──────────────────────────────────────────┤
+                              ▼                                          ▼
+                         projects ──────────────────────────────── workspace_members
+                              │
+               ┌──────────────┴──────────────┐
+               ▼                             ▼
+            tasks ──────────────────── sprints (Planning)
+               │                             │
+      ┌────────┴─────┐              sprint_backlog_items
+      ▼              ▼                       │
  task_assignments  boards                sprint_daily_snapshots (burndown)
  (users)     board_columns
              board_task_positions
 
-messages (Chat) â”€â”€â”€â”€â”€â”€> premium_ai_detections â”€â”€â”€â”€â”€â”€> ai_action_jobs
-                                                              â”‚
+messages (Chat) ──────> premium_ai_detections ──────> ai_action_jobs
+                                                              │
                                                         (creates task)
 
-Microsoft Teams (Graph) â”€â”€â”€â”€â”€â”€> workspace_teams_links â”€â”€â”€â”€â”€â”€> workspaces
-Microsoft Teams (Graph) â”€â”€â”€â”€â”€â”€> channel_teams_links â”€â”€â”€â”€â”€â”€> channels
-Microsoft Teams messages â”€â”€â”€â”€â”€â”€> teams_message_sync_state â”€â”€â”€â”€â”€â”€> messages
+Microsoft Teams (Graph) ──────> workspace_teams_links ──────> workspaces
+Microsoft Teams (Graph) ──────> channel_teams_links ──────> channels
+Microsoft Teams messages ──────> teams_message_sync_state ──────> messages
 
-tasks â”€â”€â”€â”€â”€â”€> task_documents â”€â”€â”€â”€â”€â”€> documents
-tasks â”€â”€â”€â”€â”€â”€> task_repository_links â”€â”€â”€â”€â”€â”€> repositories
-tasks â”€â”€â”€â”€â”€â”€> code_activity_events (via webhook)
+tasks ──────> task_documents ──────> documents
+tasks ──────> task_repository_links ──────> repositories
+tasks ──────> code_activity_events (via webhook)
 ```
+
+Project/workspace relationship note: the diagram is a logical dependency view, not an ownership rule. Projects are tenant-scoped and can link to multiple team workspaces through `project_workspaces`. Workspace membership does not automatically grant project visibility; project visibility comes from `project_members`.
 
 ---
 
 ## Permission Model
 
-WorkSync uses a **dual-layer** permission model:
+WorkSync uses a **layered** permission model. There is no separate generic "work role" engine beyond team roles, workspace membership, and project membership.
 
 1. **Tenant-level RBAC** (from HR Auth module): standard `roles` + `role_permissions` + `user_permission_overrides`. WorkSync-specific permissions like `tasks:write`, `projects:write`, `sprints:manage` are seeded here.
 
-2. **Workspace-level roles** (from WorkSync Foundation): `workspace_roles` (Admin/Member/Viewer) scoped to a specific workspace. These are evaluated together with tenant-level permissions. A user must pass both checks to act.
+2. **Project membership** (from WorkSync Projects): `project_members` is the source of truth for who can see or work on a project. Local access levels such as Admin, Member, and Viewer apply only inside that project.
 
-3. **Team roles** (from HR Org Structure): `team_roles` + `team_role_permissions` stack on top of workspace roles. When a user belongs to multiple teams, permissions union (most permissive wins within workspace scope).
+3. **Workspace membership** (from WorkSync Foundation): `workspace_members` controls access to a team workspace, chat, workspace-level resources, and workspace administration. A workspace member does not automatically see every project linked to that workspace.
+
+4. **Project-workspace context** (from WorkSync Projects): `project_workspaces` links a project to one or more team workspaces. This shows which workspaces/teams are involved, but it does not grant project visibility to every member of those workspaces.
+
+5. **Team roles** (configured from Roles & Permissions, assigned from Org Structure Teams): `team_roles` + `team_role_permissions` provide scoped work authority inside a team/workspace context. Team roles are limited to Admin / Lead, Member, and Viewer / Reviewer. Team role permissions must stay inside team/work-context actions and must not grant tenant-wide HR, payroll, security, project visibility, billing, or system administration authority.
 
 Authorization flow:
 ```
-Request arrives â†’
-  1. JWT validated (Auth module) â€” tenant_id, user_id confirmed
-  2. Workspace-level check â€” is user a member of this workspace?
-  3. Tenant RBAC check â€” does user have the required permission?
-  4. Team role stacking â€” if workspace role is insufficient, do any team roles grant access?
-  â†’ Allow or 403
+Request arrives →
+  1. JWT validated (Auth module) — tenant_id, user_id confirmed
+  2. Project membership check for project data — is user an active `project_members` row?
+  3. Tenant RBAC check — does user have the required permission inside enabled module/feature boundaries?
+  4. Local Admin/Member/Viewer check — does the project access level allow the action?
+  5. Workspace/team-context check when needed — if the action is inside a linked workspace area, does workspace membership plus team role allow that scoped action?
+  → Allow or 403
 ```
 
 ---
 
 ## Key Invariants
 
-1. **All Work Management entities are tenant-scoped.** Every table has `tenant_id` + either `workspace_id` or `project_id` (which implies workspace). Global query filters enforce both.
+1. **All Work Management entities are tenant-scoped.** Project entities use `tenant_id` + `project_id`. Workspace entities use `tenant_id` + `workspace_id`. A project can link to multiple workspaces through `project_workspaces`, so `project_id` must not imply a single workspace.
 
 2. **Work Management time logs feed HR analytics.** Time records store both `user_id` and `employee_id` where payroll, department, employment-status, or overtime reporting needs HR joins. `employee_id` is resolved from `employees.user_id` at write time.
 
@@ -125,22 +132,23 @@ Request arrives â†’
 
 ## Related
 
-- [[Userflow/Work-Management/wm-overview|WorkSync Userflow Overview]] â€” user-facing module map
-- [[Userflow/Work-Management/my-space-flow|My Space]] â€” personal boards, reminders, saved views
-- [[Userflow/Work-Management/chat-ai-flow|Chat AI Flow]] â€” AI action detection and undo window
-- [[Userflow/Work-Management/collaboration-flow|Work Management collaboration]] â€” documents, wiki, task document links
-- [[Userflow/Work-Management/work-analytics-flow|WorkSync Analytics]] â€” dashboards, saved views, exports
-- [[Userflow/Work-Management/integration-automation-flow|Integration Automation]] â€” repository events and automation rules
-- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]] â€” Microsoft Teams workspace/channel linking
+- [[Userflow/Work-Management/wm-overview|WorkSync Userflow Overview]] — user-facing module map
+- [[Userflow/Work-Management/my-space-flow|My Space]] — personal boards, reminders, saved views
+- [[Userflow/Work-Management/chat-ai-flow|Chat AI Flow]] — AI action detection and undo window
+- [[Userflow/Work-Management/collaboration-flow|Work Management collaboration]] — documents, wiki, task document links
+- [[Userflow/Work-Management/work-analytics-flow|WorkSync Analytics]] — dashboards, saved views, exports
+- [[Userflow/Work-Management/integration-automation-flow|Integration Automation]] — repository events and automation rules
+- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]] — Microsoft Teams workspace/channel linking
 
-- [[ADE-START-HERE|ADE Start Here]] â€” Build order for WorkSync (Weeks 1â€“4)
-- [[onevo-unified-entity-map|Entity Map]] â€” Sections 25â€“38 (all WorkSync tables)
-- [[database/schema-catalog|Schema Catalog]] â€” WorkSync section
-- [[modules/ide-extension/overview|IDE Extension]] â€” Uses WorkSync chat, tasks, sprints via tag engine
+- [[ADE-START-HERE|ADE Start Here]] — Build order for WorkSync (Weeks 1–4)
+- [[onevo-unified-entity-map|Entity Map]] — Sections 25–38 (all WorkSync tables)
+- [[database/schema-catalog|Schema Catalog]] — WorkSync section
+- [[modules/ide-extension/overview|IDE Extension]] — Uses WorkSync chat, tasks, sprints via tag engine
 - [[current-focus/DEV5-wms-foundation|DEV5 Task Pack]]
 - [[current-focus/DEV6-tasks-boards-planning|DEV6 Task Pack]]
 - [[current-focus/DEV7-chat-ai-reminders|DEV7 Task Pack]]
 - [[current-focus/DEV8-documents-github-ide|DEV8 Task Pack]]
+
 
 
 

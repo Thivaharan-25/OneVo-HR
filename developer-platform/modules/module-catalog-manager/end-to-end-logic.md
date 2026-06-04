@@ -1,4 +1,4 @@
-﻿# Module Catalog Manager End-to-End Logic
+# Module Catalog Manager End-to-End Logic
 
 ## Create Product Module
 
@@ -11,16 +11,16 @@
 7. Backend writes `module_catalog`, `module_features`, `module_permission_ownership`, and price history where applicable.
 8. Backend writes an audit event.
 
-### Create Module â€” Full Field Specification
+### Create Module - Full Field Specification
 
 **Trigger:** `+ Add Module` button (requires `platform.module_catalog.manage`)
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Module Key | "Module Key (Slug)" | Text input | Yes | Lowercase, underscores only, unique, max 80 chars | Permanent â€” cannot change after any tenant is entitled. e.g. `leave`, `core_hr`, `activity_monitoring` |
-| Display Name | "Display Name" | Text input | Yes | 2â€“100 chars | Shown to operators in catalog lists and tenant provisioning. |
+| Module Key | "Module Key (Slug)" | Text input | Yes | Lowercase, underscores only, unique, max 80 chars | Permanent - cannot change after any tenant is entitled. e.g. `leave`, `core_hr`, `activity_monitoring` |
+| Display Name | "Display Name" | Text input | Yes | 2-100 chars | Shown to operators in catalog lists and tenant provisioning. |
 | Description | "Description" | Textarea | No | Max 500 chars | Shown in module detail and tenant-facing module summaries. |
-| Pillar | "Pillar" | Dropdown | Yes | | `HR Management`, `Workforce Intelligence`, `WorkSync`, `Shared` â€” maps to `hr_management \| workforce_intelligence \| worksync \| shared` |
+| Pillar | "Pillar" | Dropdown | Yes | | `HR Management`, `Workforce Intelligence`, `WorkSync`, `Shared` - maps to `hr_management \| workforce_intelligence \| worksync \| shared` |
 | Pricing Unit | "Pricing Unit" | Dropdown | Yes | | `Per Employee`, `Per Device`, `Per User`, `Per Seat`, `Flat Rate`, `Per Event` |
 | Sellable | "Sellable" | Toggle | Yes | Default: On | Off = always-included module (Foundation). Non-sellable modules are auto-included in every plan and cannot be individually priced. |
 | Phase | "Phase" | Dropdown | Yes | | `Phase 1` or `Phase 2`. Phase 2 modules are saved with `is_active = false` and are hidden from all plan builders and tenant provisioning until promoted. |
@@ -205,12 +205,12 @@ Frontend calls `GET /admin/v1/modules/catalog/{moduleKey}/permissions/available`
 
 | Permission state | How it appears in the picker |
 |---|---|
-| Unclaimed â€” not owned by any module | Selectable checkbox, normal style |
+| Unclaimed - not owned by any module | Selectable checkbox, normal style |
 | Owned by this module (edit mode) | Already checked, selectable (can deselect to release) |
-| Owned by another module | Visible but **disabled** â€” greyed out, checkbox non-interactive. Tooltip: `"Owned by '{module_name}' â€” release it there first"` |
+| Owned by another module | Visible but **disabled** - greyed out, checkbox non-interactive. Tooltip: `"Owned by '{module_name}' - release it there first"` |
 
 **Key rules:**
-- All permissions are always shown â€” the picker never hides already-claimed ones. Operators must be able to see the full permission landscape.
+- All permissions are always shown - the picker never hides already-claimed ones. Operators must be able to see the full permission landscape.
 - An operator cannot claim a permission owned by another module without first going to that module and releasing it.
 - Backend enforces this as a hard validation error on `POST /admin/v1/modules/catalog` and `PUT /admin/v1/modules/catalog/{moduleKey}/permissions`: any submitted permission code already present in `module_permission_ownership` for another module is rejected with a 422 listing the conflicting module key(s).
 - Permissions must be registered in the seeded permission catalog before they can be claimed. Module Catalog does not create new permission codes.
@@ -219,8 +219,8 @@ Frontend calls `GET /admin/v1/modules/catalog/{moduleKey}/permissions/available`
 
 ## Update Permission Ownership
 
-1. Operator opens a module detail page â†’ **Permissions** tab.
-2. Frontend loads the permission picker pre-populated with this module's currently owned permissions checked. All other permissions are shown â€” unclaimed ones are selectable, already-owned-by-other-module ones are disabled (see **Permission Picker Behaviour** above).
+1. Operator opens a module detail page -> **Permissions** tab.
+2. Frontend loads the permission picker pre-populated with this module's currently owned permissions checked. All other permissions are shown - unclaimed ones are selectable, already-owned-by-other-module ones are disabled (see **Permission Picker Behaviour** above).
 3. Operator checks or unchecks permission codes.
 4. Operator clicks Save.
 5. Backend rejects any submitted permission code already owned by another module (422 with conflicting module key listed).
@@ -252,9 +252,9 @@ Frontend calls `GET /admin/v1/modules/catalog/{moduleKey}/permissions/available`
 | PATCH | `/admin/v1/modules/catalog/{moduleKey}/pricing` | Update pricing | `platform.module_catalog.manage` |
 | GET | `/admin/v1/modules/catalog/{moduleKey}/tenant-impact` | Tenants/plans affected by change | `platform.module_catalog.read` |
 
-## Integration Linking â€” Connecting Integrations to Modules
+## Integration Linking - Connecting Integrations to Modules
 
-Every integration available to tenants is gated by one or more module entitlements. Module Catalog Manager is where the operator defines and manages this link. This is separate from the OAuth app credentials (managed in System Config â†’ Platform OAuth Apps).
+Every integration available to tenants is gated by one or more module entitlements. Module Catalog Manager is where the operator defines and manages this link. This is separate from the OAuth app credentials (managed in System Config -> Platform OAuth Apps).
 
 ### How Integration Gating Works
 
@@ -268,47 +268,47 @@ When a tenant is entitled to a module, the integrations linked to that module be
 
 **API:** `GET /admin/v1/integrations/catalog`
 
-The integration catalog is fully **operator-managed**. Operators create entries for every third-party service tenants can connect. Nothing is hardcoded. When a new integration needs to be added, an operator creates a new entry here â€” no ONEVO deployment required.
+The integration catalog is fully **operator-managed**. Operators create entries for every third-party service tenants can connect. Nothing is hardcoded. When a new integration needs to be added, an operator creates a new entry here - no ONEVO deployment required.
 
-> **Important â€” what belongs here vs elsewhere:**
+> **Important - what belongs here vs elsewhere:**
 >
 > | Type | Example | Managed In |
 > |---|---|---|
-> | Customer OAuth â€” tenant's users log in with their own account | GitHub, Microsoft Teams, Google Calendar, Slack | Integration Catalog (here) â€” `category = 'customer_oauth'` |
-> | Platform-Managed â€” ONEVO configures; tenants don't act | Biometric terminal webhook, MDM agent distribution | Integration Catalog (here) â€” `category = 'platform_managed'` |
-> | ONEVO's own platform service keys â€” used for all tenants | Resend (email), Cloudflare, Azure Blob Storage | System Config â†’ Platform Service Keys â€” NOT here |
-> | Payment gateways â€” ONEVO charges tenants using these | Paddle, PayHere | Subscription Manager â†’ Payment Gateways â€” NOT here |
+> | Customer OAuth - tenant's users log in with their own account | GitHub, Microsoft Teams, Google Calendar, Slack | Integration Catalog (here) - `category = 'customer_oauth'` |
+> | Platform-Managed - ONEVO configures; tenants don't act | Biometric terminal webhook, MDM agent distribution | Integration Catalog (here) - `category = 'platform_managed'` |
+> | ONEVO's own platform service keys - used for all tenants | Resend (email), Cloudflare, Azure Blob Storage | System Config -> Platform Service Keys - NOT here |
+> | Payment gateways - ONEVO charges tenants using these | Paddle, PayHere | Subscription Manager -> Payment Gateways - NOT here |
 >
 > Resend and payment gateways are **never** in the integration catalog. The integration catalog is only for integrations that are part of a tenant's feature set.
 
 | Column | Description |
 |---|---|
-| Logo | Uploaded image â€” shown in tenant's Integrations tab |
+| Logo | Uploaded image - shown in tenant's Integrations tab |
 | Integration Name | Operator-set display name |
-| Integration Key | Unique slug â€” operator-set, e.g. `github`, `ms_teams` |
-| Category | **Customer OAuth** (tenant's users connect their own account) / **Platform-Managed** (ONEVO configures it â€” no customer action) |
-| Required Modules | Module entitlement condition â€” shown as badges |
+| Integration Key | Unique slug - operator-set, e.g. `github`, `ms_teams` |
+| Category | **Customer OAuth** (tenant's users connect their own account) / **Platform-Managed** (ONEVO configures it - no customer action) |
+| Required Modules | Module entitlement condition - shown as badges |
 | Auth Type | OAuth2 / Webhook / API Key / SAML / Platform-Managed |
-| OAuth App | Which platform OAuth app registration handles the OAuth flow â€” links to System Config â†’ OAuth Apps |
+| OAuth App | Which platform OAuth app registration handles the OAuth flow - links to System Config -> OAuth Apps |
 | Active Connections | Count of tenants with this integration currently connected |
-| Is Active | Global on/off â€” inactive = hidden from all tenants |
+| Is Active | Global on/off - inactive = hidden from all tenants |
 | Actions | Edit, View Connected Tenants, Deactivate |
 
 ---
 
-### Create Integration Entry â€” Full Field Specification
+### Create Integration Entry - Full Field Specification
 
 **Trigger:** `+ Add Integration` button (requires `platform.module_catalog.manage`)
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Integration Key | "Integration Key (Slug)" | Text input | Yes | Lowercase, hyphens only, unique, max 50 chars | Permanent â€” cannot change after tenants connect. e.g. `github`, `ms_teams`, `google_cal` |
-| Logo | "Integration Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Recommended: 256Ã—256px transparent PNG or SVG | Uploaded to platform file storage. Displayed in tenant's Integrations tab, module detail view, and the integration catalog list. Upload sends a multipart `POST /admin/v1/uploads/integration-logo` first; returns a `logo_url`. That URL is then submitted with the create form. Alternatively paste an external URL if not uploading. |
-| Display Name | "Display Name" | Text input | Yes | 2â€“80 chars | Shown to operators and tenants. e.g. "GitHub", "Microsoft Teams" |
+| Integration Key | "Integration Key (Slug)" | Text input | Yes | Lowercase, hyphens only, unique, max 50 chars | Permanent - cannot change after tenants connect. e.g. `github`, `ms_teams`, `google_cal` |
+| Logo | "Integration Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Recommended: 256x256px transparent PNG or SVG | Uploaded to platform file storage. Displayed in tenant's Integrations tab, module detail view, and the integration catalog list. Upload sends a multipart `POST /admin/v1/uploads/integration-logo` first; returns a `logo_url`. That URL is then submitted with the create form. Alternatively paste an external URL if not uploading. |
+| Display Name | "Display Name" | Text input | Yes | 2-80 chars | Shown to operators and tenants. e.g. "GitHub", "Microsoft Teams" |
 | Description | "Description" | Textarea | No | Max 300 chars | Shown in tenant's Integrations section as a short explanation of what this integration does |
-| Category | "Category" | Radio | Yes | | **Customer OAuth** â€” the tenant's own users log in with their own third-party account to connect (GitHub org, Microsoft workspace, Google account, Slack workspace). **Platform-Managed** â€” ONEVO configures the connection; no customer action required (biometric terminal webhook, MDM distribution). This determines whether tenants see a "Connect" button or not. |
-| Auth Type | "Authentication Type" | Dropdown | Yes | | OAuth2, API Key (customer enters their own key), Webhook (inbound only â€” customer configures their system to send), SAML, Platform-Managed (no customer action) |
-| OAuth App | "OAuth App Registration" | Dropdown | Yes if Auth Type = OAuth2 | | Select from OAuth apps configured in System Config â†’ OAuth Apps. This is ONEVO's registered developer app with the provider. The customer authorises ONEVO's app during the OAuth flow. |
+| Category | "Category" | Radio | Yes | | **Customer OAuth** - the tenant's own users log in with their own third-party account to connect (GitHub org, Microsoft workspace, Google account, Slack workspace). **Platform-Managed** - ONEVO configures the connection; no customer action required (biometric terminal webhook, MDM distribution). This determines whether tenants see a "Connect" button or not. |
+| Auth Type | "Authentication Type" | Dropdown | Yes | | OAuth2, API Key (customer enters their own key), Webhook (inbound only - customer configures their system to send), SAML, Platform-Managed (no customer action) |
+| OAuth App | "OAuth App Registration" | Dropdown | Yes if Auth Type = OAuth2 | | Select from OAuth apps configured in System Config -> OAuth Apps. This is ONEVO's registered developer app with the provider. The customer authorises ONEVO's app during the OAuth flow. |
 | Required Modules Condition | "Module Requirement Condition" | Radio: Any of / All of | Yes | | Any of = at least one of the listed modules must be entitled. All of = every listed module must be entitled. |
 | Required Module Keys | "Required Modules" | Multi-select from module catalog | Yes | At least one | Tenant must satisfy this condition to see the integration |
 | Is Active | "Active" | Toggle | Yes | Default: On | Inactive = integration hidden from all tenants globally regardless of entitlements |
@@ -349,7 +349,7 @@ Response: `{ "logo_url": "https://storage.onevo.io/integration-logos/ms_teams_ab
 
 ### Integrations Section Inside Module Detail View
 
-In the Module Catalog Manager, every module has an **Integrations** tab on its detail page. This is where integrations are linked to that module â€” it is part of the module's catalog definition, exactly like pricing and permissions.
+In the Module Catalog Manager, every module has an **Integrations** tab on its detail page. This is where integrations are linked to that module - it is part of the module's catalog definition, exactly like pricing and permissions.
 
 **Route:** `/platform/module-catalog/modules/{moduleKey}/integrations`
 
@@ -366,7 +366,7 @@ In the Module Catalog Manager, every module has an **Integrations** tab on its d
 
 **How to link an integration to a module:**
 
-1. Open Module Catalog Manager â†’ select the module (e.g., "Work Management")
+1. Open Module Catalog Manager -> select the module (e.g., "Work Management")
 2. Click the **Integrations** tab
 3. Click **Link Integration**
 4. Dropdown shows all active entries in `integration_catalog` that are not already linked to this module
@@ -394,7 +394,7 @@ In the Module Catalog Manager, every module has an **Integrations** tab on its d
 Requires `reason` (min 10 chars). Side effect: any tenant entitled to this module but NOT entitled to any other module that still links this integration will have that integration disconnected. Warning confirmation shown before delete:
 
 ```
-âš  Unlinking "GitHub" from "Work Management" will disconnect GitHub for:
+WARNING: Unlinking "GitHub" from "Work Management" will disconnect GitHub for:
   14 tenants who have Work Management entitled but no other module linking GitHub.
 Tenants entitled to both Work Management and [other module linking GitHub] are unaffected.
 ```
@@ -408,25 +408,25 @@ Tenants entitled to both Work Management and [other module linking GitHub] are u
 All fields editable except `integration_key` (permanent after first tenant connection) and `category` (structural).
 
 Changing `required_module_keys` has immediate effect:
-- Tenants who now qualify â†’ integration becomes visible in their app on next load
-- Tenants who no longer qualify â†’ `tenant_integration_credentials.status = 'disconnected'`; Warning alert raised: `integration.access_revoked`
+- Tenants who now qualify -> integration becomes visible in their app on next load
+- Tenants who no longer qualify -> `tenant_integration_credentials.status = 'disconnected'`; Warning alert raised: `integration.access_revoked`
 
 **API:** `PATCH /admin/v1/integrations/catalog/{integrationKey}`
 
-Requires `reason` field (min 10 chars) when changing `required_module_keys` or `is_active` â€” because these changes affect live tenants.
+Requires `reason` field (min 10 chars) when changing `required_module_keys` or `is_active` - because these changes affect live tenants.
 
-### Module Disable Warning â€” Integration Impact
+### Module Disable Warning - Integration Impact
 
-When an operator disables a module for a tenant (via Feature Flag Manager or Tenant Console â†’ Subscriptions), the system checks:
+When an operator disables a module for a tenant (via Feature Flag Manager or Tenant Console -> Subscriptions), the system checks:
 
 1. Which integrations have `required_module_keys` containing this module key
 2. Whether the tenant has any of those integrations connected (`tenant_integration_credentials.status = 'connected'`)
 3. If yes: shows a confirmation warning before the disable action:
 
 ```
-âš  Disabling "Agentic Chat" for TechNova Solutions will also disconnect:
-  â€¢ Microsoft Teams (connected â€” james@technova.com, connected May 12 2024)
-  â€¢ Slack (connected â€” james@technova.com, connected Jun 1 2024)
+WARNING: Disabling "Agentic Chat" for TechNova Solutions will also disconnect:
+  - Microsoft Teams (connected - james@technova.com, connected May 12 2024)
+  - Slack (connected - james@technova.com, connected Jun 1 2024)
 
 Are you sure? This cannot be undone without re-entitling the module.
 ```
@@ -435,7 +435,7 @@ Operator must explicitly confirm before the module is disabled and integrations 
 
 ---
 
-## APIs â€” Full Catalog
+## APIs - Full Catalog
 
 | Method | Route | Purpose | Permission |
 |---|---|---|---|
@@ -468,5 +468,5 @@ Operator must explicitly confirm before the module is disabled and integrations 
 | Tenant Console (Subscriptions tab) | Module entitlement state per tenant |
 | Role Template Manager | Permission codes per module to filter the permission catalog |
 | Main ONEVO app (tenant-facing) | `module_integration_links` + `integration_catalog` to determine which integrations a tenant can access based on their entitled modules |
-| Tenant Detail â†’ Integrations tab (developer console) | Same integration link data for read-only operator view |
+| Tenant Detail -> Integrations tab (developer console) | Same integration link data for read-only operator view |
 

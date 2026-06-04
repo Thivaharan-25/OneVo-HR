@@ -52,17 +52,21 @@ This table is not a billing or subscription table. It can only narrow or expose 
 
 ---
 
-## `gdpr_consent_records`
+## `legal_acceptance_records`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
 | `user_id` | `uuid` | FK → users |
-| `consent_type` | `varchar(50)` | `data_processing`, `biometric`, `monitoring`, `marketing` |
-| `consented` | `boolean` |  |
-| `consented_at` | `timestamptz` |  |
+| `document_type` | `varchar(80)` | `terms`, `privacy_notice`, `activity_monitoring_notice`, `screenshot_notice`, `biometric_photo_consent`, `marketing` |
+| `document_version` | `varchar(50)` | Version accepted/acknowledged |
+| `decision` | `varchar(20)` | `accepted`, `acknowledged`, `declined` |
+| `required` | `boolean` | Whether the item blocks platform access or affected collection |
+| `decided_at` | `timestamptz` |  |
 | `ip_address` | `varchar(45)` |  |
+| `user_agent` | `varchar(500)` |  |
+| `source` | `varchar(30)` | `invite`, `web`, `desktop-agent` |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` → [[database/schemas/infrastructure#`users`|users]]
 
@@ -179,7 +183,7 @@ External identity links for tenant users. Use this instead of overloading `users
 
 ---
 
-**Rule:** roles do not require job levels. They are tenant-scoped permission containers. Job levels, reporting lines, and hierarchy are used only by scoped permissions, workflows, escalation, and organisation-aware policies.
+**Rule:** roles do not require job levels. They are tenant-scoped permission containers. Job levels, reporting lines, and hierarchy can suggest or scope access decisions, workflows, escalation, and organisation-aware policies, but job levels must not auto-assign permissions.
 
 ## `role_templates`
 
@@ -229,6 +233,8 @@ Developer Platform starter role definitions. Templates are global/operator-manag
 | `user_id` | `uuid` | FK → users |
 | `permission_id` | `uuid` | FK → permissions |
 | `grant_type` | `varchar(10)` | `grant` or `revoke` |
+| `scope_type` | `varchar(30)` | Nullable. `Organization`, `Department`, `Team`, `Own`, or `DirectReports` |
+| `scope_id` | `uuid` | Nullable. Department/team id when scope needs a boundary; null for `Organization`, `Own`, and `DirectReports` |
 | `reason` | `varchar(255)` | Why this override exists |
 | `granted_by` | `uuid` | FK → users (Super Admin who set this) |
 | `created_at` | `timestamptz` |  |
@@ -236,20 +242,28 @@ Developer Platform starter role definitions. Templates are global/operator-manag
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` → [[database/schemas/infrastructure#`users`|users]], `permission_id` → [[#`permissions`|permissions]], `granted_by` → [[database/schemas/infrastructure#`users`|users]]
 
+**Scope rule:** Scoped overrides may narrow or explicitly grant an employee-data permission at a boundary. If `scope_type` is `Department` or `Team`, `scope_id` is required. If `scope_type` is `Organization`, `Own`, or `DirectReports`, `scope_id` must be null.
+
 ---
 
 ## `user_roles`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
-| `user_id` | `uuid` | FK → users |
-| `role_id` | `uuid` | FK → roles |
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `user_id` | `uuid` | FK -> users |
+| `role_id` | `uuid` | FK -> roles |
+| `scope_type` | `varchar(30)` | `Organization`, `Department`, `Team`, `Own`, or `DirectReports` |
+| `scope_id` | `uuid` | Nullable. Department/team id when scope needs a boundary; null for `Organization`, `Own`, and `DirectReports` |
 | `assigned_at` | `timestamptz` |  |
-| `assigned_by` | `uuid` | FK → users (who granted this) |
-| `expires_at` | `timestamptz` | Nullable — set for time-bound role grants |
-| PK: `(user_id, role_id)` | | |
+| `assigned_by` | `uuid` | FK -> users (who granted this) |
+| `expires_at` | `timestamptz` | Nullable; set for time-bound role grants |
+| UNIQUE: `(tenant_id, user_id, role_id, scope_type, scope_id)` | | |
 
-**Foreign Keys:** `user_id` → [[database/schemas/infrastructure#`users`|users]], `role_id` → [[#`roles`|roles]], `assigned_by` → [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` -> [[database/schemas/infrastructure#`users`|users]], `role_id` -> [[#`roles`|roles]], `assigned_by` -> [[database/schemas/infrastructure#`users`|users]]
+
+**Scope rule:** Scope belongs to the role assignment, not the permission. The same security role can be assigned to different users at organization, department, team, own-record, or direct-report scope.
 
 ---
 

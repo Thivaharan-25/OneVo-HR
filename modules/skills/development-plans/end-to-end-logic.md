@@ -5,6 +5,10 @@
 
 ---
 
+## Phase Rule
+
+Development plans are Phase 2. Do not build development plan routes, pages, jobs, or API integrations in Phase 1.
+
 ## Create Development Plan
 
 ### Flow

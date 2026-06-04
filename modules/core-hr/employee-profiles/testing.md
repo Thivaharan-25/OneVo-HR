@@ -1,4 +1,4 @@
-# Employee Profiles - Testing Strategy
+﻿# Employee Profiles - Testing Strategy
 
 **Module:** Core HR
 **Feature:** Employee Profiles
@@ -36,7 +36,6 @@ public class CreateEmployeeCommandHandlerTests
             LastName = "Doe",
             Email = "john.doe@company.com",
             DepartmentId = Guid.NewGuid(),
-            JobTitleId = Guid.NewGuid(),
             HireDate = DateOnly.FromDateTime(DateTime.Today)
         };
 
@@ -81,21 +80,15 @@ public class UpdateEmployeeCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ManagerIdCreatesCircle_ReturnsValidationFailure()
+    public async Task Handle_PositionAssignmentSubmitted_ReturnsSuccess()
     {
         var employeeId = Guid.NewGuid();
-        var managerId = Guid.NewGuid();
-
-        _employeeRepositoryMock
-            .Setup(x => x.WouldCreateManagerCycleAsync(employeeId, managerId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-
         var result = await _sut.Handle(
-            new UpdateEmployeeCommand { EmployeeId = employeeId, ManagerId = managerId },
+            new UpdateEmployeeCommand { EmployeeId = employeeId, PositionId = Guid.NewGuid() },
             CancellationToken.None);
 
-        result.IsFailure.Should().BeTrue();
-        result.Error.Code.Should().Contain("ManagerCycle");
+        result.IsFailure.Should().BeFalse();
+        // Position hierarchy cycle validation belongs to Org Structure; employee profile updates must not accept a manager field.
     }
 }
 ```
@@ -168,11 +161,11 @@ public class EmployeesApiTests : IClassFixture<CustomWebApplicationFactory>
 | Create valid employee | Complete DTO with valid FKs | 201 + employee persisted | Integration |
 | Create with duplicate email | Email already exists in tenant | Conflict result or 409 | Unit/API |
 | Create with duplicate employee number | Number already taken | Conflict result or 409 | Unit/API |
-| Update with circular manager | Manager relationship forms a cycle | Validation failure | Unit |
+| Update with position assignment | Valid position assignment reference | Profile update succeeds; hierarchy validation remains in Org Structure | Unit |
 | Soft delete active employee | Valid employee ID | 204 + `is_deleted=true` | Integration |
 | Soft delete already-deleted | Deleted employee ID | Not found result or 404 | Unit/API |
 | Get own profile | Authenticated customer web session | 200 + own employee data | Integration |
-| Get direct reports | Manager ID with active and deleted reports | Deleted reports excluded | Unit |
+| Get direct reports | Employee ID with position-derived active and deleted reports | Deleted reports excluded | Unit |
 | List with pagination | page and pageSize | Correct page and total count | Integration |
 | Create missing required fields | Empty required field | Validation errors | Unit/API |
 | Cross-tenant access | Employee from another tenant | 404 or forbidden according to endpoint contract | Integration |

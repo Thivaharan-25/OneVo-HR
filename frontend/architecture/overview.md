@@ -17,23 +17,24 @@
 | Forms | Angular Reactive Forms + Zod | Built-in + Latest | Type-safe form groups, schema-first cross-field validation |
 | Testing | Jest + Angular Testing Library + Playwright + MSW | Latest | Fast unit tests, behaviour-driven component tests, real E2E |
 
-## Two-App Monorepo
+## Three-App Monorepo
 
-ONEVO has two separate Angular apps in one Angular workspace:
+ONEVO has three separate Angular apps in one Angular workspace:
 
-| App | URL | Persona | Bundle goal |
-|:----|:----|:--------|:------------|
-| `employee-app` | `app.{tenant}.onevo.com` | Employee self-service | Lean — only employee features, fast load |
-| `management-app` | `manage.{tenant}.onevo.com` | HR / Admin / Manager / Executive | Full — analytics, monitoring, configuration |
+| App | Boundary | Persona | Bundle goal |
+|:----|:---------|:--------|:------------|
+| `setup-control-app` | Tenant/company setup, legal entities, departments, positions, roles/permissions, policies, imports, add-on requests | Tenant owner, system admin, HR setup users | Configuration-heavy, setup-first |
+| `operations-lifecycle-app` | Daily employee/manager/HR/workforce operations after setup is configured | Employees, managers, HR, workforce reviewers | Operational, fast daily use |
+| `dev-console` | Internal ONEVO Developer Platform using `/admin/v1/*` | ONEVO platform operators only | Internal tenant, entitlement, billing, rollout control |
 
-A `shared` Angular library is built once and imported by both apps. It contains auth, API services, SignalR, design system components, and shared models.
+A `shared` Angular library is built once and imported by all three apps. It contains auth, API services, SignalR, design system components, and shared models.
 
-Dual-role users (e.g. team leads) see a context-switcher in the header. Both apps share the same JWT session cookie (same parent domain) — switching apps requires no re-login.
+Customer app users can move between Setup / Control and Operations / Lifecycle without re-login through the same BFF cookie session. The Developer Platform uses separate internal platform-admin auth.
 
 ## Architecture Principles
 
 ### 1. Client-Side Rendering (CSR) Throughout
-Both apps are Angular CSR SPAs — there is no SSR, no universal rendering. All rendering happens in the browser. Data fetching uses Angular `HttpClient` with signals. Loading states use `@if (resource.isLoading())` or `<mat-progress-bar>`. This is intentional — the app is behind authentication and SEO is not a concern.
+All apps are Angular CSR SPAs — there is no SSR, no universal rendering. All rendering happens in the browser. Data fetching uses Angular `HttpClient` with signals. Loading states use `@if (resource.isLoading())` or `<mat-progress-bar>`. This is intentional — the apps are behind authentication and SEO is not a concern.
 
 ### 2. Standalone Components Only
 Every `@Component`, `@Directive`, and `@Pipe` must be `standalone: true`. No NgModules. Feature isolation is achieved through directory structure and import boundaries, not module declarations.
@@ -98,7 +99,7 @@ SignalR pushes are **invalidation signals**, not primary data sources. When a pu
 | Static Assets | Immutable hashing, `Cache-Control: max-age=31536000, immutable` |
 | API Proxy | Configure nginx or Azure CDN to proxy `/api/v1/**` to backend (avoids CORS) |
 | Security Headers | Set via nginx or CDN rules in production — see `frontend/cross-cutting/security.md` |
-| Build commands | `ng build employee-app` / `ng build management-app` (separate dist outputs per app) |
+| Build commands | `ng build setup-control-app` / `ng build operations-lifecycle-app` / `ng build dev-console` (separate dist outputs per app) |
 
 ## Related
 

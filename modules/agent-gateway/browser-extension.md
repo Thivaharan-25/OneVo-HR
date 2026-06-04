@@ -217,4 +217,4 @@ Browser tab change
 - [[modules/agent-gateway/data-collection|Data Collection]] — All 7 collectors
 - [[database/schemas/activity-monitoring|Activity Monitoring Schema]] — `browser_activity` table
 - [[modules/configuration/monitoring-toggles/overview|Configuration]] — `browser_extension_enabled` toggle
-- [[modules/auth/gdpr-consent/overview|GDPR Consent]] — separate consent required for browser tracking
+- [[modules/auth/gdpr-consent/overview|Legal & Privacy Acceptance]] — separate consent required for browser tracking

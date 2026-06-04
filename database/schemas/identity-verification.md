@@ -135,7 +135,7 @@ Trusted employee reference images used for future photo comparisons. The preferr
 | `reviewed_by_id` | `uuid` | Nullable FK -> users |
 | `reviewed_at` | `timestamptz` | Nullable |
 | `review_comment` | `varchar(255)` | Nullable |
-| `consent_record_id` | `uuid` | FK -> consent_records or equivalent consent audit row |
+| `legal_acceptance_record_id` | `uuid` | FK -> legal_acceptance_records for photo/biometric notice or consent |
 | `is_active` | `boolean` | Only one approved active reference per employee |
 | `created_at` | `timestamptz` |  |
 

@@ -1,4 +1,4 @@
-﻿# Expense Claims
+# Expense Claims
 
 **Module:** Expense  
 **Feature:** Expense Claims
@@ -29,10 +29,10 @@ Fields: `claim_id`, `category_id`, `description`, `amount`, `date`, `receipt_fil
 
 ## Related
 
-- [[modules/expense/overview|Expense Module]] â€” parent module
-- [[modules/expense/expense-categories/overview|Expense Categories]] â€” categories used in claim line items
-- [[infrastructure/multi-tenancy|Multi Tenancy]] â€” tenant-scoped claim isolation
-- [[security/auth-architecture|Auth Architecture]] â€” permissions: `expense:create`, `expense:approve`
-- [[backend/messaging/event-catalog|Event Catalog]] â€” events emitted on claim status changes
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] â€” implementation task
+- [[modules/expense/overview|Expense Module]] - parent module
+- [[modules/expense/expense-categories/overview|Expense Categories]] - categories used in claim line items
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - tenant-scoped claim isolation
+- [[security/auth-architecture|Auth Architecture]] - permissions: `expense:create`, `expense:approve`
+- [[backend/messaging/event-catalog|Event Catalog]] - events emitted on claim status changes
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - implementation task
 

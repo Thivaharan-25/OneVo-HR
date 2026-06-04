@@ -20,7 +20,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 - **~288 database tables** across **38 modules**
 - **.NET 10 / C# 14** backend (Clean Architecture + CQRS, single deployable monolith)
 - **.NET MAUI + Windows Service** desktop monitoring agent (separate solution `ONEVO.Agent.sln`, independent release cycle)
-- **Angular 21** frontend — two-app monorepo: `employee-app` (`app.{tenant}.onevo.com`) and `management-app` (`manage.{tenant}.onevo.com`), sharing a `shared` Angular library
+- **Angular 21** frontend — three-app monorepo: `setup-control-app`, `operations-lifecycle-app`, and internal `dev-console`, sharing a `shared` Angular library
 - **PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation** — single unified database, no bridge APIs, no external WMS backend
 - **8-week delivery plan** with 8 developers
 
@@ -58,7 +58,7 @@ ONEVO uses two sellable packages plus always-included Foundation modules. Each t
 onevo-hr-brain/
 ├── AI_CONTEXT/                  # AI context — read FIRST
 │   ├── project-context.md       # Three-pillar architecture, business logic
-│   ├── tech-stack.md            # .NET 10 / C# 14, PostgreSQL, Angular 21 two-app monorepo
+│   ├── tech-stack.md            # .NET 10 / C# 14, PostgreSQL, Angular 21 three-app monorepo
 │   ├── rules.md                 # AI agent rules (backend + frontend + agent)
 │   ├── known-issues.md          # Gotchas, monitoring data, agent auth
 │   └── changelog/               # Knowledge base update log (one file per change)
@@ -73,7 +73,7 @@ onevo-hr-brain/
 │   ├── module-boundaries.md     # Boundary rules and enforcement
 │   ├── shared-kernel.md         # Cross-cutting code (Result<T>, ITenantContext)
 │   └── messaging/               # Event catalog, exchange topology
-├── frontend/                    # Angular 21 two-app monorepo architecture
+├── frontend/                    # Angular 21 three-app monorepo architecture
 │   ├── architecture/            # Angular Router, app structure, lazy loading
 │   ├── data-layer/              # Angular Signals, resource(), SignalR
 │   └── design-system/           # Angular Material, UI tokens, components, typography
@@ -99,7 +99,7 @@ onevo-hr-brain/
 | **What users do** | `Userflow/` | End-to-end flows by permission |
 | **What to build** | `modules/` | Feature specs, DB schema, APIs |
 | **How to build (backend)** | `backend/` | .NET architecture, patterns |
-| **How to build (frontend)** | `frontend/` | Angular 21 two-app monorepo, components, patterns |
+| **How to build (frontend)** | `frontend/` | Angular 21 three-app monorepo, components, patterns |
 | **Data layer** | `database/` | Schema catalog, migrations, performance |
 | **Code rules** | `code-standards/` | Naming, git, logging |
 | **Security** | `security/` | Auth, RBAC, compliance |

@@ -1,4 +1,4 @@
-﻿# Session Management â€” End-to-End Logic
+# Session Management - End-to-End Logic
 
 **Module:** Auth
 **Feature:** Session Management
@@ -44,7 +44,7 @@ On every authenticated request:
 |:------|:---------|
 | Session revoked (admin action) | Next request returns 401, user must re-login |
 | Session expired | Return 401 with "session_expired" code |
-| Concurrent sessions | Allowed â€” each device gets its own session |
+| Concurrent sessions | Allowed - each device gets its own session |
 
 ## Related
 

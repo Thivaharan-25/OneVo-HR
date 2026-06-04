@@ -6,7 +6,7 @@
 |:---------|:--------|:----------------|
 | C# | 14 (.NET 10) | Backend API, business logic, background jobs |
 | SQL | PostgreSQL 16.13 baseline; PostgreSQL 18 target after environment approval | Database queries, RLS policies, migrations |
-| TypeScript | ES2024 / 5.x | Frontend (Vite + React 19) |
+| TypeScript | ES2024 / 5.x | Frontend (Angular 21) |
 | XAML | .NET MAUI | Desktop agent tray app UI |
 
 ---
@@ -38,15 +38,16 @@
 
 ### Monorepo Structure
 
-Two customer-facing Angular apps share a single Angular workspace monorepo:
+Three Angular apps share a single Angular workspace monorepo:
 
-| App | URL pattern | Persona |
-|:----|:------------|:--------|
-| `employee-app` | `app.{tenant}.onevo.com` | Employee self-service |
-| `management-app` | `manage.{tenant}.onevo.com` | HR / Admin / Manager / Executive |
-| `shared` (library) | — | Auth, API services, design system, models |
+| App | Boundary | Persona |
+|:----|:---------|:--------|
+| `setup-control-app` | Tenant/company setup, legal entities, departments, positions, roles/permissions, policies, imports, add-on requests | Tenant owner, system admin, HR setup users |
+| `operations-lifecycle-app` | Daily employee/manager/HR/workforce operations after setup is configured | Employees, managers, HR, workforce reviewers |
+| `dev-console` | Internal ONEVO Developer Platform using `/admin/v1/*` | ONEVO platform operators only |
+| `shared` (library) | Auth, API services, design system, models | Imported by all three apps |
 
-Both apps share the same JWT session cookie (same parent domain), same backend `/api/v1/*`, and same SignalR hubs. A context-switcher in the header lets dual-role users (team leads, player-coaches) jump between apps without re-login.
+Customer apps use the same BFF cookie session, same backend `/api/v1/*`, and same SignalR hubs. The Developer Platform uses internal platform-admin auth and `/admin/v1/*`. Final customer hostname mapping is a deployment decision; the app boundary names above are canonical.
 
 ### Core Stack
 
@@ -236,7 +237,7 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 | Category | Technology | Notes |
 |:---------|:-----------|:------|
 | Backend Hosting | Azure | .NET 10 deployment through the selected Azure hosting service |
-| Frontend Hosting | Azure | Vite build output served through the selected Azure hosting/static delivery path |
+| Frontend Hosting | Azure | Angular build output served through the selected Azure hosting/static delivery path |
 | DNS / Edge | Cloudflare DNS + optional Cloudflare proxy | `onevo.com`, wildcard `*.onevo.com`, DDoS/WAF/CDN if proxy mode is enabled |
 | Tenant URLs | Cloudflare wildcard DNS -> Azure | Default tenant URL pattern: `{tenantSlug}.onevo.com` |
 | Containerization | Docker | Development + deployment — all services in docker-compose.yml |

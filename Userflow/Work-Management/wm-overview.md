@@ -44,7 +44,7 @@ ONEVO's Work Management System, branded as **WorkSync**, is the project and task
 
 ## Data Scope
 
-All WorkSync data is tenant-scoped. Workspaces, projects, tasks, goals, and docs remain company-local by default. Cross-company collaboration requires an active company connection and explicit member/data-sharing scope; it must not be modeled as legal entity switching inside one tenant.
+All WorkSync data is tenant-scoped. Workspaces, projects, tasks, goals, and docs remain legal-entity-local by default when a legal entity is selected. Cross-tenant collaboration requires an active company connection and explicit member/data-sharing scope; it must not be modeled as legal-entity switching inside one tenant.
 
 ## Packaging Rules
 
@@ -64,3 +64,4 @@ All WorkSync data is tenant-scoped. Workspaces, projects, tasks, goals, and docs
 - [[Userflow/Work-Management/resource-flow|Resource Management]]
 - [[Userflow/Workforce-Presence/presence-overview|Workforce Presence]]
 - [[Userflow/Chat/chat-overview|Chat]]
+

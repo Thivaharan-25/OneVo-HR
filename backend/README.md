@@ -33,7 +33,7 @@ Domain events are optional. Use [[backend/domain-events|Domain Events]] only for
 
 ## Related
 
-- [[frontend/README|Frontend]] - Angular 21 two-app monorepo
+- [[frontend/README|Frontend]] - Angular 21 three-app monorepo
 - [[database/README|Database]] - PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation
 - [[code-standards/backend-standards|Backend Standards]] - .NET naming and patterns
 - [[Userflow/README|User Flows]] - end-to-end feature flows

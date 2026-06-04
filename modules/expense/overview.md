@@ -1,7 +1,7 @@
-﻿# Module: Expense
+# Module: Expense
 
 **Feature Folder:** `Application/Features/Expense`
-**Phase:** 2 â€” Deferred
+**Phase:** 2 - Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 2 (Week 4)
 **Tables:** 3
@@ -68,7 +68,7 @@ API endpoints:
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `title` | `varchar(200)` | |
 | `total_amount` | `decimal(15,2)` | Sum of items |
 | `currency_code` | `varchar(3)` | |
@@ -83,24 +83,24 @@ API endpoints:
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `claim_id` | `uuid` | FK â†’ expense_claims |
-| `category_id` | `uuid` | FK â†’ expense_categories |
+| `claim_id` | `uuid` | FK -> expense_claims |
+| `category_id` | `uuid` | FK -> expense_categories |
 | `description` | `varchar(255)` | |
 | `amount` | `decimal(15,2)` | |
 | `date` | `date` | Expense date |
-| `receipt_file_id` | `uuid` | FK â†’ file_records (nullable) |
+| `receipt_file_id` | `uuid` | FK -> file_records (nullable) |
 
 ---
 
-## Domain Events (intra-module â€” MediatR)
+## Domain Events (intra-module - MediatR)
 
 > These events are published and consumed within this module only. They never leave the module.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | â€” | â€” |
+| _(none)_ | - | - |
 
-## Cross-Module Events (cross-module â€” MediatR INotification)
+## Cross-Module Events (cross-module - MediatR INotification)
 
 ### Publishes
 
@@ -114,7 +114,7 @@ API endpoints:
 
 | Event | Source Module | Action Taken |
 |:------|:-------------|:-------------|
-| _(none)_ | â€” | â€” |
+| _(none)_ | - | - |
 
 ---
 
@@ -131,16 +131,16 @@ API endpoints:
 
 ## Features
 
-- [[modules/expense/expense-categories/overview|Expense Categories]] â€” Category definitions with per-claim limits and receipt requirements
-- [[modules/expense/expense-claims/overview|Expense Claims]] â€” Claims with line items, approval workflow via [[modules/shared-platform/overview|Shared Platform]]
+- [[modules/expense/expense-categories/overview|Expense Categories]] - Category definitions with per-claim limits and receipt requirements
+- [[modules/expense/expense-claims/overview|Expense Claims]] - Claims with line items, approval workflow via [[modules/shared-platform/overview|Shared Platform]]
 
 ---
 
 ## Related
 
-- [[infrastructure/multi-tenancy|Multi Tenancy]] â€” All expense data is tenant-scoped
-- [[backend/messaging/error-handling|Error Handling]] â€” Workflow engine handles approval routing
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] â€” Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - All expense data is tenant-scoped
+- [[backend/messaging/error-handling|Error Handling]] - Workflow engine handles approval routing
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/shared-platform/overview|Shared Platform]]
 

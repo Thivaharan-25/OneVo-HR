@@ -75,6 +75,17 @@ When a resolver returns more than one approver, the approval step must specify a
 | All assigned approvers must approve | Step completes only after every assigned approver approves | Dual approval is required |
 | Approve in order | Approvers receive the request sequentially | Reporting manager, then department owner |
 
+## Unavailable Approvers
+
+ONEVO should not require a separate manager-absence configuration module for Phase 1 approvals. When the primary approver is unavailable, the workflow handles it through the same approval engine:
+
+- The assigned approver may use a workflow `delegate` action for that specific request.
+- If the approver takes no action before `sla_deadline_at`, the workflow runs the configured unresolved/escalation path.
+- The escalation resolver should usually target department owner, users with a selected permission, a specific employee, or configured escalation owner.
+- Every delegated or escalated action is recorded in `approval_actions` and remains auditable.
+
+This keeps normal leave, overtime, attendance correction, and expense approvals simple while still preventing a request from being blocked by one absent reporting manager.
+
 ## Case Conversations
 
 Approval requests and alerts should not be handled inside normal one-to-one private chat. ONEVO creates a case conversation: a private, system-created conversation linked to one approval, alert, request, or workflow item.
@@ -116,18 +127,18 @@ Approved migration decisions:
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/automations` | `automation:read` | List automation definitions |
-| POST | `/api/v1/automations` | `automation:manage` | Create automation from builder |
-| PATCH | `/api/v1/automations/{id}` | `automation:manage` | Edit, enable, disable, or archive automation |
-| GET | `/api/v1/automation-templates` | `automation:read` | List practical starter templates |
-| POST | `/api/v1/automation-templates/{id}/apply` | `automation:manage` | Create editable automation from template |
-| GET | `/api/v1/workflows/{resourceType}/{resourceId}` | Authenticated + workflow participant or resource-scoped viewer | Workflow or case status |
-| POST | `/api/v1/workflows/{instanceId}/approve` | Authenticated + assigned approver | Approve current assigned step |
-| POST | `/api/v1/workflows/{instanceId}/reject` | Authenticated + assigned approver | Reject current assigned step |
-| POST | `/api/v1/workflows/{instanceId}/request-info` | Authenticated + assigned participant | Request more information |
+| GET | `/api/v1/automations` | `workflows:read` | List automation/workflow definitions |
+| POST | `/api/v1/automations` | `workflows:manage` | Create automation from builder |
+| PATCH | `/api/v1/automations/{id}` | `workflows:manage` | Edit, enable, disable, or archive automation |
+| GET | `/api/v1/automation-templates` | `workflows:read` | List practical starter templates |
+| POST | `/api/v1/automation-templates/{id}/apply` | `workflows:manage` | Create editable automation from template |
+| GET | `/api/v1/workflows/{resourceType}/{resourceId}` | Authenticated + `workflows:read` or workflow participant or resource-scoped viewer | Workflow or case status |
+| POST | `/api/v1/workflows/{instanceId}/approve` | Authenticated + assigned approver + required module permission | Approve current assigned step |
+| POST | `/api/v1/workflows/{instanceId}/reject` | Authenticated + assigned approver + required module permission | Reject current assigned step |
+| POST | `/api/v1/workflows/{instanceId}/request-info` | Authenticated + assigned participant + required module permission | Request more information |
 | POST | `/api/v1/cases/{caseId}/resolve` | Authenticated + case participant with resolve rights | Resolve a case conversation |
 
-`Authenticated` by itself only means the caller is logged in. Workflow action endpoints must also verify assignment, case participation, or resource-scoped access before returning data or accepting decisions.
+`workflows:manage` controls workflow configuration. Runtime approve/reject actions use the resource module permission configured on the workflow step, such as `leave:approve` or `expense:approve`, plus current assignment, case participation, and tenant/resource checks. `Authenticated` by itself only means the caller is logged in.
 
 ## Related
 

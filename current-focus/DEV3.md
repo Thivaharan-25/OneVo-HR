@@ -27,13 +27,13 @@ When Dev 3 asks to continue, start with the first unchecked item in **Current Un
 - [ ] `workspace_hr_team_links` exists so HR teams can sync into workspace membership before Microsoft Teams integration.
 - [ ] Workspace role permissions can be resolved for a user.
 - [ ] Projects can be created, listed, updated, archived, and assigned members.
-- [ ] Project members store both `user_id` and `employee_id`, require active workspace membership, and deactivate on employee offboarding.
+- [ ] Project members store both `user_id` and `employee_id`, do not require full workspace membership, and deactivate on employee offboarding. Project-workspace links provide team/workspace context only and must not auto-add workspace members to the project.
 - [ ] Project members, epics, milestones, versions, and repository links are represented.
 - [ ] Resource plans, resource allocations, capacity snapshots, and resource rates needed for planning are represented where in scope.
 - [ ] Workspace provisioning can be triggered from tenant module activation.
 - [ ] Workspace APIs are tenant-scoped.
 - [ ] Tests cover workspace membership, role permissions, project CRUD, and tenant isolation.
-- [ ] Tests cover HR team membership sync and employee offboarding deactivation for workspace/project memberships.
+- [ ] Tests cover HR team membership sync and employee offboarding deactivation for `workspace_members` and `project_members`.
 
 ### References
 

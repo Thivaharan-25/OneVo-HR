@@ -1,10 +1,10 @@
-# Database Documentation: ONEVO
+﻿# Database Documentation: ONEVO
 
 ## Overview
 
 - **RDBMS:** PostgreSQL 16.13 baseline; PostgreSQL 18 target after hosting and migration validation
 - **ORM:** Entity Framework Core 10
-- **Total Tables:** 252 unique schema tables — see [[database/schema-catalog|Schema Catalog]]
+- **Total Tables:** 252 unique schema tables â€” see [[database/schema-catalog|Schema Catalog]]
 - **Multi-tenancy:** `tenant_id` on all tenant-scoped tables + PostgreSQL RLS
 - **Connection Pooling:** PgBouncer
 - **Partitioning:** `pg_partman` for time-series tables
@@ -54,9 +54,9 @@ modelBuilder.Entity<Employee>(e =>
 
 ### Key Relationships
 
-- `employees` is the central hub — most HR tables link to it
-- `tenants` is the root — every tenant-scoped table references it
-- Self-referencing: `departments` (parent), `employees` (manager), `goals` (parent), `document_categories` (parent)
+- `employees` is the central hub â€” most HR tables link to it
+- `tenants` is the root â€” every tenant-scoped table references it
+- Self-referencing: `departments` (parent), `positions` (reports_to_position), `goals` (parent), `document_categories` (parent)
 - Polymorphic: `workflow_instances` uses `resource_type` + `resource_id` to link to any entity
 
 ## Data Types
@@ -129,7 +129,7 @@ All encrypted via `IEncryptionService` (AES-256) in [[backend/shared-kernel|Shar
 | [[database/schemas/expense\|Expense]] | 3 | 2 |
 | [[database/schemas/reporting-engine\|Reporting Engine]] | 3 | 2 |
 
-> **Build approach:** Use the per-module schema files in `database/schemas/` as the canonical reference when writing EF Core entity classes. The `end-to-end-logic.md` files describe behavior, not schema — they are for flow reference only.
+> **Build approach:** Use the per-module schema files in `database/schemas/` as the canonical reference when writing EF Core entity classes. The `end-to-end-logic.md` files describe behavior, not schema â€” they are for flow reference only.
 
 ## Related
 

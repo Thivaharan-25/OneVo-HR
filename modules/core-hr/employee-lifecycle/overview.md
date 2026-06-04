@@ -1,4 +1,4 @@
-# Employee Lifecycle
+﻿# Employee Lifecycle
 
 **Module:** Core HR  
 **Feature:** Employee Lifecycle
@@ -17,20 +17,28 @@ Audit trail for promotions, within-company transfers, salary changes, suspension
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `employee_id` | `uuid` | FK → employees |
+| `employee_id` | `uuid` | FK â†’ employees |
 | `event_type` | `varchar(30)` | `hired`, `promoted`, `transferred`, `salary_change`, `suspended`, `terminated`, `resigned` |
 | `event_date` | `date` | |
 | `details_json` | `jsonb` | Event-specific data |
-| `performed_by_id` | `uuid` | FK → users |
+| `performed_by_id` | `uuid` | FK â†’ users |
 | `created_at` | `timestamptz` | |
 
+
+### `employee_assignment_history`
+
+Effective-dated assignment history for department, position, job family, job level, and job title. Current profile snapshots are stored on `employees`; reporting history is resolved from `position_assignments` and `position_reporting_history` by date.
+
+### `employee_transfers`
+
+Transfer workflow/request records. Approved transfers apply on their effective date, update current employee assignment fields, close the previous assignment history row, create a new assignment history row, and publish `EmployeeTransferred`.
 ## Domain Events
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
 | `EmployeeCreated` | New employee added | [[modules/notifications/overview\|Notifications]], [[modules/leave/overview\|Leave]] |
 | `EmployeePromoted` | Promotion event | [[modules/notifications/overview\|Notifications]], [[modules/payroll/overview\|Payroll]] |
-| `EmployeeTransferred` | Department/team change inside one tenant | [[modules/notifications/overview\|Notifications]] |
+| `EmployeeTransferred` | Employee assignment change inside one tenant | [[modules/notifications/overview\|Notifications]] |
 | `CrossCompanyTransferRequested` | Transfer case starts between connected tenants | [[modules/shared-platform/workflow-engine/overview\|Workflow Engine]], [[modules/notifications/overview\|Notifications]] |
 | `CrossCompanyTransferAccepted` | Target tenant accepts and creates/activates its own employee record | [[modules/shared-platform/workflow-engine/overview\|Workflow Engine]], [[modules/notifications/overview\|Notifications]] |
 | `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview\|Leave]], [[modules/payroll/overview\|Payroll]], [[modules/agent-gateway/overview\|Agent Gateway]] |

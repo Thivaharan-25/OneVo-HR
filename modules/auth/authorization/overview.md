@@ -11,6 +11,13 @@ Authorization combines tenant commercial availability, runtime feature flags, te
 
 This is not simple RBAC. Roles are convenience bundles. They never override tenant commercial boundaries.
 
+Roles & Permissions has two separate role surfaces:
+
+- **Security Roles**: tenant/module authority such as HR Admin, Project Admin, Payroll Admin, System Admin, or Tenant Owner. These use `roles`, `role_permissions`, and `user_roles`.
+- **Team Roles**: scoped team/workspace authority such as Admin / Lead, Member, and Viewer / Reviewer. These use `team_roles`, `team_role_permissions`, and `team_member_roles`.
+
+Tenant security roles are separate from HR team roles, WorkSync workspace membership, and WorkSync project membership. Job level, job title, and job family must not directly assign security permissions; they may only suggest assignments that an authorized admin confirms.
+
 ## Access Decision Order
 
 Every protected tenant-facing action must pass these checks in this order:
@@ -60,7 +67,26 @@ Permission assignments for a role. These are filtered by module entitlement and 
 |:-------|:-----|:------|
 | `role_id` | `uuid` | FK to roles |
 | `permission_id` | `uuid` | FK to permissions |
-| `access_policy` | `varchar(50)` | `self`, `direct_reports`, `reporting_tree`, `department`, `department_tree`, `org_unit_tree`, or `organization` |
+
+Security role permissions must not be used as the only check for WorkSync access. Workspace-scoped actions require active workspace membership. Project-scoped actions require active `project_members` access. When access is inherited through HR team sync, the applicable team role permission must also pass.
+
+Team role permission assignment must use a team-scoped permission catalog only. The backend must reject tenant security, HR admin, payroll, billing, project visibility, system settings, and security role management permissions in `team_role_permissions`.
+
+### `user_roles`
+
+Security role assignment with explicit scope. Scope belongs here so the same role can be assigned at different boundaries.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK to tenants |
+| `user_id` | `uuid` | FK to users |
+| `role_id` | `uuid` | FK to roles |
+| `scope_type` | `varchar(30)` | `Organization`, `Department`, `Team`, `Own`, or `DirectReports` |
+| `scope_id` | `uuid` | Nullable boundary id. Required for `Department` and `Team`; null for `Organization`, `Own`, and `DirectReports` |
+| `assigned_at` | `timestamptz` | |
+| `assigned_by` | `uuid` | FK to users |
+| `expires_at` | `timestamptz` | nullable |
 
 ### `user_permission_overrides`
 
@@ -72,7 +98,8 @@ Per-user grants or revocations. Overrides cannot grant access outside the tenant
 | `user_id` | `uuid` | FK to users |
 | `permission_id` | `uuid` | FK to permissions |
 | `grant_type` | `varchar(10)` | `grant` or `revoke` |
-| `access_policy` | `varchar(50)` | Optional policy override |
+| `scope_type` | `varchar(30)` | Optional scope for this individual override |
+| `scope_id` | `uuid` | Nullable boundary id for scoped overrides |
 | `reason` | `varchar(255)` | Audit reason |
 | `valid_from` | `timestamptz` | Nullable |
 | `expires_at` | `timestamptz` | Nullable |
@@ -120,17 +147,22 @@ EffectivePermissions(userId, tenantId):
 
 ## Access Policy Scoping
 
-Employee-data queries are scoped by the effective `access_policy` for the permission. The frontend never sends employee ID lists.
+Employee-data queries are scoped by the effective `user_roles.scope_type` and `scope_id` for the role assignment. The frontend never sends employee ID lists.
 
 | Policy | Meaning |
 |:-------|:--------|
-| `self` | Current employee only |
-| `direct_reports` | Direct reports only |
-| `reporting_tree` | Full reporting subtree |
-| `department` | Current employee's department |
-| `department_tree` | Department subtree |
-| `org_unit_tree` | Org unit subtree |
-| `organization` | All active employees in tenant |
+| `Own` | Current employee only |
+| `DirectReports` | Direct reports only |
+| `Department` | Employees in the assigned department boundary |
+| `Team` | Employees in the assigned team boundary |
+| `Organization` | All active employees in tenant |
+
+Scope validation rules:
+
+- `Department` scope requires `scope_id` pointing to an active department in the same tenant.
+- `Team` scope requires `scope_id` pointing to an active team in the same tenant.
+- `Organization`, `Own`, and `DirectReports` require `scope_id = null`.
+- A permission check must verify both that the user has the permission and that the target record is inside the resolved scope.
 
 ## API Endpoints
 
@@ -140,6 +172,9 @@ Employee-data queries are scoped by the effective `access_policy` for the permis
 | POST | `/api/v1/roles` | `roles:manage` | Create custom role |
 | PUT | `/api/v1/roles/{id}` | `roles:manage` | Update role |
 | POST | `/api/v1/roles/{id}/permissions` | `roles:manage` | Set role permissions within active module/feature boundary |
+| GET | `/api/v1/team-roles` | `roles:manage` | List standard team roles and their scoped permission sets |
+| PUT | `/api/v1/team-roles/{id}/permissions` | `roles:manage` | Set team-role permissions from team-scoped catalog only |
+| GET | `/api/v1/permissions/team-catalog` | `roles:manage` | List permissions eligible for team roles |
 | POST | `/api/v1/users/{id}/roles` | `roles:manage` | Assign role to employee |
 | GET | `/api/v1/users/{id}/permissions` | `roles:manage` | Get effective permissions |
 | POST | `/api/v1/users/{id}/permission-overrides` | `roles:manage` | Grant/revoke individual permission inside active module/feature boundary |

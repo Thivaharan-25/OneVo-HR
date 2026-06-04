@@ -12,9 +12,9 @@ Country/level-specific leave policies with versioning via `superseded_by_id`.
 ## Database Tables
 
 ### `leave_policies`
-Key columns: `leave_type_id`, `country_id` (nullable = global), `job_level_id` (nullable = all levels), `annual_entitlement_days`, `carry_forward_max_days`, `carry_forward_expiry_months`, `accrual_method` (`annual`, `monthly`, `daily`), `proration_method` (`calendar_days`, `working_days`), `superseded_by_id` (self-referencing), `effective_from`.
+Key columns: `leave_type_id`, `country_id` (nullable = global), `annual_entitlement_days`, `carry_forward_max_days`, `carry_forward_expiry_months`, `accrual_method` (`annual`, `monthly`, `daily`), `proration_method` (`calendar_days`, `working_days`), `superseded_by_id` (self-referencing), `effective_from`.
 
-**Active policy:** `WHERE superseded_by_id IS NULL` for given leave type + country + job level.
+**Active policy:** `WHERE superseded_by_id IS NULL` for given leave type + country.
 
 ## API Endpoints
 

@@ -31,6 +31,6 @@ POST /api/v1/hardware/terminals
 - [[modules/shared-platform/hardware-terminals/overview|Overview]]
 - [[modules/shared-platform/real-time-integrations/overview|Real Time Integrations]]
 - [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]

@@ -86,7 +86,7 @@ export class ExceptionListComponent {
 
 ### Hover Prefetch via Route Preloading
 
-Angular Router supports preloading strategies. Use `PreloadAllModules` for management-app heavy routes, or a custom strategy for employee-app:
+Angular Router supports preloading strategies. Use `PreloadAllModules` for heavy Operations / Lifecycle routes, or a custom strategy for Setup / Control routes:
 
 ```typescript
 // app.config.ts

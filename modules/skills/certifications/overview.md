@@ -5,6 +5,10 @@
 
 ---
 
+## Phase Rule
+
+Certifications are Phase 2. Do not build certification tables, routes, pages, jobs, reminders, or API integrations in Phase 1.
+
 ## Purpose
 
 Employee certification records with expiry tracking and renewal reminders.

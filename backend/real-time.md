@@ -1,4 +1,4 @@
-﻿# Real-Time Architecture
+# Real-Time Architecture
 
 ## SignalR Setup
 
@@ -46,7 +46,7 @@ export class SignalRService implements OnDestroy {
 ## Angular Pattern
 
 ```typescript
-// management-app: workforce-live.component.ts
+// operations-lifecycle-app: workforce-live.component.ts
 export class WorkforceLiveComponent implements OnInit, OnDestroy {
   private signalR = inject(SignalRService);
 
@@ -64,7 +64,7 @@ export class WorkforceLiveComponent implements OnInit, OnDestroy {
   ngOnDestroy() { this.signalR.off('WorkforceStatusUpdate'); }
 }
 
-// management-app: exception-list.component.ts
+// operations-lifecycle-app: exception-list.component.ts
 export class ExceptionListComponent implements OnInit, OnDestroy {
   private signalR = inject(SignalRService);
   private snackBar = inject(MatSnackBar);
@@ -105,8 +105,8 @@ export function useWorkforceStatus() {
 
 ## Related
 
-- [[modules/notifications/signalr-real-time/overview|Signalr Real Time]] â€” SignalR implementation
-- [[modules/workforce-presence/overview|Workforce Presence]] â€” live presence tracking
-- [[modules/exception-engine/overview|Exception Engine]] â€” real-time alerts
-- [[backend/notification-system|Notification System]] â€” notification delivery
+- [[modules/notifications/signalr-real-time/overview|Signalr Real Time]] - SignalR implementation
+- [[modules/workforce-presence/overview|Workforce Presence]] - live presence tracking
+- [[modules/exception-engine/overview|Exception Engine]] - real-time alerts
+- [[backend/notification-system|Notification System]] - notification delivery
 

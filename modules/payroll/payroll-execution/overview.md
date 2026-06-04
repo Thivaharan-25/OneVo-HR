@@ -46,3 +46,4 @@ Fields: `payroll_run_id`, `employee_id`, `base_salary`, `total_allowances`, `tot
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/shared-kernel|Shared Kernel]]
 - Payroll task file (deferred to Phase 2)
+

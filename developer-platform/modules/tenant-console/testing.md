@@ -1,4 +1,4 @@
-﻿# Tenant Console â€” Testing
+# Tenant Console - Testing
 
 ## Test Fixtures Required
 
@@ -10,9 +10,9 @@ All tests require:
 
 ---
 
-## Wizard â€” Step 1: Organization Info
+## Wizard - Step 1: Organization Info
 
-### TC-001: Create provisioning draft â€” happy path
+### TC-001: Create provisioning draft - happy path
 **Precondition:** Operator has `platform.tenants.create`
 **Input:** `company_name: "Acme Corp"`, `legal_company_name: "Acme Corp Ltd"`, `domain: "acmecorp.io"`, `industry: "Technology"`, `estimated_employee_count: 120`
 **Action:** `POST /admin/v1/tenants`
@@ -20,7 +20,7 @@ All tests require:
 - HTTP 201
 - Response contains `tenant_code` matching format `TEN-YYYYMMDD-XXXX`
 - `tenants` row: `status = 'provisioning'`
-- `tenant_provisioning_states` row: `step_1_complete = true`, steps 2â€“4 all `false`
+- `tenant_provisioning_states` row: `step_1_complete = true`, steps 2-4 all `false`
 - Tenant does NOT appear in `GET /api/v1/*` (customer-facing) queries
 
 ### TC-002: Duplicate domain rejected
@@ -33,14 +33,14 @@ All tests require:
 **Action:** `POST /admin/v1/tenants`
 **Expected:** HTTP 422, `code: "validation_failed"`, error for `company_name` field
 
-### TC-004: Permission check â€” missing create permission
+### TC-004: Permission check - missing create permission
 **Setup:** Platform account has only `platform.tenants.read`
 **Action:** `POST /admin/v1/tenants`
 **Expected:** HTTP 403, `code: "permission_denied"`
 
 ---
 
-## Wizard â€” Step 3: Subscription
+## Wizard - Step 3: Subscription
 
 ### TC-005: Subscription saves and syncs entitlements
 **Precondition:** Tenant from TC-001 exists in provisioning state
@@ -53,7 +53,7 @@ All tests require:
 
 ### TC-006: Plan selection does NOT accept `plan_id` on `POST /admin/v1/tenants` (Step 1)
 **Action:** `POST /admin/v1/tenants` with body including `plan_id`
-**Expected:** HTTP 422 or plan_id field silently ignored â€” `tenants` row has no plan assignment after Step 1
+**Expected:** HTTP 422 or plan_id field silently ignored - `tenants` row has no plan assignment after Step 1
 
 ### TC-007: Override price requires reason
 **Action:** `PATCH /admin/v1/tenants/{id}/subscription` with `override_price: 3500`, `override_reason: null`
@@ -142,13 +142,13 @@ All tests require:
 - Token carries `impersonation: true` claim
 - Audit log entry written BEFORE token is returned
 
-### TC-019: Impersonation audit log is mandatory â€” cannot be bypassed
+### TC-019: Impersonation audit log is mandatory - cannot be bypassed
 **Action:** Inspect `audit_log` table after TC-018
 **Expected:** Row exists with `action = 'tenant.impersonated'`, `actor_id`, `target_tenant_id`, `target_user_id`, `reason`, `source_ip`, `session_expiry`
 
 ### TC-020: Impersonation token rejected at admin endpoints
 **Action:** Use impersonation token to call `PATCH /admin/v1/tenants/{id}/status`
-**Expected:** HTTP 403 â€” impersonation tokens are scoped only to `[AllowImpersonation]`-tagged endpoints
+**Expected:** HTTP 403 - impersonation tokens are scoped only to `[AllowImpersonation]`-tagged endpoints
 
 ### TC-021: Cannot impersonate in a suspended tenant
 **Setup:** Target tenant `status = 'suspended'`
@@ -164,7 +164,7 @@ All tests require:
 **Action:** `POST /admin/v1/tenants/{tenantA_id}/invite-admin` and `POST /admin/v1/tenants/{tenantB_id}/invite-admin`
 **Expected:**
 - Both succeed (HTTP 200)
-- Two separate `users` rows created â€” one per tenant â€” each with `tenant_id` scoped correctly
+- Two separate `users` rows created - one per tenant - each with `tenant_id` scoped correctly
 - Accepting Tenant A invite does not affect Tenant B access
 
 ---

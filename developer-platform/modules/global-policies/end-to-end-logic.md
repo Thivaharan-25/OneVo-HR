@@ -31,5 +31,5 @@
 ## Failure Handling
 
 - Existing-tenant propagation must be idempotent.
-- Partial propagation failures must be visible in Background Jobs.
+- Partial propagation failures must be visible in the policy publish result and Platform Health summary in Phase 1; standalone Background Jobs visibility is Phase 2.
 - Tenant-specific overrides are preserved unless explicitly selected.

@@ -1,15 +1,15 @@
-# Permissions Reference
+﻿# Permissions Reference
 
 **Total explicitly grantable:** 127 permissions across 31 modules  
-**Related flows:** [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] · [[Userflow/Auth-Access/role-creation|Role Creation]]
+**Related flows:** [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] Â· [[Userflow/Auth-Access/role-creation|Role Creation]]
 
 ---
 
-## System Permission (internal — seeded at provisioning; never shown in UI pickers)
+## System Permission (internal â€” seeded at provisioning; never shown in UI pickers)
 
 | Permission | What it gives |
 |:-----------|:--------------|
-| `*` | Tenant-local Super Admin bypass — grants access to tenant endpoints regardless of permission checks inside the current tenant only; assigned only to the Super Admin role during tenant provisioning; must not appear in the role creation browser, per-employee override lists, or any assignable permission payload; does not grant platform-admin access or cross-company access without a scoped cross-company grant |
+| `*` | Tenant-local Super Admin bypass â€” grants access to tenant endpoints regardless of permission checks inside the current tenant only; assigned only to the Super Admin role during tenant provisioning; must not appear in the role creation browser, per-employee override lists, or any assignable permission payload; does not grant platform-admin access or cross-company access without a scoped cross-company grant |
 
 ---
 
@@ -37,7 +37,7 @@ These are computed automatically by the auth layer based on the employee's effec
 
 | Permission | Derived when |
 | :--------- | :----------- |
-| `inbox:read` | Effective set contains any of: `leave:approve`, `leave:manage`, `attendance:approve`, `payroll:approve`, `payroll:run`, `performance:write`, `performance:manage`, `expense:approve`, `tasks:approve`, `documents:approve`, `grievance:manage`, `monitoring:alerts:read`, `monitoring:alerts:resolve`, `verification:review`, `workflows:execute` |
+| `inbox:read` | Effective set contains any of: `leave:approve`, `leave:manage`, `attendance:approve`, `payroll:approve`, `payroll:run`, `performance:write`, `performance:manage`, `expense:approve`, `tasks:approve`, `documents:approve`, `grievance:manage`, `monitoring:alerts:read`, `monitoring:alerts:resolve`, `verification:review` |
 | `notifications:read` | Effective set contains any of: `leave:approve`, `leave:manage`, `attendance:approve`, `employees:write`, `payroll:approve`, `performance:manage`, `monitoring:alerts:read`, `tasks:approve` |
 
 Derived permissions never appear in the role creation browser or override pickers.
@@ -46,21 +46,21 @@ Derived permissions never appear in the role creation browser or override picker
 
 ## Access Policies
 
-A permission answers **what action** is allowed. An access policy answers **whose data** the action can reach. The two are configured independently — the same permission (`leave:read`) assigned with policy `direct_reports` (manager) or `organization` (HR) operates on a completely different data set without needing separate permission codes.
+A permission answers **what action** is allowed. An access policy answers **whose data** the action can reach. The two are configured independently â€” the same permission (`leave:read`) assigned with policy `direct_reports` (manager) or `organization` (HR) operates on a completely different data set without needing separate permission codes.
 
 Access policy applies only to permissions that operate on employee records. Tenant-wide permissions (`settings:*`, `analytics:*`, `payroll:run`, `org:*`) are not scoped by access policy.
 
 | Policy | Data Scope |
 |:--|:--|
 | `self` | Own employee record only (default when no policy is set) |
-| `direct_reports` | Employees whose `reports_to_id` = current employee (depth = 1 in closure table) |
-| `reporting_tree` | All employees anywhere below this user in the org tree (depth ≥ 1) |
+| `direct_reports` | Employees directly below the current employee in `employee_hierarchy_closure` (depth = 1), derived from position hierarchy |
+| `reporting_tree` | All employees anywhere below this user in the org tree (depth â‰¥ 1) |
 | `department` | All active employees in the same department |
 | `department_tree` | All active employees in the department's full org subtree |
 | `org_unit_tree` | All active employees under this user's org unit |
 | `organization` | All active employees in the tenant |
 
-Access policies are assigned per-permission when configuring a role (in the permission browser). They can be overridden per employee in the per-employee override panel. The backend resolves the policy at query time — the frontend never sends employee ID lists.
+Access scope is assigned when a security role is assigned to a user through `user_roles.scope_type` and `user_roles.scope_id`. Per-employee permission overrides can also carry `scope_type` and `scope_id`. The backend resolves the scope at query time; the frontend never sends employee ID lists.
 
 See [[Userflow/Auth-Access/access-policy|Access Policy Reference]] for full details including the employee hierarchy closure table and the `/api/v1/me/app-context` endpoint.
 
@@ -144,13 +144,13 @@ See [[Userflow/Auth-Access/access-policy|Access Policy Reference]] for full deta
 | # | Permission | Description |
 |:--|:-----------|:------------|
 | 35 | `settings:read` | View any settings section (read-only) |
-| 36 | `settings:admin` | Manage core system settings — timezone, work hours, privacy mode, data retention |
+| 36 | `settings:admin` | Manage core system settings â€” timezone, work hours, privacy mode, data retention |
 | 37 | `settings:billing` | Manage subscription, plan, and payment methods |
 | 38 | `settings:branding` | Manage company logo and brand colors |
 | 39 | `settings:integrations` | Connect or disconnect tenant-wide app integrations via OAuth (Teams, Slack, LMS) and enter migration API keys for onboarding from existing HR systems. Google/Outlook Calendar is managed under `calendar:admin` / user-owned Calendar connections. |
 | 40 | `settings:notifications` | Manage notification templates and delivery channels |
 | 41 | `settings:alerts` | Configure alert thresholds and escalation rules |
-| 42 | `settings:system` | Manage system-level settings — audit config, data retention policies |
+| 42 | `settings:system` | Manage system-level settings â€” audit config, data retention policies |
 | 43 | `settings:device` | View biometric device connection status |
 | 44 | `settings:device:configure` | Add, remove, and configure biometric device integrations |
 
@@ -251,17 +251,14 @@ See [[Userflow/Auth-Access/access-policy|Access Policy Reference]] for full deta
 ### Audit
 | # | Permission | Description |
 |:--|:-----------|:------------|
-| 80h | `audit:read` | View audit logs — permission changes, employee updates, hierarchy changes, login/security events, and agent actions |
+| 80h | `audit:read` | View audit logs â€” permission changes, employee updates, hierarchy changes, login/security events, and agent actions |
 | 80i | `audit:export` | Export audit log data to file |
 
 ### Workflows
 | # | Permission | Description |
 |:--|:-----------|:------------|
-| 80j | `workflows:read` | View workflow rules and execution history |
-| 80k | `workflows:create` | Create new workflow rules |
-| 80l | `workflows:update` | Edit existing workflow rules |
-| 80m | `workflows:delete` | Delete workflow rules |
-| 80n | `workflows:execute` | Manually trigger workflow execution |
+| 80j | `workflows:read` | View workflow definitions, status, and execution history where resource access allows |
+| 80k | `workflows:manage` | Create, edit, disable, and manage workflow definitions, templates, resolver rules, and SLA rules |
 
 ### Company Connections And Cross-Company Access
 | # | Permission | Description |
@@ -352,7 +349,7 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `exceptions:read` | Renamed to `monitoring:alerts:read` |
 | `exceptions:view` | Renamed to `monitoring:alerts:read` |
 | `exceptions:acknowledge` | Renamed to `monitoring:alerts:resolve` |
-| `exceptions:resolve` | Same as `monitoring:alerts:resolve` — removed |
+| `exceptions:resolve` | Same as `monitoring:alerts:resolve` â€” removed |
 | `roles:manage` | Split into `roles:create`, `roles:update`, `roles:delete`, `roles:assign`, `permissions:manage` |
 | `expense:admin` | Covered by `expense:manage` |
 | `goals:read` / `goals:write` | Renamed to `okr:read` / `okr:write` |
@@ -368,10 +365,10 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `org:write` | Covered by `org:manage` |
 | `overtime:read` | Covered by `attendance:read` |
 | `payroll:manage` | Renamed to `payroll:write` |
-| `payroll:read-own` | Module auto-grant (Payroll module — Phase 2) |
+| `payroll:read-own` | Module auto-grant (Payroll module â€” Phase 2) |
 | `payroll:view` | Renamed to `payroll:read` |
 | `payroll:view-salary` | Covered by `payroll:read` |
-| `performance:read-own` | Module auto-grant (Performance module — Phase 2) |
+| `performance:read-own` | Module auto-grant (Performance module â€” Phase 2) |
 | `people:read` | Covered by `employees:read` |
 | `planning:read` / `planning:write` | Replaced by `sprints:*`, `roadmaps:*`, and `projects:*` |
 | `platform:admin` | Renamed to `settings:admin` |
@@ -390,11 +387,11 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `workforce:dashboard` | Module auto-grant (workforce module) |
 | `workforce:manage-biometric` | Renamed to `settings:device:configure` |
 | `workforce:read` | Renamed to `workforce:view` |
-| `employees:read-team` | Access policy model — use `employees:read` with policy `direct_reports` |
-| `leave:read-team` | Access policy model — use `leave:read` with policy `direct_reports` |
-| `attendance:read-team` | Access policy model — use `attendance:read` with policy `direct_reports` |
-| `performance:read-team` | Access policy model — use `performance:read` with policy `direct_reports` |
-| `skills:write-team` | Access policy model — use `skills:write` with policy `direct_reports` |
+| `employees:read-team` | Access policy model â€” use `employees:read` with policy `direct_reports` |
+| `leave:read-team` | Access policy model â€” use `leave:read` with policy `direct_reports` |
+| `attendance:read-team` | Access policy model â€” use `attendance:read` with policy `direct_reports` |
+| `performance:read-team` | Access policy model â€” use `performance:read` with policy `direct_reports` |
+| `skills:write-team` | Access policy model â€” use `skills:write` with policy `direct_reports` |
 ---
 
 ## Validation Rules
@@ -403,6 +400,7 @@ These were in the original 153 but are invalid, renamed, or redundant:
 - Explicitly grantable permissions are the only permissions shown in role creation, role editing, and employee override pickers.
 - Any permission used by a user flow, frontend route, API endpoint, or module overview must appear either in Universal Permissions or Explicitly Grantable Permissions.
 - Any legacy permission must appear in Removed from Original List with a replacement or a reason.
-- `roles:manage` is retired — use `roles:create`, `roles:update`, `roles:delete`, `roles:assign`, and `permissions:manage` individually. Assign all five to replicate the old `roles:manage` scope.
-- `exceptions:view` and `exceptions:acknowledge` are retired — use `monitoring:alerts:read` and `monitoring:alerts:resolve`. `exceptions:manage` remains for rule configuration.
+- `roles:manage` is retired â€” use `roles:create`, `roles:update`, `roles:delete`, `roles:assign`, and `permissions:manage` individually. Assign all five to replicate the old `roles:manage` scope.
+- `exceptions:view` and `exceptions:acknowledge` are retired â€” use `monitoring:alerts:read` and `monitoring:alerts:resolve`. `exceptions:manage` remains for rule configuration.
 - The `*` permission remains tenant-local. Cross-company access requires an active company connection, explicit cross-company permission, grant scope, and audit.
+

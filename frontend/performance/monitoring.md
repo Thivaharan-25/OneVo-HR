@@ -139,10 +139,10 @@ assertions:
 
 ```bash
 # Generate bundle stats JSON
-ng build employee-app --stats-json
+ng build operations-lifecycle-app --stats-json
 
 # View with webpack-bundle-analyzer (works with Angular CLI esbuild output via esbuild-bundle-analyzer)
-npx esbuild-bundle-analyzer dist/employee-app/stats.json
+npx esbuild-bundle-analyzer dist/operations-lifecycle-app/stats.json
 ```
 
 This opens an interactive treemap showing chunk composition and why packages are included.

@@ -50,7 +50,6 @@
 | `tenant_id` | `uuid` | FK → tenants |
 | `leave_type_id` | `uuid` | FK → leave_types |
 | `country_id` | `uuid` | FK → countries (nullable — global) |
-| `job_level_id` | `uuid` | FK → job_levels (nullable — all levels) |
 | `annual_entitlement_days` | `decimal(5,1)` |  |
 | `carry_forward_max_days` | `decimal(5,1)` |  |
 | `carry_forward_expiry_months` | `int` |  |
@@ -60,7 +59,7 @@
 | `effective_from` | `date` |  |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `leave_type_id` → [[#`leave_types`|leave_types]], `country_id` → [[database/schemas/infrastructure#`countries`|countries]], `job_level_id` → [[database/schemas/org-structure#`job_levels`|job_levels]]
+**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `leave_type_id` → [[#`leave_types`|leave_types]], `country_id` → [[database/schemas/infrastructure#`countries`|countries]]
 
 ---
 

@@ -347,7 +347,7 @@ Agent → Agent Gateway (202 Accepted)
 - [[security/auth-architecture|Auth Architecture]] — Device JWT for agent data ingestion
 - [[infrastructure/multi-tenancy|Multi Tenancy]] — All activity tables are tenant-scoped
 - [[security/data-classification|Data Classification]] — Window titles hashed (SHA-256), screenshots are RESTRICTED
-- [[security/compliance|Compliance]] — Monitoring consent required before processing
+- [[security/compliance|Compliance]] — Required Legal & Privacy item must be complete before affected monitoring processing
 - [[backend/messaging/event-catalog|Event Catalog]] — `ActivitySnapshotReceived`, `DailySummaryAggregated`, `ScreenshotCaptured`
 - [[code-standards/logging-standards|Logging Standards]] — Log activity counts only, never content
 - [[database/migration-patterns|Migration Patterns]] — Partitioned tables via pg_partman
