@@ -123,15 +123,33 @@ POST /api/v1/workflows/{instanceId}/approve
   -> Insert approval action with actor, comment, and timestamp
   -> Apply approval mode
   -> If step complete:
-       advance to next step or complete workflow
-  -> If workflow complete:
-       publish WorkflowCompleted with outcome
+       publish WorkflowStepApproved and advance to next step, or finish workflow
+  -> If workflow approved:
+       publish WorkflowApproved
        source module updates resource state
   -> Write audit entry
   -> Update case conversation action card state
 ```
 
 For all-required mode, the workflow remains waiting until every assigned approver approves. For only-one-required mode, the first approval completes the step. For sequential mode, the next approver is notified only after the prior approver approves.
+
+## Delegate Current Approval
+
+```text
+Approver clicks Delegate on the action card
+  -> Verify caller is an active assignee for the step
+  -> Verify delegated employee is allowed by the workflow's resolver/scope rules
+  -> Insert approval action:
+       action = "delegate"
+       actor_id = current approver
+       delegated_to_id = selected employee
+  -> Mark current workflow_step_assignment as skipped or delegated
+  -> Create a new workflow_step_assignment for delegated employee
+  -> Route the action card to the delegated employee through Chat or Inbox
+  -> Write audit entry
+```
+
+Delegation is request-specific in Phase 1. Do not require a separate manager absence or acting-manager setup before approvals can move.
 
 ## Request Information
 

@@ -1,4 +1,4 @@
-# Performance — Schema
+﻿# Performance â€” Schema
 
 **Module:** [[modules/performance/overview|Performance]]
 **Phase:** Phase 2
@@ -12,15 +12,15 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `requester_id` | `uuid` | FK → employees |
-| `respondent_id` | `uuid` | FK → employees |
-| `subject_id` | `uuid` | FK → employees (who is being reviewed) |
-| `cycle_id` | `uuid` | FK → review_cycles (nullable — ad hoc) |
+| `requester_id` | `uuid` | FK â†’ employees |
+| `respondent_id` | `uuid` | FK â†’ employees |
+| `subject_id` | `uuid` | FK â†’ employees (who is being reviewed) |
+| `cycle_id` | `uuid` | FK â†’ review_cycles (nullable â€” ad hoc) |
 | `status` | `varchar(20)` | `pending`, `completed`, `declined` |
 | `feedback_text` | `text` |  |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `requester_id` → [[database/schemas/core-hr#`employees`|employees]], `respondent_id` → [[database/schemas/core-hr#`employees`|employees]], `subject_id` → [[database/schemas/core-hr#`employees`|employees]], `cycle_id` → [[#`review_cycles`|review_cycles]]
+**Foreign Keys:** `requester_id` â†’ [[database/schemas/core-hr#`employees`|employees]], `respondent_id` â†’ [[database/schemas/core-hr#`employees`|employees]], `subject_id` â†’ [[database/schemas/core-hr#`employees`|employees]], `cycle_id` â†’ [[#`review_cycles`|review_cycles]]
 
 ---
 
@@ -29,9 +29,9 @@
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
-| `parent_goal_id` | `uuid` | Self-referencing — cascading goals |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `employee_id` | `uuid` | FK â†’ employees |
+| `parent_goal_id` | `uuid` | Self-referencing â€” cascading goals |
 | `title` | `varchar(200)` |  |
 | `description` | `text` |  |
 | `goal_type` | `varchar(20)` | `individual`, `team`, `company` |
@@ -43,7 +43,7 @@
 | `weight` | `decimal(3,2)` | Contribution weight to overall score |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `tenant_id` â†’ [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` â†’ [[database/schemas/core-hr#`employees`|employees]]
 
 ---
 
@@ -53,8 +53,8 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK → employees |
-| `initiated_by_id` | `uuid` | FK → users |
+| `employee_id` | `uuid` | FK â†’ employees |
+| `initiated_by_id` | `uuid` | FK â†’ users |
 | `reason` | `text` |  |
 | `objectives_json` | `jsonb` | Measurable objectives |
 | `start_date` | `date` |  |
@@ -63,7 +63,7 @@
 | `outcome` | `varchar(20)` | `improved`, `no_improvement`, `termination` |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `employee_id` → [[database/schemas/core-hr#`employees`|employees]], `initiated_by_id` → [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `employee_id` â†’ [[database/schemas/core-hr#`employees`|employees]], `initiated_by_id` â†’ [[database/schemas/infrastructure#`users`|users]]
 
 ---
 
@@ -72,15 +72,15 @@
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `from_employee_id` | `uuid` | FK → employees |
-| `to_employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `from_employee_id` | `uuid` | FK â†’ employees |
+| `to_employee_id` | `uuid` | FK â†’ employees |
 | `category` | `varchar(30)` | `teamwork`, `innovation`, `leadership`, `other` |
 | `message` | `text` |  |
 | `points` | `int` | Reward points |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `from_employee_id` → [[database/schemas/core-hr#`employees`|employees]], `to_employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `tenant_id` â†’ [[database/schemas/infrastructure#`tenants`|tenants]], `from_employee_id` â†’ [[database/schemas/core-hr#`employees`|employees]], `to_employee_id` â†’ [[database/schemas/core-hr#`employees`|employees]]
 
 ---
 
@@ -89,16 +89,16 @@
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK â†’ tenants |
 | `name` | `varchar(100)` | e.g., "Q1 2026 Review" |
 | `cycle_type` | `varchar(20)` | `quarterly`, `annual`, `probation` |
 | `start_date` | `date` |  |
 | `end_date` | `date` |  |
 | `status` | `varchar(20)` | `draft`, `active`, `completed` |
-| `include_productivity_data` | `boolean` | **NEW** — pull scores from Productivity Analytics |
+| `include_productivity_data` | `boolean` | **NEW** â€” pull scores from Productivity Analytics |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+**Foreign Keys:** `tenant_id` â†’ [[database/schemas/infrastructure#`tenants`|tenants]]
 
 ---
 
@@ -108,19 +108,19 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `cycle_id` | `uuid` | FK → review_cycles |
-| `employee_id` | `uuid` | FK → employees |
-| `reviewer_id` | `uuid` | FK → employees |
+| `cycle_id` | `uuid` | FK â†’ review_cycles |
+| `employee_id` | `uuid` | FK â†’ employees |
+| `reviewer_id` | `uuid` | FK â†’ employees |
 | `review_type` | `varchar(20)` | `self`, `manager`, `peer`, `360` |
-| `overall_rating` | `decimal(3,1)` | 1.0–5.0 |
-| `productivity_score` | `decimal(5,2)` | **NEW** — from Productivity Analytics (nullable) |
+| `overall_rating` | `decimal(3,1)` | 1.0â€“5.0 |
+| `productivity_score` | `decimal(5,2)` | **NEW** â€” from Productivity Analytics (nullable) |
 | `productivity_score_basis` | `varchar(30)` | Nullable; `composite`, `activity_only`, `worksync_only`, `insufficient_data` |
 | `productivity_data_coverage_percentage` | `decimal(5,2)` | Nullable; evidence completeness at score generation time |
 | `comments` | `text` |  |
 | `status` | `varchar(20)` | `draft`, `submitted`, `finalized` |
 | `submitted_at` | `timestamptz` |  |
 
-**Foreign Keys:** `cycle_id` → [[#`review_cycles`|review_cycles]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]], `reviewer_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `cycle_id` â†’ [[#`review_cycles`|review_cycles]], `employee_id` â†’ [[database/schemas/core-hr#`employees`|employees]], `reviewer_id` â†’ [[database/schemas/core-hr#`employees`|employees]]
 
 ---
 
@@ -130,14 +130,14 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `position_id` | `uuid` | FK → job_titles |
-| `current_holder_id` | `uuid` | FK → employees |
-| `successor_id` | `uuid` | FK → employees |
+| `position_id` | `uuid` | FK -> positions |
+| `current_holder_id` | `uuid` | FK â†’ employees |
+| `successor_id` | `uuid` | FK â†’ employees |
 | `readiness` | `varchar(20)` | `ready_now`, `1_year`, `2_years`, `not_ready` |
 | `development_plan_json` | `jsonb` |  |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `position_id` → [[database/schemas/org-structure#`job_titles`|job_titles]], `current_holder_id` → [[database/schemas/core-hr#`employees`|employees]], `successor_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `position_id` â†’ [[database/schemas/org-structure#`positions`|positions]], `current_holder_id` â†’ [[database/schemas/core-hr#`employees`|employees]], `successor_id` â†’ [[database/schemas/core-hr#`employees`|employees]]
 
 ---
 

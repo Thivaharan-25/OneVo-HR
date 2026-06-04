@@ -7,9 +7,9 @@
 | Group | Shell Component | Auth Required |
 |:------|:----------------|:--------------|
 | Auth | `AuthLayoutComponent` — centered card, no nav | No |
-| App | App-specific shell (employee or management) — nav rail + topbar + `<router-outlet>` | Yes |
+| App | App-specific shell — nav rail + topbar + `<router-outlet>` | Yes |
 
-Both apps (`employee-app` and `management-app`) follow the same routing pattern. Guards and permission checks are shared from `@onevo/shared`.
+All three apps (`setup-control-app`, `operations-lifecycle-app`, and `dev-console`) follow the same routing pattern. Guards and permission checks are shared from `@onevo/shared`; Developer Platform routes use platform-admin auth and `/admin/v1/*`.
 
 ## Functional Guards
 
@@ -51,10 +51,10 @@ export const permissionGuard = (permission: string): CanActivateFn =>
 
 All routes defined in a single file per app. Heavy routes use `loadComponent` for lazy loading.
 
-### Employee App
+### Operations / Lifecycle App
 
 ```typescript
-// projects/employee-app/src/app/app.routes.ts
+// projects/operations-lifecycle-app/src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard, permissionGuard } from '@onevo/shared';
 
@@ -72,11 +72,11 @@ export const routes: Routes = [
     ],
   },
 
-  // Authenticated — employee shell
+  // Authenticated — operations shell
   {
     path: '',
     loadComponent: () =>
-      import('./shell/employee-shell.component').then(m => m.EmployeeShellComponent),
+      import('./shell/operations-shell.component').then(m => m.OperationsShellComponent),
     canActivate: [authGuard],
     children: [
       { path: '',       redirectTo: 'home', pathMatch: 'full' },
@@ -104,46 +104,27 @@ export const routes: Routes = [
 ];
 ```
 
-### Management App (key routes)
+### Setup / Control App (key routes)
 
 ```typescript
-// projects/management-app/src/app/app.routes.ts (excerpt)
+// projects/setup-control-app/src/app/app.routes.ts (excerpt)
 export const routes: Routes = [
-  // Auth — same pattern as employee-app
+  // Auth — same pattern as operations-lifecycle-app
   { path: '', loadComponent: () => import('./features/auth/auth-layout.component') /* ... */ },
 
-  // Authenticated — management shell
+  // Authenticated — setup shell
   {
     path: '',
-    loadComponent: () => import('./shell/management-shell.component').then(m => m.ManagementShellComponent),
+    loadComponent: () => import('./shell/setup-control-shell.component').then(m => m.SetupControlShellComponent),
     canActivate: [authGuard],
     children: [
-      { path: '',              redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard',     loadComponent: () => import('./features/home/dashboard.component').then(m => m.DashboardComponent) },
-
-      // Employees
-      { path: 'employees',     canActivate: [permissionGuard('employees:read')],  loadComponent: () => import('./features/employees/employee-list.component').then(m => m.EmployeeListComponent) },
-      { path: 'employees/new', canActivate: [permissionGuard('employees:write')], loadComponent: () => import('./features/employees/employee-new.component').then(m => m.EmployeeNewComponent) },
-      { path: 'employees/:id', canActivate: [permissionGuard('employees:read')],  loadComponent: () => import('./features/employees/employee-detail.component').then(m => m.EmployeeDetailComponent) },
-
-      // Leave
-      { path: 'leave',         canActivate: [permissionGuard('leave:read')],    loadChildren: () => import('./features/leave/leave.routes').then(m => m.leaveRoutes) },
-
-      // Workforce Intelligence
-      { path: 'workforce',           canActivate: [permissionGuard('workforce:view')],  loadComponent: () => import('./features/workforce/live-dashboard.component').then(m => m.LiveDashboardComponent) },
-      { path: 'workforce/:id',       canActivate: [permissionGuard('workforce:view')],  loadComponent: () => import('./features/workforce/employee-activity.component').then(m => m.EmployeeActivityComponent) },
-      { path: 'workforce/analytics', canActivate: [permissionGuard('analytics:view')],  loadComponent: () => import('./features/workforce/analytics.component').then(m => m.AnalyticsComponent) },
-      { path: 'exceptions',          canActivate: [permissionGuard('exceptions:view')], loadChildren: () => import('./features/exceptions/exceptions.routes').then(m => m.exceptionsRoutes) },
-
-      // Org
-      { path: 'org', loadChildren: () => import('./features/org/org.routes').then(m => m.orgRoutes) },
-
-      // WorkSync
-      { path: 'worksync', loadChildren: () => import('./features/worksync/worksync.routes').then(m => m.worksyncRoutes) },
-
-      // Admin
-      { path: 'admin',    canActivate: [permissionGuard('users:manage')],    loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes) },
-      { path: 'settings', canActivate: [permissionGuard('settings:read')],   loadChildren: () => import('./features/settings/settings.routes').then(m => m.settingsRoutes) },
+      { path: '', redirectTo: 'setup', pathMatch: 'full' },
+      { path: 'setup/legal-entities', canActivate: [permissionGuard('org:manage')], loadChildren: () => import('./features/legal-entities/legal-entities.routes').then(m => m.legalEntityRoutes) },
+      { path: 'setup/departments', canActivate: [permissionGuard('org:manage')], loadChildren: () => import('./features/departments/departments.routes').then(m => m.departmentRoutes) },
+      { path: 'setup/positions', canActivate: [permissionGuard('org:manage')], loadChildren: () => import('./features/positions/positions.routes').then(m => m.positionRoutes) },
+      { path: 'setup/roles', canActivate: [permissionGuard('roles:manage')], loadChildren: () => import('./features/roles/roles.routes').then(m => m.roleRoutes) },
+      { path: 'setup/import', canActivate: [permissionGuard('data-import:write')], loadChildren: () => import('./features/import/import.routes').then(m => m.importRoutes) },
+      { path: 'setup/add-ons', canActivate: [permissionGuard('billing:request')], loadChildren: () => import('./features/add-ons/add-ons.routes').then(m => m.addOnRoutes) },
     ],
   },
 

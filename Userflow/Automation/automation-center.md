@@ -2,8 +2,8 @@
 
 **Area:** Automation Center (`/automation`)  
 **Trigger:** Customer opens Automation Center or clicks Create Automation  
-**Required Permission(s):** `automation:read`, `automation:manage` to create/edit  
-**Related Permissions:** Permission selectors can reference any tenant permission key, such as `exceptions:manage`, but visibility and edits remain governed by `automation:*`.
+**Required Permission(s):** `workflows:read`, `workflows:manage` to create/edit  
+**Related Permissions:** Permission selectors can reference any tenant permission key, such as `exceptions:manage`, but Automation Center visibility and edits remain governed by `workflows:read` and `workflows:manage`.
 
 ---
 

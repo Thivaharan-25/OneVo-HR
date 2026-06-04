@@ -2,7 +2,7 @@
 
 **Area:** Cross-Module Scenario  
 **Trigger:** Employee submits leave request  
-**Required Permission(s):** `leave:create`, `leave:approve`, `automation:read`  
+**Required Permission(s):** `leave:create`, `leave:approve`, `workflows:read`  
 **Modules Involved:** Leave, Calendar, Workforce Presence, Payroll, Notifications, Workflow Engine, Automation Center, Chat or Inbox
 
 ---
@@ -45,6 +45,14 @@ When a resolver returns two reporting managers or multiple approvers, the workfl
 | Only one approval is required | Both managers receive it. First approval completes the leave request. |
 | All assigned approvers must approve | Request stays pending until every assigned approver approves. |
 | Approve in order | Approver A receives it first; Approver B receives it only after Approver A approves. |
+
+## Manager Unavailable Handling
+
+ONEVO does not need a separate manager-absence setup for the normal leave approval path. If the reporting manager is unavailable:
+
+- The manager can delegate that specific workflow action to another allowed approver.
+- If no action happens before the configured wait/SLA, the unresolved workflow escalates to the configured resolver, such as department owner or configured escalation owner.
+- The leave request stays auditable through `approval_actions`, including original assignee, delegated approver, escalation, and final decision.
 
 ---
 

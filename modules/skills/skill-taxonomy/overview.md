@@ -9,6 +9,12 @@
 
 Defines skill categories and individual skills with proficiency level definitions.
 
+## Phase Rule
+
+The full customer-facing `Skills -> Taxonomy` management area is Phase 2. In Phase 1, skills are only searched or created inline from `Org Structure -> Job Families -> Required Skills` so a job family can define required skills.
+
+Phase 1 inline creation creates a simple tenant-scoped skill and category if needed. It does not expose full taxonomy cleanup, bulk management, proficiency-label editing, or a standalone Skills sidebar.
+
 ## Database Tables
 
 ### `skill_categories`
@@ -21,6 +27,18 @@ Individual skills: `category_id`, `name`, `proficiency_levels` (jsonb with level
 Required skills per job family: `job_family_id`, `skill_id`, `min_proficiency`, `is_mandatory`.
 
 ## API Endpoints
+
+### Phase 1 Embedded Use
+
+Owned by Org Structure job hierarchy flow:
+
+| Method | Route | Permission | Description |
+|:-------|:------|:-----------|:------------|
+| GET | `/api/v1/org/job-families/{familyId}/skill-requirements` | `skills:read` | List required skills for a job family |
+| POST | `/api/v1/org/job-families/{familyId}/skill-requirements` | `skills:manage` | Select an existing skill or create a simple skill inline, then attach it to the job family |
+| DELETE | `/api/v1/org/job-families/{familyId}/skill-requirements/{id}` | `skills:manage` | Remove a required skill from a job family |
+
+### Phase 2 Full Taxonomy
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|

@@ -50,7 +50,7 @@ GET /api/v1/audit-logs?action=employee.created&from=2026-04-01&to=2026-04-05
 - [[modules/auth/audit-logging/overview|Overview]]
 - [[frontend/cross-cutting/authentication|Authentication]]
 - [[frontend/cross-cutting/authorization|Authorization]]
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[code-standards/logging-standards|Logging Standards]]

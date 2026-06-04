@@ -92,7 +92,7 @@ POST /api/v1/workspaces/{wsId}/roadmaps/{rmId}/items
   → AddRoadmapItemHandler
     → 1. Validate entity_type in (Epic, Milestone, Sprint)
     → 2. Verify entity_id exists in correct table
-    → 3. Verify entity belongs to a project in same workspace
+    → 3. Verify entity belongs to a project linked to this workspace through project_workspaces
     → 4. INSERT roadmap_items
     → Return 201
 ```
@@ -118,3 +118,4 @@ POST /api/v1/workspaces/{wsId}/roadmaps/{rmId}/items
 - [[modules/work-management/planning/overview|Planning Overview]]
 - [[modules/work-management/tasks/end-to-end-logic|Tasks Logic]] — status transitions
 - [[modules/work-management/planning/testing|Planning Testing]]
+

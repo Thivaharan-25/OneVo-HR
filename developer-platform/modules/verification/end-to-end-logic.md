@@ -35,7 +35,7 @@ Verification operates **standalone** — it does not require the Activity Monito
 
 **Prerequisites:** `verification` module entitled. No additional config toggle required for photo collection.
 
-1. Employee opens the ONEVO employee app and taps **Clock In**
+1. Employee opens the ONEVO Operations / Lifecycle app and taps **Clock In**
 2. App prompts for camera permission and captures a selfie
 3. Photo is uploaded via `POST /tenant/v1/verification/clock-in` (multipart form with the image)
 4. Backend:

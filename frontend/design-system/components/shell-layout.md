@@ -8,7 +8,7 @@ The OneVo shell uses a **floating-cards** layout. Every chrome element — topba
 ┌─ body: bg #EDEEF2 / #0A0A0D dark ── padding: 8px ── gap: 6px ─────────────────────┐
 │                                                                                     │
 │  ┌─────────────────────────────────────────── topbar (40px h, radius 10px) ──────┐ │
-│  │  [Acme Malaysia â–¾]  /  Workforce  /  Presence     [Search ⌘K]   🔔  ☀  [A]  │ │
+│  │  [Acme Malaysia v]  /  Workforce  /  Presence     [Search ⌘K]   🔔  ☀  [A]  │ │
 │  └─────────────────────────────────────────────────────────────────────────────── ┘ │
 │                                                                                     │
 │  ┌─ rail ─┐  ┌─── panel ────────┐  ┌─── content ──────────────────────────────┐   │
@@ -18,7 +18,7 @@ The OneVo shell uses a **floating-cards** layout. Every chrome element — topba
 │  │ always │  │ #000000 (dark)   │  │                                          │   │
 │  │  dark  │  │ slides in/out    │  │ padding: 24px                            │   │
 │  └────────┘  └──────────────────┘  └──────────────────────────────────────────┘   │
-│              â† gap: 6px between every card                                          │
+│              <- gap: 6px between every card                                          │
 └─────────────────────────────────────────────────────────────────────────────────────┘
 ```
 

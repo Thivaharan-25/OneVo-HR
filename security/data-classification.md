@@ -89,7 +89,7 @@ Managed via `retention_policies` table and Hangfire daily cleanup job. See [[sec
 | Right to Erasure | Anonymization of PII fields + deletion of non-required data |
 | Right to Rectification | Standard CRUD update endpoints |
 | Right to Portability | Export in JSON/CSV format via `compliance_exports` |
-| Right to Object | `consent_records` — withdraw consent for specific processing |
+| Right to Object | `legal_acceptance_records` - withdraw optional consent or record objections for specific processing |
 
 ### Legal Holds
 

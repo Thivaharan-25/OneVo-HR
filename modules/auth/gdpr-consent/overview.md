@@ -1,52 +1,60 @@
-# GDPR Consent
+# Legal & Privacy Acceptance
 
 **Module:** Auth & Security
-**Feature:** GDPR Consent
+**Feature:** Legal & Privacy Acceptance
 
 ---
 
 ## Purpose
 
-Tracks employee consent for data processing, biometric, monitoring, and marketing activities. Monitoring consent (`consent_type: "monitoring"`) must be recorded before monitoring features activate.
+Tracks versioned legal/privacy decisions for Terms & Conditions, Privacy Notice, WorkPulse monitoring notices, screenshot notices, biometric/photo consent, and marketing consent.
+
+Platform-required items block account activation or dashboard access when missing. Collection-required items block only the affected collection category.
 
 ## Database Tables
 
-### `gdpr_consent_records`
+### `legal_acceptance_records`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `user_id` | `uuid` | FK → users |
-| `consent_type` | `varchar(50)` | `data_processing`, `biometric`, `monitoring`, `marketing` |
-| `consented` | `boolean` | |
-| `consented_at` | `timestamptz` | |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `user_id` | `uuid` | FK -> users |
+| `document_type` | `varchar(80)` | `terms`, `privacy_notice`, `activity_monitoring_notice`, `screenshot_notice`, `biometric_photo_consent`, `marketing` |
+| `document_version` | `varchar(50)` | Version accepted/acknowledged |
+| `decision` | `varchar(20)` | `accepted`, `acknowledged`, `declined` |
+| `required` | `boolean` | Whether the item blocks access or collection |
+| `decided_at` | `timestamptz` | |
 | `ip_address` | `varchar(45)` | |
+| `user_agent` | `varchar(500)` | |
+| `source` | `varchar(30)` | `invite`, `web`, `desktop-agent` |
 
 ## Key Business Rules
 
-1. **Monitoring consent is a hard gate on ingest.** The `POST /api/v1/agent/ingest` endpoint checks `gdpr_consent_records` for the employee before processing any batch. If no active `monitoring` consent record exists (`consented = true`), the endpoint returns `403 Forbidden` with `detail: "Monitoring consent not recorded for this employee"`. The agent must surface this in the tray app and halt data collection. Consent is recorded by the employee accepting the monitoring disclosure during onboarding or via the tray app consent dialog.
-2. Biometric consent is mandatory before fingerprint enrollment (GDPR/PDPA).
+1. **Platform-required items block platform access.** Missing Terms or Privacy Notice acknowledgement blocks account activation or dashboard access.
+2. **Collection-required items gate only the affected category.** Missing WorkPulse activity monitoring, screenshot, or biometric/photo notice/consent disables that collector or verification path even if admin policy enables it.
+3. Photo/biometric notice or consent is mandatory before WorkPulse photo/biometric verification or biometric enrollment starts.
+4. Do not collapse all legal/privacy decisions into one flag. Store each document type and version separately.
 
-### Consent Gate — Ingest Flow
+### Legal & Privacy Gate - Ingest Flow
 
-```
+```text
 POST /api/v1/agent/ingest
-  ↓
+  ->
 1. Validate Device JWT (agent auth)
 2. Validate employee_id against agent_sessions (device binding)
-3. CHECK gdpr_consent_records WHERE user_id = employee.user_id
-         AND consent_type = 'monitoring' AND consented = true
-   → not found → 403 "Monitoring consent not recorded for this employee"
+3. Resolve the payload category and check legal_acceptance_records for the matching required document/version
+   -> missing/declined -> 403 for that category only
 4. Validate payload bounds (see agent-server-protocol.md)
-5. Queue batch for async processing → 202 Accepted
+5. Queue batch for async processing -> 202 Accepted
 ```
 
-**Caching:** The consent check result may be cached in Redis for up to 5 minutes per `employee_id` to avoid a DB hit on every ingest. Cache must be invalidated immediately when consent is withdrawn.
+**Caching:** The Legal & Privacy gate result may be cached in Redis for up to 5 minutes per `employee_id` and category to avoid a DB hit on every ingest. Cache must be invalidated immediately when a relevant decision is recorded, changed, or withdrawn.
 
 ## Related
 
 - [[modules/auth/overview|Auth Module]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - [[frontend/cross-cutting/authentication|Authentication]]
 - [[frontend/cross-cutting/authorization|Authorization]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]

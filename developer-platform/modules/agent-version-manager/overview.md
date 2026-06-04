@@ -1,5 +1,7 @@
 # Desktop Agent Version Manager
 
+> Phase 2 only. This module is not part of Phase 1 navigation or `/admin/v1/*` API scope. Phase 1 does not support agent version publishing, ring assignment, force-update, or rollback from the Developer Platform.
+
 ## Purpose
 
 Agent Version Manager controls the full lifecycle of the OneVo desktop agent binary across all tenant endpoints — from publishing new releases and managing deployment rings to pushing force-update commands directly to agents in the field.
@@ -50,9 +52,9 @@ Agent Version Manager controls the full lifecycle of the OneVo desktop agent bin
 
 | Route | Permission |
 |---|---|
-| `/operations/agent-versions` | `platform.agent_versions.read` |
-| Publish / channel change | `platform.agent_versions.manage` |
-| Force-update | `platform.agent_versions.force_update` |
+| `/operations/agent-versions` | Phase 2 permission contract |
+| Publish / channel change | Phase 2 permission contract |
+| Force-update | Phase 2 permission contract |
 
 ## Key Rules
 

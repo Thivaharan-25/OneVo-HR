@@ -1,16 +1,17 @@
-# 2026-05-21: Angular 21 Two-App Architecture Decision
+# 2026-05-21: Angular 21 Frontend Architecture Decision
 
 ## Summary
 
-Replaced the entire frontend tech stack description and all documentation with **Angular 21** in a **two-app Angular workspace monorepo**, replacing the previously documented Vite + React 19 SPA.
+Replaced the previously documented Vite + React 19 SPA with **Angular 21**. The original customer-app split recorded here has since been superseded by the current **three-app Angular workspace monorepo**: Setup / Control Application, Operations / Lifecycle Application, and internal Developer Platform.
 
 ## What Changed
 
 ### Architecture Decision
-- **Two separate Angular apps** instead of one unified SPA:
-  - `employee-app` at `app.{tenant}.onevo.com` — employee self-service
-  - `management-app` at `manage.{tenant}.onevo.com` — HR / Admin / Manager / Executive workflows
-  - `shared` Angular library built once and imported by both apps
+- **Three Angular apps** instead of one unified SPA:
+  - `setup-control-app` for tenant/company setup, legal entities, departments, positions, roles/permissions, policies, imports, and add-on requests
+  - `operations-lifecycle-app` for daily employee, manager, HR, workforce, and WorkSync operations
+  - `dev-console` for ONEVO internal Developer Platform workflows
+  - `shared` Angular library built once and imported by all apps
 
 ### Framework Change
 | Before | After |
@@ -27,15 +28,15 @@ Replaced the entire frontend tech stack description and all documentation with *
 | Vitest + RTL | Jest + Angular Testing Library |
 | React component pattern | Standalone components, `inject()`, `@if`/`@for` |
 
-### Why Two Apps
-1. **Different personas** — employee UX is simple/fast; management UX is data-dense/analytical
-2. **Security** — monitoring and policy configuration code is not in the employee app's bundle
-3. **Bundle performance** — employee app is lean; management app carries heavy analytics libs
+### Why Separate Apps
+1. **Different work modes** — setup/configuration work is separated from daily operational work
+2. **Security** — internal Developer Platform code is not in customer app bundles
+3. **Bundle performance** — setup, operations, and platform routes build as separate outputs
 4. **Angular monorepo** — shared library eliminates duplication (auth, API services, design system)
-5. **Interconnection** — both apps share the same backend, JWT session cookie, and SignalR hubs; automation/real-time is backend-driven and unaffected by app count
+5. **Interconnection** — customer apps share the same backend, BFF cookie session, and SignalR hubs; automation/real-time is backend-driven and unaffected by app count
 
-### Dual-Role Users
-Context-switcher in the topbar lets users with both employee and management roles switch apps. Same session cookie works on both (same parent domain) — no re-login required.
+### Cross-App Users
+Context-switcher in the topbar lets authorized users switch between Setup / Control and Operations / Lifecycle. Customer apps use the same BFF cookie session; Developer Platform uses separate platform-admin auth.
 
 ## Files Updated
 

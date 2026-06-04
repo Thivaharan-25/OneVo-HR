@@ -2,25 +2,25 @@
 
 ## Purpose
 
-The Tenant Console is the primary operator tool for managing the full lifecycle of OneVo tenants â€” from provisioning new accounts to suspending problematic ones. It is the authoritative UI for anything that touches a tenant's identity, subscription, and access configuration.
+The Tenant Console is the primary operator tool for managing the full lifecycle of OneVo tenants - from provisioning new accounts to suspending problematic ones. It is the authoritative UI for anything that touches a tenant's identity, subscription, and access configuration.
 
 ## Database Tables / Systems Controlled
 
 | Table / System | Role |
 |---|---|
-| `tenants` | Read + write â€” status, plan, metadata |
-| `users` | Read â€” per-tenant user list, last login |
-| `tenant_settings` | Write â€” initial and override configuration |
+| `tenants` | Read + write - status, plan, metadata |
+| `users` | Read - per-tenant user list, last login |
+| `tenant_settings` | Write - initial and override configuration |
 | `subscription_plans` | Read reusable global plan catalog; assign selected plan to tenant |
 | `tenant_subscriptions` | Write tenant-specific commercial terms, billing dates, payment collection modes, gateway refs, full-license payment evidence, custom contract value, and maintenance state |
 | `module_catalog` | Read reusable global module catalog and default pricing |
-| setup services catalog | Read + write â€” module-connected free/global and paid setup services |
-| configuration templates | Read + write â€” reusable setup templates and tenant-specific template applications |
+| setup services catalog | Read + write - module-connected free/global and paid setup services |
+| configuration templates | Read + write - reusable setup templates and tenant-specific template applications |
 | `payment_gateway_configs` | Read/write safe Stripe/Paddle/PayHere gateway config metadata and encrypted secrets |
 | module entitlement registry | Write through module interfaces - which modules are active per tenant |
 | role templates / tenant roles | Read + write through Auth interfaces - starter role configuration |
 | Payment gateway | Used for normal subscription collection and full-license maintenance collection; one-time full-license sales can be recorded manually |
-| Auth service (JWT) | Write â€” impersonation token issuance |
+| Auth service (JWT) | Write - impersonation token issuance |
 
 ## Capabilities
 
@@ -37,8 +37,8 @@ The Tenant Console is the primary operator tool for managing the full lifecycle 
 - Total agent count (desktop agents registered)
 
 ### Tenant Lifecycle Actions
-- **Suspend / Unsuspend** â€” toggles `tenants.status`; suspended tenants cannot log in to OneVo
-- **Impersonation** â€” generates a short-lived JWT scoped to the tenant's super-admin role, for support debugging without requiring the customer's credentials. All impersonation events are audit-logged.
+- **Suspend / Unsuspend** - toggles `tenants.status`; suspended tenants cannot log in to OneVo
+- **Impersonation** - generates a short-lived JWT scoped to the tenant's super-admin role, for support debugging without requiring the customer's credentials. All impersonation events are audit-logged.
 
 ### Subscription / Commercial Terms
 Sets or changes a tenant's plan and commercial terms. This is used during tenant creation Step 2 and as a reviewed post-activation exception tool.
@@ -90,20 +90,20 @@ A draft-safe 4-step wizard creates the tenant through the internal operator-only
 | 2 | Admin Account | Owner's first name, last name, email, role assignment, send-invite-on-activation flag. |
 | 3 | Commercial Boundary | Select allowed reusable plans, optional recommended plan, Phase 1 modules only (Package 1 HR Core/Intelligence and/or Package 2 WorkSync - Phase 2 modules not shown), commercial model, payment collection mode, gateway, AI token limit, tenant storage limit (shared pool for entire tenant), setup charges, and optional pricing override with audit reason. Billing cycle is chosen later by the tenant owner. |
 | 4 | Configuration | Work mode, monitoring/privacy settings including camera photo capture toggle (if Intelligence modules selected), leave defaults (if Leave selected), data import template, app allowlist template, setup services checklist. |
-| Review & Confirm | â€” | Read-only summary of all steps. Each section has an Edit link. "Activate Tenant" button runs the activation guard and flips status to `active`. |
+| Review & Confirm | - | Read-only summary of all steps. Each section has an Edit link. "Activate Tenant" button runs the activation guard and flips status to `active`. |
 
 The wizard is **draft-safe**: after Step 1, the tenant exists and can be resumed. The Tenants list shows a yellow "In Progress" badge. Clicking the row reopens the wizard at the last incomplete step with all saved values pre-populated.
 
 ### Post-Activation Management
 
-After activation, all ongoing management happens from the **Tenant Detail page** (click any tenant row in the Tenants list). The detail page has 9 tabs:
+After activation, all ongoing management happens from the **Tenant Detail page** (click any tenant row in the Tenants list). The Phase 1 detail page has 8 active tabs. The Devices tab is deferred to Phase 2:
 
 | Tab | Contents |
 |---|---|
 | Overview | KPI cards, user activity chart, work mode distribution, subscription & limits progress bars, recent alerts, top departments, integrations status |
 | Usage & Analytics | DAU trend, session duration, feature usage, module engagement heatmap |
 | Users | Read-only tenant user list with role, status, last login |
-| Devices | Read-only device list with agent version badge and deployment ring |
+| Devices | Deferred to Phase 2; Phase 1 may show aggregate agent/device health only in Platform Health |
 | Subscriptions | Current plan, module entitlements table, invoices table, override action |
 | Policies | Feature flag overrides, global policy overrides for this tenant |
 | Integrations | Integration connection status and last sync |
@@ -119,7 +119,7 @@ No invite email is sent automatically by any wizard step or activation. Email is
 - The first invoice pricing tier is selected from the tenant-owner-confirmed total employee count, not an operator-entered company-size band.
 - Operator price overrides never erase calculated prices; both calculated and effective/override values are preserved for audit.
 - AI-enabled plans require a positive monthly token limit; non-AI plans leave the token limit blank.
-- All tenants require a tenant storage limit (`tenant_storage_limit_gb`). Storage is a **single shared pool for the entire tenant** â€” not split per module. All modules (HR documents, screenshots, payslips, verification photos, attachments) draw from this pool.
+- All tenants require a tenant storage limit (`tenant_storage_limit_gb`). Storage is a **single shared pool for the entire tenant** - not split per module. All modules (HR documents, screenshots, payslips, verification photos, attachments) draw from this pool.
 - Manual subscription, manual full-license payment, and manual maintenance payment require billing evidence or an approved external reference plus an audit reason.
 - Payment exception periods are commercial exceptions that can apply to subscription tenants or full-license/maintenance tenants and are snapshotted onto the tenant commercial record.
 - A selected plan can include modules, but the post-creation Manage/Configure flow must still show the effective module set so the operator can confirm, add purchased modules, or disable exceptions.
@@ -132,7 +132,7 @@ No invite email is sent automatically by any wizard step or activation. Email is
 - Reusable role templates are global operator-managed blueprints.
 - Tenant-specific roles can be created directly during Manage/Configure without becoming global templates.
 - Applying a template materializes normal tenant-scoped Auth roles and permissions.
-- Role creation does not require job levels. Job levels and org hierarchy are only needed for scoped access, approvals, escalation, and workflow routing.
+- Role creation does not require positions. positions and org hierarchy are only needed for scoped access, approvals, escalation, and workflow routing.
 - The first owner/admin invite must assign a materialized tenant role that satisfies the minimum owner/admin permission set.
 - The operator never sets the tenant owner's final password; the owner sets it through the invite link.
 - No invite email is sent automatically by profile creation, commercial selection, module configuration, setup completion, or activation. Owner invitation is an explicit operator action.
@@ -151,7 +151,7 @@ No invite email is sent automatically by any wizard step or activation. Email is
 - Free/global setup services are auto-added when a tenant has a matching entitled module, can still be configured by the operator, and must not create billing.
 - Paid setup services must be explicitly selected and tracked.
 - A setup service can only be applied when at least one linked module is in the tenant's entitled module set.
-- Reusable templates include Configuration Templates, Role Templates, Org Structure Templates, Job Family Templates, Leave Policy Templates, Onboarding Templates, App Allowlist Templates, Monitoring Policy Templates, and Data Import Mapping Templates.
+- Reusable templates include Configuration Templates, Role Templates, Position Templates, Leave Policy Templates, Monitoring Policy Templates, App Allowlist Templates, Onboarding Templates, and Data Import Mapping Templates.
 - Applying a reusable template creates tenant-specific configuration that can be customized without changing the global template.
 
 ## Notes
@@ -168,4 +168,6 @@ No invite email is sent automatically by any wizard step or activation. Email is
 - [[modules/data-import/overview|Data Import]]
 - [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
 - [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
+
+
 

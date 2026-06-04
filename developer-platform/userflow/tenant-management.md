@@ -1,4 +1,4 @@
-﻿# Tenant Management Flows
+# Tenant Management Flows
 
 ## Purpose
 
@@ -19,7 +19,7 @@ The list renders all tenants across all statuses. Each row shows:
 
 **Filter bar:** filter by status, plan tier, or free-text search on name/slug.
 
-Provisioning-status tenants appear in this list with a yellow **"In Progress"** badge. Clicking them resumes tenant creation if Step 2 is incomplete, or opens the tenant card Manage/Configure flow when the two-step creation is complete but activation is still pending â€” see `provisioning-flow.md`.
+Provisioning-status tenants appear in this list with a yellow **"In Progress"** badge. Clicking them resumes tenant creation if Step 2 is incomplete, or opens the tenant card Manage/Configure flow when the two-step creation is complete but activation is still pending - see `provisioning-flow.md`.
 
 **API:** `GET /admin/v1/tenants`
 
@@ -35,17 +35,17 @@ Click any tenant row to open the full tenant detail page. This is the primary ma
 |---|---|
 | **Overview** | Company profile header, KPI summary cards (total users, active users today, registered devices, active devices, storage used, platform health), user activity chart, work mode distribution, subscription & limits progress bars, recent alerts, top departments by activity, integrations status |
 | **Usage & Analytics** | DAU trend, session duration distribution, feature usage breakdown, module engagement heatmap, device activity, exception events |
-| **Users** | Tenant user list with role, status, work mode, department, last login â€” read-only |
-| **Devices** | Registered device list with agent version badge, connection status, deployment ring â€” read-only |
+| **Users** | Tenant user list with role, status, work mode, department, last login - read-only |
+| **Devices** | Deferred to Phase 2; Phase 1 may show aggregate agent/device health only in Platform Health |
 | **Subscriptions** | Current plan detail, module entitlements table with status per module, invoices table |
 | **Policies** | Feature flag overrides for this tenant, global policy overrides |
 | **Integrations** | All integration statuses (Microsoft 365, Azure AD SSO, Biometric, Slack, etc.) with connection health and last sync |
-| **Activity Log** | Audit log filtered to this tenant only â€” all actor types (tenant user, platform admin, system) |
+| **Activity Log** | Audit log filtered to this tenant only - all actor types (tenant user, platform admin, system) |
 | **Settings** | Editable tenant settings: org profile, operational settings, monitoring configuration (if applicable) |
 
 **API:** `GET /admin/v1/tenants/{id}`
 
-**Tenant creation path:** Tenant creation uses a 4-step wizard accessed via `+ Create Tenant` on the Tenants list. After the wizard completes and the tenant is activated, all ongoing management happens from this Tenant Detail page â€” see [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] for the full wizard specification.
+**Tenant creation path:** Tenant creation uses a 4-step wizard accessed via `+ Create Tenant` on the Tenants list. After the wizard completes and the tenant is activated, all ongoing management happens from this Tenant Detail page - see [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] for the full wizard specification.
 
 ---
 
@@ -88,7 +88,7 @@ Suspended tenants cannot log in to the main OneVo app. All tenant data is preser
 
 1. Open the tenant detail page (`/tenants/{id}`)
 2. Click **Suspend** in the action bar (top-right)
-3. `ConfirmActionDialog` appears â€” type the tenant slug to confirm
+3. `ConfirmActionDialog` appears - type the tenant slug to confirm
 4. Click **Confirm Suspend**
 5. API call: `PATCH /admin/v1/tenants/{id}/status` with body `{ "status": "suspended" }`
 6. Toast: "Tenant suspended"
@@ -98,7 +98,7 @@ Suspended tenants cannot log in to the main OneVo app. All tenant data is preser
 
 1. Open the suspended tenant's detail page
 2. Click **Unsuspend**
-3. `ConfirmActionDialog` â€” no slug confirmation required for unsuspend
+3. `ConfirmActionDialog` - no slug confirmation required for unsuspend
 4. API call: `PATCH /admin/v1/tenants/{id}/status` with body `{ "status": "active" }`
 5. Toast: "Tenant reactivated"
 6. Status badge returns to green **"Active"**
@@ -111,7 +111,7 @@ Both actions are audit-logged with the developer account, timestamp, and previou
 
 **Minimum role:** super_admin
 
-Impersonation lets a developer log in to the main OneVo app as the tenant's super-admin role â€” for support debugging, reproducing issues, or validating configuration â€” without requiring the customer's credentials.
+Impersonation lets a developer log in to the main OneVo app as the tenant's super-admin role - for support debugging, reproducing issues, or validating configuration - without requiring the customer's credentials.
 
 **Steps:**
 
@@ -123,11 +123,11 @@ Impersonation lets a developer log in to the main OneVo app as the tenant's supe
 6. Backend issues a short-lived tenant-scoped JWT
 7. The main OneVo app opens in a **new browser tab** with that JWT pre-loaded
 
-**Security constraints â€” all four apply:**
+**Security constraints - all four apply:**
 
 - Token expiry: **15 minutes**, hard limit
-- Token is **not renewable** â€” there is no refresh token issued
-- JWT carries `"impersonation": true` claim â€” the main app surfaces a persistent banner so the session is visually distinguishable
+- Token is **not renewable** - there is no refresh token issued
+- JWT carries `"impersonation": true` claim - the main app surfaces a persistent banner so the session is visually distinguishable
 - Every impersonation event is **audit-logged** with: developer account, target tenant, timestamp, and source IP
 
 When the 15-minute token expires the new tab is logged out automatically. The developer returns to the console tab; the original platform-admin session is unaffected.
@@ -148,7 +148,7 @@ When the 15-minute token expires the new tab is logged out automatically. The de
 
 **Steps:**
 
-1. Open the tenant detail page (`/tenants/{id}`) â†’ **Overview** tab
+1. Open the tenant detail page (`/tenants/{id}`) -> **Overview** tab
 2. Click **Override Subscription**
 3. A form appears: select new plan from dropdown, choose commercial model, set billing dates, select collection mode and gateway provider when applicable, enter reason (required free-text field)
 4. Click **Apply Override**

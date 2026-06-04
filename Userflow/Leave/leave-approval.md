@@ -3,7 +3,7 @@
 **Area:** Leave Management  
 **Trigger:** Approver receives workflow action card after leave request submission  
 **Required Permission(s):** `leave:approve`  
-**Related Permissions:** `leave:read`, `calendar:read`, `automation:read`
+**Related Permissions:** `leave:read`, `leave:approve`, `calendar:read`, `workflows:read`
 
 ---
 
@@ -90,9 +90,13 @@ The workflow step must specify an approval mode:
 
 After one approval step completes, the workflow advances to the next resolver. Example: employee's reporting manager first, then department owner for long leave. The status should name the pending resolver outcome, not a fixed role name.
 
-### When Approver Delegates Approval Authority
+### When Approver Delegates This Approval
 
-Approver can set a delegate for a date range. The workflow resolver treats the delegate as the active assignee and audit trail shows both delegate and original approver context.
+Approver can delegate the current workflow action to another allowed approver. This is request-specific and does not require a separate manager-absence setup. The audit trail records the original approver, delegated approver, comment, and timestamp.
+
+### When Approver Is Unavailable Or Does Not Act
+
+If the assigned approver does not act before the workflow SLA, the unresolved item follows the configured escalation path. For normal leave, the default escalation target should be department owner or configured escalation owner, not a fixed HR role name.
 
 ### When Administrative Intervention Is Allowed
 
@@ -116,7 +120,7 @@ Users with broader leave permissions can intervene only when the workflow, permi
 - `LeaveRequestApprovedEvent`
 - `LeaveRequestRejectedEvent`
 - `WorkflowApprovalActionRecorded`
-- `WorkflowCompleted`
+- `WorkflowApproved` or `WorkflowRejected`
 - `CalendarEventCreatedEvent`
 - `AuditLogEntry`
 

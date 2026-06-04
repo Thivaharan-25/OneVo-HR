@@ -223,7 +223,7 @@ Important rules:
 - Server returns `202 Accepted` immediately; processing is async.
 - Server resolves `tenant_id`, `agent_id`, and trusted `device_id` from the Device JWT.
 - Client-sent `tenant_id` is never trusted.
-- Server verifies the employee has active `monitoring` consent in `gdpr_consent_records`.
+- Server verifies the employee has completed the required Legal & Privacy item for the payload category in `legal_acceptance_records`.
 - Server verifies `employee_id` matches the active `agent_sessions` row for the `device_id`.
 - Application allowlist/blocklist matching uses `process_name`; `application_name` is display metadata only.
 - If consent is missing or false, the request returns `403 Forbidden`; the agent stops collection and shows consent-required / policy-blocked state in the TrayApp.

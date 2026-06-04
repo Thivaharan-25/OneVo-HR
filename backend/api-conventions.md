@@ -186,7 +186,7 @@ POST   /api/v1/users/{id}/roles           # Assign role to user
 ### Org Structure
 
 ```
-CRUD   /api/v1/legal-entities
+CRUD   /api/v1/org/legal-entities
 CRUD   /api/v1/office-locations
 CRUD   /api/v1/departments                # Supports hierarchical queries
 CRUD   /api/v1/job-families
@@ -320,3 +320,5 @@ Work Management is an internal ONEVO pillar. In the customer web app it uses the
 - [[backend/module-catalog|Module Catalog]] — module-specific API endpoints
 - [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant scoping for all API requests
 - [[backend/external-integrations|External Integrations]] - third-party integrations only
+
+

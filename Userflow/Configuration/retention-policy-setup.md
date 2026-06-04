@@ -60,7 +60,7 @@
 
 - [[Userflow/Configuration/tenant-settings|Tenant Settings]]
 - [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 
 ## Module References
 

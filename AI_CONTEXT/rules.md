@@ -5,7 +5,7 @@
 - **Source of Truth:** Always prioritize information found within this repository. If there's a conflict, the most recently updated file in `AI_CONTEXT/` takes precedence.
 - **Contextual Awareness:** Before performing any task, read these files in order:
     1. [[AI_CONTEXT/project-context|Project Context]] — What ONEVO is
-    2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 10 / C# 14, PostgreSQL, Redis, Angular 21 two-app monorepo, etc.
+    2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 10 / C# 14, PostgreSQL, Redis, Angular 21 three-app monorepo, etc.
     3. [[current-focus/README|Current Focus]] — Current sprint/week priorities
     4. [[AI_CONTEXT/known-issues|Known Issues]] — Gotchas and deprecated patterns
     5. The specific module doc in `modules/` for the module you're working on
@@ -168,7 +168,7 @@ var sql = $"SELECT * FROM employees WHERE id = '{id}'"; // BAD
 
 ### RBAC Permissions — Full List
 
-Data scope for employee-record permissions (`employees:read`, `leave:read`, `attendance:read`, etc.) is controlled by the **access policy** configured on the role permission — not by separate `:read-team` codes. See [[Userflow/Auth-Access/access-policy|Access Policy Reference]].
+Data scope for employee-record permissions (`employees:read`, `leave:read`, `attendance:read`, etc.) is controlled by `user_roles.scope_type` / `user_roles.scope_id` or by `user_permission_overrides.scope_type` / `user_permission_overrides.scope_id` for scoped overrides. Scope is not stored on `role_permissions`, and separate `:read-team` codes must not be created. See [[Userflow/Auth-Access/access-policy|Access Policy Reference]].
 
 ```
 // HR Management
@@ -200,7 +200,7 @@ roles:read, roles:create, roles:update, roles:delete, roles:assign, permissions:
 users:read, users:manage
 audit:read, audit:export
 org:read, org:manage
-workflows:read, workflows:create, workflows:update, workflows:delete, workflows:execute
+workflows:read, workflows:manage
 ```
 
 ---
@@ -285,7 +285,7 @@ The following modules are **Phase 2 deferred**. Workers MUST NOT build routes, p
 
 ## 10. Frontend / Angular 21 Rules
 
-ONEVO has two Angular apps in one workspace monorepo: `employee-app` (`app.{tenant}.onevo.com`) and `management-app` (`manage.{tenant}.onevo.com`), sharing a `shared` Angular library. See [[AI_CONTEXT/tech-stack|Tech Stack]] Section 3 for the full stack.
+ONEVO has three Angular apps in one workspace monorepo: `setup-control-app`, `operations-lifecycle-app`, and internal `dev-console`, sharing a `shared` Angular library. See [[AI_CONTEXT/tech-stack|Tech Stack]] Section 3 for the full stack.
 
 ### Angular 21 Mandatory Patterns
 
@@ -326,7 +326,7 @@ projects/{app-name}/src/app/
 └── features/
     ├── hr/                 # Pillar 1 feature components
     ├── workforce/          # Pillar 2 feature components
-    └── worksync/           # Pillar 3 feature components (management-app only)
+    └── worksync/           # Pillar 3 feature components (operations-lifecycle-app only)
 
 projects/shared/src/lib/
 ├── auth/                   # AuthService, auth.guard.ts, auth.interceptor.ts
@@ -420,7 +420,7 @@ export class CreateEmployeeComponent {
 ### Frontend Real-time Rules
 
 - **SignalR for:** `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status`
-- **`SignalRService` in shared lib** — one connection shared across both apps via service injection
+- **`SignalRService` in shared lib** — one connection shared across customer apps via service injection
 - **Polling fallback:** 30 s polling if SignalR connection fails
 - **Reconnection:** Auto-reconnect with exponential backoff (1s, 2s, 4s, 8s, max 30s)
 - **Stale data indicator:** Show "Last updated X seconds ago" on live dashboards

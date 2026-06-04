@@ -29,7 +29,7 @@ POST /api/v1/biometric/enroll
 ### Key Rules
 
 - **Fingerprint templates are NEVER stored in ONEVO** — only `template_hash` (a reference to the biometric device's local storage).
-- **GDPR/PDPA consent is mandatory** before enrollment.
+- **Legal & Privacy notice/consent is mandatory** before biometric enrollment.
 - **One active enrollment per employee per device.**
 
 ## Related

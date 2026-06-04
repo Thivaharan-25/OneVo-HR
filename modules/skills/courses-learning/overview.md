@@ -5,6 +5,10 @@
 
 ---
 
+## Phase Rule
+
+This feature is Phase 2. Phase 1 does not include course catalogs, enrollments, LMS integrations, or learning recommendations.
+
 ## Purpose
 
 Learning course management with LMS provider integration and enrollment tracking.

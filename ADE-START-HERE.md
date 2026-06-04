@@ -28,7 +28,7 @@ Plus an **IDE Extension** — a full chat sidebar and tag-based automation surfa
 |:------|:-----------|
 | **Backend** | .NET 10 / C# 14 |
 | **Database** | PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation + EF Core 10 — single `ApplicationDbContext`, ~288 tables |
-| **Frontend** | Angular 21, TypeScript, Angular Router, Angular Material, Angular Signals — two-app monorepo (`employee-app` + `management-app` + `shared` library) |
+| **Frontend** | Angular 21, TypeScript, Angular Router, Angular Material, Angular Signals — three-app monorepo (`setup-control-app` + `operations-lifecycle-app` + `dev-console` + `shared` library) |
 | **Real-time** | SignalR — agent↔server bidirectional; server→browser for WorkSync live updates and IDE extension |
 | **Background Jobs** | Hangfire |
 | **Messaging** | MediatR for command/query dispatch; optional in-process domain events by exception |
@@ -75,7 +75,7 @@ All WorkSync modules live in the same .NET solution, same `ApplicationDbContext`
 | # | Module | Purpose | Owner | Spec |
 |:--|:-------|:--------|:------|:-----|
 | W1 | **WorkSync Foundation** | Workspaces, workspace_members, workspace_roles | DEV5 | [[modules/work-management/foundation\|WS Foundation]] |
-| W2 | **Project Management** | Projects, project_members, epics, milestones, versions, release_calendar | DEV5 | [[modules/work-management/projects\|WS Projects]] |
+| W2 | **Project Management** | Projects, project_workspaces, project_members, epics, milestones, versions, release_calendar | DEV5 | [[modules/work-management/projects\|WS Projects]] |
 | W3 | **Task Management** | Tasks, task_assignments, task_checklists, task_tags, custom_field_values, task_approvals | DEV6 | [[modules/work-management/tasks\|WS Tasks]] |
 | W4 | **Planning** | Sprints, sprint_backlog_items, sprint_daily_snapshots, boards, board_columns, board_task_positions | DEV6 | [[modules/work-management/planning\|WS Planning]] |
 | W5 | **OKR** | Objectives, key_results, okr_check_ins | DEV5 | [[modules/work-management/okr\|WS OKR]] |
@@ -154,7 +154,7 @@ The remaining 10 Skills tables (courses, LMS, assessments, dev plans, certificat
 
 ```
 Week 1 (Foundation — all 8 devs in parallel):
-  DEV1: Infrastructure (tenants, users, file storage, legal_entities)
+  DEV1: Infrastructure (tenants, users, file storage, primary legal entity seeding)
   DEV2: Auth & Security (roles, permissions, sessions, JWT, temporary-password fields on users)
   DEV3: Org Structure (departments, teams, job_titles, team_roles, team_role_permissions)
   DEV4: Shared Platform + Agent Gateway (subscriptions, entitlements, agent_install_entitlements)
@@ -167,11 +167,11 @@ Week 1 (Foundation — all 8 devs in parallel):
   DEV5 workspaces depends on DEV1 tenants + DEV3 legal_entities being done first.
 
 Week 2 (Core modules):
-  DEV1: Core HR — Employee Profile (users.must_change_password + password auth state)
+  DEV1: Core HR — Employee Profile (password auth state)
   DEV2: Core HR — Employee Lifecycle (hire/terminate/transfer domain events)
   DEV3: Workforce Presence (shifts, schedules, clock-in/out)
   DEV4: Workforce Presence — Biometric integration
-  DEV5: Projects + project_members + epics + milestones + versions
+  DEV5: Projects + project_workspaces + project_members + epics + milestones + versions
   DEV6: Boards + board_columns + board_task_positions + sprint_backlog_items
   DEV7: Chat AI — premium_ai_detections + ai_action_jobs undo state machine
   DEV8: wiki_pages + document_approvals + task_documents (documents locked_at/locked_by fields)
@@ -229,10 +229,10 @@ Week 6 (IDE Extension — tag engine + entitlement):
 All 38 modules share one `ApplicationDbContext`. WorkSync tables (`projects`, `tasks`, `sprints`, `boards`, `channels`, etc.) are EF Core entities exactly like HR tables. `backend/bridge-api-contracts.md` is **DEPRECATED**. Do not implement it.
 
 ### Hybrid Permission Model
-NOT simple RBAC. Roles are **templates**. Tenant Super Admin / tenant owner can grant permissions only inside that tenant's commercial entitlement boundary: active module entitlements plus selected feature keys from the subscription/custom contract, minus runtime-disabled modules/features. Feature access grants are only an additional role/employee visibility filter inside that boundary; they must not create commercial access. Tenant Super Admin does not bypass commercial entitlement; disabled or unpurchased module permissions must not be shown, assigned, or accepted by APIs. Platform Super Admin is separate and applies only to Developer Platform / operator routes. Access is hierarchy-scoped (manager sees their team only), with explicit bypass grants for approved exceptions. WorkSync adds workspace-level roles (Admin/Member/Viewer) on top of HR tenant-level roles. Both are evaluated together for cross-module flows. Team roles (`team_roles`, `team_role_permissions`) stack on top of workspace roles. See [[modules/auth/overview|Auth]].
+NOT simple RBAC. Roles are **templates**. Tenant Super Admin / tenant owner can grant permissions only inside that tenant's commercial entitlement boundary: active module entitlements plus selected feature keys from the subscription/custom contract, minus runtime-disabled modules/features. Feature access grants are only an additional role/employee visibility filter inside that boundary; they must not create commercial access. Tenant Super Admin does not bypass commercial entitlement; disabled or unpurchased module permissions must not be shown, assigned, or accepted by APIs. Platform Super Admin is separate and applies only to Developer Platform / operator routes. Access is hierarchy-scoped (manager sees their team only), with explicit bypass grants for approved exceptions. WorkSync uses `workspace_members` for workspace inclusion and `project_members` for project visibility/work, with Admin/Member/Viewer as local access levels. HR team roles (`team_roles`, `team_role_permissions`) can provide scoped work authority when an HR team is linked to a workspace. Project access still requires `project_members`. Security roles such as HR Admin, Project Admin, and System Admin remain tenant/module authority and must not be inferred from job level. See [[modules/auth/overview|Auth]].
 
-### Temporary Password Flow
-HR sets temporary credentials when creating a WorkSync user via the onboarding flow. The `users` table has `must_change_password` (boolean), `password_set_by_admin` (boolean), and `temporary_password_expires_at` (timestamptz). On first login, if `must_change_password = true`, the backend returns a 403 with code `MUST_CHANGE_PASSWORD` — the frontend blocks all navigation and forces password change before issuing a full session.
+### Account Setup Invite Flow
+HR never creates employee credentials during onboarding. The system sends an email invite; the employee can complete password setup or use SSO when tenant SSO is enabled. `must_change_password` is reserved for explicit security reset flows, not normal onboarding.
 
 ### Tag Technology (IDE Extension)
 The IDE extension parses `@entity:action params` syntax in:
@@ -332,3 +332,4 @@ Every module overview (`modules/*/overview.md`) follows the same structure:
 8. **Do not install the desktop monitoring agent via the IDE extension without entitlement check** — always validate `agent_install_entitlements` server-side; never silently install
 9. **Do not validate permissions in the IDE extension client** — the extension sends actions to the backend; the backend validates and rejects if unauthorized
 10. **Do not build KPI targets or billable rates** — Phase 2 WorkSync features
+

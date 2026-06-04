@@ -48,7 +48,7 @@ Collection stops immediately when:
 
 ### Activity Timeline
 
-A per-employee chronological view of the work session. Available at the employee detail page in the management app.
+A per-employee chronological view of the work session. Available at the employee detail page in the Operations / Lifecycle app.
 
 | Component | Data source | Notes |
 |:---|:---|:---|
@@ -134,7 +134,7 @@ HTTP 200 OK
 { ... daily summary ... }
 ```
 
-The management app hides the "Monitoring" sidebar section entirely for non-entitled tenants based on the entitlement list in the JWT claims.
+The Operations / Lifecycle app hides the "Monitoring" sidebar section entirely for non-entitled tenants based on the entitlement list in the JWT claims.
 
 ---
 

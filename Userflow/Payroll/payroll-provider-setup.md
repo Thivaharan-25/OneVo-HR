@@ -9,7 +9,7 @@
 
 ## Preconditions
 
-- Legal entity exists → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- Legal entity exists -> [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
 - External provider API credentials available (if using external)
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
@@ -25,7 +25,7 @@
 - **DB:** `payroll_providers` — credentials encrypted
 
 ### Step 3: Assign to Legal Entity
-- **UI:** Select which legal entity uses this provider → one provider per entity
+- **UI:** Select which legal entity uses this provider -> one provider per legal entity
 - **Validation:** Entity doesn't already have an active provider
 
 ### Step 4: Test Connection
@@ -56,3 +56,6 @@
 
 - [[modules/payroll/payroll-providers/overview|Payroll Providers]]
 - [[backend/external-integrations|External Integrations]]
+
+
+

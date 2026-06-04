@@ -42,13 +42,12 @@ Triggered by: First entitlement query for employee+year OR YearEndEntitlementJob
 
 LeaveEntitlementService.CalculateEntitlementAsync(employeeId, leaveTypeId, year, ct)
   -> 1. _employeeService.GetByIdAsync(employeeId)
-       -> retrieve hire_date, country_id, job_level_id
-  -> 2. _policyRepo.GetActivePolicyAsync(leaveTypeId, countryId, jobLevelId)
+       -> retrieve hire_date, country_id
+  -> 2. _policyRepo.GetActivePolicyAsync(leaveTypeId, countryId)
        -> SQL: WHERE superseded_by_id IS NULL
               AND leave_type_id = @leaveTypeId
               AND (country_id = @countryId OR country_id IS NULL)
-              AND (job_level_id = @jobLevelId OR job_level_id IS NULL)
-       -> ORDER BY country_id DESC NULLS LAST, job_level_id DESC NULLS LAST
+       -> ORDER BY country_id DESC NULLS LAST
        -> LIMIT 1  (most specific policy wins)
   -> 3. Calculate proration if hire_date is within the entitlement year:
        -> proration_method = 'calendar_days':

@@ -1,10 +1,10 @@
-﻿# Tenant Console â€” End-to-End Logic
+# Tenant Console - End-to-End Logic
 
 ## Purpose
 
 Tenant Console is the central management screen for all tenant organizations. Operators use it to find tenants, inspect their status, view usage, manage subscriptions, suspend or unsuspend access, impersonate tenant admins for support, and configure all tenant-level settings after initial provisioning.
 
-**Entry:** Platform Management â†’ Tenants (sidebar)
+**Entry:** Platform Management -> Tenants (sidebar)
 **Route:** `/platform/tenants`
 
 ---
@@ -17,8 +17,8 @@ Tenant Console is the central management screen for all tenant organizations. Op
 |---|---|
 | Page title | "Tenant Directory" |
 | Page subtitle | "View and manage all tenant organizations on the OneVo platform." |
-| Create button | `+ Create Tenant` â€” top-right, visible only to accounts with `platform.tenants.create`; hidden (not disabled) when permission absent |
-| More options | `â‹®` kebab button â€” top-right next to Create â€” options: Export Tenant List (CSV), Bulk Status Change (requires confirmation) |
+| Create button | `+ Create Tenant` - top-right, visible only to accounts with `platform.tenants.create`; hidden (not disabled) when permission absent |
+| More options | `...` kebab button - top-right next to Create - options: Export Tenant List (CSV), Bulk Status Change (requires confirmation) |
 
 ### KPI Summary Row (4 cards)
 
@@ -55,16 +55,16 @@ Positioned between KPI cards and the tenants table.
 | Column | Label | Sortable | Width | Description |
 |---|---|---|---|---|
 | Checkbox | (no label) | No | 40px | Multi-select for bulk actions |
-| Avatar + Name | "Tenant Name â†•" | Yes, default sort | Flexible | Two-letter initials avatar with tenant color, company name (bold), plan tier label below |
+| Avatar + Name | "Tenant Name <->" | Yes, default sort | Flexible | Two-letter initials avatar with tenant color, company name (bold), plan tier label below |
 | Tenant ID | "Tenant ID" | Yes | 120px | `TEN-XXXXXX` format |
 | Domain | "Domain" | Yes | 160px | Primary domain |
 | Plan | "Subscription Plan" | Yes | 130px | Colored badge: Enterprise (dark blue), Business (medium blue), Professional (light blue), Custom (gray) |
 | Users | "Users" | Yes | 70px | Total user count for this tenant |
-| Status | "Status â†•" | Yes | 120px | Colored badge â€” see Status Badge Logic below |
+| Status | "Status <->" | Yes | 120px | Colored badge - see Status Badge Logic below |
 | Work Mode | "Work Mode" | Yes | 110px | Icon + label: ðŸ  Hybrid, ðŸ¡ Remote, ðŸ¢ On-site |
 | Region | "Region" | Yes | 90px | Country flag emoji + ISO country code |
-| Created | "Created On â†•" | Yes | 120px | "May 12, 2024" format |
-| Actions | "Actions" | No | 80px | Eye icon (view) + `â‹®` kebab |
+| Created | "Created On <->" | Yes | 120px | "May 12, 2024" format |
+| Actions | "Actions" | No | 80px | Eye icon (view) + `...` kebab |
 
 ### Status Badge Logic
 
@@ -72,18 +72,18 @@ Positioned between KPI cards and the tenants table.
 |---|---|---|
 | Active | Green dot + "Active" | `status = 'active'` |
 | Suspended | Orange dot + "Suspended" | `status = 'suspended'` |
-| In Progress | Yellow dot + "In Progress" | `status = 'provisioning'` â€” creation wizard not complete |
+| In Progress | Yellow dot + "In Progress" | `status = 'provisioning'` - creation wizard not complete |
 | Pending Payment | Blue dot + "Pending Payment" | `status = 'pending_payment'` after tenant owner confirms plan and invoice is open |
 | Cancelled | Gray dot + "Cancelled" | `status = 'cancelled'` |
 
-### Row Actions (kebab â‹®)
+### Row Actions (kebab ...)
 
 | Action | Permission Required | Behavior |
 |---|---|---|
 | View Details | `platform.tenants.read` | Navigates to `/platform/tenants/{id}` |
 | Edit Profile | `platform.tenants.manage` | Opens edit drawer for company name, legal name, phone, website |
-| Suspend | `platform.tenants.suspend` | Opens confirmation dialog â€” see Suspend flow |
-| Impersonate | `platform.tenants.impersonate` | Opens impersonation dialog â€” see Impersonation flow |
+| Suspend | `platform.tenants.suspend` | Opens confirmation dialog - see Suspend flow |
+| Impersonate | `platform.tenants.impersonate` | Opens impersonation dialog - see Impersonation flow |
 | Export Tenant Data | `platform.tenants.read` | Downloads tenant data summary as CSV |
 
 ### Bulk Actions (multi-select)
@@ -92,9 +92,9 @@ When one or more checkboxes are selected, a bulk action toolbar appears above th
 
 | Action | Permission Required | Behavior |
 |---|---|---|
-| Suspend Selected | `platform.tenants.suspend` | Confirmation dialog listing affected tenants â†’ confirms suspension of all selected |
+| Suspend Selected | `platform.tenants.suspend` | Confirmation dialog listing affected tenants -> confirms suspension of all selected |
 | Export Selected | `platform.tenants.read` | Downloads CSV of selected tenants |
-| Assign to Ring | `platform.agent_versions.manage` | Assigns selected tenants to a deployment ring |
+| Assign to Ring | *(Phase 2)* `platform.agent_versions.manage` | Assigns selected tenants to a deployment ring |
 
 **Bulk suspend confirmation:** "You are about to suspend {N} tenants. All users in these tenants will lose access immediately. This cannot be undone without explicitly unsuspending each tenant. Type CONFIRM to proceed."
 
@@ -102,7 +102,7 @@ When one or more checkboxes are selected, a bulk action toolbar appears above th
 
 | Control | Behavior |
 |---|---|
-| Rows per page | Dropdown: 10, 25, 50, 100 â€” stored in user preference |
+| Rows per page | Dropdown: 10, 25, 50, 100 - stored in user preference |
 | Page controls | First, Previous, numbered pages, Next, Last |
 | Count label | "Showing 1 to 8 of 128 tenants" |
 
@@ -114,7 +114,7 @@ When one or more checkboxes are selected, a bulk action toolbar appears above th
 
 **Access:** Click any tenant row, or the eye icon in Actions column.
 
-**API on load:** `GET /admin/v1/tenants/{id}` â€” returns full tenant profile, subscription state, module entitlements, user count, device count, provisioning state, active alert count.
+**API on load:** `GET /admin/v1/tenants/{id}` - returns full tenant profile, subscription state, module entitlements, user count, device count, provisioning state, active alert count.
 
 ### Header Section
 
@@ -122,8 +122,8 @@ When one or more checkboxes are selected, a bulk action toolbar appears above th
 |---|---|
 | Back link | "Back to Tenant Directory" - navigates to `/platform/tenants` |
 | Page title | "Tenant Details" |
-| Actions button | "Actions â–¾" dropdown button (top-right) â€” contains all high-risk actions for this tenant |
-| More options | `â‹®` next to Actions button |
+| Actions button | "Actions v" dropdown button (top-right) - contains all high-risk actions for this tenant |
+| More options | `...` next to Actions button |
 
 **Tenant Identity Card (below header):**
 
@@ -131,7 +131,7 @@ When one or more checkboxes are selected, a bulk action toolbar appears above th
 |---|---|
 | Avatar | Two-letter initials, colored |
 | Company name | Large bold text |
-| Status badge | Colored badge â€” see Status Badge Logic |
+| Status badge | Colored badge - see Status Badge Logic |
 | Plan label | "Enterprise Plan" with colored badge |
 | Tenant code | "TEN-000001" |
 | Domain | "technova.com" |
@@ -139,8 +139,8 @@ When one or more checkboxes are selected, a bulk action toolbar appears above th
 | Customer since | "Customer since May 12, 2024" |
 | Primary Admin | Name + email with avatar |
 | Subscription Plan | Plan name + "Manage Plan" link |
-| Billing Cycle | "Monthly â€” Next billing: Jun 12, 2025" |
-| Status summary | "Active â€” All systems normal" or alert count if alerts exist |
+| Billing Cycle | "Monthly - Next billing: Jun 12, 2025" |
+| Status summary | "Active - All systems normal" or alert count if alerts exist |
 
 ### Actions Dropdown Contents
 
@@ -159,7 +159,7 @@ When one or more checkboxes are selected, a bulk action toolbar appears above th
 
 ## Tenant Detail Tabs
 
-### Tab 1 â€” Overview
+### Tab 1 - Overview
 
 Default tab on page load.
 
@@ -204,7 +204,7 @@ Shows the 3 most recent active alerts for this specific tenant.
 | Timestamp | e.g., "May 20, 2025 10:15 AM" |
 | Badge | Warning / Critical / Info colored badge |
 
-"View All Alerts" link â†’ navigates to Security Center filtered to this tenant.
+"View All Alerts" link -> navigates to Security Center filtered to this tenant.
 
 **Section: Top Departments by Activity (bar chart)**
 Horizontal bar chart showing top 5 departments ranked by user activity count.
@@ -229,7 +229,7 @@ List of configured integrations with connection status badge.
 
 ---
 
-### Tab 2 â€” Usage & Analytics
+### Tab 2 - Usage & Analytics
 
 **API:** `GET /admin/v1/tenants/{id}/analytics?from=...&to=...`
 
@@ -242,19 +242,19 @@ List of configured integrations with connection status badge.
 | Daily Active Users trend | Line chart | DAU per day |
 | Session Duration Distribution | Histogram | Minutes per session, binned |
 | Feature Usage Breakdown | Horizontal bar | Top 10 features by usage event count |
-| Module Engagement | Heatmap | Day Ã— hour grid of activity intensity |
+| Module Engagement | Heatmap | Day x hour grid of activity intensity |
 | Device Activity | Stacked bar | Online / Idle / Offline by day |
 | Exception Events | Line chart | Exception rule fires per day |
 
-Each section has: title, "View Full Report" link â†’ Platform Analytics, and export icon.
+Each section has: title, "View Full Report" link -> Platform Analytics, and export icon.
 
 ---
 
-### Tab 3 â€” Users
+### Tab 3 - Users
 
 **API:** `GET /admin/v1/tenants/{id}/users?{filters}&page={n}&per_page={n}`
 
-**This tab is read-only.** Operators cannot create, edit, or delete tenant users from this console â€” user management belongs to the tenant's own HR Admin.
+**This tab is read-only.** Operators cannot create, edit, or delete tenant users from this console - user management belongs to the tenant's own HR Admin.
 
 **Columns:**
 
@@ -262,7 +262,7 @@ Each section has: title, "View Full Report" link â†’ Platform Analytics, an
 |---|---|
 | Avatar + Name | User initials, first name, last name |
 | Email | User email address |
-| Role | Assigned role(s) â€” comma-separated if multiple |
+| Role | Assigned role(s) - comma-separated if multiple |
 | Status | Active (green), Invited (yellow), Suspended (orange), Deactivated (gray) |
 | Work Mode | Hybrid / Remote / On-site |
 | Department | Org department assignment |
@@ -279,7 +279,7 @@ Each section has: title, "View Full Report" link â†’ Platform Analytics, an
 
 ---
 
-### Tab 4 â€” Devices
+### Tab 4 - Devices
 
 **API:** `GET /admin/v1/tenants/{id}/devices?{filters}&page={n}&per_page={n}`
 
@@ -292,7 +292,7 @@ Each section has: title, "View Full Report" link â†’ Platform Analytics, an
 | Device name | Hostname from agent registration |
 | Device ID | Internal device UUID |
 | OS | Operating system + version |
-| Agent Version | Installed agent version with badge: Up to date (green) / Outdated (orange) / Unsupported (red) |
+| Agent Version | *(Phase 2)* Installed agent version with badge: Up to date (green) / Outdated (orange) / Unsupported (red) |
 | Status | Online (green) / Idle (yellow) / Offline (gray) |
 | Assigned User | User assigned to this device |
 | Last Seen | Relative timestamp of last heartbeat |
@@ -303,12 +303,12 @@ Each section has: title, "View Full Report" link â†’ Platform Analytics, an
 |---|---|
 | Search | Device name or ID |
 | Status | All / Online / Idle / Offline |
-| Agent Version | All / Up to date / Outdated / Unsupported |
-| Deployment Ring | All / Internal / Beta / GA |
+| Agent Version | *(Phase 2)* All / Up to date / Outdated / Unsupported |
+| Deployment Ring | *(Phase 2)* All / Internal / Beta / GA |
 
 ---
 
-### Tab 5 â€” Subscriptions
+### Tab 5 - Subscriptions
 
 **API:** `GET /admin/v1/tenants/{id}/subscription`
 
@@ -319,8 +319,8 @@ Each section has: title, "View Full Report" link â†’ Platform Analytics, an
 | Plan name | e.g., "Enterprise" |
 | Commercial model | Subscription or Full License + Maintenance |
 | Billing cycle | Monthly / Annual |
-| Calculated price | e.g., "Â£4,200 / month" |
-| Override price | If set: "Â£3,800 / month (overridden)" in orange |
+| Calculated price | e.g., "£4,200 / month" |
+| Override price | If set: "£3,800 / month (overridden)" in orange |
 | Collection mode | Gateway: "Stripe - Production" / "Paddle - Production" / "PayHere - Production" / Manual: "Manual Billing" |
 | Billing start date | "Jun 1, 2024" |
 | Next billing date | "Jun 1, 2025" |
@@ -348,7 +348,7 @@ Each section has: title, "View Full Report" link â†’ Platform Analytics, an
 | Amount | Formatted currency |
 | Status | Paid (green) / Overdue (red) / Draft (gray) / Void (gray) |
 | Issued date | Date |
-| Paid date | Date or "â€”" |
+| Paid date | Date or "-" |
 | Actions | Download PDF, View payment details |
 
 **Override Subscription action** (in Actions dropdown):
@@ -360,7 +360,7 @@ Each section has: title, "View Full Report" link â†’ Platform Analytics, an
 
 ---
 
-### Tab 6 â€” Policies
+### Tab 6 - Policies
 
 **API:** `GET /admin/v1/tenants/{id}/feature-flags` and `GET /admin/v1/global-policies?tenant_id={id}`
 
@@ -374,7 +374,7 @@ Table of all global policies where this tenant has a non-default value. Shows po
 
 ---
 
-### Tab 7 â€” Integrations
+### Tab 7 - Integrations
 
 **API:** `GET /admin/v1/tenants/{id}/integrations`
 
@@ -397,7 +397,7 @@ Lists all integrations visible to this tenant based on their entitled modules.
 
 ---
 
-### Tab 8 â€” Activity Log
+### Tab 8 - Activity Log
 
 **API:** `GET /admin/v1/tenants/{id}/audit?{filters}&page={n}&per_page={n}`
 
@@ -410,7 +410,7 @@ Read-only audit log for all events affecting this specific tenant, across all ac
 | Timestamp | Full datetime, sortable |
 | Actor | Name + type badge: Tenant User / Platform Admin / System |
 | Action | Human-readable description, e.g., "User invited", "Plan changed", "Agent suspended" |
-| Resource | What was affected â€” entity type + name |
+| Resource | What was affected - entity type + name |
 | IP Address | Source IP |
 | Result | Success (green) / Failed (red) |
 
@@ -425,9 +425,9 @@ Read-only audit log for all events affecting this specific tenant, across all ac
 
 ---
 
-### Tab 9 â€” Settings
+### Tab 9 - Settings
 
-**API:** `GET /admin/v1/tenants/{id}/settings` (read), `PATCH /admin/v1/tenants/{id}/settings` (write â€” requires `platform.tenants.manage`)
+**API:** `GET /admin/v1/tenants/{id}/settings` (read), `PATCH /admin/v1/tenants/{id}/settings` (write - requires `platform.tenants.manage`)
 
 **Section: Organization Profile**
 
@@ -456,13 +456,13 @@ Each field shows current value, edit icon, saved/error state.
 | Input counting | Toggle | Yes |
 
 **Section: Branding** (Phase 2)
-White-label branding overrides â€” planned for Phase 2.
+White-label branding overrides - planned for Phase 2.
 
 **Save behavior:** Each section has its own "Save Changes" button. Saving calls `PATCH /admin/v1/tenants/{id}/settings` with only the changed section's fields. Each save writes an audit log entry.
 
 ---
 
-## Tenant Status Lifecycle â€” State Machine
+## Tenant Status Lifecycle - State Machine
 
 ```
 ```
@@ -477,22 +477,22 @@ Create wizard
 
 ### Transition Rules
 
-| From â†’ To | Endpoint | Permission | Side Effects |
+| From -> To | Endpoint | Permission | Side Effects |
 |---|---|---|---|
 | provisioning -> pending_confirmation | `PATCH /admin/v1/tenants/{id}/provision/confirm` | `platform.tenants.activate` | Tenant owner can access onboarding/billing confirmation; no trial is created |
 | pending_confirmation -> pending_payment | `POST /api/v1/billing/subscription/confirm` | `billing:manage` | Tenant owner selects allowed plan, billing cycle, confirms employee count; first invoice generated |
 | pending_payment -> active | Gateway webhook or manual mark-paid | `platform.subscriptions.manage` for manual | Invoice paid or approved; module entitlements become active |
-| active â†’ suspended | `PATCH /admin/v1/tenants/{id}/status` `{"status":"suspended"}` | `platform.tenants.suspend` | All tenant user sessions invalidated immediately; tenant invisible to `/api/v1/*` except admin; audit log entry |
-| suspended â†’ active | `PATCH /admin/v1/tenants/{id}/status` `{"status":"active"}` | `platform.tenants.suspend` | Tenant becomes visible again; audit log entry |
-| active/suspended â†’ cancelled | `PATCH /admin/v1/tenants/{id}/status` `{"status":"cancelled"}` | `platform.tenants.suspend` + separate `platform.tenants.cancel` | Irreversible in normal flow; data preserved for retention period; billing stopped; all sessions invalidated; audit log entry |
+| active -> suspended | `PATCH /admin/v1/tenants/{id}/status` `{"status":"suspended"}` | `platform.tenants.suspend` | All tenant user sessions invalidated immediately; tenant invisible to `/api/v1/*` except admin; audit log entry |
+| suspended -> active | `PATCH /admin/v1/tenants/{id}/status` `{"status":"active"}` | `platform.tenants.suspend` | Tenant becomes visible again; audit log entry |
+| active/suspended -> cancelled | `PATCH /admin/v1/tenants/{id}/status` `{"status":"cancelled"}` | `platform.tenants.suspend` + separate `platform.tenants.cancel` | Irreversible in normal flow; data preserved for retention period; billing stopped; all sessions invalidated; audit log entry |
 
 ---
 
-## Suspend Flow â€” Full Detail
+## Suspend Flow - Full Detail
 
 ### Trigger
 
-Actions dropdown â†’ "Suspend Tenant"
+Actions dropdown -> "Suspend Tenant"
 
 ### Confirmation Dialog
 
@@ -501,8 +501,8 @@ Actions dropdown â†’ "Suspend Tenant"
 | Dialog title | "Suspend Tenant" |
 | Body text | "Suspending TechNova Solutions will immediately revoke access for all 3,842 users. The tenant's data is preserved. You can unsuspend at any time." |
 | Confirmation input | Text field: "Type the tenant domain to confirm: technova.com" |
-| Validation | Must exactly match tenant domain â€” case-insensitive |
-| Reason field | Textarea â€” "Reason for suspension (required)" â€” min 10 characters |
+| Validation | Must exactly match tenant domain - case-insensitive |
+| Reason field | Textarea - "Reason for suspension (required)" - min 10 characters |
 | Cancel button | Closes dialog, no action |
 | Confirm button | Disabled until domain typed correctly AND reason filled; enabled when both pass |
 
@@ -531,8 +531,8 @@ Actions dropdown â†’ "Suspend Tenant"
 
 **Side effects:**
 - All active tenant user sessions invalidated (JWT blocklist or session table purge depending on implementation)
-- `tenants.status` â†’ `'suspended'`
-- Status badge on list and detail page â†’ orange "Suspended"
+- `tenants.status` -> `'suspended'`
+- Status badge on list and detail page -> orange "Suspended"
 - Tenant removed from all `/api/v1/*` query results
 - Audit log: `action = 'tenant.suspended'`, actor, reason, timestamp, previous status
 - If tenant has active Paddle subscription: subscription collection paused (via Paddle API call if gateway = paddle)
@@ -541,11 +541,11 @@ Actions dropdown â†’ "Suspend Tenant"
 
 ---
 
-## Unsuspend Flow â€” Full Detail
+## Unsuspend Flow - Full Detail
 
 ### Trigger
 
-Actions dropdown â†’ "Unsuspend Tenant" (only visible when status = suspended)
+Actions dropdown -> "Unsuspend Tenant" (only visible when status = suspended)
 
 ### Confirmation Dialog
 
@@ -553,9 +553,9 @@ Actions dropdown â†’ "Unsuspend Tenant" (only visible when status = suspend
 |---|---|
 | Dialog title | "Unsuspend Tenant" |
 | Body text | "Restoring access for TechNova Solutions. Users will be able to log in immediately after confirmation." |
-| No slug confirmation | Not required for unsuspend â€” lower risk action |
+| No slug confirmation | Not required for unsuspend - lower risk action |
 | Note field | Optional text: "Internal note for audit log" |
-| Confirm button | Always enabled â€” no input required |
+| Confirm button | Always enabled - no input required |
 
 ### API Call
 
@@ -583,11 +583,11 @@ Actions dropdown â†’ "Unsuspend Tenant" (only visible when status = suspend
 
 ---
 
-## Impersonation Flow â€” Full Detail
+## Impersonation Flow - Full Detail
 
 ### Trigger
 
-Actions dropdown â†’ "Impersonate as Admin" (visible only when status = active and account has `platform.tenants.impersonate`)
+Actions dropdown -> "Impersonate as Admin" (visible only when status = active and account has `platform.tenants.impersonate`)
 
 ### Confirmation Dialog
 
@@ -596,9 +596,9 @@ Actions dropdown â†’ "Impersonate as Admin" (visible only when status = act
 | Dialog title | "Impersonate Tenant Admin" |
 | Warning banner | Red callout: "This action is audit-logged with your account, IP address, and timestamp. The session cannot be extended. You will be opening the main OneVo app as the tenant's super-admin role." |
 | Tenant shown | TechNova Solutions |
-| Target user field | Dropdown: "Select user to impersonate" â€” lists all admin-role users for this tenant with name + email |
-| Reason field | Required, min 20 characters â€” "Reason for impersonation (required for compliance audit)" |
-| Session duration | Read-only display: "Session TTL: 15 minutes â€” not renewable" |
+| Target user field | Dropdown: "Select user to impersonate" - lists all admin-role users for this tenant with name + email |
+| Reason field | Required, min 20 characters - "Reason for impersonation (required for compliance audit)" |
+| Session duration | Read-only display: "Session TTL: 15 minutes - not renewable" |
 | Cancel button | Closes dialog |
 | Confirm button | Enabled only when user selected and reason filled |
 
@@ -628,7 +628,7 @@ Actions dropdown â†’ "Impersonate as Admin" (visible only when status = act
 **Frontend behavior after success:**
 - New browser tab opens to `app.onevo.io/impersonate?token={impersonation_token}`
 - Main OneVo app validates the token and opens the session with `"impersonation": true` claim
-- A persistent yellow banner appears at the top of the tenant app: "âš  Impersonation Session â€” Platform Admin: engineer@onevo.io â€” Expires in 15:00" with countdown timer
+- A persistent yellow banner appears at the top of the tenant app: "WARNING: Impersonation Session - Platform Admin: engineer@onevo.io - Expires in 15:00" with countdown timer
 - Console tab shows: "Impersonation session opened. Tab closes automatically in 15 minutes." with a countdown
 - When token expires: tenant app tab redirects to a "Session Expired" page; console tab shows "Impersonation session ended."
 
@@ -649,7 +649,7 @@ Actions dropdown â†’ "Impersonate as Admin" (visible only when status = act
 
 **Constraints enforced server-side:**
 - Token TTL = 900 seconds (15 minutes). Hard-coded. No parameter can change this.
-- Token is not renewable. Calling the endpoint again issues a new independent token â€” each is audit-logged separately.
+- Token is not renewable. Calling the endpoint again issues a new independent token - each is audit-logged separately.
 - Token carries `impersonation: true` claim. The tenant `/api/v1/*` middleware accepts it only at endpoints tagged `[AllowImpersonation]`. Admin endpoints reject it.
 - If account lacks `platform.tenants.impersonate`: `403 Forbidden` with code `impersonation_permission_required`.
 
@@ -659,7 +659,7 @@ Actions dropdown â†’ "Impersonate as Admin" (visible only when status = act
 
 ### Trigger
 
-Actions dropdown â†’ "Send Owner Invite" â€” available when:
+Actions dropdown -> "Send Owner Invite" - available when:
 - Status = provisioning and Step 2 admin account has been set but invite not yet sent
 - Status = active and operator wants to re-invite (e.g., invite link expired)
 
@@ -701,7 +701,7 @@ Actions dropdown â†’ "Send Owner Invite" â€” available when:
 
 ---
 
-## API Surface â€” Full Catalog
+## API Surface - Full Catalog
 
 | Method | Route | Purpose | Permission | Notes |
 |---|---|---|---|---|

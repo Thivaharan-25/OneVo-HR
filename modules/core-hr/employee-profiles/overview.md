@@ -1,4 +1,4 @@
-# Employee Profiles
+﻿# Employee Profiles
 
 **Module:** Core HR  
 **Feature:** Employee Profiles
@@ -7,14 +7,14 @@
 
 ## Purpose
 
-Central employee data management — profiles, addresses, emergency contacts, and custom fields.
+Central employee data management â€” profiles, addresses, emergency contacts, and custom fields.
 
 ## Database Tables
 
 ### `employees`
-Central hub entity. Linked 1:1 to `users` via `user_id`. Self-referencing `manager_id` forms reporting hierarchy.
+Central hub entity. Linked 1:1 to `users` via `user_id`. Reporting hierarchy is resolved from active position assignments; employee records do not store manager references.
 
-Key columns: `id`, `tenant_id`, `user_id`, `employee_number`, `first_name`, `last_name`, `email`, `phone`, `date_of_birth` (PII), `gender`, `nationality_id`, `department_id`, `job_title_id`, `manager_id`, `legal_entity_id`, `employment_type`, `employment_status`, `work_mode`, `hire_date`, `probation_end_date`, `termination_date`, `avatar_file_id`, `is_deleted` (soft delete).
+Key columns: `id`, `tenant_id`, `user_id`, `employee_number`, `first_name`, `last_name`, `email`, `phone`, `date_of_birth` (PII), `gender`, `nationality_id`, `department_id`, `legal_entity_id`, `employment_type`, `employment_status`, `work_mode`, `hire_date`, `probation_end_date`, `termination_date`, `avatar_file_id`, `is_deleted` (soft delete).
 
 ### `employee_addresses`
 Address records per employee: `address_type` (`permanent`, `current`, `emergency`), `address_json`, `is_primary`.
@@ -35,7 +35,7 @@ Extensible custom fields: `field_name`, `field_value`, `field_type` (`text`, `nu
 | PUT | `/api/v1/employees/{id}` | `employees:write` | Update employee |
 | DELETE | `/api/v1/employees/{id}` | `employees:delete` | Soft delete |
 | GET | `/api/v1/employees/me` | `employees:read-own` | Get own profile |
-| GET | `/api/v1/employees/{id}/team` | `employees:read` | Get direct reports (backend applies access policy) |
+| GET | `/api/v1/employees/{id}/team` | `employees:read` | Get direct reports from position-derived hierarchy (backend applies access policy) |
 
 ## Related
 
@@ -53,3 +53,4 @@ Extensible custom fields: `field_name`, `field_value`, `field_type` (`text`, `nu
 - [[backend/shared-kernel|Shared Kernel]]
 - [[code-standards/logging-standards|Logging Standards]]
 - [[current-focus/DEV1-core-hr-profile|DEV1: Core HR Profile]]
+

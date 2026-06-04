@@ -1,7 +1,7 @@
-﻿# Remote Commands
+# Remote Commands
 
 **Module:** Agent Gateway
-**Feature:** Remote Commands (Server â†’ Agent)
+**Feature:** Remote Commands (Server -> Agent)
 
 ## Purpose
 
@@ -10,9 +10,9 @@ Bidirectional SignalR command channel that enables the server to push commands t
 ## Architecture
 
 ```
-Manager UI â†’ API â†’ AgentCommandService â†’ SignalR Hub â†’ Desktop Agent
-                                              â†“ (fallback)
-                                    agent_commands table â†’ Agent polls via heartbeat
+Manager UI -> API -> AgentCommandService -> SignalR Hub -> Desktop Agent
+                                              down (fallback)
+                                    agent_commands table -> Agent polls via heartbeat
 ```
 
 **Primary path (real-time):** Command dispatched via SignalR `ExecuteCommand` method. Agent acknowledges, executes, reports result.
@@ -118,9 +118,9 @@ public class RemoteCaptureCommandHandler : INotificationHandler<RemoteCaptureReq
 ## Related
 
 - [[modules/agent-gateway/overview|Agent Gateway Overview]]
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] â€” Full protocol including command endpoints
-- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] â€” Presence event â†’ agent command flow
-- [[modules/identity-verification/overview|Identity Verification]] â€” Consumes photo/screenshot results
-- [[modules/exception-engine/overview|Exception Engine]] â€” Triggers remote capture requests
-- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] â€” Agent integrity when receiving commands
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] - Full protocol including command endpoints
+- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] - Presence event -> agent command flow
+- [[modules/identity-verification/overview|Identity Verification]] - Consumes photo/screenshot results
+- [[modules/exception-engine/overview|Exception Engine]] - Triggers remote capture requests
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] - Agent integrity when receiving commands
 

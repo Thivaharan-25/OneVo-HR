@@ -1,4 +1,4 @@
-# User Flow Overview
+﻿# User Flow Overview
 
 ## Purpose
 
@@ -22,8 +22,8 @@ The Developer Platform uses a sidebar icon rail plus a side panel for sections t
 | Rail Area | Has Panel | Child Routes |
 |---|---:|---|
 | Dashboard | No | `/` |
-| Platform Management | Yes | `/platform/tenants`, `/platform/subscriptions`, `/platform/platform-users`, `/platform/platform-roles`, `/platform/global-policies`, `/platform/module-catalog`, `/platform/role-templates`, `/platform/feature-flags` |
-| System Operations | Yes | `/operations/platform-health`, `/operations/services`, `/operations/devices`, `/operations/infrastructure`, `/operations/background-jobs`, `/operations/agent-versions` |
+| Platform Management | Yes | `/platform/tenants`, `/platform/subscriptions`, `/platform/platform-users`, `/platform/platform-roles`, `/platform/global-policies`, `/platform/module-catalog`, `/platform/templates`, `/platform/feature-flags` |
+| System Operations | Yes | `/operations/platform-health`, `/operations/services`; device, infrastructure, background-job, and agent-version flows are Phase 2 |
 | Security & Compliance | Yes | `/security/security-center`, `/security/audit-logs`, `/security/compliance`, `/security/data-retention` |
 | Analytics & Reports | Yes | `/analytics/platform`, `/analytics/reports` |
 | Settings | Yes | `/settings/system`, `/settings/app-catalog`, `/settings/api-keys` *(Phase 2)* |
@@ -44,7 +44,7 @@ The platform-admin JWT includes account identity and effective platform permissi
 | Manage platform roles | `platform.roles.manage` |
 | Manage subscription plans/gateways | `platform.subscriptions.manage` / `platform.payment_gateways.manage` |
 | Manage product module catalog | `platform.module_catalog.manage` |
-| Force-update agent ring | `platform.agent_versions.force_update` |
+| Force-update agent ring | *(Phase 2)* `platform.agent_versions.force_update` |
 
 ## Detailed Flows
 
@@ -59,12 +59,12 @@ The platform-admin JWT includes account identity and effective platform permissi
 | `role-template-management.md` | Global role templates and tenant role materialization |
 | `global-policies.md` | Global policy edit, impact preview, and publish |
 | `feature-flags.md` | Global flag list, toggle global default, per-tenant override |
-| `agent-versions.md` | Version catalog, publish, force-update ring, ring assignment, rollback |
+| `agent-versions.md` | *(Phase 2)* Version catalog, publish, force-update ring, ring assignment, rollback |
 | `platform-health.md` | Platform health overview |
 | `services-monitor.md` | Service detail and safe service actions |
-| `device-management.md` | Device/agent search and approved commands |
-| `infrastructure-operations.md` | Infrastructure capacity and dependencies |
-| `background-jobs.md` | Background job observability and retry |
+| `device-management.md` | *(Phase 2)* Device/agent search and approved commands |
+| `infrastructure-operations.md` | *(Phase 2)* Infrastructure capacity and dependencies |
+| `background-jobs.md` | *(Phase 2)* Background job observability and retry |
 | `security-center.md` | Security overview and session review |
 | `audit-console.md` | Cross-tenant audit query and export |
 | `compliance-center.md` | Compliance exports and legal holds |
@@ -74,3 +74,4 @@ The platform-admin JWT includes account identity and effective platform permissi
 | `system-config.md` | System defaults and tenant overrides |
 | `app-catalog.md` | Global app catalog and uncatalogued app approval |
 | `api-keys.md` | *(Phase 2)* Platform API keys |
+

@@ -33,7 +33,7 @@ GET /api/v1/skills/gap-analysis/{employeeId}
       -> 4. Compare: for each required skill:
          -> If missing: gap = full requirement
          -> If below min_proficiency: gap = difference
-      -> 5. Recommend courses: query course_skill_tags matching gap skills
+      -> 5. Phase 1: return skill gaps only. Course recommendations are Phase 2 because courses and course_skill_tags are deferred.
       -> Return Result.Success(gapAnalysisDtos)
 ```
 

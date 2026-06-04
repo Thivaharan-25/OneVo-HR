@@ -131,11 +131,11 @@ Server checks agent_install_entitlements:
                         │
                         ▼
                 TrayApp starts and opens Sign in
-                        â”‚
-                        â–¼
+                        |
+                        v
                 User completes TrayApp/browser SSO enrollment
-                        â”‚
-                        â–¼
+                        |
+                        v
                 Agent enrolls through Agent Gateway
                 Extension calls PUT /api/v1/ide/agent-install/{id}/installed
                         │

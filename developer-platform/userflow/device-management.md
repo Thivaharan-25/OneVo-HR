@@ -1,5 +1,7 @@
 # Device Management Userflow
 
+> Phase 2 only. This flow is absent from Phase 1 navigation and API scope.
+
 ## Actor
 
 Operations or support user with device permissions.

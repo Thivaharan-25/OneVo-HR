@@ -33,7 +33,8 @@ dotnet ef migrations script --idempotent --output migration.sql
 
 - `AddEmployeeTable`
 - `AddLeaveModule`
-- `AlterEmployeesAddManagerId`
+- `CreatePositionsAndPositionAssignments`
+- `CreateEmployeeHierarchyClosure`
 - `CreateIndexOnAttendanceDate`
 - `SeedDefaultRolesAndPermissions`
 

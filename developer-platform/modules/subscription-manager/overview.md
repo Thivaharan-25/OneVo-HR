@@ -1,4 +1,4 @@
-﻿# Subscription Manager
+# Subscription Manager
 
 ## Purpose
 
@@ -8,14 +8,14 @@ Subscription Manager maintains the global commercial catalog: reusable subscript
 
 | Table / System | Role |
 |---|---|
-| `subscription_plans` | Read + write â€” reusable global plan definitions |
-| `subscription_plan_price_brackets` | Read + write â€” per-plan, per-size-range pricing |
-| `subscription_plan_price_history` | Write â€” immutable price change audit trail |
+| `subscription_plans` | Read + write - reusable global plan definitions |
+| `subscription_plan_price_brackets` | Read + write - per-plan, per-size-range pricing |
+| `subscription_plan_price_history` | Write - immutable price change audit trail |
 | `payment_gateways` | Read + write - Stripe/Paddle/PayHere gateway configs with encrypted secrets |
-| `tenant_subscriptions` | Read â€” current tenant commercial state; write through tenant subscription APIs only |
-| `subscription_invoices` | Read + write â€” invoice lifecycle management |
-| `webhook_event_queue` | Read â€” webhook processing status |
-| `module_catalog` | Read â€” module pricing and module feature registry for plan price calculation |
+| `tenant_subscriptions` | Read - current tenant commercial state; write through tenant subscription APIs only |
+| `subscription_invoices` | Read + write - invoice lifecycle management |
+| `webhook_event_queue` | Read - webhook processing status |
+| `module_catalog` | Read - module pricing and module feature registry for plan price calculation |
 | Audit log | Write every billing action |
 
 ## Phase 1 Sellable Modules (for plan creation)
@@ -27,9 +27,9 @@ Plans are built from Phase 1 modules only. Phase 2 modules (`payroll`, `performa
 | HR Core (Package 1) | `core_hr`, `leave`, `calendar` | |
 | Intelligence (Package 1) | `monitoring`, `workforce`, `verification`, `exceptions`, `analytics` | |
 | WorkSync (Package 2) | `work_management`, `chat`, `chat_ai`, `documents`, `reports`, `integrations` | `chat` and `chat_ai` are separately sellable |
-| Foundation (always included) | `auth`, `configuration`, `roles`, `notifications`, `org`, `workflow_engine` | Not selectable in plans â€” auto-included |
+| Foundation (always included) | `auth`, `configuration`, `roles`, `notifications`, `org`, `workflow_engine` | Not selectable in plans - auto-included |
 
-`chat` and `chat_ai` are **separately sellable** â€” a plan can include one, both, or neither. `chat_ai` requires a positive `ai_token_limit_per_month`.
+`chat` and `chat_ai` are **separately sellable** - a plan can include one, both, or neither. `chat_ai` requires a positive `ai_token_limit_per_month`.
 
 ## Capabilities
 
@@ -78,7 +78,7 @@ Plans are built from Phase 1 modules only. Phase 2 modules (`payroll`, `performa
 
 - Updating a plan's pricing does NOT rewrite existing tenant subscription snapshots
 - If a plan includes only part of a module, that partial feature inclusion must be recorded in the plan/custom contract. Disabling features through Feature Flag Manager does not reduce price or change billing.
-- Gateway secrets are AES-256 encrypted â€” never returned by any API response
+- Gateway secrets are AES-256 encrypted - never returned by any API response
 - Manual collection requires billing evidence/reference and an audit reason
 - `chat_ai` module in a plan requires the operator to set an AI token limit during tenant provisioning
 - Dunning auto-suspension is logged as a system action; platform admins can halt it via payment exception
@@ -86,7 +86,7 @@ Plans are built from Phase 1 modules only. Phase 2 modules (`payroll`, `performa
 ## Related
 
 - [[developer-platform/modules/subscription-manager/end-to-end-logic|Subscription Manager End-to-End Logic]]
-- [[developer-platform/modules/tenant-console/overview|Tenant Console]] â€” applies plans to tenants
-- [[developer-platform/modules/module-catalog-manager/overview|Module Catalog Manager]] â€” module pricing used in plan calculation
-- [[developer-platform/modules/system-config/overview|System Config]] â€” payment gateway credential management
+- [[developer-platform/modules/tenant-console/overview|Tenant Console]] - applies plans to tenants
+- [[developer-platform/modules/module-catalog-manager/overview|Module Catalog Manager]] - module pricing used in plan calculation
+- [[developer-platform/modules/system-config/overview|System Config]] - payment gateway credential management
 

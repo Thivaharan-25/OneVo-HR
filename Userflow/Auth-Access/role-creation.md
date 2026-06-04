@@ -1,7 +1,7 @@
-# Role Creation
+# Security Role Creation
 
 **Area:** Auth & Access
-**Trigger:** Admin clicks Create Role (user action â€” configuration)
+**Trigger:** Admin clicks Create Security Role (user action - configuration)
 **Required Permission(s):** `roles:manage`
 **Related Permissions:** `users:manage` (to assign the new role to users)
 
@@ -10,24 +10,24 @@
 ## Preconditions
 
 - Tenant is active
-- Understanding of which permissions are needed for the role being created
+- Understanding of which tenant/module permissions are needed for the security role
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
-### Step 1: Navigate to Role Management
-- **UI:** Administration > Roles & Permissions. List view shows all roles: Name, Description, User Count (how many users have this role), Type (System/Custom), Created Date. System roles marked with a lock icon (cannot be deleted). "Create Role" button in top-right
+### Step 1: Navigate to Security Role Management
+- **UI:** Administration > Roles & Permissions > Security Roles. List view shows security roles: Name, Description, User Count, Type (System/Custom), Created Date. System roles are marked with a lock icon. Team Roles are shown in a separate Team Roles section and are not created here.
 - **API:** `GET /api/v1/roles`
-- **Backend:** `RoleService.GetRolesAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
+- **Backend:** `RoleService.GetRolesAsync()` -> [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** Permission check for `roles:manage`
 - **DB:** `roles`, `user_roles` (for user count)
 
-### Step 2: Click Create Role
-- **UI:** Full-page form opens with sections:
+### Step 2: Click Create Security Role
+- **UI:** Full-page security-role form opens with sections:
   - **Basic Info:** Role Name (required, e.g., "HR Business Partner"), Description (optional, e.g., "Can manage employees in assigned departments")
   - **Permission Browser:** Accordion-style category list showing all 106 explicitly grantable permissions grouped by module. Universal permissions are shown separately as read-only auto-grants and cannot be selected.
 - **API:** `GET /api/v1/permissions` (loads all explicitly grantable permissions; universal permissions are excluded from assignment payloads)
-- **Backend:** `PermissionService.GetAllPermissionsAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
+- **Backend:** `PermissionService.GetAllPermissionsAsync()` -> [[frontend/cross-cutting/authorization|Authorization]]
 - **Validation:** N/A
 - **DB:** `permissions`
 
@@ -47,7 +47,7 @@
   - **Reporting:** `reports:read`, `reports:create`
   - **Skills:** `skills:read`, `skills:write`, `skills:validate`, `skills:manage`
   
-  For **employee-data permissions** (those with a data scope, e.g. `leave:read`, `attendance:read`, `employees:read`): an **access policy picker** appears inline next to the checkbox. Options: `self` / `direct_reports` / `reporting_tree` / `department` / `department_tree` / `org_unit_tree` / `organization`. Defaults to `self` if not explicitly set. This determines whose data this role can access for that permission.
+  Employee-data permissions are selected here as permissions only. Data scope is not configured on `role_permissions`; it is configured later on the `user_roles` assignment through `scope_type` and `scope_id`.
   - **Grievance:** `grievance:read`, `grievance:write`, `grievance:manage`
   - **Expense:** `expense:read`, `expense:create`, `expense:approve`, `expense:manage`
   - **Calendar:** `calendar:write`
@@ -65,7 +65,7 @@
   - **Projects:** `projects:read`, `projects:write`, `projects:create`
   - **Work Management:** `okr:read`, `okr:write`, `wiki:read`, `wiki:write`, `sprints:read`, `sprints:manage`, `workspaces:read`, `workspaces:create`, `workspaces:manage`, `resources:read`, `resources:manage`, `roadmaps:read`, `roadmaps:write`
   
-  Each explicitly grantable permission has: checkbox, permission code, human-readable description, module badge. Employee-data permissions additionally show an access policy picker. "Select All" per category. Search/filter across assignable permissions. Universal auto-grants are shown without checkboxes.
+  Each explicitly grantable permission has: checkbox, permission code, human-readable description, and module badge. "Select All" per category. Search/filter across assignable permissions. Universal auto-grants are shown without checkboxes.
 - **API:** N/A (client-side selection)
 - **Backend:** N/A
 - **Validation:** At least one explicitly grantable permission must be selected. Universal permissions cannot be selected, submitted, added, or removed.
@@ -78,15 +78,11 @@
   {
     "name": "HR Business Partner",
     "description": "Can manage employees in assigned departments",
-    "permissionIds": ["uuid1", "uuid2", "uuid3"],
-    "permissionPolicies": {
-      "uuid1": "organization",
-      "uuid2": "organization"
-    }
+    "permissionIds": ["uuid1", "uuid2", "uuid3"]
   }
   ```
-  `permissionPolicies` is a map of permissionId → access policy. Only required for employee-data permissions; omit for tenant-wide permissions. Omitted entries default to `self`.
-- **Backend:** `RoleService.CreateRoleAsync()` â†’ [[frontend/cross-cutting/authorization|Authorization]]
+  Scope is intentionally absent from this payload. Scope is selected when assigning this role to a user.
+- **Backend:** `RoleService.CreateRoleAsync()` -> [[frontend/cross-cutting/authorization|Authorization]]
   1. Validate role name is unique within tenant
   2. Create `roles` record
   3. Create `role_permissions` records for each selected permission
@@ -94,8 +90,8 @@
 - **Validation:** Role name must be unique within tenant. At least one permission required. Role name max 50 characters. Name cannot match system role names
 - **DB:** `roles`, `role_permissions`
 
-### Step 5: Role Available for Assignment
-- **UI:** Redirect to role detail page showing: role name, description, permission list, "Assign to Users" button, "Edit" button. Role now appears in role dropdowns across the platform (user invitation, employee profile, job family setup)
+### Step 5: Security Role Available for Assignment
+- **UI:** Redirect to security role detail page showing: role name, description, permission list, "Assign to Users" button, "Edit" button. Role now appears in security-role dropdowns such as user invitation and employee profile. It does not appear in team creation.
 - **API:** N/A (navigation)
 - **Backend:** Role is immediately available in all role selection queries
 - **Validation:** N/A
@@ -104,7 +100,7 @@
 ## Variations
 
 ### When cloning an existing role
-- From role list, click a role â†’ "Clone Role" button
+- From role list, click a role -> "Clone Role" button
 - Pre-fills all permissions from the source role
 - Admin modifies name, description, and adjusts permissions
 - Saves as a new independent role (no link to source)
@@ -115,10 +111,10 @@
 - On save: all users with this role immediately get updated permissions
 - Active sessions pick up new permissions on next token refresh (within 15 minutes)
 
-### When role is linked to a Job Family Level
-- Role created here can be assigned to a [[Userflow/Org-Structure/job-family-setup|Job Family Level]]
-- Employees assigned to that job family level automatically receive this role
-- Changes to the role's permissions cascade to all employees in that job family level
+### When role is suggested by a Job Family Level
+- A security role created here can be selected as a suggested role for a [[Userflow/Org-Structure/job-family-setup|Job Family Level]]
+- Employees assigned to that job family level do not automatically receive this role. An authorized admin must confirm the assignment.
+- Changes to the role permissions affect only employees who already have the confirmed security role assignment.
 
 ## Error Scenarios
 
@@ -131,19 +127,19 @@
 
 ## Events Triggered
 
-- `RoleCreatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by audit logging
-- `AuditLogEntry` (action: `role.created`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
+- `RoleCreatedEvent` -> [[backend/messaging/event-catalog|Event Catalog]] - consumed by audit logging
+- `AuditLogEntry` (action: `role.created`) -> [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] â€” assign permissions to roles or override per employee
-- [[Userflow/Auth-Access/user-invitation|User Invitation]] â€” assign role during user invitation
-- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] â€” link role to job family levels for automatic assignment
-- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] â€” role assigned during onboarding
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] - assign permissions to roles or override per employee
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] - assign role during user invitation
+- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] - link role to job family levels as a suggested role prefill; admin confirmation is required
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] - role assigned during onboarding
 
 ## Module References
 
-- [[frontend/cross-cutting/authorization|Authorization]] â€” RBAC implementation, role and permission management
-- [[security/rbac-frontend|Rbac Frontend]] â€” role management UI components
-- [[frontend/cross-cutting/authentication|Authentication]] â€” backend session metadata includes permissions from assigned role
+- [[frontend/cross-cutting/authorization|Authorization]] - RBAC implementation, role and permission management
+- [[security/rbac-frontend|Rbac Frontend]] - role management UI components
+- [[frontend/cross-cutting/authentication|Authentication]] - backend session metadata includes permissions from assigned role
 

@@ -74,3 +74,4 @@ When the outage is resolved, admins call `PUT /api/v1/workforce/biometric-outage
 - [[modules/workforce-presence/device-sessions/overview|Device Sessions]]
 - [[modules/workforce-presence/overview|Workforce Presence]]
 - [[modules/agent-gateway/overview|Agent Gateway]]
+

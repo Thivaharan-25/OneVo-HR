@@ -99,12 +99,12 @@ POST /api/v1/users/{id}/permission-overrides
 
 ## Hierarchy Scoping
 
-Employee-data endpoints must apply hierarchy/access-policy scope after permission checks. The frontend never sends employee ID lists.
+Employee-data endpoints must apply assignment scope after permission checks. The frontend never sends employee ID lists.
 
 ```text
 IHierarchyScope.Resolve(userId, permissionCode, tenantId)
-  -> returns scope predicate based on access_policy:
-     self | direct_reports | reporting_tree | department | department_tree | org_unit_tree | organization
+  -> returns scope predicate based on user_roles.scope_type/scope_id:
+     Own | DirectReports | Department | Team | Organization
 ```
 
 ## Cache Invalidation

@@ -1,39 +1,43 @@
-# GDPR Consent — Testing
+# Legal & Privacy Acceptance - Testing
 
 **Module:** Auth
-**Feature:** GDPR Consent
-**Location:** `tests/ONEVO.Tests.Unit/Modules/Auth/ConsentServiceTests.cs`
+**Feature:** Legal & Privacy Acceptance
+**Location:** `tests/ONEVO.Tests.Unit/Modules/Auth/LegalAcceptanceServiceTests.cs`
 
 ---
 
 ## Unit Tests
 
 ```csharp
-public class ConsentServiceTests
+public class LegalAcceptanceServiceTests
 {
-    private readonly Mock<IGdprConsentRepository> _repoMock = new();
+    private readonly Mock<ILegalAcceptanceRepository> _repoMock = new();
     private readonly Mock<IConfigurationService> _configMock = new();
-    private readonly ConsentService _sut;
+    private readonly LegalAcceptanceService _sut;
 
     [Fact]
-    public async Task RecordAsync_MonitoringConsentWithdrawn_DisablesMonitoring()
+    public async Task RecordAsync_WorkPulseScreenshotNoticeMissing_DisablesScreenshotCollector()
     {
-        var command = new RecordConsentCommand { ConsentType = "monitoring", Consented = false };
+        var command = new RecordLegalDecisionCommand
+        {
+            DocumentType = "screenshot_notice",
+            Decision = "declined",
+            Source = "desktop-agent"
+        };
 
         await _sut.RecordAsync(command, default);
 
         _configMock.Verify(c => c.SetEmployeeOverrideAsync(
             It.Is<SetOverrideCommand>(o =>
-                o.ActivityMonitoring == false &&
                 o.ScreenshotCapture == false), default), Times.Once);
     }
 
     [Fact]
-    public async Task HasConsentAsync_NoRecord_ReturnsFalse()
+    public async Task HasRequiredDecisionAsync_NoRecord_ReturnsFalse()
     {
-        _repoMock.Setup(r => r.GetAsync(It.IsAny<Guid>(), "biometric", default)).ReturnsAsync((GdprConsentRecord?)null);
+        _repoMock.Setup(r => r.GetAsync(It.IsAny<Guid>(), "biometric_photo_consent", default)).ReturnsAsync((LegalAcceptanceRecord?)null);
 
-        var result = await _sut.HasConsentAsync(_userId, "biometric", default);
+        var result = await _sut.HasRequiredDecisionAsync(_userId, "biometric_photo_consent", default);
 
         result.Should().BeFalse();
     }
@@ -44,10 +48,11 @@ public class ConsentServiceTests
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| Record monitoring consent | Unit | Consent saved |
-| Withdraw monitoring | Unit | Monitoring disabled |
-| Check biometric consent | Unit | Returns true/false |
-| No consent record | Unit | Returns false |
+| Record Terms acceptance | Unit | Versioned acceptance saved |
+| Record Privacy Notice acknowledgement | Unit | Versioned acknowledgement saved |
+| Missing WorkPulse screenshot notice | Unit | Screenshot collector disabled |
+| Check biometric/photo consent | Unit | Returns true/false |
+| No legal acceptance record | Unit | Returns false |
 
 ## Related
 

@@ -10,12 +10,15 @@ Projects are the top-level containers for all work in the WMS. Each project hold
 
 Project members are employee-backed in Phase 1. The system stores both `user_id` and `employee_id` so project access can follow HR status, offboarding, department/team reporting, and company tenant scope.
 
+Projects can involve multiple team workspaces. Linked workspaces provide team context, member suggestions, task grouping, and reporting, but they do not automatically expose the project to every member of those workspaces. Project visibility comes from `PROJECT_MEMBER`.
+
 ## Key Entities
 
 | Entity | Role |
 |---|---|
 | `PROJECT` | Top-level container: name, status, dates |
-| `PROJECT_MEMBER` | Employee-backed user-to-project link with role (owner / member / viewer) |
+| `PROJECT_WORKSPACE` | Link between a project and an involved team workspace; context only, not access |
+| `PROJECT_MEMBER` | Employee-backed user-to-project link with local access level (admin / member / viewer) |
 | `EPIC` | Groups of related tasks within a project |
 | `MILESTONE` | Target deliverable with a due date |
 | `PROJECT_SETTING` | Timezone, working days, default priority |
@@ -35,8 +38,9 @@ Project members are employee-backed in Phase 1. The system stores both `user_id`
 1. User clicks "+ Create" in the Workforce panel header.
 2. System opens a create form: name, description, start date, end date, default priority, working days.
 3. User submits; system creates `PROJECT` plus project settings.
-4. Creator is automatically added as `PROJECT_MEMBER` with role `Owner`, including both `user_id` and `employee_id`.
-5. System redirects to the new project detail page.
+4. Creator is automatically added as `PROJECT_MEMBER` with local access level `admin`, including both `user_id` and `employee_id`.
+5. User can link one or more team workspaces to the project for context.
+6. System redirects to the new project detail page.
 
 ### Project Detail (`/workforce/projects/[id]`)
 
@@ -50,9 +54,9 @@ Project members are employee-backed in Phase 1. The system stores both `user_id`
 ### Add Project Member
 
 1. From project detail, user clicks "Add Member" (requires `projects:write`).
-2. User searches for an employee scoped to the same company tenant/workspace.
-3. User selects a role: owner, member, or viewer.
-4. System validates the employee is active and already belongs to the workspace.
+2. User searches for an active employee in the same company tenant. Linked workspaces can be used as suggested pools, but they are not required.
+3. User selects a local access level: admin, member, or viewer.
+4. System validates the employee is active and belongs to the tenant.
 5. System creates a `PROJECT_MEMBER` record with both `user_id` and `employee_id`.
 
 ### Cross-Company Project Participation
@@ -64,7 +68,7 @@ Cross-company projects are not created by switching an in-tenant operating scope
 1. User clicks "Request Change" on project detail.
 2. User fills the change form: type, description, impact.
 3. System creates a `CHANGE_REQUEST` with status `pending`.
-4. Project owners receive an Inbox notification to approve or reject.
+4. Project admins receive an Inbox notification to approve or reject.
 5. Outcome is logged in the change request history.
 
 ## Connection Points
@@ -76,7 +80,7 @@ Cross-company projects are not created by switching an in-tenant operating scope
 | Workforce -> Planner | Project sprints and roadmap are accessible from the Planner item |
 | Workforce -> Timesheets | Time is logged against tasks within this project |
 | People -> Employees | Project members are ONEVO employees; profile link on the member list |
-| Org Structure -> Teams | HR teams can sync into workspace membership through `workspace_hr_team_links` |
+| Org Structure -> Teams | HR teams can sync into workspace membership through `workspace_hr_team_links`; project membership remains explicit through `PROJECT_MEMBER` |
 | Inbox | Change request approvals and project notifications land in Inbox |
 
 ## Related Flows

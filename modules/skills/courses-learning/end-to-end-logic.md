@@ -5,6 +5,10 @@
 
 ---
 
+## Phase Rule
+
+Courses and learning are Phase 2. Do not build course enrollment routes, pages, jobs, or API integrations in Phase 1.
+
 ## Enroll in Course
 
 ### Flow

@@ -1,7 +1,7 @@
 # DEV5: Frontend App Foundation + Developer Platform Console
 
 **Track:** Frontend
-**Primary ownership:** Angular monorepo foundation (employee-app + management-app + shared library), auth UI, shared Angular architecture, standalone Developer Platform console
+**Primary ownership:** Angular monorepo foundation (setup-control-app + operations-lifecycle-app + dev-console + shared library), auth UI, shared Angular architecture
 **Current Unfinished Task:** Task 1 - Angular app foundation
 **Blocked By:** none for scaffold; DEV1 auth contracts for live auth
 
@@ -19,10 +19,10 @@ When Dev 5 asks to continue, start with the first unchecked item in **Current Un
 
 ### Acceptance Criteria
 
-- [ ] Angular workspace with `employee-app`, `management-app`, and `shared` library builds locally.
+- [ ] Angular workspace with `setup-control-app`, `operations-lifecycle-app`, `dev-console`, and `shared` library builds locally.
 - [ ] Angular Router route trees exist in each app for auth, dashboard, feature areas, and error pages.
 - [ ] `app.config.ts` in each app includes `provideRouter`, `provideHttpClient` with interceptors, `provideAnimationsAsync`, and `APP_INITIALIZER` for session init.
-- [ ] App shell (nav rail, topbar, `<router-outlet>`) exists in both apps via `@onevo/shared` shell components.
+- [ ] App shell (nav rail, topbar, `<router-outlet>`) exists in all three apps via `@onevo/shared` shell components.
 - [ ] Shared layout supports loading, empty, error, and forbidden states.
 - [ ] Baseline tests render app shell and protected route behavior.
 
@@ -37,8 +37,9 @@ When Dev 5 asks to continue, start with the first unchecked item in **Current Un
 
 ```bash
 ng build shared
-ng build employee-app
-ng build management-app
+ng build setup-control-app
+ng build operations-lifecycle-app
+ng build dev-console
 ng lint
 ng test shared
 ```

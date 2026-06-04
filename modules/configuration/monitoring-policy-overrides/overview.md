@@ -89,7 +89,7 @@ Valid `scopeType` values: `role`, `department`, `team`, `job-family`.
 
 ## Consent And Visibility
 
-Admin policy does not replace employee disclosure/consent. If required consent is missing, the resolved desktop collection policy is disabled.
+Admin policy does not replace employee disclosure/consent. If a required WorkPulse notice or consent is missing, the affected desktop collection category is disabled.
 
 Employees should be able to see the policy assigned to them according to tenant `privacy_mode`:
 

@@ -1,4 +1,4 @@
-# WorkSync Foundation — End-to-End Logic
+# WorkSync Foundation - End-to-End Logic
 
 **Module:** WorkSync
 **Feature:** Foundation
@@ -7,28 +7,43 @@
 
 ## Create Workspace
 
-```
+```text
 POST /api/v1/workspaces
   body: { name, slug, members?, teams_sync? }
-  → [RequirePermission("workspaces:create")]
-  → FluentValidation: name required, slug unique within tenant
-  → CreateWorkspaceHandler
-    → 1. Verify tenant has WorkSync enabled (feature flag check)
-    → 2. Create Workspace entity
-    → 3. Seed 3 system WorkspaceRole rows in same transaction:
-         Admin (is_system=true), Member (is_system=true), Viewer (is_system=true)
-    → 4. Add creator as Admin WorkspaceMember
-    → 5. SaveChanges (transaction commits workspace + roles + member atomically)
-    → 6. Publish WorkspaceCreatedEvent
-    → Return Result<WorkspaceDto>
-  → 201 Created
+  -> [RequirePermission("workspaces:create")]
+  -> FluentValidation: name required, slug unique within tenant
+  -> CreateWorkspaceHandler
+    -> 1. Verify tenant has WorkSync enabled
+    -> 2. Create Workspace entity
+    -> 3. Seed 3 system WorkspaceRole rows in same transaction:
+         Admin, Member, Viewer
+    -> 4. Add creator as Admin WorkspaceMember
+    -> 5. SaveChanges
+    -> 6. Publish WorkspaceCreatedEvent
+    -> Return Result<WorkspaceDto>
+  -> 201 Created
 ```
 
 ## Invite Workspace Member
 
+```text
+POST /api/v1/workspaces/{id}/members
+  -> [RequirePermission("workspaces:manage")]
+  -> AddWorkspaceMemberHandler
+    -> 1. Verify workspace exists and belongs to tenant
+    -> 2. Verify user exists in tenant and has an active employee record
+    -> 3. Check user is not already a member
+    -> 4. Resolve workspace_role_id from role name
+    -> 5. Create WorkspaceMember row
+    -> 6. Publish WorkspaceMemberAddedEvent
+    -> Return Result<WorkspaceMemberDto>
+```
+
+Workspace membership controls access to workspace-scoped resources. It does not automatically grant project access. Project visibility is controlled by `project_members`.
+
 ## Microsoft Teams Workspace Sync
 
-```
+```text
 POST /api/v1/workspaces
   body.teams_sync: { create_team?, existing_team_id?, create_default_channel? }
   -> CreateWorkspaceHandler
@@ -51,7 +66,7 @@ POST /api/v1/workspaces
 
 ## Microsoft Teams Eligibility
 
-```
+```text
 GET /api/v1/workspaces/{id}/teams/eligibility
   -> [RequirePermission("workspaces:manage")]
   -> WorkspaceTeamsEligibilityHandler
@@ -62,7 +77,7 @@ GET /api/v1/workspaces/{id}/teams/eligibility
 
 ## Link Existing Microsoft Team
 
-```
+```text
 GET /api/v1/workspaces/{id}/teams/candidates
   -> Find Teams groups visible to caller
   -> Compare Teams members to workspace members
@@ -78,47 +93,35 @@ POST /api/v1/workspaces/{id}/teams/link
     -> 5. Optionally map ONEVO channels to Teams channels
 ```
 
-```
-POST /api/v1/workspaces/{id}/members
-  → [RequirePermission("workspaces:manage")]
-  → AddWorkspaceMemberHandler
-    → 1. Verify workspace exists and belongs to tenant
-    → 2. Verify user exists in tenant (must be a tenant user)
-    → 3. Check user not already a member
-    → 4. Resolve workspace_role_id from role name
-    → 5. Create WorkspaceMember row
-    → 6. Publish WorkspaceMemberAddedEvent
-    → Return Result<WorkspaceMemberDto>
-```
+## Workspace Context Resolution
 
-## Workspace Context Resolution (Every WorkSync Request)
-
-```
-Every WorkSync API request:
-  → TenantResolutionMiddleware: resolve tenant_id from JWT sub claim
-  → WorkspaceResolutionMiddleware:
-      1. Read workspace_id from JWT claim "workspace_id"
-         OR X-Workspace-Id header (header takes precedence)
-      2. Verify user is member of workspace_id
+```text
+Workspace-scoped WorkSync API request:
+  -> TenantResolutionMiddleware resolves tenant_id from session/JWT
+  -> WorkspaceResolutionMiddleware:
+      1. Read workspace_id from backend session or X-Workspace-Id header
+      2. Verify user is an active workspace member
       3. Set ICurrentWorkspace.WorkspaceId
-  → Global query filters: WHERE tenant_id = ? AND workspace_id = ?
-  → Handler executes with scoped workspace context
+  -> Handler executes with tenant + workspace context
 ```
+
+Project-scoped requests do not require one active workspace context. They resolve access from `project_members`. They use `project_workspaces` only when an action needs team/workspace context, such as grouping tasks or selecting suggested members.
 
 ## Remove Member
 
-```
+```text
 DELETE /api/v1/workspaces/{id}/members/{userId}
-  → [RequirePermission("workspaces:manage")]
-  → RemoveWorkspaceMemberHandler
-    → 1. Verify requester is workspace Admin
-    → 2. Cannot remove yourself if you are the last Admin
-    → 3. Soft-cascade: remove user from project_members in this workspace
-    → 4. Delete WorkspaceMember row (hard delete — no soft delete for membership)
-    → 5. Publish WorkspaceMemberRemovedEvent
+  -> [RequirePermission("workspaces:manage")]
+  -> RemoveWorkspaceMemberHandler
+    -> 1. Verify requester is workspace Admin
+    -> 2. Cannot remove yourself if you are the last Admin
+    -> 3. Delete WorkspaceMember row
+    -> 4. Re-evaluate workspace-scoped access only
+    -> 5. Do not remove project_members automatically
+    -> 6. Publish WorkspaceMemberRemovedEvent
 ```
 
-### Error Scenarios
+## Error Scenarios
 
 | Scenario | HTTP | Error |
 |:---------|:-----|:------|

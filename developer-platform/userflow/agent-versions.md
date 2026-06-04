@@ -1,5 +1,7 @@
 # Agent Version and Ring Management Flows
 
+> Phase 2 only. These flows are absent from Phase 1 navigation and API scope.
+
 ## Purpose
 
 The Agent Version Manager controls which version of the OneVo desktop agent is deployed to tenants, how versions roll out across deployment rings, and how to respond to a bad release.

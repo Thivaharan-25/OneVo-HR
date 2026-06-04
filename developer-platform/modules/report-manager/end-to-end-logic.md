@@ -22,4 +22,4 @@
 
 - Export payload must record filters and requester.
 - Export access expires.
-- Report generation failures appear in Background Jobs or report export status.
+- Report generation failures appear in report export status in Phase 1; standalone Background Jobs visibility is Phase 2.

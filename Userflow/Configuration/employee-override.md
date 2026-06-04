@@ -10,7 +10,7 @@
 ## Preconditions
 
 - Tenant monitoring configured → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
-- Employee has GDPR consent (for enabling features) → [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- Employee has completed required Legal & Privacy notice/consent for affected collection -> [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
@@ -38,13 +38,13 @@
 ## Variations
 
 ### Employee consent check
-- If enabling a feature the employee hasn't consented to → warning: "Employee has not given GDPR consent for this feature"
+- If enabling a feature whose notice/consent is missing -> warning: "Employee has not completed the required Legal & Privacy item for this feature"
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| No consent | Warning | "Consent not given — feature will not activate until consent is provided" |
+| Missing notice/consent | Warning | "Required Legal & Privacy item is incomplete - feature will not activate until completed" |
 | Agent not installed | Info | "Employee has no desktop agent — override saved but not active" |
 
 ## Events Triggered
@@ -55,7 +55,7 @@
 
 - [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
 - [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]]
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 
 ## Module References
 

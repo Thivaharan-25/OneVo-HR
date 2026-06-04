@@ -16,8 +16,10 @@
 ## Core Rules
 
 - Tenant creation collects company registration/profile data, country, timezone, and currency as tenant profile data.
-- Tenant creation does not write `legal_entities`.
-- Separate operating companies are separate tenants.
+- Tenant creation does not write deprecated registration-profile rows.
+- Activation seeds one primary legal entity from the tenant profile so Setup / Control has a starting point.
+- Additional operating companies that belong to the same customer account are added as legal entities inside the same tenant.
+- Separate tenants are used only for separate customer accounts that must remain isolated.
 - The same email can be invited to multiple tenants. Accepting one invitation grants access only to that tenant and does not merge tenant data.
 - Owner invite email is sent only by the explicit invite action. Profile creation, commercial selection, setup completion, and activation must not send it automatically.
 
@@ -30,7 +32,7 @@
 - **API:** `POST /admin/v1/tenants`
 - **Backend:** Creates `tenants.status = provisioning`, stores profile/contact metadata, and creates provisioning state.
 - **Validation:** unique slug/company where required, valid email, valid country/timezone/currency, valid industry, positive estimated employee count when supplied, and registration/profile validation where product requires it.
-- **DB:** `tenants`, provisioning state/checklist records.
+- **DB:** `tenants`, provisioning state/checklist records. Primary `legal_entities` is created during activation/setup seeding.
 
 ### Step 2: Operator Commercial Boundary
 
@@ -106,3 +108,4 @@ Setup service rule:
 - [[developer-platform/modules/role-template-manager/overview|Role Template Manager]]
 - [[modules/shared-platform/subscriptions-billing/overview|Subscriptions & Billing]]
 - [[modules/configuration/app-allowlist/overview|App Allowlist]]
+

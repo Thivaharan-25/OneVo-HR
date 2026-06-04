@@ -1,8 +1,8 @@
 ﻿# Frontend Architecture
 
-**Angular 21** | TypeScript | Angular Material | Tailwind CSS v4 | Angular Signals | Angular Router | Reactive Forms + Zod | SignalR | Two-app monorepo
+**Angular 21** | TypeScript | Angular Material | Tailwind CSS v4 | Angular Signals | Angular Router | Reactive Forms + Zod | SignalR | Three-app monorepo
 
-Two customer-facing apps: `employee-app` (`app.{tenant}.onevo.com`) and `management-app` (`manage.{tenant}.onevo.com`), sharing a `shared` Angular library.
+Three apps: `setup-control-app`, `operations-lifecycle-app`, and internal `dev-console`, sharing a `shared` Angular library.
 
 ---
 

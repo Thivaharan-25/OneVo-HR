@@ -1,5 +1,7 @@
 # Device Management
 
+> Phase 2 only. This module is not part of Phase 1 navigation or `/admin/v1/*` API scope. Phase 1 may surface only aggregate agent/device health indicators inside Platform Health.
+
 ## Purpose
 
 Device Management provides cross-tenant visibility into all registered ONEVO desktop agent devices and their current state. It allows operators to investigate device issues and queue approved support commands — without exposing any employee activity content.
@@ -25,8 +27,8 @@ Device Management provides cross-tenant visibility into all registered ONEVO des
 
 | Route | Permission |
 |---|---|
-| `/operations/devices` | `platform.health.read` |
-| Queue commands | `platform.health.manage` |
+| `/operations/devices` | Phase 2 permission contract |
+| Queue commands | Phase 2 permission contract |
 
 ## Key Rules
 

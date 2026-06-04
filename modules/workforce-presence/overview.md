@@ -1,8 +1,8 @@
- # Module: Workforce Presence
+﻿ # Module: Workforce Presence
 
 **Feature Folder:** `Application/Features/WorkforcePresence`
-**Phase:** 1 — Build
-**Pillar:** 2 — Workforce Intelligence
+**Phase:** 1 â€” Build
+**Pillar:** 2 â€” Workforce Intelligence
 **Owner:** Dev 3 + Dev 4 (Week 2)
 **Tables:** 12
 **Task Files:** [[current-focus/DEV3-workforce-presence-setup|DEV3: Workforce Presence]], [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]
@@ -14,12 +14,12 @@
 ## Purpose
 
 Single source of truth for **"is this employee present and working?"** Unifies data from three sources:
-1. **Biometric terminals** — clock-in/out events from fingerprint devices
-2. **Desktop agent** — device sessions (active/idle cycles) via [[modules/agent-gateway/overview|Agent Gateway]]
+1. **Biometric terminals** â€” clock-in/out events from fingerprint devices
+2. **Desktop agent** â€” device sessions (active/idle cycles) via [[modules/agent-gateway/overview|Agent Gateway]]
 3. **Policy-gated web/tray clock events** - allowed for remote/hybrid work and approved outage scenarios
 4. **Manual entries** - admin corrections and overrides
 
-Produces `presence_sessions` — one unified row per employee per day — consumed by [[modules/payroll/overview|Payroll]], [[modules/productivity-analytics/overview|Productivity Analytics]], and [[modules/exception-engine/overview|Exception Engine]].
+Produces `presence_sessions` â€” one unified row per employee per day â€” consumed by [[modules/payroll/overview|Payroll]], [[modules/productivity-analytics/overview|Productivity Analytics]], and [[modules/exception-engine/overview|Exception Engine]].
 
 ---
 
@@ -28,7 +28,7 @@ Produces `presence_sessions` — one unified row per employee per day — consum
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context, manager hierarchy |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context, position-derived reporting hierarchy |
 | **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Monitoring toggles, employee overrides |
 | **Consumed by** | [[modules/payroll/overview\|Payroll]] | `IWorkforcePresenceService` | Actual worked hours for payroll runs |
 | **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IWorkforcePresenceService` | Attendance data for reports |
@@ -95,13 +95,13 @@ API endpoints:
 
 #### `presence_sessions`
 
-Unified presence — **one row per employee per day**. Combines biometric + agent data.
+Unified presence â€” **one row per employee per day**. Combines biometric + agent data.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `employee_id` | `uuid` | FK â†’ employees |
 | `date` | `date` | The work day |
 | `first_seen_at` | `timestamptz` | First sign of presence (any source) |
 | `last_seen_at` | `timestamptz` | Last sign of presence |
@@ -121,9 +121,9 @@ Tracks designated laptop active vs idle. **Multiple rows per employee per day** 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
-| `device_id` | `uuid` | FK → registered_agents |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `employee_id` | `uuid` | FK â†’ employees |
+| `device_id` | `uuid` | FK â†’ registered_agents |
 | `session_start` | `timestamptz` | When active period began |
 | `session_end` | `timestamptz` | When active period ended (null if ongoing) |
 | `active_minutes` | `int` | Minutes with input activity |
@@ -139,8 +139,8 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `employee_id` | `uuid` | FK â†’ employees |
 | `break_start` | `timestamptz` | |
 | `break_end` | `timestamptz` | Null if ongoing |
 | `break_type` | `varchar(30)` | `lunch`, `prayer`, `smoke`, `personal`, `other` |
@@ -151,15 +151,15 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 
 ---
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module â€” MediatR)
 
 > These events are published and consumed within this module only. They never leave the module.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | â€” | â€” |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module â€” MediatR INotification)
 
 ### Publishes
 
@@ -186,27 +186,27 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 ## Key Business Rules
 
 1. **Presence session is computed, not directly written.** It aggregates from `attendance_records` (biometric/web/tray/outage/manual), `device_sessions` (agent), and corrections.
-2. **Device sessions can overlap with biometric clock-in.** The unified `presence_sessions` deduplicates — uses earliest first_seen and latest last_seen.
+2. **Device sessions can overlap with biometric clock-in.** The unified `presence_sessions` deduplicates â€” uses earliest first_seen and latest last_seen.
 3. **Break detection:** If agent reports idle > configurable threshold (default 15 min), auto-create a `break_record` with `auto_detected = true`.
 4. **Overtime:** Must be pre-approved via workflow or auto-flagged when `total_present_minutes > scheduled_minutes`.
 5. **Data flow:** Biometric and policy-gated clock events write to `attendance_records`. Agent data arrives via [[modules/agent-gateway/overview|Agent Gateway]] -> `device_sessions`. A Hangfire job reconciles both into `presence_sessions` every 5 minutes during work hours.
 6. **Clock-in source policy:** Office employees clock in through biometric terminals only, unless their legal entity has `agent_clock_in_enabled = true` (which allows all employees in that entity to clock in/out via web or tray app). Remote employees always clock in/out via the tray app. Hybrid employees use biometric when onsite and tray when remote. Field employees follow their legal entity's policy. Onsite tray clock-in (non-remote) is only available when the employee's legal entity has `agent_clock_in_enabled = true` or an active biometric outage override exists.
-   - **The tray app / web Clock In / Clock Out option is hidden** unless the employee's `work_type` is `remote` or `hybrid`, OR the employee's legal entity (`department.legal_entity_id → legal_entities.agent_clock_in_enabled`) is `true`.
+   - **The tray app / web Clock In / Clock Out option is hidden** unless the employee's `work_type` is `remote` or `hybrid`, OR the employee's legal entity (`employees.legal_entity_id -> legal_entities.agent_clock_in_enabled`) is `true`.
    - Scope of this flag: a Super Admin can set `agent_clock_in_enabled` on any legal entity within the tenant; a non-Super Admin with `attendance:manage` can only set it on the legal entity their own department belongs to.
-   - **Remote tray clock-in and clock-out each require a webcam photo** (identity verification). Photo is captured every time — not just on first setup.
+   - **Remote tray clock-in and clock-out each require a webcam photo** (identity verification). Photo is captured every time â€” not just on first setup.
 7. **IDE extension boundary:** WorkSync and IDE time logging can create `time_logs`, but they must never create Workforce Presence clock-in/out records.
 
 ---
 
-## Frontend — Presence Card View
+## Frontend â€” Presence Card View
 
 The workforce-presence module surfaces on the Workforce pillar default screen (`/workforce`) as a live card grid.
 
 **Card per employee shows:**
-- Online status dot — sourced from this module (clocked-in, break, offline)
-- Productivity score — sourced from productivity-analytics module
-- Current task — sourced from WMS task module
-- Agent alert banner — sourced from exception-engine (when flagged)
+- Online status dot â€” sourced from this module (clocked-in, break, offline)
+- Productivity score â€” sourced from productivity-analytics module
+- Current task â€” sourced from WMS task module
+- Agent alert banner â€” sourced from exception-engine (when flagged)
 
 **Replaced:** The previous 3-tab design (Activity tab, Work Insights tab, Online Status tab) is replaced by this single card grid. Online status is embedded in each card. Productivity is embedded in each card. Activity is the drill-down at `/workforce/[employeeId]`.
 
@@ -250,7 +250,7 @@ See [[Userflow/Workforce-Presence/presence-overview|Presence Overview]] for the 
 
 | Job | Schedule | Purpose |
 |:----|:---------|:--------|
-| `ReconcilePresenceSessions` | Every 5 min (work hours) | Merge biometric + agent data → `presence_sessions` |
+| `ReconcilePresenceSessions` | Every 5 min (work hours) | Merge biometric + agent data â†’ `presence_sessions` |
 | `FlagUnresolvedAbsences` | Daily 10:00 AM | Flag employees with no presence data for the day |
 | `CloseOpenSessions` | Daily 11:59 PM | Close any open device sessions and break records |
 
@@ -259,29 +259,30 @@ See [[Userflow/Workforce-Presence/presence-overview|Presence Overview]] for the 
 ## Important Notes
 
 - **Presence session vs device session:** `presence_sessions` is ONE row per employee per day (unified). `device_sessions` can have MULTIPLE rows per day (one per laptop active/idle cycle). Don't confuse them.
-- **This module does NOT handle screenshots or app tracking** — that's [[modules/activity-monitoring/overview|Activity Monitoring]].
+- **This module does NOT handle screenshots or app tracking** â€” that's [[modules/activity-monitoring/overview|Activity Monitoring]].
 - **Biometric device management** is exposed through Workforce Presence routes (`/api/v1/workforce/devices`) because clock-in/out is a workforce function. Identity Verification owns photo/fingerprint verification policy and review, but Workforce Presence owns terminal registration, enrollment, and clock event ingestion.
 - **Payroll reads from this module** via `IWorkforcePresenceService.GetTotalWorkedHoursAsync()`.
 
 ## Features
 
-- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]] — Unified presence (one row/employee/day from biometric + agent + manual) — frontend: [[modules/workforce-presence/presence-sessions/frontend|Frontend]]
-- [[modules/workforce-presence/device-sessions/overview|Device Sessions]] — Device active/idle cycle tracking (multiple rows/day per laptop)
-- [[Userflow/Workforce-Presence/break-tracking|Break Tracking]] — Break records with auto-detection from agent idle threshold
-- [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]] — Shift definitions, weekly schedule patterns, employee assignments
-- [[modules/workforce-presence/overtime/overview|Overtime]] — Overtime request and approval workflow
-- [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections]] — Manager corrections to presence data
+- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]] â€” Unified presence (one row/employee/day from biometric + agent + manual) â€” frontend: [[modules/workforce-presence/presence-sessions/frontend|Frontend]]
+- [[modules/workforce-presence/device-sessions/overview|Device Sessions]] â€” Device active/idle cycle tracking (multiple rows/day per laptop)
+- [[Userflow/Workforce-Presence/break-tracking|Break Tracking]] â€” Break records with auto-detection from agent idle threshold
+- [[modules/workforce-presence/shifts-schedules/overview|Shifts Schedules]] â€” Shift definitions, weekly schedule patterns, employee assignments
+- [[modules/workforce-presence/overtime/overview|Overtime]] â€” Overtime request and approval workflow
+- [[modules/workforce-presence/attendance-corrections/overview|Attendance Corrections]] â€” Manager corrections to presence data
 
 ---
 
 ## Related
 
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — All presence data is tenant-scoped
-- [[backend/messaging/event-catalog|Event Catalog]] — `PresenceSessionStarted`, `PresenceSessionEnded`, `BreakExceeded`, `OvertimeRequested`
-- [[backend/messaging/error-handling|Error Handling]] — Deduplication of biometric + agent data in reconciliation job
-- [[security/compliance|Compliance]] — Presence history for payroll and legal record-keeping
-- [[database/migration-patterns|Migration Patterns]] — `presence_sessions` UNIQUE on `(tenant_id, employee_id, date)`
-- [[current-focus/DEV3-workforce-presence-setup|DEV3: Workforce Presence]] — Presence and shift setup task file
-- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]] — Biometric integration task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] â€” All presence data is tenant-scoped
+- [[backend/messaging/event-catalog|Event Catalog]] â€” `PresenceSessionStarted`, `PresenceSessionEnded`, `BreakExceeded`, `OvertimeRequested`
+- [[backend/messaging/error-handling|Error Handling]] â€” Deduplication of biometric + agent data in reconciliation job
+- [[security/compliance|Compliance]] â€” Presence history for payroll and legal record-keeping
+- [[database/migration-patterns|Migration Patterns]] â€” `presence_sessions` UNIQUE on `(tenant_id, employee_id, date)`
+- [[current-focus/DEV3-workforce-presence-setup|DEV3: Workforce Presence]] â€” Presence and shift setup task file
+- [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]] â€” Biometric integration task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/agent-gateway/overview|Agent Gateway]], [[modules/identity-verification/overview|Identity Verification]]
+

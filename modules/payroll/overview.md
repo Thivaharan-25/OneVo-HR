@@ -287,3 +287,5 @@ External payroll system connections.
 - Payroll task file (deferred to Phase 2) — Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/leave/overview|Leave]]
+
+

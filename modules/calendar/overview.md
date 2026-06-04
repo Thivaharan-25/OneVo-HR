@@ -11,9 +11,9 @@
 
 ## Purpose
 
-Company-wide and team calendar events. Aggregates leave, holidays, review cycles, custom events, country holidays, and connected Google/Outlook events into a unified calendar view.
+Company-wide, legal-entity-wide, and team calendar events. Aggregates leave, holidays, review cycles, custom events, country holidays, and connected Google/Outlook events into a unified calendar view.
 
-Phase 1 includes country holiday sync and external calendar sync. Company country is the default holiday calendar source; admins can disable holiday sync or override the calendar country from the Calendar screen without changing the company registration profile country.
+Phase 1 includes country holiday sync and external calendar sync. Legal entity country is the default holiday calendar source for employees in that legal entity; admins can disable holiday sync or override the calendar country from the Calendar screen without changing the legal entity registration country.
 
 The Calendar's sidebar also surfaces three workforce management features: **Shifts & Schedules** (shift creation, schedule templates, employee assignments), **Attendance Correction** (manager corrections to presence data), and **Overtime** (overtime request and approval). The backend logic for all three lives in [[modules/workforce-presence/overview|Workforce Presence]]; the UI entry points are the Calendar sidebar panel.
 
@@ -26,7 +26,7 @@ The Calendar's sidebar also surfaces three workforce management features: **Shif
 | **Depends on** | [[modules/leave/overview\|Leave]] | `ILeaveService` | Approved leave for calendar |
 | **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | — | Holidays |
 | **Depends on** | [[database/performance\|Performance]] | — | Review cycle dates |
-| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `CompanyProfileCountrySet` | Default holiday calendar country from company country |
+| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `LegalEntityCountrySet` | Default holiday calendar country from legal entity country |
 | **Depends on** | External API | Nager.Date | Phase 1 free country holiday source |
 | **Consumed by** | [[modules/leave/overview\|Leave]] | `ICalendarConflictService` | Conflict detection for leave requests |
 
@@ -110,14 +110,14 @@ Used when `audience_type = individual`.
 
 ### `holiday_calendar_settings`
 
-Controls country holiday sync per tenant/company.
+Controls country holiday sync per legal entity.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `registration_profile_id` | `uuid` | Optional FK -> company_registration_profiles; nullable for tenant default |
-| `default_country_code` | `char(2)` | Company country |
+| `legal_entity_id` | `uuid` | FK -> legal_entities |
+| `default_country_code` | `char(2)` | Legal entity country |
 | `override_country_code` | `char(2)` | Nullable admin override from Calendar screen |
 | `effective_country_code` | `char(2)` | Override or default |
 | `holiday_sync_enabled` | `boolean` | Admin can stop sync |
@@ -163,8 +163,8 @@ Sync state and idempotency between ONEVO events and Google/Outlook events.
 2. **Conflict detection** — `ICalendarConflictService` queries overlapping events for a given employee + date range. Excludes `leave` and `holiday` event types. Severity: `review` and `company` events are **high**, `team` and `personal` are **medium**. See [[Userflow/Calendar/conflict-detection|Leave-Calendar Conflict Detection]].
 3. **Hierarchy-scoped audience** — `audience_type` determines who receives the event. Available options are filtered by `IHierarchyScope`: a user can only target entities in their reporting chain. Super Admin bypasses scoping. For `department`/`team` audiences, participants are resolved server-side before conflict checks run.
 4. **External sync** — events with `source_type = external_sync` are read-only unless the connection is `two_way` and the current user owns the connection.
-5. **Company holiday default** — when company country is set, Calendar creates `holiday_calendar_settings` with `default_country_code` from the company country.
-6. **Holiday override** — Calendar admins can stop country holiday sync or set `override_country_code`. This changes the calendar only; it does not change the company registration profile country.
+5. **Legal entity holiday default** — when legal entity country is set, Calendar creates `holiday_calendar_settings` with `default_country_code` from the legal entity country.
+6. **Holiday override** — Calendar admins can stop country holiday sync or set `override_country_code`. This changes the calendar only; it does not change the legal entity country.
 7. **Country holiday provider** — Phase 1 uses Nager.Date for public holidays by year and ISO country code. Imported holidays are stored as `calendar_events` with `event_type = holiday`, `source_type = holiday`, and `external_source = country_holiday`.
 8. **Google/Outlook sync** — users connect Google Calendar or Outlook Calendar with OAuth. Sync can be pull-only, push-only, two-way, or disabled per connection. Provider event IDs are tracked in `external_calendar_event_links` to prevent duplicates.
 
@@ -193,7 +193,7 @@ Sync state and idempotency between ONEVO events and Google/Outlook events.
 | `LeaveApproved` | [[modules/leave/overview\|Leave]] | Create a `leave` calendar event for the approved leave period |
 | `ReviewCycleStarted` | [[modules/performance/overview\|Performance]] | Create a `review` calendar event for the cycle dates |
 | `EmployeeHired` | [[modules/core-hr/overview\|Core HR]] | Seed onboarding events for new employee |
-| `CompanyProfileCountrySet` | [[modules/org-structure/overview\|Org Structure]] | Create default holiday calendar settings from the company country |
+| `LegalEntityCountrySet` | [[modules/org-structure/overview\|Org Structure]] | Create default holiday calendar settings from the legal entity country |
 
 ---
 
@@ -202,7 +202,7 @@ Sync state and idempotency between ONEVO events and Google/Outlook events.
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/calendar` | Authenticated | Calendar events for date range |
-| GET | `/api/v1/calendar/holiday-settings` | `calendar:admin` | Get tenant/company holiday calendar settings |
+| GET | `/api/v1/calendar/holiday-settings` | `calendar:admin` | Get legal entity holiday calendar settings |
 | PUT | `/api/v1/calendar/holiday-settings/{id}` | `calendar:admin` | Enable/disable holiday sync or override country calendar |
 | POST | `/api/v1/calendar/holiday-settings/{id}/sync` | `calendar:admin` | Pull public holidays for selected year/country |
 | GET | `/api/v1/calendar/connections` | Authenticated | List current user's Google/Outlook calendar connections |

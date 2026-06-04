@@ -89,23 +89,23 @@
 
 ---
 
-## Flow 5 — Company Context in Topbar
+## Flow 5 — Tenant / Legal Entity Context in Topbar
 
 **Trigger:** User clicks the company name in the topbar
 
 ### Step 1: Dropdown Opens
 
-- **UI:** Dropdown shows current company context, Company Profile, and Connected Companies when permitted. It must not present connected companies as legal entity/session switching.
+- **UI:** Dropdown shows current tenant and legal entity context, Legal Entities, and Connected Companies when permitted. It must not present connected companies as legal-entity/session switching.
 
-### Step 2: User Opens Company Profile Or Connected Companies
+### Step 2: User Opens Legal Entities Or Connected Companies
 
-- **Company Profile:** Navigates to the current tenant's profile/registration settings.
+- **Legal Entities:** Navigates to legal entity setup for single-company or multi-company structure.
 - **Connected Companies:** Opens permission-scoped connected-company views or management. Auth session remains anchored to the current company tenant.
 - **Audit:** Cross-company views and actions are audit logged with requester tenant and source tenant.
 
 ### Step 3: Static Label For Basic Users
 
-- **UI:** Company name renders as a static label when the user has no company profile or connected-company permissions.
+- **UI:** Company name renders as a static label when the user has no legal-entity or connected-company permissions.
 
 ---
 

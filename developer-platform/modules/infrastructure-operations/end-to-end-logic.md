@@ -1,5 +1,7 @@
 # Infrastructure Operations End-to-End Logic
 
+> Phase 2 only as a standalone operations module. Phase 1 can expose aggregate dependency status through Platform Health only.
+
 ## Load Infrastructure View
 
 1. Operator opens System Operations -> Infrastructure.

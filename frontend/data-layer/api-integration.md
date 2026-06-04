@@ -122,7 +122,7 @@ Non-browser clients (IDE extension, WorkPulse Agent, platform-admin server) use 
 ## Environment Configuration
 
 ```typescript
-// projects/employee-app/src/environments/environment.ts
+// projects/operations-lifecycle-app/src/environments/environment.ts
 export const environment = {
   production: false,
   apiBaseUrl: 'http://localhost:5000',
@@ -131,7 +131,7 @@ export const environment = {
 ```
 
 ```typescript
-// projects/employee-app/src/app/app.config.ts
+// projects/operations-lifecycle-app/src/app/app.config.ts
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {

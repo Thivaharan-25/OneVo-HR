@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Data Retention manages the policies that determine how long different categories of ONEVO data are kept before deletion. It works in conjunction with Compliance Center's legal holds (which override retention deletion) and Background Jobs (which execute retention sweeps).
+Data Retention manages the policies that determine how long different categories of ONEVO data are kept before deletion. It works in conjunction with Compliance Center's legal holds, which override retention deletion. Phase 1 exposes retention sweep status only as a read-only Platform Health summary; the standalone Background Jobs screen is Phase 2.
 
 ## Database Tables / Systems Controlled
 
@@ -10,7 +10,7 @@ Data Retention manages the policies that determine how long different categories
 |---|---|
 | `retention_policies` | Read + write — policy definitions per data category |
 | `legal_holds` | Read — hold protection state (written by Compliance Center) |
-| Retention sweep job | Monitor and trigger via Background Jobs |
+| Retention sweep job | Read-only sweep health surfaced through Platform Health in Phase 1; standalone monitoring/triggering is Phase 2 |
 | Audit log | Write every policy change with old/new values and reason |
 
 ## Retention Periods (defaults)
@@ -50,5 +50,5 @@ Data Retention manages the policies that determine how long different categories
 
 - [[developer-platform/modules/data-retention/end-to-end-logic|Data Retention End-to-End Logic]]
 - [[developer-platform/modules/compliance-center/overview|Compliance Center]] — legal holds
-- [[developer-platform/modules/background-jobs/overview|Background Jobs]] — retention sweep execution
+- [[developer-platform/modules/background-jobs/overview|Background Jobs]] — Phase 2 standalone retention sweep execution/operations
 - [[developer-platform/modules/audit-console/overview|Audit Console]] — retention rules for audit log data

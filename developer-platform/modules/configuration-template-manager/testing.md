@@ -1,6 +1,6 @@
-# Configuration Template Manager — Testing
+﻿# Configuration Template Manager â€” Testing
 
-**Module:** Developer Platform → Configuration Template Manager
+**Module:** Developer Platform â†’ Configuration Template Manager
 **Phase:** Phase 1
 
 ---
@@ -9,8 +9,8 @@
 
 - One active tenant with `core_hr`, `leave`, `monitoring`, `configuration` modules entitled
 - One active tenant with no modules entitled (for entitlement guard tests)
-- One global role template with `template_key = "team-lead"` and `source_template_id` applied to the first tenant (i.e. a matching role exists in `roles`)
-- One global role template with `template_key = "engineer"` NOT yet applied to the first tenant
+- One global role template with `template_key = "team-lead"` available for position template linkage
+- One global role template with `template_key = "engineer"` available for position template linkage and materialized during position template apply
 - Platform operator account with `platform.config_templates.manage`
 - Platform read-only account with `platform.config_templates.read` only
 
@@ -18,10 +18,10 @@
 
 ## Template Creation
 
-### TC-CT-001: Create configuration template — happy path
+### TC-CT-001: Create configuration template â€” happy path
 **Input:** `{ template_key: "uk-office-defaults", template_type: "configuration", name: "UK Office Defaults", payload_json: { "timezone": "Europe/London", "currency_code": "GBP", "work_week_days": [1,2,3,4,5] } }`
 **Action:** `POST /admin/v1/configuration-templates`
-**Expected:** HTTP 201 — template created with `version = 1`, `is_active = true`, `is_system = false`
+**Expected:** HTTP 201 â€” template created with `version = 1`, `is_active = true`, `is_system = false`
 
 ### TC-CT-002: Duplicate template_key rejected
 **Input:** Same `template_key` as an existing template
@@ -51,11 +51,11 @@
 ### TC-CT-007: Clone system template creates editable copy
 **Input:** System template
 **Action:** `POST /admin/v1/configuration-templates/{id}/clone`
-**Expected:** HTTP 201 — new template with `is_system = false`, `version = 1`, new unique `template_key` (appended `-copy`)
+**Expected:** HTTP 201 â€” new template with `is_system = false`, `version = 1`, new unique `template_key` (appended `-copy`)
 
 ---
 
-## Apply — Configuration Template
+## Apply â€” Configuration Template
 
 ### TC-CT-008: Apply configuration template writes tenant_settings
 **Input:** Configuration template with `timezone = "Europe/London"`, `currency_code = "GBP"`
@@ -73,63 +73,63 @@
 
 ---
 
-## Apply — Job Family Template (Critical: Deferred Role Linking)
+## Apply - Position Template Pack
 
-### TC-CT-011: Apply job family — role already applied — links immediately
-**Setup:** Role with `source_template_id = "engineer-role-template-id"` already exists for the tenant
-**Input:** Job family template with level `rank=1, role_template_id = "engineer-role-template-id"`
+### TC-CT-011: Apply position template pack - creates departments and positions
+**Input:** Position template pack with Leadership and Engineering departments and three positions
 **Action:** Apply
-**Expected:** `job_levels.default_role_id` = existing role ID; `job_levels.pending_role_template_id = null`; no warnings returned
+**Expected:** Tenant departments are created if missing; tenant `positions` rows are created with matching `position_key`, `position_name`, department, and reports-to links
 
-### TC-CT-012: Apply job family — role not yet applied — stores pending link
-**Setup:** No role with `source_template_id = "engineer-role-template-id"` exists for tenant
-**Input:** Job family template with level `rank=1, role_template_id = "engineer-role-template-id"`
+### TC-CT-012: Apply position template pack - linked role template materializes role
+**Setup:** Tenant is entitled to the modules used by the linked role template
+**Input:** Position template pack with `linked_role_template_id = "engineer-role-template-id"`
 **Action:** Apply
-**Expected:** `job_levels.default_role_id = null`; `job_levels.pending_role_template_id = "engineer-role-template-id"`; warning returned: `"Level 'Junior Engineer' role link is pending — apply role template 'engineer' to resolve."`
+**Expected:** Linked role template is applied for the tenant; created position links to the materialized tenant role; no permission-exclusion warnings returned
 
-### TC-CT-013: Applying role template resolves pending job level links
-**Setup:** `job_levels` row with `pending_role_template_id = "engineer-role-template-id"` exists for tenant
-**Action:** Apply role template "engineer" to tenant (via Role Template Manager)
-**Expected:** `job_levels.default_role_id` set to newly created role ID; `job_levels.pending_role_template_id = null`
-
-### TC-CT-014: Apply job family — no role_template_id — creates level with null role
-**Input:** Job family template with level that has no `role_template_id`
+### TC-CT-013: Apply position template pack - role permissions filtered by subscription
+**Setup:** Linked role template includes Work Management permissions, but tenant is not entitled to Work Management
+**Input:** Position template pack with `linked_role_template_id = "engineering-manager-role-template-id"`
 **Action:** Apply
-**Expected:** `job_levels.default_role_id = null`, `pending_role_template_id = null`, no warnings
+**Expected:** Tenant role is created with only entitled permissions; warning returned listing excluded permission count/module
 
-### TC-CT-015: Reapply job family (force_update=false) — family exists — skips existing levels
-**Setup:** `job_families` and `job_levels` already exist for this tenant (from previous apply)
+### TC-CT-014: Apply position template pack - no linked role template
+**Input:** Position template pack with a position that has `linked_role_template_id = null`
+**Action:** Apply
+**Expected:** Position is created without a linked role; no warnings
+
+### TC-CT-015: Reapply position template pack (force_update=false) - skips existing positions
+**Setup:** Tenant already has positions from this pack
 **Action:** Apply same template, `force_update = false`
-**Expected:** No new family or level rows created; existing levels' pending links re-evaluated; no duplicate family error
+**Expected:** No duplicate position rows created; existing position rows are skipped; skip count is returned
 
-### TC-CT-016: Reapply job family (force_update=true) — updates name and salary bands
-**Setup:** Level rank=1 exists with old name "Junior"
-**Input:** Template now has level rank=1 with name "Junior Engineer", new salary bands
+### TC-CT-016: Reapply position template pack (force_update=true) - updates non-destructive fields
+**Setup:** Existing position has old display name and assigned employees
+**Input:** Template now has updated `position_name`
 **Action:** Apply, `force_update = true`
-**Expected:** Existing level row updated with new name and salary bands; `default_role_id` preserved
+**Expected:** Position name and safe references are updated; assigned employees are not removed or reassigned
 
 ---
 
-## Apply — Leave Policy Template
+## Apply - Leave Policy Template
 
-### TC-CT-017: Apply leave policy — null job_level_rank — policy applies to all levels
-**Input:** Leave rule with `job_level_rank = null`
+### TC-CT-017: Apply leave policy - tenant scope
+**Input:** Leave policy template with `assignment_scope = "tenant"`
 **Action:** Apply
-**Expected:** `leave_policies.job_level_id = null`; no warnings
+**Expected:** Leave types and policies are created; assignment row targets the full tenant
 
-### TC-CT-018: Apply leave policy — job_level_rank matches existing level — links correctly
-**Setup:** `job_levels` row with `rank = 2` exists for tenant
-**Input:** Leave rule with `job_level_rank = 2`
+### TC-CT-018: Apply leave policy - department scope
+**Setup:** Department "Engineering" exists for tenant
+**Input:** Leave policy template with `assignment_scope = "department"` and `department_names = ["Engineering"]`
 **Action:** Apply
-**Expected:** `leave_policies.job_level_id` = matched job level ID; no warnings
+**Expected:** Leave types and policies are created; assignment row targets the Engineering department
 
-### TC-CT-019: Apply leave policy — job_level_rank has no match — warns and applies globally
-**Setup:** No `job_levels` row with `rank = 5` for tenant
-**Input:** Leave rule with `job_level_rank = 5`
+### TC-CT-019: Apply leave policy - position scope target missing
+**Setup:** No position exists with `position_key = "software-engineer"`
+**Input:** Leave policy template with `assignment_scope = "position"` and `position_keys = ["software-engineer"]`
 **Action:** Apply
-**Expected:** `leave_policies.job_level_id = null`; warning: `"Leave rule for 'Senior Leave' could not be linked — no job level with rank 5 exists for this tenant. Policy applied to all levels."`; apply does NOT fail
+**Expected:** HTTP 422, error code `assignment_target_not_found`; no policy assignment rows written
 
-### TC-CT-020: Apply leave policy — leave type already exists — reuses existing type
+### TC-CT-020: Apply leave policy - leave type already exists - reuses existing type
 **Setup:** `leave_types` row with `name = "Annual Leave"` already exists for tenant
 **Input:** Leave rule with `leave_type_name = "Annual Leave"`
 **Action:** Apply
@@ -137,58 +137,58 @@
 
 ---
 
-## Apply — Module Entitlement Guard
+## Apply â€” Module Entitlement Guard
 
-### TC-CT-021: Apply job_family template — tenant not entitled to core_hr — blocked
+### TC-CT-021: Apply position_template - tenant not entitled to core_hr - blocked
 **Setup:** Tenant with no `core_hr` entitlement
-**Input:** Job family template
+**Input:** Position template pack
 **Action:** Apply
 **Expected:** HTTP 400, error code `module_not_entitled`, message includes `"core_hr"`, no rows written
 
-### TC-CT-022: Apply leave_policy template — tenant not entitled to leave — blocked
+### TC-CT-022: Apply leave_policy template â€” tenant not entitled to leave â€” blocked
 **Setup:** Tenant with no `leave` entitlement
 **Expected:** HTTP 400, error code `module_not_entitled`
 
-### TC-CT-023: Apply configuration template — no module required — always allowed
+### TC-CT-023: Apply configuration template â€” no module required â€” always allowed
 **Setup:** Tenant with no modules entitled
 **Input:** Configuration template
 **Action:** Apply
-**Expected:** HTTP 200 — applies successfully
+**Expected:** HTTP 200 â€” applies successfully
 
 ---
 
-## Apply — Monitoring Policy Template
+## Apply â€” Monitoring Policy Template
 
-### TC-CT-024: Apply monitoring policy template — seeds monitoring_feature_toggles
+### TC-CT-024: Apply monitoring policy template â€” seeds monitoring_feature_toggles
 **Input:** Monitoring policy template with `activity_monitoring = true`, `screenshot_capture = false`
 **Action:** Apply
 **Expected:** `monitoring_feature_toggles.activity_monitoring = true`, `screenshot_capture = false`; upsert (not insert) if row already exists
 
-### TC-CT-025: Reapply monitoring policy — overwrites all toggles
+### TC-CT-025: Reapply monitoring policy â€” overwrites all toggles
 **Setup:** Existing `monitoring_feature_toggles` row
 **Action:** Apply different monitoring policy template
 **Expected:** All toggle values replaced with new template values
 
 ---
 
-## Apply — App Allowlist Template
+## Apply â€” App Allowlist Template
 
-### TC-CT-026: Apply app allowlist template — seeds entries at tenant scope
+### TC-CT-026: Apply app allowlist template â€” seeds entries and assignment rows
 **Input:** App allowlist template with 3 entries
 **Action:** Apply
-**Expected:** 3 `app_allowlists` rows with `scope_type = 'tenant'`, `scope_id = null`
+**Expected:** 3 `app_allowlists` rows plus assignment rows for the configured tenant, department, or position scope
 
-### TC-CT-027: Reapply app allowlist — upserts by process_name
-**Setup:** `app_allowlists` row for `chrome.exe` already exists at tenant scope
+### TC-CT-027: Reapply app allowlist â€” upserts by process_name
+**Setup:** `app_allowlists` row for `chrome.exe` already exists for the same tenant
 **Input:** Template includes `chrome.exe` with updated `is_allowed = false`
 **Action:** Apply, `force_update = true`
 **Expected:** Existing `chrome.exe` row updated, not duplicated
 
 ---
 
-## Apply — Onboarding Template
+## Apply â€” Onboarding Template
 
-### TC-CT-028: Apply onboarding template — seeds template definition only (no live tasks)
+### TC-CT-028: Apply onboarding template â€” seeds template definition only (no live tasks)
 **Input:** Onboarding template with 3 tasks
 **Action:** Apply
 **Expected:** `onboarding_templates` row created, 3 `onboarding_template_tasks` rows created; no employee task records created
@@ -197,26 +197,26 @@
 **Input:** Tasks with `order_index` 0, 1, 2
 **Expected:** Tasks stored and returned in order_index order
 
-### TC-CT-030: Onboarding template with job family and job level targeting
-**Input:** Onboarding template with `target_job_family_template_key = "engineering"` and `target_job_level_rank = 2`
+### TC-CT-030: Onboarding template with department targeting
+**Input:** Onboarding template with `assignment_scope = "department"` and `department_names = ["Engineering"]`
 **Action:** Create/apply template
-**Expected:** `onboarding_templates` row stores both targeting fields; generated onboarding task template applies only to new hires matching the targeted job family and level
+**Expected:** `onboarding_templates` row stores assignment scope and targets; generated onboarding task template applies only to new hires in the targeted department
 
-### TC-CT-031: Onboarding target job level without target job family is rejected
-**Input:** Onboarding template with `target_job_level_rank = 2` and `target_job_family_template_key = null`
+### TC-CT-031: Onboarding scoped target without selected targets is rejected
+**Input:** Onboarding template with `assignment_scope = "position"` and empty `position_keys`
 **Action:** Create/update template
-**Expected:** Validation fails with `target_job_family_required`; no template payload is saved
+**Expected:** Validation fails with `assignment_scope_targets_required`; no template payload is saved
 
 ---
 
-## Apply — Data Import Mapping Template
+## Apply â€” Data Import Mapping Template
 
-### TC-CT-032: Apply data import mapping — seeds template and field mappings
+### TC-CT-032: Apply data import mapping â€” seeds template and field mappings
 **Input:** Data import mapping template with `source_type = "csv"` and 4 field mappings
 **Action:** Apply
 **Expected:** 1 `data_import_mapping_templates` row, 4 `data_import_field_mappings` rows
 
-### TC-CT-033: Required field mapping — validation_rule stored correctly
+### TC-CT-033: Required field mapping â€” validation_rule stored correctly
 **Input:** Field mapping with `validation_rule = "date:DD/MM/YYYY"`
 **Expected:** Stored verbatim; returned on GET
 
@@ -224,15 +224,15 @@
 
 ## Deactivation Guard
 
-### TC-CT-034: Deactivate template — no pending links — succeeds
-**Setup:** No `job_levels` with `pending_role_template_id` pointing to any role template in this template's payload
+### TC-CT-034: Deactivate template - no active references - succeeds
+**Setup:** No active tenant positions or assignment rows reference the template
 **Action:** `DELETE /admin/v1/configuration-templates/{id}`
 **Expected:** HTTP 200, `is_active = false`
 
-### TC-CT-035: Deactivate job family template — pending links exist — blocked
-**Setup:** At least one `job_levels` row for any tenant has `pending_role_template_id` matching a role template referenced in this template
+### TC-CT-035: Deactivate position template - active tenant position exists - blocked
+**Setup:** At least one active tenant position was created from this position template pack
 **Action:** `DELETE /admin/v1/configuration-templates/{id}`
-**Expected:** HTTP 400, error code `deactivation_blocked`, message lists the affected tenants/levels
+**Expected:** HTTP 400, error code `deactivation_blocked`, message lists the affected tenants/positions
 
 ---
 
@@ -247,6 +247,11 @@
 **Action:** Apply same template again
 **Expected:** Previous row updated to `status = "superseded"`; new row with `status = "applied"`
 
-### TC-CT-038: Apply with warnings — warnings stored in audit row
+### TC-CT-038: Apply with warnings â€” warnings stored in audit row
 **Action:** Apply leave policy template with unmatched rank reference
 **Expected:** Warning text stored in `tenant_configuration_template_applications.warnings_json`
+
+
+
+
+

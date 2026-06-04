@@ -5,6 +5,10 @@
 
 ---
 
+## Phase Rule
+
+Development plans are Phase 2. Do not build development plan tables, routes, pages, jobs, or API integrations in Phase 1.
+
 ## Purpose
 
 Individual development plans with milestones linked to skills and courses.

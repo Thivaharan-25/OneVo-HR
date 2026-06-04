@@ -1,5 +1,7 @@
 # Background Jobs End-to-End Logic
 
+> Phase 2 only as a standalone operations module. Phase 1 can expose aggregate job health through Platform Health only.
+
 ## View Jobs
 
 1. Operator opens System Operations -> Background Jobs.

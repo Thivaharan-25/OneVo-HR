@@ -148,7 +148,7 @@ export class EmployeeCardComponent {
 Angular CLI fails the build when budgets are exceeded:
 
 ```bash
-ng build employee-app --configuration=production
+ng build operations-lifecycle-app --configuration=production
 # Fails if any budget from angular.json is exceeded
 ```
 

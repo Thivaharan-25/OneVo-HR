@@ -73,3 +73,4 @@ Shift schedule data from this flow feeds directly into WMS Resource Management:
 - **Availability for sprint planning:** Resource management uses scheduled hours to determine how many hours an employee can realistically be allocated to a project sprint.
 
 See [[Userflow/Work-Management/time-tracking-flow|Time Tracking Flow]] and [[Userflow/Work-Management/resource-flow|Resource Management Flow]].
+

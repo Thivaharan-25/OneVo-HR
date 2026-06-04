@@ -51,7 +51,6 @@
 
 Before completing KB or implementation work, search for:
 
-- `legal entity`
 - `legal entities`
 - `primary legal entity`
 - `current legal entity`
@@ -63,3 +62,4 @@ Before completing KB or implementation work, search for:
 - `cross-company`
 
 Every result must either follow the company-connections model or be explicitly marked as legacy/deprecated.
+

@@ -17,7 +17,7 @@
 ## Flow Steps
 
 ### Step 1: Navigate to Leave Policies
-- **UI:** User navigates to Leave → Policies. Sees a list of existing policies with columns: Policy Name, Country, Leave Types Covered, Assigned Legal Entities, Status
+- **UI:** User navigates to Leave -> Policies. Sees a list of existing policies with columns: Policy Name, Country, Leave Types Covered, Assigned Legal Entities, Status
 - **API:** `GET /api/v1/leave/policies`
 - **Backend:** `LeavePolicyService.GetAllAsync()` → [[modules/leave/overview|Leave]]
 - **Validation:** Checks `leave:manage` permission via RBAC middleware
@@ -94,7 +94,7 @@
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | Duplicate policy name | `409 Conflict` returned | "A policy with this name already exists" |
-| Legal entity already has active policy | Warning dialog | "Legal Entity X already has an active policy. Activating this policy will replace it. Continue?" |
+| Legal entity already has active policy | Warning dialog | "Legal entity X already has an active policy. Activating this policy will replace it. Continue?" |
 | Leave type not found | `404 Not Found` | "The selected leave type no longer exists" |
 | Accrual exceeds annual max | Validation fails | "Monthly accrual (N × 12 = M days) exceeds the leave type's annual limit of X days" |
 | Missing country | Validation fails | "Country is required to determine statutory compliance" |
@@ -116,4 +116,7 @@
 - [[modules/leave/overview|Leave]] — leave module overview and architecture
 - [[modules/leave/leave-policies/overview|Leave Policies]] — policy data model and business rules
 - [[modules/leave/leave-types/overview|Leave Types]] — leave type definitions
-- [[modules/org-structure/legal-entities/overview|Legal Entities]] — organizational entities policies are assigned to
+- [[modules/org-structure/legal-entities/overview|Legal Entities]] - organizational entities policies are assigned to
+
+
+

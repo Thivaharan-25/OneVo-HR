@@ -185,7 +185,7 @@ Resolution order:
 1. Start with `monitoring_feature_toggles` tenant defaults.
 2. Apply `monitoring_policy_overrides` for matching workforce scopes (`role`, `job_family`, `department`, `team`). Only non-null fields override inherited values.
 3. Apply `employee_monitoring_overrides`. Only non-null fields override inherited values.
-4. Apply consent and legal gates. If required consent/disclosure is missing, all desktop collectors are disabled regardless of admin settings.
+4. Apply consent and legal gates. If a required notice/consent is missing, the affected desktop collector is disabled regardless of admin settings.
 5. Apply lifecycle gates from Workforce Presence. The agent collects only while monitoring is active, never during breaks or after clock-out.
 6. Attach resolved app allowlist from `app_allowlists` using tenant -> role -> employee resolution.
 7. Attach privacy/transparency mode from `tenant_settings` so the TrayApp knows what to show the employee.
@@ -326,7 +326,7 @@ The effective policy for an employee is not read from any single row. It is reso
 1. Tenant default from `monitoring_feature_toggles`.
 2. Workforce-scope overrides from `monitoring_policy_overrides` for the employee's role, job family, department, and team.
 3. Employee override from `employee_monitoring_overrides`.
-4. Consent and disclosure gate. Missing required consent disables desktop collection even if admin policy is enabled.
+4. Consent and disclosure gate. Missing required notice/consent disables the affected desktop collection category even if admin policy is enabled.
 5. Workforce Presence lifecycle gate. Collection is active only while the employee is clocked in and not on break.
 6. App allowlist from `app_allowlists`, resolved tenant -> role -> employee.
 7. Privacy/transparency mode from `tenant_settings`, used for what the employee sees in TrayApp and self-service.

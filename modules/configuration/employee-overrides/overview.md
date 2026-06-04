@@ -47,7 +47,7 @@ Resolution order for every monitoring feature:
 1. Tenant default from `monitoring_feature_toggles`.
 2. Scope override from `monitoring_policy_overrides` (`role`, `job_family`, `department`, `team`).
 3. Employee override from `employee_monitoring_overrides`.
-4. Consent/disclosure gate. Missing consent disables desktop collection.
+4. Consent/disclosure gate. Missing required WorkPulse notice or consent disables only the affected desktop collection category.
 5. Workforce Presence lifecycle gate. No collection during breaks or after clock-out.
 
 Employee overrides should be used for specific exceptions, not as the normal way to configure an entire role or department. Use `monitoring_policy_overrides` for lasting group-level policy.

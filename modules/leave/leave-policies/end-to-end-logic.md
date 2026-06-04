@@ -15,7 +15,7 @@ POST /api/v1/leave/policies
     -> [RequirePermission("leave:manage")]
     -> Validation: leave_type_id exists, annual_entitlement_days > 0
     -> LeavePolicyService.CreateAsync(command, ct)
-      -> 1. Check if active policy exists for same leave_type + country + job_level
+      -> 1. Check if active policy exists for same leave_type + country
          -> If exists: create new version
             -> Set old policy: superseded_by_id = new_policy.id
          -> If not: create first version
@@ -36,7 +36,7 @@ GET /api/v1/leave/policies?leaveTypeId={id}&countryId={id}
     -> [RequirePermission("leave:manage")]
     -> LeavePolicyService.GetActivePoliciesAsync(query, ct)
       -> Query: WHERE superseded_by_id IS NULL (active only)
-      -> Filter by leave_type_id, country_id, job_level_id
+      -> Filter by leave_type_id, country_id
       -> Return Result.Success(policyDtos)
 ```
 
@@ -44,7 +44,6 @@ GET /api/v1/leave/policies?leaveTypeId={id}&countryId={id}
 
 - **Policy versioning** via `superseded_by_id` chain. Active policy: `WHERE superseded_by_id IS NULL`.
 - **Country-specific:** Policies can apply to specific countries (e.g., UK gets 28 days, US gets 15 days).
-- **Job-level-specific:** Senior roles may get more days than junior roles.
 - **Proration methods:** `calendar_days` or `working_days` for mid-year hires.
 
 ## Related

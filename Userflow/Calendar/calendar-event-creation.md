@@ -1,4 +1,4 @@
-# Calendar Event Creation
+﻿# Calendar Event Creation
 
 **Area:** Calendar  
 **Trigger:** User creates calendar event (user action)
@@ -14,12 +14,12 @@
 ## Flow Steps
 
 ### Step 0: Choose View
-- **UI:** View toggle (Month / Week / Day) at top of Calendar page — default: Month
+- **UI:** View toggle (Month / Week / Day) at top of Calendar page â€” default: Month
 - Month view: grid of date cells, click a cell to select day
 - Week / Day views: time-slot rows, click a slot to pre-fill date/time
 
 ### Step 1: Create Event
-- **UI:** Click date/time slot or "Create Event" button → slide-in creation panel opens
+- **UI:** Click date/time slot or "Create Event" button â†’ slide-in creation panel opens
 - **API:** `POST /api/v1/calendar/events`
 
 ### Step 2: Enter Details
@@ -30,26 +30,26 @@
   - `date`, `start_time`, `end_time`
   - `recurrence`: None / Daily / Weekly / Monthly
   - `audience` (see Audience Rules below)
-  - `color`: preset palette (optional — defaults to type color)
+  - `color`: preset palette (optional â€” defaults to type color)
 
 ### Step 3: Add Participants *(individual audience only)*
-- **UI:** Employee search picker — returns employees from two pools:
-  1. **Hierarchy subordinates** — employees below the creator in the `reports_to_id` chain
-  2. **Bypass-granted** — employees covered by an active `hierarchy_scope_exceptions` record for this user with `applies_to IS NULL OR applies_to = 'calendar'`
+- **UI:** Employee search picker â€” returns employees from two pools:
+  1. **Hierarchy subordinates** â€” employees below the creator in `employee_hierarchy_closure`, derived from position hierarchy
+  2. **Bypass-granted** â€” employees covered by an active `hierarchy_scope_exceptions` record for this user with `applies_to IS NULL OR applies_to = 'calendar'`
   
   Bypass-granted employees are shown with a **"Bypass"** badge in the search results so the creator knows they are outside normal hierarchy scope.
-- **Backend:** `CalendarService.SearchParticipantsAsync()` calls `IHierarchyScope.GetSubordinateIdsAsync(featureContext: "calendar")` → [[modules/auth/authorization/end-to-end-logic|Authorization]]
+- **Backend:** `CalendarService.SearchParticipantsAsync()` calls `IHierarchyScope.GetSubordinateIdsAsync(featureContext: "calendar")` â†’ [[modules/auth/authorization/end-to-end-logic|Authorization]]
 - Skipped when audience is Tenant / Department / Team (participants resolved server-side)
 - **DB:** `calendar_events`, `calendar_event_participants`
 
 ### Step 4: Save & Notify
-- **Result:** Event visible on shared calendar → participants notified → conflicts stored
+- **Result:** Event visible on shared calendar â†’ participants notified â†’ conflicts stored
 
 ---
 
 ## Audience Rules
 
-The `audience` field controls who receives the event. Available options depend on the creator's position in the `reports_to_id` hierarchy chain (`IHierarchyScope`).
+The `audience` field controls who receives the event. Available options depend on the creator's resolved position-based reporting scope (`IHierarchyScope`).
 
 | Audience Option | Who can select it |
 |:----------------|:-----------------|
@@ -58,7 +58,7 @@ The `audience` field controls who receives the event. Available options depend o
 | **Team** | User manages that team or is above it in hierarchy |
 | **Individual** | Any user with `calendar:write` + `employees:read` scoped to that person **or covered by an active bypass grant (`applies_to = 'calendar'` or `applies_to IS NULL`)** |
 
-- The audience picker shows only options within the creator's hierarchy scope — same `IHierarchyScope` filter used across all ONEVO modules.
+- The audience picker shows only options within the creator's hierarchy scope â€” same `IHierarchyScope` filter used across all ONEVO modules.
 - Super Admin bypasses all scoping and can target any audience.
 - For Department / Team audiences, a sub-selector appears to choose the specific entity.
 
@@ -66,13 +66,13 @@ The `audience` field controls who receives the event. Available options depend o
 
 ## Variations
 
-### Company holiday
-- Type = Holiday -> applies to all employees in legal entity -> affects leave calculations and shift schedules.
+### Legal entity holiday
+- Type = Holiday -> applies to all employees in selected legal entity -> affects leave calculations and shift schedules.
 - Country holidays are normally imported through [[Userflow/Calendar/calendar-integrations|Calendar Integrations]]. Manual holiday creation is for company-specific closures that are not provided by the country calendar.
 
 ### Drag-and-drop rescheduling
-- User drags an existing event card to a new date/time cell → triggers `PUT /api/v1/calendar/events/{id}` with updated `start_date`/`end_date`
-- Conflict check re-runs on drop — same warning as event creation
+- User drags an existing event card to a new date/time cell â†’ triggers `PUT /api/v1/calendar/events/{id}` with updated `start_date`/`end_date`
+- Conflict check re-runs on drop â€” same warning as event creation
 - Only events where the user has `calendar:write` can be dragged
 
 ### External sync
@@ -95,8 +95,8 @@ The `audience` field controls who receives the event. Available options depend o
 
 ## Events Triggered
 
-- `CalendarEventCreated` → [[backend/messaging/event-catalog|Event Catalog]]
-- Notification to resolved participants → [[backend/notification-system|Notification System]]
+- `CalendarEventCreated` â†’ [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to resolved participants â†’ [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
@@ -108,3 +108,5 @@ The `audience` field controls who receives the event. Available options depend o
 
 - [[modules/calendar/calendar-events/overview|Calendar Events]]
 - [[modules/calendar/overview|Calendar]]
+
+

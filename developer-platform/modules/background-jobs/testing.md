@@ -1,5 +1,7 @@
 # Background Jobs — Testing
 
+> Phase 2 only as a standalone module. In Phase 1, test only aggregate job health surfaced through Platform Health.
+
 ## Test Fixtures Required
 
 - Platform account with `platform.health.manage`

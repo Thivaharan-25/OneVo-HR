@@ -1,4 +1,4 @@
-# Database Performance: ONEVO
+﻿# Database Performance: ONEVO
 
 ## Indexing Strategy
 
@@ -19,7 +19,11 @@ CREATE INDEX idx_{table}_tenant_{filter} ON {table} (tenant_id, {filter_column})
 ```sql
 -- Employees (most queried table)
 CREATE INDEX idx_employees_tenant_dept ON employees (tenant_id, department_id);
-CREATE INDEX idx_employees_tenant_manager ON employees (tenant_id, manager_id);
+CREATE INDEX idx_position_assignments_current ON position_assignments (tenant_id, employee_id, position_id) WHERE effective_to IS NULL;
+CREATE INDEX idx_position_assignments_position_current ON position_assignments (tenant_id, position_id) WHERE effective_to IS NULL;
+CREATE INDEX idx_positions_reports_to ON positions (tenant_id, reports_to_position_id);
+CREATE INDEX idx_position_reporting_history_current ON position_reporting_history (tenant_id, position_id, effective_from, effective_to);
+CREATE INDEX idx_employee_hierarchy_closure_ancestor ON employee_hierarchy_closure (tenant_id, ancestor_employee_id, depth);
 CREATE INDEX idx_employees_tenant_status ON employees (tenant_id, employment_status);
 CREATE UNIQUE INDEX uq_employees_tenant_empno ON employees (tenant_id, employee_no);
 
@@ -45,7 +49,7 @@ CREATE INDEX idx_workflow_instances_status ON workflow_instances (tenant_id, sta
 ### EF Core Eager Loading
 
 ```csharp
-// BAD: N+1 — loads department for each employee separately
+// BAD: N+1 â€” loads department for each employee separately
 var employees = await _context.Employees.ToListAsync();
 foreach (var emp in employees)
     Console.WriteLine(emp.Department.Name); // N additional queries!
@@ -96,9 +100,9 @@ var employee = await _context.Employees
 ### Cache Key Convention
 
 ```
-onevo:{tenantId}:{entity}:{id}        → Single entity
-onevo:{tenantId}:{entity}:list:{hash}  → List queries
-onevo:global:{entity}:{id}             → Non-tenant data (countries, permissions)
+onevo:{tenantId}:{entity}:{id}        â†’ Single entity
+onevo:{tenantId}:{entity}:list:{hash}  â†’ List queries
+onevo:global:{entity}:{id}             â†’ Non-tenant data (countries, permissions)
 ```
 
 ### Cache Invalidation
@@ -139,7 +143,7 @@ SELECT create_parent(
     p_interval := '1 month'
 );
 
--- Workforce Intelligence: activity_raw_buffer — partitioned DAILY, purged after 48h
+-- Workforce Intelligence: activity_raw_buffer â€” partitioned DAILY, purged after 48h
 SELECT create_parent(
     p_parent_table := 'public.activity_raw_buffer',
     p_control := 'received_at',
@@ -147,7 +151,7 @@ SELECT create_parent(
     p_interval := '1 day'
 );
 
--- Workforce Intelligence: activity_snapshots — partitioned MONTHLY, 90-day retention
+-- Workforce Intelligence: activity_snapshots â€” partitioned MONTHLY, 90-day retention
 SELECT create_parent(
     p_parent_table := 'public.activity_snapshots',
     p_control := 'captured_at',
@@ -206,8 +210,8 @@ server_idle_timeout = 300      ; Close idle server connections after 5 min
 2. **Always** project to DTOs (`.Select()`) instead of loading full entities for list endpoints
 3. **Never** load more than 100 records in a single query (use pagination)
 4. **Use** `EXPLAIN ANALYZE` to verify query plans for new queries
-5. **Avoid** `LIKE '%search%'` — use PostgreSQL FTS with GIN indexes
-6. **Monitor** slow queries via `pg_stat_statements` extension — see [[frontend/performance/monitoring|Monitoring]]
+5. **Avoid** `LIKE '%search%'` â€” use PostgreSQL FTS with GIN indexes
+6. **Monitor** slow queries via `pg_stat_statements` extension â€” see [[frontend/performance/monitoring|Monitoring]]
 
 ## Related
 

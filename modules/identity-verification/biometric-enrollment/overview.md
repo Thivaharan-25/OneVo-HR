@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Employee fingerprint enrollment with mandatory GDPR/PDPA consent. Templates are NEVER stored in ONEVO — only a hash reference.
+Employee biometric enrollment with mandatory Legal & Privacy notice/consent. Templates are NEVER stored in ONEVO - only a hash reference.
 
 ## Database Tables
 

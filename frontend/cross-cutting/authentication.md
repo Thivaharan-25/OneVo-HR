@@ -173,24 +173,25 @@ export class AuthSyncService implements OnDestroy {
 }
 ```
 
-## Context Switcher (employee-app ↔ management-app)
+## Context Switcher (Setup / Control ↔ Operations / Lifecycle)
 
-Dual-role users can switch between the two apps. Because both apps are on the same parent domain (`{tenant}.onevo.com`), the session cookie is valid on both:
+Authorized users can switch between the customer apps. Both customer apps use the same BFF cookie session. The final customer hostname mapping is a deployment decision, so redirects must use configured app URLs rather than hardcoded subdomains:
 
 ```typescript
 // shared/src/lib/ui/shell/context-switcher.component.ts
 export class ContextSwitcherComponent {
   private auth = inject(AuthService);
 
-  // Only show if user has any management permission
-  canSwitchToManagement = this.auth.hasAnyPermission('employees:read', 'workforce:view', 'settings:read');
+  // Only show if user has permissions in the target app
+  canSwitchToSetup = this.auth.hasAnyPermission('org:manage', 'roles:manage', 'settings:write');
+  canSwitchToOperations = this.auth.hasAnyPermission('employees:read', 'leave:read', 'workforce:view');
 
-  switchToManagement() {
-    window.location.href = `https://manage.${this.auth.user()!.tenantSlug}.onevo.com`;
+  switchToSetup() {
+    window.location.href = environment.appUrls.setupControl;
   }
 
-  switchToEmployee() {
-    window.location.href = `https://app.${this.auth.user()!.tenantSlug}.onevo.com`;
+  switchToOperations() {
+    window.location.href = environment.appUrls.operationsLifecycle;
   }
 }
 ```

@@ -1,8 +1,8 @@
-# Skill Assessment
+﻿# Skill Assessment
 
 **Area:** Skills & Learning  
 **Phase:** Phase 1
-**Trigger:** Manager validates employee declared skills (reaction — triggered by skill declaration)
+**Trigger:** Manager validates employee skill request from Inbox
 **Required Permission(s):** `skills:validate`  
 **Related Permissions:** `skills:read` (to view skills), `employees:read` with team access policy (to view team members)
 
@@ -10,35 +10,36 @@
 
 ## Preconditions
 
-- Employee has declared at least one skill with status `pending`: [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration Flow]]
-- Assessor (manager) has the employee in their reporting line
+- Employee has submitted a pending skill request: [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration Flow]].
+- Requested skill already exists in the tenant skill library.
+- Assessor has `skills:validate` and is the employee's manager or has scoped HR access to that employee.
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
-### Step 1: Navigate to Team Skills
-- **UI:** Team → Skills. Table view showing all direct reports with: Employee Name, Total Skills Declared, Pending Validation (count with badge), Last Assessment Date. Filter by: validation status (Pending, Validated, All). Sort by pending count descending to prioritize. Notification badge shows total pending validations across team
-- **API:** `GET /api/v1/teams/me/skills?status=pending`
-- **Backend:** `TeamSkillService.GetTeamSkillSummaryAsync()` → [[skills]]
-- **Validation:** Permission check for `skills:validate`. Scoped to manager's direct reports (resolved from `employees.reporting_manager_id` chain)
+### Step 1: Open Inbox Skill Request
+- **UI:** Inbox shows `Skill validation request` items. The item displays employee name, requested skill, self-rated proficiency, whether the skill is required for the employee job family, and submitted date. `Team -> Skills` dashboards are Phase 2, not Phase 1.
+- **API:** `GET /api/v1/skills/validation-requests`
+- **Backend:** `SkillValidationRequestService.GetPendingForManagerAsync()` â†’ [[skills]]
+- **Validation:** Permission check for `skills:validate`. Scoped to validator's direct reports from `employee_hierarchy_closure`, derived from position hierarchy
 - **DB:** `employee_skills`, `employees`
 
-### Step 2: Select Employee
-- **UI:** Click employee row to expand or navigate to employee skill detail view. Shows all declared skills for that employee in a list: Skill Name, Category, Self-Rated Proficiency (visual bar), Years of Experience, Employee Notes, Status (Pending / Validated / Rejected). Pending skills highlighted with amber indicator
+### Step 2: Review Request
+- **UI:** Open the Inbox item. Shows employee profile summary, requested skill, current job family required skills, self-rated proficiency, and employee notes. Certifications, courses, and project evidence panels are Phase 2.
 - **API:** `GET /api/v1/employees/{employeeId}/skills`
-- **Backend:** `EmployeeSkillService.GetByEmployeeAsync()` → [[skills]]
+- **Backend:** `EmployeeSkillService.GetByEmployeeAsync()` â†’ [[skills]]
 - **Validation:** Manager must have reporting line to employee
 - **DB:** `employee_skills`, `skills`
 
-### Step 3: Review and Assess Skill
-- **UI:** Click pending skill to open assessment panel. Shows: Employee's self-rating (read-only), Manager's proficiency rating (slider/radio — same levels as self-rating), Assessment Notes (text area, e.g., "Demonstrated advanced Python skills in Q3 project. Agree with self-assessment"), Assessment Date (auto-set to today). Side panel shows context: employee's related certifications, completed courses for this skill, project history if available
+### Step 3: Decide Proficiency
+- **UI:** Manager selects `Validate`, `Adjust & Validate`, or `Reject`. For validate/adjust, choose proficiency 1-5. For reject, notes are required.
 - **API:** N/A (client-side form entry)
 - **Backend:** N/A
 - **Validation:** Manager rating required. Notes optional but encouraged
 - **DB:** None
 
 ### Step 4: Submit Validation
-- **UI:** Three action buttons: "Validate" (accept — uses manager rating or agrees with self-rating), "Adjust & Validate" (accept with different proficiency), "Reject" (skill not demonstrated — requires reason). Click chosen action. Confirmation dialog for reject. Toast: "Skill assessment saved"
+- **UI:** Three action buttons: "Validate" (accept â€” uses manager rating or agrees with self-rating), "Adjust & Validate" (accept with different proficiency), "Reject" (skill not demonstrated â€” requires reason). Click chosen action. Confirmation dialog for reject. Toast: "Skill assessment saved"
 - **API:** `PUT /api/v1/employees/{employeeId}/skills/{skillId}/validate`
   ```json
   {
@@ -47,14 +48,14 @@
     "notes": "Demonstrated advanced Python skills in Q3 project"
   }
   ```
-- **Backend:** `EmployeeSkillService.ValidateAsync()` → [[skills]]
+- **Backend:** `EmployeeSkillService.ValidateAsync()` â†’ [[skills]]
   1. Validate manager is in employee's reporting chain
   2. Update `employee_skills`: set `proficiency_level` to manager's rating, `validated_by_id` to manager, `status = 'validated'`
   3. For reject: set `status = 'pending'`, leave `validated_by_id` null
   4. Notify employee of result via [[backend/notification-system|Notification System]]
   5. Publish `SkillValidatedEvent` or `SkillRejectedEvent`
   6. Create audit log entry
-- **Validation:** Assessor must be manager of employee. `proficiencyLevel` must be integer 1–5. Rejection requires notes
+- **Validation:** Assessor must be manager of employee. `proficiencyLevel` must be integer 1â€“5. Rejection requires notes
 - **DB:** `employee_skills`, `audit_logs`
 
 ### Step 5: Employee Notified
@@ -67,7 +68,7 @@
 ## Variations
 
 ### When bulk-assessing multiple skills
-- Manager selects multiple pending skills via checkboxes → "Bulk Validate"
+- Manager selects multiple pending skills via checkboxes â†’ "Bulk Validate"
 - All selected skills validated at their self-rated proficiency
 - Individual notes not available in bulk mode
 - API: `POST /api/v1/employees/{employeeId}/skills/bulk-assess`
@@ -75,7 +76,7 @@
 ### When reassessing a previously validated skill
 - Manager can reassess a validated skill (e.g., after performance review)
 - Opens same assessment panel with previous proficiency shown
-- Updates `employee_skills.proficiency_level` and `validated_by_id` in place (no separate history table in Phase 1 — full history is in `audit_logs`)
+- Updates `employee_skills.proficiency_level` and `validated_by_id` in place (no separate history table in Phase 1 baseline; full history is in `audit_logs`)
 
 ### When employee is in a dotted-line reporting relationship
 - Both direct and dotted-line managers with `skills:validate` can assess
@@ -93,19 +94,21 @@
 
 ## Events Triggered
 
-- `SkillAssessedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by notification service, analytics, development plan suggestions
-- `SkillRejectedEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by notification service
-- `AuditLogEntry` (action: `skill.assessed`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `SkillAssessedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by notification service, analytics, development plan suggestions
+- `SkillRejectedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by notification service
+- `AuditLogEntry` (action: `skill.assessed`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]] — declaration that triggers this assessment
-- [[Userflow/Skills-Learning/development-plan|Development Plan]] — assessment results inform skill gap analysis
-- [[Userflow/Skills-Learning/certification-tracking|Certification Tracking]] — certifications provide evidence for assessment
+- [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]] â€” declaration that triggers this assessment
+- [[Userflow/Skills-Learning/development-plan|Development Plan]] â€” assessment results inform skill gap analysis
+- [[Userflow/Skills-Learning/certification-tracking|Certification Tracking]] â€” certifications provide evidence for assessment
 
 ## Module References
 
-- [[skills]] — skills module overview and architecture
-- [[modules/skills/skill-assessments/overview|Skill Assessments]] — assessment data model and history
-- [[modules/skills/employee-skills/overview|Employee Skills]] — employee skill lifecycle
-- [[backend/notification-system|Notification System]] — employee notification on assessment result
+- [[skills]] â€” skills module overview and architecture
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] - Phase 2 quiz-based assessments; this flow is Phase 1 manager validation
+- [[modules/skills/employee-skills/overview|Employee Skills]] â€” employee skill lifecycle
+- [[backend/notification-system|Notification System]] â€” employee notification on assessment result
+
+

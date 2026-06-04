@@ -4,13 +4,13 @@
 **Feature:** Project Management
 **Namespace:** `WorkManagement.Projects`
 **Owner:** DEV3
-**Tables:** 7
+**Tables:** 8
 
 ---
 
 ## Purpose
 
-Projects are the primary organisational unit within a workspace. Tasks, sprints, boards, and roadmaps all belong to a project. Epics, milestones, and versions provide hierarchy and release planning within a project. Project membership is employee-backed so HR status, department/team reporting, and offboarding rules are enforceable.
+Projects are tenant-scoped business/work containers that can involve multiple team workspaces. Tasks, sprints, boards, and roadmaps all belong to a project. Epics, milestones, and versions provide hierarchy and release planning within a project. Project membership is employee-backed so HR status, department/team reporting, and offboarding rules are enforceable.
 
 ---
 
@@ -18,17 +18,23 @@ Projects are the primary organisational unit within a workspace. Tasks, sprints,
 
 ### `projects`
 
-Key columns: `workspace_id`, `tenant_id`, `name`, `description`, `status` (`active`, `archived`, `completed`), `lead_id`, `start_date`, `target_date`.
+Key columns: `tenant_id`, `name`, `description`, `status` (`active`, `archived`, `completed`), `lead_id`, `start_date`, `target_date`.
+
+### `project_workspaces`
+
+Key columns: `project_id`, `workspace_id`, `tenant_id`, `linked_by_id`, `linked_at`, `is_active`.
+
+This table records which team workspaces are involved in a project. It is context only; it does not grant project access to every member of those workspaces.
 
 ### `project_members`
 
-Key columns: `project_id`, `user_id`, `employee_id`, `role` (`Owner`, `Admin`, `Member`, `Viewer`), `membership_source`, `is_active`, `added_by_id`, `added_at`, `removed_at`.
+Key columns: `project_id`, `user_id`, `employee_id`, `role` (`Admin`, `Member`, `Viewer`), `membership_source`, `is_active`, `added_by_id`, `added_at`, `removed_at`.
 
-Owner role is always exactly one user. Workspace Admin implicitly has full project access.
+Project `admin` is local to that project. Workspace Admin does not implicitly have full project access unless they are also a project member or a tenant security role explicitly allows project administration inside the relevant scope.
 
 ### `epics`
 
-Key columns: `project_id`, `workspace_id`, `tenant_id`, `title`, `description`, `status`, `start_date`, `end_date`, `owner_id`, `color`.
+Key columns: `project_id`, `tenant_id`, `title`, `description`, `status`, `start_date`, `end_date`, `owner_id`, `color`.
 
 Tasks reference epics via `tasks.epic_id`.
 
@@ -48,7 +54,7 @@ Key columns: `project_id`, `version_id`, `scheduled_date`, `release_type` (`majo
 
 ### `labels`
 
-Key columns: `workspace_id` (workspace-scoped, not project-scoped; reusable across projects), `name`, `color`, `description`.
+Key columns: `tenant_id`, `project_id` (nullable for tenant-wide reusable labels), `name`, `color`, `description`.
 
 Tasks reference labels via `task_tags.label_id`.
 
@@ -56,13 +62,14 @@ Tasks reference labels via `task_tags.label_id`.
 
 ## Key Business Rules
 
-1. Projects are workspace-scoped; `project_id` always implies `workspace_id`.
+1. Projects are tenant-scoped and can link to multiple workspaces through `project_workspaces`; `project_id` does not imply one workspace.
 2. `project.identifier` is immutable after first task is created; changing it would break all task references.
-3. Labels are workspace-scoped: one label can appear in multiple projects.
+3. Labels are project-scoped by default; tenant-wide reusable labels are allowed only when `project_id` is null.
 4. Epics span the project lifecycle; milestones are date-targeted checkpoints.
-5. Project must have exactly one Owner role member at all times.
-6. Adding a project member requires an active `workspace_members` row and an active, non-deleted `employees` row.
+5. A project must have at least one active `admin` project member at all times.
+6. Adding a project member requires an active, non-deleted `employees` row. It does not require full workspace membership.
 7. Employee offboarding deactivates project membership; historical assignments remain auditable.
+8. Linking a workspace to a project does not make every workspace member a project member.
 
 ---
 
@@ -82,17 +89,20 @@ Tasks reference labels via `task_tags.label_id`.
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/workspaces/{wsId}/projects` | `projects:read` | List workspace projects |
-| POST | `/api/v1/workspaces/{wsId}/projects` | `projects:create` | Create project |
+| GET | `/api/v1/projects` | `projects:read` | List projects visible to current user via `project_members` |
+| POST | `/api/v1/projects` | `projects:create` | Create project |
 | GET | `/api/v1/projects/{id}` | `projects:read` | Get project |
 | PATCH | `/api/v1/projects/{id}` | `projects:write` | Update project |
+| GET | `/api/v1/projects/{id}/workspaces` | `projects:read` | List linked workspaces |
+| POST | `/api/v1/projects/{id}/workspaces` | `projects:write` | Link workspace to project |
+| DELETE | `/api/v1/projects/{id}/workspaces/{workspaceId}` | `projects:write` | Unlink workspace from project |
 | GET | `/api/v1/projects/{id}/members` | `projects:read` | List project members |
 | POST | `/api/v1/projects/{id}/members` | `projects:write` | Add employee-backed member |
 | GET | `/api/v1/projects/{id}/epics` | `projects:read` | List epics |
 | POST | `/api/v1/projects/{id}/epics` | `projects:write` | Create epic |
 | GET | `/api/v1/projects/{id}/milestones` | `projects:read` | List milestones |
 | GET | `/api/v1/projects/{id}/versions` | `projects:read` | List versions |
-| GET | `/api/v1/workspaces/{wsId}/labels` | `projects:read` | List workspace labels |
+| GET | `/api/v1/projects/{id}/labels` | `projects:read` | List project labels |
 
 ---
 

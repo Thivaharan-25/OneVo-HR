@@ -8,7 +8,7 @@ ONEVO uses **SignalR** (WebSocket with fallbacks) for real-time push from the .N
 
 Package: `@microsoft/signalr`
 
-An Angular singleton service that builds and manages the `HubConnection`. Both apps inject this service from `@onevo/shared`. The connection starts on successful authentication and stops on logout.
+An Angular singleton service that builds and manages the `HubConnection`. Customer apps inject this service from `@onevo/shared`. The connection starts on successful authentication and stops on logout.
 
 ## Connection Lifecycle
 
@@ -21,7 +21,7 @@ AuthService.setSession() called
     ├── On connected → join tenant hub groups (server-side via hub method)
     │   ├── tenant:{tenantId}              (tenant-wide broadcasts)
     │   ├── user:{userId}                  (personal notifications)
-    │   └── workforce:{tenantId}           (live workforce — management-app only)
+    │   └── workforce:{tenantId}           (live workforce — operations-lifecycle-app only)
     │
     ├── On message → dispatch to registered handlers
     │   ├── resource.reload()              (cache invalidation)
@@ -110,7 +110,7 @@ export class SignalRService implements OnDestroy {
 | `SessionExpired` | — | `AuthService.clear()`, navigate to `/login` |
 | `PermissionsChanged` | `{ permissions[] }` | Update `AuthService` permissions signal |
 
-### Workforce Hub (`workforce:{tenantId}`) — management-app only
+### Workforce Hub (`workforce:{tenantId}`) — operations-lifecycle-app only
 
 | Event | Payload | Action |
 |:------|:--------|:-------|
@@ -123,7 +123,7 @@ export class SignalRService implements OnDestroy {
 Register handlers in the component that owns the resource. Unregister in `ngOnDestroy`.
 
 ```typescript
-// management-app: exception-list.component.ts
+// operations-lifecycle-app: exception-list.component.ts
 export class ExceptionListComponent implements OnInit, OnDestroy {
   private signalR = inject(SignalRService);
 
@@ -146,7 +146,7 @@ export class ExceptionListComponent implements OnInit, OnDestroy {
 For high-frequency events, set the resource value directly to avoid refetch storms:
 
 ```typescript
-// management-app: workforce-live.component.ts
+// operations-lifecycle-app: workforce-live.component.ts
 ngOnInit() {
   // High-frequency: set directly
   this.signalR.on<WorkforceSnapshot>('WorkforceStatusUpdate', (snapshot) => {

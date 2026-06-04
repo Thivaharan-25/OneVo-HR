@@ -50,15 +50,15 @@ POST /api/v1/calendar
 | Invalid event_type | Return 422 |
 | Event not found (update/delete) | Return 404 |
 
-## Company Holiday Calendar Default
+## Legal Entity Holiday Calendar Default
 
 ### Flow
 
 ```
-CompanyProfileCountrySet(tenant_id, country_code)
+LegalEntityCountrySet(tenant_id, legal_entity_id, country_code)
   -> CalendarHolidaySettingsHandler
     -> 1. Create holiday_calendar_settings
-       -> default_country_code = company country
+       -> default_country_code = legal entity country
        -> override_country_code = null
        -> effective_country_code = default_country_code
        -> holiday_sync_enabled = true

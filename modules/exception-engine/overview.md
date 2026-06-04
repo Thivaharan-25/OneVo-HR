@@ -1,8 +1,8 @@
-# Module: Exception Engine
+﻿# Module: Exception Engine
 
 **Feature Folder:** `Application/Features/ExceptionEngine`
-**Phase:** 1 — Build
-**Pillar:** 2 — Workforce Intelligence
+**Phase:** 1 â€” Build
+**Pillar:** 2 â€” Workforce Intelligence
 **Owner:** Dev 2 (Week 4)
 **Tables:** 6
 **Task File:** [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]]
@@ -21,10 +21,10 @@ Configurable anomaly detection engine that evaluates rules against activity and 
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | `IActivityMonitoringService` | Latest activity data for rule evaluation |
 | **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Presence/idle data for detection |
-| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee/department context, manager hierarchy |
+| **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee/department context, position-derived reporting hierarchy |
 | **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Monitoring toggles |
-| **Consumed by** | [[modules/notifications/overview\|Notifications]] | — (via `ExceptionAlertCreated` event) | Route alert action cards through Chat or Inbox |
-| **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | — (via direct query) | Exception counts for reports |
+| **Consumed by** | [[modules/notifications/overview\|Notifications]] | â€” (via `ExceptionAlertCreated` event) | Route alert action cards through Chat or Inbox |
+| **Consumed by** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | â€” (via direct query) | Exception counts for reports |
 | **Publishes to** | [[modules/agent-gateway/overview\|Agent Gateway]] | `RemoteCaptureRequested` event | Triggers on-demand screenshot/photo capture via agent |
 
 ---
@@ -75,15 +75,15 @@ Configurable anomaly detection rules.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK â†’ tenants |
 | `rule_name` | `varchar(100)` | Human-readable name |
 | `rule_type` | `varchar(30)` | `low_activity`, `excess_idle`, `unusual_pattern`, `excess_meeting`, `no_presence`, `break_exceeded`, `verification_failed`, `non_allowed_app`, `presence_without_activity`, `heartbeat_gap` |
 | `threshold_json` | `jsonb` | Rule-specific thresholds (see below) |
 | `severity` | `varchar(20)` | `info`, `warning`, `critical` |
 | `is_active` | `boolean` | |
 | `applies_to` | `varchar(20)` | `all`, `department`, `team`, `employee` |
-| `applies_to_id` | `uuid` | Nullable — department/team/employee ID |
-| `created_by_id` | `uuid` | FK → users |
+| `applies_to_id` | `uuid` | Nullable â€” department/team/employee ID |
+| `created_by_id` | `uuid` | FK â†’ users |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
@@ -105,13 +105,13 @@ Configurable anomaly detection rules.
 // break_exceeded
 {"max_break_minutes": 60, "break_type": "any"}
 
-// non_allowed_app — triggers when employee uses app not on their allowlist
+// non_allowed_app â€” triggers when employee uses app not on their allowlist
 {"max_minutes_per_day": 15, "max_consecutive_minutes": 5, "alert_severity": "medium"}
 
-// presence_without_activity — biometric says present but no laptop activity
+// presence_without_activity â€” biometric says present but no laptop activity
 {"gap_minutes_threshold": 30, "source": "biometric_vs_activity"}
 
-// heartbeat_gap — agent stopped sending heartbeats (possible tamper or crash)
+// heartbeat_gap â€” agent stopped sending heartbeats (possible tamper or crash)
 {"gap_minutes_threshold": 10, "exclude_known_offline": true}
 ```
 
@@ -124,9 +124,9 @@ Generated alerts when rules are triggered.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
-| `rule_id` | `uuid` | FK → exception_rules |
+| `tenant_id` | `uuid` | FK â†’ tenants |
+| `employee_id` | `uuid` | FK â†’ employees |
+| `rule_id` | `uuid` | FK â†’ exception_rules |
 | `triggered_at` | `timestamptz` | When the rule fired |
 | `severity` | `varchar(20)` | Copied from rule at trigger time |
 | `summary` | `varchar(500)` | Human-readable description |
@@ -143,18 +143,18 @@ Notification routing by severity.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK â†’ tenants |
 | `severity` | `varchar(20)` | Which severity triggers this chain |
-| `step_order` | `int` | 1, 2, 3… |
+| `step_order` | `int` | 1, 2, 3â€¦ |
 | `resolver_type` | `varchar(50)` | `reporting_manager`, `team_lead`, `department_owner`, `permission`, `department`, `team`, `job_level`, `specific_employee`, `configured_escalation_owner`, `previous_approver`, `case_participants` |
 | `resolver_config` | `jsonb` | Resolver-specific configuration such as permission key, department/team/job level id, or selected employee id |
 | `delay_minutes` | `int` | Wait N minutes before escalating to next step |
 | `created_at` | `timestamptz` | |
 
 **Example chain for `critical` severity:**
-1. Employee's reporting manager — delay 0 min (immediate)
-2. Users with permission `exceptions:manage` — delay 30 min (if not acknowledged)
-3. Configured escalation owner — delay 60 min (if still not acknowledged)
+1. Employee's reporting manager â€” delay 0 min (immediate)
+2. Users with permission `exceptions:manage` â€” delay 30 min (if not acknowledged)
+3. Configured escalation owner â€” delay 60 min (if still not acknowledged)
 
 > Database note: resolver-based routing is the canonical Phase 1 shape. Do not reintroduce fixed HR/CEO role columns for exception escalation.
 
@@ -165,8 +165,8 @@ Audit trail for alert actions.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `alert_id` | `uuid` | FK → exception_alerts |
-| `acknowledged_by_id` | `uuid` | FK → users |
+| `alert_id` | `uuid` | FK â†’ exception_alerts |
+| `acknowledged_by_id` | `uuid` | FK â†’ users |
 | `action` | `varchar(20)` | `acknowledged`, `dismissed`, `escalated`, `noted` |
 | `comment` | `text` | Optional note |
 | `acted_at` | `timestamptz` | |
@@ -178,26 +178,26 @@ When the engine runs checks.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants, UNIQUE |
+| `tenant_id` | `uuid` | FK â†’ tenants, UNIQUE |
 | `check_interval_minutes` | `int` | Default 5 |
 | `active_from_time` | `time` | e.g., 08:00 |
 | `active_to_time` | `time` | e.g., 18:00 |
-| `active_days_json` | `jsonb` | e.g., `[1,2,3,4,5]` (Mon–Fri) |
+| `active_days_json` | `jsonb` | e.g., `[1,2,3,4,5]` (Monâ€“Fri) |
 | `timezone` | `varchar(50)` | e.g., "Asia/Colombo" |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
 ---
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module â€” MediatR)
 
 > These events are published and consumed within this module only. They never leave the module.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | â€” | â€” |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module â€” MediatR INotification)
 
 ### Publishes
 
@@ -220,7 +220,7 @@ When the engine runs checks.
 ## Key Business Rules
 
 1. **Engine only evaluates during configured work hours** (`exception_schedules`). Off-hours activity data is still collected by [[modules/activity-monitoring/overview|Activity Monitoring]] but does NOT trigger alerts.
-2. **One alert per rule per employee per evaluation window.** Don't generate duplicate alerts for the same ongoing condition — check if an active (non-acknowledged) alert already exists.
+2. **One alert per rule per employee per evaluation window.** Don't generate duplicate alerts for the same ongoing condition â€” check if an active (non-acknowledged) alert already exists.
 3. **Escalation is time-based and resolver-based.** If alert is not acknowledged within `delay_minutes`, auto-escalate to the next resolver in the chain. Implemented via Hangfire delayed jobs.
 4. **Data snapshot is evidence.** When an alert fires, capture the relevant data (activity snapshots, presence data) into `data_snapshot_json` so the alert is self-contained for review.
 5. **Threshold JSON must be validated** against the known schema for each `rule_type` before evaluation. Invalid JSON = skip rule + log warning.
@@ -231,31 +231,31 @@ When the engine runs checks.
 
 ```
 ExceptionEngineEvaluationJob (Hangfire, every 5 min during work hours)
-  │
-  ├─ Check exception_schedules — is it within active hours?
-  │   └─ No → skip evaluation
-  │
-  ├─ Load all active exception_rules for tenant
-  │
-  ├─ For each rule:
-  │   ├─ Determine target employees (all / department / team / specific)
-  │   ├─ For each employee:
-  │   │   ├─ Check monitoring_feature_toggles + employee_monitoring_overrides
-  │   │   │   └─ Monitoring disabled → skip
-  │   │   ├─ Fetch relevant data from Activity Monitoring / Workforce Presence
-  │   │   ├─ Evaluate threshold_json against data
-  │   │   ├─ If breached:
-  │   │   │   ├─ Check for existing active alert (dedup)
-  │   │   │   ├─ Create exception_alert with data_snapshot_json
-  │   │   │   └─ Publish ExceptionAlertCreated event
-  │   │   └─ If not breached → continue
-  │
-  └─ Done
+  â”‚
+  â”œâ”€ Check exception_schedules â€” is it within active hours?
+  â”‚   â””â”€ No â†’ skip evaluation
+  â”‚
+  â”œâ”€ Load all active exception_rules for tenant
+  â”‚
+  â”œâ”€ For each rule:
+  â”‚   â”œâ”€ Determine target employees (all / department / team / specific)
+  â”‚   â”œâ”€ For each employee:
+  â”‚   â”‚   â”œâ”€ Check monitoring_feature_toggles + employee_monitoring_overrides
+  â”‚   â”‚   â”‚   â””â”€ Monitoring disabled â†’ skip
+  â”‚   â”‚   â”œâ”€ Fetch relevant data from Activity Monitoring / Workforce Presence
+  â”‚   â”‚   â”œâ”€ Evaluate threshold_json against data
+  â”‚   â”‚   â”œâ”€ If breached:
+  â”‚   â”‚   â”‚   â”œâ”€ Check for existing active alert (dedup)
+  â”‚   â”‚   â”‚   â”œâ”€ Create exception_alert with data_snapshot_json
+  â”‚   â”‚   â”‚   â””â”€ Publish ExceptionAlertCreated event
+  â”‚   â”‚   â””â”€ If not breached â†’ continue
+  â”‚
+  â””â”€ Done
 
 EscalationJob (Hangfire, every 5 min)
-  ├─ Find alerts where status = 'new' AND triggered_at + delay_minutes < now
-  ├─ Escalate to next step in escalation_chains
-  └─ Publish AlertEscalated event
+  â”œâ”€ Find alerts where status = 'new' AND triggered_at + delay_minutes < now
+  â”œâ”€ Escalate to next step in escalation_chains
+  â””â”€ Publish AlertEscalated event
 ```
 
 ---
@@ -310,52 +310,52 @@ New exception alerts are pushed to the frontend via SignalR channel `exception-a
 
 ## New Rule Type Details
 
-### `non_allowed_app` — App Allowlist Violation
+### `non_allowed_app` â€” App Allowlist Violation
 
 ```
 Evaluation:
-  → Fetch resolved app allowlist for employee via IConfigurationService.GetResolvedAppAllowlistAsync()
-  → Query application_usage for today where app NOT in allowlist
-  → Sum non-allowed minutes
-  → If exceeds max_minutes_per_day OR any single app exceeds max_consecutive_minutes → fire alert
-  → Evidence: { app_name, total_minutes, category, allowlist_mode }
+  â†’ Fetch resolved app allowlist for employee via IConfigurationService.GetResolvedAppAllowlistAsync()
+  â†’ Query application_usage for today where app NOT in allowlist
+  â†’ Sum non-allowed minutes
+  â†’ If exceeds max_minutes_per_day OR any single app exceeds max_consecutive_minutes â†’ fire alert
+  â†’ Evidence: { app_name, total_minutes, category, allowlist_mode }
 ```
 
-### `presence_without_activity` — Biometric ↔ Activity Cross-Validation
-
-```
-Evaluation:
-  → Fetch attendance_records (biometric clock-in/out) for employee today
-  → Fetch activity_daily_summary (agent data) for employee today  
-  → Compare: if biometric says "present since 09:00" but first activity_snapshot is at 09:45
-    → gap = 45 minutes > gap_minutes_threshold (30) → fire alert
-  → Also detects: "clocked out at 17:00 but no activity since 15:30"
-  → Evidence: { biometric_in, first_activity, gap_minutes, biometric_out, last_activity }
-```
-
-### `heartbeat_gap` — Agent Tamper / Crash Detection
+### `presence_without_activity` â€” Biometric â†” Activity Cross-Validation
 
 ```
 Evaluation:
-  → Fetch agent_health_logs for employee's registered agent
-  → Check last_heartbeat_at against now
-  → If gap > gap_minutes_threshold AND agent status = 'active' → fire alert
-  → Exclude agents with status 'inactive' or 'revoked' (known offline)
-  → Evidence: { agent_id, last_heartbeat, gap_minutes, tamper_detected }
+  â†’ Fetch attendance_records (biometric clock-in/out) for employee today
+  â†’ Fetch activity_daily_summary (agent data) for employee today  
+  â†’ Compare: if biometric says "present since 09:00" but first activity_snapshot is at 09:45
+    â†’ gap = 45 minutes > gap_minutes_threshold (30) â†’ fire alert
+  â†’ Also detects: "clocked out at 17:00 but no activity since 15:30"
+  â†’ Evidence: { biometric_in, first_activity, gap_minutes, biometric_out, last_activity }
+```
+
+### `heartbeat_gap` â€” Agent Tamper / Crash Detection
+
+```
+Evaluation:
+  â†’ Fetch agent_health_logs for employee's registered agent
+  â†’ Check last_heartbeat_at against now
+  â†’ If gap > gap_minutes_threshold AND agent status = 'active' â†’ fire alert
+  â†’ Exclude agents with status 'inactive' or 'revoked' (known offline)
+  â†’ Evidence: { agent_id, last_heartbeat, gap_minutes, tamper_detected }
 ```
 
 ### Remote Capture Action Flow
 
 ```
-Manager views alert detail → clicks "Request Screenshot" or "Request Photo"
-  → POST /api/v1/exceptions/alerts/{id}/request-screenshot
-  → ExceptionEngineService.RequestRemoteCaptureAsync(alertId, captureType, requestedByUserId)
-    → Validate: alert exists, employee has active agent, rate limit not exceeded
-    → Publish RemoteCaptureRequested event
-    → agent-gateway handles event → sends command to agent via SignalR
-    → Agent shows notification to employee → captures → uploads
-    → AgentCommandCompleted event fires → result attached to alert
-  → Manager sees capture result in alert detail view
+Manager views alert detail â†’ clicks "Request Screenshot" or "Request Photo"
+  â†’ POST /api/v1/exceptions/alerts/{id}/request-screenshot
+  â†’ ExceptionEngineService.RequestRemoteCaptureAsync(alertId, captureType, requestedByUserId)
+    â†’ Validate: alert exists, employee has active agent, rate limit not exceeded
+    â†’ Publish RemoteCaptureRequested event
+    â†’ agent-gateway handles event â†’ sends command to agent via SignalR
+    â†’ Agent shows notification to employee â†’ captures â†’ uploads
+    â†’ AgentCommandCompleted event fires â†’ result attached to alert
+  â†’ Manager sees capture result in alert detail view
 ```
 
 **Rate limit:** Max 10 capture requests per agent per hour. Prevents harassment.
@@ -372,24 +372,24 @@ Manager views alert detail → clicks "Request Screenshot" or "Request Photo"
 
 ## Features
 
-- [[modules/exception-engine/exception-rules/overview|Exception Rules]] — Configurable anomaly detection rules with threshold JSON
-- [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]] — Hangfire-driven rule evaluation against activity and presence data
-- [[modules/exception-engine/alert-generation/overview|Alert Generation]] — Alert creation, deduplication, evidence snapshots — frontend: [[modules/exception-engine/alert-generation/frontend|Frontend]]
-- [[modules/exception-engine/escalation-chains/overview|Escalation Chains]] — Time-based escalation routing by severity
-- [[modules/exception-engine/activity-baselines/overview|Activity Baselines]] — Per-employee rolling baseline computation enabling sigma-relative rule thresholds
-- Remote Capture Actions — Manager-triggered screenshot/photo capture from alert detail view
-- Biometric Cross Validation — Presence-without-activity detection (biometric ↔ agent data)
-- App Violation Rules — Non-allowed app usage detection (integrated with [[modules/configuration/app-allowlist/overview|App Allowlist]])
+- [[modules/exception-engine/exception-rules/overview|Exception Rules]] â€” Configurable anomaly detection rules with threshold JSON
+- [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]] â€” Hangfire-driven rule evaluation against activity and presence data
+- [[modules/exception-engine/alert-generation/overview|Alert Generation]] â€” Alert creation, deduplication, evidence snapshots â€” frontend: [[modules/exception-engine/alert-generation/frontend|Frontend]]
+- [[modules/exception-engine/escalation-chains/overview|Escalation Chains]] â€” Time-based escalation routing by severity
+- [[modules/exception-engine/activity-baselines/overview|Activity Baselines]] â€” Per-employee rolling baseline computation enabling sigma-relative rule thresholds
+- Remote Capture Actions â€” Manager-triggered screenshot/photo capture from alert detail view
+- Biometric Cross Validation â€” Presence-without-activity detection (biometric â†” agent data)
+- App Violation Rules â€” Non-allowed app usage detection (integrated with [[modules/configuration/app-allowlist/overview|App Allowlist]])
 
 ---
 
 ## Related
 
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — All rules, alerts, and schedules are tenant-scoped
-- [[backend/messaging/event-catalog|Event Catalog]] — `ExceptionAlertCreated`, `AlertEscalated`, `AlertAcknowledged`
-- [[backend/messaging/error-handling|Error Handling]] — Invalid threshold JSON skips rule with warning log
-- [[security/compliance|Compliance]] — Alert acknowledgement audit trail
-- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] â€” All rules, alerts, and schedules are tenant-scoped
+- [[backend/messaging/event-catalog|Event Catalog]] â€” `ExceptionAlertCreated`, `AlertEscalated`, `AlertAcknowledged`
+- [[backend/messaging/error-handling|Error Handling]] â€” Invalid threshold JSON skips rule with warning log
+- [[security/compliance|Compliance]] â€” Alert acknowledgement audit trail
+- [[current-focus/DEV2-exception-engine|DEV2: Exception Engine]] â€” Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/notifications/overview|Notifications]]
 

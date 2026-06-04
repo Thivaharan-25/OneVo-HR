@@ -50,7 +50,7 @@ public class WorkflowServiceTests
         // var result = await _sut.MethodAsync(command, default);
 
         // Assert
-        // WorkflowCompleted event
+        // WorkflowApproved event
     }
 }
 ```
@@ -70,7 +70,7 @@ public class WorkflowServiceTests
 | Delivery router without Chat | Integration | Action card appears in Inbox detail panel |
 | Teams mirror enabled | Integration | Discussion is mirrored, but official action remains a ONEVO link |
 | Approve advances to next step | Unit | Next resolver is evaluated and next assignee notified |
-| Final approval completes workflow | Unit | WorkflowCompleted event |
+| Final approval approves workflow | Unit | WorkflowApproved event |
 | Unresolved delay escalates dynamically | Unit | Escalation resolver receives action card and audit entry is written |
 
 ## Related

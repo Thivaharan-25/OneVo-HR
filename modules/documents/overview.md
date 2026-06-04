@@ -73,7 +73,7 @@ Document metadata. Actual files are stored in blob storage via `IFileService`. S
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `registration_profile_id` | `uuid` | Optional FK → company_registration_profiles (nullable — company HR scope) |
+| `legal_entity_id` | `uuid` | Optional FK → legal_entities (nullable — tenant/workspace scope) |
 | `employee_id` | `uuid` | FK → employees (nullable — HR employee-level docs) |
 | `workspace_id` | `uuid` | FK → workspaces (nullable — WorkSync scope) |
 | `project_id` | `uuid` | FK → projects (nullable — WorkSync project-level docs) |

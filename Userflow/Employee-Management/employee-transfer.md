@@ -1,9 +1,9 @@
-# Employee Transfer
+﻿# Employee Transfer
 
 **Area:** Employee Management  
-**Trigger:** HR Admin initiates within-company department/team transfer, or starts a cross-company transfer to a connected company  
-**Required Permission(s):** `employees:write`; cross-company transfer also requires `cross-company:employees:transfer`  
-**Related Permissions:** `org:manage` (cross-department), `attendance:write` (schedule reassignment), `company-connections:read`
+**Trigger:** HR Admin initiates a position, department, or legal entity transfer inside the tenant  
+**Required Permission(s):** `employees:write`  
+**Related Permissions:** `org:manage` (department/legal entity changes), `attendance:write` (schedule reassignment)
 
 ---
 
@@ -11,27 +11,32 @@
 
 | Type | Meaning | Boundary |
 |:-----|:--------|:---------|
-| Within-company transfer | Department, team, reporting manager, location, or cost center change inside the current tenant | Employee record remains in the same tenant |
-| Cross-company transfer | Controlled move or secondment from source tenant to target connected tenant | Source tenant keeps history; target tenant creates or activates its own employee record |
+| Same-legal-entity transfer | Position or department change inside the employee's current legal entity | Employee primary legal entity remains unchanged |
+| Legal-entity transfer | Move from one legal entity to another legal entity inside the same tenant | Employee primary legal entity and position assignment change to the target legal entity |
 
-Cross-company transfer must not be modeled as moving an employee between legal entities inside one tenant.
+Separate-tenant company connections are not part of Phase 1 employee transfer. Phase 1 multi-company support is handled through legal entities inside one tenant.
 
 ## Preconditions
 
 - Employee is active -> [[Userflow/Employee-Management/profile-management|Profile Management]]
-- Target department/team exists for within-company transfer -> [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Target legal entity exists when changing legal entity.
+- Target position exists inside the selected legal entity and department -> [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Team membership changes are handled separately through Org Structure > Teams; employee transfers do not directly move team membership.
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
-- Cross-company transfer additionally requires an active [[modules/shared-platform/company-connections/overview|Company Connection]], target acceptance permission/scope, and configured workflow approval where applicable.
 
-## Within-Company Flow
+## Transfer Flow
 
 ### Step 1: Initiate Transfer
 - **UI:** Employee Profile -> Actions -> "Transfer" -> form opens
-- **API:** `GET /api/v1/org/departments` + `GET /api/v1/org/teams`
+- **API:** `GET /api/v1/org/legal-entities`, `GET /api/v1/org/departments?legalEntityId={id}`, `GET /api/v1/org/positions?legalEntityId={id}`
 
 ### Step 2: Select Transfer Details
-- **UI:** Select new department -> select new team -> select new reporting manager -> set new location (if applicable) -> set effective date -> enter reason
-- **Validation:** Effective date must be today or future
+- **UI:** Select legal entity if changing company -> select department -> select new position -> set effective date -> enter reason.
+- **Validation:** Effective date must be today or future. The selected position must be active, belong to the selected legal entity, and have available occupancy. The target position's reporting position must belong to the same legal entity. If the new position reports to a vacant unique position, transfer can proceed with a warning that reporting manager will be unresolved until staffed.
+
+### Step 2b: Confirm Access Impact
+- **UI:** Show access to add/remove based on old and new position-linked roles/permissions.
+- **Rule:** Remove old position-linked access, add new position-linked access, and keep manual access only if admin confirms.
 
 ### Step 3: Submit Transfer
 - **API:** `POST /api/v1/employees/{id}/transfer`
@@ -40,53 +45,32 @@ Cross-company transfer must not be modeled as moving an employee between legal e
 
 ### Step 4: Approval (if configured)
 - **Backend:** Workflow triggers if approval required -> [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
-- Resolver-selected approvers may include the current department owner, new department owner, reporting manager, team lead, users with a selected permission, or configured escalation owner. Multiple approvers use the workflow approval mode: only one required, all required, or approve in order.
+- Resolver-selected approvers may include the current department owner, new department owner, position-resolved reporting manager, team lead, users with a selected permission, or configured escalation owner. Multiple approvers use the workflow approval mode: only one required, all required, or approve in order.
 
 ### Step 5: Effective Date Processing
 - **Backend:** On effective date:
-  - Department/team updated
-  - Reporting line changed
+  - Old `position_assignments` row closed and new row created
+  - Employee primary legal entity updated when this is a legal-entity transfer
+  - Department and job title profile snapshots updated from the new position where configured
+  - Old `employee_assignment_history` row closed and new row created with the new `position_id`
+  - Current `employee_hierarchy_closure` rebuilt for the affected branch if the transfer is effective today; future-dated transfers rebuild when they become effective
   - Shift schedule may need reassignment -> [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
-  - Cost center allocation updated
-  - Notifications sent to old and new managers
-
-## Cross-Company Transfer Flow
-
-### Step 1: Select Target Company
-- **UI:** Employee Profile -> Actions -> "Transfer to connected company"
-- **API:** `GET /api/v1/company-connections`
-- **Validation:** Target company must be an active connected tenant included in the caller's grant scope.
-
-### Step 2: Start Transfer Workflow
-- **API:** `POST /api/v1/employees/{id}/cross-company-transfer`
-- **Backend:** Workflow Engine creates a cross-company transfer case with source tenant, target tenant, subject employee, connection ID, allowed evidence package, requester, and audit context.
-
-### Step 3: Source Approval And Target Acceptance
-- Source tenant approver confirms release/secondment details.
-- Target tenant approver confirms acceptance, role, department/team, start date, and onboarding tasks.
-- Workflow rules decide whether approvals are sequential, all-required, or only-one-required.
-
-### Step 4: Finalize
-- Source tenant keeps historical employment, payroll, attendance, monitoring, documents, and lifecycle records.
-- Target tenant creates or activates its own employee record.
-- Only explicitly approved transfer evidence is shared with the target tenant.
-- Payroll, leave balances, documents, device assignments, monitoring history, and user permissions do not move automatically.
+  - Notifications sent to old and new position-resolved managers where resolved from the effective-date assignment and reporting history
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| Same department | Validation fails | "Employee is already in this department" |
+| Same position | Validation fails | "Employee is already assigned to this position" |
 | Pending transfer exists | Blocked | "Employee has a pending transfer - cancel first" |
-| No active company connection | Blocked | "Target company is not connected" |
-| Missing cross-company scope | Blocked | "You do not have permission to transfer to this company" |
+| Target position belongs to another legal entity | Blocked | "Position does not belong to selected legal entity" |
+| Reporting position belongs to another legal entity | Blocked | "Reporting position must be inside the same legal entity" |
+| Position capacity exceeded | Blocked | "This position has reached its capacity" |
 
 ## Events Triggered
 
 - `EmployeeTransferred` -> [[backend/messaging/event-catalog|Event Catalog]]
-- `CrossCompanyTransferRequested`
-- `CrossCompanyTransferAccepted`
-- Notification to managers -> [[backend/notification-system|Notification System]]
+- Notification to position-resolved managers -> [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
@@ -99,4 +83,3 @@ Cross-company transfer must not be modeled as moving an employee between legal e
 - [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
 - [[modules/org-structure/departments/overview|Departments]]
 - [[modules/org-structure/teams/overview|Teams]]
-- [[modules/shared-platform/company-connections/overview|Company Connections]]

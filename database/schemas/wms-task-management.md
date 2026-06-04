@@ -12,7 +12,7 @@
 |---|---|---|
 | `id` | uuid | PK |
 | `project_id` | uuid | FK -> projects |
-| `workspace_id` | uuid | FK -> workspaces |
+| `workspace_id` | uuid | FK -> workspaces; task's team/workspace context |
 | `tenant_id` | uuid | FK -> tenants |
 | `parent_task_id` | uuid | FK -> tasks, nullable; subtasks |
 | `epic_id` | uuid | FK -> epics, nullable |
@@ -31,6 +31,8 @@
 | `updated_at` | timestamptz | |
 
 **Indexes:** `(project_id, status)`, `(workspace_id)`, `(tenant_id)`, `(parent_task_id)`, `(due_date)` where not null
+
+**Rule:** `workspace_id` must reference an active `project_workspaces` link for the task's project. It does not mean the project belongs to one workspace.
 
 ---
 

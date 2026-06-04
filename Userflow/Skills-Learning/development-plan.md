@@ -1,6 +1,7 @@
 # Development Plan
 
 **Area:** Skills & Learning  
+**Phase:** Phase 2 deferred
 **Trigger:** Manager or employee creates learning path (user action)
 **Required Permission(s):** `skills:manage` (create for team) or `skills:write` (own)  
 **Related Permissions:** `performance:manage` (link to performance reviews)
@@ -14,6 +15,8 @@
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
+
+The steps below are Phase 2 only. Do not build Skills development plan pages or `/api/v1/skills/development-plans` integrations in Phase 1.
 
 ### Step 1: Create Plan
 - **UI:** Skills → Development Plans → "Create Plan" → select employee (or self) → set plan name, duration

@@ -21,14 +21,14 @@ projects/
 │   └── utils/
 │       ├── format-date.ts
 │       └── format-date.spec.ts             # Utility unit test
-├── employee-app/src/app/features/
+├── operations-lifecycle-app/src/app/features/
 │   ├── leave/
 │   │   ├── leave-overview.component.ts
 │   │   └── leave-overview.component.spec.ts # Component test
-├── management-app/src/app/features/
-│   ├── workforce/
-│   │   ├── live-dashboard.component.ts
-│   │   └── live-dashboard.component.spec.ts # Component test
+├── setup-control-app/src/app/features/
+│   ├── legal-entities/
+│   │   ├── legal-entity-list.component.ts
+│   │   └── legal-entity-list.component.spec.ts # Component test
 e2e/
 ├── leave-request.spec.ts                    # E2E test
 ├── exception-management.spec.ts
@@ -282,7 +282,7 @@ test.describe('Leave Request Flow', () => {
 | Leave approval | `leave-request.spec.ts` | Submit, approve, reject leave |
 | Exception management | `exception-management.spec.ts` | View alerts, acknowledge, dismiss |
 | Employee CRUD | `employee-crud.spec.ts` | Create, edit, view employee |
-| App context switch | `context-switch.spec.ts` | Switch between employee-app and management-app |
+| App context switch | `context-switch.spec.ts` | Switch between Setup / Control and Operations / Lifecycle |
 
 ## What NOT to Test
 
@@ -303,8 +303,9 @@ test.describe('Leave Request Flow', () => {
 ## Run Commands
 
 ```bash
-ng test employee-app          # Jest unit + component tests
-ng test management-app
+ng test setup-control-app     # Jest unit + component tests
+ng test operations-lifecycle-app
+ng test dev-console
 ng test shared
 ng e2e                        # Playwright E2E
 ```

@@ -43,7 +43,7 @@
 | `name` | `varchar(200)` | Company name |
 | `slug` | `varchar(100)` | URL-safe identifier, UNIQUE |
 | `primary_contact_email` | `varchar(255)` | Primary customer contact captured during Developer Platform tenant profile creation |
-| `country_code` | `varchar(3)` | Tenant/company profile country code selected during provisioning |
+| `country_code` | `varchar(3)` | Tenant profile country code selected during provisioning |
 | `industry_profile` | `varchar(30)` | `office_it`, `manufacturing`, `retail`, `healthcare`, `custom` — **sets monitoring defaults at signup** |
 | `registration_profile_name` | `varchar(200)` | Registration/profile display name captured on the tenant profile, not a legal entity name |
 | `registration_number` | `varchar(50)` | Nullable registration/profile number captured on the tenant profile |
@@ -66,9 +66,9 @@
 - `suspended` - Temporarily disabled tenant. Data is preserved; tenant-facing login and workflows are blocked.
 - `cancelled` - Commercially cancelled/offboarded tenant. Data retention, export, and purge follow the offboarding policy.
 
-`country_code`, `registration_profile_name`, `registration_number`, `company_size_range`, `timezone`, and `currency_code` are tenant profile metadata, not legal-entity data. Detailed provisioning progress is stored in `tenant_provisioning_states` and `tenant_provisioning_validation_results`; do not add wizard-step progress columns to `tenants`.
+`country_code`, `registration_profile_name`, `registration_number`, `company_size_range`, `timezone`, and `currency_code` are tenant profile metadata, not legal entity data. Detailed provisioning progress is stored in `tenant_provisioning_states` and `tenant_provisioning_validation_results`; do not add wizard-step progress columns to `tenants`.
 
-Tenant profile creation does not create legal entity records. Separate operating companies are separate tenants. The same owner email can be invited to multiple tenants and accepting one invitation grants access only to that tenant.
+Tenant profile creation seeds one default legal entity for single-company setup. Multi-company customers can add additional legal entities in the Setup / Control Application after activation.
 
 ---
 
@@ -85,9 +85,9 @@ Tenant profile creation does not create legal entity records. Separate operating
 | `is_active` | `boolean` |  |
 | `email_verified` | `boolean` |  |
 | `last_login_at` | `timestamptz` | Nullable |
-| `must_change_password` | `boolean` | Set by Dev Platform admin when assigning a temporary password |
-| `password_set_by_admin` | `boolean` | True when password was set via Dev Platform override |
-| `temporary_password_expires_at` | `timestamptz` | Nullable — if set and in the past, login is blocked until admin resets |
+| `must_change_password` | `boolean` | Security reset flag; not used as an invite method |
+| `password_setup_required` | `boolean` | True until invited user completes password setup; SSO can still be used when enabled |
+| `password_setup_expires_at` | `timestamptz` | Nullable — expiry for account setup link; admin can resend invite |
 | `password_reset_token_hash` | `varchar(128)` | Nullable — SHA-256 hex hash of the forgot-password reset token |
 | `password_reset_token_expires_at` | `timestamptz` | Nullable — 1-hour expiry for password reset tokens |
 | `created_at` | `timestamptz` |  |
@@ -107,3 +107,5 @@ Tenant profile creation does not create legal entity records. Separate operating
 - [[database/schema-catalog|Schema Catalog]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[database/performance|Performance]]
+
+

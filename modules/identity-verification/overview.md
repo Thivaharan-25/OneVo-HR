@@ -135,7 +135,7 @@ Trusted employee reference images used for future photo comparisons. Reference p
 | `reviewed_by_id` | `uuid` | Nullable FK -> users |
 | `reviewed_at` | `timestamptz` | Nullable |
 | `review_comment` | `varchar(255)` | Nullable |
-| `consent_record_id` | `uuid` | FK -> consent_records or equivalent consent audit row |
+| `legal_acceptance_record_id` | `uuid` | FK -> legal_acceptance_records for photo/biometric notice or consent |
 | `is_active` | `boolean` | Only one approved active reference per employee |
 | `created_at` | `timestamptz` | |
 
@@ -160,7 +160,7 @@ Fingerprint terminals (moved from old Attendance module).
 
 ### `biometric_enrollments`
 
-Employee fingerprint enrollment.
+Employee biometric enrollment. For fingerprint devices, store only the approved enrollment reference/hash metadata required for verification.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -237,7 +237,7 @@ Tamper detection and device health.
 
 1. **Verification photos are temporary** — retained for configurable period (default 30 days) then auto-deleted by `PurgeExpiredVerificationPhotosJob`. They are NOT approved reference photos.
 2. **Photos are RESTRICTED data** — stored in Cloudflare R2 object storage via `file_records`, never in the database.
-3. **Biometric consent is mandatory** — `consent_given` must be `true` before enrollment. This is a GDPR/PDPA requirement.
+3. **Legal & Privacy notice/consent is mandatory** - a matching `legal_acceptance_record_id` must exist before photo/biometric verification or biometric enrollment starts.
 4. **Fingerprint templates are NEVER stored in ONEVO** — only `template_hash` (a reference to the biometric device's local storage). The actual template stays on the hardware.
 5. **Verification policy respects monitoring overrides** — if an employee has `identity_verification = false` in `employee_monitoring_overrides`, skip verification even if tenant policy is active.
 
@@ -311,7 +311,7 @@ Manager sees exception alert → clicks "Request Screenshot" or "Request Photo"
 - [[modules/identity-verification/photo-verification/overview|Photo Verification]] — Photo capture and confidence-score matching
 - On Demand Capture — Manager-triggered screenshot/photo capture from exception alerts
 - [[modules/identity-verification/biometric-devices/overview|Biometric Devices]] — Fingerprint terminal management and HMAC webhook authentication
-- [[modules/identity-verification/biometric-enrollment/overview|Biometric Enrollment]] — Employee fingerprint enrollment with mandatory GDPR consent
+- [[modules/identity-verification/biometric-enrollment/overview|Biometric Enrollment]] - Employee biometric enrollment with mandatory Legal & Privacy notice/consent
 
 ---
 
@@ -320,7 +320,7 @@ Manager sees exception alert → clicks "Request Screenshot" or "Request Photo"
 - [[security/auth-architecture|Auth Architecture]] — HMAC-SHA256 authentication for biometric device webhooks
 - [[infrastructure/multi-tenancy|Multi Tenancy]] — Policies and records are tenant-scoped
 - [[security/data-classification|Data Classification]] — Photos are RESTRICTED; fingerprint templates stored on device hardware only
-- [[security/compliance|Compliance]] — `consent_given` mandatory for biometric enrollment (GDPR/PDPA)
+- [[security/compliance|Compliance]] - Legal & Privacy notice/consent is mandatory before photo/biometric verification or biometric enrollment
 - [[backend/messaging/event-catalog|Event Catalog]] — `VerificationFailed`, `VerificationCompleted`, `BiometricDeviceOffline`
 - [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]] — Implementation task file
 

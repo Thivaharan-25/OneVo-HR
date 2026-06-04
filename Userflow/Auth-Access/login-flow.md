@@ -1,9 +1,9 @@
-﻿# Login Flow
+# Login Flow
 
 **Area:** Auth & Access
-**Trigger:** User navigates to login page (user action â€” every session)
+**Trigger:** User navigates to login page (user action - every session)
 **Required Permission(s):** None (public endpoint, any user)
-**Related Permissions:** All â€” after login, the user's effective permissions determine what they can access
+**Related Permissions:** All - after login, the user's effective permissions determine what they can access
 
 ---
 
@@ -15,9 +15,9 @@
 ## Flow Steps
 
 ### Step 1: Navigate to Login Page
-- **UI:** User opens `https://{tenantSlug}.onevo.com/login`. Login page displays: tenant logo, email field, password field, "Remember me" checkbox, "Forgot Password?" link, "Sign in with SSO" button (if SSO configured). If tenant not found by subdomain: generic ONEVO login page with tenant selector
+- **UI:** User opens `https://{tenantSlug}.onevo.com/login`. Login page displays: tenant logo, email field, password field, "Remember me" checkbox, "Forgot Password?" link, "Sign in with SSO" button (if SSO configured), and footer links to Terms and Privacy. The login button is not blocked by legal checkboxes; required Legal & Privacy items are checked after authentication when the backend knows the exact user, tenant, policy, and accepted versions. If tenant not found by subdomain: generic ONEVO login page with tenant selector.
 - **API:** `GET /api/v1/tenants/resolve?host={hostname}` (resolves tenant from ONEVO subdomain)
-- **Backend:** `TenantResolver.ResolveAsync()` â†’ [[modules/infrastructure/overview|Infrastructure]]
+- **Backend:** `TenantResolver.ResolveAsync()` -> [[modules/infrastructure/overview|Infrastructure]]
 - **Validation:** Tenant must exist and be active
 - **DB:** `tenants`, `tenant_branding` (for logo/colors)
 
@@ -38,11 +38,11 @@
     "rememberMe": true
   }
   ```
-- **Backend:** `AuthService.LoginAsync()` â†’ [[frontend/cross-cutting/authentication|Authentication]]
+- **Backend:** `AuthService.LoginAsync()` -> [[frontend/cross-cutting/authentication|Authentication]]
   1. Look up user by email + tenant_id
   2. Verify password hash (bcrypt compare)
   3. Check user status is `active` (not `disabled`, `invited`, or `locked`)
-  4. Check for account lockout (5 failed attempts â†’ 15-minute lockout)
+  4. Check for account lockout (5 failed attempts -> 15-minute lockout)
   5. Record login attempt in `login_attempts` (success or failure)
   6. If password valid and no MFA: proceed to Step 5
   7. If password valid and MFA enabled: return `mfa_required: true` with temporary MFA token
@@ -58,7 +58,7 @@
     "code": "123456"
   }
   ```
-- **Backend:** `MfaService.VerifyAsync()` â†’ [[modules/auth/mfa/overview|MFA]]
+- **Backend:** `MfaService.VerifyAsync()` -> [[modules/auth/mfa/overview|MFA]]
   1. Validate temporary MFA token (valid for 5 minutes)
   2. Load verified `totp` MFA method for the user
   3. Verify submitted code against the encrypted TOTP secret with a small clock-skew window
@@ -95,21 +95,28 @@
   6. Return user, permissions, active module keys, and active feature keys in the response body
 - **Validation:** N/A
 - **DB:** `sessions` (created), `refresh_tokens` or session rotation records (created), `user_roles`, `role_permissions`, `user_permission_overrides`
-### Step 6: Redirect to Dashboard
+### Step 6: Legal & Privacy Gate
+- **UI:** If the user has pending platform-required Legal & Privacy items, redirect to `/legal-privacy` before dashboard access. If only WorkPulse collection-required monitoring/screenshot/biometric items are pending, the dashboard may load and shows a WorkPulse setup/status task instead of desktop collection checkboxes. The web Legal & Privacy screen shows only missing or changed web items, such as updated Terms & Conditions or updated Privacy Notice.
+- **API:** `GET /api/v1/legal/pending`, then `POST /api/v1/legal/acceptances`
+- **Backend:** Resolves pending web legal items from active legal document versions and the user's previous acceptance records. WorkPulse collection items are resolved for status display but completed inside the desktop app.
+- **Validation:** Terms and Privacy Notice acknowledgement block dashboard access when missing. Monitoring/screenshot/biometric items block only the affected WorkPulse collection category unless product/legal policy explicitly requires full access blocking.
+- **DB:** Legal acceptance/consent records
+
+### Step 7: Redirect to Dashboard
 - **UI:** User redirected to `/dashboard`. Dashboard loads based on permissions:
   - Widgets visible based on permission checks (e.g., "Team Leave" widget requires `leave:read` with team/reporting access policy)
   - Navigation sidebar built from permitted modules
   - Quick actions based on write permissions
   - Pending approvals count (if user has any `*:approve` permissions)
 - **API:** `GET /api/v1/dashboard`
-- **Backend:** `DashboardService.GetDashboardAsync()` â€” assembles widgets based on user's effective permissions
+- **Backend:** `DashboardService.GetDashboardAsync()` - assembles widgets based on user's effective permissions
 - **Validation:** HttpOnly session cookie validated on every request via middleware
 - **DB:** Various tables for dashboard widgets
 
-### Step 7: SignalR Connection Established
+### Step 8: SignalR Connection Established
 - **UI:** No visible UI change. Connection status icon in footer (green dot = connected)
 - **API:** WebSocket connection to `/hubs/notifications`
-- **Backend:** `NotificationHub.OnConnectedAsync()` â€” registers user's connection for real-time notifications, permission updates, and presence tracking
+- **Backend:** `NotificationHub.OnConnectedAsync()` - registers user's connection for real-time notifications, permission updates, and presence tracking
 - **Validation:** cookie-backed session included in the WebSocket handshake for authentication
 - **DB:** None (in-memory connection tracking)
 
@@ -122,16 +129,17 @@
 - `AuthService.HandleSsoCallbackAsync()` validates the IDP token, maps user, creates the ONEVO web session
 - MFA step is skipped (handled by the IDP)
 
-### When GDPR consent is pending
+### When Legal & Privacy items are pending
 - After successful login, before dashboard access
-- [[Userflow/Auth-Access/gdpr-consent|GDPR Consent Flow]] dialog appears
-- User must accept required consents before proceeding
-- If monitoring consent declined: monitoring features disabled for this user
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]] screen appears
+- User must accept/acknowledge required Terms and Privacy Notice items before proceeding
+- If a tenant later enables activity monitoring, screenshots, or photo/biometric verification, the web dashboard may show a WorkPulse setup/status task
+- If monitoring/screenshot/photo/biometric items remain incomplete, affected desktop collection is disabled until the user completes the notice/consent inside WorkPulse
 
 ### When session already exists (returning user)
 - If valid session cookie exists: attempt session refresh
 - `POST /api/v1/auth/refresh` with `credentials: "include"`
-- If valid: session metadata is refreshed and user goes straight to dashboard
+- If valid: session metadata is refreshed, then the Legal & Privacy gate is evaluated before dashboard access or affected collection
 - If invalid/expired: redirect to login page
 
 ### When user has sessions on multiple devices
@@ -154,29 +162,29 @@
 
 ## Events Triggered
 
-- `UserLoggedInEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by session tracking, audit logging
-- `LoginFailedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by security monitoring, lockout counter
-- `SessionCreatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by presence tracking
-- `AuditLogEntry` (action: `auth.login.success` or `auth.login.failed`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
+- `UserLoggedInEvent` -> [[backend/messaging/event-catalog|Event Catalog]] - consumed by session tracking, audit logging
+- `LoginFailedEvent` -> [[backend/messaging/event-catalog|Event Catalog]] - consumed by security monitoring, lockout counter
+- `SessionCreatedEvent` -> [[backend/messaging/event-catalog|Event Catalog]] - consumed by presence tracking
+- `AuditLogEntry` (action: `auth.login.success` or `auth.login.failed`) -> [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[Userflow/Auth-Access/password-reset|Password Reset]] â€” "Forgot Password?" link on login page
-- [[Userflow/Auth-Access/mfa-setup|Mfa Setup]] â€” enabling MFA before this flow
-- [[Userflow/Platform-Setup/sso-configuration|Sso Configuration]] â€” SSO setup by admin
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]] â€” consent collection after login
-- [[Userflow/Auth-Access/user-invitation|User Invitation]] â€” account creation before first login
-- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]] â€” disabled accounts cannot login
+- [[Userflow/Auth-Access/password-reset|Password Reset]] - "Forgot Password?" link on login page
+- [[Userflow/Auth-Access/mfa-setup|Mfa Setup]] - enabling MFA before this flow
+- [[Userflow/Platform-Setup/sso-configuration|Sso Configuration]] - SSO setup by admin
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]] - legal/privacy notices after login and policy changes
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] - account creation before first login
+- [[Userflow/Employee-Management/employee-offboarding|Employee Offboarding]] - disabled accounts cannot login
 
 ## Module References
 
-- [[frontend/cross-cutting/authentication|Authentication]] â€” login logic, BFF session creation, backend-held auth state
-- [[frontend/cross-cutting/authorization|Authorization]] â€” effective permission computation for backend session metadata
-- [[modules/auth/session-management/overview|Session Management]] â€” session creation and tracking
-- [[modules/auth/mfa/overview|MFA]] â€” TOTP verification with optional email fallback
-- [[security/auth-architecture|Auth Architecture]] â€” overall auth design
-- [[security/auth-flow|Auth Flow]] â€” authentication flow diagrams
-- [[modules/infrastructure/overview|Infrastructure]] â€” tenant resolution, multi-tenancy
+- [[frontend/cross-cutting/authentication|Authentication]] - login logic, BFF session creation, backend-held auth state
+- [[frontend/cross-cutting/authorization|Authorization]] - effective permission computation for backend session metadata
+- [[modules/auth/session-management/overview|Session Management]] - session creation and tracking
+- [[modules/auth/mfa/overview|MFA]] - TOTP verification with optional email fallback
+- [[security/auth-architecture|Auth Architecture]] - overall auth design
+- [[security/auth-flow|Auth Flow]] - authentication flow diagrams
+- [[modules/infrastructure/overview|Infrastructure]] - tenant resolution, multi-tenancy
 
 
 

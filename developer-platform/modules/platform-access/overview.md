@@ -50,7 +50,7 @@ The canonical access and UI rendering contract is `developer-platform/access-con
 | Billing Manager | Subscription plans, gateways, invoices, commercial read/manage |
 | Security Auditor | Security, audit, compliance, retention: read-only |
 | Module Catalog Manager | Product module catalog, integration catalog, role templates, configuration templates |
-| Operations Engineer | Health, services, infrastructure, background jobs, agent versions |
+| Operations Engineer | Health, services, feature flags, and system configuration review |
 | Read-Only Viewer | Dashboard and broad read-only visibility without mutation permissions |
 
 Seeded system roles are editable but cannot be deleted. Custom roles are unlimited.

@@ -20,6 +20,8 @@ Tasks are the atomic unit of work in Work Management. Every task belongs to a pr
 
 Key columns: `project_id`, `workspace_id`, `tenant_id`, `title`, `description`, `status` (`todo`, `in_progress`, `in_review`, `done`, `cancelled`), `priority` (`low`, `medium`, `high`, `urgent`), `parent_task_id`, `epic_id`, `sprint_id`, `version_id`, `due_date`, `story_points`, `short_id`, `is_archived`, `type`, `created_by_id`.
 
+`workspace_id` on a task is the team/workspace context responsible for that task. It must be one of the active `project_workspaces` for the task's project. It does not mean the whole project belongs to that workspace.
+
 ### `task_assignments`
 
 Key columns: `task_id`, `user_id`, `employee_id`, `assigned_by_id`, `assigned_at`, `availability_status`, `availability_checked_at`, `availability_warning`. Multiple employees can be assigned to one task.
@@ -84,6 +86,7 @@ Key columns: `board_id`, `column_id`, `task_id`, `position`.
 8. Assignment APIs must reject inactive/deleted employees and users without employee records in Phase 1.
 9. Assignment APIs call Leave + Calendar availability checks before writing `task_assignments`. Approved leave creates `availability_status = on_leave` and a warning by default; tenant policy may hard-block it.
 10. Employee offboarding deactivates future assignability and removes active watchers where required, while preserving historical task rows.
+11. When a task has `workspace_id`, that workspace must be linked to the project through `project_workspaces`.
 
 ---
 

@@ -1,18 +1,57 @@
-# Job Family Setup
+# Job Hierarchy Setup
 
 **Area:** Org Structure  
-**Trigger:** Admin creates job family and levels (user action — configuration)
+**Trigger:** Admin creates job titles, job families, or job levels (user action — configuration)  
 **Required Permission(s):** `org:manage`  
-**Related Permissions:** `roles:manage` (to assign default role per level)
+**Related Permissions:** `roles:manage` (to configure suggested roles per level)
 
 ---
 
-## Preconditions
+## What Lives Here
 
-- Roles created with permissions → [[Userflow/Auth-Access/role-creation|Role Creation]]
-- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+This flow covers three related but independent concepts:
 
-## Flow Steps
+| Concept | Required for position setup? | Requires the others? |
+|:--------|:-----------------------------|:---------------------|
+| **Job Title** | Yes — every position needs one | No — family and level are optional |
+| **Job Family** | No | No |
+| **Job Level** | No | Requires a job family |
+
+**The minimum path to create a position:** create a job title. Job families and levels are full first-class concepts that enable gap analysis, salary bands, and role prefill — but they are not a prerequisite for position setup or employee onboarding in Phase 1.
+
+---
+
+## Flow A: Create a Job Title (required for position setup)
+
+### Step 1: Navigate to Job Titles
+- **UI:** Sidebar → Organization → Job Titles → click "Add Job Title"
+- **API:** `GET /api/v1/org/job-titles`
+
+### Step 2: Enter Title Details
+
+| Field | Required | Notes |
+|:------|:---------|:------|
+| Name | Yes | e.g., "Software Engineer", "HR Manager". Unique within tenant. |
+| Job Family | No | Dropdown from existing families; leave blank if families not yet set up |
+| Job Level | No | Filtered to levels inside the selected family; unavailable if no family selected |
+
+- **Validation:** Name unique within tenant. Job level must belong to the selected family if both are set.
+
+### Step 3: Save
+- **API:** `POST /api/v1/org/job-titles`
+- **DB:** `job_titles` — `job_family_id` and `job_level_id` are nullable; both remain null when omitted
+- **Result:** Job title appears in the tenant catalog and is immediately selectable in position setup
+
+### Inline Creation from Position Setup
+Admins can create a job title without leaving the position form:
+- In the Job Title field on the position form, type a name that doesn't match any existing title
+- System shows "Create job title '{name}'" option
+- Selecting it creates a minimal `job_titles` record (name only, no family or level) and links it to the position
+- Family and level can be added to the title later from Sidebar → Organization → Job Titles
+
+---
+
+## Flow B: Create a Job Family with Levels (optional enrichment)
 
 ### Step 1: Navigate to Job Families
 - **UI:** Sidebar → Organization → Job Families → click "Create Job Family"
@@ -23,78 +62,114 @@
 - **Validation:** Name unique within tenant
 
 ### Step 3: Define Levels Within Family
-- **UI:** Add levels sequentially:
-  - Level 1: Junior (e.g., "Junior Engineer")
-  - Level 2: Mid (e.g., "Engineer")
-  - Level 3: Senior (e.g., "Senior Engineer")
-  - Level 4: Lead (e.g., "Engineering Lead")
-  - Level 5: Director (e.g., "Engineering Director")
-- For each level: set title, min/max salary band, description
+- **UI:** Add levels in rank order. Each level has a name and a numeric rank (used for ordering — lower rank = more junior).
 
-### Step 4: Assign Default Role Per Level (CRITICAL for RBAC)
-- **UI:** For each level → select a role from existing roles → this role's permissions become the default for employees at this level
-- **Backend:** JobFamilyService.CreateAsync() → [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
-- **Example:** Junior Engineer → "Employee" role (basic permissions), Engineering Lead → "Team Lead" role (includes `performance:read` with policy `reporting_tree`, `attendance:read` with policy `reporting_tree`)
+| Field | Required | Notes |
+|:------|:---------|:------|
+| Level Name | Yes | e.g., "Junior", "Mid", "Senior", "Lead", "Director" — seniority tier names, not job title names |
+| Rank | Yes | Integer; unique within family; determines ordering |
+| Description | No | |
+| Min / Max Salary | No | Informational band; enforced only when payroll:write is active |
+
+Level names describe seniority tiers, not specific roles. "Senior" is a level; "Software Engineer" is a job title that sits at that level — they are separate fields.
+
+### Step 4: Configure Suggested Role Per Level
+- **UI:** For each level, optionally select a suggested role from existing tenant roles. This prefills the role picker during onboarding and promotion for admin review — it never auto-grants permissions.
+- **API:** Included in `POST /api/v1/org/job-families` payload; stored as `suggested_role_id` on the `job_levels` row
+- **Example:** Junior level suggests "Employee" role; Lead level may suggest "Team Lead" role. Admin confirmation is always required before any role is assigned.
 
 ### Step 5: Save
 - **API:** `POST /api/v1/org/job-families`
-- **DB:** `job_families`, `job_levels`, `job_titles` — records created with role associations
-- **Result:** When employees are assigned to a job family level during onboarding, they automatically inherit the level's default role and its permissions
+- **DB:** `job_families`, `job_levels` — no `job_titles` rows are created here
+- **Result:** Family and levels are now available as optional fields in the job title form
 
-### Step 6: Assign Required Skills to Job Family
-- **UI:** Inside the job family detail view, navigate to "Required Skills" tab. Empty state: "No skills assigned yet — add skills this job family requires". Click "Add Skill Requirement". Modal: search and select a skill from the skill taxonomy (requires skills to be set up first — see [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]]). For each skill: set Minimum Proficiency (slider 1–5 with level label), toggle Mandatory / Optional. Save
+### Step 6: Link Existing Job Titles to the Family
+- **UI:** Organization → Job Titles → select a title → edit → choose family and level
+- **API:** `PUT /api/v1/org/job-titles/{id}`
+- Linking is optional and can be done any time after the family is created
+
+### Step 7: Assign Required Skills to Job Family
+- **UI:** Inside the job family detail view → Required Skills tab → Add Skill Requirement
+- Type to search existing tenant skills. If no match, system shows "Create skill '{name}'" to create inline without a taxonomy sidebar.
+- Set Minimum Proficiency (1–5) and Mandatory / Optional.
 - **API:** `POST /api/v1/org/job-families/{familyId}/skill-requirements`
+
+  When linking an existing skill:
   ```json
-  {
-    "skillId": "uuid",
-    "minProficiency": 3,
-    "isMandatory": true
-  }
+  { "skillId": "uuid", "minProficiency": 3, "isMandatory": true }
+  ```
+  When creating a skill inline:
+  ```json
+  { "skillId": null, "newSkill": { "name": "Rust", "categoryName": "Technical" }, "minProficiency": 3, "isMandatory": true }
   ```
 - **Backend:** `JobSkillRequirementService.AssignAsync()`
-  1. Validate skill exists in tenant's taxonomy
-  2. Validate job family belongs to tenant
-  3. Prevent duplicate skill for same job family
-  4. Create `job_skill_requirements` record
-  5. Create audit log entry
-- **Validation:** Skill must exist and be active. `min_proficiency` must be 1–5. Cannot add the same skill twice to the same family
-- **DB:** `job_skill_requirements`
-- **Result:** Skill gap analysis (`GET /api/v1/skills/gap-analysis/{employeeId}`) now compares employees in this job family against these requirements
+  1. Validate job family belongs to tenant
+  2. If `skillId` provided, validate skill exists and is active
+  3. If `newSkill` provided, normalize name, prevent duplicates, create tenant-scoped `skills` record attached to the provided category or "Uncategorized"
+  4. Validate `min_proficiency` is 1–5
+  5. Prevent duplicate skill for the same family
+  6. Create `job_skill_requirements` record
+  7. Create audit log entry
+- **Phase 1 rule:** There is no customer-facing Skills → Taxonomy sidebar in Phase 1. Skills are created inline here or imported. Full taxonomy management is Phase 2.
+- **DB:** `skills`, `skill_categories`, `job_skill_requirements`
+- **Result:** The skill becomes reusable for other job families even though the full Skill Taxonomy management screen is Phase 2.
 
-> **Note:** Skill taxonomy must be configured before this step. If skills are not yet set up, this step can be completed later without re-running the rest of the flow.
+---
 
 ## Variations
 
-### When editing levels
-- Changing the default role on a level → existing employees at that level can be bulk-updated or kept on old role
-- Adding a new level → existing employees unaffected
+### When a Job Title Has No Family or Level
+- Position setup proceeds normally — job title is the only required link
+- Gap analysis is unavailable for employees in that title until a family is assigned
+- Suggested role prefill during onboarding falls back to the role linked on the position itself
 
-### When user also has `payroll:write`
-- Salary bands become enforceable — system warns if employee salary is outside band during compensation setup
+### When Editing a Level's Suggested Role
+- Affects future admin suggestions only; does not bulk-update existing employee permissions
+
+### When Adding a New Level to an Existing Family
+- Existing employees at other levels are unaffected
+- New level is immediately available in the job title form
+
+### When Payroll is Active
+- Salary bands on levels become enforceable — system warns if employee compensation is outside band during compensation setup
+
+---
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| Salary band overlap between levels | Warning (not blocking) | "Salary bands overlap with Level 2" |
-| Delete level with employees | Blocked | "5 employees assigned to this level — reassign first" |
-| No role assigned to level | Warning | "No default role set — employees will need manual role assignment" |
+| Duplicate job title name in tenant | Validation fails | "A job title with this name already exists" |
+| Duplicate job family name in tenant | Validation fails | "A job family with this name already exists" |
+| Job level assigned to wrong family | Validation fails | "This level does not belong to the selected family" |
+| Duplicate level rank within family | Validation fails | "Rank [N] is already used by another level in this family" |
+| Salary band overlap between levels | Warning (not blocking) | "Salary bands overlap with [Level Name]" |
+| Delete level with assigned employees | Blocked | "[N] employees assigned to this level — reassign first" |
+| Duplicate skill on job family | Blocked | "This skill is already required for this job family" |
+
+---
 
 ## Events Triggered
 
 - `JobFamilyCreated` → [[backend/messaging/event-catalog|Event Catalog]]
 - `JobFamilyLevelUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
 
+---
+
 ## Related Flows
 
-- [[Userflow/Auth-Access/role-creation|Role Creation]] — create roles before assigning to levels
-- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — permissions come from role assigned to level
-- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — job family level selected during onboarding
-- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] — promotion changes job family level and potentially role
-- [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]] — skills must exist before they can be assigned to a job family
+- [[Userflow/Org-Structure/position-setup|Position Setup]] — positions link to job titles; family and level are not required at position setup time
+- [[Userflow/Auth-Access/role-creation|Role Creation]] — create roles before using them as level suggestions
+- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — permissions come from confirmed role assignments, not job level alone
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — job family level selected during onboarding; suggested role prefills for admin review
+- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] — promotion changes job family level and may prefill role suggestions
+- [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]] — Phase 2 full taxonomy management
+
+---
 
 ## Module References
 
 - [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
-- [[frontend/cross-cutting/authorization|Authorization]]
 - [[modules/org-structure/overview|Org Structure]]
+- [[modules/org-structure/positions/overview|Positions]]
+- [[frontend/cross-cutting/authorization|Authorization]]

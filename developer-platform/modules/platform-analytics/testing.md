@@ -1,4 +1,4 @@
-﻿# Platform Analytics â€” Testing
+# Platform Analytics - Testing
 
 ## Test Fixtures Required
 
@@ -28,16 +28,16 @@
 **Expected:**
 - `chat_ai.active_tenants = 30`
 - `chat_ai.pending_payment_tenants = 5`
-- Counts match `tenant_module_entitlements` table â€” not subscription plan data alone
+- Counts match `tenant_module_entitlements` table - not subscription plan data alone
 
-### TC-AN-005: Date filters are enforced â€” no data outside range returned
+### TC-AN-005: Date filters are enforced - no data outside range returned
 **Setup:** Events exist for May 2025 and May 2026
 **Action:** `GET /admin/v1/analytics/platform?from=2026-05-01T00:00:00Z&to=2026-05-31T23:59:59Z`
 **Expected:** Only May 2026 data returned. May 2025 events not included.
 
-### TC-AN-006: Subscription analytics require subscriptions.read â€” not just analytics.read
+### TC-AN-006: Subscription analytics require subscriptions.read - not just analytics.read
 **Action:** `GET /admin/v1/analytics/subscriptions` with account having only `platform.reports.read` (not `platform.subscriptions.read`)
-**Expected:** HTTP 403 or subscription data filtered to non-commercial data â€” commercial analytics require `platform.subscriptions.read`
+**Expected:** HTTP 403 or subscription data filtered to non-commercial data - commercial analytics require `platform.subscriptions.read`
 
 ### TC-AN-007: Tenant filter scopes analytics to single tenant
 **Action:** `GET /admin/v1/analytics/platform?tenant_id={tenantId}&from=...&to=...`

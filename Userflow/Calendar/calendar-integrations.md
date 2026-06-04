@@ -11,27 +11,28 @@
 
 Calendar supports two Phase 1 integration paths:
 
-1. Country holiday calendars, defaulted from the company country.
+1. Country holiday calendars, defaulted from the legal entity country.
 2. User-connected Google Calendar and Outlook Calendar pull/push sync.
 
 ---
 
-## Company Country Holiday Default
+## Legal Entity Country Holiday Default
 
 ```
-Operator sets company registration profile country
+Admin sets legal entity country
   -> Selects country
-  -> Org Structure saves company profile country_id
-  -> Org Structure publishes CompanyProfileCountrySet
+  -> Org Structure saves legal entity country_id
+  -> Org Structure publishes LegalEntityCountrySet
   -> Calendar creates holiday_calendar_settings
-     -> default_country_code = company country
+     -> legal_entity_id = selected legal entity
+     -> default_country_code = legal entity country
      -> override_country_code = null
      -> holiday_sync_enabled = true
      -> provider = nager_date
   -> Calendar imports current-year and next-year holidays
 ```
 
-The company country is the default calendar country. Changing the Calendar country later does not change the company registration profile country.
+The legal entity country is the default calendar country for employees under that legal entity. Changing the Calendar country later does not change the legal entity registration country.
 
 ---
 
@@ -39,7 +40,7 @@ The company country is the default calendar country. Changing the Calendar count
 
 ```
 Admin opens Calendar settings
-  -> Selects tenant/company holiday settings
+  -> Selects legal entity holiday settings
   -> Can disable holiday sync
   -> Can choose a different holiday calendar country
   -> Calendar saves override_country_code
@@ -142,3 +143,5 @@ Conflict rules per sync direction:
 - [[modules/org-structure/legal-entities/overview|Legal Entities]]
 - [[current-focus/DEV2|DEV2]]
 - [[current-focus/DEV6|DEV6]]
+
+

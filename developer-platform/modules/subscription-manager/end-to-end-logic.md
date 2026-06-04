@@ -1,8 +1,8 @@
-﻿# Subscription Manager â€” End-to-End Logic
+# Subscription Manager - End-to-End Logic
 
 ## Purpose
 
-Subscription Manager maintains the global commercial catalog: reusable subscription plans, payment gateway configurations, invoice records, and commercial rules. It does not directly assign subscriptions to tenants â€” that is done through Tenant Console. Subscription Manager provides the catalog data that Tenant Console reads during provisioning and override.
+Subscription Manager maintains the global commercial catalog: reusable subscription plans, payment gateway configurations, invoice records, and commercial rules. It does not directly assign subscriptions to tenants - that is done through Tenant Console. Subscription Manager provides the catalog data that Tenant Console reads during provisioning and override.
 
 ## Current Commercial Rules
 
@@ -36,7 +36,7 @@ Left sidebar navigation within the module:
 |---|---|
 | Title | "Subscription Plans" |
 | Subtitle | "Manage reusable subscription plan templates. Plans are assigned to tenants during provisioning." |
-| Create Plan button | `+ Create Plan` â€” visible to accounts with `platform.subscriptions.manage` |
+| Create Plan button | `+ Create Plan` - visible to accounts with `platform.subscriptions.manage` |
 
 ### Plans Table
 
@@ -49,24 +49,24 @@ Left sidebar navigation within the module:
 | Included Modules | Count of modules included, e.g. "12 modules" | No |
 | Pricing Tiers | Employee-count pricing tiers, e.g. "201-1,000 employees" | Yes |
 | Base Monthly Price | Calculated price for the target size range | Yes |
-| Active | Toggle â€” yes/no | Yes |
+| Active | Toggle - yes/no | Yes |
 | Tenants Using | Count of active tenants on this plan | Yes |
 | Created | Date | Yes |
 | Actions | Edit, Clone, Deactivate | No |
 
 ---
 
-## Create Reusable Plan â€” Full Field Specification
+## Create Reusable Plan - Full Field Specification
 
 ### How to Open
 
-Plans table â†’ `+ Create Plan` button â†’ opens full-page form (not modal â€” too much content).
+Plans table -> `+ Create Plan` button -> opens full-page form (not modal - too much content).
 
 ### Section 1: Plan Identity
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Plan Name | "Plan Name" | Text input | Yes | 2â€“80 chars, unique across active plans | e.g., "Enterprise 2025" |
+| Plan Name | "Plan Name" | Text input | Yes | 2-80 chars, unique across active plans | e.g., "Enterprise 2025" |
 | Plan Tier | "Plan Tier" | Dropdown: Enterprise / Business / Professional / Custom | Yes | | Determines sort order in provisioning wizard plan dropdown |
 | Description | "Plan Description" | Textarea | No | Max 500 chars | Shown to operators in plan selection dropdown |
 | Is Active | "Active" | Toggle | Yes | | Inactive plans cannot be selected during new provisioning but existing tenant assignments are preserved |
@@ -75,7 +75,7 @@ Plans table â†’ `+ Create Plan` button â†’ opens full-page form (not m
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Employee Count Tier | "Pricing Tier" | Multi-select checkboxes | Yes | At least one size range required | Determines which price brackets apply â€” different sizes have different prices |
+| Employee Count Tier | "Pricing Tier" | Multi-select checkboxes | Yes | At least one size range required | Determines which price brackets apply - different sizes have different prices |
 
 Employee count tier options: `1-10`, `11-50`, `51-200`, `201-500`, `501-1000`, `1001-5000`, `5000+`
 
@@ -93,23 +93,23 @@ Module checklist grouped by ONEVO product pillar. Each module row shows:
 
 When a module is selected, the operator can either include all default features for that module or choose a subset. This is the commercial package definition. Runtime feature flags cannot add features that are not selected here.
 
-**Foundation Modules â€” Always Included (no separate cost, not sellable individually)**
+**Foundation Modules - Always Included (no separate cost, not sellable individually)**
 | Module Key | Module Name | Notes |
 |---|---|---|
-| `auth` | Authentication & Authorization | Always included â€” no pricing unit |
+| `auth` | Authentication & Authorization | Always included - no pricing unit |
 | `configuration` | Tenant Configuration & Settings | Always included |
 | `roles` | Roles & Permissions | Always included |
 | `notifications` | Notifications | Always included |
 | `org` | Organisation Structure | Always included |
 
-**Package 1 â€” HR Core (sellable)**
+**Package 1 - HR Core (sellable)**
 | Module Key | Module Name | Pricing Unit |
 |---|---|---|
 | `core_hr` | Core HR (Profile Management) | Per employee |
 | `leave` | Attendance & Leave Management | Per employee |
 | `calendar` | Calendar | Per employee |
 
-**Package 1 â€” Intelligence (sellable)**
+**Package 1 - Intelligence (sellable)**
 | Module Key | Module Name | Pricing Unit |
 |---|---|---|
 | `monitoring` | E2E Monitoring (Activity Monitoring) | Per monitored employee (user-based; no device billing) |
@@ -118,27 +118,27 @@ When a module is selected, the operator can either include all default features 
 | `exceptions` | Exception Detection | Per active rule |
 | `analytics` | Productivity & Performance Analytics | Per employee |
 
-> **Billing rule:** Users with monitoring fully disabled are excluded from the Package 1 billable seat count at the monthly snapshot. Billing is user-based only â€” there is no device count billing.
+> **Billing rule:** Users with monitoring fully disabled are excluded from the Package 1 billable seat count at the monthly snapshot. Billing is user-based only - there is no device count billing.
 
-**Package 2 â€” Work Management (sellable â€” all sold independently)**
+**Package 2 - Work Management (sellable - all sold independently)**
 | Module Key | Module Name | Pricing Unit | AI Required |
 |---|---|---|---|
-| `work_management` | Project Management (WorkSync â€” projects, tasks, sprints, OKR, roadmaps, GitHub integration) | Per active user | No |
-| `chat` | Chat (no AI â€” basic messaging, channels, threads) | Per active user | No |
-| `chat_ai` | Agentic Chat (AI-powered â€” requires AI provider config to be set) | Per active user + AI token limit | Yes |
+| `work_management` | Project Management (WorkSync - projects, tasks, sprints, OKR, roadmaps, GitHub integration) | Per active user | No |
+| `chat` | Chat (no AI - basic messaging, channels, threads) | Per active user | No |
+| `chat_ai` | Agentic Chat (AI-powered - requires AI provider config to be set) | Per active user + AI token limit | Yes |
 | `integrations` | Third Party Integrations (Microsoft 365, Teams, Slack, Google Workspace) | Flat rate | No |
 
 > **Chat independence rule:** `chat` and `chat_ai` are separate sellable modules. A plan can include one, both, or neither:
-> - `chat` only â†’ basic messaging, no AI assistant
-> - `chat_ai` only â†’ AI chat only (no basic channels unless `chat` also included)
-> - Both â†’ full chat with AI assistant as an optional mode
-> - Neither â†’ no chat at all
+> - `chat` only -> basic messaging, no AI assistant
+> - `chat_ai` only -> AI chat only (no basic channels unless `chat` also included)
+> - Both -> full chat with AI assistant as an optional mode
+> - Neither -> no chat at all
 >
-> `chat_ai` cannot function without an active AI provider config for the `agentic_chat` purpose in System Config. If `chat_ai` is entitled for a tenant but no AI config exists, the Agentic Chat feature shows a configuration-required error â€” it does not fall back to basic chat.
+> `chat_ai` cannot function without an active AI provider config for the `agentic_chat` purpose in System Config. If `chat_ai` is entitled for a tenant but no AI config exists, the Agentic Chat feature shows a configuration-required error - it does not fall back to basic chat.
 >
 > A subscription plan that includes `chat_ai` automatically requires the operator to set an AI token limit during Step 3 of the provisioning wizard.
 
-> **Phase 2 Modules â€” NOT available in Phase 1:**
+> **Phase 2 Modules - NOT available in Phase 1:**
 > The following modules are out of scope for Phase 1 and must NOT appear in plans, the module catalog sellable list, or tenant provisioning options: `payroll`, `performance` (standalone), `skills`, `learning`, `recruitment`, `hr_docs`, `grievance`, `expense`, `documents`, `reports`.
 > They exist in the module catalog with `is_active = false` and `phase = 2`. Do not seed them as sellable options.
 
@@ -153,9 +153,9 @@ When a module is selected, the operator can either include all default features 
 **Tenant Storage (plan default):**
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Default Tenant Storage | "Default Tenant Storage Limit (GB)" | Number input | Yes | Suggested default for tenants on this plan. Storage is a **single shared pool for the entire tenant** â€” not split per module. Operator can override per tenant during provisioning Step 3. |
+| Default Tenant Storage | "Default Tenant Storage Limit (GB)" | Number input | Yes | Suggested default for tenants on this plan. Storage is a **single shared pool for the entire tenant** - not split per module. Operator can override per tenant during provisioning Step 3. |
 
-> **Storage rule:** `tenant_storage_limit_gb` applies to all modules â€” uploaded files, HR documents, screenshots, payslips, verification photos, attachments. Never create per-module storage limits.
+> **Storage rule:** `tenant_storage_limit_gb` applies to all modules - uploaded files, HR documents, screenshots, payslips, verification photos, attachments. Never create per-module storage limits.
 
 ### Section 4: Pricing Brackets
 
@@ -165,15 +165,15 @@ For each employee-count pricing tier selected in Section 2, a pricing bracket ro
 
 | Field | Description | Type | Required |
 |---|---|---|---|
-| Size Range label | Read-only, e.g. "51â€“200 employees" | Display | N/A |
-| Monthly total (calculated) | Sum of all selected module prices Ã— bracket multiplier | Display â€” auto-calculated | N/A |
-| Per-module price cells | One input per selected module â€” unit price at this size range | Currency input | Yes per module |
+| Size Range label | Read-only, e.g. "51-200 employees" | Display | N/A |
+| Monthly total (calculated) | Sum of all selected module prices x bracket multiplier | Display - auto-calculated | N/A |
+| Per-module price cells | One input per selected module - unit price at this size range | Currency input | Yes per module |
 | Override monthly total | Operator-entered flat monthly total for this bracket instead of per-module sum | Currency input | No |
 | Override reason | Required if override entered | Textarea | Conditional |
 
 **Price bracket calculation rule:**
 ```
-monthly_total = SUM(module_unit_price Ã— applicable_quantity_for_size_range)
+monthly_total = SUM(module_unit_price x applicable_quantity_for_size_range)
 
 For per-employee modules: quantity = midpoint of size range (e.g. for "51-200" = 125)
 For flat rate modules:     quantity = 1
@@ -182,7 +182,7 @@ For first invoice: quantity = tenant-owner-confirmed total employee count. Do no
 
 > **No per-device pricing.** Billing is user-based only. Do not create per-device price brackets or per-device quantity estimates.
 
-The calculated total is shown in real-time as prices are entered. Operators may override the total with a flat amount per bracket â€” override and calculated prices are stored separately.
+The calculated total is shown in real-time as prices are entered. Operators may override the total with a flat amount per bracket - override and calculated prices are stored separately.
 
 ### Section 5: Billing Options
 
@@ -190,7 +190,7 @@ The calculated total is shown in real-time as prices are entered. Operators may 
 |---|---|---|---|---|---|
 | Supported Commercial Models | "Supported Commercial Models" | Multi-select checkboxes | Yes | Subscription, Full License + Maintenance | Determines which commercial models operators can choose when assigning this plan |
 | Supported Billing Cycles | "Supported Billing Cycles" | Multi-select checkboxes (shown only if Subscription selected) | Yes when Subscription | Monthly, Annual | Annual may include a configured discount percentage |
-| Annual Discount | "Annual Discount (%)" | Number input 0â€“50 | No | | Discount applied to monthly price Ã— 12 for annual billing |
+| Annual Discount | "Annual Discount (%)" | Number input 0-50 | No | | Discount applied to monthly price x 12 for annual billing |
 | Supported Collection Modes | "Supported Collection Modes" | Multi-select | Yes | Gateway, Manual | Whether this plan is sold via gateway or manual billing |
 | Trial Allowed | Removed | N/A | N/A | Trial is not part of tenant creation or plan confirmation |
 | Trial Duration | Removed | N/A | N/A | Trial is not part of tenant creation |
@@ -269,7 +269,7 @@ The calculated total is shown in real-time as prices are entered. Operators may 
 
 ---
 
-## Update Existing Plan â€” Field Behavior
+## Update Existing Plan - Field Behavior
 
 **Endpoint:** `PATCH /admin/v1/subscription-plans/{id}`
 
@@ -279,23 +279,23 @@ The same rule applies to feature inclusion. Existing tenant subscriptions keep t
 
 **What changes when a plan is updated:**
 - New tenants provisioned after the update get the new price brackets
-- The Tenant Console "Stale pricing" warning appears on existing tenants whose snapshot price differs from the current plan price â€” operators can choose to re-price manually
+- The Tenant Console "Stale pricing" warning appears on existing tenants whose snapshot price differs from the current plan price - operators can choose to re-price manually
 - `subscription_plan_price_history` table records the change with `changed_by_id` and `changed_at`
 
 **Fields that cannot be changed after plan has active tenant assignments:**
-- `tier` â€” would break tier-based filtering logic
-- `name` â€” can be changed but all audit logs retain the name at time of assignment
+- `tier` - would break tier-based filtering logic
+- `name` - can be changed but all audit logs retain the name at time of assignment
 
 **Fields that can always be changed:**
 - Price brackets (creates price history entry)
 - Description
-- Included modules (only adding â€” removing modules from plan does not remove entitlements from existing tenants)
+- Included modules (only adding - removing modules from plan does not remove entitlements from existing tenants)
 - AI/storage defaults
 - Is active (deactivation prevents new assignments; existing assignments unaffected)
 
 ---
 
-## Payment Gateway Configuration â€” Full Field Specification
+## Payment Gateway Configuration - Full Field Specification
 
 **Route:** `/platform/subscriptions/gateways`
 
@@ -313,14 +313,14 @@ The same rule applies to feature inclusion. Existing tenant subscriptions keep t
 | Created | Date |
 | Actions | Edit, Rotate Secrets, Deactivate |
 
-**Rule:** Secrets are never shown in list or detail views â€” only non-secret metadata is displayed. Rotating secrets requires the full new secret value; partial updates to encrypted fields are not permitted.
+**Rule:** Secrets are never shown in list or detail views - only non-secret metadata is displayed. Rotating secrets requires the full new secret value; partial updates to encrypted fields are not permitted.
 
-### Create Payment Gateway â€” Fields
+### Create Payment Gateway - Fields
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
 | Provider | "Payment Provider" | Radio: Stripe / Paddle / PayHere | Yes | | Determines which credential fields appear |
-| Display Name | "Display Name" | Text input | Yes | 2â€“80 chars | e.g., "Paddle Global Production" |
+| Display Name | "Display Name" | Text input | Yes | 2-80 chars | e.g., "Paddle Global Production" |
 | Country Codes | "Applicable Countries" | Multi-select tag input (ISO codes) | Yes | Valid ISO 3166-1 alpha-2 codes | Countries where this gateway is offered to tenants |
 | Environment | "Environment" | Radio: Sandbox / Production | Yes | | |
 | Is Active | "Active" | Toggle | Yes | Default: On | |
@@ -361,7 +361,7 @@ The same rule applies to feature inclusion. Existing tenant subscriptions keep t
 }
 ```
 
-**The `credentials` object is AES-256 encrypted before storage.** The API never returns the `credentials` object â€” only safe metadata fields are returned.
+**The `credentials` object is AES-256 encrypted before storage.** The API never returns the `credentials` object - only safe metadata fields are returned.
 
 **Response (201 Created):**
 ```json
@@ -380,7 +380,7 @@ The same rule applies to feature inclusion. Existing tenant subscriptions keep t
 
 **Endpoint:** `PATCH /admin/v1/payment-gateways/{id}/rotate-secrets`
 
-Rotation requires the full new credential object â€” not a partial update. All encrypted fields are replaced atomically.
+Rotation requires the full new credential object - not a partial update. All encrypted fields are replaced atomically.
 
 **Request body:**
 ```json
@@ -396,19 +396,19 @@ Rotation requires the full new credential object â€” not a partial update. 
 
 ---
 
-## Invoice Lifecycle â€” Full Specification
+## Invoice Lifecycle - Full Specification
 
 ### Invoice States
 
 | Status | Color | Meaning |
 |---|---|---|
-| Draft | Gray | Invoice generated but not yet finalized â€” editable |
-| Open | Blue | Invoice finalized, sent to tenant or recorded â€” awaiting payment |
+| Draft | Gray | Invoice generated but not yet finalized - editable |
+| Open | Blue | Invoice finalized, sent to tenant or recorded - awaiting payment |
 | Paid | Green | Payment received and confirmed |
 | Overdue | Red | Payment due date passed without payment |
-| Void | Gray | Invoice cancelled â€” no payment expected |
-| Uncollectible | Dark red | Debt written off â€” tenant commercial issue |
-| Partially Refunded | Orange | Paddle issued a partial refund â€” original amount not fully returned |
+| Void | Gray | Invoice cancelled - no payment expected |
+| Uncollectible | Dark red | Debt written off - tenant commercial issue |
+| Partially Refunded | Orange | Paddle issued a partial refund - original amount not fully returned |
 
 ### Invoice Generation Trigger
 
@@ -440,7 +440,7 @@ ONEVO owns billing cycle. Invoice generated and charge initiated locally.
 4. PayHere payment initiated via PayHere Recurring API; awaits webhook callback
 
 **For subscription tenants with manual collection:**
-1. Invoice generated same way â€” status â†’ `open`
+1. Invoice generated same way - status -> `open`
 2. No automatic charge
 3. Invoice PDF generated and (optionally) emailed to tenant primary contact
 4. Operator must manually mark payment received: `PATCH /admin/v1/invoices/{id}/mark-paid`
@@ -461,7 +461,7 @@ ONEVO owns billing cycle. Invoice generated and charge initiated locally.
 | `line_items` | JSON array of `{module_key, module_name, unit_price, quantity, pricing_unit, line_total}` |
 | `subtotal` | Sum of line items |
 | `calculated_price` | What the price brackets calculated |
-| `override_price` | If operator set an override â€” shown separately for audit |
+| `override_price` | If operator set an override - shown separately for audit |
 | `effective_price` | `override_price ?? calculated_price` |
 | `tax_amount` | Tax if applicable |
 | `total` | `effective_price + tax_amount` |
@@ -471,20 +471,20 @@ ONEVO owns billing cycle. Invoice generated and charge initiated locally.
 | `paid_at` | Timestamp when payment confirmed |
 | `payment_method` | `paddle`, `payhere`, `manual`, `waived` |
 | `payment_reference` | External reference for manual payments |
-| `paddle_transaction_id` | Paddle transaction ID when gateway = paddle â€” idempotency key |
+| `paddle_transaction_id` | Paddle transaction ID when gateway = paddle - idempotency key |
 | `paddle_invoice_url` | Paddle-hosted invoice PDF URL when gateway = paddle |
 | `gateway_charge_id` | PayHere charge ref when gateway = payhere |
 
 ---
 
-## Paddle Webhook Handling â€” Full Specification
+## Paddle Webhook Handling - Full Specification
 
 Paddle sends webhook events to `POST /webhooks/paddle`. The backend must:
 1. Parse `Paddle-Signature` header: format is `ts={timestamp};h1={signature}`
 2. Verify HMAC-SHA256 signature: `HMAC(webhook_secret, ts + ":" + raw_body)`
-3. Reject with `400` if signature invalid or timestamp > 5 seconds old â€” do not process
-4. Respond `200` immediately upon signature validation â€” process asynchronously
-5. Use `paddle_transaction_id` as idempotency key â€” ignore duplicate events
+3. Reject with `400` if signature invalid or timestamp > 5 seconds old - do not process
+4. Respond `200` immediately upon signature validation - process asynchronously
+5. Use `paddle_transaction_id` as idempotency key - ignore duplicate events
 
 ### Handled Paddle Events
 
@@ -495,17 +495,17 @@ Paddle sends webhook events to `POST /webhooks/paddle`. The backend must:
 | `subscription.activated` | Confirm subscription active | `tenant_subscriptions.status = 'active'` |
 | `subscription.updated` | Sync subscription state if Paddle-side change detected | Log mismatch, raise Warning alert for operator review |
 | `subscription.canceled` | Raise Critical alert | `billing.subscription_expired` Critical alert created |
-| `subscription.past_due` | After repeated failures â†’ raise Critical alert | `billing.payment_failed_final` Critical alert; `invoice.status = 'overdue'` |
+| `subscription.past_due` | After repeated failures -> raise Critical alert | `billing.payment_failed_final` Critical alert; `invoice.status = 'overdue'` |
 | `transaction.refunded` | Record refund | `invoice.refund_amount`, `invoice.refunded_at` updated |
 | `dispute.created` | Raise Warning alert for dispute review | Warning alert: "Payment disputed by customer bank" |
 
 ### Paddle Webhook Retry / Idempotency
 
-- ONEVO returns `200` immediately on signature validation â€” Paddle does not retry if we return `200`
+- ONEVO returns `200` immediately on signature validation - Paddle does not retry if we return `200`
 - If processing fails internally, the event is written to `webhook_event_queue` with `status = 'pending_processing'`
 - Background job `WebhookRetryJob` retries failed events up to 5 times with exponential backoff: 1min, 5min, 15min, 1h, 4h
 - After 5 failures, event is marked `status = 'dead_letter'` and a Critical alert is raised: `billing.webhook_processing_failed`
-- Each event has `paddle_event_id` as unique constraint in `webhook_event_queue` â€” duplicate events are ignored with `200` response
+- Each event has `paddle_event_id` as unique constraint in `webhook_event_queue` - duplicate events are ignored with `200` response
 
 ### PayHere Webhook Handling
 
@@ -519,14 +519,14 @@ PayHere sends POST to `POST /webhooks/payhere/notify`.
 | PayHere Status Code | ONEVO Action |
 |---|---|
 | `2` (Success) | Mark invoice Paid |
-| `0` (Pending) | No change â€” await final status |
+| `0` (Pending) | No change - await final status |
 | `-1` (Cancelled) | Warning alert |
 | `-2` (Failed) | Increment retry; Critical after 3 failures |
 | `-3` (Charged Back) | Warning alert for chargeback review |
 
 ---
 
-## Dunning Sequence â€” Full Specification
+## Dunning Sequence - Full Specification
 
 Dunning is the automated payment recovery flow for tenants with failed gateway payments.
 
@@ -534,10 +534,10 @@ Dunning is the automated payment recovery flow for tenants with failed gateway p
 
 | Attempt | When | Action | Alert |
 |---|---|---|---|
-| Attempt 1 | Billing date | Gateway charge initiated (Paddle auto-charges; PayHere initiated by ONEVO) | â€” (normal) |
+| Attempt 1 | Billing date | Gateway charge initiated (Paddle auto-charges; PayHere initiated by ONEVO) | - (normal) |
 | Retry 1 | +3 days after failure | Gateway retry | Warning: `billing.payment_failed` |
 | Retry 2 | +7 days after Retry 1 | Gateway retry | Warning: `billing.payment_failed` (existing alert updated) |
-| Retry 3 | +7 days after Retry 2 | Gateway retry â€” final | Critical: `billing.payment_failed_final` if fails |
+| Retry 3 | +7 days after Retry 2 | Gateway retry - final | Critical: `billing.payment_failed_final` if fails |
 | Grace window | After Retry 3 | Tenant access continues for 7 days | Critical alert remains open |
 | Suspension | +7 days after Retry 3 | `PATCH /admin/v1/tenants/{id}/status {status: suspended}` auto-applied by `DunningJob` | Audit log: `action = 'tenant.auto_suspended_dunning'` |
 
@@ -550,7 +550,7 @@ Dunning is the automated payment recovery flow for tenants with failed gateway p
 
 ---
 
-## Invoice Invoices Screen â€” Full Specification
+## Invoice Invoices Screen - Full Specification
 
 **Route:** `/platform/subscriptions/invoices`
 
@@ -571,14 +571,14 @@ Dunning is the automated payment recovery flow for tenants with failed gateway p
 
 | Column | Description |
 |---|---|
-| Invoice Number | Linked â€” opens invoice detail side panel |
+| Invoice Number | Linked - opens invoice detail side panel |
 | Tenant | Company name, linked to tenant detail |
 | Period | "May 2025" |
 | Amount | Formatted with currency |
 | Status | Colored badge |
 | Issued | Date |
-| Due | Date â€” red text if overdue |
-| Paid | Date or "â€”" |
+| Due | Date - red text if overdue |
+| Paid | Date or "-" |
 | Method | Stripe / Paddle / PayHere / Manual |
 | Actions | Download PDF, Mark Paid (if manual/open), Void, View Paddle dashboard link |
 
@@ -635,7 +635,7 @@ Shows all historical price bracket changes across all plans, with before/after c
 
 ---
 
-## APIs â€” Full Catalog
+## APIs - Full Catalog
 
 | Method | Route | Purpose | Permission |
 |---|---|---|---|
@@ -664,7 +664,7 @@ Shows all historical price bracket changes across all plans, with before/after c
 
 ---
 
-## Invoice PDF Generation â€” Full Specification
+## Invoice PDF Generation - Full Specification
 
 ### Scope
 
@@ -674,7 +674,7 @@ Stripe/PayHere tenants: ONEVO can generate or stream the invoice PDF server-side
 
 **Library:** QuestPDF (open-source, MIT-licensed, .NET 10 compatible)
 
-**Trigger:** On-demand â€” PDF is generated at request time, not stored. Generated bytes are streamed directly in the response.
+**Trigger:** On-demand - PDF is generated at request time, not stored. Generated bytes are streamed directly in the response.
 
 **Endpoint:** `GET /admin/v1/subscription-invoices/{id}/pdf`
 **Tenant endpoint:** `GET /api/v1/billing/invoices/{id}/pdf`
@@ -705,24 +705,24 @@ Content-Disposition: attachment; filename="INV-{invoice_number}.pdf"
 
 ---
 
-## Chargeback / Dispute Resolution â€” Full Specification
+## Chargeback / Dispute Resolution - Full Specification
 
 ### Trigger
 
-Paddle sends `dispute.created` webhook â†’ ONEVO creates Warning alert: `billing.dispute_raised`.
+Paddle sends `dispute.created` webhook -> ONEVO creates Warning alert: `billing.dispute_raised`.
 
 ### Resolution Flow
 
 | Step | Action |
 |---|---|
-| 1 | Alert raised: `billing.dispute_raised` â€” links to invoice, dispute amount, dispute reason from Paddle |
+| 1 | Alert raised: `billing.dispute_raised` - links to invoice, dispute amount, dispute reason from Paddle |
 | 2 | Platform admin reviews dispute in Paddle dashboard (linked from alert) |
 | 3 | Admin chooses action in ONEVO: Accept Dispute or Contest Dispute |
-| 4a â€” Accept | `PATCH /admin/v1/subscription-invoices/{id}/mark-uncollectible` â€” invoice status â†’ `uncollectible`; audit logged; alert resolved |
-| 4b â€” Contest | Admin records contest reference; alert status â†’ `acknowledged`; no invoice state change |
-| 5 | Paddle sends `dispute.closed` webhook â†’ ONEVO resolves the alert; if lost, invoice â†’ `uncollectible` automatically |
+| 4a - Accept | `PATCH /admin/v1/subscription-invoices/{id}/mark-uncollectible` - invoice status -> `uncollectible`; audit logged; alert resolved |
+| 4b - Contest | Admin records contest reference; alert status -> `acknowledged`; no invoice state change |
+| 5 | Paddle sends `dispute.closed` webhook -> ONEVO resolves the alert; if lost, invoice -> `uncollectible` automatically |
 
-**Rule:** Dispute outcome must be recorded in ONEVO regardless of Paddle dashboard action â€” invoice state must match the financial reality.
+**Rule:** Dispute outcome must be recorded in ONEVO regardless of Paddle dashboard action - invoice state must match the financial reality.
 
 ### Handled Paddle Dispute Events
 
@@ -730,11 +730,11 @@ Paddle sends `dispute.created` webhook â†’ ONEVO creates Warning alert: `bi
 |---|---|
 | `dispute.created` | Warning alert `billing.dispute_raised`; invoice flagged |
 | `dispute.closed` (won) | Alert resolved; no invoice state change |
-| `dispute.closed` (lost) | Alert resolved; `invoice.status â†’ 'uncollectible'`; audit log entry |
+| `dispute.closed` (lost) | Alert resolved; `invoice.status -> 'uncollectible'`; audit log entry |
 
 ---
 
-## Billing Audit Log â€” Full Specification
+## Billing Audit Log - Full Specification
 
 Every mutation to billing state must be logged. Platform admins must be able to reconstruct the full billing history for any tenant.
 
@@ -753,7 +753,7 @@ Every mutation to billing state must be logged. Platform admins must be able to 
 
 ### Storage
 
-All entries go to `billing_audit_logs` table (see database schema). Entries are **immutable** â€” no UPDATE or DELETE. Retention: indefinite.
+All entries go to `billing_audit_logs` table (see database schema). Entries are **immutable** - no UPDATE or DELETE. Retention: indefinite.
 
 ### Rule
 
@@ -761,16 +761,16 @@ All entries go to `billing_audit_logs` table (see database schema). Entries are 
 
 ---
 
-## MRR / ARR / Churn Reporting â€” Full Specification
+## MRR / ARR / Churn Reporting - Full Specification
 
 ### Report Definitions
 
 | Metric | Formula |
 |---|---|
 | MRR (Monthly Recurring Revenue) | Sum of `effective_price` for all `tenant_subscriptions` with `status IN ('active')` and `billing_cycle = 'monthly'` + (annual / 12) |
-| ARR (Annual Recurring Revenue) | MRR Ã— 12 |
+| ARR (Annual Recurring Revenue) | MRR x 12 |
 | Churn rate (monthly) | Subscriptions cancelled this month / active subscriptions start of month |
-| Net revenue retention | (MRR end of period âˆ’ MRR start + expansion âˆ’ contraction âˆ’ churn) / MRR start |
+| Net revenue retention | (MRR end of period - MRR start + expansion - contraction - churn) / MRR start |
 | Failed payments | Count of `subscription_invoices` with `status = 'overdue'` in period |
 | Outstanding invoices | Sum of `total` for invoices with `status IN ('open', 'overdue')` |
 
@@ -788,7 +788,7 @@ All entries go to `billing_audit_logs` table (see database schema). Entries are 
 
 ### Data Source
 
-All reports query `subscription_invoices`, `tenant_subscriptions`, and `subscription_plans` directly. No pre-aggregated reporting table in Phase 1 â€” queries are run on-demand. Add database-level indexes if query performance degrades with scale.
+All reports query `subscription_invoices`, `tenant_subscriptions`, and `subscription_plans` directly. No pre-aggregated reporting table in Phase 1 - queries are run on-demand. Add database-level indexes if query performance degrades with scale.
 
 ---
 
@@ -799,8 +799,8 @@ All reports query `subscription_invoices`, `tenant_subscriptions`, and `subscrip
 An employee is counted as a **billable Package 1 seat** at the monthly snapshot when ALL of the following are true:
 
 1. `employees.status = 'active'`
-2. `users.status â‰  'deactivated'`
-3. Monitoring is **not** fully disabled for this employee â€” at least one monitoring feature toggle is enabled (from tenant default or employee-specific override in `monitoring_feature_toggles`)
+2. `users.status != 'deactivated'`
+3. Monitoring is **not** fully disabled for this employee - at least one monitoring feature toggle is enabled (from tenant default or employee-specific override in `monitoring_feature_toggles`)
 
 **Excluded from billing:**
 - Employees with monitoring fully disabled (operator or employee-level override)
@@ -842,7 +842,7 @@ An employee/user counts as a **billable WorkSync seat** when they are an active 
 | Data preservation | All module data and configuration preserved until period end |
 | No proration credit | No credit for removed modules mid-cycle |
 | Downgrade restrictions | Cannot remove modules required by other active modules (e.g. cannot remove `core_hr` while `leave` is active) |
-| Self-service | Pack removal is NOT self-service â€” tenant contacts ONEVO |
+| Self-service | Pack removal is NOT self-service - tenant contacts ONEVO |
 
 ### Cancellation
 
@@ -853,8 +853,8 @@ An employee/user counts as a **billable WorkSync seat** when they are an active 
 | PayHere | DunningJob will not generate next invoice |
 | Data retention | All tenant data retained for **90 days** after `billing_period_end` |
 | After 90 days | Permanent deletion job; data unrecoverable |
-| Status transition | `tenants.status â†’ 'cancelled'`; all entitlements â†’ `disabled` |
-| Reversal | Platform admin only â€” not self-service |
+| Status transition | `tenants.status -> 'cancelled'`; all entitlements -> `disabled` |
+| Reversal | Platform admin only - not self-service |
 
 ### Restarting a Cancelled Subscription
 

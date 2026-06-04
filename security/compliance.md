@@ -1,10 +1,10 @@
-﻿# Compliance: ONEVO
+# Compliance: ONEVO
 
 ## GDPR (UK) Compliance
 
 | Requirement | Implementation |
 |:------------|:--------------|
-| Lawful basis for processing | `consent_records` table tracking consent type, version, timestamp |
+| Lawful basis for processing | Versioned legal/privacy acceptance records track terms, notices, consent type, version, timestamp, source, and user context |
 | Data minimization | Only collect necessary PII; JSONB preferences for optional data |
 | Storage limitation | `retention_policies` table with automated cleanup via Hangfire |
 | Right to access | `compliance_exports` with full data export |
@@ -17,7 +17,7 @@
 
 | Requirement | Implementation |
 |:------------|:--------------|
-| Consent | Explicit consent capture before processing |
+| Consent and notice | Explicit consent or acknowledgement captured before sensitive/conditional processing |
 | Data residency | Configurable per tenant; APAC region (Singapore) available |
 | Biometric data | Consent required before enrollment (`biometric_enrollments.consent_given`) |
 | Cross-border transfer | Compliance framework field in `retention_policies` |
@@ -52,15 +52,15 @@ Meeting transcripts and AI meeting summaries are not part of Teams chat/group sy
 | Vulnerability | Mitigation |
 |:-------------|:-----------|
 | Injection | Parameterized queries via EF Core; no raw SQL |
-| Broken Auth | BFF cookie sessions, backend-held JWT/refresh rotation, MFA support â€” see [[security/auth-architecture\|Auth Architecture]] |
-| Sensitive Data Exposure | AES-256 encryption, PII log scrubbing â€” see [[security/data-classification\|Data Classification]] |
+| Broken Auth | BFF cookie sessions, backend-held JWT/refresh rotation, MFA support - see [[security/auth-architecture\|Auth Architecture]] |
+| Sensitive Data Exposure | AES-256 encryption, PII log scrubbing - see [[security/data-classification\|Data Classification]] |
 | XXE | JSON-only API (no XML parsing) |
-| Broken Access Control | RBAC with 80+ permissions, RLS â€” see [[infrastructure/multi-tenancy\|Multi Tenancy]] |
+| Broken Access Control | RBAC with 80+ permissions, RLS - see [[infrastructure/multi-tenancy\|Multi Tenancy]] |
 | Security Misconfiguration | Hardened defaults, HSTS, CSP headers |
 | XSS | Content-Type enforcement, CSP headers |
 | Insecure Deserialization | System.Text.Json with strict options |
 | Known Vulnerabilities | Dependabot alerts, regular dependency updates |
-| Insufficient Logging | Serilog structured logging, audit trail â€” see [[code-standards/logging-standards\|Logging Standards]] |
+| Insufficient Logging | Serilog structured logging, audit trail - see [[code-standards/logging-standards\|Logging Standards]] |
 
 ### Security Headers
 
@@ -82,7 +82,7 @@ app.Use(async (context, next) =>
 
 - [[security/auth-architecture|Auth Architecture]]
 - [[security/data-classification|Data Classification]]
-- [[Userflow/Auth-Access/gdpr-consent|Gdpr Consent]]
+- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 
