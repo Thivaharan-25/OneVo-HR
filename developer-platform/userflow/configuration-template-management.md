@@ -1,7 +1,7 @@
 ﻿# Configuration Template Management Userflow
 
-**Module:** Developer Platform â†’ Configuration Template Manager
-**Actor:** Platform operator with `platform.config_templates.manage`
+**Module:** Developer Platform â†’ Platform Management â†’ Templates â†’ Configuration Template Manager
+**Actor:** Platform operator with `platform.templates.manage`
 
 ---
 
@@ -9,16 +9,19 @@
 
 ### Create a new configuration template
 
-1. Navigate to Developer Platform â†’ Templates â†’ Template Manager â†’ Configuration
-2. Click "New Template"
-3. Fill Section 1: Identity â€” name, template_key, description, template_type, industry_profile_tag (monitoring_policy only)
-4. Fill Section 2: Module Scope â€” select required modules
-5. Fill Section 3: Payload â€” structured form for the selected template_type (fields vary by type â€” see end-to-end-logic payload schemas)
-   - For `onboarding`, the assignment fields are Applies To, Departments, and Positions.
-   - Department or position assignment requires at least one selected target.
-6. Click "Save Template"
+1. Navigate to **Platform Management â†’ Templates** (`/platform/templates`)
+2. Optionally filter by type chip to browse existing templates of the target type
+3. Click **”+ New Template”** (top-right)
+4. **Type Picker modal** appears â€” select the template type:
+   - Configuration / Position / Leave Policy / Monitoring Policy / App Allowlist / Onboarding / Data Import
+5. Modal advances to the creation form for the selected type. Fill:
+   - **Section 1 â€” Identity:** name, `template_key`, description, `industry_profile_tag` (Monitoring Policy only)
+   - **Section 2 â€” Module Scope:** select required modules
+   - **Section 3 â€” Payload:** structured form fields for the selected type (fields vary â€” see end-to-end-logic payload schemas)
+     - For `onboarding`: Applies To, Departments, and Positions assignment fields are shown. Department or position assignment requires at least one selected target.
+6. Click **”Save Template”**
 7. **API:** `POST /admin/v1/configuration-templates`
-8. Template created with `version = 1`, `is_active = true`
+8. Template created with `version = 1`, `is_active = true`, returned in library under the matching type chip
 
 ### Edit an existing template
 
