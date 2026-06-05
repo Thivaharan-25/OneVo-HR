@@ -80,7 +80,7 @@ Read-only operator accounts (`platform.templates.read` only) can browse template
 
 ## Template Types
 
-**Managed in this module (non-role tabs of Template Management):**
+**Managed in this module (non-role template types in Template Management):**
 
 | `template_type` | Seeds into | Required module entitlement |
 |---|---|---|
