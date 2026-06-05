@@ -22,6 +22,8 @@ The Template Library page (`/platform/templates`) shows all templates in a singl
 | **Onboarding** | Onboarding checklist and task presets |
 | **Data Import** | Data import source mapping presets |
 
+> **App Allowlist** and **Monitoring Policy** templates are Phase 1 provisioning artifacts and are managed by Template Management.
+
 Clicking `+ New Template` opens a **Type Picker** modal. The operator selects a type, then the form advances to the creation form for that type.
 
 ## Database Tables / Systems Controlled
