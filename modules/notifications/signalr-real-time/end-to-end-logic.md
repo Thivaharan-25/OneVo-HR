@@ -20,7 +20,7 @@ Domain event published (e.g., ExceptionAlertCreated)
 
 SignalR Channels:
   -> notifications-{userId}: Per-user notifications
-  -> exception-alerts: Exception alerts (managers/admins only)
+  -> exception-alerts: Exception alerts (authorized resolver outputs only)
   -> workforce-live: Live workforce status updates
   -> agent-status: Agent online/offline status
 ```

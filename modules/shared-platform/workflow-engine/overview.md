@@ -19,15 +19,17 @@ A resolver finds the right person dynamically based on the employee, department,
 
 Supported resolver types:
 
+- First eligible approver in employee's position reporting chain
 - Employee's reporting manager
 - Employee's team lead
 - Employee's department owner
 - Users with selected permission
 - Users in selected department
 - Users in selected team
-- Users in selected job level
+- Users in selected position or position branch
+- Users in selected job level, only when job levels are configured and linked for the tenant
 - Specific employee
-- Configured escalation owner
+- Configured escalation resolver
 - Previous workflow approver
 - Current case conversation participants
 - Owner of connected company
@@ -40,7 +42,8 @@ Examples:
 
 - Send to users with permission `exceptions:manage`.
 - Assign to employee's reporting manager.
-- Escalate to the configured escalation owner.
+- For leave with no custom workflow, assign to the first active manager above the employee who has `leave:approve`.
+- Escalate to the configured escalation resolver only after the hierarchy resolver cannot produce a valid candidate or a custom workflow explicitly chooses that route.
 
 ## Builder Model
 
@@ -81,10 +84,25 @@ ONEVO should not require a separate manager-absence configuration module for Pha
 
 - The assigned approver may use a workflow `delegate` action for that specific request.
 - If the approver takes no action before `sla_deadline_at`, the workflow runs the configured unresolved/escalation path.
-- The escalation resolver should usually target department owner, users with a selected permission, a specific employee, or configured escalation owner.
+- The escalation resolver should usually target department owner, users with a selected permission, a specific employee, HR coverage resolver, or configured escalation resolver.
 - Every delegated or escalated action is recorded in `approval_actions` and remains auditable.
 
 This keeps normal leave, overtime, attendance correction, and expense approvals simple while still preventing a request from being blocked by one absent reporting manager.
+
+## Default Approval Fallback
+
+Custom workflow definitions are optional for common leave approval. When a module requires approval and no customer-defined workflow exists, the module must choose an explicit default resolver. For leave, the default resolver is the first eligible approver in the employee's position reporting chain.
+
+Default hierarchy resolution:
+
+1. Resolve the request employee's current position.
+2. Walk `reports_to_position_id` upward until the root.
+3. For each reporting position, resolve the current active occupant.
+4. Return the first candidate who is an active employee, has an active user account, has the required action permission such as `leave:approve`, and is allowed by self-approval policy.
+5. Skip vacant positions, inactive employees, missing user accounts, and candidates without the required permission.
+6. If no valid candidate is found, mark the step blocked and notify the automation owner or authorized admin. Optional fallback routing may use department owner, selected permission, specific employee, HR coverage assignment, or configured escalation resolver.
+
+Do not expose per-permission scope policy setup as a required role-creation step. Permission grants define the action capability; resolver context, hierarchy, workspace membership, project membership, and legal-entity context define where that action can operate.
 
 ## Case Conversations
 

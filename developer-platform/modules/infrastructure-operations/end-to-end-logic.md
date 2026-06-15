@@ -4,7 +4,7 @@
 
 ## Load Infrastructure View
 
-1. Operator opens System Operations -> Infrastructure.
+1. Operator opens Phase 2 Operations -> Infrastructure.
 2. Frontend calls `GET /admin/v1/operations/infrastructure`.
 3. Backend verifies `platform.infrastructure.read`.
 4. Backend aggregates safe infrastructure metrics.

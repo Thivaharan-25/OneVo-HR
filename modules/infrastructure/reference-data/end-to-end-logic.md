@@ -15,7 +15,7 @@ GET /api/v1/countries
     -> [Authenticated]
     -> ReferenceDataService.GetCountriesAsync(ct)
       -> 1. Query countries table (global — no tenant filter)
-      -> 2. Cache in Redis (no expiry — static data)
+      -> 2. Cache in Phase 1 `IMemoryCache` (no expiry — static data)
       -> Return Result.Success(countryDtos)
 ```
 

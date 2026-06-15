@@ -64,7 +64,7 @@ interface TenantListResponseDto {
 
 ## GET `/admin/v1/subscription-plans`
 
-Plans are reusable catalog records. Operators select one plan for a tenant; tenant-specific pricing, discounts, contract value, payment collection mode, full-license payment evidence, and maintenance terms are stored on the tenant subscription/commercial record.
+Plans are reusable catalog records. Operators select or allow one plan for a tenant; tenant-specific pricing, discounts, selected optional add-ons, selected resource-only add-ons, shared resource limits, resolved payment gateway config, and unpaid dues are stored on the tenant subscription/commercial record.
 
 ```ts
 interface SubscriptionPlanDto {
@@ -92,7 +92,7 @@ interface SubscriptionPlanListResponseDto {
 }
 ```
 
-`effective_*_price` is derived as `override_*_price ?? calculated_*_price`. The backend calculates `calculated_*_price` from `module_catalog.price_brackets` for `included_modules` and `company_size_range`. `included_feature_keys` is the commercial feature package inside those modules.
+`effective_*_price` is derived as `override_*_price ?? calculated_*_price`. The backend calculates `calculated_*_price` from `module_catalog.price_brackets` for `included_modules` and `company_size_range`. `included_feature_keys` is the commercial feature package inside those modules. A module can be included in a plan without including every feature key registered under that module in Module Catalog.
 
 ## POST `/admin/v1/subscription-plans`
 
@@ -119,7 +119,7 @@ interface CreateSubscriptionPlanDto {
 
 ## PATCH `/admin/v1/subscription-plans/{id}`
 
-Updates reusable plan metadata, included modules, included feature keys, and base prices. Existing tenant subscriptions keep their stored commercial terms unless product explicitly runs a migration/reprice operation.
+Updates reusable plan metadata, included modules, included feature keys, and base prices. Existing tenant subscriptions keep their stored commercial terms unless product explicitly runs a migration/reprice operation. Adding a feature key to Module Catalog or to a reusable plan must not silently rewrite existing tenant subscription snapshots.
 
 ```ts
 interface UpdateSubscriptionPlanDto {
@@ -149,17 +149,29 @@ interface ModuleCatalogItemDto {
   pillar: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
   phase: "phase_1" | "phase_2" | "future" | string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
-  price_brackets: ModulePriceBracketDto[]
-  full_license_price: number | null
-  maintenance_rate: number | null
+  pricing_references: ModulePriceReferenceDto[]
+  storage_references: ModuleStorageReferenceDto[]
+  ai_token_references: ModuleAiTokenReferenceDto[]
   is_active: boolean
 }
 
-interface ModulePriceBracketDto {
+interface ModulePriceReferenceDto {
   min_employees: number
   max_employees: number       // -1 means unlimited
   monthly_price: number
   annual_price: number
+}
+
+interface ModuleStorageReferenceDto {
+  min_employees: number
+  max_employees: number
+  storage_gb: number
+}
+
+interface ModuleAiTokenReferenceDto {
+  min_employees: number
+  max_employees: number
+  tokens_per_month: number
 }
 
 interface ModuleCatalogResponseDto {
@@ -178,9 +190,9 @@ interface CreateModuleCatalogItemDto {
   pillar: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
   phase: "phase_1" | "phase_2" | "future" | string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
-  price_brackets: ModulePriceBracketDto[]
-  full_license_price?: number | null
-  maintenance_rate?: number | null
+  pricing_references?: ModulePriceReferenceDto[]
+  storage_references?: ModuleStorageReferenceDto[]
+  ai_token_references?: ModuleAiTokenReferenceDto[]
   is_active?: boolean
 }
 
@@ -189,7 +201,7 @@ interface CreateModuleCatalogItemDto {
 
 ## PATCH `/admin/v1/modules/catalog/{moduleKey}`
 
-Updates reusable module metadata and bracketed catalog prices. Existing tenant entitlements and tenant subscriptions keep their stored pricing snapshots unless product explicitly runs a migration/reprice operation.
+Updates reusable module metadata and reference values. Existing tenant entitlements and tenant subscriptions keep their stored pricing snapshots unless product explicitly runs a migration/reprice operation.
 
 ```ts
 interface UpdateModuleCatalogItemDto {
@@ -197,9 +209,9 @@ interface UpdateModuleCatalogItemDto {
   pillar?: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
   phase?: "phase_1" | "phase_2" | "future" | string
   pricing_unit?: "per_employee" | "per_device" | "flat" | "custom"
-  price_brackets?: ModulePriceBracketDto[]
-  full_license_price?: number | null
-  maintenance_rate?: number | null
+  pricing_references?: ModulePriceReferenceDto[]
+  storage_references?: ModuleStorageReferenceDto[]
+  ai_token_references?: ModuleAiTokenReferenceDto[]
   is_active?: boolean
   reason: string
 }
@@ -381,10 +393,9 @@ interface TenantDetailDto {
   status: TenantLifecycleStatus
   billing_start_date: string | null
   subscription_override: boolean
-  commercial_model: "subscription" | "full_license_maintenance" | null
-  subscription_collection_mode: "gateway" | "manual" | null
-  license_payment_mode: "manual" | "gateway" | null
-  maintenance_collection_mode: "gateway" | "manual" | "waived" | null
+  billing_cycle: "monthly" | "annual" | null
+  selected_addon_count: number
+  unpaid_seat_dues_amount: number
   users_summary: { total: number; admins: number }
   agents_summary: { total: number; online: number }
   flags_summary: { overrides: number }
@@ -427,43 +438,26 @@ interface TenantStatusUpdateDto {
 ```ts
 interface SubscriptionOverrideDto {
   plan_code: string
-  commercial_model: "subscription" | "full_license_maintenance"
   billing_currency: string
   contract_start_date?: string
   contract_end_date?: string | null
   company_size_range: string
-  selected_modules: string[]
+  selected_base_modules: string[]
+  selected_addon_modules: string[]
+  selected_resource_addons: Array<{ addon_id: string; quantity: number }>
   selected_feature_keys: Record<string, string[]>
   calculated_monthly_price: number
   calculated_annual_price: number
   override_monthly_price?: number | null
   override_annual_price?: number | null
+  annual_price_override?: number | null
+  annual_discount_percent?: number | null
   ai_token_limit_per_month?: number | null
+  tenant_storage_limit_gb?: number | null
+  unpaid_seat_dues_amount?: number
 
-  // Required for commercial_model = "subscription".
   billing_cycle?: "monthly" | "annual"
   billing_start_date?: string  // ISO date
-  subscription_collection_mode?: "gateway" | "manual"
-  gateway_provider?: "stripe" | "payhere" | "manual_gateway" | string
-  gateway_customer_ref?: string | null
-  gateway_subscription_ref?: string | null
-
-  // Required for commercial_model = "full_license_maintenance".
-  license_payment_mode?: "manual" | "gateway"
-  full_license_amount?: number | null
-  license_paid_at?: string | null
-  license_reference?: string | null
-
-  // Maintenance may still be collected through the payment gateway even when the full license was paid manually.
-  maintenance_collection_mode?: "gateway" | "manual" | "waived"
-  maintenance_billing_cycle?: "monthly" | "annual" | null
-  maintenance_status?: "active" | "due" | "expired" | "waived"
-  maintenance_start_date?: string | null
-  maintenance_renewal_date?: string | null
-  maintenance_rate?: number | null
-  maintenance_amount?: number | null
-
-  custom_contract_value?: number | null  // total negotiated contract value when different from plan/module defaults
   discount_percent?: number | null
   reason: string              // required; written to audit log
 }
@@ -472,14 +466,14 @@ interface SubscriptionOverrideDto {
 
 Rules:
 
-- Subscription tenants normally use `subscription_collection_mode = "gateway"` and `gateway_provider` so recurring plan/module fees are charged by the payment gateway.
-- `company_size_range` uses the same option set as tenant creation. `selected_modules`, `selected_feature_keys`, and `company_size_range` must be validated against Module Catalog. Price calculation comes from `module_catalog.price_brackets`; the calculated values supplied by the UI are display echoes and the backend remains authoritative.
+- `company_size_range` uses the same option set as tenant creation. `selected_base_modules`, `selected_addon_modules`, `selected_resource_addons`, selected feature keys, and company size must be validated against Subscription Plans and Module Catalog. The backend remains authoritative for price and resource calculation.
 - `selected_feature_keys` is the tenant's commercial feature snapshot. Runtime feature flags cannot add keys that are absent from this object.
+- Resource-only add-ons affect shared limits such as storage or AI tokens only. They must not create module entitlements or add `selected_feature_keys`.
 - `override_monthly_price` and `override_annual_price` are negotiated/effective prices when present. They must not replace `calculated_monthly_price` and `calculated_annual_price` in storage.
-- `ai_token_limit_per_month` is required and positive when the selected module set includes an AI capability such as `chat_ai`; it is omitted/null for non-AI plans.
-- Full-license tenants can use `license_payment_mode = "manual"` for the one-time license sale. The operator records `full_license_amount`, `license_paid_at`, and `license_reference`.
-- Full-license maintenance is separate from the one-time license. It normally uses `maintenance_collection_mode = "gateway"` so recurring maintenance/support fees are collected by the system payment gateway.
-- `manual` collection modes are exception paths and require `reason`.
+- `ai_token_limit_per_month` is the resolved shared tenant AI allowance.
+- `tenant_storage_limit_gb` is the resolved shared tenant storage pool.
+- Unpaid seat dues block cancellation and renewal changes.
+- Gateway payment references are handled by invoice/payment APIs where applicable.
 
 ## PUT `/admin/v1/tenants/{id}/modules`
 
@@ -488,8 +482,8 @@ interface TenantModuleSelectionDto {
   modules: Array<{
     module_key: string
     enabled: boolean
-    sales_state: "available" | "trial" | "quoted" | "purchased" | "maintenance_included" | "subscription_included" | "disabled"
-    pricing_model?: "subscription" | "full_license" | "maintenance" | "trial" | "custom"
+    sales_state: "available" | "trial" | "quoted" | "purchased" | "subscription_included" | "disabled"
+    pricing_model?: "subscription" | "addon" | "trial" | "custom"
     price?: number | null
     currency?: string | null
     starts_at?: string | null
@@ -499,7 +493,7 @@ interface TenantModuleSelectionDto {
 // response: 204 No Content
 ```
 
-`available` and `quoted` are commercial pipeline states and do not grant tenant-facing access. Active module access is granted by `purchased`, `trial`, `subscription_included`, or `maintenance_included`, unless the entitlement has expired.
+`available` and `quoted` are commercial pipeline states and do not grant tenant-facing access. Active module access is granted by `purchased`, `trial`, or `subscription_included`, unless the entitlement has expired.
 
 ## GET `/admin/v1/tenants/{id}/permissions/catalog`
 

@@ -49,7 +49,7 @@
   "setup_service_keys": ["leave_default_types_seed"],
   "features": [
     { "feature_key": "leave.requests", "name": "Leave Requests", "is_default_included": true },
-    { "feature_key": "leave.approvals", "name": "Manager Approvals", "is_default_included": true },
+    { "feature_key": "leave.approvals", "name": "Leave Approvals", "is_default_included": true },
     { "feature_key": "leave.advanced_accruals", "name": "Advanced Accrual Rules", "is_default_included": false }
   ],
   "permissions": [
@@ -78,7 +78,7 @@ Foundation modules are always included and not separately sellable. They do not 
 
 | Module Key | Feature Key | Display Name | Default Included | Notes |
 |---|---|---|---|---|
-| `auth` | `auth.google_login` | Google Login | Yes | Operational flag candidate only, not sellable |
+| `auth` | `auth.optional_google_oauth` | Optional Google OAuth Setup | Yes | Operational flag candidate only, not sellable |
 | `auth` | `auth.mfa_enforcement` | MFA Enforcement | Yes | Operational flag candidate only, not sellable |
 | `configuration` | `configuration.tenant_settings` | Tenant Settings | Yes | Foundation capability |
 | `roles` | `roles.permission_management` | Permission Management | Yes | Foundation capability |
@@ -87,7 +87,7 @@ Foundation modules are always included and not separately sellable. They do not 
 | `org` | `org.structure_management` | Organisation Structure Management | Yes | Foundation capability |
 | `workflow_engine` | `workflow_engine.automation_execution` | Automation Execution | Yes | Operational flag candidate only, not sellable |
 
-#### Package 1 - HR Core
+#### HR Core Module Group
 
 | Module Key | Feature Key | Display Name | Default Included | Runtime Flag Candidate |
 |---|---|---|---|---|
@@ -110,7 +110,7 @@ Foundation modules are always included and not separately sellable. They do not 
 | `calendar` | `calendar.leave_visibility` | Leave Visibility | Yes | No |
 | `calendar` | `calendar.event_sync` | Event Sync | Yes | No |
 
-#### Package 1 - Intelligence
+#### Workforce Intelligence Module Group
 
 | Module Key | Feature Key | Display Name | Default Included | Runtime Flag Candidate |
 |---|---|---|---|---|
@@ -147,7 +147,7 @@ Foundation modules are always included and not separately sellable. They do not 
 | `analytics` | `analytics.data_export` | Data Export | No | Yes |
 | `analytics` | `analytics.scheduled_reports` | Scheduled Reports | No | Yes |
 
-#### Package 2 - Work Management
+#### Work Management Module Group
 
 | Module Key | Feature Key | Display Name | Default Included | Runtime Flag Candidate |
 |---|---|---|---|---|
@@ -182,7 +182,7 @@ Foundation modules are always included and not separately sellable. They do not 
 
 **Implementation rule:** `Runtime Flag Candidate = Yes` means it is acceptable to seed a matching `feature_flags` row. `Runtime Flag Candidate = No` means the feature should normally be controlled only by module entitlement, plan inclusion, permissions, or tenant configuration.
 
-Plans and custom tenant contracts select from this list. Feature Flag Manager can later control runtime access to feature keys marked as runtime flag candidates, but only after the feature is commercially included.
+Plans and custom tenant contracts select from this list. Tenant Runtime Overrides can control runtime access to feature keys marked as runtime flag candidates, but only after the feature is commercially included.
 
 **Runtime availability rule:**
 
@@ -230,7 +230,7 @@ Frontend calls `GET /admin/v1/modules/catalog/{moduleKey}/permissions/available`
 
 ## Change Pricing
 
-1. Operator updates price brackets or full-license/maintenance rates.
+1. Operator updates pricing, storage, or AI token reference values.
 2. Backend stores new catalog values.
 3. Backend writes `module_catalog_price_history`.
 4. Existing tenant subscription snapshots remain unchanged.
@@ -277,7 +277,7 @@ The integration catalog is fully **operator-managed**. Operators create entries 
 > | Customer OAuth - tenant's users log in with their own account | GitHub, Microsoft Teams, Google Calendar, Slack | Integration Catalog (here) - `category = 'customer_oauth'` |
 > | Platform-Managed - ONEVO configures; tenants don't act | Biometric terminal webhook, MDM agent distribution | Integration Catalog (here) - `category = 'platform_managed'` |
 > | ONEVO's own platform service keys - used for all tenants | Resend (email), Cloudflare, Azure Blob Storage | System Config -> Platform Service Keys - NOT here |
-> | Payment gateways - ONEVO charges tenants using these | Paddle, PayHere | Subscription Manager -> Payment Gateways - NOT here |
+> | Payment gateways - ONEVO charges tenants using these | Stripe, Paddle, PayHere | System Config -> Payment Gateways - NOT here |
 >
 > Resend and payment gateways are **never** in the integration catalog. The integration catalog is only for integrations that are part of a tenant's feature set.
 
@@ -417,7 +417,7 @@ Requires `reason` field (min 10 chars) when changing `required_module_keys` or `
 
 ### Module Disable Warning - Integration Impact
 
-When an operator disables a module for a tenant (via Feature Flag Manager or Tenant Console -> Subscriptions), the system checks:
+When an operator disables a module for a tenant (via Tenant Detail -> Runtime Overrides or Tenant Management -> Subscriptions), the system checks:
 
 1. Which integrations have `required_module_keys` containing this module key
 2. Whether the tenant has any of those integrations connected (`tenant_integration_credentials.status = 'connected'`)
@@ -463,9 +463,9 @@ Operator must explicitly confirm before the module is disabled and integrations 
 
 | Consumer | What It Reads From Module Catalog Manager |
 |---|---|
-| Subscription Manager | Module pricing brackets to calculate plan prices |
-| Tenant Console (Step 3 wizard) | Module list + pricing to populate the module selector |
-| Tenant Console (Subscriptions tab) | Module entitlement state per tenant |
+| Subscription Plans | Module pricing brackets to calculate plan prices |
+| Tenant Management (Step 3 wizard) | Module list + pricing to populate the module selector |
+| Tenant Management (Subscriptions tab) | Module entitlement state per tenant |
 | Role Template Manager | Permission codes per module to filter the permission catalog |
 | Main ONEVO app (tenant-facing) | `module_integration_links` + `integration_catalog` to determine which integrations a tenant can access based on their entitled modules |
 | Tenant Detail -> Integrations tab (developer console) | Same integration link data for read-only operator view |

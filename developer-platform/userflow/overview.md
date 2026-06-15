@@ -1,4 +1,4 @@
-﻿# User Flow Overview
+# User Flow Overview
 
 ## Purpose
 
@@ -7,43 +7,61 @@ This section documents the step-by-step flows a Developer Platform operator foll
 ## Login Flow
 
 1. Navigate to `console.onevo.io/login`.
-2. Click Sign in with Google.
-3. Google returns an ID token; backend validates it against `dev_platform_accounts`.
-4. Backend checks `is_active = true` and resolves effective platform permissions.
-5. Backend issues a platform-admin JWT (`iss: onevo-platform-admin`, 30-minute expiry).
-6. Redirect to `/`, the Dashboard.
+2. Enter email/password.
+3. Backend validates the account, password hash, active status, and lockout state.
+4. Backend creates a pending MFA challenge; no full platform session exists yet.
+5. User completes MFA.
+6. Backend resolves effective platform permissions and issues a platform-admin JWT (`iss: onevo-platform-admin`, 30-minute expiry).
+7. Redirect to `/`, the Dashboard.
 
-Accounts not in `dev_platform_accounts`, accounts without a valid invite, or accounts with `is_active = false` are rejected. There is no self-registration. Accounts are invited through Platform Access by an operator with `platform.accounts.manage`.
+Users not in `platform_users`, users without a valid invite, inactive users, or users who fail MFA are rejected. There is no self-registration. Users are invited through Platform Users by an operator with `platform.accounts.manage`. Optional Google OAuth setup for invited managers still requires MFA before a session is issued.
 
 ## Navigation Map
 
-The Developer Platform uses a sidebar icon rail plus a side panel for sections that have child modules. Dashboard has no side panel.
+The Developer Platform uses a flat Super Admin sidebar.
 
-| Rail Area | Has Panel | Child Routes |
-|---|---:|---|
-| Dashboard | No | `/` |
-| Platform Management | Yes | `/platform/tenants`, `/platform/subscriptions`, `/platform/platform-users`, `/platform/platform-roles`, `/platform/global-policies`, `/platform/module-catalog`, `/platform/templates`, `/platform/feature-flags` |
-| System Operations | Yes | `/operations/platform-health`, `/operations/services`; device, infrastructure, background-job, and agent-version flows are Phase 2 |
-| Security & Compliance | Yes | `/security/security-center`, `/security/audit-logs`, `/security/compliance`, `/security/data-retention` |
-| Analytics & Reports | Yes | `/analytics/platform`, `/analytics/reports` |
-| Settings | Yes | `/settings/system`, `/settings/app-catalog`, `/settings/api-keys` *(Phase 2)* |
+| Sidebar Item | Route |
+|---|---|
+| Dashboard | `/` |
+| **Platform Management** _(sidebar group)_ | |
+| &nbsp;&nbsp;&nbsp;Tenants | `/platform/tenants` |
+| &nbsp;&nbsp;&nbsp;Subscription Plans | `/platform/subscription-plans` |
+| &nbsp;&nbsp;&nbsp;Module Catalog | `/platform/module-catalog` |
+| &nbsp;&nbsp;&nbsp;Demo Profiles | `/platform/demo-profiles` |
+| &nbsp;&nbsp;&nbsp;Templates | `/platform/templates` |
+| Requests Center | `/platform/requests` |
+| Customer Support | `/platform/support` |
+| Platform Users | `/platform/platform-users` |
+| Platform Roles | `/platform/platform-roles` |
+| Security Center | `/security/security-center` |
+| Audit Console | `/security/audit-console` |
+| Compliance Center | `/security/compliance` |
+| Reports / Analytics | `/reports-analytics` |
+| System Config | `/settings/system` |
+| Operations | `/operations` |
+| App Catalog | `/settings/app-catalog` |
 
 ## Access Model
 
-Developer Platform access is permission-based. Built-in roles such as Platform Super Admin, Tenant Operations Manager, Billing Manager, Security Auditor, Module Catalog Manager, and Operations Engineer are presets composed from `dev_platform_permissions`.
+Developer Platform access is permission-based. Built-in roles such as Platform Super Admin, Tenant Operations Manager, Billing Manager, Security Auditor, Module Catalog Manager, and Operations Engineer are presets composed from platform permission codes.
 
 The platform-admin JWT includes account identity and effective platform permissions or a permission version reference. All `/admin/v1/*` endpoints enforce permission checks server-side. Frontend route gates are a convenience only.
 
 | Action | Required Permission |
 |---|---|
-| Create tenant draft | `platform.tenants.create` |
-| Suspend / unsuspend tenant | `platform.tenants.suspend` |
+| Create tenant draft | `platform.tenants.manage` |
+| Suspend / reactivate tenant | `platform.tenants.manage` |
 | Activate provisioning tenant | `platform.tenants.activate` |
 | Impersonate tenant user | `platform.tenants.impersonate` |
 | Manage platform accounts | `platform.accounts.manage` |
 | Manage platform roles | `platform.roles.manage` |
 | Manage subscription plans/gateways | `platform.subscriptions.manage` / `platform.payment_gateways.manage` |
 | Manage product module catalog | `platform.module_catalog.manage` |
+| Manage demo profiles | `platform.demo_profiles.manage` |
+| Approve/reject requests | `platform.requests.manage` |
+| Manage support tickets | `platform.support.manage` |
+| Manage templates | `platform.templates.manage` |
+| Manage tenant runtime overrides | `platform.tenants.feature_overrides.manage` |
 | Force-update agent ring | *(Phase 2)* `platform.agent_versions.force_update` |
 
 ## Detailed Flows
@@ -56,18 +74,21 @@ The platform-admin JWT includes account identity and effective platform permissi
 | `provisioning-flow.md` | Two-step tenant creation plus post-creation Manage/Configure flow |
 | `subscription-management.md` | Reusable plans, gateway configuration, and tenant commercial assignment |
 | `module-catalog.md` | ONEVO product module catalog management |
-| `role-template-management.md` | Global role templates and tenant role materialization |
-| `global-policies.md` | Global policy edit, impact preview, and publish |
-| `feature-flags.md` | Global flag list, toggle global default, per-tenant override |
+| `demo-profiles.md` | Demo/trial profile setup, module access, limits, and upgrade options |
+| `requests-center.md` | Demo access requests and trial extension requests |
+| `customer-support.md` | Support ticket queue, assignment, replies, notes, and closure |
+| `configuration-template-management.md` | Template Management — unified library, type filter chips, type-picker-first creation |
+| `role-template-management.md` | Template Management — role template creation and tenant role materialization |
+| `global-policies.md` | System Config policy defaults: edit, impact preview, and publish |
+| `feature-flags.md` | Tenant Detail runtime overrides and feature flag override rules |
 | `agent-versions.md` | *(Phase 2)* Version catalog, publish, force-update ring, ring assignment, rollback |
-| `platform-health.md` | Platform health overview |
-| `services-monitor.md` | Service detail and safe service actions |
+| `platform-health.md` | Platform health overview, service detail, dependencies, safe service actions, and Phase 1 aggregate job/config/security checks |
 | `device-management.md` | *(Phase 2)* Device/agent search and approved commands |
 | `infrastructure-operations.md` | *(Phase 2)* Infrastructure capacity and dependencies |
 | `background-jobs.md` | *(Phase 2)* Background job observability and retry |
 | `security-center.md` | Security overview and session review |
 | `audit-console.md` | Cross-tenant audit query and export |
-| `compliance-center.md` | Compliance exports and legal holds |
+| `compliance-center.md` | Compliance exports, legal holds, legal document versions, and acceptance tracking |
 | `data-retention.md` | Retention policy setup and sweep behavior |
 | `platform-analytics.md` | Cross-tenant analytics |
 | `reports.md` | Platform report exports |

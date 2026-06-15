@@ -32,43 +32,44 @@ Work Management is **Pillar 3** - it is internal to ONEVO. All three pillars sha
 
 ## Product Configuration Matrix
 
-ONEVO uses two sellable packages plus always-included Foundation modules. Tenant access controls whether tenant admins can configure/manage the module (`Full`), only consume/use tenant-provided setup (`Use only`), only view module outputs (`View only`), or have no tenant-facing access (`None`).
+ONEVO uses Subscription Plans with base modules, optional module add-ons, resource-only add-ons, and always-included Foundation modules. Tenant access controls whether tenant admins can configure/manage the module (`Full`), only consume/use tenant-provided setup (`Use only`), only view module outputs (`View only`), or have no tenant-facing access (`None`).
 
-| # | Module | Layer | Package | Tenant Access |
+| # | Module | Layer | Plan Role | Tenant Access |
 |---:|---|---|---|---|
 | 1 | Authentication and Authorization | Foundation | Always Included | None |
 | 2 | Tenant Configuration and Onboarding | Foundation | Always Included | None |
 | 3 | Roles and Permissions | Foundation | Always Included | Use only |
-| 4 | Profile Management | HR Core | Package 1 | Full |
-| 5 | Attendance and Leave Management | HR Core | Package 1 | Full |
-| 6 | E2E Monitoring | Intelligence | Package 1 | View only |
-| 7 | Productivity and Performance Analytics | Intelligence | Package 1 | View only |
-| 8 | Exception Detection | Intelligence | Package 1 | View only |
-| 9 | Overtime Management | Intelligence | Package 1 | Full |
-| 10 | Project Management | Work Management | Package 2 | Full |
-| 11 | Agentic Chat | Work Management | Package 2 | Full |
-| 12 | Third Party Integrations | Work Management | Package 2 | Full |
-| 13 | IDE Extension | Work Management | Package 2 | Full |
+| 4 | Profile Management | HR Core | Plan-selected module | Full |
+| 5 | Attendance and Leave Management | HR Core | Plan-selected module | Full |
+| 6 | E2E Monitoring | Intelligence | Plan-selected module | View only |
+| 7 | Productivity and Performance Analytics | Intelligence | Plan-selected module | View only |
+| 8 | Exception Detection | Intelligence | Plan-selected module | Full |
+| 9 | Overtime Management | Intelligence | Plan-selected module | Full |
+| 10 | Project Management | Work Management | Plan-selected module | Full |
+| 11 | Agentic Chat | Work Management | Plan-selected module | Full |
+| 12 | Third Party Integrations | Work Management | Plan-selected module | Full |
+| 13 | IDE Extension | Work Management | Plan-selected module | Full |
 
 ---
 
-## Billing Packs
+## Subscription Plan Composition
 
-Tenants are provisioned by an ONEVO operator with Foundation plus one or both sellable packages. See [[Userflow/Platform-Setup/billing-subscription|Billing & Subscription]].
+Tenants are provisioned or upgraded onto one selected base plan. The selected plan can include base modules, optional module add-ons, and resource-only add-ons. See [[Userflow/Platform-Setup/billing-subscription|Billing & Subscription]].
 
-| Pack | Modules Included | Pricing Unit |
-|------|-----------------|--------------|
-| **Foundation** | Authentication and Authorization, Tenant Configuration and Onboarding, Roles and Permissions | Always included |
-| **Package 1** | Profile Management, Attendance and Leave Management, E2E Monitoring, Productivity and Performance Analytics, Exception Detection, Overtime Management | Commercial pricing by active employee and/or monitored employee/device, finalized in billing configuration |
-| **Package 2** | Project Management, Agentic Chat, Third Party Integrations, IDE Extension | Commercial pricing by active Work Management user, finalized in billing configuration |
+| Component | Meaning |
+|---|---|
+| Foundation | Always included services required for every tenant |
+| Base package modules | Included automatically when the plan is selected |
+| Optional module add-ons | Added only when selected and charged once |
+| Resource-only add-ons | Extra Storage Pack and Extra AI Token Pack; no module entitlement |
 
 Phase 2 modules (Payroll, Performance, HR Documents, Governance, Skill & Talent Development, etc.) are introduced as standalone add-ons when released. The operator adds them to the module catalog in the Developer Console; they then appear as purchasable add-ons for all tenants.
 
 ### Module Pricing Brackets
 
-Module catalog pricing is bracketed by employee-count pricing tiers and must be read from `module_catalog.price_brackets`, not hardcoded. Company size is not part of module configuration and is not a separate subscription plan identity. Plan creation stores reusable feature/module bundles and pricing rules; the tenant owner's confirmed employee count selects the applicable tier for first-invoice calculation, and both calculated price and any operator override are stored for audit.
+Module Catalog pricing, storage, and AI values are references only. Company-size pricing brackets live in Subscription Plans. The tenant owner's confirmed employee count selects the applicable tier for first-invoice calculation, and both calculated price and any operator override are stored for audit.
 
-Example: for the `51-200` employee range, Package 1 plus Package 2 displays the summed calculated price for the tenant before any operator-negotiated override.
+Example: for the `51-200` employee range, the selected base plan plus selected add-ons displays the calculated price for the tenant before any operator-negotiated override.
 
 ---
 
@@ -115,7 +116,7 @@ Example: for the `51-200` employee range, Package 1 plus Package 2 displays the 
 | W6 | Time | `Features/Time` | ~4 | Phase 1 |
 | W7 | Resources | `Features/Resources` | ~3 | Phase 1 |
 | W8 | Chat & Messaging | `Features/Chat` | 8 | Phase 1/2 |
-| W9 | Agentic Chat AI | `Features/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 — included in Package 2 Agentic Chat |
+| W9 | Agentic Chat AI | `Features/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 - available as a plan-selected module/add-on |
 | W10 | Collaboration | `Features/Collaboration` | 4 new + extends documents | Phase 1 |
 | W11 | Analytics & Insights | `Features/WorkSyncAnalytics` | 7 | Phase 1 |
 | W12 | Integrations | `Features/WorkSyncIntegrations` | 7 | Phase 1 |

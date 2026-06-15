@@ -4,7 +4,7 @@
 
 ```
 ┌─ Topbar ─────────────────────────────────────────────────────────────────┐
-│  [☰]  Breadcrumbs (Outfit 400, 13px, zinc-500)  [⌘K Search]  [🔔] [Av] │
+│  [☰]  [⚙Config|▶Ops]  Breadcrumbs  ···  [⌘K Search]  [Entity▾]  [🌙][🔔][Av] │
 ├──────┬──────────────────┬────────────────────────────────────────────────┤
 │ Rail │ Expansion Panel  │  Page Content                                  │
 │ 64px │ 220px            │                                                │
@@ -314,8 +314,7 @@ Navigation is responsive from Phase 1 and must preserve the same route, badge, a
 |:---------|:-----------------|:---------|
 | Mobile `<640px` | Hamburger + `MobileNavDrawer` | Drawer contains entity context, search entry, all visible pillars, sub-items, badges, and profile/settings access. It closes after navigation. |
 | Tablet `640-1023px` | Hamburger + drawer | Same route map as desktop. Drawer may use two-level accordion groups for pillar items. |
-| Laptop `1024-1279px` | Rail + flyout/collapsed panel | Rail remains visible. Expansion panel is collapsed by default and opens as flyout or temporary panel. |
-| Desktop `>=1280px` | Rail + expansion panel | Full rail and pinnable expansion panel. |
+| Desktop `>=1024px` | Rail + expansion panel | Rail visible; expansion panel pinnable. At 1024–1279px the panel may default to collapsed/flyout mode; at ≥1280px it can be pinned open. |
 
 State rules:
 
@@ -329,16 +328,24 @@ State rules:
 
 Height: **48px**, glass surface (`bg-white/5 backdrop-blur border-b border-white/10`).
 
-| Element | Position | Behavior |
-|:--------|:---------|:---------|
-| Hamburger | Left on mobile/tablet | Opens responsive navigation drawer |
-| Breadcrumbs | Left (after hamburger) | Outfit 400, 13px, zinc-500 — auto-generated from route |
-| Quick Search pill | Center | Opens Quick Search modal (`⌘K` / `Ctrl+K`) |
-| Theme Toggle | Right (before divider) | Sun/Moon/Monitor — cycles system→light→dark, persists to localStorage |
-| Notification Bell | Right | FYI only — informational alerts, no actions required |
-| User Avatar | Right | Profile, preferences, logout |
+Full element order (left → right):
 
-> **Bell vs Inbox distinction:** The Notification Bell is for **informational** updates (system events, FYI alerts). Items that require action go to **Inbox** (`/inbox`), surfaced via the Inbox pillar in the rail with an unresolved-count badge.
+```
+[≡ Hamburger]  [⚙ Config | ▶ Ops]  [Breadcrumbs]  ···spacer···  [⌘K Search]  [Entity ▾]  [🌙 Theme]  [🔔 Bell]  [Avatar]
+```
+
+| Element | Position | Visibility | Behaviour |
+|:--------|:---------|:-----------|:----------|
+| Hamburger `≡` | Left | Mobile/tablet only (`< 1024px`) | Opens responsive navigation drawer |
+| App switcher `[⚙ Config \| ▶ Ops]` | Left (after hamburger) | Only when user has **both** `config:access` + `ops:access` | Segmented pill — see [[frontend/design-system/patterns/app-entity-switcher\|App + Entity Switcher]] |
+| Breadcrumbs | Left (after app switcher) | Always | Outfit 400, 13px, zinc-500 — auto-generated from route |
+| Quick Search pill | Center/right | Always | Opens Quick Search modal (`⌘K` / `Ctrl+K`) |
+| Entity chip `[Entity ▾]` | Right (before theme toggle) | Only when tenant has **more than one** legal entity and user has access to **more than one** | Compact dropdown — see [[frontend/design-system/patterns/app-entity-switcher\|App + Entity Switcher]] |
+| Theme Toggle | Right (before bell) | Always | Sun/Moon/Monitor — cycles system→light→dark |
+| Notification Bell | Right | Always | FYI-only informational alerts |
+| User Avatar | Right | Always | Profile, preferences, logout |
+
+For full app switcher and entity chip behaviour, states, and responsive rules see [[frontend/design-system/patterns/app-entity-switcher|App + Entity Switcher Pattern]].
 
 ---
 

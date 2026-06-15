@@ -520,13 +520,13 @@ Error response when blocked: `400 "Module '{key}' is not entitled for this tenan
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/configuration-templates` | List templates; filter by `?type=`, `?active_only=`, `?industry_tag=` | `platform.config_templates.read` |
-| `GET` | `/admin/v1/configuration-templates/{id}` | Template detail + version history | `platform.config_templates.read` |
-| `POST` | `/admin/v1/configuration-templates` | Create new template | `platform.config_templates.manage` |
-| `PATCH` | `/admin/v1/configuration-templates/{id}` | Update name / description / payload â€” increments version | `platform.config_templates.manage` |
-| `DELETE` | `/admin/v1/configuration-templates/{id}` | Deactivate - blocked if active tenant positions or assignment rows still reference the template | `platform.config_templates.manage` |
-| `POST` | `/admin/v1/configuration-templates/{id}/clone` | Clone into new editable template | `platform.config_templates.manage` |
-| `POST` | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply to tenant â€” body: `{ force_update: bool }` | `platform.config_templates.manage` |
+| `GET` | `/admin/v1/configuration-templates` | List templates; filter by `?type=`, `?active_only=`, `?industry_tag=` | `platform.templates.read` |
+| `GET` | `/admin/v1/configuration-templates/{id}` | Template detail + version history | `platform.templates.read` |
+| `POST` | `/admin/v1/configuration-templates` | Create new template | `platform.templates.manage` |
+| `PATCH` | `/admin/v1/configuration-templates/{id}` | Update name / description / payload â€” increments version | `platform.templates.manage` |
+| `DELETE` | `/admin/v1/configuration-templates/{id}` | Deactivate - blocked if active tenant positions or assignment rows still reference the template | `platform.templates.manage` |
+| `POST` | `/admin/v1/configuration-templates/{id}/clone` | Clone into new editable template | `platform.templates.manage` |
+| `POST` | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply to tenant â€” body: `{ force_update: bool }` | `platform.templates.manage` |
 | `GET` | `/admin/v1/tenants/{id}/configuration-template-applications` | Apply history for this tenant | `platform.tenants.read` |
 
 ---

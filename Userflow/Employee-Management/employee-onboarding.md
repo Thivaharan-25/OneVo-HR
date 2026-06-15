@@ -1,7 +1,7 @@
 # Employee Onboarding
 
 **Area:** Employee Management  
-**Trigger:** HR Admin clicks "Add Employee" — Sidebar → Employees → Add Employee
+**Trigger:** Authorized employee-management user clicks "Add Employee" — Sidebar → Employees → Add Employee
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `roles:manage` (confirm role suggestions), `org:manage` (change department or create position inline)
 

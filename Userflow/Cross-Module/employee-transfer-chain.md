@@ -1,7 +1,7 @@
 ﻿# Employee Transfer â€” Cross-Module Chain
 
 **Area:** Cross-Module Scenario  
-**Trigger:** HR Admin or Manager initiates an assignment or legal entity transfer (user action)  
+**Trigger:** Authorized employee-management user or position-resolved manager initiates an assignment or legal entity transfer (user action)  
 **Required Permission(s):** `employees:write`, `org:manage`, `attendance:write`, `leave:manage`  
 **Modules Involved:** Employee-Management, Org-Structure, Workforce-Presence, Leave, Payroll, Auth-Access, Notifications
 
@@ -25,7 +25,7 @@ Transferring an employee isn't just updating a department field. It can change t
 
 | Order | Module | What Happens | Triggered By | Event Published |
 |:------|:-------|:-------------|:-------------|:----------------|
-| 1 | **Employee-Management** | Transfer record created with old/new legal entity where applicable, old/new position, derived department/job title snapshots, effective date, and reason. Employee status temporarily set to "Transferring" | HR Admin submits transfer | `EmployeeTransferInitiated` |
+| 1 | **Employee-Management** | Transfer record created with old/new legal entity where applicable, old/new position, derived department/job title snapshots, effective date, and reason. Employee status temporarily set to "Transferring" | Authorized employee-management user submits transfer | `EmployeeTransferInitiated` |
 | 2 | **Org-Structure** | Position assignment and derived reporting context updated. Org chart reflects change on effective date | `EmployeeTransferInitiated` | `ReportingLineChanged` |
 | 3 | **Auth-Access** | Position-linked access impact is applied after admin confirmation. Approval routing updated: new position-resolved manager becomes approver for leave, expense, attendance. Old position-resolved manager loses approval authority for this employee | `ReportingLineChanged` | `ApprovalRoutingUpdated` |
 | 4 | **Workforce-Presence** | Shift schedule reassigned if new department has different shift pattern. Old schedule ends on transfer date, new schedule starts | `EmployeeTransferInitiated` | `ShiftScheduleReassigned` |
@@ -56,10 +56,10 @@ Effective Date Reached (Step 8) â€” scheduled, runs after all above
 
 | Failed Step | Impact | Recovery |
 |:------------|:-------|:---------|
-| Position reporting context not updated | Old position-resolved manager still receives approvals for transferred employee | HR Admin manually updates via Org-Structure |
-| Approval routing stale | Leave/expense requests go to wrong position-resolved manager | System detects on next approval attempt; HR corrects |
+| Position reporting context not updated | Old position-resolved manager still receives approvals for transferred employee | Authorized org-management user manually updates via Org Structure |
+| Approval routing stale | Leave/expense requests go to wrong position-resolved manager | System detects on next approval attempt; authorized workflow or org-management user corrects |
 | Shift schedule not reassigned | Employee tracked against old shift | Admin assigns manually via [[Userflow/Workforce-Presence/shift-schedule-setup\|Shift Schedule Setup]] |
-| Leave policy not re-evaluated | Employee may have wrong entitlements for new legal entity | HR manually reassigns via [[Userflow/Leave/leave-entitlement-assignment\|Leave Entitlement Assignment]] |
+| Leave policy not re-evaluated | Employee may have wrong entitlements for new legal entity | Authorized leave-management user manually reassigns via [[Userflow/Leave/leave-entitlement-assignment\|Leave Entitlement Assignment]] |
 | Payroll context not updated | Payroll may use old legal entity context | Finance corrects via [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] |
 
 ---

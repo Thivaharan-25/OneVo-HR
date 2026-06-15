@@ -9,7 +9,7 @@ Security Center is the single screen where platform security team members review
 | Source | Role |
 |---|---|
 | `platform_alerts` | Read + write - alert list, acknowledge, resolve |
-| `dev_platform_sessions` | Read + write - session list, revoke |
+| `platform_user_sessions` | Read + write - session list, revoke |
 | `audit_log` | Read - suspicious activity events and security-category event history |
 
 ## Alert Detection (summary)
@@ -34,7 +34,7 @@ See [[developer-platform/modules/dashboard/end-to-end-logic|Dashboard End-to-End
 ### Session Management
 - View all active platform admin sessions with IP address, login time, and expiry
 - **Revoke** a specific session - takes effect immediately; revoking own session logs out the current operator
-- Revoke all sessions for a specific account (also accessible from Platform Access)
+- Revoke all sessions for a specific account (also accessible from Platform Users and Platform Roles)
 
 ### Suspicious Activity
 - View below-threshold security events from the audit log that did not reach alert creation (e.g., 5 failed logins - suspicious but not yet brute-force threshold of 10)
@@ -58,7 +58,7 @@ See [[developer-platform/modules/dashboard/end-to-end-logic|Dashboard End-to-End
 ## Key Rules
 
 - Every read of the Security Center is itself audit-logged - reading sensitive data is a security event
-- Token hashes stored in `dev_platform_sessions` are never returned by any API response
+- Token hashes stored in `platform_user_sessions` are never returned by any API response
 - Alert resolution notes are plaintext - operators must not include credentials or secrets in resolution notes
 - Alerts cannot be suppressed or deleted - only acknowledged and resolved. The full creation-to-resolution trail is permanent.
 - Session revocation of own session logs out the current operator immediately
@@ -68,5 +68,5 @@ See [[developer-platform/modules/dashboard/end-to-end-logic|Dashboard End-to-End
 - [[developer-platform/modules/security-center/end-to-end-logic|Security Center End-to-End Logic]]
 - [[developer-platform/modules/dashboard/end-to-end-logic|Dashboard End-to-End Logic]] - alert detection mechanism
 - [[developer-platform/modules/audit-console/overview|Audit Console]] - full audit trail
-- [[developer-platform/modules/platform-access/overview|Platform Access]] - platform account management
+- [[developer-platform/modules/platform-access/overview|Platform Users and Platform Roles]] - platform account management
 

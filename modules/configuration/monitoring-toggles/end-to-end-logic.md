@@ -31,7 +31,7 @@ PUT /api/v1/settings/monitoring
       -> 1. Load existing toggles
       -> 2. Apply changes
       -> 3. UPDATE monitoring_feature_toggles
-      -> 4. Invalidate monitoring toggle cache (Redis)
+      -> 4. Invalidate monitoring toggle cache (Phase 1 in-memory cache)
       -> 5. Log to audit_logs
       -> 6. Note: Agent policy changes take effect on next agent poll (up to 5 min)
       -> Return Result.Success(updatedDto)

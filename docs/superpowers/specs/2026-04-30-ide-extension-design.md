@@ -143,7 +143,7 @@ Submit → time log created → bot card in chat + undo countdown (30s)
 
 ### `@overtime:request` Form
 Fields: Date, Hours, Reason  
-Submit → routes to manager approval workflow
+Submit → routes through the configured approval resolver
 
 ### `@timesheet:submit` Form
 Shows: Current period timesheet summary  

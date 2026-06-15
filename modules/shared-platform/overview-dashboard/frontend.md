@@ -43,7 +43,7 @@ Landing page after login. Shows a role-appropriate summary of HR and Workforce I
 
 | Card | Visible When |
 |:-----|:-------------|
-| Employees | Always (count varies by scope: own team for Manager, all for HR Admin) |
+| Employees | Always (count varies by scope: own reporting team for position-resolved manager, all allowed employees for authorized broad-scope users) |
 | On Leave | `leave:read` |
 | Pending Tasks | Always (own pending approvals/actions) |
 | Active Now | `workforce:view` AND monitoring enabled |

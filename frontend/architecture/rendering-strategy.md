@@ -140,6 +140,19 @@ import { SectionErrorBoundary } from '@/components/shared/section-error-boundary
 </SectionErrorBoundary>
 ```
 
+## App Route Memory
+
+When the user switches between the Config and Ops apps, the browser navigates to the other subdomain. To restore the user's last position, `AppRouteMemoryService` (shared lib) listens to Angular Router `NavigationEnd` events and writes the current route path to `localStorage`:
+
+```
+Key: onevo_last_route_{userId}_{config|ops}
+Written: on every NavigationEnd
+Read: when [[frontend/design-system/patterns/app-entity-switcher|AppSwitcherComponent]] initiates a cross-app navigation
+Cleared: on logout
+```
+
+This is the only state that survives cross-subdomain navigation outside of the session cookie. All other state (filters, pagination, form drafts) is considered ephemeral and is not persisted across app switches.
+
 ## Related
 
 - [[frontend/architecture/app-structure|App Structure]] — route tree and page file structure

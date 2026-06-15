@@ -12,6 +12,8 @@
 
 Tasks are the atomic unit of work in Work Management. Every task belongs to a project. Tasks support subtasks, assignments, checklists, custom fields, approval gates, watchers, and inter-task links.
 
+Task authority is context-bound. A user with `tasks:write` can create or assign tasks only inside a project/workspace context where they have local authority. Reporting hierarchy can limit or suggest assignees, but it must not grant task authority inside another manager's workspace or project by itself.
+
 ---
 
 ## Database Tables
@@ -87,6 +89,23 @@ Key columns: `board_id`, `column_id`, `task_id`, `position`.
 9. Assignment APIs call Leave + Calendar availability checks before writing `task_assignments`. Approved leave creates `availability_status = on_leave` and a warning by default; tenant policy may hard-block it.
 10. Employee offboarding deactivates future assignability and removes active watchers where required, while preserving historical task rows.
 11. When a task has `workspace_id`, that workspace must be linked to the project through `project_workspaces`.
+12. Creating a task requires `tasks:write`, active project membership or approved scoped project authority, and a responsible workspace that is actively linked to the project.
+13. Assignment requires the assignee to be an active project member or approved participant in the responsible workspace/project context.
+14. A reporting manager can assign tasks to reports only inside contexts where the manager has workspace/project task authority. Hierarchy over the assignee alone is not enough.
+15. A workspace/project local administration context can allow assignment to members of that workspace/project even when the assignee is not below the actor in the company hierarchy, subject to project policy.
+
+## Assignment Decision Flow
+
+When a user assigns a task:
+
+1. Verify module entitlement and `tasks:write`.
+2. Verify the actor can access the project through `project_members` or an approved scoped grant.
+3. Verify the task's `workspace_id` is active in `project_workspaces`.
+4. Verify the actor has task authority in that project/workspace context.
+5. Verify the assignee is active and belongs to the project, responsible workspace, or approved participant set.
+6. If the actor is relying on reporting-manager authority, verify the assignee is below the actor in `employee_hierarchy_closure` and the workspace/project context is one the actor controls.
+7. Run leave/calendar availability checks.
+8. Write `task_assignments` or return a scoped 403 with no leaked employee/project details.
 
 ---
 

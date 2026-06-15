@@ -40,9 +40,9 @@ See [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]].
 
 ONEVO supports **Stripe**, **Paddle**, and **PayHere** for payment collection.
 
-Use `gateway_provider = "stripe"` for direct Stripe-backed recurring subscriptions, invoices, and payment methods. Use `gateway_provider = "paddle"` when Paddle is the merchant of record for international SaaS billing and tax handling. Use `gateway_provider = "payhere"` for Sri Lanka/local payment collection and gateway callbacks. The provider is selected by the ONEVO operator during tenant creation/commercial setup; tenant owners do not choose the gateway.
+Use `gateway_provider = "stripe"` for direct Stripe-backed recurring subscriptions, invoices, and payment methods. Use `gateway_provider = "paddle"` when Paddle is the merchant of record for international SaaS billing and tax handling. Use `gateway_provider = "payhere"` for Sri Lanka/local payment collection and gateway callbacks. The provider is resolved from the System Config country route during tenant creation/commercial setup; tenant owners do not choose the gateway.
 
-Full-license customers may pay the one-time license manually/offline, but recurring maintenance/support fees should still use one of the configured payment gateways when possible.
+Payment provider integrations are used for subscription invoices and configured payment flows. Manual/offline payment collection is not supported for subscription billing.
 
 #### Stripe
 
@@ -80,12 +80,12 @@ Full-license customers may pay the one-time license manually/offline, but recurr
 |:---------|:------|
 | **Module** | SharedPlatform |
 | **Auth** | Merchant ID + Merchant Secret (server-side, encrypted) + Webhooks/notify URL signature verification |
-| **Purpose** | Sri Lanka/local payment collection, recurring subscriptions where supported, maintenance fee collection |
+| **Purpose** | Sri Lanka/local payment collection and recurring subscription payments where supported |
 | **Tables** | `payment_gateway_configs`, `tenant_subscriptions`, `subscription_invoices`, `payment_methods` |
 
 **Key Flows:**
 - Tenant subscription checkout through PayHere when selected by operator
-- Full-license maintenance collection through PayHere recurring/payment flow
+- Subscription collection through PayHere recurring/payment flow where supported
 - Webhook/notify callbacks update invoice and subscription state
 - Gateway references stored in `gateway_customer_ref`, `gateway_subscription_ref`, and invoice/payment provider refs
 

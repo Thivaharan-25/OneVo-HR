@@ -29,7 +29,7 @@
 **Action:** `POST /admin/v1/system-config/ai-providers/fetch-models` with wrong API key
 **Expected:**
 - HTTP 200 (ONEVO returns 200 — the error is in the payload)
-- `{"status": "error", "error_message": "..."}` — raw provider error message passed through
+- `{"error": "provider_auth_failed", "message": "..."}` — raw provider error message passed through
 - No `ai_provider_configs` row created
 
 ### TC-SYS-003: Fetch models uses operator-supplied api_base_url — no hardcoded fallback
@@ -61,6 +61,8 @@
   "api_base_url": "https://api.openai.com",
   "model": "gpt-4o-mini",
   "api_key": "sk-live-test-key-abc123",
+  "request_timeout_seconds": 60,
+  "max_retries": 2,
   "is_active": true
 }
 ```
@@ -143,7 +145,7 @@
 
 ---
 
-## Global Defaults
+## Global Settings
 
 ### TC-SYS-018: Global default change is audit-logged with old and new values
 **Setup:** `invite.expiry_hours = 72`

@@ -21,24 +21,27 @@
 - **UI:** Sidebar → Organization → Positions → list view grouped by legal entity and department
 - **API:** `GET /api/v1/org/positions?legalEntityId={id}` — returns all positions for the selected legal entity
 
-### Step 2: Select Legal Entity (multi-company tenants)
-- **UI:** Legal entity selector at the top of the Positions page; defaults to the first active entity
-- Single-company tenants skip this — the only legal entity is pre-selected and the selector is hidden
+### Step 2: Select Legal Entity Context
+- **UI:** Legal entity switcher in the Org Structure top bar, similar to a workspace selector.
+- If the user can access one legal entity, that entity is auto-selected and the switcher is hidden or read-only.
+- If the user can access multiple legal entities, the user selects the working legal entity before opening Positions.
+- Positions list, department pickers, reports-to pickers, create forms, edit forms, and reporting tree all use the active legal entity context.
 
 ### Step 3: Create Position
-- **UI:** Click "Add Position" → side panel or modal with the following fields:
+- **UI:** Click "Add Position" → side panel or modal within the active legal entity context. The form does not show Legal Entity as an editable field.
 
 | Field | Required | Notes |
 |:------|:---------|:------|
 | Position Name | Yes | Unique within the legal entity |
-| Legal Entity | Yes | Pre-selected from Step 2; not editable inline |
 | Department | Yes | Dropdown filtered to departments belonging to the selected legal entity |
-| Capacity | Yes | Integer ≥ 1; represents the headcount ceiling for this position |
+| Position Type | Yes | `unique` or `pooled` |
+| Capacity / Max Occupancy | Yes | Integer ≥ 1; represents the headcount ceiling for this position. `unique` positions must have max occupancy 1 |
 | Reports To | No | Position picker filtered to same legal entity; leave blank for root positions |
 | Linked Roles / Permissions | No | Multi-select from tenant roles catalog; these are confirmed when an employee is placed into the position |
 
 - **API:** `POST /api/v1/org/positions`
-- **DB:** `positions` — new record with `legal_entity_id`, `department_id`, `reports_to_position_id` (nullable), `capacity`
+- **DB:** `positions` — new record with `legal_entity_id` from the active context, `department_id`, `position_type`, `reports_to_position_id` (nullable), `max_occupancy`
+- **Backend guard:** the selected legal entity context is still validated server-side; the department and reports-to position must belong to that legal entity.
 
 ### Step 4: Confirm Linked Roles
 - **UI:** After selecting linked roles, a summary panel shows: "Assigning an employee to this position will grant: [role list]"

@@ -74,6 +74,13 @@ tasks ──────> code_activity_events (via webhook)
 
 Project/workspace relationship note: the diagram is a logical dependency view, not an ownership rule. Projects are tenant-scoped and can link to multiple team workspaces through `project_workspaces`. Workspace membership does not automatically grant project visibility; project visibility comes from `project_members`.
 
+Workspaces and projects have different jobs:
+
+- **Workspace**: a regular collaboration area for a reporting team, explicit team, or work area. It owns workspace membership, chat, workspace resources, and workspace-level settings.
+- **Project**: a delivery container with tasks, milestones, risks, blockers, progress, and health. A project can involve one or more workspaces through `project_workspaces`.
+
+Creating a project from a workspace auto-links that workspace, but the project is not owned by exactly one workspace. A project can later request participation from other workspaces or legal entities.
+
 ---
 
 ## Permission Model
@@ -103,9 +110,34 @@ Request arrives →
 
 ---
 
+## Context And Visibility Rules
+
+Do not require administrators to configure a scope policy for every permission on every role. Permissions such as `tasks:write`, `projects:create`, and `workspaces:manage` define action capability. Context comes from position hierarchy, active legal entity, workspace role, project membership, project-workspace link, and invite/approval state.
+
+Hierarchy authority is not global. A reporting manager can use hierarchy to create a workspace from "My Reporting Team" or view subordinate contributions in contexts they can access. That authority does not automatically grant control over the same subordinate inside another manager's workspace or project.
+
+A user may have `tasks:write`, but they still need the relevant project/workspace authority to create or assign tasks in that project/workspace.
+
+Project health and progress are not shown the same way to every user:
+
+| Viewer context | Show |
+|:---------------|:-----|
+| Full project administration context | Overall health, overall progress, all linked workspaces, all participating legal entities, all milestones, all risks/blockers, all pending project approvals, and all members. |
+| Legal-entity-scoped approval or management context | Only the legal entity contribution, entity members in the project, entity risks/blockers, and entity participation approvals. |
+| Workspace administration/lead context | Workspace progress, tasks, blockers, members, and milestones for that workspace. |
+| Reporting manager/team lead context without project-wide authority | Only their reports' tasks, blockers, deadlines, and availability conflicts inside projects/workspaces they can access. |
+| Project member context | Own tasks, watched tasks, assigned milestones, blockers they raised, and published project announcements. |
+| Viewer/stakeholder context | Published summary, approved milestones, and published risks only. |
+
+---
+
 ## Key Invariants
 
 1. **All Work Management entities are tenant-scoped.** Project entities use `tenant_id` + `project_id`. Workspace entities use `tenant_id` + `workspace_id`. A project can link to multiple workspaces through `project_workspaces`, so `project_id` must not imply a single workspace.
+
+1a. **Legal entity context is inferred.** When a user creates a project, `owning_legal_entity_id` is resolved from the active legal entity context. Users with access to multiple legal entities choose the context before creation; normal create forms do not ask for owning legal entity as a free field.
+
+1b. **Cross-legal-entity participation requires approval.** A project can request participation from a workspace or member in another legal entity, but access begins only after the target workspace/legal-entity approver accepts the request. Approval grants project/workspace collaboration only; it does not grant reporting authority over that entity's employees.
 
 2. **Work Management time logs feed HR analytics.** Time records store both `user_id` and `employee_id` where payroll, department, employment-status, or overtime reporting needs HR joins. `employee_id` is resolved from `employees.user_id` at write time.
 

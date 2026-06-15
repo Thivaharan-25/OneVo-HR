@@ -101,7 +101,9 @@ Every audit entry has a machine-readable `action_code`. This is the full catalog
 | `auth.login.failed` | Login attempt failed (wrong credentials or account inactive) |
 | `auth.session.revoked` | Session manually revoked by another admin |
 | `auth.session.expired` | Session expired naturally |
-| `auth.google_callback.success` | Google OAuth callback succeeded |
+| `platform_auth.login_success` | Email/password primary login succeeded |
+| `platform_auth.mfa_success` | MFA verification succeeded |
+| `platform_auth.session_created` | Platform-admin session created |
 | `tenant.user.login.success` | Tenant user logged in |
 | `tenant.user.login.failed` | Tenant user login failed |
 | `tenant.impersonated` | Platform admin issued impersonation token |
@@ -126,8 +128,7 @@ Every audit entry has a machine-readable `action_code`. This is the full catalog
 | `subscription.assigned` | Subscription plan assigned to tenant |
 | `subscription.overridden` | Post-activation subscription override applied |
 | `invoice.generated` | Invoice created by billing job |
-| `invoice.paid` | Invoice marked paid (gateway or manual) |
-| `invoice.manually_marked_paid` | Manual payment recorded by platform admin |
+| `invoice.paid` | Invoice marked paid by configured payment gateway |
 | `invoice.voided` | Invoice voided |
 | `payment.failed` | Gateway payment attempt failed |
 | `payment.gateway.created` | New gateway configuration saved |
@@ -138,7 +139,7 @@ Every audit entry has a machine-readable `action_code`. This is the full catalog
 | Action Code | Description |
 |---|---|
 | `module.entitlement.updated` | Module entitlement state changed for tenant |
-| `module.runtime_disabled` | Module disabled by operator via Feature Flag Manager |
+| `module.runtime_disabled` | Module disabled by operator via Tenant Runtime Overrides |
 | `module.runtime_enabled` | Module re-enabled by operator |
 | `feature_flag.created` | New feature flag created |
 | `feature_flag.default_changed` | Flag global default changed |

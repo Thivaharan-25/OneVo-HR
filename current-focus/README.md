@@ -1,4 +1,4 @@
-﻿# Current Focus: ONEVO Build Packs
+# Current Focus: ONEVO Build Packs
 
 **Team size:** 8 developers
 **Build model:** 4 backend developers + 4 frontend developers
@@ -56,7 +56,7 @@ If a dependency is missing, build the smallest mock or contract stub needed for 
 
 ## Foundation Owners Rule
 
-Two developers own the shared foundation files. All others build on top — they do not directly modify foundation files. If a change is needed, raise it with the owner who adds the extension point.
+Two developers own the shared foundation files. All others build on top � they do not directly modify foundation files. If a change is needed, raise it with the owner who adds the extension point.
 
 | Owner | Track | Protected areas |
 |---|---|---|
@@ -74,10 +74,10 @@ The Developer Platform is a standalone internal control plane. It is not part of
 | Layer | Owner | Scope | Required Wiki References |
 |---|---|---|---|
 | Admin API surface | Dev 1 | `ONEVO.Api` `/admin/v1/*`, platform-admin auth, issuer isolation | [[developer-platform/system-design|Developer Platform System Design]] (developer-platform/system-design.md), [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md) |
-| DevPlatform backend feature | Dev 1 | `dev_platform_accounts`, `dev_platform_sessions`, admin auth/session CQRS | [[modules/dev-platform/overview|Dev Platform Feature]] (modules/dev-platform/overview.md), [[developer-platform/database/schema|Developer Platform Schema]] (developer-platform/database/schema.md) |
-| Tenant Console backend | Dev 1 | tenant list/detail/status/provisioning/subscription/impersonation APIs | [[developer-platform/modules/tenant-console/overview|Tenant Console]] (developer-platform/modules/tenant-console/overview.md), [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md) |
+| DevPlatform backend feature | Dev 1 | `platform_users`, `platform_user_sessions`, admin auth/session CQRS | [[modules/dev-platform/overview|Dev Platform Feature]] (modules/dev-platform/overview.md), [[developer-platform/database/schema|Developer Platform Schema]] (developer-platform/database/schema.md) |
+| Tenant Management backend | Dev 1 | tenant list/detail/status/provisioning/subscription/impersonation APIs | [[developer-platform/modules/tenant-console/overview|Tenant Management]] (developer-platform/modules/tenant-console/overview.md), [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md) |
 | Role Template backend | Dev 1 | module-filtered permission catalog, operator-managed role templates, tenant role materialization | [[developer-platform/modules/role-template-manager/overview|Role Template Manager]] (developer-platform/modules/role-template-manager/overview.md), [[modules/auth/overview|Auth]] (modules/auth/overview.md), [[Userflow/Auth-Access/role-creation|Role Creation]] (Userflow/Auth-Access/role-creation.md) |
-| Feature Flag backend | Dev 1 | global flags, per-tenant overrides, module toggles | [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md), [[developer-platform/userflow/feature-flags|Feature Flag Flows]] (developer-platform/userflow/feature-flags.md) |
+| Feature Flag backend | Dev 1 | global flags, per-tenant overrides, module toggles | [[developer-platform/modules/feature-flag-manager/overview|Tenant Runtime Overrides]] (developer-platform/modules/feature-flag-manager/overview.md), [[developer-platform/userflow/feature-flags|Tenant Runtime Override Flows]] (developer-platform/userflow/feature-flags.md) |
 | Audit/System/App Catalog backend | Dev 1 | cross-tenant audit query, global config, catalog management contracts | [[developer-platform/modules/audit-console/overview|Audit Console]] (developer-platform/modules/audit-console/overview.md), [[developer-platform/modules/system-config/overview|System Config]] (developer-platform/modules/system-config/overview.md), [[developer-platform/modules/app-catalog-manager/overview|App Catalog Manager]] (developer-platform/modules/app-catalog-manager/overview.md) |
 | Agent release backend | Dev 4 | agent versions, deployment rings, tenant ring assignments, force-update dispatch via Agent Gateway | [[developer-platform/modules/agent-version-manager/overview|Agent Version Manager]] (developer-platform/modules/agent-version-manager/overview.md), [[developer-platform/userflow/agent-versions|Agent Version Flows]] (developer-platform/userflow/agent-versions.md) |
 | Dev Console frontend | Dev 5 | standalone Angular app at `console.onevo.io` | [[developer-platform/frontend/overview|Developer Platform Frontend]] (developer-platform/frontend/overview.md), [[developer-platform/frontend/app-structure|Developer Platform App Structure]] (developer-platform/frontend/app-structure.md) |
@@ -121,33 +121,33 @@ Tasks do not flow in a single line across all 8 developers. Use this schedule to
 
 | Window | Dev | Task | Note |
 |---|---|---|---|
-| **Day 0** | Dev 1 | DEV1.T0 — Backend CQRS Folder Structure Cleanup | First Dev 1 task; must run before all other backend foundation/Auth work |
-| **After DEV1.T0** | Dev 1 | DEV1.T1 — Backend Foundation | Critical path start after structure cleanup |
-| **Day 0** | Dev 5 | DEV5.T1 — Vite App Foundation | No backend dependency |
-| **Day 0** | Dev 8 | DEV8.T1 — Extension Foundation | MSW stubs; no backend dependency |
-| **After DEV1.T1** | Dev 1 | DEV1.T2 — Auth + RBAC | Sequential on T1 |
-| **After DEV1.T1** | Dev 2 | DEV2.T1 — Org Structure + Core HR | Parallel with DEV1.T2 |
-| **After DEV1.T1** | Dev 4 | **DEV1.T4 — Audit Foundation (pickup)** | Dev 4 is idle waiting for T2; T4 only needs T1 |
-| **After DEV5.T1** | Dev 5 | DEV5.T2 — API Client + State Layer | Sequential |
-| **After DEV1.T2 + T4** | Dev 1 | DEV1.T3 — Tenant + Entitlement | Dev 1 critical chain; T4 done by Dev 4 |
-| **After DEV1.T2 + T4** | **Dev 3 (pickup)** | **DEV1.T7 — Dev Platform Admin API** | Dev 3 is idle (blocked until T3); T7 only needs T1+T2+T4 |
-| **After DEV1.T2** | Dev 4 | DEV4.T1 — Agent Gateway Enrollment | Now unblocked (needed T1+T2) |
-| **After DEV5.T2** | Dev 5 | DEV5.T3 + DEV5.T4 — Auth Screens + Shared Components | **Parallel pair** |
-| **After DEV1.T3** | Dev 3 | DEV3.T1 — WorkSync Foundation | Now unblocked (may still be finishing T7 — fine to wrap) |
-| **After DEV5.T1–T4** | Dev 6 | DEV6.T1 — HR Employee Screens | First gating task |
-| **After DEV5.T1–T4** | Dev 7 | DEV7.T1 — WorkSync Shell + Projects | First gating task |
+| **Day 0** | Dev 1 | DEV1.T0 � Backend CQRS Folder Structure Cleanup | First Dev 1 task; must run before all other backend foundation/Auth work |
+| **After DEV1.T0** | Dev 1 | DEV1.T1 � Backend Foundation | Critical path start after structure cleanup |
+| **Day 0** | Dev 5 | DEV5.T1 � Vite App Foundation | No backend dependency |
+| **Day 0** | Dev 8 | DEV8.T1 � Extension Foundation | MSW stubs; no backend dependency |
+| **After DEV1.T1** | Dev 1 | DEV1.T2 � Auth + RBAC | Sequential on T1 |
+| **After DEV1.T1** | Dev 2 | DEV2.T1 � Org Structure + Core HR | Parallel with DEV1.T2 |
+| **After DEV1.T1** | Dev 4 | **DEV1.T4 � Audit Foundation (pickup)** | Dev 4 is idle waiting for T2; T4 only needs T1 |
+| **After DEV5.T1** | Dev 5 | DEV5.T2 � API Client + State Layer | Sequential |
+| **After DEV1.T2 + T4** | Dev 1 | DEV1.T3 � Tenant + Entitlement | Dev 1 critical chain; T4 done by Dev 4 |
+| **After DEV1.T2 + T4** | **Dev 3 (pickup)** | **DEV1.T7 � Dev Platform Admin API** | Dev 3 is idle (blocked until T3); T7 only needs T1+T2+T4 |
+| **After DEV1.T2** | Dev 4 | DEV4.T1 � Agent Gateway Enrollment | Now unblocked (needed T1+T2) |
+| **After DEV5.T2** | Dev 5 | DEV5.T3 + DEV5.T4 � Auth Screens + Shared Components | **Parallel pair** |
+| **After DEV1.T3** | Dev 3 | DEV3.T1 � WorkSync Foundation | Now unblocked (may still be finishing T7 � fine to wrap) |
+| **After DEV5.T1�T4** | Dev 6 | DEV6.T1 � HR Employee Screens | First gating task |
+| **After DEV5.T1�T4** | Dev 7 | DEV7.T1 � WorkSync Shell + Projects | First gating task |
 | **After DEV8.T1** | Dev 8 | DEV8.T2 + T3 + T4 + T5 | **All four parallel** |
 | **After DEV2.T1** | Dev 2 | DEV2.T2 + T3 + T4 + T5 | **All four parallel** |
 | **After DEV3.T1** | Dev 3 | DEV3.T2 + T3 + T5 (parallel); T4 after T2+T3 | T2/T3/T5 parallel; T4 gates on T2+T3 |
-| **After DEV4.T1** | Dev 4 | DEV4.T2 — Monitoring Agent Client | Sequential |
-| **After DEV4.T3** | Dev 4 | DEV4.T4 + T5 — Identity Verification + Exception Engine | **Parallel pair** |
+| **After DEV4.T1** | Dev 4 | DEV4.T2 � Monitoring Agent Client | Sequential |
+| **After DEV4.T3** | Dev 4 | DEV4.T4 + T5 � Identity Verification + Exception Engine | **Parallel pair** |
 | **After DEV6.T1** | Dev 6 | DEV6.T2 + T3 + T4 | **All three parallel** |
 | **After DEV7.T1** | Dev 7 | DEV7.T2 + T3 + T4 | **All three parallel** |
-| **After DEV5.T5** | Dev 5 | DEV5.T6 + T7 — Dev Platform Console UIs | **Parallel pair** |
-| **After DEV1.T3+T5+T7** | Dev 2 (overflow) | DEV1.T8 — Tenant Console Backend | Dev 2 picks up after their track is done |
-| **After DEV1.T4+T5+T7** | Dev 3 (overflow) | DEV1.T9 — Dev Platform Operations Backend | Dev 3 picks up after their track is done |
+| **After DEV5.T5** | Dev 5 | DEV5.T6 + T7 � Dev Platform Console UIs | **Parallel pair** |
+| **After DEV1.T3+T5+T7** | Dev 2 (overflow) | DEV1.T8 � Tenant Management Backend | Dev 2 picks up after their track is done |
+| **After DEV1.T4+T5+T7** | Dev 3 (overflow) | DEV1.T9 � Dev Platform Operations Backend | Dev 3 picks up after their track is done |
 
-**Dev 1 critical chain (irreducible):** T0 → T1 → T2 → T3 → T5 → T6. Everything else flows around it.
+**Dev 1 critical chain (irreducible):** T0 ? T1 ? T2 ? T3 ? T5 ? T6. Everything else flows around it.
 
 ---
 

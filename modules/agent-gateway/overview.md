@@ -211,7 +211,7 @@ Pending and completed commands sent from server to agent.
 | `agent_id` | `uuid` | FK -> registered_agents |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `capture_remote_workplace`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
-| `requested_by` | `uuid` | FK -> users (manager/CEO who initiated) |
+| `requested_by` | `uuid` | FK -> users (authorized user who initiated) |
 | `payload_json` | `jsonb` | Command-specific parameters |
 | `status` | `varchar(20)` | `pending`, `delivered`, `completed`, `failed`, `expired` |
 | `created_at` | `timestamptz` | When command was created |

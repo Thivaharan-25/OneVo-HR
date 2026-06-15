@@ -13,7 +13,7 @@
 
 Verifies employee identity via photo capture and biometric fingerprint matching. Configurable verification policies allow tenants to require identity checks at login, logout, and/or at timed intervals. Manages biometric terminal hardware (fingerprint readers).
 
-Photo verification uses a trusted **verification reference photo**, not a casual avatar/profile image. If no reference photo exists, the TrayApp can collect one during first agent sign-in after employee authentication and consent. That first capture is an enrollment photo, not a verification result. It becomes trusted only after HR/manager approval or an explicit tenant policy that allows SSO/MFA-backed auto-approval.
+Photo verification uses a trusted **verification reference photo**, not a casual avatar/profile image. If no reference photo exists, the TrayApp can collect one during first agent sign-in after employee authentication and consent. That first capture is an enrollment photo, not a verification result. It becomes trusted only after approval by the configured identity-verification resolver or an explicit tenant policy that allows SSO/MFA-backed auto-approval.
 
 ---
 
@@ -247,7 +247,7 @@ Additional photo reference rules:
 
 6. **First agent photo can enroll the reference** - when no approved reference exists, the first TrayApp capture after sign-in creates a `verification_reference_photos` row with `pending_review`. It does not create a failed verification alert.
 7. **No reference means no match** - scheduled/login/interval verification is recorded as `skipped` with `failure_reason = 'No approved verification reference photo'` until a reference is approved.
-8. **Reference approval is audited** - default flow requires HR/manager approval. Auto-approval is allowed only when tenant policy explicitly enables it and the employee authenticated with a trusted SSO/MFA flow.
+8. **Reference approval is audited** - default flow requires approval by the configured identity-verification resolver. Auto-approval is allowed only when tenant policy explicitly enables it and the employee authenticated with a trusted SSO/MFA flow.
 
 ## API Endpoints
 

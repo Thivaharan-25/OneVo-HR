@@ -35,11 +35,11 @@ No work-location evidence is collected before clock-in, after clock-out, during 
 
 | Configuration | Owner | Notes |
 |:--------------|:------|:------|
-| Company workplace | Admin / HR admin | Office, branch, or company-approved worksite in the current tenant |
-| Employee work mode | Admin / HR admin | `office`, `remote`, `hybrid`, `field`, `no_enforcement` |
-| Approved remote workplace | Employee initiates, manager approves changes | Captured from the employee's first approved remote clock-in |
-| Grace period and severity | Admin / HR admin | Can inherit from tenant defaults or be overridden by workplace/rule |
-| Escalation routing | Admin / HR admin | Reporting manager first, then hierarchy-aware reviewers/escalation chain |
+| Company workplace | Authorized workforce configuration user | Office, branch, or company-approved worksite in the current tenant |
+| Employee work mode | Authorized workforce configuration user | `office`, `remote`, `hybrid`, `field`, `no_enforcement` |
+| Approved remote workplace | Employee initiates, configured approver reviews changes | Captured from the employee's first approved remote clock-in |
+| Grace period and severity | Authorized workforce configuration user | Can inherit from tenant defaults or be overridden by workplace/rule |
+| Escalation routing | Authorized workflow configuration user | Configured work-location resolver, hierarchy-aware reviewers, or escalation chain |
 
 ---
 
@@ -118,8 +118,8 @@ If an employee needs to change their remote workplace:
 1. Employee opens **Employee Settings -> Remote Work Location**.
 2. Employee clicks **Request Location Change**.
 3. Employee enters a reason, such as `Moved house`.
-4. Request is routed to the reporting manager's Inbox.
-5. Manager approves or rejects.
+4. Request is routed through the configured work-location approval resolver.
+5. Configured approver approves or rejects.
 6. If approved, the next remote clock-in becomes a re-capture session.
 7. Employee takes a photo and the agent captures the new network profile.
 8. Old profile is archived, new profile becomes active.

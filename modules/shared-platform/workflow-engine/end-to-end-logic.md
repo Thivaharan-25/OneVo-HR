@@ -57,9 +57,10 @@ Domain event arrives, such as LeaveRequestSubmitted or ExceptionAlertCreated
 ```text
 Resolver input:
   resource employee
-  department/team/job level
+  legal entity/department/team/position or position branch
+  job level only when configured and linked
   selected permission
-  configured escalation owner
+  configured escalation resolver
   previous workflow approver
   case conversation participants
 
@@ -69,7 +70,8 @@ Resolver output:
 If zero candidates:
   mark step blocked
   notify automation owner
-  optionally route to configured escalation owner
+  optionally route to department owner, selected permission, specific employee,
+  HR coverage assignment, or configured escalation resolver
 
 If one candidate:
   assign step to that candidate
@@ -82,6 +84,29 @@ If many candidates:
 ```
 
 Resolvers must use tenant-owned org structure and permission assignments. They must never check fixed role names.
+
+For default leave approval when no custom workflow exists:
+
+```text
+Input:
+  employee_id
+  required_permission = leave:approve
+
+Flow:
+  -> Resolve employee current position
+  -> Walk positions.reports_to_position_id upward
+  -> For each reporting position:
+       find active occupant
+       find active linked user
+       verify required permission
+       verify self-approval policy
+  -> Assign first valid approver in hierarchy order
+  -> If none found before root:
+       mark blocked
+       notify automation owner or authorized admin
+```
+
+Do not require administrators to choose a scope policy for every permission on every role. Permission checks answer whether the action is available. The resolver and resource context answer which employees, workspaces, projects, legal entities, or records are affected.
 
 For connected-company workflows, resolver input also includes requester tenant, source tenant, target tenant, subject tenant, connection ID, and grant scope. The resolver must verify the connection is active and the grant includes the target tenant, resource type, and action before returning connected-tenant candidates.
 
@@ -167,7 +192,7 @@ Approver clicks Request information
 Wait/delay job fires
   -> Reload workflow/case status
   -> If already resolved, no-op
-  -> Resolve escalation owner dynamically
+  -> Resolve configured escalation resolver dynamically
   -> Add escalation assignee or participant
   -> Send Chat or Inbox action card
   -> Mirror discussion to Teams if enabled

@@ -173,7 +173,7 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 | Environment | Issue | Notes |
 |:------------|:------|:------|
 | Local dev | PostgreSQL RLS requires role setup | Use Docker Compose with pre-configured roles |
-| Local dev | Redis required for rate limiting and caching | Redis container in Docker Compose |
+| Local dev | Phase 1 rate limiting and caching use in-memory fallback | Do not require Redis unless a future distributed-cache path is explicitly enabled |
 | Railway | Connection string format differs from local | Use environment-specific appsettings |
 
 ## Related

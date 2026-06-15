@@ -13,13 +13,13 @@ All day-to-day company/tenant operations: finding companies, inspecting their te
 The list renders all tenants across all statuses. Each row shows:
 - Company name and slug
 - Plan tier
-- Status badge (`provisioning` -> yellow, `pending_confirmation` -> blue, `pending_payment` -> blue, `active` -> green, `suspended` -> red, `cancelled` -> gray)
+- Status badge (`provisioning` -> yellow, `trial` -> purple, `trial_expired` -> red, `pending_payment` -> blue, `active` -> green, `suspended` -> red, `cancelled` -> gray)
 - Employee count
 - Created date
 
 **Filter bar:** filter by status, plan tier, or free-text search on name/slug.
 
-Provisioning-status tenants appear in this list with a yellow **"In Progress"** badge. Clicking them resumes tenant creation if Step 2 is incomplete, or opens the tenant card Manage/Configure flow when the two-step creation is complete but activation is still pending - see `provisioning-flow.md`.
+Provisioning-status tenants appear in this list with a yellow **"In Progress"** badge. Trial tenants appear with trial/demo status and remain governed by their Demo Profile. Clicking a provisioning tenant resumes tenant creation; clicking a trial tenant opens the demo tenant detail view with trial limits, usage, upgrade/activation state, and direct extend/expire actions.
 
 **API:** `GET /admin/v1/tenants`
 
@@ -45,7 +45,7 @@ Click any tenant row to open the full tenant detail page. This is the primary ma
 
 **API:** `GET /admin/v1/tenants/{id}`
 
-**Tenant creation path:** Tenant creation uses a 4-step wizard accessed via `+ Create Tenant` on the Tenants list. After the wizard completes and the tenant is activated, all ongoing management happens from this Tenant Detail page - see [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] for the full wizard specification.
+**Tenant creation path:** Tenant creation uses a 4-step wizard accessed via `+ Create Tenant` on the Tenants list. The Plan / Demo Setup step can apply a Demo Profile for trial tenants or configure paid-plan commercial terms for operator provisioning. After activation, all ongoing management happens from this Tenant Detail page - see [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] for the full wizard specification.
 
 ---
 
@@ -138,9 +138,8 @@ When the 15-minute token expires the new tab is logged out automatically. The de
 
 **Minimum role:** super_admin
 
-> **Warning - exception tool only.** The normal, primary path for standard subscription collection is through the configured payment gateway (`stripe`, `paddle`, or `payhere`). Use this tool only when that path cannot be used or when the tenant has negotiated commercial terms:
+> **Warning - exception tool only.** The normal, primary path for standard subscription collection is through the configured payment gateway (`stripe`, `paddle`, or `payhere`). Use this tool only for approved commercial exceptions or to correct confirmed gateway sync errors:
 > - Enterprise deals closed by sales
-> - Full-license tenants with manually recorded one-time license payment
 > - Internal test accounts
 > - Fixing a confirmed gateway sync error
 >
@@ -150,11 +149,11 @@ When the 15-minute token expires the new tab is logged out automatically. The de
 
 1. Open the tenant detail page (`/tenants/{id}`) -> **Overview** tab
 2. Click **Override Subscription**
-3. A form appears: select new plan from dropdown, choose commercial model, set billing dates, select collection mode and gateway provider when applicable, enter reason (required free-text field)
+3. A form appears: select new plan from dropdown, choose commercial model, set billing dates, review the resolved gateway provider/config when applicable, enter reason (required free-text field)
 4. Click **Apply Override**
-5. API call: `PATCH /admin/v1/tenants/{id}/subscription` with body including `plan_code`, `commercial_model`, collection modes, optional `gateway_provider` (`stripe`, `paddle`, or `payhere`), and `reason`
+5. API call: `PATCH /admin/v1/tenants/{id}/subscription` with body including `plan_code`, `commercial_model`, resolved `payment_gateway_config_id`, optional `gateway_provider` (`stripe`, `paddle`, or `payhere`), and `reason`
 6. Toast: "Subscription updated"
-7. Overview tab reflects the new plan; gateway-managed, manually managed, or full-license maintenance labels appear next to billing dates
+7. Overview tab reflects the new plan, selected add-ons, resource limits, invoice/payment state, and billing dates
 
 All overrides are audit-logged with the developer account, the previous plan, the new plan, and the reason provided.
 

@@ -14,8 +14,8 @@ A leave request touches the calendar, attendance, payroll, notifications, workfl
 ## Preconditions
 
 - Employee has active leave entitlements: [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment]]
-- Approval automation is configured in [[Userflow/Automation/automation-center|Automation Center]]
-- Resolver source exists, such as reporting line, team lead, department owner, selected permission, selected employee, or configured escalation owner
+- Approval automation may be configured in [[Userflow/Automation/automation-center|Automation Center]]. If no custom automation is configured, the default hierarchy approval resolver is used.
+- Resolver source exists, such as hierarchy approval chain, team lead, department owner, selected permission, selected employee, HR coverage assignment when configured, or configured escalation resolver
 - Leave policies are active for the employee's entity/country: [[Userflow/Leave/leave-policy-setup|Leave Policy Setup]]
 
 ---
@@ -26,7 +26,7 @@ A leave request touches the calendar, attendance, payroll, notifications, workfl
 |:------|:-------|:-------------|:-------------|:----------------|
 | 1 | **Leave** | Leave request created with status `pending`. Days calculated excluding weekends/holidays | Employee submits form | `LeaveRequestCreated` |
 | 2 | **Calendar** | Team calendar updated with tentative leave block. Conflict check evaluates team absence threshold | `LeaveRequestCreated` | `CalendarEntryCreated` |
-| 3 | **Workflow Engine / Automation Center** | Workflow instance created. Resolver finds approver or approvers. Approval mode determines whether any one, all, or sequential approvals are required | `LeaveRequestCreated` | `WorkflowInstanceCreated` |
+| 3 | **Workflow Engine / Automation Center** | Workflow instance created. If a custom leave workflow exists, its resolver finds approver or approvers. If not, the default resolver walks the position reporting chain and selects the first active manager with `leave:approve`. Approval mode determines whether any one, all, or sequential approvals are required | `LeaveRequestCreated` | `WorkflowInstanceCreated` |
 | 4 | **Chat or Inbox** | Delivery router creates a case conversation and action card in Chat, or an Inbox detail item if Chat is not enabled | `WorkflowStepAssigned` | `CaseConversationCreated` / `NotificationSent` |
 | 5 | **Leave** | Assigned approver approves according to workflow mode. When required approval is complete, status changes to `approved` and leave balance is deducted | Workflow approval action | `LeaveRequestApproved` |
 | 6 | **Calendar** | Tentative block changed to confirmed. Team calendar updated | `LeaveRequestApproved` | `CalendarEntryConfirmed` |
@@ -51,7 +51,7 @@ When a resolver returns two reporting managers or multiple approvers, the workfl
 ONEVO does not need a separate manager-absence setup for the normal leave approval path. If the reporting manager is unavailable:
 
 - The manager can delegate that specific workflow action to another allowed approver.
-- If no action happens before the configured wait/SLA, the unresolved workflow escalates to the configured resolver, such as department owner or configured escalation owner.
+- If no action happens before the configured wait/SLA, the unresolved workflow escalates to the configured resolver, such as hierarchy-aware resolver, department owner, selected permission, HR coverage resolver, or configured escalation resolver.
 - The leave request stays auditable through `approval_actions`, including original assignee, delegated approver, escalation, and final decision.
 
 ---
@@ -78,7 +78,7 @@ Workflow approval completed
 | Failed Step | Impact | Recovery |
 |:------------|:-------|:---------|
 | Calendar update fails | Team calendar shows stale data, but leave is valid | Auto-retry; admin can manually sync via Calendar |
-| Resolver returns no approver | Workflow is blocked | Notify automation owner or configured escalation owner to fix routing |
+| Resolver returns no approver | Workflow is blocked | Notify automation owner or authorized admin to fix routing; optional fallback can use department owner, selected permission, specific employee, HR coverage assignment, or configured escalation resolver |
 | Action-card delivery fails | Approver may not see pending request | Retry via delivery router; unresolved workflow can escalate |
 | Attendance override fails | Employee marked absent on leave days | Authorized attendance user corrects via [[Userflow/Workforce-Presence/attendance-correction\|Attendance Correction]] |
 | Payroll deduction not created | Employee overpaid for unpaid leave period | Payroll user adds manual adjustment via [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] |

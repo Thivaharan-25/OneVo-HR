@@ -26,7 +26,7 @@ Productivity Analytics separates monitoring evidence from output evidence:
 
 **Three dashboard views:**
 1. **Manager Dashboard** — full team visibility, drill-down per employee, exception alerts, app usage context, score basis, and WorkSync output signals
-2. **CEO Dashboard** — high-level workforce summary, exception-only escalation, no individual drill-down unless flagged
+2. **Executive Dashboard** — high-level workforce summary, exception-only escalation, no individual drill-down unless flagged
 3. **Employee Self-Service** — own data only (hours, activity rate, work-classified app time, score basis, trends). Cannot see other employees.
 
 ---
@@ -271,7 +271,7 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 8. **Export formats:** CSV and Excel via the [[modules/reporting-engine/overview|Reporting Engine]]. PDF deferred to Phase 2.
 9. **Workforce snapshot** includes ALL active employees, even those with monitoring disabled (they show presence data only, no activity breakdown).
 10. **Employee self-service dashboard** uses `analytics:view` permission and shows own daily hours, activity rate, work-classified app time, meeting time, score basis, and weekly/monthly trends. It never shows team/department aggregates or comparative rankings.
-11. **CEO dashboard** shows workforce-level summary only. Individual employee data is not shown unless there is an escalated or critical exception alert.
+11. **Executive dashboard** shows workforce-level summary only. Individual employee data is not shown unless there is an escalated or critical exception alert.
 12. **Manager detail view** allows drill-down for employees in the manager's hierarchy: app usage breakdown, allowlist violations, activity timeline, WorkSync output signals, score basis, and data coverage.
 
 ---
@@ -292,8 +292,8 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 | GET | `/api/v1/analytics/my/weekly` | `analytics:view` | Employee's own weekly report |
 | GET | `/api/v1/analytics/my/monthly` | `analytics:view` | Employee's own monthly report |
 | GET | `/api/v1/analytics/my/trends` | `analytics:view` | Employee's own trend data for charts |
-| GET | `/api/v1/analytics/ceo/summary` | `analytics:view` | CEO-level workforce summary (exceptions only, no individual drill-down) |
-| GET | `/api/v1/analytics/ceo/exceptions` | `analytics:view` | CEO-level exception overview (escalated/critical only) |
+| GET | `/api/v1/analytics/executive/summary` | `analytics:view` | Executive-level workforce summary (exceptions only, no individual drill-down) |
+| GET | `/api/v1/analytics/executive/exceptions` | `analytics:view` | Executive-level exception overview (escalated/critical only) |
 
 ---
 
@@ -310,7 +310,7 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 ## Important Notes
 
 - **Score basis is mandatory in DTOs and exports.** Every productivity score must declare whether it is `composite`, `activity_only`, `worksync_only`, or `insufficient_data`.
-- **Activity-only scores are fallback evidence.** They are useful for monitoring trends but should not be mixed with composite WorkSync-backed scores in rankings, reviews, or CEO summaries.
+- **Activity-only scores are fallback evidence.** They are useful for monitoring trends but should not be mixed with composite WorkSync-backed scores in rankings, reviews, or executive summaries.
 - **This module does NOT collect data.** It only aggregates data from other modules.
 - **For real-time dashboard data**, the frontend queries [[modules/workforce-presence/overview|Workforce Presence]] `GetLiveWorkforceStatusAsync()` — not this module. This module serves historical/aggregated reports.
 - **Performance module integration:** [[database/performance|Performance]] can pull `GetProductivityScoreAsync()` to include productivity data in performance reviews (optional, configurable by tenant). This score combines agent-based reports (`daily_employee_report`) with WorkSync output metrics (`wms_productivity_snapshots`) when available and always returns score basis.
@@ -323,7 +323,7 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 - [[modules/productivity-analytics/monthly-reports/overview|Monthly Reports]] — Monthly aggregation with department comparative ranking
 - [[modules/productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]] — Tenant-wide daily metrics and per-department breakdown
 - Employee Self Service — Employee-facing dashboard: own hours, activity rate, work-classified app time, score basis, and trends (`analytics:view`)
-- Ceo Dashboard — CEO-level workforce summary: key metrics + exceptions only (`analytics:view`)
+- Executive Dashboard — executive-level workforce summary: key metrics + exceptions only (`analytics:view`)
 - Manager Detail View — Manager drill-down: per-employee app usage, activity timeline, allowlist violations
 
 ---

@@ -1,4 +1,4 @@
-﻿# Configuration Template Manager â€” Testing
+# Configuration Template Manager â€” Testing
 
 **Module:** Developer Platform â†’ Configuration Template Manager
 **Phase:** Phase 1
@@ -11,8 +11,8 @@
 - One active tenant with no modules entitled (for entitlement guard tests)
 - One global role template with `template_key = "team-lead"` available for position template linkage
 - One global role template with `template_key = "engineer"` available for position template linkage and materialized during position template apply
-- Platform operator account with `platform.config_templates.manage`
-- Platform read-only account with `platform.config_templates.read` only
+- Platform operator account with `platform.templates.manage`
+- Platform read-only account with `platform.templates.read` only
 
 ---
 

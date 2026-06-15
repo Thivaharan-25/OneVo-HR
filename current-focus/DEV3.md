@@ -24,7 +24,7 @@ When Dev 3 asks to continue, start with the first unchecked item in **Current Un
 - [ ] Workspaces table and APIs exist.
 - [ ] Workspace members and roles exist.
 - [ ] Workspace members store both `user_id` and `employee_id`, and reject users without an active employee record in Phase 1.
-- [ ] `workspace_hr_team_links` exists so HR teams can sync into workspace membership before Microsoft Teams integration.
+- [ ] `workspace_team_links` exists so explicit Org Structure teams can sync into workspace membership before Microsoft Teams integration.
 - [ ] Workspace role permissions can be resolved for a user.
 - [ ] Projects can be created, listed, updated, archived, and assigned members.
 - [ ] Project members store both `user_id` and `employee_id`, do not require full workspace membership, and deactivate on employee offboarding. Project-workspace links provide team/workspace context only and must not auto-add workspace members to the project.
@@ -33,7 +33,7 @@ When Dev 3 asks to continue, start with the first unchecked item in **Current Un
 - [ ] Workspace provisioning can be triggered from tenant module activation.
 - [ ] Workspace APIs are tenant-scoped.
 - [ ] Tests cover workspace membership, role permissions, project CRUD, and tenant isolation.
-- [ ] Tests cover HR team membership sync and employee offboarding deactivation for `workspace_members` and `project_members`.
+- [ ] Tests cover explicit team membership sync and employee offboarding deactivation for `workspace_members` and `project_members`.
 
 ### References
 

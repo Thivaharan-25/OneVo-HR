@@ -5,7 +5,7 @@
 - **Source of Truth:** Always prioritize information found within this repository. If there's a conflict, the most recently updated file in `AI_CONTEXT/` takes precedence.
 - **Contextual Awareness:** Before performing any task, read these files in order:
     1. [[AI_CONTEXT/project-context|Project Context]] — What ONEVO is
-    2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 10 / C# 14, PostgreSQL, Redis, Angular 21 three-app monorepo, etc.
+    2. [[AI_CONTEXT/tech-stack|Tech Stack]] — .NET 10 / C# 14, PostgreSQL, Phase 1 `IMemoryCache`, Angular 21 three-app monorepo, etc.
     3. [[current-focus/README|Current Focus]] — Current sprint/week priorities
     4. [[AI_CONTEXT/known-issues|Known Issues]] — Gotchas and deprecated patterns
     5. The specific module doc in `modules/` for the module you're working on

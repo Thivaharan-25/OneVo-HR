@@ -2,7 +2,7 @@
 
 ## Generate Report
 
-1. Operator opens Analytics & Reports -> Reports.
+1. Operator opens Reports / Analytics -> Reports.
 2. Frontend calls `GET /admin/v1/reports`.
 3. Operator selects report, filters, and export format.
 4. Frontend calls `POST /admin/v1/reports/export`.

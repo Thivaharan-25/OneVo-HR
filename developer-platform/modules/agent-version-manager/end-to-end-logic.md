@@ -4,7 +4,7 @@
 
 ## Publish Agent Version
 
-1. Operator opens System Operations -> Agent Versions.
+1. Operator opens Phase 2 Operations -> Agent Versions.
 2. Frontend calls `GET /admin/v1/agent-versions`.
 3. Operator enters version, channel, release notes, OS requirements, and download URL.
 4. Frontend calls `POST /admin/v1/agent-versions`.

@@ -10,7 +10,7 @@
 ## Preconditions
 
 - ONEVO operator account with developer console access.
-- Sales agreement confirmed: allowed subscription plans, setup services, payment gateway/collection method, negotiated discounts or overrides, and templates needed.
+- Sales agreement confirmed: allowed subscription plans, setup services, payment gateway route, negotiated discounts or overrides, and templates needed.
 - Customer profile details confirmed: company name, slug, primary contact email, country, industry, registration/profile name, registration number, estimated total employee count, timezone, and currency.
 
 ## Core Rules
@@ -36,19 +36,19 @@
 
 ### Step 2: Operator Commercial Boundary
 
-- **UI:** Select the subscription plans the tenant owner is allowed to choose from, optionally mark one as recommended/default, select payment gateway or manual collection method, add one-time setup charges, set negotiated discounts/overrides when applicable, and set AI token / Work Management storage limits when required.
+- **UI:** Select the subscription plans the tenant owner is allowed to choose from, optionally mark one as recommended/default, review the payment gateway resolved from the tenant country route, add one-time setup charges, set negotiated discounts/overrides when applicable, and set AI token / Work Management storage limits when required.
 - **API:** `PATCH /admin/v1/tenants/{tenantId}/subscription`
-- **Backend:** Stores tenant commercial boundaries: allowed plan ids, optional recommended plan id, gateway/manual payment state, one-time setup charges, negotiated overrides/discounts, and commercial limits. It does not finalize billing cycle or first invoice quantity.
-- **Validation:** allowed plans exist and are active, recommended plan is in the allowed set, AI modules have token limit, Work Management storage-backed modules have storage limit, manual collection has operator reason, and gateway/manual collection is selected by the ONEVO operator.
-- **DB:** `tenant_subscriptions`, payment/evidence file references where applicable.
+- **Backend:** Stores tenant commercial boundaries: allowed plan ids, optional recommended plan id, resolved payment gateway config, one-time setup charges, negotiated overrides/discounts, and commercial limits. It does not finalize billing cycle or first invoice quantity.
+- **Validation:** allowed plans exist and are active, recommended plan is in the allowed set, AI modules have token limit, Work Management storage-backed modules have storage limit, and the tenant country has exactly one active payment gateway route for the current environment.
+- **DB:** `tenant_subscriptions`, gateway invoice/payment references where applicable.
 
 Tenant owner choice rule:
 
 - Tenant owner may choose only from the operator-allowed plans.
 - Tenant owner chooses billing cycle (`monthly` or `annual`) during onboarding/plan confirmation.
 - Tenant owner confirms total employee count before the first real invoice is generated.
-- Tenant owner does not choose Stripe, Paddle, PayHere, or manual collection. Payment gateway/collection is an operator decision from Developer Platform.
-- Tenant creation does not create a trial. Activation and billing are driven by the confirmed subscription and invoice/payment state.
+- Tenant owner does not choose Stripe, Paddle, or PayHere. Payment gateway selection is resolved from System Config country routing and reviewed by the ONEVO operator in Developer Platform.
+- Paid tenant provisioning does not set trial duration directly. Demo/trial tenants are created from Demo Profiles; paid activation and billing are driven by the selected subscription plan, selected add-ons, generated first invoice, and payment state.
 
 ### Step 3: Module Entitlements
 
@@ -103,8 +103,8 @@ Setup service rule:
 
 ## Related
 
-- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]]
-- [[developer-platform/modules/tenant-console/overview|Tenant Console]]
+- [[developer-platform/userflow/provisioning-flow|Operator Customer Provisioning Flow]]
+- [[developer-platform/modules/tenant-console/overview|Tenant Management]]
 - [[developer-platform/modules/role-template-manager/overview|Role Template Manager]]
 - [[modules/shared-platform/subscriptions-billing/overview|Subscriptions & Billing]]
 - [[modules/configuration/app-allowlist/overview|App Allowlist]]

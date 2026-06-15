@@ -26,11 +26,9 @@ The internal Developer Platform app (`dev-console` at `console.onevo.io`) exists
 - **How tenants are acquired:** Customers contact ONEVO directly. A sales conversation happens first — this is intentional, especially because the platform includes employee activity monitoring which requires explicit company buy-in before deployment.
 - **How tenants are provisioned:** After a sale is agreed, an ONEVO operator creates the tenant via the **developer console** (`console.onevo.io` -> `ONEVO.Api` `/admin/v1/*`). There is no public signup page or public tenant creation endpoint.
 - **Module gating:** Each tenant is provisioned with a specific set of pillars/modules enabled. If ONEVO introduces a new module in the future, existing tenants remain on their current set unless they upgrade (pay for the new module) — then an operator enables it for them via the developer console.
-- **Commercial model:** Each tenant is provisioned with an explicit commercial relationship:
-  - **Subscription** - recurring SaaS payment for the selected plan/modules.
-  - **Full license + maintenance** - customer has bought the agreed suite/license, but still pays recurring maintenance/support. New modules are not automatically included unless the contract says so.
-- **Subscription pricing rule:** Reusable subscription plans define feature/module bundles plus employee-count/company-size pricing tiers. Company size is part of the subscription plan pricing table, not module configuration and not a separate plan identity. During tenant creation the ONEVO operator chooses the allowed plans and gateway/collection method. During onboarding the tenant owner chooses the final plan from the allowed list, chooses monthly or annual billing, and confirms total employee count. Store calculated prices separately from operator overrides, and snapshot selected plan, billing cycle, confirmed employee count, effective prices, and AI monthly token limits where applicable.
-- **Future module sales rule:** New modules must be represented in the module catalog and surfaced in the Developer Console as `available`, `quoted`, `purchased`, `maintenance_included`, `subscription_included`, or `disabled` for each tenant. Do not infer access from tenant age or plan name alone.
+- **Commercial model:** Each tenant is provisioned or upgraded onto one selected subscription plan, with optional module add-ons and resource-only add-ons where allowed.
+- **Subscription pricing rule:** Reusable subscription plans define base modules, optional add-ons, resource-only add-ons, shared storage/AI allowances, and employee-count/company-size pricing tiers. Company size is part of the subscription plan pricing table, not module configuration and not a separate plan identity. During demo upgrade or onboarding the tenant owner chooses one allowed plan, monthly or annual billing, allowed add-ons, and confirms total employee count. Store calculated prices separately from overrides, and snapshot selected plan, billing cycle, confirmed employee count, selected add-ons, effective prices, shared storage, and AI token allowance.
+- **Future module sales rule:** New modules must be represented in the module catalog and surfaced in the Developer Console as `available`, `quoted`, `purchased`, `subscription_included`, or `disabled` for each tenant. Do not infer access from tenant age or plan name alone.
 - **Phase 2 (future, not yet designed):** ONEVO may introduce a self-service SaaS model. Until that is explicitly specced, assume all tenant lifecycle operations are operator-driven.
 
 **ADE rule:** Never build a public tenant signup flow, public registration page, or expose `POST /api/v1/tenants` on the customer-facing API. Tenant creation is always via `/admin/v1/*` inside the single `ONEVO.Api` backend deployment.
@@ -39,21 +37,21 @@ The internal Developer Platform app (`dev-console` at `console.onevo.io`) exists
 
 ONEVO is designed around **always-included Foundation modules** plus **two sellable packages**:
 
-| # | Module | Layer | Package | Tenant Access |
+| # | Module | Layer | Plan Role | Tenant Access |
 |---:|---|---|---|---|
 | 1 | Authentication and Authorization | Foundation | Always Included | None |
 | 2 | Tenant Configuration and Onboarding | Foundation | Always Included | None |
 | 3 | Roles and Permissions | Foundation | Always Included | Use only |
-| 4 | Profile Management | HR Core | Package 1 | Full |
-| 5 | Attendance and Leave Management | HR Core | Package 1 | Full |
-| 6 | E2E Monitoring | Intelligence | Package 1 | View only |
-| 7 | Productivity and Performance Analytics | Intelligence | Package 1 | View only |
-| 8 | Exception Detection | Intelligence | Package 1 | View only |
-| 9 | Overtime Management | Intelligence | Package 1 | Full |
-| 10 | Project Management | Work Management | Package 2 | Full |
-| 11 | Agentic Chat | Work Management | Package 2 | Full |
-| 12 | Third Party Integrations | Work Management | Package 2 | Full |
-| 13 | IDE Extension | Work Management | Package 2 | Full |
+| 4 | Profile Management | HR Core | Plan-selected module | Full |
+| 5 | Attendance and Leave Management | HR Core | Plan-selected module | Full |
+| 6 | E2E Monitoring | Intelligence | Plan-selected module | View only |
+| 7 | Productivity and Performance Analytics | Intelligence | Plan-selected module | View only |
+| 8 | Exception Detection | Intelligence | Plan-selected module | View only |
+| 9 | Overtime Management | Intelligence | Plan-selected module | Full |
+| 10 | Project Management | Work Management | Plan-selected module | Full |
+| 11 | Agentic Chat | Work Management | Plan-selected module | Full |
+| 12 | Third Party Integrations | Work Management | Plan-selected module | Full |
+| 13 | IDE Extension | Work Management | Plan-selected module | Full |
 
 **WorkSync (Pillar 3)** is a fully-integrated Jira/Slack-equivalent built directly inside ONEVO — same backend, same database, no external bridges.
 
@@ -121,7 +119,7 @@ ONEVO follows **Clean Architecture + CQRS** (.NET 10 / C# 14). See [[backend/fol
 **Layers:**
 - `ONEVO.Domain` - entities, value objects, business rules, optional domain events (zero external dependencies)
 - `ONEVO.Application` — CQRS handlers (MediatR), interfaces, DTOs, validators
-- `ONEVO.Infrastructure` — EF Core (single ApplicationDbContext, ~300 tables), JWT, BCrypt, Redis, Hangfire, SignalR
+- `ONEVO.Infrastructure` — EF Core (single ApplicationDbContext, ~300 tables), JWT, BCrypt, Phase 1 `IMemoryCache`, Hangfire, SignalR
 - `ONEVO.Api` — single ASP.NET Core host for customer APIs (`/api/v1/*`) and Developer Console admin APIs (`/admin/v1/*`)
 - `ONEVO.Admin.Api` — deprecated historical scaffold only; does not exist in the current `Onevo_Backend/src` tree and must not be recreated or deployed as a second backend service
 
@@ -160,7 +158,7 @@ ONEVO follows **Clean Architecture + CQRS** (.NET 10 / C# 14). See [[backend/fol
 5. **Performance Flow:** Review Cycle → Self/Manager/Peer Assessment → [Productivity Score] → Calibration → Goals → Dev Plan
 6. **Skills Flow:** Skill Creation → Assessment → Gap Analysis → Course Assignment → Validation
 7. **Monitoring Flow:** Agent Install → Register → Policy Sync → Activity Capture → Buffer → Aggregate → Exception Check → Alert/Report
-8. **Exception Flow:** Rule Trigger → Alert → Notify Manager → Escalate (if unacknowledged) → CEO
+8. **Exception Flow:** Rule Trigger → Alert → Resolve recipient through configured resolver → Escalate if unacknowledged through escalation chain
 
 ### Business Rules
 
@@ -317,14 +315,14 @@ ONEVO has three Angular apps in one monorepo workspace: Setup / Control, Operati
 
 ### Three-App Monorepo
 
-| App | Boundary | Persona | Bundle goal |
-|:----|:---------|:--------|:------------|
-| `setup-control-app` | Tenant/company setup, legal entities, departments, positions, roles/permissions, policies, imports, add-on requests | Tenant owner, system admin, HR setup users | Configuration-heavy, setup-first |
-| `operations-lifecycle-app` | Daily employee/manager/HR/workforce operations after setup is configured | Employees, managers, HR, workforce reviewers | Operational, fast daily use |
-| `dev-console` | Internal ONEVO Developer Platform using `/admin/v1/*` | ONEVO platform operators only | Internal tenant, entitlement, billing, rollout control |
-| `shared` (library) | Auth, API services, design system, models | Imported by all three apps | Built once, imported by all apps |
+| App | Subdomain | Boundary | Persona | Bundle goal |
+|:----|:---------|:---------|:--------|:------------|
+| `setup-control-app` | `config.{tenantSlug}.onevo.com` | Tenant/company setup, legal entities, departments, positions, roles/permissions, policies, imports, add-on requests | Tenant owner, system admin, HR setup users | Configuration-heavy, setup-first |
+| `operations-lifecycle-app` | `{tenantSlug}.onevo.com` | Daily employee/manager/HR/workforce operations after setup is configured | Employees, managers, HR, workforce reviewers | Operational, fast daily use |
+| `dev-console` | `console.onevo.io` | Internal ONEVO Developer Platform using `/admin/v1/*` | ONEVO platform operators only | Internal tenant, entitlement, billing, rollout control |
+| `shared` (library) | — | Auth, API services, design system, models, shared `TopbarComponent` | Imported by all three apps | Built once, imported by all apps |
 
-Customer app users can move between Setup / Control and Operations / Lifecycle without re-login through the same BFF cookie session. The Developer Platform uses separate internal platform-admin auth.
+> "Customer app users move between Setup / Control (`config.{tenantSlug}.onevo.com`) and Operations / Lifecycle (`{tenantSlug}.onevo.com`) without re-login via a parent-domain BFF cookie (`Domain=.{tenantSlug}.onevo.com`, `SameSite=Lax`). The `TopbarComponent` in the shared library renders the app switcher (permission-gated) and entity chip (multi-entity tenants only). See [[frontend/design-system/patterns/app-entity-switcher|App + Entity Switcher Pattern]]."
 
 ### Workspace Structure
 
@@ -355,12 +353,12 @@ onevo-frontend/  (Angular workspace — angular.json)
 
 ### Product Packaging Affects UI
 
-| Package | What is visible |
+| Entitlement source | What is visible |
 |:--------|:----------------|
 | Foundation only | Tenant setup, auth/session surfaces, role/permission surfaces |
-| Package 1 | Profile, attendance/leave, monitoring views, productivity/performance analytics, exception views, overtime management |
-| Package 2 | Project management, agentic chat, third-party integrations, IDE extension |
-| Package 1 + Package 2 | Union of both |
+| Base modules in selected plan | Included module navigation and actions |
+| Optional module add-ons | Add-on module navigation and actions only when selected and active |
+| Resource-only add-ons | No navigation; they only increase shared storage or AI allowance |
 
 Every route, sidebar item, and API endpoint must check tenant module entitlements. Disabled modules are hidden in Angular UI and rejected server-side with `403`.
 

@@ -33,7 +33,7 @@
 - **DB:** `reviews` — status: "Draft" or "Submitted"
 
 ### Step 4: Post-Submit
-- Manager notified that self-assessment is ready for review
+- Configured review resolver notified that self-assessment is ready for review
 - Employee cannot edit submitted assessment
 
 ## Error Scenarios

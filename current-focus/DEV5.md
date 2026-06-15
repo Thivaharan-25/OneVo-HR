@@ -192,7 +192,7 @@ npm run build
 
 > **Parallel group** — Tasks 6 and 7 both require Task 5 and are independent of each other. Run them simultaneously.
 
-## Task 6: Developer Platform Tenant Console UI
+## Task 6: Developer Platform Tenant Management UI
 
 **Goal:** build tenant lifecycle and provisioning workflows for internal operators.
 
@@ -206,7 +206,7 @@ npm run build
 - [ ] `/tenants/[tenantId]` renders Overview, Flags, Settings, Users, and Audit tabs.
 - [ ] Suspend flow requires `super_admin`, confirm dialog, slug confirmation, API call, toast, and status update.
 - [ ] Unsuspend flow requires `super_admin`, confirm dialog, API call, toast, and status update.
-- [ ] Subscription override flow requires `super_admin`, new plan, billing start date, reason, and visible manual override state.
+- [ ] Subscription override flow requires `super_admin`, new plan, billing start date, reason, and visible operator override state.
 - [ ] Impersonation flow requires `super_admin`, warning confirmation, opens main app in a new tab, and surfaces token expiry.
 - [ ] `/tenants/new` implements seven-step provisioning wizard: account setup, plan assignment, module selection, role template setup, initial configuration, admin invite, review/confirm.
 - [ ] Provisioning wizard is draft-safe after Step 1 and can resume from a `provisioning` tenant.
@@ -217,9 +217,9 @@ npm run build
 
 ### References
 
-- [[developer-platform/modules/tenant-console/overview|Tenant Console]] (developer-platform/modules/tenant-console/overview.md)
+- [[developer-platform/modules/tenant-console/overview|Tenant Management]] (developer-platform/modules/tenant-console/overview.md)
 - [[developer-platform/userflow/tenant-management|Tenant Management Flows]] (developer-platform/userflow/tenant-management.md)
-- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
+- [[developer-platform/userflow/provisioning-flow|Operator Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
 - [[developer-platform/modules/role-template-manager/overview|Role Template Manager]] (developer-platform/modules/role-template-manager/overview.md)
 - [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
 
@@ -235,17 +235,17 @@ npm run build
 
 ## Task 7: Developer Platform Operations UI
 
-**Goal:** build feature flags, agent versions/rings, audit, system config, and app catalog screens.
+**Goal:** build runtime flag definition controls inside System Config, tenant runtime override UI inside Tenant Detail, agent versions/rings, audit, system config, and app catalog screens.
 
 **Requires:** DEV5 Task 5 complete  
 **Live integration:** DEV1 Task 9, DEV4 Task 8 (use MSW until ready)
 
 ### Acceptance Criteria
 
-- [ ] `/feature-flags` renders flag list with key, description, global default, rollout percentage, and override count.
-- [ ] `/feature-flags/[flagId]` renders flag detail with per-tenant override table.
-- [ ] Global flag toggle uses confirm dialog and optimistic update with rollback on error.
-- [ ] Tenant flag override UI supports set, clear, and inherit-default states.
+- [ ] System Config -> Runtime Flags renders global flag definitions with key, description, module/feature linkage, global default, rollout percentage, active status, and override count.
+- [ ] Runtime flag definition detail supports editing description, default value, rollout percentage, and active status with `platform.runtime_flags.manage`.
+- [ ] Global flag changes use confirm dialog and optimistic update with rollback on error.
+- [ ] Tenant Detail -> Runtime Overrides supports tenant flag override set, clear, and inherit-default states with `platform.tenants.feature_overrides.manage`.
 - [ ] `/agents/versions` renders version catalog with version, status, release notes, minimum OS, publisher, published date, and recalled date.
 - [ ] Publish Version form validates semver uniqueness, channel, minimum OS, release notes, and HTTPS download URL.
 - [ ] Version detail supports channel change, recall, force-update ring, and rollback workflows with correct role gates.
@@ -257,8 +257,8 @@ npm run build
 
 ### References
 
-- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md)
-- [[developer-platform/userflow/feature-flags|Feature Flag Flows]] (developer-platform/userflow/feature-flags.md)
+- [[developer-platform/modules/feature-flag-manager/overview|Tenant Runtime Overrides]] (developer-platform/modules/feature-flag-manager/overview.md)
+- [[developer-platform/userflow/feature-flags|Tenant Runtime Override Flows]] (developer-platform/userflow/feature-flags.md)
 - [[developer-platform/modules/agent-version-manager/overview|Agent Version Manager]] (developer-platform/modules/agent-version-manager/overview.md)
 - [[developer-platform/userflow/agent-versions|Agent Version and Ring Management Flows]] (developer-platform/userflow/agent-versions.md)
 - [[developer-platform/modules/audit-console/overview|Audit Console]] (developer-platform/modules/audit-console/overview.md)

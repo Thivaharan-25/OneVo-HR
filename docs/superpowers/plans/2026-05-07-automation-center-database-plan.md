@@ -12,9 +12,9 @@ The current database schema does not fully support the Automation Center directi
 
 Current gaps:
 
-- `workflow_steps` still models fixed approver fields such as `approver_type` and `approver_role_id`.
+- Legacy `workflow_steps` rows may still contain fixed approver fields such as `approver_type` and `approver_role_id`; new workflow definitions must use resolver fields instead.
 - `workflow_step_instances` has one `assigned_to_id`, which cannot represent multiple approvers, all-required approval, or sequential approval cleanly.
-- `escalation_rules` and `escalation_chains` still contain role-targeting fields such as `escalate_to_role_id` and `notify_role`.
+- Legacy `escalation_rules` and `escalation_chains` may still contain role-targeting fields such as `escalate_to_role_id` and `notify_role`; new routing must use resolver fields instead.
 - There is no first-class automation definition/template model for the builder.
 - There is no explicit case conversation metadata linking a private conversation to a workflow item, approval, alert, request, or escalation.
 - Delivery routing is not modeled as Chat-first, Inbox fallback, Teams discussion mirror.

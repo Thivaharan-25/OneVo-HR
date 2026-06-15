@@ -55,12 +55,12 @@
 
 ### TC-MC-003: Deactivated module excluded from new plan creation
 **Setup:** Module `leave` deactivated (`is_active = false`)
-**Action:** `POST /admin/v1/subscription-plans` with `included_module_keys: ["core_hr", "leave"]`
+**Action:** `POST /admin/v1/subscription-plans` with `base_module_keys: ["core_hr", "leave"]` and `optional_addon_module_keys: []`
 **Expected:** HTTP 422 - `leave` is inactive and cannot be included in new plans. Existing tenant entitlements using `leave` are preserved and not removed.
 
 ### TC-MC-004: Phase 2 module cannot be included in Phase 1 plans
 **Setup:** Module `payroll` has `phase = 2`
-**Action:** `POST /admin/v1/subscription-plans` with `included_module_keys: ["core_hr", "payroll"]`
+**Action:** `POST /admin/v1/subscription-plans` with `base_module_keys: ["core_hr", "payroll"]` and `optional_addon_module_keys: []`
 **Expected:** HTTP 422 - Phase 2 modules cannot be sold in Phase 1 plans
 
 ### TC-MC-017: Sellable module without price brackets is rejected

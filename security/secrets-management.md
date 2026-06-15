@@ -14,7 +14,7 @@
 | JWT scoped token secret | `JWT_SCOPED_TOKEN_SECRET` | Base64-encoded 32 bytes minimum | Password-change and MFA pending token signing |
 | AES-256 encryption key | `ENCRYPTION_KEY` | Base64-encoded 32 bytes | `bytea` encrypted columns (bank details, SSO creds, API keys) |
 | PostgreSQL connection | `DATABASE_URL` | Railway auto-injects | EF Core data source |
-| Redis connection | `REDIS_URL` | Railway auto-injects | Permission versioning, rate limiting, caching |
+| Redis connection | `REDIS_URL` | Optional/future | Distributed permission versioning, rate limiting, and caching if a multi-instance deployment enables Redis |
 | Resend API key | `RESEND_API_KEY` | Opaque string | Email delivery |
 | Email sender address | `EMAIL_FROM` | Verified email address/domain | Transactional and notification emails |
 | App base URL | `APP_BASE_URL` | Absolute URL | Invite, password reset, and account setup links |
@@ -93,9 +93,10 @@ Do not store `JWT_PRIVATE_KEY` or `JWT_SCOPED_TOKEN_SECRET` inside token service
 
 ### Redis Connection
 
-- Railway injects `REDIS_URL` automatically for linked Redis services
-- Internal Railway networking — Redis port NOT exposed externally
-- Used for: permission version counters, rate limiting token buckets, policy caching
+- Phase 1 does not require Redis; permission versioning, rate limiting, and policy caching use in-memory services.
+- If a future distributed/multi-instance deployment enables Redis, Railway may inject `REDIS_URL` for linked Redis services.
+- Redis must use internal Railway networking only; the Redis port must not be exposed externally.
+- Future Redis usage: distributed permission version counters, rate limiting token buckets, and policy caching.
 
 ### Resend Email Delivery
 
@@ -117,7 +118,7 @@ PAYHERE_MERCHANT_ID=<merchant id>
 PAYHERE_MERCHANT_SECRET=<merchant secret>
 ```
 
-When tenant-specific gateway configuration is needed, store credentials encrypted with `IEncryptionService` and expose only safe metadata such as provider, mode, public key/merchant ID, and active state.
+Payment gateway credentials are platform-managed in System Config. Tenant-specific gateway credentials are not supported; tenant billing uses the active country route for the tenant country. Store credentials encrypted with `IEncryptionService` and expose only safe metadata such as provider, mode, public key/merchant ID, and active state.
 
 ### Bridge Client Secrets
 

@@ -5,11 +5,11 @@
 System Config manages four categories of encrypted external credential storage plus platform-wide defaults:
 
 1. **AI Provider Configs** - LLM API keys with live model fetch from provider
-2. **Payment Gateway Configs** - Stripe/PayHere credentials with live account verification
+2. **Payment Gateway Configs** - Stripe/Paddle/PayHere credentials with live account verification and country routing
 3. **Platform OAuth App Registrations** - ONEVO's developer app credentials for customer-facing integrations (GitHub, Microsoft, Google, Slack)
 4. **Platform Service Keys** - ONEVO's own service keys that the platform uses internally (Resend email, etc.)
 
-Plus: Global Defaults and Per-Tenant Overrides for all system settings.
+Plus: Global Settings for platform-wide defaults. Tenant-specific overrides are edited from Tenant Detail -> Settings so the operator stays in tenant context.
 
 **Route:** `/settings/system`
 **Permission:** `platform.system_config.read`
@@ -18,10 +18,9 @@ Plus: Global Defaults and Per-Tenant Overrides for all system settings.
 
 ## Screen Tabs
 
-- Global Defaults
-- Per-Tenant Overrides
+- Global Settings
 - AI Provider Configuration
-- Payment Gateways <- links to Subscription Manager for global catalog; adds per-tenant overrides here
+- Payment Gateways
 - Platform OAuth Apps <- ONEVO's OAuth app registrations for customer integrations
 - Platform Service Keys <- Resend and other internal platform services
 - Email / SMTP
@@ -169,8 +168,8 @@ Click "Rotate Key" on existing config row -> opens a panel with only the API Key
 ### Per-Tenant AI Override
 
 Same step-by-step flow as global config. Entry from:
-1. System Config -> Per-Tenant Overrides -> AI tab -> select tenant -> Add Override
-2. Tenant Detail -> Settings -> AI Configuration -> Set Override
+1. Tenant Detail -> Settings -> AI Configuration -> Set Override
+2. Optional cross-link from System Config -> AI Provider Configuration -> tenant override usage
 
 **Set:** `PUT /admin/v1/tenants/{id}/ai-provider-override/{purpose}`
 
@@ -184,16 +183,10 @@ Same request body as global. Lookup chain applies immediately on next AI call.
 
 ### Design
 
-Payment gateways are configured at global level in Subscription Manager -> Payment Gateways. System Config adds:
+Payment gateways are configured at global level in System Config -> Payment Gateways. System Config owns:
 - A live **account verification + capabilities fetch** on credential entry (same principle as AI model fetch)
-- **Per-tenant gateway override** for tenants using their own Stripe/PayHere account
-
-### Why Per-Tenant Override
-
-A tenant may use their own gateway when:
-- White-label enterprise: charges appear in their own Stripe dashboard, not ONEVO's
-- Region-specific: tenant in Sri Lanka using their own PayHere merchant account
-- Commercial isolation: tenant's payments must be legally separate from the platform
+- Country-to-gateway routing for tenant payment collection
+- The global credential model used by country routes during tenant provisioning and billing
 
 ### Payment Gateway Credential Entry Flow
 
@@ -201,11 +194,11 @@ A tenant may use their own gateway when:
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Logo | "Gateway Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Recommended: 256x256px. Upload via `POST /admin/v1/uploads/gateway-logo` -> returns `logo_url` -> submitted with the form. Shown in the gateway selection dropdown during tenant provisioning Step 3, in the Subscription Manager gateway list, and in the Tenant Detail -> Subscriptions tab. |
+| Logo | "Gateway Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Recommended: 256x256px. Upload via `POST /admin/v1/uploads/gateway-logo` -> returns `logo_url` -> submitted with the form. Shown in the gateway selection dropdown during tenant provisioning Step 3, in the Subscription Plans gateway list, and in the Tenant Detail -> Subscriptions tab. |
 | Provider | "Payment Provider" | Dropdown: Stripe / Paddle / PayHere | Yes | Determines which credential fields appear below |
 | Display Name | "Configuration Label" | Text input | Yes | e.g. "Paddle Global Production", "PayHere Sri Lanka" |
 | Environment | "Environment" | Radio: Sandbox / Production | Yes | |
-| Country Codes | "Applicable Countries" | Multi-select tag | Yes | ISO codes - used to filter gateway options when creating tenants (only gateways matching the tenant's country are shown) |
+| Applicable Countries | "Applicable Countries" | Country-name multi-select | Yes | Operator sees country names; backend stores ISO country codes as route rows. One gateway config can be assigned to multiple countries. |
 
 **Paddle credentials:**
 
@@ -265,15 +258,49 @@ After entering credentials -> click "Verify Account" button.
 
 UI shows verified account details as a green confirmation card before allowing save. Operator must see "verified" before Save button becomes active.
 
-#### Gateway Selection During Tenant Creation (Step 3 of Wizard)
+#### Step 3: Save Gateway And Country Routes
 
-When operator opens the Payment Gateway dropdown in Step 3, gateways are filtered by:
+**API:** `POST /admin/v1/system-config/payment-gateways`
+
+```json
+{
+  "provider": "paddle",
+  "display_name": "Paddle Global Production",
+  "environment": "production",
+  "country_codes": ["GB", "US", "AU"],
+  "credentials": {
+    "api_key": "pdl_live_...",
+    "seller_id": "12345",
+    "webhook_secret": "pdl_ntfset_..."
+  },
+  "is_active": true
+}
+```
+
+**Backend does:**
+- Saves encrypted credentials in `payment_gateway_configs`.
+- Creates one `payment_gateway_country_routes` row per selected country.
+- Rejects save if any selected country already has another active route in the same environment.
+
+**Conflict example:**
+
+```json
+{
+  "error": "gateway_country_route_conflict",
+  "message": "Sri Lanka is already assigned to PayHere Sri Lanka Production for production."
+}
+```
+
+#### Gateway Resolution During Tenant Creation (Step 3 of Wizard)
+
+When operator opens Step 3, the payment gateway is resolved by:
 - `is_active = true`
-- `country_codes` intersects with the tenant's country from Step 1
+- active `payment_gateway_country_routes.country_code` matches the tenant's country from Step 1
+- route `environment` matches the current platform environment
 
-So a tenant in `LK` (Sri Lanka) only sees PayHere gateways; a tenant in `GB` only sees Paddle gateways. A tenant in a country with both available sees both. This is the mechanism by which "not all payment methods are available in every country" is enforced.
+So a tenant in `LK` (Sri Lanka) resolves to the one active production gateway route for Sri Lanka. If Sri Lanka is assigned to PayHere, Stripe cannot also be assigned to Sri Lanka in production unless the PayHere route is deactivated first. This enforces "one country, one active gateway per environment" while still allowing one gateway config to cover many countries.
 
-**API for populating the dropdown:** `GET /admin/v1/payment-gateways?country={countryCode}`
+**API for resolving the gateway:** `GET /admin/v1/payment-gateways/resolve?country={countryCode}`
 
 ---
 
@@ -374,6 +401,42 @@ ONEVO uses some third-party services where ONEVO holds the API key and calls the
 
 ---
 
+## Global Settings
+
+> **Not yet documented.** See `overview.md` Capabilities → Global Settings for the list of managed keys (session TTL, invite expiry, dunning schedule). APIs: `GET /admin/v1/system-config/global-defaults` and `PATCH /admin/v1/system-config/global-defaults`.
+
+---
+
+## Global Policies
+
+> **Not yet documented.** See `overview.md` Capabilities → Global Policies for coverage scope (MFA enforcement, login method defaults, failed-login lockout). Stored in `system_settings` and `tenant_auth_policies`.
+
+---
+
+## Runtime Flag Definitions
+
+> **Not yet documented.** See `overview.md` Capabilities → Runtime Flag Definitions for field list (flag key, owning module, commercial feature key, default value, rollout percentage, phase, description). Stored in `feature_flags`. Tenant-specific ON/OFF overrides are managed from Tenant Management → Tenant Detail → Runtime Overrides, not here.
+
+---
+
+## Email / SMTP
+
+> **Not yet documented.** This tab manages SMTP relay configuration for system emails. Falls back to the Resend service key (Platform Service Keys tab) if no SMTP override is configured.
+
+---
+
+## Storage Configuration
+
+> **Not yet documented.** This tab manages blob storage configuration overrides. Falls back to the Azure Blob service key (Platform Service Keys tab) if no override is configured.
+
+---
+
+## Agent Policy Defaults
+
+> **Not yet documented.** This tab manages default desktop agent collection policy settings applied to all newly provisioned tenants. Tenant-specific overrides are managed from Tenant Management → Tenant Detail → Agent Policy.
+
+---
+
 ## Integration -> Module Catalog Link
 
 ### How Integrations Are Gated by Module Entitlements
@@ -414,7 +477,7 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | `config_name` | varchar(80) | NOT NULL |
 | `purpose` | varchar(40) | UNIQUE NOT NULL |
 | `provider_type` | varchar(30) | NOT NULL - `'openai_compatible' \| 'anthropic'` |
-| `api_base_url` | varchar(500) | Nullable |
+| `api_base_url` | varchar(500) | NOT NULL - always required; no hardcoded default |
 | `model` | varchar(120) | NOT NULL - set from fetched model list |
 | `api_key_encrypted` | text | NOT NULL - AES-256 |
 | `request_timeout_seconds` | int | NOT NULL |
@@ -422,7 +485,7 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | `is_active` | boolean | NOT NULL |
 | `last_verified_at` | timestamptz | Nullable |
 | `last_verification_status` | varchar(20) | Nullable |
-| `updated_by_id` | uuid | FK -> dev_platform_accounts |
+| `updated_by_id` | uuid | FK -> platform_users |
 | `updated_at` | timestamptz | NOT NULL |
 
 **Index:** `UNIQUE(purpose)`
@@ -436,13 +499,13 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | `purpose` | varchar(40) | NOT NULL |
 | `config_name` | varchar(80) | NOT NULL |
 | `provider_type` | varchar(30) | NOT NULL |
-| `api_base_url` | varchar(500) | Nullable |
+| `api_base_url` | varchar(500) | NOT NULL - always required; no hardcoded default |
 | `model` | varchar(120) | NOT NULL |
 | `api_key_encrypted` | text | NOT NULL |
 | `request_timeout_seconds` | int | NOT NULL |
 | `max_retries` | int | NOT NULL |
 | `is_active` | boolean | NOT NULL |
-| `set_by_id` | uuid | FK -> dev_platform_accounts |
+| `set_by_id` | uuid | FK -> platform_users |
 | `set_at` | timestamptz | NOT NULL |
 
 **Unique:** `(tenant_id, purpose)`
@@ -452,7 +515,7 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PRIMARY KEY |
-| `provider` | varchar(30) | UNIQUE NOT NULL - `'github' \| 'microsoft' \| 'google' \| 'slack'` |
+| `provider` | varchar(30) | UNIQUE NOT NULL - operator-set slug (lowercase, hyphens only); no fixed enum enforced at DB level |
 | `app_name` | varchar(100) | NOT NULL - shown in OAuth consent screen |
 | `client_id` | varchar(200) | NOT NULL - not encrypted (used in redirect URLs) |
 | `client_secret_encrypted` | text | NOT NULL - AES-256 |
@@ -462,7 +525,7 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | `default_scopes` | text[] | NOT NULL |
 | `is_active` | boolean | NOT NULL |
 | `last_verified_at` | timestamptz | Nullable |
-| `updated_by_id` | uuid | FK -> dev_platform_accounts |
+| `updated_by_id` | uuid | FK -> platform_users |
 | `updated_at` | timestamptz | NOT NULL |
 
 **Index:** `UNIQUE(provider)`
@@ -477,7 +540,7 @@ Every integration in ONEVO is linked to one or more module keys in the module ca
 | `api_key_encrypted` | text | NOT NULL - AES-256 |
 | `is_active` | boolean | NOT NULL |
 | `last_verified_at` | timestamptz | Nullable |
-| `updated_by_id` | uuid | FK -> dev_platform_accounts |
+| `updated_by_id` | uuid | FK -> platform_users |
 | `updated_at` | timestamptz | NOT NULL |
 
 ### integration_catalog
@@ -538,12 +601,18 @@ Stores per-tenant OAuth tokens and connection state for customer-managed integra
 | GET | `/admin/v1/system-config/service-keys` | List service keys (no secrets) | `platform.system_config.read` |
 | PUT | `/admin/v1/system-config/service-keys/{serviceKey}` | Set service key | `platform.system_config.manage` |
 | POST | `/admin/v1/system-config/service-keys/{serviceKey}/test` | Test service key | `platform.system_config.manage` |
-| GET | `/admin/v1/system-config/payment-gateways/verify` | Verify gateway credentials before save | `platform.system_config.manage` |
+| POST | `/admin/v1/system-config/payment-gateways/verify` | Verify gateway credentials before save (credentials sent in body) | `platform.system_config.manage` |
 | GET | `/admin/v1/tenants/{id}/integrations` | Tenant integration status | `platform.tenants.read` |
 | POST | `/admin/v1/tenants/{id}/integrations/{key}/disconnect` | Disconnect a tenant integration | `platform.tenants.manage` |
 | GET | `/admin/v1/tenants/{id}/settings-override` | Tenant setting overrides | `platform.system_config.read` |
 | PATCH | `/admin/v1/tenants/{id}/settings-override` | Set tenant setting override | `platform.system_config.manage` |
 | DELETE | `/admin/v1/tenants/{id}/settings-override/{key}` | Clear tenant setting override | `platform.system_config.manage` |
+| POST | `/admin/v1/system-config/ai-providers/{id}/test` | Test AI provider connection using stored key | `platform.system_config.manage` |
+| POST | `/admin/v1/system-config/payment-gateways` | Save verified gateway config and country routes | `platform.system_config.manage` |
+| GET | `/admin/v1/payment-gateways/resolve` | Resolve active gateway for a country (`?country={code}`) — used during tenant wizard Step 3 | `platform.tenants.manage` |
+| POST | `/admin/v1/uploads/ai-provider-logo` | Upload AI provider logo; returns `logo_url` | `platform.system_config.manage` |
+| POST | `/admin/v1/uploads/gateway-logo` | Upload payment gateway logo; returns `logo_url` | `platform.system_config.manage` |
+| POST | `/admin/v1/uploads/oauth-app-logo` | Upload OAuth app logo; returns `logo_url` | `platform.system_config.manage` |
 
 
 

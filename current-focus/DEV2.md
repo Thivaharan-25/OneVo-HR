@@ -28,7 +28,7 @@ When Dev 2 asks to continue, start with the first unchecked item in **Current Un
 - [ ] Employee create/update/list/detail APIs exist.
 - [ ] Employee lifecycle supports onboarding, transfer, promotion, and offboarding state changes.
 - [ ] Employee offboarding publishes `EmployeeOffboarded` with `employee_id`, `user_id`, and tenant context so Work Management can deactivate memberships, watchers, and future assignability.
-- [ ] Team membership changes publish `TeamMemberAdded` and `TeamMemberRemoved` with `team_id`, `employee_id`, `user_id`, and tenant context for Work Management HR team sync.
+- [ ] Team membership changes publish `TeamMemberAdded` and `TeamMemberRemoved` with `team_id`, `employee_id`, `user_id`, and tenant context for Work Management explicit team sync.
 - [ ] Org references validate legal entity, department, team, job, and location IDs.
 - [ ] Domain events are emitted for employee created, updated, transferred, and offboarded.
 - [ ] Tests cover create, update, lifecycle transition, and tenant isolation.
@@ -202,7 +202,7 @@ dotnet test ONEVO.sln --filter Notifications
 
 ## Overflow Assignment: DEV1 Task 8
 
-After DEV2 Tasks 1–5 are complete, Dev 2 picks up **DEV1 Task 8 — Developer Platform Tenant Console Backend**.
+After DEV2 Tasks 1–5 are complete, Dev 2 picks up **DEV1 Task 8 — Developer Platform Tenant Management Backend**.
 
 **Requires:** DEV1 Tasks 3, 5, and 7 complete before starting (Dev 1 will have T3/T5 done; Dev 3 will have T7 done).  
 **Acceptance criteria and verification:** see `current-focus/DEV1.md` Task 8.

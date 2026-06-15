@@ -18,11 +18,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-rls.sql:/docker-entrypoint-initdb.d/01-rls.sql
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
   pgadmin:
     image: dpage/pgadmin4
     environment:
@@ -40,7 +35,7 @@ volumes:
 | Setting | Local | Staging | Production |
 |:--------|:------|:--------|:-----------|
 | PostgreSQL | Docker (localhost:5432) | Railway managed | Railway managed + PgBouncer |
-| Redis | Docker (localhost:6379) | Railway managed | Railway managed |
+| Cache | `IMemoryCache` in API process | `IMemoryCache` unless distributed cache is enabled | `IMemoryCache`; Redis only for future distributed/multi-instance cache |
 | JWT signing | Development RSA keys | Staging keys | Production keys (rotated) |
 | Email | Console logger (no actual send) | Resend (sandbox) | Resend (production) |
 | Stripe | Test mode | Test mode | Live mode |
@@ -53,7 +48,7 @@ volumes:
 ## Local Setup
 
 ```bash
-# 1. Start infrastructure
+# 1. Start Phase 1 infrastructure
 docker compose up -d
 
 # 2. Apply migrations

@@ -39,8 +39,8 @@ These are not enforced as removal blocks but define what "empty state" means and
 | Module | Soft-Requires | Behavior When Absent |
 |:---|:---|:---|
 | `exceptions` | `monitoring` | Exception rules can be created and saved. Evaluation background job runs on schedule but finds zero `activity_daily_summary` rows for the tenant → zero alerts generated. UI shows "Waiting for activity monitoring data" empty state on the Alerts screen. Operators are warned at provisioning time if `exceptions` is selected without `monitoring`. |
-| `workforce` | `monitoring` | Workforce insights exist in two layers: (1) HR-derived metrics (headcount, turnover, leave trends) — these work with Core HR data only; (2) Activity-derived metrics (productivity scores, idle trends, work-pattern analysis) — these show empty state without `monitoring`. |
-| `analytics` | `monitoring`, `leave`, `core_hr` | Cross-module analytics renders only sections for modules the tenant has. Sections for absent modules show "Module not available on your plan" placeholder. `core_hr` is a Package 1 baseline so analytics never shows fully empty in a valid plan. |
+| `workforce` | `monitoring` | Workforce insights exist in two layers: (1) core-employee-derived metrics (headcount, turnover, leave trends) — these work with Core HR data only; (2) Activity-derived metrics (productivity scores, idle trends, work-pattern analysis) — these show empty state without `monitoring`. |
+| `analytics` | `monitoring`, `leave`, `core_hr` | Cross-module analytics renders only sections for modules the tenant has. Sections for absent modules show "Module not available on your plan" placeholder. Plans that include analytics should normally include enough source modules to avoid an empty analytics experience. |
 | `chat_ai` | AI provider config in System Config | If `chat_ai` is entitled but no `agentic_chat` AI provider is configured in System Config, Agentic Chat shows a "Configuration required" error on launch. Does NOT silently fall back to basic `chat`. |
 | `verification` | _(none — works standalone)_ | Clock-in/out photo capture and biometric device verification function without activity monitoring or exception rules. |
 | `monitoring` | _(none — works standalone)_ | Activity data is collected and stored independently. Exception alerts will not fire without the `exceptions` module but the data pipeline itself is unaffected. |
@@ -78,12 +78,12 @@ The five Intelligence modules (`monitoring`, `workforce`, `verification`, `excep
 | ✓ | ✓ | | | | Activity monitoring + clock-in/out photo verification + biometric device scans. `identity.verification_failed_spike` alerts fire. No rule-based exception alerts. |
 | ✓ | | ✓ | | | Activity monitoring + exception rule evaluation. Exception alerts fire when thresholds are breached. `monitoring.data_exfiltration_pattern` alert fires via exception engine. No identity verification. |
 | ✓ | ✓ | ✓ | | | Activity + identity verification + exception rule engine. Recommended Intelligence baseline. All alert types fire. |
-| ✓ | | | ✓ | | Activity data collected + workforce insights fully populated (both HR-derived and activity-derived metrics). No rule-based alerts. No identity verification. |
+| ✓ | | | ✓ | | Activity data collected + workforce insights fully populated (both core-employee-derived and activity-derived metrics). No rule-based alerts. No identity verification. |
 | ✓ | ✓ | ✓ | ✓ | ✓ | Full Intelligence Package. All features and alerts available. |
 | | ✓ | | | | Clock-in/out photo capture + biometric device verification only. No activity pipeline running. `identity.verification_failed_spike` alerts still fire. |
 | | | ✓ | | | Exception rules created and saved. Evaluation job runs on schedule but produces zero alerts — no monitoring data exists. UI shows "Waiting for Activity Monitoring data" empty state. No error thrown. |
-| | | | ✓ | | Workforce insights show only HR-derived metrics (headcount, leave trends, turnover). Activity-derived metrics (productivity, idle) show empty state with "Activity Monitoring required" label. |
-| | | | | ✓ | Analytics renders HR Core sections (leave summary, headcount). All Intelligence sections show "Module not available on your plan" placeholder. |
+| | | | ✓ | | Workforce insights show only core-employee-derived metrics (headcount, leave trends, turnover). Activity-derived metrics (productivity, idle) show empty state with "Activity Monitoring required" label. |
+| | | | | ✓ | Analytics renders Core Employee sections (leave summary, headcount). All Intelligence sections show "Module not available on your plan" placeholder. |
 
 ---
 
@@ -139,4 +139,4 @@ The tenant-facing app hides navigation sidebar items for non-entitled modules us
 - [[developer-platform/modules/monitoring/end-to-end-logic|Activity Monitoring — End-to-End Logic]]
 - [[developer-platform/modules/verification/end-to-end-logic|Identity Verification — End-to-End Logic]]
 - [[developer-platform/modules/exceptions/end-to-end-logic|Exception Engine — End-to-End Logic]]
-- [[developer-platform/modules/subscription-manager/end-to-end-logic|Subscription Manager — End-to-End Logic]]
+- [[developer-platform/modules/subscription-manager/end-to-end-logic|Subscription Plans — End-to-End Logic]]

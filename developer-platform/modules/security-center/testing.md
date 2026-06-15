@@ -5,7 +5,7 @@
 - Platform account with `platform.security.manage` (full security access)
 - Platform account with `platform.security.read` only
 - At least 2 `platform_alerts` rows: one Critical (unresolved), one Warning (unresolved)
-- At least 2 active `dev_platform_sessions` rows (for session revoke tests)
+- At least 2 active `platform_user_sessions` rows (for session revoke tests)
 - `audit_log` table seeded with security-category events
 
 ---
@@ -87,7 +87,7 @@
 **Action:** `POST /admin/v1/security/sessions/{otherSessionId}/revoke` `{"reason": "Suspicious concurrent login"}`
 **Expected:**
 - HTTP 200
-- `dev_platform_sessions.revoked_at` set for the target session
+- `platform_user_sessions.revoked_at` set for the target session
 - Target admin's next API call is rejected with 401
 - Operator's own session is unaffected
 - Audit log: `action = 'session.revoked'`, `actor_id` = operator, `target_account_id` set, `reason` stored
@@ -97,7 +97,7 @@
 **Action:** `POST /admin/v1/security/sessions/{ownSessionId}/revoke`
 **Expected:**
 - HTTP 200
-- `dev_platform_sessions.revoked_at` set
+- `platform_user_sessions.revoked_at` set
 - Operator's next API call using this session returns 401
 - Frontend should redirect to login screen
 
@@ -106,12 +106,12 @@
 **Action:** `POST /admin/v1/security/sessions/{sessionId}/revoke`
 **Expected:** HTTP 409, `code: "session_already_revoked"`
 
-### TC-SC-012: Revoke all sessions for an account
-**Setup:** Account with 3 active sessions
-**Action:** `POST /admin/v1/platform-accounts/{accountId}/sessions/revoke-all`
+### TC-SC-012: Revoke all sessions for a platform user
+**Setup:** Platform user with 3 active sessions
+**Action:** `POST /admin/v1/platform-users/{userId}/sessions/revoke-all`
 **Expected:**
 - All 3 sessions get `revoked_at` set
-- Account cannot make any API call with those sessions
+- Platform user cannot make any API call with those sessions
 - Single audit log entry recording all revoked sessions
 
 ---

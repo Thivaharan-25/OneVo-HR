@@ -74,7 +74,7 @@
 - Banner warning: "You have N carry-forward days expiring on [Date]"
 - Carry-forward days shown separately from annual entitlement
 
-### When viewing balances with `leave:manage` (HR Admin)
+### When viewing balances with `leave:manage` (authorized leave manager)
 - Can see all employees across all departments
 - Additional filters: legal entity, employment status
 - Can click "Adjust" to modify individual entitlements inline → [[Userflow/Leave/leave-entitlement-assignment|Leave Entitlement Assignment]]
@@ -83,7 +83,7 @@
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| No entitlements assigned | Empty state | "No leave entitlements found for [Year]. Contact HR if you believe this is an error" |
+| No entitlements assigned | Empty state | "No leave entitlements found for [Year]. Contact your leave administrator if you believe this is an error" |
 | Permission denied for team view | Tab not visible | Team Balances tab hidden if user lacks `leave:read` |
 | Export fails | `500 Internal Server Error` | "Export failed. Please try again later" |
 | Year out of range | Validation fails | "Balance data is not available for the selected year" |

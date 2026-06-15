@@ -135,7 +135,7 @@ On login/session refresh:
 
 On authenticated request:
   Resolve backend-held auth state from HttpOnly session cookie
-  Compare auth state's perm_ver against Redis perm_version
+  Compare auth state's perm_ver against the Phase 1 in-memory permission version counter
   If stale, refresh server-side permission state or reject with 401
 ```
 

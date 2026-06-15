@@ -1,105 +1,140 @@
-# Platform Access — Testing
+# Platform Users And Roles - Testing
 
 ## Test Fixtures Required
 
-- Super Admin platform account (all permissions)
-- Platform account with `platform.accounts.manage` only
-- Platform account with `platform.accounts.read` only
-- Platform account that is deactivated (`is_active = false`)
-- At least 1 pending unexpired invite in `dev_platform_account_invites`
+- Platform Super Admin user with all permissions
+- Platform user with `platform.accounts.manage` only
+- Platform user with `platform.accounts.read` only
+- Platform user with `status = inactive`
+- At least one pending unexpired invite in `platform_user_invites`
 
 ---
 
-## Authentication and Access
+## Authentication And Access
 
-### TC-PA-001: Tenant JWT is rejected by every Platform Access endpoint
-**Action:** `GET /admin/v1/platform-accounts` with `iss: "onevo-tenant"` token
+### TC-PA-001: Tenant JWT is rejected by every Platform Users endpoint
+
+**Action:** `GET /admin/v1/platform-users` with `iss: "onevo-tenant"` token.
+
 **Expected:** HTTP 401
 
-### TC-PA-002: Deactivated account cannot log in
-**Setup:** Platform account with `is_active = false`
-**Action:** `POST /admin/v1/auth/google-callback` with valid Google id_token for deactivated account
-**Expected:** HTTP 401 — `is_active` check fails at step 4 of login flow
+### TC-PA-002: Inactive user cannot log in
+
+**Setup:** Platform user with `status = inactive`.
+
+**Action:** `POST /admin/v1/auth/login` with valid credentials.
+
+**Expected:** HTTP 401 before MFA challenge creation.
 
 ### TC-PA-003: Expired invite cannot create a session
-**Setup:** Invite with `expires_at` in the past
-**Action:** Attempt to accept the expired invite link
-**Expected:** HTTP 401 or HTTP 422, `code: "invite_expired"` — no session created
+
+**Setup:** Invite with `expires_at` in the past.
+
+**Action:** Accept expired invite link.
+
+**Expected:** HTTP 401 or HTTP 422, `code: "invite_expired"`; no session created.
 
 ---
 
-## Invite
+## Invites
 
-### TC-PA-004: Invite validates @onevo.io email domain
-**Action:** `POST /admin/v1/platform-accounts/invite` with `email: "user@gmail.com"`
-**Expected:** HTTP 422 — only `@onevo.io` email addresses allowed for platform accounts
+### TC-PA-004: Invite validates ONEVO email domain
+
+**Action:** `POST /admin/v1/platform-users/invite` with `email: "user@gmail.com"`.
+
+**Expected:** HTTP 422.
 
 ### TC-PA-005: Valid invite creates invite record and sends email
-**Action:** `POST /admin/v1/platform-accounts/invite` `{"email": "newengineer@onevo.io", "full_name": "New Engineer"}`
+
+**Action:** `POST /admin/v1/platform-users/invite`
+
 **Expected:**
+
 - HTTP 201
-- `dev_platform_account_invites` row created: `email`, `expires_at = now + 72 hours`, `invited_by_id`
-- `invite_token_hash` stored (raw token hashed — never stored plaintext)
-- Email sent to `newengineer@onevo.io` via Resend
+- `platform_user_invites` row created
+- Raw invite token is never stored
+- Audit event `platform_account.invited` written
 
-### TC-PA-006: Invite requires platform.accounts.manage
-**Setup:** Account with `platform.accounts.read` only
-**Action:** `POST /admin/v1/platform-accounts/invite`
-**Expected:** HTTP 403
+### TC-PA-006: Resend invite writes audit event
+
+**Action:** `POST /admin/v1/platform-users/{id}/invite/resend`
+
+**Expected:** Audit event `platform_account.invite_resent` written.
+
+### TC-PA-007: Revoke invite blocks later acceptance
+
+**Action:** `POST /admin/v1/platform-users/{id}/invite/revoke`
+
+**Expected:** Invite cannot be accepted; audit event `platform_account.invite_revoked` written.
 
 ---
 
-## Deactivate and Reactivate
+## Deactivate, Reactivate, Sessions
 
-### TC-PA-007: Deactivating an account invalidates their sessions
-**Setup:** Target account has 2 active sessions
-**Action:** `POST /admin/v1/platform-accounts/{id}/deactivate`
+### TC-PA-008: Deactivating user invalidates sessions
+
+**Setup:** Target user has 2 active sessions.
+
+**Action:** `POST /admin/v1/platform-users/{id}/deactivate`
+
 **Expected:**
-- `dev_platform_accounts.is_active = false`
-- Both sessions revoked (`dev_platform_sessions.revoked_at` set)
-- Target account's next API call returns 401
-- Audit log: `action = 'platform_account.deactivated'`
 
-### TC-PA-008: Reactivate restores login capability
-**Setup:** Account with `is_active = false`
-**Action:** `POST /admin/v1/platform-accounts/{id}/reactivate`
-**Expected:** `is_active = true`. Account can now log in via Google OAuth.
+- `platform_users.status = inactive`
+- Active `platform_user_sessions` are revoked
+- Audit event `platform_account.deactivated` written
 
-### TC-PA-009: Accounts.manage required to deactivate
-**Setup:** Account with `platform.accounts.read` only
-**Action:** `POST /admin/v1/platform-accounts/{id}/deactivate`
-**Expected:** HTTP 403
+### TC-PA-009: Reactivate restores login capability
 
----
+**Action:** `POST /admin/v1/platform-users/{id}/reactivate`
 
-## Role and Permission Management
+**Expected:** `platform_users.status = active`; audit event `platform_account.reactivated` written.
 
-### TC-PA-010: Role permission change affects API authorization on next request
-**Setup:** Custom role "Junior Ops" has only `platform.dashboard.view`. Account assigned this role.
-**Action 1:** Account calls `GET /admin/v1/feature-flags` → HTTP 403 (no feature_flags.read)
-**Action 2:** `PUT /admin/v1/platform-roles/{roleId}/permissions` adding `platform.feature_flags.read`
-**Action 3:** Same account calls `GET /admin/v1/feature-flags`
-**Expected:** HTTP 200 — permission takes effect on next request without re-login
+### TC-PA-010: Session revoke invalidates selected sessions
 
-### TC-PA-011: Every access management change writes audit log
-**Action:** `PATCH /admin/v1/platform-accounts/{id}` changing role assignment
-**Expected:** `audit_log` entry: actor, target account, `action = 'platform_account.role_updated'`, previous role, new role
+**Action:** `POST /admin/v1/platform-users/{id}/sessions/revoke`
 
-### TC-PA-012: Session revoke invalidates that specific session only
-**Setup:** Account has 3 active sessions
-**Action:** `POST /admin/v1/platform-accounts/{id}/sessions/revoke` targeting 1 session ID
-**Expected:** Targeted session revoked. Other 2 sessions remain active.
+**Expected:** Target sessions revoked; audit event `platform_account.sessions_revoked` written.
 
 ---
 
-## Permission Enforcement on Routes
+## Roles And Permissions
 
-### TC-PA-013: Account without manage permission sees read-only state
-**Setup:** Account with `platform.accounts.read` only
-**Action:** `GET /admin/v1/platform-accounts`
-**Expected:** HTTP 200 — list returned. Edit/deactivate actions not present in response.
+### TC-PA-011: Role permission change affects API authorization
 
-### TC-PA-014: Account without any permission cannot read platform accounts
-**Setup:** Account with no permissions at all
-**Action:** `GET /admin/v1/platform-accounts`
-**Expected:** HTTP 403
+**Setup:** Custom role has only dashboard/read permission.
+
+**Action:** Add `platform.tenants.feature_overrides.read` through `PUT /admin/v1/platform-roles/{roleId}/permissions`.
+
+**Expected:** Assigned users can access feature flags on next authorization check.
+
+### TC-PA-012: Role assignment change is audited
+
+**Action:** `PATCH /admin/v1/platform-users/{id}` changing role assignment.
+
+**Expected:** Audit event `platform_account.roles_changed` written with previous and new role sets.
+
+### TC-PA-013: Recoverable Super Admin cannot be removed
+
+**Action:** Deactivate or strip roles from the last recoverable Super Admin.
+
+**Expected:** HTTP 422, `code: "recoverable_admin_required"`.
+
+---
+
+## Permission Enforcement
+
+### TC-PA-014: User without manage permission sees read-only state
+
+**Setup:** User has `platform.accounts.read` only.
+
+**Action:** `GET /admin/v1/platform-users`
+
+**Expected:** HTTP 200; mutation actions are absent or disabled by response/action model.
+
+### TC-PA-015: User without read permission cannot read platform users
+
+**Setup:** User has no platform account permissions.
+
+**Action:** `GET /admin/v1/platform-users`
+
+**Expected:** HTTP 403.

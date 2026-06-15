@@ -2,18 +2,31 @@
 
 ## Canonical Navigation
 
-The Developer Platform frontend is an Angular 21 application. It uses a sidebar icon rail with a secondary panel for grouped modules. This navigation is separate from the tenant-facing ONEVO app navigation.
+The Developer Platform frontend is an Angular 21 application with a flat Super Admin sidebar. This navigation is separate from the tenant-facing ONEVO app navigation.
 
-| Rail Area | Default Route | Has Panel | Panel Items |
-|---|---|---:|---|
-| Dashboard | `/` | No | None |
-| Platform Management | `/platform/tenants` | Yes | Tenants, Subscriptions, Platform Users, Platform Roles, Global Policies, Module Catalog, Templates, Feature Flags |
-| System Operations | `/operations/platform-health` | Yes | Platform Health, Services Monitor; Device Management, Infrastructure, Background Jobs, and Agent Versions are Phase 2 |
-| Security & Compliance | `/security/security-center` | Yes | Security Center, Audit Logs, Compliance Center, Data Retention |
-| Analytics & Reports | `/analytics/platform` | Yes | Platform Analytics, Reports |
-| Settings | `/settings/system` | Yes | System Settings, App Catalog, API Keys *(Phase 2)* |
+| Sidebar Item | Route |
+|---|---|
+| Dashboard | `/` |
+| Tenant Management | `/platform/tenants` |
+| Subscription Plans | `/platform/subscription-plans` |
+| Module Catalog | `/platform/module-catalog` |
+| Demo Profiles | `/platform/demo-profiles` |
+| Requests Center | `/platform/requests` |
+| Customer Support | `/platform/support` |
+| Platform Users | `/platform/platform-users` |
+| Platform Roles | `/platform/platform-roles` |
+| Template Management | `/platform/templates` |
+| Security Center | `/security/security-center` |
+| Audit Console | `/security/audit-console` |
+| Compliance Center | `/security/compliance` |
+| Reports / Analytics | `/reports-analytics` |
+| System Config | `/settings/system` |
+| Operations | `/operations` |
+| App Catalog | `/settings/app-catalog` |
 
-Route visibility is controlled by platform permissions from Platform Access. Do not use tenant roles or ONEVO product module entitlements to show Developer Platform routes. The canonical permission and rendering rules are defined in `developer-platform/access-control-contract.md`.
+Permission categories are shown inside the Platform Roles permission matrix only; they are not a separate sidebar item.
+
+Route visibility is controlled by platform permissions from Platform Roles. Do not use tenant roles or ONEVO product module entitlements to show Developer Platform routes. The canonical permission and rendering rules are defined in `developer-platform/access-control-contract.md`.
 
 ## Canonical Angular Route Tree
 
@@ -40,36 +53,32 @@ src/app/
 |   `-- topbar.component.ts
 |-- pages/
 |   |-- login/
+|   |-- mfa/
 |   |-- forbidden/
 |   |-- dashboard/
 |   |-- platform/
 |   |   |-- tenants/
-|   |   |-- subscriptions/
+|   |   |-- subscription-plans/
+|   |   |-- demo-profiles/
+|   |   |-- requests/
+|   |   |-- support/
 |   |   |-- platform-users/
 |   |   |-- platform-roles/
-|   |   |-- global-policies/
-|   |   |-- module-catalog/
 |   |   |-- templates/
-|   |   `-- feature-flags/
+|   |   |-- module-catalog/
+|   |   `-- tenant-runtime-overrides/  # Tenant Detail tab, not a sidebar route
 |   |-- operations/
+|   |   |-- index/
 |   |   |-- platform-health/
-|   |   |-- services/
-|   |   |-- devices/          # Phase 2
-|   |   |-- infrastructure/   # Phase 2
-|   |   |-- background-jobs/   # Phase 2
-|   |   `-- agent-versions/   # Phase 2
+|   |   `-- background-jobs/   # Phase 2
 |   |-- security/
 |   |   |-- security-center/
-|   |   |-- audit-logs/
-|   |   |-- compliance/
-|   |   `-- data-retention/
-|   |-- analytics/
-|   |   |-- platform/
-|   |   `-- reports/
+|   |   |-- audit-console/
+|   |   `-- compliance/
+|   |-- reports-analytics/
 |   `-- settings/
 |       |-- system/
-|       |-- app-catalog/
-|       `-- api-keys/
+|       `-- app-catalog/
 `-- shared/
     |-- components/
     |   |-- status-badge/
@@ -83,7 +92,7 @@ src/app/
 
 ### Public Routes
 
-`/login` is public. It initiates Google OAuth and exchanges the Google token for a platform-admin session.
+`/login` is public. It accepts email/password and creates only a pending MFA challenge when primary login succeeds. `/mfa` verifies the second factor and only then creates the platform-admin session. Optional Google OAuth account setup for invited managers must also finish with MFA before a session is issued.
 
 ### Authenticated Console Routes
 
@@ -108,7 +117,7 @@ Example route metadata:
 
 ## Core Services
 
-- `auth.service.ts` manages Google OAuth callback handling, current account state, session expiry, and logout.
+- `auth.service.ts` manages email/password login, pending MFA challenge state, optional OAuth setup callbacks, current account state, session expiry, and logout.
 - `permission.service.ts` exposes `hasPermission`, `hasAnyPermission`, `hasAllPermissions`, `canViewRoute`, and action filtering helpers.
 - `admin-api.service.ts` is the typed API client for `/admin/v1/*`.
 - `admin-api.interceptor.ts` attaches credentials, handles 401 logout, and maps 403 responses to the forbidden page or inline permission errors where appropriate.

@@ -10,7 +10,7 @@
 ```text
 GET /admin/v1/company-connections/eligible?ownerEmail=owner@example.com
   -> Normalize email
-  -> Find active/provisioning/pending_confirmation/pending_payment tenants with verified owner email
+  -> Find active/provisioning/trial/pending_payment tenants with verified owner email
   -> Return eligible tenant pairs and existing connection state
 
 POST /admin/v1/tenants/{tenantId}/company-connections

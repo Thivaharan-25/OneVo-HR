@@ -125,7 +125,7 @@ public class HierarchyScopeServiceTests
     [Fact]
     public async Task GetSubordinateIds_CachesResult()
     {
-        // Second call hits Redis, not DB
+        // Second call hits cache, not DB
     }
 }
 ```

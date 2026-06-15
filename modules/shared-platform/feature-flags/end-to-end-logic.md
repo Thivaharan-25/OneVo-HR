@@ -30,18 +30,18 @@ Tenant-facing APIs do not toggle flags. Developer Platform admin APIs manage glo
 
 ```text
 PATCH /admin/v1/feature-flags/{flagKey}
-  -> requires platform.feature_flags.manage
+  -> requires platform.runtime_flags.manage
   -> update default_value / rollout_percentage / description
   -> invalidate tenant flag cache
 
 PATCH /admin/v1/tenants/{id}/feature-flags/{flagKey}
-  -> requires platform.feature_flags.manage
+  -> requires platform.tenants.feature_overrides.manage
   -> validate tenant has module entitlement and commercial feature inclusion before allowing value = true
   -> set per-tenant override
   -> invalidate tenant flag cache
 
 DELETE /admin/v1/tenants/{id}/feature-flags/{flagKey}
-  -> requires platform.feature_flags.manage
+  -> requires platform.tenants.feature_overrides.manage
   -> remove per-tenant override
   -> invalidate tenant flag cache
 ```

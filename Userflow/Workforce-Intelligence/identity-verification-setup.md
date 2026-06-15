@@ -46,7 +46,7 @@ Flow:
 3. If identity verification is enabled and no approved `verification_reference_photos` row exists, TrayApp starts Reference Enrollment.
 4. Employee sees consent/disclosure if needed and captures a reference photo.
 5. Backend stores it as `pending_review`.
-6. HR/manager approves it, or the system auto-approves only when the tenant explicitly allows trusted SSO/MFA auto-approval.
+6. Configured identity-verification resolver approves it, or the system auto-approves only when the tenant explicitly allows trusted SSO/MFA auto-approval.
 7. Future login/logout/interval verification compares captured photos against this approved reference.
 
 The first captured photo is enrollment, not verification. It must not trigger a failed-verification alert.

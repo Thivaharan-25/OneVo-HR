@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Report Manager provides a catalog of pre-defined platform reports that operators can generate and export. Unlike Platform Analytics (which is a live dashboard), Report Manager is for generating point-in-time, structured exports of specific operational or commercial data sets — for sharing with leadership, handing off to legal/compliance teams, or archiving.
+Report Manager provides a catalog of pre-defined platform reports that operators can generate and export. Unlike Reports / Analytics (which is a live dashboard), Report Manager is for generating point-in-time, structured exports of specific operational or commercial data sets — for sharing with leadership, handing off to legal/compliance teams, or archiving.
 
 ## Data / Systems Read and Written
 
@@ -39,6 +39,6 @@ Report Manager provides a catalog of pre-defined platform reports that operators
 ## Related
 
 - [[developer-platform/modules/report-manager/end-to-end-logic|Report Manager End-to-End Logic]]
-- [[developer-platform/modules/platform-analytics/overview|Platform Analytics]] — live aggregate dashboards
+- [[developer-platform/modules/platform-analytics/overview|Reports / Analytics]] — live aggregate dashboards
 - [[developer-platform/modules/audit-console/overview|Audit Console]] — audit-specific export
 - [[developer-platform/modules/compliance-center/overview|Compliance Center]] — compliance-specific data exports

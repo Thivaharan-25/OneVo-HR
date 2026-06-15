@@ -287,7 +287,7 @@ MODULES = [
         "purpose": "Internal OneVo operator console for tenant operations, flags, audit, system config, and agent version rollout.",
         "scope": [
             "Separate console.onevo.io Next.js app for OneVo internal team only.",
-            "Google OAuth only for approved @onevo.io accounts.",
+            "Email/password plus mandatory MFA for approved platform accounts; optional Google OAuth setup may be enabled for invited managers.",
             "Separate admin JWT issuer: onevo-platform-admin.",
             "Separate backend host/namespace through ONEVO.Admin.Api and /admin/v1/* endpoints.",
             "Tenant console, provisioning, subscriptions, impersonation, and tenant troubleshooting.",

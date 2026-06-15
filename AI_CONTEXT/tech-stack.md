@@ -224,7 +224,7 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 |:-----|:-----------|:--------|:----------|
 | Primary DB | PostgreSQL | 16.13 baseline; 18.x target after hosting and migration validation | All application data, RLS for multi-tenancy |
 | Connection Pool | PgBouncer | Latest | Connection pooling for PostgreSQL |
-| Cache | Redis | 8.x target after hosting support validation | L1/L2/L3 caching, rate limiting, feature flags |
+| Cache | `IMemoryCache` in Phase 1; Redis optional/future | Redis 8.x target only after distributed hosting support validation | Phase 1 process-local caching, rate limiting, feature flags; future distributed cache if multi-instance deployment requires it |
 | Partitioning | pg_partman | Latest | Time-series partitioning for activity data, audit_logs, biometric_events |
 | Search (Phase 1) | PostgreSQL Full-Text Search | Built-in | Initial search implementation |
 | Search (Phase 2) | Meilisearch | Latest | Upgraded search at scale |

@@ -6,15 +6,17 @@ Platform operator with role-template permissions.
 
 ## Global Template Journey
 
-1. Operator opens Developer Platform -> Templates -> Template Manager -> Role Templates.
-2. Console loads available product-module permissions and existing templates.
-3. Operator creates or edits a template.
-4. Backend validates permission ownership.
-5. Template is versioned and audit-logged.
+1. Operator navigates to **Platform Management → Templates** (`/platform/templates`).
+2. Selects the **Role** filter chip to view existing role templates. Console loads available role templates.
+3. To create: click **"+ New Template"** → Type Picker modal → select **Role** → creation form loads with permission picker grouped by module.
+4. To edit: click an existing template card → click **Edit** (or **Clone** for system templates).
+5. Operator creates or edits the template.
+6. Backend validates permission ownership.
+7. Template is versioned and audit-logged.
 
 ## Tenant Apply Journey
 
-1. Operator opens Tenant Console -> Manage/Configure -> Roles.
+1. Operator opens Tenant Management -> Manage/Configure -> Roles.
 2. Console loads tenant-filtered permission catalog.
 3. Operator applies a template or creates tenant-specific role.
 4. Backend validates permissions against tenant entitlements.

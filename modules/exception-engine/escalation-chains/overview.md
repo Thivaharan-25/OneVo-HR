@@ -21,13 +21,14 @@ Supported escalation targets:
 - Users with selected permission, such as `exceptions:manage`
 - Users in selected department
 - Users in selected team
-- Users in selected job level
+- Users in selected position or position branch
+- Users in selected job level, only when job levels are configured and linked
 - Specific employee
-- Configured escalation owner
+- Configured escalation resolver
 - Previous workflow approver
 - Case conversation participants
 
-Do not use fixed escalation labels like HR or CEO. If a customer wants an HR-like escalation, they should select a permission, department, team, specific employee, or configured escalation owner.
+Do not use fixed escalation labels like HR or CEO. If a customer wants an HR-like escalation, they should select a permission, department, team, position branch, specific employee, HR coverage resolver, or configured escalation resolver.
 
 ## Database Tables
 
@@ -40,7 +41,7 @@ Example for `critical`:
 ```text
 1. employee's reporting manager immediately
 2. users with permission exceptions:manage after 30 minutes
-3. configured escalation owner after 60 minutes
+3. configured escalation resolver after 60 minutes
 ```
 
 ## Domain Events

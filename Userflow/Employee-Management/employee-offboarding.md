@@ -1,7 +1,7 @@
 # Employee Offboarding
 
 **Area:** Employee Management  
-**Trigger:** HR Admin initiates offboarding (user action)
+**Trigger:** Authorized employee-management user initiates offboarding (user action)
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `payroll:write` (final pay), `documents:manage` (exit documents)
 
@@ -39,7 +39,7 @@
 
 ### Step 4A: Knowledge Transfer and Handover
 - **UI:** Offboarding detail -> Knowledge Transfer section
-- **Assignee:** Manager by default; HR/Admin can review
+- **Assignee:** Configured offboarding resolver by default; authorized employee-management or asset-management users can review
 - **Required when:** `knowledge_risk_level = high` or `critical`
 - **Manager actions:**
   - Record handover notes

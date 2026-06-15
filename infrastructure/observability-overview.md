@@ -31,7 +31,7 @@
 | Latency | API response time (p50, p95, p99) |
 | Traffic | Requests per second by endpoint |
 | Errors | 4xx/5xx rates, exception rates |
-| Saturation | CPU, memory, DB connections, Redis connections |
+| Saturation | CPU, memory, DB connections, cache health; Redis connections only if future distributed cache is enabled |
 
 ## Related
 

@@ -25,7 +25,7 @@ Manages external integration connections (PeopleHR, Stripe, PayHere, Resend, Goo
 
 **PeopleHR:** `peoplehr` connections are used by [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]]. The connection card must support masked API key entry, permission preflight, last migration status, and audit links.
 
-**Payment gateways:** Stripe and PayHere billing credentials are managed through Shared Platform `payment_gateway_configs` when they are used for subscription collection, full-license maintenance collection, invoices, or payment methods. Configuration integration cards may link to that gateway setup, but must not duplicate raw payment secrets.
+**Payment gateways:** Billing credentials are managed through Shared Platform `payment_gateway_configs` when they are used for subscription collection, invoices, or payment methods. Configuration integration cards may link to that gateway setup, but must not duplicate raw payment secrets.
 
 ## API Endpoints
 

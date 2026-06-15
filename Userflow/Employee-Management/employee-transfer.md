@@ -1,7 +1,7 @@
 ﻿# Employee Transfer
 
 **Area:** Employee Management  
-**Trigger:** HR Admin initiates a position, department, or legal entity transfer inside the tenant  
+**Trigger:** Authorized employee-management user initiates a position, department, or legal entity transfer inside the tenant  
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `org:manage` (department/legal entity changes), `attendance:write` (schedule reassignment)
 
@@ -45,7 +45,7 @@ Separate-tenant company connections are not part of Phase 1 employee transfer. P
 
 ### Step 4: Approval (if configured)
 - **Backend:** Workflow triggers if approval required -> [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
-- Resolver-selected approvers may include the current department owner, new department owner, position-resolved reporting manager, team lead, users with a selected permission, or configured escalation owner. Multiple approvers use the workflow approval mode: only one required, all required, or approve in order.
+- Resolver-selected approvers may include the current department owner, new department owner, position-resolved reporting manager, team lead, users with a selected permission, HR coverage resolver, or configured escalation resolver. Multiple approvers use the workflow approval mode: only one required, all required, or approve in order.
 
 ### Step 5: Effective Date Processing
 - **Backend:** On effective date:

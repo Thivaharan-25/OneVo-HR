@@ -7,7 +7,13 @@
 
 ## Purpose
 
-Teams are tenant-scoped work groups made from employees. A team does not own or require a department. Department context for reporting is derived from the current departments of the employees inside the team. A user with `org:manage` can create teams, but the employees they can add depend on hierarchy scope, explicit bypass grants, and tenant permissions. See [[modules/auth/authorization/end-to-end-logic|Authorization - Hierarchy Scoping]] for bypass resolution.
+Teams are tenant-scoped explicit work groups made from employees. A stored team is used only when the group is not simply the current reporting hierarchy, or when the customer wants a reusable named group that can be linked to a workspace.
+
+Do not create a stored `teams` row for every reporting manager. A reporting manager's people are a **virtual reporting team** resolved from `employee_hierarchy_closure`, which is derived from position hierarchy. The UI may show "My Reporting Team" as a selectable source when creating a workspace, but that source is calculated from positions and is not persisted in `teams` or `team_members`.
+
+A team does not own or require a department. Department context for reporting is derived from the current departments of the employees inside the team. A user with `org:manage` can create explicit teams, but the employees they can add depend on hierarchy scope, explicit bypass grants, and tenant permissions. See [[modules/auth/authorization/end-to-end-logic|Authorization - Hierarchy Scoping]] for bypass resolution.
+
+Use stored teams for stable or cross-functional groups such as "Payroll Implementation Group" or "HR Operations Reviewers". Use the virtual reporting team for "people under this manager/team lead".
 
 ## Database Tables
 
@@ -29,7 +35,7 @@ Join table: `team_id`, `employee_id`, `joined_at`, `left_at`. PK: `(team_id, emp
 
 ### `team_roles`, `team_member_roles`, `team_role_permissions`
 
-Team roles represent scoped authority inside one HR team. They are configured from Roles & Permissions under Team Roles, not from team creation. Team creation and team editing only assign existing team roles to team members.
+Team roles represent scoped authority inside one explicit stored team. They are configured from Roles & Permissions under Team Roles, not from team creation. Team creation and team editing only assign existing team roles to team members.
 
 Allowed standard team roles:
 
@@ -44,9 +50,10 @@ Rules:
 - Team role permissions apply only inside the linked team/work area.
 - Team role permissions must not grant tenant-wide HR, payroll, security, or system administration authority.
 - A user in multiple teams receives the union of their scoped team-role permissions inside each linked workspace where they have active workspace access.
-- Project managers, tech leads, reviewers, or observers who are not in the HR team should be added directly as workspace members or project members with Admin, Member, or Viewer access instead of being forced into the HR team.
+- Project managers, tech leads, reviewers, or observers who are not in the explicit stored team should be added directly as workspace members or project members with Admin, Member, or Viewer access instead of being forced into that team.
 - Team creation UI must show only team roles. It must not show security roles.
 - Team lead behavior must come from the assigned team role permissions/capabilities, not from a `teams.team_lead_id` shortcut.
+- A user's reporting authority over an employee must not leak into unrelated workspaces or projects. Hierarchy can be used to choose eligible members for a workspace the user manages, but actions inside a workspace/project require the relevant workspace or project context role.
 
 ## Member Pool Resolution
 
@@ -70,6 +77,18 @@ TeamService.ResolveMemberPoolAsync(creatorEmployeeId)
 
 `IHierarchyScope.GetSubordinateIdsAsync(featureContext: "teams")` provides hierarchy and bypass sets. Department is not a team ownership boundary; department reporting can be computed from `team_members -> employees.department_id`.
 
+## Workspace Creation Source Rules
+
+When a user creates a WorkSync workspace, the workspace member source can be:
+
+| Source | Stored in `teams`? | Meaning |
+|:-------|:-------------------|:--------|
+| My Reporting Team | No | Employees under the creator in the current position hierarchy. Recomputed each time from `employee_hierarchy_closure`. |
+| Existing Explicit Team | Yes | A named stored team from `teams`/`team_members`, usually cross-functional or reusable. |
+| Manual Invite | No | Employee search filtered by hierarchy, bypass grants, workspace/project invite approval, or organization-wide authority. |
+
+If the source is "My Reporting Team", the workspace stores only `workspace_members`; it does not create a matching `teams` row. If a reporting change happens later, existing workspace membership does not silently change unless the workspace uses an explicit sync policy. This prevents reporting history and workspace collaboration history from becoming the same thing.
+
 ## API Endpoints
 
 | Method | Route | Permission | Description |
@@ -90,4 +109,3 @@ TeamService.ResolveMemberPoolAsync(creatorEmployeeId)
 - [[modules/org-structure/legal-entities/overview|Legal Entities]]
 - [[modules/org-structure/cost-centers/overview|Cost Centers]]
 - [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
-

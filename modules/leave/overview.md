@@ -170,10 +170,10 @@ Audit trail for balance changes.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `LeaveRequested` | Employee submits request | [[modules/notifications/overview\|Notifications]] (notify manager) |
-| `LeaveApproved` | Manager approves | [[modules/notifications/overview\|Notifications]], [[modules/workforce-presence/overview\|Workforce Presence]] (mark presence as `on_leave`), [[modules/calendar/overview\|Calendar]], [[modules/payroll/overview\|Payroll]] |
-| `LeaveRejected` | Manager rejects | [[modules/notifications/overview\|Notifications]] |
-| `LeaveCancelled` | Employee/manager cancels | [[modules/notifications/overview\|Notifications]] |
+| `LeaveRequested` | Employee submits request | [[modules/notifications/overview\|Notifications]] (notify configured leave approver) |
+| `LeaveApproved` | Configured approver approves | [[modules/notifications/overview\|Notifications]], [[modules/workforce-presence/overview\|Workforce Presence]] (mark presence as `on_leave`), [[modules/calendar/overview\|Calendar]], [[modules/payroll/overview\|Payroll]] |
+| `LeaveRejected` | Configured approver rejects | [[modules/notifications/overview\|Notifications]] |
+| `LeaveCancelled` | Employee or authorized leave user cancels | [[modules/notifications/overview\|Notifications]] |
 | `EntitlementAdjusted` | Leave entitlement recalculated or manually adjusted | Audit trail |
 
 ### Consumes

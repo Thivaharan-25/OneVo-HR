@@ -60,7 +60,7 @@ npm run build
 
 - [ ] Leave balance view shows available, used, pending, and upcoming leave.
 - [ ] Leave request form validates leave type, date range, overlap, and reason.
-- [ ] Manager approval screen supports approve, reject, and comment.
+- [ ] Approval screen supports approve, reject, and comment for configured approvers.
 - [ ] Calendar screen combines holidays, shifts, leave, and company events.
 - [ ] Shift and holiday admin screens exist.
 - [ ] Calendar holiday settings screen lets admins disable country holiday sync or override the country calendar from the legal entity default.

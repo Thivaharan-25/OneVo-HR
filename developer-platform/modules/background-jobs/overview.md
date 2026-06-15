@@ -54,5 +54,5 @@ Key jobs operators monitor via this screen:
 
 - [[developer-platform/modules/background-jobs/end-to-end-logic|Background Jobs End-to-End Logic]]
 - [[developer-platform/modules/platform-health/overview|Platform Health]] - job queue health is surfaced here
-- [[developer-platform/modules/subscription-manager/overview|Subscription Manager]] - dunning and invoice jobs
+- [[developer-platform/modules/subscription-manager/overview|Subscription Plans]] - dunning and invoice jobs
 

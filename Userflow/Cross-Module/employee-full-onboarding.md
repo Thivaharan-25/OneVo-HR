@@ -55,9 +55,9 @@ Steps 2-6 can run in parallel except Step 7 which depends on Step 2.
 | Failed Step | Impact | Recovery |
 |:------------|:-------|:---------|
 | Auth account creation fails | Employee cannot log in, but profile exists | Admin retries from employee profile → "Resend Invitation" |
-| Leave entitlements not assigned | Employee sees 0 balance, cannot apply leave | HR Admin manually assigns via [[Userflow/Leave/leave-entitlement-assignment\|Leave Entitlement Assignment]] |
+| Leave entitlements not assigned | Employee sees 0 balance, cannot apply leave | Authorized leave-management user manually assigns via [[Userflow/Leave/leave-entitlement-assignment\|Leave Entitlement Assignment]] |
 | Shift schedule not assigned | Employee not tracked in attendance | Admin assigns manually via [[Userflow/Workforce-Presence/shift-schedule-setup\|Shift Schedule Setup]] |
-| Payroll profile missing | Employee excluded from next payroll run | HR Admin sets up via [[Userflow/Employee-Management/compensation-setup\|Compensation Setup]] |
+| Payroll profile missing | Employee excluded from next payroll run | Authorized compensation-management user sets up via [[Userflow/Employee-Management/compensation-setup\|Compensation Setup]] |
 | Document generation fails | Employee doesn't receive contract | Admin re-triggers from [[Userflow/Documents/template-management\|Template Management]] |
 | Legal & Privacy item not queued | Affected monitoring collection cannot start for this employee | Auto-retries on invite acceptance, next login, or agent startup; admin can trigger manually |
 

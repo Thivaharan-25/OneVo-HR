@@ -36,7 +36,7 @@ The personal action center - everything waiting for YOUR decision in one place. 
 
 ### Step 2b: Remote Location Change Request
 - **Trigger:** Employee opens Employee Settings -> Remote Work Location -> Request Location Change and submits a reason.
-- **Route:** Reporting manager receives the Inbox item.
+- **Route:** Configured work-location approval resolver receives the Inbox item.
 - **UI:** Item shows employee name, current remote workplace status, requested change reason, and submitted time.
 - **Actions:** Approve or Reject. If approved, the employee can re-capture their remote work location profile on the next remote clock-in.
 

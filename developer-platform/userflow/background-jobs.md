@@ -8,7 +8,7 @@ Operations user.
 
 ## Journey
 
-1. Operator opens System Operations -> Background Jobs.
+1. Operator opens Phase 2 Operations -> Background Jobs.
 2. Console lists recurring, running, failed, and completed jobs.
 3. Operator opens failed job detail.
 4. If job is retryable and operator has manage permission, operator retries with reason.

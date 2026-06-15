@@ -1,7 +1,7 @@
 # Disciplinary Action
 
 **Area:** Grievance  
-**Trigger:** HR Admin issues disciplinary action after investigation (user action — post-investigation)
+**Trigger:** Authorized grievance/disciplinary user issues disciplinary action after investigation (user action — post-investigation)
 **Required Permission(s):** `grievance:manage`  
 **Related Permissions:** `employees:write` (record on profile)
 

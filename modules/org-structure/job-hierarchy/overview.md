@@ -9,11 +9,11 @@
 
 Job families, levels, and titles forming the career framework. The three concepts are independent:
 
-- **Job Title** — the named role used on a position (e.g., "Software Engineer"). Every position requires a job title. `job_family_id` and `job_level_id` on `job_titles` are nullable; a title can exist without being linked to a family or level.
+- **Job Title** — the named role label that can be used on a position (e.g., "Software Engineer"). Job title is optional in Phase 1 position setup. `job_family_id` and `job_level_id` on `job_titles` are nullable; a title can exist without being linked to a family or level.
 - **Job Family** — a grouping of related roles (e.g., "Engineering"). Enables skill gap analysis and salary bands. Not required for position setup.
 - **Job Level** — a seniority tier within a family (e.g., "Senior"), with a numeric `rank` for ordering and an optional suggested role for onboarding/promotion prefill. Requires a job family. Not required for position setup.
 
-A job title may carry a family and level, but position setup only requires the title. Family and level enrich titles with career structure and are not a prerequisite for creating positions or onboarding employees.
+A job title may carry a family and level, but position setup does not require title, family, or level in Phase 1. These fields enrich positions with career structure and are not a prerequisite for creating positions or onboarding employees.
 
 ## Database Tables
 
@@ -48,7 +48,7 @@ Phase 1 required-skill setup is embedded in this Job Hierarchy flow. Admins sear
 ## Related
 
 - [[modules/org-structure/overview|Org Structure Module]]
-- [[modules/org-structure/positions/overview|Positions]] — positions link to job titles; family and level are not required at position setup time
+- [[modules/org-structure/positions/overview|Positions]] — positions may link to job titles, but title, family, and level are not required in Phase 1 position setup
 - [[Userflow/Org-Structure/job-family-setup|Job Hierarchy Setup]]
 - [[modules/org-structure/departments/overview|Departments]]
 - [[modules/org-structure/legal-entities/overview|Legal Entities]]

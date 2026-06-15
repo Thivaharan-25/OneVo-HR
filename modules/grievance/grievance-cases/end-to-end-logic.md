@@ -19,7 +19,7 @@ POST /api/v1/grievances
          -> Set filed_by_id = null (protect identity)
       -> 3. INSERT into grievance_cases
          -> status = 'filed', severity based on category
-      -> 4. Notify HR team via notifications module
+      -> 4. Notify the configured grievance resolver via notifications module
       -> Return Result.Success(grievanceDto)
 ```
 

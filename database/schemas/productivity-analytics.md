@@ -147,7 +147,7 @@ Work Management-derived task productivity metrics per employee per period. Popul
 
 **Index:** `(tenant_id, employee_id, period_type, period_start)` UNIQUE
 
-**Visibility:** Admin and Reporting Manager only. Not surfaced to the employee directly.
+**Visibility:** Authorized analytics users and position-resolved hierarchy reviewers only. Not surfaced to the employee directly.
 
 ---
 

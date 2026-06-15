@@ -61,7 +61,7 @@ public class WorkflowServiceTests
 |:---------|:-----|:---------|
 | Create instance resolves first approver through resolver | Unit | Step instance created without role-name checks |
 | Resolver returns users with selected permission | Unit | All eligible users are candidates |
-| Resolver returns no candidate | Unit | Step is blocked and automation owner/escalation owner is notified |
+| Resolver returns no candidate | Unit | Step is blocked and the automation owner or configured escalation resolver is notified |
 | Only one approval is required | Unit | First approver completes the step; other assignees see completed state |
 | All assigned approvers must approve | Unit | Step remains pending until every assignee approves |
 | Approve in order | Unit | Next approver receives the request only after previous approval |

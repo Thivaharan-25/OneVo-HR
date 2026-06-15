@@ -2,7 +2,7 @@
 
 ## Load Health Dashboard
 
-1. Operator opens System Operations -> Platform Health.
+1. Operator opens Operations and selects the Platform Health view.
 2. Frontend calls `GET /admin/v1/operations/platform-health`.
 3. Backend verifies `platform.health.read`.
 4. Backend loads the Platform Health registry.
@@ -11,7 +11,7 @@
 7. Backend normalizes reader results and applies redaction before returning evidence.
 8. Backend maps check evidence to `healthy`, `degraded`, `down`, or `unknown`.
 9. Backend calculates weighted `overall_health_pct` from all enabled registry services; `unknown` counts as failed evidence.
-10. Frontend renders service status, uptime, dependency state, degraded/down components, and unknown/missing evidence.
+10. Frontend renders one screen with the health summary, service status, dependency state, job summary, configuration checks, security checks, recent events, degraded/down components, and unknown/missing evidence.
 
 ## APIs
 
@@ -19,6 +19,7 @@
 |---|---|---|---|
 | GET | `/admin/v1/operations/platform-health` | Overall platform health | `platform.health.read` |
 | GET | `/admin/v1/operations/platform-health/dependencies` | Dependency-level health | `platform.health.read` |
+| POST | `/admin/v1/operations/platform-health/services/{serviceKey}/actions/{action}` | Execute approved safe service action from the Platform Health screen | `platform.health.manage` |
 
 ## Failure Handling
 
@@ -35,4 +36,4 @@
 - Services, dependencies, criticality, expected evidence, thresholds, and approved actions come from [[developer-platform/modules/platform-health/health-registry|Platform Health Registry and Rules]].
 - The UI must not hardcode pass/fail rules that are absent from the registry.
 - `PlatformHealthCheckJob` uses the same registry and status mapping as the read endpoints.
-- Services Monitor must use the same `service_key`, dependency keys, and approved action keys. It can show more detail, but it must not define a second service registry.
+- Service rows and actions on the Platform Health screen must use the same `service_key`, dependency keys, and approved action keys from the registry. The UI must not define a second service registry.

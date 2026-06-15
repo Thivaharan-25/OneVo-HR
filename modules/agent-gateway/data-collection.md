@@ -305,7 +305,7 @@ public class CommunicationTracker : ICollector
 
 ### 8. Screenshot Capturer (`ScreenshotCapturer.cs`)
 
-**What:** Captures screenshot of the primary display **only on explicit remote command** from a manager or HR Admin.
+**What:** Captures screenshot of the primary display **only on explicit remote command** from an authorized hierarchy reviewer or monitoring user.
 
 **Trigger:** ONLY via remote command (`capture_screenshot` from `agent_commands` table). **NEVER automated, NEVER scheduled, NEVER random.** The `screenshots` table accepts only `manual` and `on_demand` trigger types.
 

@@ -26,7 +26,7 @@ Employee signs in to TrayApp
   -> TrayApp shows required WorkPulse photo/biometric notice or consent if needed
   -> TrayApp captures first reference photo
   -> Backend stores verification_reference_photos.status = 'pending_review'
-  -> HR/manager approves OR tenant auto-approval policy approves trusted SSO/MFA enrollment
+  -> Configured identity-verification resolver approves OR tenant auto-approval policy approves trusted SSO/MFA enrollment
   -> Future verification photos compare against this approved reference
 ```
 

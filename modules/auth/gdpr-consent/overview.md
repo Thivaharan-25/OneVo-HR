@@ -21,13 +21,15 @@ Platform-required items block account activation or dashboard access when missin
 | `tenant_id` | `uuid` | FK -> tenants |
 | `user_id` | `uuid` | FK -> users |
 | `document_type` | `varchar(80)` | `terms`, `privacy_notice`, `activity_monitoring_notice`, `screenshot_notice`, `biometric_photo_consent`, `marketing` |
-| `document_version` | `varchar(50)` | Version accepted/acknowledged |
+| `document_version` | `varchar(50)` | Version accepted/acknowledged; references the published version string from Developer Platform `legal_document_versions` |
 | `decision` | `varchar(20)` | `accepted`, `acknowledged`, `declined` |
 | `required` | `boolean` | Whether the item blocks access or collection |
 | `decided_at` | `timestamptz` | |
 | `ip_address` | `varchar(45)` | |
 | `user_agent` | `varchar(500)` | |
 | `source` | `varchar(30)` | `invite`, `web`, `desktop-agent` |
+
+Compliance Center manages `legal_document_versions`. Auth owns `legal_acceptance_records` and records user decisions against those published versions.
 
 ## Key Business Rules
 
@@ -49,7 +51,7 @@ POST /api/v1/agent/ingest
 5. Queue batch for async processing -> 202 Accepted
 ```
 
-**Caching:** The Legal & Privacy gate result may be cached in Redis for up to 5 minutes per `employee_id` and category to avoid a DB hit on every ingest. Cache must be invalidated immediately when a relevant decision is recorded, changed, or withdrawn.
+**Caching:** The Legal & Privacy gate result may be cached in Phase 1 `IMemoryCache` for up to 5 minutes per `employee_id` and category to avoid a DB hit on every ingest. Cache must be invalidated immediately when a relevant decision is recorded, changed, or withdrawn. Redis may replace this only if future distributed cache is enabled.
 
 ## Related
 

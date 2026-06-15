@@ -18,7 +18,9 @@ Notification templates are pre-configured per event type + channel:
 
 Notification Pipeline (when domain event fires):
   -> 1. Event handler receives domain event (e.g., LeaveApproved)
-  -> 2. Resolve recipients (employee, manager, HR)
+  -> 2. Resolve recipients through event context and configured resolvers
+       (employee, position-resolved manager, selected permission holder,
+       HR coverage resolver, case participant, or specific employee)
   -> 3. Load notification_templates WHERE event_type AND channel AND is_active
   -> 4. Render template with event data
   -> 5. Dispatch to channel (email via Resend, in_app via DB insert, SignalR push)

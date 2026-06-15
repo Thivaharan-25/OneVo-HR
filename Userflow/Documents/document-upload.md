@@ -24,7 +24,7 @@
 - **Validation:** File size ≤ 25MB, allowed file types only
 
 ### Step 3: Set Access Level
-- **UI:** Choose: Public (all employees), Department-specific, Individual (named employees), Confidential (HR only) → add tags for searchability
+- **UI:** Choose: Public (all employees), Department-specific, Individual (named employees), Confidential (authorized document managers only) → add tags for searchability
 - **Backend:** DocumentService.UploadAsync() → [[modules/documents/document-management/overview|Document Management]]
 - **DB:** `documents` — metadata, `document_access` — permissions
 

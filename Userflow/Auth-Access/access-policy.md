@@ -7,7 +7,9 @@
 
 ## What Is an Access Policy?
 
-A **permission** answers *what action* a user can perform. An **access policy** answers *whose data* that action can reach. The two are configured independently.
+A **permission** answers *what action* a user can perform. An **access policy** answers *whose data* that action can reach.
+
+Access policy must not become a required per-permission setup step for every role. Role templates and assignment flows should provide practical defaults, such as self-service for employees and position-derived reporting hierarchy for managers. Administrators change access policy only when they need broader or exceptional employee-data access.
 
 Example:
 
@@ -15,9 +17,9 @@ Example:
 |---|---|---|---|
 | Team Manager | `leave:read` | `reporting_tree` | Sees leave records for all direct and indirect reports |
 | HR Generalist | `leave:read` | `organization` | Sees leave records for all active employees in the tenant |
-| Department Head | `leave:approve` | `direct_reports` | Can only approve leave for employees who report directly to them |
+| Department-level approver | `leave:approve` | `direct_reports` | Can only approve leave for employees who report directly to them |
 
-The same permission (`leave:read`) produces a completely different data scope for different roles without needing separate permission codes.
+The same permission (`leave:read`) can produce a different data scope from assignment context without needing separate permission codes. The normal default for manager-style access is resolved from position hierarchy.
 
 ---
 
@@ -28,16 +30,16 @@ The same permission (`leave:read`) produces a completely different data scope fo
 | `self` | Own employee record only | Default when no policy is set |
 | `direct_reports` | Employees directly below this user in `employee_hierarchy_closure` (depth = 1), derived from position hierarchy | Manager approvals |
 | `reporting_tree` | All employees anywhere below this user in the org tree (depth â‰¥ 1) | Manager read access |
-| `department` | All active employees in the same department | Dept-level HR support |
-| `department_tree` | All active employees in the dept's full org subtree | Department heads |
+| `department` | All active employees in the selected department | Dept-level support or approved coverage |
+| `department_tree` | All active employees in the dept's full org subtree | Department-level leadership |
 | `org_unit_tree` | All active employees under this user's org unit | Regional managers |
-| `organization` | All active employees in the tenant | HR, Payroll, Executives |
+| `organization` | All active employees in the tenant | Explicit organization-wide employee-data authority |
 
 ---
 
 ## Which Permissions Use Access Policy
 
-Access policy applies to permissions that operate on **employee records**. Tenant-wide permissions (`settings:admin`, `analytics:view`, `payroll:run`, `org:manage`, etc.) are not scoped by access policy â€” they apply tenant-wide and are controlled by the permission alone.
+Access policy applies to permissions that operate on **employee records**. Tenant-wide or context-scoped permissions (`settings:admin`, `analytics:view`, `payroll:run`, `org:manage`, WorkSync workspace/project actions, etc.) are not governed by this employee access-policy table alone. They are controlled by the permission plus their own context, such as legal entity, workspace role, project membership, workflow assignment, or approved participation request.
 
 | Module | Permissions governed by access policy |
 |---|---|
@@ -48,7 +50,7 @@ Access policy applies to permissions that operate on **employee records**. Tenan
 | Skills | `skills:read`, `skills:write`, `skills:validate` |
 | Expense | `expense:read`, `expense:approve` |
 | Documents | `documents:read`, `documents:write`, `documents:approve` |
-| Tasks | `tasks:read`, `tasks:approve` |
+| Tasks | Employee-data views attached to tasks, such as subordinate workload summaries. Project task visibility itself is controlled by `project_members`, `workspace_members`, and project/workspace context. |
 | Time | `time:read`, `time:approve` |
 
 ---
@@ -59,13 +61,15 @@ Access policy applies to permissions that operate on **employee records**. Tenan
 
 Roles define what permissions exist. `user_roles.scope_type` and `user_roles.scope_id` define whose employee data those permissions can reach for a specific user assignment.
 
+This should be template-driven for normal setup. Do not ask administrators to select a scope for every permission on every role unless they intentionally open advanced access configuration.
+
 Example assignments:
 
 | User | Role | Scope Type | Scope Id | Effect |
 |---|---|---|---|---|
 | Team Manager | Leave Approver | `DirectReports` | null | Can approve leave for direct reports |
-| HR Generalist | HR Manager | `Organization` | null | Can access employee data across the tenant |
-| Department HR | HR Manager | `Department` | EngineeringDepartmentId | Can access employees inside Engineering |
+| HR Generalist | Employee Data Reviewer | `Organization` | null | Can access employee data across the tenant |
+| Department support user | Employee Data Reviewer | `Department` | EngineeringDepartmentId | Can access employees inside Engineering |
 
 ### Per-Employee Permission Override
 
@@ -81,7 +85,7 @@ The backend resolves access policy at query time. The frontend never receives em
 Frontend: GET /api/leave/requests?view=team
 Backend:
   1. User has leave:read â†’ âœ“
-  2. Scope for `leave:read` on this user -> `DirectReports`, `Department`, `Team`, `Organization`, or `Own`
+  2. Resolve employee-data scope from assignment defaults, hierarchy, approved coverage, or explicit override
   3. Resolve descendant employee IDs from employee_hierarchy_closure table
   4. Filter leave requests to those employees
   5. Return filtered results
@@ -93,7 +97,7 @@ Backend:
 Frontend: POST /api/leave/requests/{id}/approve
 Backend:
   1. User has leave:approve â†’ âœ“
-  2. Scope for `leave:approve` on this user -> `DirectReports`, `Department`, `Team`, `Organization`, or `Own`
+  2. Resolve employee-data scope from assignment defaults, workflow assignment, hierarchy, approved coverage, or explicit override
   3. Verify target employee is in resolved scope
   4. If not in scope â†’ 403 Forbidden
   5. If in scope â†’ proceed with approval

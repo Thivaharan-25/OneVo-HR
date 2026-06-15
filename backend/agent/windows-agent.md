@@ -18,7 +18,7 @@
 
 Context menu items:
 - Status (Connected / Offline)
-- Pause monitoring (requires manager approval token)
+- Pause monitoring (requires configured monitoring-approval token)
 - About / version
 - Exit (requires IT PIN)
 
