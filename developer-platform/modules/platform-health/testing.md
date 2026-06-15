@@ -107,6 +107,6 @@ Run these before real health readers are implemented. They validate the registry
 **Action:** `GET /admin/v1/operations/platform-health`
 **Expected:** The check appears with `status = "unknown"` and a stable `reader_error_code` such as `reader_not_implemented`.
 
-### TC-PH-017: Services Monitor uses the same registry keys
-**Action:** Compare `GET /admin/v1/operations/platform-health` services with `GET /admin/v1/operations/services`
-**Expected:** Services Monitor uses the same `service_key`, dependency keys, criticality, and approved action keys. It does not introduce services or actions absent from the Platform Health registry.
+### TC-PH-017: Service Health section uses the same registry keys
+**Action:** Compare service rows in `GET /admin/v1/operations/platform-health` with service detail from `GET /admin/v1/operations/platform-health/services/{serviceKey}`
+**Expected:** The Service Health section uses the same `service_key`, dependency keys, criticality, and approved action keys. It does not introduce services or actions absent from the Platform Health registry.

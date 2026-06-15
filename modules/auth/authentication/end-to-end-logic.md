@@ -19,7 +19,7 @@ POST /api/v1/auth/login
          -> If not found -> Return failure("Invalid credentials")
       -> 2. Verify password via bcrypt hash comparison
          -> If mismatch -> Return failure("Invalid credentials")
-         -> Increment failed_attempts counter (Redis)
+         -> Increment failed_attempts counter (Phase 1 in-memory cache; Redis only if future distributed cache is enabled)
          -> If failed_attempts >= 5 -> Lock account for 15 min
       -> 3. Check user.is_active
          -> If false -> Return failure("Account disabled")

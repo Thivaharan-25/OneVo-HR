@@ -25,7 +25,7 @@
 ### Step 3: Submit
 - **Backend:** GrievanceService.FileAsync() → [[modules/grievance/overview|Grievance]]
 - **DB:** `grievance_cases` — case number generated (GRV-2026-001), status: "Open"
-- **Result:** Automation Center creates or routes a confidential case to the configured grievance resolver, such as users with `grievance:manage`, a selected department/team, a specific employee, or the configured escalation owner.
+- **Result:** Automation Center creates or routes a confidential case to the configured grievance resolver, such as users with `grievance:manage`, a selected department/team/position branch, a specific employee, or the configured escalation resolver.
 
 ### Step 4: Track Status
 - **UI:** Grievance → My Cases → see status (Open, Under Investigation, Resolved, Closed) → timeline of updates

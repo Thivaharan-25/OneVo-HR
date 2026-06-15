@@ -1,46 +1,47 @@
-# Feature Flag Manager - End-to-End Logic
+# Tenant Runtime Overrides - End-to-End Logic
 
 ## Purpose
 
-Feature Flag Manager controls two things:
+Tenant Runtime Overrides are managed from Tenant Management -> Tenant Detail, not from a top-level Feature Flags sidebar item. They control two things:
 1. **Feature flags** - boolean switches that gate features globally with optional per-tenant overrides and rollout percentages
 2. **Module enable/disable** - toggle individual ONEVO modules on or off for a specific tenant after activation, without going through the subscription wizard
 
-It does not define paid package contents or prices. Commercial inclusion of module features is owned by Module Catalog and Subscription Manager. Runtime flag evaluation must sit after commercial entitlement checks:
+It does not define paid package contents or prices. Module Catalog defines which module features exist. Commercial inclusion is owned by Subscription Plans, selected optional module add-ons, and tenant subscription/custom commercial snapshots. Runtime flag evaluation must sit after commercial entitlement checks:
 
 ```text
-tenant has module entitlement
+feature_key exists in Module Catalog for the module
+AND tenant has active module entitlement
 AND module runtime override is not false
-AND tenant plan/custom contract includes the feature
+AND tenant_subscriptions.selected_feature_keys includes the feature_key
 AND feature flag evaluates enabled
 = feature available
 ```
 
 Tenant-facing product feature flags must be linked to Module Catalog by setting both `module_key` and `feature_key`. The `feature_key` must exist in `module_features` and belong to the selected `module_key`. Only platform operational flags that are not sold as tenant features may omit both fields.
 
-**Route:** `/platform/feature-flags`
-**Permission:** `platform.feature_flags.read`
+**Route:** `/platform/tenants/{id}` -> Runtime Overrides tab
+**Permission:** `platform.tenants.feature_overrides.read`
 
 ---
 
 ## Screen Layout
 
-Left tab navigation:
-- Global Flags (default)
-- Per-Tenant Overrides
-- Module Enable/Disable
+Tenant Detail tab navigation:
+- Runtime Overrides
+- Feature Flag Overrides
+- Module Runtime Status
 
 ---
 
-## Global Flags Screen
+## Runtime Overrides Screen
 
 ### Page Header
 
 | Element | Value |
 |---|---|
-| Title | "Feature Flag Manager" |
-| Subtitle | "Control global feature availability and per-tenant overrides." |
-| Add Flag button | `+ Create Flag` - requires `platform.feature_flags.manage` |
+| Title | "Runtime Overrides" |
+| Subtitle | "Control this tenant's feature flag overrides and module runtime status." |
+| Add Override button | `+ Add Override` - requires `platform.tenants.feature_overrides.manage` |
 
 ### Filter Bar
 
@@ -136,7 +137,7 @@ Optional operational foundation flags may be seeded if the backend implements th
 
 | Flag Key | Module | Default Value | Rollout % | Purpose |
 |---|---|---|---|---|
-| `auth.google_login` | `auth` | true | 100 | Emergency disable for Google OAuth |
+| `auth.optional_google_oauth` | `auth` | false | 0 | Enable optional Google OAuth setup/sign-in for invited managers only |
 | `auth.mfa_enforcement` | `auth` | true | 100 | Gradual MFA enforcement |
 | `notifications.email_delivery` | `notifications` | true | 100 | Emergency disable for outbound email |
 | `notifications.in_app_delivery` | `notifications` | true | 100 | Emergency disable for in-app notifications |
@@ -161,7 +162,14 @@ Optional operational foundation flags may be seeded if the backend implements th
 
 **State written:** `feature_flags` row created. Audit log: `action = 'feature_flag.created'`, actor, flag_key, default_value.
 
-**Commercial boundary:** Creating a feature flag does not add the feature to any paid plan and does not change module pricing. Operators must add the feature to the relevant module/plan package in Module Catalog / Subscription Manager before any tenant can receive runtime access.
+**Commercial boundary:** Creating a feature flag does not add the feature to any paid plan, tenant subscription, or pricing package. Operators must first register the feature key in Module Catalog, then commercially include it through a Subscription Plan, selected optional module add-on, or audited tenant subscription/custom override before any tenant can receive runtime access.
+
+**Production testing one feature for one tenant:**
+1. Register the feature key in Module Catalog.
+2. Do not add it to normal plan `included_feature_keys`.
+3. Add it only to the test tenant's `tenant_subscriptions.selected_feature_keys` through an audited subscription/custom override.
+4. Enable the runtime flag only for that tenant.
+5. Optionally expose it only to selected roles/users through `feature_access_grants`.
 
 ---
 
@@ -215,9 +223,9 @@ Are you sure?
 
 ---
 
-## Flag Detail Screen
+## Flag Detail Reference
 
-**Route:** `/platform/feature-flags/{flagKey}`
+**Operator route:** Tenant Detail -> Runtime Overrides
 
 **API:** `GET /admin/v1/feature-flags/{flagKey}`
 
@@ -256,11 +264,11 @@ An override sets an explicit value for a specific tenant, bypassing both the def
 It does not bypass commercial eligibility. Before saving `value = true`, the backend validates that:
 - the flag belongs to a module in `module_catalog`
 - the tenant has an active module entitlement for that module
-- the tenant's current subscription/custom contract includes the requested feature key
+- the tenant's current subscription snapshot includes the requested feature key in `tenant_subscriptions.selected_feature_keys`
 
 ### Add Override
 
-**Trigger:** "Add Override" on the flag detail screen OR from the Per-Tenant Overrides tab.
+**Trigger:** "Add Override" from Tenant Detail -> Runtime Overrides.
 
 **Dialog fields:**
 
@@ -283,7 +291,7 @@ It does not bypass commercial eligibility. Before saving `value = true`, the bac
 
 **Effect:** Takes effect immediately on next request from this tenant (cache invalidated). No tenant restart required.
 
-**Billing effect:** None. If three features are disabled for a tenant, the tenant keeps paying the same subscription price until Subscription Manager or Tenant Console changes the commercial record.
+**Billing effect:** None. If three features are disabled for a tenant, the tenant keeps paying the same subscription price until Subscription Plans or Tenant Management changes the commercial record.
 
 ### Remove Override
 
@@ -295,9 +303,9 @@ It does not bypass commercial eligibility. Before saving `value = true`, the bac
 
 **Effect:** Tenant falls back to global default + rollout % evaluation. Audit logged.
 
-### Per-Tenant Overrides Tab (global view)
+### Runtime Overrides Review
 
-**Route:** `/platform/feature-flags/tenant-overrides`
+**Operator route:** Tenant Management -> Tenant Detail -> Runtime Overrides. Cross-tenant review, if exposed later, belongs under Reports / Analytics or Operations and is not a sidebar item.
 
 Shows ALL overrides across ALL flags and ALL tenants.
 
@@ -327,10 +335,12 @@ Shows ALL overrides across ALL flags and ALL tenants.
 This tab allows operators to enable or disable a specific ONEVO module for a tenant **after activation** without going through the subscription override flow. This is a post-activation runtime toggle, not a commercial action.
 
 **When to use this vs Subscription Override:**
-- **Feature Flag Manager -> Module Enable/Disable:** Immediate runtime toggle; does not change billing, subscription snapshot, or module sales state. Use for debugging, temporary access grants, beta access.
-- **Tenant Console -> Subscriptions -> Override Subscription:** Changes the commercial record, module sales state, and billing. Use when the tenant has actually bought or cancelled a module.
+- **Tenant Detail -> Runtime Overrides -> Module Runtime Status:** Immediate runtime toggle for a module the tenant is already commercially entitled to; does not change billing, subscription snapshot, or module sales state. Use for debugging, emergency disable, or restoring previously disabled runtime access.
+- **Tenant Management -> Subscriptions -> Override Subscription:** Changes the commercial record, module sales state, selected feature keys, and billing. Use when the tenant has actually bought, cancelled, trialed, or been approved to test a module or feature.
 
-**Route:** `/platform/feature-flags/modules`
+Production testing a feature for one tenant must use the subscription override path first to add the feature key to that tenant's commercial snapshot. Runtime overrides may then turn the feature on for that tenant; they must not create commercial feature access by themselves.
+
+**Operator route:** Tenant Detail -> Runtime Overrides -> Module Runtime Status
 
 ### Module Toggle Screen
 
@@ -347,7 +357,7 @@ After selecting a tenant, shows all modules in the catalog with their current st
 | Module Name | Full name |
 | Module Key | slug |
 | Pillar | HR / Intelligence / WorkSync badge |
-| Sales State | From `tenant_module_entitlements` - subscription_included, purchased, maintenance_included, etc. |
+| Sales State | From `tenant_module_entitlements` - subscription_included, purchased, trial, etc. |
 | Runtime Status | Enabled (green) / Disabled (red) - the current toggle state |
 | Enabled By | Commercial (from entitlement) / Override (explicitly toggled here) |
 | Actions | Enable / Disable toggle |
@@ -396,18 +406,18 @@ Reason for disable (required):
 
 | Method | Route | Purpose | Permission |
 |---|---|---|---|
-| GET | `/admin/v1/feature-flags` | List all global flags | `platform.feature_flags.read` |
-| POST | `/admin/v1/feature-flags` | Create new flag | `platform.feature_flags.manage` |
-| GET | `/admin/v1/feature-flags/{flagKey}` | Flag detail with tenant overrides | `platform.feature_flags.read` |
-| PATCH | `/admin/v1/feature-flags/{flagKey}` | Update flag default/rollout/description | `platform.feature_flags.manage` |
-| DELETE | `/admin/v1/feature-flags/{flagKey}` | Deactivate flag | `platform.feature_flags.manage` |
-| GET | `/admin/v1/feature-flags/tenant-overrides` | All overrides across all flags and tenants | `platform.feature_flags.read` |
-| PUT | `/admin/v1/tenants/{id}/feature-flags` | Replace all tenant overrides with an `overrides` value map | `platform.feature_flags.manage` |
-| PATCH | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Set per-tenant override with `{ "value": true | false, "reason": "..." }` | `platform.feature_flags.manage` |
-| DELETE | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Remove per-tenant override | `platform.feature_flags.manage` |
-| GET | `/admin/v1/tenants/{id}/feature-flags` | All flag values (effective) for a tenant | `platform.feature_flags.read` |
-| PATCH | `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status` | Enable/disable module runtime | `platform.feature_flags.manage` |
-| GET | `/admin/v1/tenants/{id}/modules/runtime-status` | All module runtime statuses for tenant | `platform.feature_flags.read` |
+| GET | `/admin/v1/feature-flags` | List all global flags | `platform.runtime_flags.read` |
+| POST | `/admin/v1/feature-flags` | Create new flag | `platform.runtime_flags.manage` |
+| GET | `/admin/v1/feature-flags/{flagKey}` | Flag detail with tenant overrides | `platform.runtime_flags.read` |
+| PATCH | `/admin/v1/feature-flags/{flagKey}` | Update flag default/rollout/description | `platform.runtime_flags.manage` |
+| DELETE | `/admin/v1/feature-flags/{flagKey}` | Deactivate flag | `platform.runtime_flags.manage` |
+| GET | `/admin/v1/feature-flags/tenant-overrides` | All overrides across all flags and tenants | `platform.tenants.feature_overrides.read` |
+| PUT | `/admin/v1/tenants/{id}/feature-flags` | Replace all tenant overrides with an `overrides` value map | `platform.tenants.feature_overrides.manage` |
+| PATCH | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Set per-tenant override with `{ "value": true | false, "reason": "..." }` | `platform.tenants.feature_overrides.manage` |
+| DELETE | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Remove per-tenant override | `platform.tenants.feature_overrides.manage` |
+| GET | `/admin/v1/tenants/{id}/feature-flags` | All flag values (effective) for a tenant | `platform.tenants.feature_overrides.read` |
+| PATCH | `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status` | Enable/disable module runtime | `platform.tenants.feature_overrides.manage` |
+| GET | `/admin/v1/tenants/{id}/modules/runtime-status` | All module runtime statuses for tenant | `platform.tenants.feature_overrides.read` |
 
 ---
 
@@ -420,5 +430,4 @@ Reason for disable (required):
 | 422 | `invalid_rollout_percentage` | Value outside 0-100 |
 | 422 | `phase_2_flag_on_phase_1_tenant` | Attempt to enable a Phase 2 flag for a Phase 1-only tenant |
 | 422 | `module_not_entitled` | Override attempt for a module the tenant is not entitled to |
-| 403 | `permission_denied` | Missing `platform.feature_flags.manage` |
-
+| 403 | `permission_denied` | Missing `platform.tenants.feature_overrides.manage` for tenant overrides, or `platform.runtime_flags.manage` for global flag definitions |

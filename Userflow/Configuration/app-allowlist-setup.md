@@ -24,7 +24,7 @@ HR admins configure which applications employees are permitted to use during wor
 **Entry:** Settings → Monitoring → App Allowlist → **Browse App Catalog** tab
 
 ```
-HR Admin opens App Allowlist page
+Authorized app-allowlist user opens App Allowlist page
   → Clicks "Browse App Catalog" tab
   → Sees global catalog: app cards with icon, name, publisher, category
   → Filters by category (browser / communication / development / office / design / productivity)
@@ -46,7 +46,7 @@ HR Admin opens App Allowlist page
 **Entry:** Settings → Monitoring → App Allowlist → **Discovered in Your Org** tab
 
 ```
-HR Admin opens Discovered tab
+Authorized app-allowlist user opens Discovered tab
   → Sees app cards from agent data, sorted by employee_count DESC
   → Each card shows:
       - App name + icon (from catalog if matched, else raw name)
@@ -74,7 +74,7 @@ HR Admin opens Discovered tab
 **Entry:** Settings → Monitoring → App Allowlist → search box (any tab)
 
 ```
-HR Admin types in search box
+Authorized app-allowlist user types in search box
   → GET /api/v1/settings/monitoring/allowlist/search?q=teams
   → Results merge catalog matches + discovered matches by process_name
   → Each result shows source badge: "From Catalog" | "Seen in Your Org" | both
@@ -89,7 +89,7 @@ HR Admin types in search box
 **Entry:** Settings → Monitoring → App Allowlist → **Current Allowlist** tab
 
 ```
-HR Admin sees table of current entries (name, scope, allow/block status, added by, date)
+Authorized app-allowlist user sees table of current entries (name, scope, allow/block status, added by, date)
   → Toggle Allow ↔ Block inline
   → Change scope (e.g., All Employees → specific Role)
   → Click delete icon → entry removed

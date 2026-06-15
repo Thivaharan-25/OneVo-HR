@@ -1,7 +1,7 @@
 # Exception Engine — End-to-End Logic
 
 **Module key:** `exceptions`  
-**Pillar:** Workforce Intelligence (Package 1)  
+**Pillar:** Workforce Intelligence
 **Pricing unit:** Per employee  
 **Entitlement guard:** All endpoints call `IsModuleEnabledAsync(tenantId, "exceptions")` → 403 `module_not_entitled` if not entitled  
 **Dependency:** See [[developer-platform/module-dependency-matrix|Module Dependency Matrix]]

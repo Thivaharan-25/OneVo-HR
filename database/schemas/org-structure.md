@@ -163,7 +163,7 @@ First-class org seats used to define reporting hierarchy. Positions are legal-en
 
 **Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `legal_entity_id` -> [[#`legal_entities`|legal_entities]], `department_id` -> [[#`departments`|departments]], `reports_to_position_id` -> [[#`positions`|positions]]
 
-**Phase 1 setup fields:** Position Name, Legal Entity, Department, Capacity, Reports To Position, Linked Roles/Permissions. Job Title, Job Family, Job Level, Location, and Cost Center are not required in Phase 1 position setup.
+**Phase 1 setup fields:** Position Name, active Legal Entity Context, Department, Position Type, Capacity / Max Occupancy, Reports To Position, Linked Roles/Permissions. Legal entity is selected as the Org Structure working context before creation and is not an editable Create Position field. Job Title, Job Family, Job Level, Location, and Cost Center are not required in Phase 1 position setup.
 
 **Position reporting rules:**
 - `unique` positions must have `max_occupancy = 1`.
@@ -263,6 +263,8 @@ Current derived reporting tree for fast hierarchy queries. This table is not sou
 
 **Active membership rule:** Current team membership is `left_at IS NULL`. Historical team membership remains available for reporting and audit.
 
+**Reporting-team rule:** Do not store every reporting manager's hierarchy as `teams`/`team_members`. A reporting manager's "team" is a virtual reporting team resolved from `employee_hierarchy_closure`. Store `team_members` only for explicit reusable groups, cross-functional groups, reviewer pools, or teams the customer intentionally manages as named groups.
+
 ---
 
 ## `team_roles`
@@ -330,6 +332,8 @@ Maps team roles to scoped team/workspace permissions.
 
 
 **Leadership rule:** Team leadership is derived from `team_member_roles -> team_roles -> team_role_permissions`; `teams` must not store `team_lead_id`.
+
+**Workspace source rule:** WorkSync can create a workspace from "My Reporting Team" by resolving hierarchy and writing `workspace_members`; that flow must not create a duplicate stored team.
 ---
 
 ## Related

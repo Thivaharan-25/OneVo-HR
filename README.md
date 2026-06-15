@@ -30,27 +30,26 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 
 ## Product Packaging
 
-ONEVO uses two sellable packages plus always-included Foundation modules. Each tenant has explicit module entitlements, and the UI, API, navigation, scheduled jobs, desktop agent, and IDE extension must check those entitlements before showing or serving features.
+ONEVO uses Subscription Plans with base modules, optional module add-ons, resource-only add-ons, and always-included Foundation modules. Each tenant has explicit module entitlements, and the UI, API, navigation, scheduled jobs, desktop agent, and IDE extension must check those entitlements before showing or serving features.
 
-| # | Module | Layer | Package | Tenant Access |
+| # | Module | Layer | Plan Role | Tenant Access |
 |---:|---|---|---|---|
 | 1 | Authentication and Authorization | Foundation | Always Included | None |
 | 2 | Tenant Configuration and Onboarding | Foundation | Always Included | None |
 | 3 | Roles and Permissions | Foundation | Always Included | Use only |
-| 4 | Profile Management | HR Core | Package 1 | Full |
-| 5 | Attendance and Leave Management | HR Core | Package 1 | Full |
-| 6 | E2E Monitoring | Intelligence | Package 1 | View only |
-| 7 | Productivity and Performance Analytics | Intelligence | Package 1 | View only |
-| 8 | Exception Detection | Intelligence | Package 1 | View only |
-| 9 | Overtime Management | Intelligence | Package 1 | Full |
-| 10 | Project Management | Work Management | Package 2 | Full |
-| 11 | Agentic Chat | Work Management | Package 2 | Full |
-| 12 | Third Party Integrations | Work Management | Package 2 | Full |
-| 13 | IDE Extension | Work Management | Package 2 | Full |
+| 4 | Profile Management | HR Core | Plan-selected module | Full |
+| 5 | Attendance and Leave Management | HR Core | Plan-selected module | Full |
+| 6 | E2E Monitoring | Intelligence | Plan-selected module | View only |
+| 7 | Productivity and Performance Analytics | Intelligence | Plan-selected module | View only |
+| 8 | Exception Detection | Intelligence | Plan-selected module | View only |
+| 9 | Overtime Management | Intelligence | Plan-selected module | Full |
+| 10 | Project Management | Work Management | Plan-selected module | Full |
+| 11 | Agentic Chat | Work Management | Plan-selected module | Full |
+| 12 | Third Party Integrations | Work Management | Plan-selected module | Full |
+| 13 | IDE Extension | Work Management | Plan-selected module | Full |
 
 **Foundation:** Always active for every tenant.  
-**Package 1:** HR Core + Intelligence.  
-**Package 2:** Work Management + IDE Extension.
+**Plan-selected modules:** Classified as base package modules or optional add-ons inside Subscription Plans.
 
 ## Repository Structure
 

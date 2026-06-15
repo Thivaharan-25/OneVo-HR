@@ -10,7 +10,7 @@
 Tenant creation is an internal ONEVO operator flow. Customers cannot self-sign up, and
 `POST /api/v1/tenants` must not exist on the tenant-facing API. The canonical
 tenant creation workflow is the Developer Platform two-step wizard plus post-creation Manage/Configure:
-[[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]].
+[[developer-platform/userflow/provisioning-flow|Operator Customer Provisioning Flow]].
 
 ### Draft Creation Flow
 

@@ -2,22 +2,22 @@
 
 ## Overview
 
-The OneVo Developer Platform introduces dedicated tables to manage platform accounts, platform roles and permissions, and authentication sessions in Phase 1. Phase 2 adds agent version releases, deployment ring assignments, and platform API keys. This schema enables:
+The OneVo Developer Platform introduces dedicated tables to manage platform users, platform roles and permissions, authentication sessions, and platform auth events in Phase 1. Phase 2 adds agent version releases, deployment ring assignments, and platform API keys. This schema enables:
 
-- **Multi-tenant admin isolation**: Developer platform accounts operate independently from tenant-facing systems
+- **Multi-tenant admin isolation**: Developer Platform users operate independently from tenant-facing systems
 - **Permission-based platform RBAC**: Platform roles restrict access to Developer Platform modules and `/admin/v1/*` actions
 - **Agent release management**: Phase 2 semantic versioning, release channels (stable/beta/recalled), and OS compatibility tracking
 - **Gradual rollout capabilities**: Phase 2 deployment rings (Internal, Beta, GA) allow controlled agent version distribution across tenants
-- **Session security**: OAuth-based authentication with token management and IP tracking
+- **Session security**: Email/password plus mandatory MFA before session creation, with token management and IP tracking
 - **API access control**: Platform API key provisioning with scope-based permissions and expiration
 
-**Phase 1** adds platform account/session/RBAC tables plus the `global_app_catalog` table in the SharedPlatform schema managed by the App Catalog Manager module. **Phase 2** adds release/ring management tables and the `platform_api_keys` table for programmatic access.
+**Phase 1** adds platform user/session/RBAC/auth-event tables plus the `global_app_catalog` table in the SharedPlatform schema managed by the App Catalog module. **Phase 2** adds release/ring management tables and the `platform_api_keys` table for programmatic access.
 
 ---
 
 ## DbContext Ownership (ADR-001)
 
-> **DbContext:** `ApplicationDbContext` in `ONEVO.Infrastructure/Persistence/`. Phase 1 DevPlatform entities (`DevPlatformAccount`, `DevPlatformSession`) are configured in `ONEVO.Infrastructure/Persistence/Configurations/DevPlatform/`. Phase 2 adds `AgentVersionRelease`, `AgentDeploymentRing`, and `AgentDeploymentRingAssignment`. These entities have **no TenantId** and are excluded from the global tenant query filter.
+> **DbContext:** `ApplicationDbContext` in `ONEVO.Infrastructure/Persistence/`. Phase 1 DevPlatform entities (`PlatformUser`, `PlatformUserSession`, `PlatformRole`) are configured in `ONEVO.Infrastructure/Persistence/Configurations/DevPlatform/`. Phase 2 adds `AgentVersionRelease`, `AgentDeploymentRing`, and `AgentDeploymentRingAssignment`. These entities have **no TenantId** and are excluded from the global tenant query filter.
 
 Per [ADR-001](../../decisions/ADR-001-per-module-database-and-event-bus.md), all developer platform tables are mapped by the unified `ApplicationDbContext`. EF migrations live in `ONEVO.Infrastructure/Persistence/Migrations/` and are run as part of the standard application startup.
 
@@ -30,7 +30,7 @@ Cross-module data access (e.g., reading `tenants`) goes through the existing mod
 | Phase | Change | Table Count |
 |-------|--------|------------|
 | Current | Baseline | 170 |
-| Phase 1 | DevPlatform account/session/RBAC tables + `global_app_catalog` (SharedPlatform) + `observed_applications` (Configuration) + 3 columns on `app_allowlists` | Finalized by Phase 1 migration cut |
+| Phase 1 | DevPlatform user/session/RBAC/auth-event tables + `global_app_catalog` (SharedPlatform) + `observed_applications` (Configuration) + 3 columns on `app_allowlists` | Finalized by Phase 1 migration cut |
 | Phase 2 | Agent release/ring management tables + `platform_api_keys` | Finalized by Phase 2 migration cut |
 
 > **Note on ownership:** `global_app_catalog` is owned by `SharedPlatformDbContext` and `observed_applications` by `ConfigurationDbContext`. They are not in `ApplicationDbContext`. The dev console manages them through `IGlobalAppCatalogService` and `IObservedApplicationReader` interfaces respectively.
@@ -39,26 +39,28 @@ Cross-module data access (e.g., reading `tenants`) goes through the existing mod
 
 ## Phase 1 Tables
 
-### dev_platform_accounts
+### platform_users
 
-Administrative accounts for the developer platform. Supports OAuth (Google Sign-In). Effective access is permission-based through account-role and role-permission mappings.
+Administrative users for the Developer Platform. Email/password plus MFA is the primary login journey. Optional Google OAuth can be linked for invited platform managers where policy allows, but it never bypasses MFA. Effective access is permission-based through user-role and role-permission mappings.
 
 | Column | Type | Constraints / Notes |
 |--------|------|-------------------|
 | id | uuid | PRIMARY KEY |
 | email | varchar(255) | UNIQUE, NOT NULL |
 | full_name | varchar(255) | NOT NULL |
-| google_sub | varchar(255) | Google OAuth subject identifier, nullable |
-| legacy_role | varchar(30) | Nullable compatibility preset: `'super_admin'` \| `'admin'` \| `'viewer'`; do not use as the only authorization source |
-| is_active | boolean | Default: true; controls login permission |
+| google_sub | varchar(255) | Nullable Google OAuth subject identifier for optional invited-manager OAuth setup/sign-in |
+| status | varchar(20) | `pending`, `active`, or `inactive` |
+| mfa_status | varchar(20) | `not_enrolled`, `enrolled`, `locked`, or equivalent policy state |
+| invite_status | varchar(20) | `pending`, `accepted`, `revoked`, `expired` |
+| created_by_id | uuid | FK -> platform_users(id), nullable for seed Super Admin |
 | created_at | timestamptz | NOT NULL; creation timestamp |
 | last_login_at | timestamptz | Nullable; tracks last successful authentication |
 
-**Indexes**: `UNIQUE(email)`, `btree(is_active)`
+**Indexes**: `UNIQUE(email)`, `btree(status)`, `btree(invite_status)`
 
 ---
 
-### dev_platform_account_invites
+### platform_user_invites
 
 Pending invitations for platform managers.
 
@@ -68,7 +70,7 @@ Pending invitations for platform managers.
 | email | varchar(255) | NOT NULL |
 | full_name | varchar(255) | NOT NULL |
 | invite_token_hash | varchar(64) | NOT NULL; raw token never stored |
-| invited_by_id | uuid | FOREIGN KEY -> dev_platform_accounts(id), NOT NULL |
+| invited_by_id | uuid | FOREIGN KEY -> platform_users(id), NOT NULL |
 | expires_at | timestamptz | NOT NULL |
 | accepted_at | timestamptz | Nullable |
 | revoked_at | timestamptz | Nullable |
@@ -76,7 +78,7 @@ Pending invitations for platform managers.
 
 ---
 
-### dev_platform_roles
+### platform_roles
 
 Platform role presets and custom roles.
 
@@ -87,13 +89,13 @@ Platform role presets and custom roles.
 | description | text | Nullable |
 | is_system | boolean | System roles can be cloned but not deleted |
 | is_active | boolean | Default true |
-| created_by_id | uuid | FOREIGN KEY -> dev_platform_accounts(id), nullable for seed roles |
+| created_by_id | uuid | FOREIGN KEY -> platform_users(id), nullable for seed roles |
 | created_at | timestamptz | NOT NULL |
 | updated_at | timestamptz | NOT NULL |
 
 ---
 
-### dev_platform_permissions
+### platform_permissions
 
 Catalog of platform-admin permissions. These control Developer Platform modules only; they are not tenant permissions.
 
@@ -106,52 +108,68 @@ Catalog of platform-admin permissions. These control Developer Platform modules 
 
 ---
 
-### dev_platform_role_permissions
+### platform_role_permissions
 
 Maps platform roles to platform permissions.
 
 | Column | Type | Constraints / Notes |
 |--------|------|-------------------|
-| role_id | uuid | FOREIGN KEY -> dev_platform_roles(id), NOT NULL |
-| permission_code | varchar(120) | FOREIGN KEY -> dev_platform_permissions(code), NOT NULL |
-| granted_by_id | uuid | FOREIGN KEY -> dev_platform_accounts(id), NOT NULL |
+| role_id | uuid | FOREIGN KEY -> platform_roles(id), NOT NULL |
+| permission_code | varchar(120) | FOREIGN KEY -> platform_permissions(code), NOT NULL |
+| granted_by_id | uuid | FOREIGN KEY -> platform_users(id), NOT NULL |
 | granted_at | timestamptz | NOT NULL |
 
 **Primary key:** `(role_id, permission_code)`
 
 ---
 
-### dev_platform_account_roles
+### platform_user_roles
 
-Maps platform accounts to platform roles.
+Maps platform users to platform roles.
 
 | Column | Type | Constraints / Notes |
 |--------|------|-------------------|
-| account_id | uuid | FOREIGN KEY -> dev_platform_accounts(id), NOT NULL |
-| role_id | uuid | FOREIGN KEY -> dev_platform_roles(id), NOT NULL |
-| assigned_by_id | uuid | FOREIGN KEY -> dev_platform_accounts(id), NOT NULL |
+| user_id | uuid | FOREIGN KEY -> platform_users(id), NOT NULL |
+| role_id | uuid | FOREIGN KEY -> platform_roles(id), NOT NULL |
+| assigned_by_id | uuid | FOREIGN KEY -> platform_users(id), NOT NULL |
 | assigned_at | timestamptz | NOT NULL |
 
-**Primary key:** `(account_id, role_id)`
+**Primary key:** `(user_id, role_id)`
 
 ---
 
-### dev_platform_sessions
+### platform_user_sessions
 
-Authenticated sessions for dev platform accounts. One session per login or API token grant.
+Authenticated sessions for Developer Platform users. A session is created only after MFA succeeds.
 
 | Column | Type | Constraints / Notes |
 |--------|------|-------------------|
 | id | uuid | PRIMARY KEY |
-| account_id | uuid | FOREIGN KEY → dev_platform_accounts(id), NOT NULL |
+| account_id | uuid | FOREIGN KEY → platform_users(id), NOT NULL |
 | token_hash | varchar(64) | SHA256 hash of session token, NOT NULL |
 | created_at | timestamptz | NOT NULL |
 | expires_at | timestamptz | NOT NULL; session TTL |
 | ip_address | varchar(45) | Nullable; IPv4 or IPv6, for audit/security |
 
-**Indexes**: `btree(account_id)`, `btree(expires_at)`
+**Indexes**: `btree(user_id)`, `btree(expires_at)`
 
 **Notes**: Tokens are hashed; original token never stored. Expired sessions are soft-deleted or archived for audit.
+
+---
+
+### platform_auth_events
+
+Immutable authentication and access history for Developer Platform users.
+
+| Column | Type | Constraints / Notes |
+|--------|------|-------------------|
+| id | uuid | PRIMARY KEY |
+| user_id | uuid | Nullable FK -> platform_users(id); nullable for failed login before user resolution |
+| event_type | varchar(80) | Examples: `login_succeeded`, `login_failed`, `mfa_succeeded`, `mfa_failed`, `password_reset_requested`, `password_reset_completed`, `session_revoked` |
+| source_ip | varchar(45) | Nullable |
+| user_agent | text | Nullable |
+| metadata_json | jsonb | Safe structured context only; no passwords, tokens, or secrets |
+| created_at | timestamptz | NOT NULL |
 
 ---
 
@@ -169,7 +187,7 @@ Agent binary releases with version metadata, channels, and OS requirements.
 | min_os_version | varchar(20) | Nullable; minimum OS version required (e.g., `'10.0.26000'` for Windows) |
 | release_notes | text | Nullable; markdown-formatted changelog |
 | download_url | varchar(500) | NOT NULL; CDN or S3 URL to agent binary |
-| published_by_id | uuid | FOREIGN KEY → dev_platform_accounts(id), NOT NULL |
+| published_by_id | uuid | FOREIGN KEY → platform_users(id), NOT NULL |
 | published_at | timestamptz | NOT NULL; release publication time |
 | recalled_at | timestamptz | Nullable; if set, version is marked as recalled/unsafe |
 
@@ -205,7 +223,7 @@ Maps tenants to deployment rings, controlling which agent versions they receive.
 | id | uuid | PRIMARY KEY |
 | tenant_id | uuid | FOREIGN KEY → tenants(id), NOT NULL |
 | ring_id | uuid | FOREIGN KEY → agent_deployment_rings(id), NOT NULL |
-| assigned_by_id | uuid | FOREIGN KEY → dev_platform_accounts(id), NOT NULL |
+| assigned_by_id | uuid | FOREIGN KEY → platform_users(id), NOT NULL |
 | assigned_at | timestamptz | NOT NULL; assignment timestamp for audit |
 
 **Indexes**: `UNIQUE(tenant_id, ring_id)`, `btree(ring_id)`, `btree(assigned_by_id)`
@@ -224,7 +242,7 @@ API keys for programmatic access to the developer platform admin API. Supports r
 | key_hash | varchar(64) | SHA256 hash of the API key, NOT NULL, UNIQUE |
 | name | varchar(100) | NOT NULL; human-readable label for key management |
 | scopes | text[] | Array of permission scopes; e.g., `ARRAY['agent:view-health', 'deployment:write']` |
-| created_by_id | uuid | FOREIGN KEY → dev_platform_accounts(id), NOT NULL |
+| created_by_id | uuid | FOREIGN KEY → platform_users(id), NOT NULL |
 | expires_at | timestamptz | Nullable; if set, key becomes invalid after this time |
 | revoked_at | timestamptz | Nullable; if set, key is revoked and unusable |
 | created_at | timestamptz | NOT NULL; key creation time |
@@ -239,23 +257,24 @@ API keys for programmatic access to the developer platform admin API. Supports r
 
 ### tenants.status Enum
 
-The canonical `tenants.status` lifecycle enum is: `provisioning`, `pending_confirmation`, `pending_payment`, `active`, `suspended`, and `cancelled`. Tenant creation does not create a trial. The Developer Platform uses `provisioning` for draft tenants while the wizard is incomplete; detailed wizard progress is stored in `tenant_provisioning_states` and `tenant_provisioning_validation_results`.
+The canonical `tenants.status` lifecycle enum is: `provisioning`, `trial`, `trial_expired`, `pending_payment`, `active`, `suspended`, and `cancelled`. The Developer Platform supports both operator-created provisioning drafts and demo/trial tenants created from Demo Profiles. Detailed wizard progress is stored in `tenant_provisioning_states` and `tenant_provisioning_validation_results`; demo/trial limits and upgrade options are resolved from `demo_profiles`.
 
 | Status | Meaning | Visibility |
 |--------|---------|------------|
 | `provisioning` | Onboarding draft in progress | Excluded from tenant-facing queries; visible only in admin API for platform managers |
-| `pending_confirmation` | Tenant owner must confirm plan, billing cycle, employee count, and billing contact | Limited onboarding/billing confirmation access |
-| `pending_payment` | First invoice generated and awaiting payment or manual approval | Limited billing/payment access |
+| `trial` | Demo/trial tenant with active trial window and demo profile limits | Limited tenant-facing demo access |
+| `trial_expired` | Demo/trial tenant whose trial has expired or was expired by Super Admin | Tenant-facing access blocked except upgrade/support flows where policy allows |
+| `pending_payment` | First invoice generated from self-service demo upgrade or operator provisioning and awaiting gateway payment | Limited billing/payment access |
 | `active` | Production-ready tenant | Visible in all tenant-facing and admin queries |
 | `suspended` | Temporarily disabled | Excluded from tenant-facing queries; visible only in admin API |
 | `cancelled` | Commercially cancelled/offboarded tenant | Excluded from tenant-facing queries; visible in admin API for retention, export, and audit workflows |
 
-**Visibility Rule**: Tenants in `provisioning` status are excluded from:
+**Visibility Rule**: Tenants in `provisioning`, `trial_expired`, `suspended`, or `cancelled` status are excluded from:
 - Tenant-facing application queries
 - Tenant-facing login/session creation
 - Standard analytics and reporting
 
-Provisioning tenants are visible to developer platform accounts with the required tenant permissions via `/admin/v1/*`, ensuring clean separation during onboarding workflows.
+Trial tenants are visible to tenant-facing demo flows while their trial is active and must be limited by the applied Demo Profile. Provisioning, expired, suspended, and cancelled tenants remain visible to developer platform accounts with the required tenant permissions via `/admin/v1/*`.
 
 ---
 
@@ -265,7 +284,7 @@ Provisioning tenants are visible to developer platform accounts with the require
 
 - Completed tenant profile: company name, slug, primary contact email, country, industry profile, registration/profile name, registration number, estimated employee count, timezone, and currency.
 - Persistence rule for tenant profile: country, registration/profile name, registration number, estimated employee count, timezone, currency, and contact metadata are stored as tenant profile/draft state. Tenant provisioning does not create deprecated registration-profile rows. Activation/setup seeding creates the primary legal entity.
-- Completed subscription/commercial terms: commercial model, plan or custom contract, billing cycle/currency, contract dates, gateway/manual billing mode, billing evidence for manual payment, payment exception/grace dates when approved, AI token limit when AI is included, Work Management storage limit when storage-backed Work Management is included, and maintenance status/renewal date when applicable.
+- Completed subscription/commercial terms: selected plan, billing cycle/currency, confirmed employee count/company-size bracket, selected optional module add-ons, selected resource-only add-ons, resolved payment gateway config, first-invoice state, shared storage limit, and shared AI token allowance.
 - Completed module selection: active modules and each module's sales state are recorded through the entitlement registry.
 - Completed role template application: at least the tenant owner/admin starter role is materialized from the module-filtered permission catalog. Role template completion is part of provisioning state, not optional decoration.
 - Completed required settings/templates/setup services: monitoring defaults, privacy/transparency mode, leave defaults, template applications, setup-service state, and any module-required settings.
@@ -277,8 +296,8 @@ Activation fails with `422 Unprocessable Entity` and a checklist of missing step
 
 ## Security & Access Control
 
-- **OAuth Integration**: dev_platform_accounts authenticate via Google OAuth; tokens are hashed in dev_platform_sessions
-- **Permission-Based Access**: Platform roles map to explicit `dev_platform_permissions`; legacy role names are presets only
+- **Platform Auth Integration**: platform_users authenticate with email/password plus mandatory MFA; optional Google OAuth identifiers can be linked for invited-manager setup/sign-in where enabled. Session tokens are hashed in platform_user_sessions.
+- **Permission-Based Access**: Platform roles map to explicit `platform_permissions`; legacy role names are presets only
 - **API Key Hashing**: platform_api_keys stores SHA256 hashes; plaintext keys never persisted
 - **Audit Trail**: All admin actions (published_by_id, assigned_by_id, created_by_id) track who made changes
 - **Tenant Isolation**: dev_platform_* tables are isolated from tenant_facing_* schema; cross-tenant queries are forbidden
@@ -316,7 +335,7 @@ Central tenant registry. One row per company onboarded to ONEVO.
 | `work_mode` | varchar(20) | `'hybrid' \| 'remote' \| 'on_site'` |
 | `status` | varchar(20) | NOT NULL — see status enum above |
 | `created_at` | timestamptz | NOT NULL |
-| `created_by` | uuid | FK → dev_platform_accounts(id) — the platform account that created the tenant |
+| `created_by` | uuid | FK → platform_users(id) — the platform account that created the tenant |
 | `activated_at` | timestamptz | Nullable — set when status transitions to active |
 | `suspended_at` | timestamptz | Nullable |
 | `cancelled_at` | timestamptz | Nullable |
@@ -361,26 +380,22 @@ Stores the most recent activation guard check results — the list of blocking i
 
 ### subscription_plans (owned by: SharedPlatform / Billing)
 
-Global reusable plan catalog. Plans are not tenant-scoped.
+Global reusable paid plan catalog. Plans are not tenant-scoped. Current scope supports monthly and annual subscription plans only. Paid plans must not store demo/trial duration; `demo_profiles.trial_duration_days` is the source of truth for demo tenants.
 
 | Column | Type | Notes |
 |---|---|---|
-| `id` | varchar(80) | PRIMARY KEY — human-readable slug e.g. `'plan-enterprise-2025-v1'` |
+| `id` | varchar(80) | PRIMARY KEY - human-readable slug e.g. `plan-enterprise-2026-v1` |
 | `name` | varchar(80) | UNIQUE among active plans, NOT NULL |
-| `tier` | varchar(30) | NOT NULL — `'enterprise' \| 'business' \| 'professional' \| 'custom'` |
+| `tier` | varchar(30) | NOT NULL - `enterprise`, `business`, `professional`, or `custom` |
 | `description` | text | Nullable |
 | `is_active` | boolean | NOT NULL, default true |
-| `included_module_keys` | text[] | NOT NULL — array of module key strings |
-| `included_feature_keys` | jsonb | NOT NULL, default `{}` — `{module_key: [feature_key...]}` commercial feature inclusion for partial module packages |
-| `ai_capabilities` | boolean | NOT NULL, default false |
-| `default_ai_monthly_token_limit` | bigint | Nullable — required when ai_capabilities = true |
-| `work_management_storage` | boolean | NOT NULL, default false |
-| `default_storage_limit_gb` | int | Nullable — required when work_management_storage = true |
-| `supported_commercial_models` | text[] | NOT NULL — `['subscription', 'full_license_maintenance']` |
-| `supported_billing_cycles` | text[] | Nullable — `['monthly', 'annual']` |
-| `annual_discount_pct` | numeric(5,2) | Nullable — discount applied to monthly × 12 for annual |
-| `supported_collection_modes` | text[] | NOT NULL — `['gateway', 'manual']` |
-| `created_by_id` | uuid | FK → dev_platform_accounts(id) |
+| `included_module_keys` | text[] | NOT NULL - derived/read model array of all selected module key strings; `subscription_plan_modules` is the source of truth for base vs add-on classification |
+| `shared_base_storage_gb` | int | NOT NULL, default 0 |
+| `shared_base_ai_token_allowance` | bigint | NOT NULL, default 0 |
+| `supported_billing_cycles` | text[] | NOT NULL - `monthly`, `annual` |
+| `annual_price_override` | numeric(12,2) | Nullable |
+| `annual_discount_pct` | numeric(5,2) | Nullable - discount applied to monthly x 12 for annual |
+| `created_by_id` | uuid | FK -> platform_users(id) |
 | `created_at` | timestamptz | NOT NULL |
 | `updated_at` | timestamptz | NOT NULL |
 
@@ -388,21 +403,177 @@ Global reusable plan catalog. Plans are not tenant-scoped.
 
 ### subscription_plan_price_brackets (owned by: SharedPlatform / Billing)
 
-Employee-count pricing tiers per plan. Multiple rows per plan, one per employee-count tier.
+Company-size pricing tiers per plan. Multiple rows per plan, one per company-size or employee-count range.
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PRIMARY KEY |
-| `plan_id` | varchar(80) | FK → subscription_plans(id), NOT NULL |
-| `employee_count_tier` | varchar(20) | NOT NULL - e.g. `51-200` |
-| `module_prices` | jsonb | NOT NULL — `{module_key: unit_price}` map |
-| `calculated_monthly_total` | numeric(12,2) | NOT NULL - sum of selected module unit prices for this employee-count tier |
-| `override_monthly_total` | numeric(12,2) | Nullable — operator-set flat total |
-| `override_reason` | text | Nullable — required when override set |
+| `plan_id` | varchar(80) | FK -> subscription_plans(id), NOT NULL |
+| `company_size_range` | varchar(20) | NOT NULL - e.g. `51-200` |
+| `base_plan_monthly_price` | numeric(12,2) | NOT NULL |
+| `optional_addon_prices` | jsonb | NOT NULL, default `{}` - `{module_key: monthly_price}` map |
+| `resource_addon_prices` | jsonb | NOT NULL, default `{}` - `{addon_id: unit_price}` map |
 | `currency` | varchar(3) | NOT NULL, ISO 4217 |
 | `created_at` | timestamptz | NOT NULL |
 
-**Unique constraint:** `(plan_id, employee_count_tier)`
+**Unique constraint:** `(plan_id, company_size_range)`
+
+---
+### subscription_plan_modules (owned by: SharedPlatform / Billing)
+
+Explicit package classification for selected plan modules. This table is the source of truth for whether a selected module is included in the base package or offered as an optional add-on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `plan_id` | varchar(80) | FK -> subscription_plans(id), NOT NULL |
+| `module_key` | varchar(80) | FK/logical reference -> module_catalog(module_key), NOT NULL |
+| `package_type` | varchar(20) | `base` or `optional_addon`, NOT NULL |
+| `storage_contribution_gb` | int | Nullable - added to shared tenant pool when applicable |
+| `ai_token_contribution` | bigint | Nullable - added to tenant AI allowance when applicable |
+| `is_active` | boolean | NOT NULL, default true |
+| `created_at` | timestamptz | NOT NULL |
+
+**Unique constraint:** `(plan_id, module_key)`.
+
+**Duplicate prevention rule:** a module cannot be both base and optional add-on in the same plan. A tenant subscription must not create duplicate entitlements or duplicate charges for the same module.
+
+---
+
+### subscription_plan_resource_addons (owned by: SharedPlatform / Billing)
+
+Resource-only add-ons are not modules. They increase the tenant's shared storage pool and/or shared AI token allowance.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `plan_id` | varchar(80) | FK -> subscription_plans(id), NOT NULL |
+| `label` | varchar(120) | e.g. `Extra Storage Pack`, `Extra AI Token Pack` |
+| `storage_contribution_gb` | int | Nullable |
+| `ai_token_contribution` | bigint | Nullable |
+| `price_by_employee_tier` | jsonb | NOT NULL - `{employee_count_tier: unit_price}` |
+| `is_active` | boolean | NOT NULL, default true |
+| `created_at` | timestamptz | NOT NULL |
+
+---
+
+### demo_profiles (owned by: SharedPlatform / Developer Platform)
+
+Controls demo/trial tenant behavior and the upgrade choices visible to demo customers.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `name` | varchar(120) | NOT NULL |
+| `trial_duration_days` | int | NOT NULL |
+| `auto_expire` | boolean | NOT NULL, default true |
+| `max_employees` | int | NOT NULL |
+| `demo_storage_limit_gb` | int | NOT NULL |
+| `demo_ai_token_limit` | bigint | Nullable |
+| `is_active` | boolean | NOT NULL, default true |
+| `created_by_id` | uuid | FK -> platform_users(id) |
+| `created_at` | timestamptz | NOT NULL |
+| `updated_at` | timestamptz | NOT NULL |
+
+---
+
+### demo_profile_modules
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `demo_profile_id` | uuid | FK -> demo_profiles(id), NOT NULL |
+| `module_key` | varchar(80) | NOT NULL |
+| `access_level` | varchar(20) | `full_access`, `view_only`, or `archive` |
+| `feature_permissions` | jsonb | NOT NULL, default `{}` |
+
+**Unique constraint:** `(demo_profile_id, module_key)`.
+
+---
+
+### demo_profile_upgrade_options
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `demo_profile_id` | uuid | FK -> demo_profiles(id), NOT NULL |
+| `allowed_plan_ids` | text[] | NOT NULL |
+| `allowed_addon_module_keys` | text[] | NOT NULL, default `{}` |
+| `hidden_addon_module_keys` | text[] | NOT NULL, default `{}` |
+| `addon_visibility` | jsonb | NOT NULL - `{module_key: "enabled" | "show_only"}` |
+| `addon_demo_limits` | jsonb | NOT NULL, default `{}` |
+
+---
+
+### tenant_resource_limits
+
+Effective shared resource limits for a tenant after applying demo profile, selected plan, selected add-ons, resource-only add-ons, and approved tenant overrides.
+
+| Column | Type | Notes |
+|---|---|---|
+| `tenant_id` | uuid | PRIMARY KEY / FK -> tenants(id) |
+| `storage_limit_gb` | int | NOT NULL |
+| `ai_token_limit` | bigint | Nullable |
+| `source` | varchar(30) | `demo_profile`, `subscription_plan`, `subscription_addons`, `tenant_override` |
+| `updated_at` | timestamptz | NOT NULL |
+
+---
+
+### activation_requests
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `tenant_id` | uuid | FK -> tenants(id), NOT NULL |
+| `requested_plan_id` | varchar(80) | FK -> subscription_plans(id), NOT NULL |
+| `billing_cycle` | varchar(20) | `monthly` or `annual` |
+| `requested_addons` | jsonb | Module add-ons and resource-only add-ons |
+| `confirmed_employee_count` | int | NOT NULL |
+| `billing_contact` | jsonb | NOT NULL |
+| `status` | varchar(30) | `pending_review`, `approved`, `activation_started`, `rejected` |
+| `requested_at` | timestamptz | NOT NULL |
+| `reviewed_by_id` | uuid | Nullable FK -> platform_users(id) |
+| `reviewed_at` | timestamptz | Nullable |
+| `review_note` | text | Nullable |
+
+---
+
+### trial_extension_requests
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `tenant_id` | uuid | FK -> tenants(id), NOT NULL |
+| `current_trial_end_at` | timestamptz | NOT NULL |
+| `requested_days` | int | NOT NULL |
+| `approved_days` | int | Nullable |
+| `reason` | text | NOT NULL |
+| `usage_snapshot` | jsonb | Storage, AI token usage, login count, last login |
+| `status` | varchar(30) | `pending_review`, `approved`, `rejected` |
+| `requested_at` | timestamptz | NOT NULL |
+| `reviewed_by_id` | uuid | Nullable FK -> platform_users(id) |
+| `reviewed_at` | timestamptz | Nullable |
+| `admin_notes` | text | Nullable |
+
+---
+
+### support_tickets
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `tenant_id` | uuid | FK -> tenants(id), NOT NULL |
+| `subject` | varchar(200) | NOT NULL |
+| `category` | varchar(80) | NOT NULL |
+| `priority` | varchar(20) | NOT NULL |
+| `status` | varchar(30) | `open`, `in_progress`, `waiting_for_customer`, `resolved` |
+| `created_by_user_id` | uuid | Tenant user id |
+| `assigned_to_id` | uuid | Nullable FK -> platform_users(id) |
+| `created_at` | timestamptz | NOT NULL |
+| `updated_at` | timestamptz | NOT NULL |
+| `resolved_at` | timestamptz | Nullable |
+
+Support messages, internal notes, and attachments should be stored in separate child tables so customer-visible communication is not mixed with internal-only notes.
 
 ---
 
@@ -418,7 +589,7 @@ Immutable log of every price bracket change. Never updated, only inserted.
 | `module_key` | varchar(80) | NOT NULL — which module's price changed |
 | `previous_unit_price` | numeric(12,2) | NOT NULL |
 | `new_unit_price` | numeric(12,2) | NOT NULL |
-| `changed_by_id` | uuid | FK → dev_platform_accounts(id), NOT NULL |
+| `changed_by_id` | uuid | FK → platform_users(id), NOT NULL |
 | `changed_at` | timestamptz | NOT NULL |
 | `reason` | text | Nullable |
 
@@ -426,175 +597,39 @@ Immutable log of every price bracket change. Never updated, only inserted.
 
 ### tenant_subscriptions (owned by: SharedPlatform / Billing)
 
-Commercial snapshot per tenant. One active row per tenant. Immutable snapshot of the terms at assignment — changes create a new row and archive the old one.
+Commercial snapshot per tenant. One active row per tenant. Changes create a new row and archive the old one.
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PRIMARY KEY |
-| `tenant_id` | uuid | FK → tenants(id), NOT NULL |
-| `plan_id` | varchar(80) | FK → subscription_plans(id), NOT NULL |
-| `is_current` | boolean | NOT NULL — only one true per tenant |
-| `commercial_model` | varchar(30) | NOT NULL — `'subscription' \| 'full_license_maintenance'` |
-| `billing_cycle` | varchar(10) | `'monthly' \| 'annual'` — null for full_license |
+| `tenant_id` | uuid | FK -> tenants(id), NOT NULL |
+| `plan_id` | varchar(80) | FK -> subscription_plans(id), NOT NULL |
+| `is_current` | boolean | NOT NULL - only one true per tenant |
+| `billing_cycle` | varchar(10) | `monthly` or `annual` |
 | `billing_start_date` | date | NOT NULL |
-| `next_billing_date` | date | Nullable — calculated from billing_start + cycle |
-| `billing_end_date` | date | Nullable — when contract ends |
-| `collection_mode` | varchar(20) | NOT NULL — `'gateway' \| 'manual'` |
-| `payment_gateway_id` | varchar(80) | FK → payment_gateway_configs(id) — nullable when manual |
-| `selected_module_keys` | text[] | NOT NULL — snapshot of modules at assignment time |
-| `selected_feature_keys` | jsonb | NOT NULL, default `{}` — snapshot of included commercial feature keys at assignment time |
-| `estimated_employee_count` | int | Nullable operator-entered estimate; not final invoice quantity |
-| `calculated_price` | numeric(12,2) | NOT NULL — price from brackets at assignment time |
-| `override_price` | numeric(12,2) | Nullable |
-| `override_reason` | text | Nullable — required when override set |
-| `effective_price` | numeric(12,2) | NOT NULL — `COALESCE(override_price, calculated_price)` |
+| `next_billing_date` | date | Nullable - calculated from billing_start + cycle |
+| `billing_end_date` | date | Nullable - when contract ends |
+| `confirmed_employee_count` | int | NOT NULL - used for first invoice and company-size bracket |
+| `selected_base_module_keys` | text[] | NOT NULL - snapshot from selected plan |
+| `selected_addon_module_keys` | text[] | NOT NULL, default empty |
+| `selected_resource_addons` | jsonb | NOT NULL, default `[]` |
+| `calculated_monthly_amount` | numeric(12,2) | NOT NULL |
+| `calculated_annual_amount` | numeric(12,2) | Nullable |
+| `annual_price_override` | numeric(12,2) | Nullable |
+| `annual_discount_pct` | numeric(5,2) | Nullable |
+| `effective_amount` | numeric(12,2) | NOT NULL |
 | `currency` | varchar(3) | NOT NULL |
-| `ai_monthly_token_limit` | bigint | Nullable |
-| `work_management_storage_limit_gb` | int | Nullable |
-| `payment_status` | varchar(20) | NOT NULL — `'current' \| 'overdue' \| 'grace_period' \| 'excepted'` |
-| `payment_exception_start` | date | Nullable |
-| `payment_exception_end` | date | Nullable |
-| `payment_exception_reason` | text | Nullable |
-| `billing_evidence_file_id` | uuid | Nullable — for manual collection |
-| `billing_evidence_reference` | varchar(200) | Nullable — external reference for manual collection |
-| `full_license_amount` | numeric(12,2) | Nullable — for full_license_maintenance |
-| `maintenance_rate_pct` | numeric(5,2) | Nullable |
-| `maintenance_collection_mode` | varchar(20) | Nullable — `'gateway' \| 'manual' \| 'waived'` |
-| `maintenance_renewal_date` | date | Nullable |
-| `maintenance_status` | varchar(20) | Nullable — `'current' \| 'overdue' \| 'waived'` |
-| `payment_attempt_count` | int | NOT NULL, default 0 — dunning retry counter |
-| `assigned_by_id` | uuid | FK → dev_platform_accounts(id), NOT NULL |
+| `status` | varchar(30) | `pending_payment`, `active`, `grace_period`, `suspended`, or `cancelled` |
+| `cancellation_requested_at` | timestamptz | Nullable |
+| `unpaid_seat_dues_amount` | numeric(12,2) | NOT NULL, default 0 |
+| `payment_gateway_config_id` | varchar(80) | FK -> payment_gateway_configs(id), NOT NULL |
+| `assigned_by_id` | uuid | FK -> platform_users(id), NOT NULL |
 | `assigned_at` | timestamptz | NOT NULL |
-| `archived_at` | timestamptz | Nullable — set when superseded by new row |
+| `archived_at` | timestamptz | Nullable - set when superseded by new row |
 
-**Index:** `btree(tenant_id, is_current)`, `btree(next_billing_date)`, `btree(payment_status)`
-
----
-
-### module_catalog (owned by: SharedPlatform)
-
-Global ONEVO product module registry. One row per module. Managed by Module Catalog Manager.
-
-| Column | Type | Notes |
-|---|---|---|
-| `module_key` | varchar(80) | PRIMARY KEY — e.g. `'leave'`, `'activity_monitoring'` |
-| `name` | varchar(100) | NOT NULL — display name |
-| `description` | text | Nullable |
-| `pillar` | varchar(30) | NOT NULL — `'hr_management' \| 'workforce_intelligence' \| 'worksync' \| 'shared'` |
-| `pricing_unit` | varchar(30) | NOT NULL — `'per_employee' \| 'per_device' \| 'per_user' \| 'per_seat' \| 'flat' \| 'per_event'` |
-| `is_sellable` | boolean | NOT NULL — false for always-included modules like notifications |
-| `is_active` | boolean | NOT NULL — false hides from catalog and provisioning |
-| `phase` | int | NOT NULL — 1 = Phase 1, 2 = Phase 2 |
-| `setup_service_keys` | text[] | Nullable — connected setup service keys |
-| `has_ai_capability` | boolean | NOT NULL, default false |
-| `requires_storage` | boolean | NOT NULL, default false |
-| `created_at` | timestamptz | NOT NULL |
-| `updated_at` | timestamptz | NOT NULL |
+**Index:** `btree(tenant_id, is_current)`, `btree(next_billing_date)`, `btree(status)`
 
 ---
-
-### module_features (owned by: SharedPlatform)
-
-Commercial feature registry inside a module. These rows define what can be included in plans or tenant-specific custom contracts. They are not runtime rollout flags.
-
-| Column | Type | Notes |
-|---|---|---|
-| `feature_key` | varchar(120) | PRIMARY KEY — format `{module_key}.{feature_name}` |
-| `module_key` | varchar(80) | FK → module_catalog(module_key), NOT NULL |
-| `name` | varchar(100) | NOT NULL |
-| `description` | text | Nullable |
-| `is_default_included` | boolean | NOT NULL, default true — selected by default when the module is added to a plan |
-| `is_active` | boolean | NOT NULL, default true |
-| `created_at` | timestamptz | NOT NULL |
-| `updated_at` | timestamptz | NOT NULL |
-
-**Index:** `btree(module_key, is_active)`
-
----
-
-### module_permission_ownership (owned by: SharedPlatform)
-
-Exclusive ownership map between product modules and seeded tenant-facing permission codes. This table is the authority for filtering tenant role builders by active module entitlement. Permission namespaces do not need to match `module_catalog.module_key`; for example, `core_hr` can own `employees:read` and `employees:write`.
-
-| Column | Type | Notes |
-|---|---|---|
-| `module_key` | varchar(80) | FK → module_catalog(module_key), NOT NULL |
-| `permission_code` | varchar(120) | FK → platform_permission_catalog(code), NOT NULL |
-| `is_default_permission` | boolean | NOT NULL, default false — included in the tenant Owner role during future tenant activation |
-| `created_at` | timestamptz | NOT NULL |
-| `updated_at` | timestamptz | NOT NULL |
-
-**Primary key:** `(module_key, permission_code)`
-
-**Unique constraint:** `(permission_code)` — a permission can be owned by only one module.
-
-**Rule:** Permission codes are seeded/version-controlled. Module Catalog assigns ownership of existing permission codes; it does not create or rename permission codes.
-
----
-
-### platform_permission_catalog (owned by: SharedPlatform)
-
-Master registry of all ONEVO tenant-facing permission codes. This is the authoritative list that the permission picker reads — it includes every permission that exists in the system, whether claimed by a module or unclaimed. Without this table, unclaimed permissions would have no home and the `/available` endpoint could only return already-claimed ones.
-
-This table is distinct from `dev_platform_permissions`, which lists developer platform admin permissions (e.g. `platform.tenants.read`). This table lists tenant-facing permissions (e.g. `leave:approve`, `core_hr:read`).
-
-| Column | Type | Notes |
-|---|---|---|
-| `code` | varchar(120) | PRIMARY KEY — e.g. `'leave:approve'`, `'core_hr:read'` |
-| `display_name` | varchar(150) | NOT NULL — human-readable label shown in permission picker |
-| `description` | text | Nullable — explains what granting this permission allows |
-| `is_high_risk` | boolean | NOT NULL, default false — flagged permissions shown with warning in role builders |
-| `created_at` | timestamptz | NOT NULL |
-
-**Index:** `btree(code)`
-
-**How `GET /admin/v1/modules/catalog/{moduleKey}/permissions/available` uses this table:**
-
-```sql
-SELECT
-  p.code,
-  p.display_name,
-  p.description,
-  p.is_high_risk,
-  owned_module.module_key AS owned_by_module_key,
-  owned_module.name       AS owned_by_module_name
-FROM platform_permission_catalog p
-LEFT JOIN module_permission_ownership mpo
-  ON mpo.permission_code = p.code
-LEFT JOIN module_catalog owned_module
-  ON owned_module.module_key = mpo.module_key
-ORDER BY p.code;
-```
-
-The frontend uses `owned_by_module_key` to determine picker state:
-- `null` → unclaimed — checkbox enabled
-- equals current module key → already owned by this module — checked
-- any other value → owned by another module — checkbox disabled, tooltip shows `owned_by_module_name`
-
-**Seeding:** Permission codes are seeded by backend permission migrations/seeders. Module ownership rows are seeded separately in `module_permission_ownership`. New permission codes added by backend changes must have a corresponding `platform_permission_catalog` row before they can be assigned to a module.
-
----
-
-### module_catalog_price_history (owned by: SharedPlatform)
-
-Immutable price change audit trail for the module catalog. One row written per `PATCH /admin/v1/modules/catalog/{moduleKey}/pricing` call. Never updated or deleted.
-
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | PRIMARY KEY |
-| `module_key` | varchar(80) | FK → module_catalog(module_key), NOT NULL |
-| `changed_by_id` | uuid | FK → dev_platform_accounts(id), NOT NULL |
-| `changed_at` | timestamptz | NOT NULL |
-| `previous_price_brackets` | jsonb | NOT NULL — full bracket snapshot before the change |
-| `new_price_brackets` | jsonb | NOT NULL — full bracket snapshot after the change |
-| `reason` | text | Nullable — operator-provided reason for the change |
-
-**Indexes:** `btree(module_key, changed_at DESC)`
-
-**Notes:** Append-only. Tracks module base pricing changes only — `subscription_plan_price_history` separately tracks plan-level pricing snapshots.
-
----
-
 ### tenant_module_entitlements (owned by: SharedPlatform)
 
 Runtime access source of truth. One row per module per tenant. This table — not the subscription snapshot — is what the ONEVO application checks to determine if a tenant may access a module.
@@ -612,7 +647,7 @@ Runtime access source of truth. One row per module per tenant. This table — no
 | `start_date` | date | Nullable |
 | `end_date` | date | Nullable - subscription or entitlement end |
 | entitlement_source | varchar(30) | NOT NULL - 'plan_included' | 'add_on' | 'operator_grant' |
-| `assigned_by_id` | uuid | FK → dev_platform_accounts(id), NOT NULL |
+| `assigned_by_id` | uuid | FK → platform_users(id), NOT NULL |
 | `assigned_at` | timestamptz | NOT NULL |
 | `updated_at` | timestamptz | NOT NULL |
 
@@ -632,8 +667,8 @@ Runtime access source of truth. One row per module per tenant. This table — no
 | Value | Meaning |
 |---|---|
 | `subscription_included` | Part of the subscription plan |
-| `purchased` | Full license purchased |
-| `maintenance_included` | Included in maintenance contract |
+| `purchased` | Purchased optional module add-on |
+
 | `quoted` | Quoted to customer — not yet purchased; no access |
 | `available` | In catalog, can be purchased — not yet active; no access |
 | `disabled` | Not accessible and not in sales pipeline |
@@ -642,25 +677,44 @@ Runtime access source of truth. One row per module per tenant. This table — no
 
 ### payment_gateway_configs (owned by: SharedPlatform / Billing)
 
-Encrypted payment gateway configurations. Secrets are AES-256 encrypted and never returned by API.
+Encrypted payment gateway configurations. Secrets are AES-256 encrypted and never returned by API. Gateway credentials are separate from country routing: one gateway config can be routed to many countries, but one country can have only one active gateway route per environment.
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | varchar(80) | PRIMARY KEY — e.g. `'gw-paddle-global-prod'` |
 | `provider` | varchar(20) | NOT NULL - `stripe`, `paddle`, or `payhere` |
 | `name` | varchar(80) | NOT NULL |
-| `logo_url` | varchar(500) | Nullable — uploaded via `POST /admin/v1/uploads/gateway-logo`; shown in gateway selection dropdown during tenant provisioning Step 3 and in Subscription Manager |
-| `country_codes` | text[] | NOT NULL — applicable countries |
+| `logo_url` | varchar(500) | Nullable — uploaded via `POST /admin/v1/uploads/gateway-logo`; shown in System Config payment provider records |
 | `environment` | varchar(20) | NOT NULL — `'sandbox' \| 'production'` |
 | `config_encrypted` | text | NOT NULL — AES-256 JSON blob (never returned by API) |
 | `is_active` | boolean | NOT NULL, default true |
-| `created_by_id` | uuid | FK → dev_platform_accounts(id), NOT NULL |
+| `created_by_id` | uuid | FK → platform_users(id), NOT NULL |
 | `created_at` | timestamptz | NOT NULL |
 | `updated_at` | timestamptz | NOT NULL |
 
 **Payload inside `config_encrypted` (Stripe):** `secret_key`, `publishable_key`, `webhook_secret`
 **Payload inside `config_encrypted` (Paddle):** `api_key`, `seller_id`, `webhook_secret`
 **Payload inside `config_encrypted` (PayHere):** `merchant_id`, `merchant_secret`, `webhook_secret`
+
+---
+
+### payment_gateway_country_routes (owned by: SharedPlatform / Billing)
+
+Country-to-gateway routing for tenant payment collection. Operators select country names in the UI; backend stores ISO country codes.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `country_code` | varchar(2) | ISO 3166-1 alpha-2, NOT NULL |
+| `country_name_snapshot` | varchar(120) | Display snapshot for audit/readability |
+| `gateway_config_id` | varchar(80) | FK -> payment_gateway_configs(id), NOT NULL |
+| `environment` | varchar(20) | NOT NULL — `'sandbox' \| 'production'` |
+| `is_active` | boolean | NOT NULL, default true |
+| `created_by_id` | uuid | FK -> platform_users(id), NOT NULL |
+| `created_at` | timestamptz | NOT NULL |
+| `updated_at` | timestamptz | NOT NULL |
+
+**Business rule:** one active route per `country_code + environment`. A gateway config may have multiple country route rows.
 
 ---
 
@@ -686,7 +740,7 @@ Invoice records for all tenant billing cycles.
 | `currency` | varchar(3) | NOT NULL |
 | `status` | varchar(20) | NOT NULL — `'draft' \| 'open' \| 'paid' \| 'overdue' \| 'void' \| 'uncollectible' \| 'partially_refunded'` |
 | `due_date` | date | NOT NULL |
-| `payment_method` | varchar(20) | Nullable - `stripe`, `paddle`, `payhere`, `manual`, or `waived` |
+| `payment_method` | varchar(20) | Nullable - `stripe`, `paddle`, `payhere`, or `waived` |
 | `payment_reference` | varchar(200) | Nullable — external bank ref or gateway charge ID |
 | `paddle_transaction_id` | varchar(100) | Nullable — idempotency key for Paddle transactions |
 | `paddle_invoice_url` | varchar(500) | Nullable — Paddle-hosted invoice PDF URL |
@@ -736,19 +790,43 @@ Cross-tenant operational alerts. Owned by the DevPlatform feature namespace, not
 | `created_at` | timestamptz | NOT NULL |
 | `auto_resolved` | boolean | NOT NULL, default false |
 | `resolved_at` | timestamptz | Nullable |
-| `resolved_by_id` | uuid | Nullable, FK → dev_platform_accounts(id) |
+| `resolved_by_id` | uuid | Nullable, FK → platform_users(id) |
 | `resolved_reason` | text | Nullable — required for Critical severity |
 | `acknowledged_at` | timestamptz | Nullable |
-| `acknowledged_by_id` | uuid | Nullable, FK → dev_platform_accounts(id) |
+| `acknowledged_by_id` | uuid | Nullable, FK → platform_users(id) |
 | `auto_dismissed` | boolean | NOT NULL, default false — Info alerts dismissed after 48h |
 
 **Index:** `btree(severity, created_at DESC)`, `btree(tenant_id, severity)`, `btree(alert_code)`, partial index on `(resolved_at IS NULL)` for active alert queries
 
 ---
 
+### legal_document_versions (owned by: DevPlatform / Compliance)
+
+Published legal and privacy document versions managed from Compliance Center.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PRIMARY KEY |
+| `document_type` | varchar(80) | `terms`, `privacy_notice`, `activity_monitoring_notice`, `screenshot_notice`, `biometric_photo_consent`, or `marketing` |
+| `version` | varchar(50) | Stable version shown to users and stored in `legal_acceptance_records.document_version` |
+| `title` | varchar(200) | Display title |
+| `content_url` | varchar(500) | Stored document URL or rendered content reference |
+| `is_required` | boolean | Whether acknowledgement/acceptance is required |
+| `block_scope` | varchar(40) | `dashboard`, `workpulse_collection`, `verification`, or `none` |
+| `status` | varchar(20) | `draft`, `published`, or `archived` |
+| `published_by_id` | uuid | FK -> platform_users(id), nullable until published |
+| `published_at` | timestamptz | Nullable |
+| `publish_reason` | text | Required when publishing |
+| `created_at` | timestamptz | NOT NULL |
+| `updated_at` | timestamptz | NOT NULL |
+
+**Rule:** Publishing required Terms & Conditions or Privacy Notice versions marks affected users pending and blocks dashboard access until accepted or acknowledged. Publishing required monitoring, screenshot, or biometric/photo versions blocks only the affected WorkPulse collection or verification path.
+
+---
+
 ### feature_flags (owned by: Configuration)
 
-Global feature flag definitions. Managed by Feature Flag Manager.
+Global feature flag definitions. Tenant-specific overrides are managed from Tenant Management -> Tenant Detail -> Runtime Overrides, not from a top-level Feature Flags sidebar item.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -776,7 +854,7 @@ Per-tenant feature flag overrides. Overrides the global default for a specific t
 | `flag_key` | varchar(120) | FK → feature_flags(key), NOT NULL |
 | `tenant_id` | uuid | FK → tenants(id), NOT NULL |
 | `value` | boolean | NOT NULL — the overridden value for this tenant |
-| `granted_by_id` | uuid | FK → dev_platform_accounts(id), NOT NULL |
+| `granted_by_id` | uuid | FK → platform_users(id), NOT NULL |
 | `granted_at` | timestamptz | NOT NULL |
 | `reason` | text | Nullable |
 
@@ -833,7 +911,7 @@ Global AI provider configuration per purpose. One row per ONEVO AI feature purpo
 | `is_active` | boolean | NOT NULL, default true |
 | `last_verified_at` | timestamptz | Nullable |
 | `last_verification_status` | varchar(20) | Nullable — `'healthy' \| 'error'` |
-| `updated_by_id` | uuid | FK → dev_platform_accounts(id) |
+| `updated_by_id` | uuid | FK → platform_users(id) |
 | `updated_at` | timestamptz | NOT NULL |
 
 **Index:** `UNIQUE(purpose)`
@@ -857,7 +935,7 @@ Per-tenant AI config overrides. One row per (tenant, purpose) pair. When present
 | `request_timeout_seconds` | int | NOT NULL |
 | `max_retries` | int | NOT NULL |
 | `is_active` | boolean | NOT NULL, default true |
-| `set_by_id` | uuid | FK → dev_platform_accounts(id), NOT NULL |
+| `set_by_id` | uuid | FK → platform_users(id), NOT NULL |
 | `set_at` | timestamptz | NOT NULL |
 
 **Unique:** `(tenant_id, purpose)`
@@ -882,7 +960,7 @@ ONEVO's OAuth app registrations used when tenants connect Customer OAuth integra
 | `default_scopes` | text[] | NOT NULL |
 | `is_active` | boolean | NOT NULL |
 | `last_verified_at` | timestamptz | Nullable |
-| `updated_by_id` | uuid | FK → dev_platform_accounts(id) |
+| `updated_by_id` | uuid | FK → platform_users(id) |
 | `updated_at` | timestamptz | NOT NULL |
 
 **Index:** `UNIQUE(provider)`
@@ -901,7 +979,7 @@ ONEVO's own third-party service API keys used internally across all tenants (Res
 | `api_key_encrypted` | text | NOT NULL — AES-256 |
 | `is_active` | boolean | NOT NULL |
 | `last_verified_at` | timestamptz | Nullable |
-| `updated_by_id` | uuid | FK → dev_platform_accounts(id) |
+| `updated_by_id` | uuid | FK → platform_users(id) |
 | `updated_at` | timestamptz | NOT NULL |
 
 **Index:** `UNIQUE(service_key)`
@@ -923,7 +1001,7 @@ Operator-managed catalog of all integrations tenants can connect. Fully dynamic 
 | `show_in_module_config` | boolean | NOT NULL, default true — whether shown in Module Catalog Manager's Integrations tab |
 | `logo_url` | varchar(500) | Nullable |
 | `is_active` | boolean | NOT NULL, default true |
-| `created_by_id` | uuid | FK → dev_platform_accounts(id) |
+| `created_by_id` | uuid | FK → platform_users(id) |
 | `created_at` | timestamptz | NOT NULL |
 
 ---
@@ -937,7 +1015,7 @@ Links ONEVO product modules to integration catalog entries. Managed through Modu
 | `module_key` | varchar(80) | FK → module_catalog(module_key), NOT NULL |
 | `integration_key` | varchar(50) | FK → integration_catalog(integration_key), NOT NULL |
 | `link_type` | varchar(20) | NOT NULL — `'required'` |
-| `linked_by_id` | uuid | FK → dev_platform_accounts(id), NOT NULL |
+| `linked_by_id` | uuid | FK → platform_users(id), NOT NULL |
 | `linked_at` | timestamptz | NOT NULL |
 
 **Primary key:** `(module_key, integration_key)`
@@ -977,7 +1055,7 @@ Stores per-tenant OAuth tokens and connection state for Customer OAuth integrati
 | Phase | New Tables Added | Running Total |
 |---|---|---|
 | Baseline | — | 170 |
-| DevPlatform Phase 1 | `dev_platform_accounts`, `dev_platform_account_invites`, `dev_platform_roles`, `dev_platform_permissions`, `dev_platform_role_permissions`, `dev_platform_account_roles`, `dev_platform_sessions`, `platform_alerts`, `webhook_event_queue` | Finalized by Phase 1 migration cut |
+| DevPlatform Phase 1 | `platform_users`, `platform_user_invites`, `platform_roles`, `platform_permissions`, `platform_role_permissions`, `platform_user_roles`, `platform_user_sessions`, `platform_alerts`, `webhook_event_queue` | Finalized by Phase 1 migration cut |
 | DevPlatform Phase 2 | `agent_version_releases`, `agent_deployment_rings`, `agent_deployment_ring_assignments`, `platform_api_keys` | Finalized by Phase 2 migration cut |
 | Cross-module additions | `tenant_provisioning_states`, `tenant_provisioning_validation_results` | 185 |
 | AI / Gateway / Integration | `ai_provider_configs`, `tenant_ai_provider_overrides`, `platform_oauth_apps`, `platform_service_keys`, `integration_catalog`, `module_integration_links`, `tenant_integration_credentials` | 192 |
@@ -996,7 +1074,7 @@ Immutable append-only audit trail for all billing mutations. No UPDATE or DELETE
 |---|---|---|
 | `id` | uuid | PRIMARY KEY |
 | `tenant_id` | uuid | FK → tenants(id), NOT NULL |
-| `actor_id` | uuid | FK → dev_platform_accounts(id), Nullable — NULL means system action |
+| `actor_id` | uuid | FK → platform_users(id), Nullable — NULL means system action |
 | `actor_type` | varchar(20) | NOT NULL — `'platform_admin' \| 'system'` |
 | `action` | varchar(80) | NOT NULL — e.g. `'invoice.marked_paid'`, `'subscription.overridden'`, `'tenant.auto_suspended_dunning'` |
 | `entity_type` | varchar(40) | NOT NULL — `'invoice' \| 'subscription' \| 'gateway' \| 'tenant'` |

@@ -114,7 +114,7 @@ Severity is calculated by `DiscrepancySeverityCalculator.Calculate()`. When a pr
 |:---------|:--------|:------------|
 | `none` | z < 1.0 | Within normal range for this employee |
 | `low` | 1.0 ≤ z < 1.5 | Mildly above personal baseline — automated reminder |
-| `high` | 1.5 ≤ z < 2.5 | Significantly above baseline — manager notified privately |
+| `high` | 1.5 ≤ z < 2.5 | Significantly above baseline — configured discrepancy reviewer notified privately |
 | `critical` | z ≥ 2.5 | Extreme anomaly — escalated through the configured resolver |
 
 **Absolute fallback (new employees, < 5 baseline samples):**
@@ -123,7 +123,7 @@ Severity is calculated by `DiscrepancySeverityCalculator.Calculate()`. When a pr
 |:---------|:----------------|:-------|
 | `none` | < 30 min | No action |
 | `low` | 30–60 min | Automated reminder to employee: "You have unlogged active time today" |
-| `high` | 60–180 min | Manager notified privately (employee NOT informed) |
+| `high` | 60–180 min | Configured discrepancy reviewer notified privately (employee NOT informed) |
 | `critical` | 180+ min | Escalated through the configured resolver immediately |
 
 See [[modules/discrepancy-engine/statistical-baselines/overview|Statistical Baselines]] for full details on baseline computation.

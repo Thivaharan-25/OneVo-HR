@@ -6,7 +6,7 @@ Auditor or security operator.
 
 ## Journey
 
-1. Operator opens Security & Compliance -> Audit Logs.
+1. Operator opens Security & Compliance -> Audit Console.
 2. Console loads audit filters.
 3. Operator filters by tenant, user, action, resource, and date range.
 4. Backend audits the audit query itself.

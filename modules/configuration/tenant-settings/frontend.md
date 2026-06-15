@@ -70,11 +70,11 @@ Per-employee or bulk (department/team) overrides.
 │ Critical Severity:                                       │
 │   Step 1: Employee's reporting manager → Immediate       │
 │   Step 2: Users with exceptions:manage → After 30 min    │
-│   Step 3: Configured escalation owner → After 60 min     │
+│   Step 3: Configured escalation resolver → After 60 min  │
 │                                                          │
 │ Warning Severity:                                        │
 │   Step 1: Employee's reporting manager → Immediate       │
-│   Step 2: Configured escalation owner → After 60 min     │
+│   Step 2: Configured escalation resolver → After 60 min  │
 └──────────────────────────────────────────────────────────┘
 ```
 

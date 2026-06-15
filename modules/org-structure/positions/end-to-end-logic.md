@@ -13,12 +13,14 @@
 POST /api/v1/org/positions
   -> PositionController.Create(CreatePositionCommand)
     -> [RequirePermission("org:manage")]
+    -> Resolve active legal_entity_id from the Org Structure context
     -> FluentValidation: name required, legal_entity_id required,
        department_id required,
-       capacity required (>= 1), position_type required (unique|pooled),
+       max_occupancy required (>= 1), position_type required (unique|pooled),
        reports_to_position_id optional
     -> PositionService.CreateAsync(command, ct)
       -> 1. Validate legal entity exists and belongs to tenant
+      -> 1a. Validate caller can manage positions inside the selected legal entity context
       -> 2. Validate department exists, belongs to same legal entity
       -> 3. Validate name uniqueness within legal entity
       -> 4. If reports_to_position_id provided:
@@ -79,7 +81,7 @@ GET /api/v1/org/positions/tree?legalEntityId={id}
   -> [RequirePermission("employees:read")]
   -> PositionService.GetTreeAsync(legalEntityId, ct)
     -> Recursive CTE from employee_hierarchy_closure filtered to legalEntityId
-    -> Each node includes: position name, type, capacity, current_occupancy,
+    -> Each node includes: position name, type, max_occupancy, current_occupancy,
        is_vacant (occupancy == 0), current occupant name if unique + occupied
     -> Return nested PositionTreeNodeDto[]
   -> 200 OK
@@ -98,7 +100,7 @@ PUT /api/v1/org/positions/{id}
     -> 3. If name changed: validate uniqueness within legal entity
     -> 4. If department_id changed:
            a. Validate new department belongs to same legal entity
-    -> 5. If capacity changed:
+    -> 5. If max_occupancy changed:
            a. Reject reduction below current active occupancy count
     -> 6. If reports_to_position_id changed:
            a. Validate new target exists, is active, same legal entity, type 'unique'

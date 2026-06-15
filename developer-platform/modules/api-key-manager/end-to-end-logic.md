@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Platform API Key Manager enables programmatic access to the Admin API for CI/CD pipelines, external tooling, and automation scripts — without requiring a human Google OAuth session. Keys are scoped to specific permission sets, have optional expiry, and can be revoked at any time.
+Platform API Key Manager enables programmatic access to the Admin API for CI/CD pipelines, external tooling, and automation scripts without requiring a human platform-admin session. Keys are scoped to specific permission sets, have optional expiry, and can be revoked at any time.
 
 ## Database Tables / Systems Controlled
 
@@ -84,7 +84,7 @@ The backend:
 3. If found: uses the key's `scopes` as the effective permission set for authorization checks
 4. If not found or expired/revoked: HTTP 401
 
-**Scopes are enforced at every endpoint** — a key with only `platform.health.read` cannot call any endpoint requiring `platform.feature_flags.manage`.
+**Scopes are enforced at every endpoint** — a key with only `platform.health.read` cannot call any endpoint requiring `platform.runtime_flags.manage` or `platform.tenants.feature_overrides.manage`.
 
 ## Key List Screen
 

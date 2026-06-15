@@ -87,15 +87,16 @@ var employee = await _context.Employees
     .FirstOrDefaultAsync(e => e.Id == id, ct);
 ```
 
-## Caching Strategy (Redis)
+## Caching Strategy
 
-### 3-Layer Cache
+### Phase 1 Cache
 
 | Layer | Storage | TTL | Use Case |
 |:------|:--------|:----|:---------|
-| L1 | In-memory (`IMemoryCache`) | 1-5 min | Hot data (current user permissions, tenant settings) |
-| L2 | Redis | 5-60 min | Warm data (department tree, job families, feature flags) |
+| L1 | In-memory (`IMemoryCache`) | 1-5 min | Hot data (current user permissions, tenant settings, feature flags, reference data) |
 | L3 | PostgreSQL | Permanent | Source of truth |
+
+Redis is optional/future distributed cache infrastructure for multi-instance deployment. It is not required for Phase 1.
 
 ### Cache Key Convention
 

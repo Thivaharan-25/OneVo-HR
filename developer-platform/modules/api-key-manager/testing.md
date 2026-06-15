@@ -54,7 +54,7 @@
 
 ### TC-AK-008: Scope checks are enforced per endpoint
 **Setup:** API key scoped to `["agent:view-health"]` only
-**Action:** Use this key to call `PATCH /admin/v1/feature-flags/{key}` (requires `platform.feature_flags.manage`)
+**Action:** Use this key to call `PATCH /admin/v1/feature-flags/{key}` (requires `platform.runtime_flags.manage`)
 **Expected:** HTTP 403 — key scope does not include feature flag management
 
 ### TC-AK-009: Key create and revoke write audit logs

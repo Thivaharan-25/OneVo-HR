@@ -59,7 +59,7 @@ app.MapHubs(); // SignalR
 
 ```csharp
 builder.Services.AddApplication();           // MediatR + behaviors
-builder.Services.AddInfrastructure(config);  // EF, JWT, BCrypt, Redis…
+builder.Services.AddInfrastructure(config);  // EF, JWT, BCrypt, IMemoryCache; Redis only if future distributed cache is enabled
 builder.Services.AddSignalR();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opts => { /* see security.md */ });

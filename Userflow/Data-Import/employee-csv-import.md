@@ -1,7 +1,7 @@
 # Employee CSV Import
 
 **Area:** People → Import  
-**Trigger:** HR Admin uploads a CSV file to bulk-create employees (user action — configuration)  
+**Trigger:** Authorized employee-import user uploads a CSV file to bulk-create employees (user action — configuration)  
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `org:manage` (to create missing departments or positions during review)
 

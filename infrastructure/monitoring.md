@@ -39,7 +39,7 @@
 // Registered in Program.cs
 builder.Services.AddHealthChecks()
     .AddNpgSql(connectionString, name: "postgresql")
-    .AddRedis(redisConnectionString, name: "redis")
+    // Add Redis health check only if future distributed cache is enabled.
     .AddCheck<HangfireHealthCheck>("hangfire");
 
 // Endpoints

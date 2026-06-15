@@ -57,7 +57,7 @@ When clicking "View Detail":
 │ Escalation:                         │
 │ ✅ Employee's reporting manager     │
 │ ⏳ Users with exceptions:manage     │
-│ ⬜ Configured escalation owner      │
+│ ⬜ Configured escalation resolver   │
 │                                     │
 │ [Acknowledge] [Dismiss] [Escalate]  │
 │                                     │

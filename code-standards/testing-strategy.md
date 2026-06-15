@@ -8,7 +8,7 @@
          ├─────────┤
         │ Contract │  Pact (module API contracts)
         ├──────────┤
-       │ Integration│  xUnit + Testcontainers (real PostgreSQL + Redis)
+       │ Integration│  xUnit + Testcontainers (real PostgreSQL; Redis only for optional distributed-cache tests)
        ├────────────┤
       │    Unit     │  xUnit + Moq + FluentAssertions (80%+ coverage)
       ├──────────────┤

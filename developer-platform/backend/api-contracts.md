@@ -8,7 +8,7 @@ Authorization: Bearer <platform-admin-jwt>
 
 Platform-admin JWTs: issuer `onevo-platform-admin`, 30-minute TTL, signed with a separate key from tenant JWTs. Tenant-issued tokens are rejected at every endpoint in this namespace by the `PlatformAdmin` authorization policy.
 
-Authorization is permission-based. Built-in platform roles are presets only â€” endpoints check explicit `dev_platform_permissions` codes, never role names.
+Authorization is permission-based. Built-in platform roles are presets only; endpoints check explicit platform permission codes, never role names.
 
 **Convention:**
 - `{id}` = UUID unless otherwise stated
@@ -22,8 +22,12 @@ Authorization is permission-based. Built-in platform roles are presets only â�
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `POST` | `/admin/v1/auth/google-callback` | Exchange Google id_token for platform-admin JWT | None |
-| `POST` | `/admin/v1/auth/login` | Dev-only email/password login â€” returns 403 in non-Development environments | None |
+| `POST` | `/admin/v1/auth/login` | Validate email/password and create pending MFA challenge; does not create full session | None |
+| `POST` | `/admin/v1/auth/mfa/verify` | Verify MFA challenge and issue platform-admin session/JWT | None |
+| `POST` | `/admin/v1/auth/mfa/resend` | Resend or rotate MFA challenge where policy allows | None |
+| `POST` | `/admin/v1/auth/password-reset/request` | Request platform password reset | None |
+| `POST` | `/admin/v1/auth/password-reset/complete` | Complete platform password reset | None |
+| `POST` | `/admin/v1/auth/google-callback` | Optional invited-manager OAuth setup/sign-in; still requires MFA before session | None |
 
 ---
 
@@ -44,46 +48,50 @@ Authorization is permission-based. Built-in platform roles are presets only â�
 
 ---
 
-## Platform Access
+## Platform Users And Roles
 
-Developer Platform account management. These are not tenant users or tenant roles.
+Developer Platform user and role management. These are not tenant users or tenant roles.
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/platform-accounts` | List platform accounts | `platform.accounts.read` |
-| `POST` | `/admin/v1/platform-accounts/invite` | Invite a new platform manager | `platform.accounts.manage` |
-| `GET` | `/admin/v1/platform-accounts/{id}` | Platform account detail | `platform.accounts.read` |
-| `PATCH` | `/admin/v1/platform-accounts/{id}` | Update name or role assignment | `platform.accounts.manage` |
-| `POST` | `/admin/v1/platform-accounts/{id}/deactivate` | Disable login without deleting | `platform.accounts.manage` |
-| `POST` | `/admin/v1/platform-accounts/{id}/reactivate` | Re-enable login | `platform.accounts.manage` |
-| `POST` | `/admin/v1/platform-accounts/{id}/sessions/revoke` | Revoke all active sessions for this account | `platform.accounts.manage` |
-| `GET` | `/admin/v1/platform-roles` | List platform roles (presets and custom) | `platform.accounts.read` |
-| `POST` | `/admin/v1/platform-roles` | Create a custom platform role | `platform.accounts.manage` |
-| `GET` | `/admin/v1/platform-roles/{id}` | Platform role detail with permissions | `platform.accounts.read` |
-| `PATCH` | `/admin/v1/platform-roles/{id}` | Update role name/description | `platform.accounts.manage` |
-| `PUT` | `/admin/v1/platform-roles/{id}/permissions` | Replace permission set for a platform role | `platform.accounts.manage` |
-| `GET` | `/admin/v1/platform-permissions/catalog` | All available platform permission codes | `platform.accounts.read` |
+| `GET` | `/admin/v1/platform-users` | List platform users | `platform.accounts.read` |
+| `POST` | `/admin/v1/platform-users/invite` | Invite a new platform manager | `platform.accounts.manage` |
+| `POST` | `/admin/v1/platform-users/{id}/invite/resend` | Resend a pending invite | `platform.accounts.manage` |
+| `POST` | `/admin/v1/platform-users/{id}/invite/revoke` | Revoke a pending invite | `platform.accounts.manage` |
+| `GET` | `/admin/v1/platform-users/{id}` | Platform user detail | `platform.accounts.read` |
+| `PATCH` | `/admin/v1/platform-users/{id}` | Update user profile fields or role assignment | `platform.accounts.manage` |
+| `POST` | `/admin/v1/platform-users/{id}/deactivate` | Disable login without deleting | `platform.accounts.manage` |
+| `POST` | `/admin/v1/platform-users/{id}/reactivate` | Re-enable login | `platform.accounts.manage` |
+| `GET` | `/admin/v1/platform-users/{id}/sessions` | List active sessions for this platform user | `platform.accounts.read` |
+| `POST` | `/admin/v1/platform-users/{id}/sessions/revoke` | Revoke active sessions for this user | `platform.accounts.manage` |
+| `GET` | `/admin/v1/platform-users/{id}/access-history` | Login, MFA, password reset, role-change, and session history | `platform.accounts.read` |
+| `GET` | `/admin/v1/platform-roles` | List platform roles (presets and custom) | `platform.roles.read` |
+| `POST` | `/admin/v1/platform-roles` | Create a custom platform role | `platform.roles.manage` |
+| `GET` | `/admin/v1/platform-roles/{id}` | Platform role detail with permissions | `platform.roles.read` |
+| `PATCH` | `/admin/v1/platform-roles/{id}` | Update role name/description | `platform.roles.manage` |
+| `PUT` | `/admin/v1/platform-roles/{id}/permissions` | Replace permission set for a platform role | `platform.roles.manage` |
+| `GET` | `/admin/v1/platform-permissions/catalog` | All available platform permission codes | `platform.roles.read` |
 
 ---
 
-## Tenant Console
+## Tenant Management
 
-Full tenant lifecycle: 4-step creation wizard, post-activation management, status changes, impersonation.
+Full tenant lifecycle: create, view, edit, suspend, reactivate, demo/trial operations, activation status, and audit history.
 
 ### Tenant CRUD and Wizard
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
 | `GET` | `/admin/v1/tenants` | List tenants with filters (status, plan, country, work_mode, search) | `platform.tenants.read` |
-| `GET` | `/admin/v1/tenants/validate` | Validate domain/company name uniqueness before Step 1 submit | `platform.tenants.create` |
-| `POST` | `/admin/v1/tenants` | Create provisioning draft â€” wizard Step 1 (Organization Info) | `platform.tenants.create` |
+| `GET` | `/admin/v1/tenants/validate` | Validate domain/company name uniqueness before submit | `platform.tenants.manage` |
+| `POST` | `/admin/v1/tenants` | Create tenant or demo tenant draft | `platform.tenants.manage` |
 | `GET` | `/admin/v1/tenants/{id}` | Full tenant detail including provisioning_state | `platform.tenants.read` |
 | `PATCH` | `/admin/v1/tenants/{id}` | Edit tenant profile (company name, phone, website) | `platform.tenants.manage` |
 | `PATCH` | `/admin/v1/tenants/{id}/admin-account` | Save admin account â€” wizard Step 2 | `platform.tenants.manage` |
 | `PATCH` | `/admin/v1/tenants/{id}/subscription` | Assign/override subscription and commercial terms â€” wizard Step 3 and post-activation override | `platform.subscriptions.manage` |
 | `PATCH` | `/admin/v1/tenants/{id}/settings` | Save configuration and setup services â€” wizard Step 4 | `platform.tenants.manage` |
-| `PATCH` | `/admin/v1/tenants/{id}/status` | Suspend, unsuspend, or cancel tenant | `platform.tenants.suspend` |
-| `PATCH` | `/admin/v1/tenants/{id}/provision/confirm` | Activate provisioning tenant â€” runs activation guard | `platform.tenants.activate` |
+| `PATCH` | `/admin/v1/tenants/{id}/status` | Suspend or reactivate tenant | `platform.tenants.manage` |
+| `PATCH` | `/admin/v1/tenants/{id}/provision/confirm` | Confirm provisioning tenant where operator-created activation is allowed | `platform.tenants.manage` |
 | `GET` | `/admin/v1/tenants/{id}/provisioning-summary` | Activation checklist â€” blockers and warnings | `platform.tenants.read` |
 
 ### Tenant Actions
@@ -101,13 +109,15 @@ Full tenant lifecycle: 4-step creation wizard, post-activation management, statu
 | `GET` | `/admin/v1/tenants/{id}/analytics` | Usage analytics (DAU, session duration, feature usage) | `platform.tenants.read` |
 | `GET` | `/admin/v1/tenants/{id}/users` | Read-only tenant user list | `platform.tenants.read` |
 | `GET` | `/admin/v1/tenants/{id}/device-health-summary` | Aggregate device health counts only; detailed device/version/ring list is Phase 2 | `platform.tenants.read` |
-| `GET` | `/admin/v1/tenants/{id}/feature-flags` | Feature flag overrides for this tenant | `platform.feature_flags.read` |
+| `GET` | `/admin/v1/tenants/{id}/feature-flags` | Feature flag overrides for this tenant | `platform.tenants.feature_overrides.read` |
 | `GET` | `/admin/v1/tenants/{id}/integrations` | Integration connection status for this tenant | `platform.tenants.read` |
 | `POST` | `/admin/v1/tenants/{id}/integrations/{key}/disconnect` | Disconnect a specific integration for this tenant | `platform.tenants.manage` |
 | `GET` | `/admin/v1/tenants/{id}/audit` | Audit log filtered to this tenant | `platform.audit.read` |
 | `GET` | `/admin/v1/tenants/{id}/settings` | Current tenant settings | `platform.tenants.read` |
 | `GET` | `/admin/v1/tenants/{id}/user-activity-timeseries` | Per-tenant user activity chart data | `platform.tenants.read` |
 | `GET` | `/admin/v1/tenants/{id}/department-activity` | Top departments by activity | `platform.tenants.read` |
+| `PATCH` | `/admin/v1/tenants/{id}/trial/extend` | Directly extend a demo/trial tenant | `platform.tenants.manage` |
+| `PATCH` | `/admin/v1/tenants/{id}/trial/expire` | Immediately expire a demo/trial tenant | `platform.tenants.manage` |
 
 ### Tenant AI and Gateway Overrides
 
@@ -128,26 +138,19 @@ Full tenant lifecycle: 4-step creation wizard, post-activation management, statu
 
 ---
 
-## Subscription Manager
+## Subscription Plans
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/subscription-plans` | List reusable plans with price brackets, module lists, and included feature keys | `platform.subscriptions.read` |
-| `POST` | `/admin/v1/subscription-plans` | Create reusable plan from selected Phase 1 modules, included feature keys, and employee-count pricing tiers | `platform.subscriptions.manage` |
-| `GET` | `/admin/v1/subscription-plans/{id}` | Plan detail with full price bracket and feature inclusion breakdown | `platform.subscriptions.read` |
-| `PATCH` | `/admin/v1/subscription-plans/{id}` | Update plan metadata, modules, included features, or pricing | `platform.subscriptions.manage` |
+| `GET` | `/admin/v1/subscription-plans` | List paid plans with pricing, modules, add-ons, resource add-ons, and tenant impact summary | `platform.subscriptions.read` |
+| `POST` | `/admin/v1/subscription-plans` | Create plan with base modules, optional module add-ons, resource add-ons, storage/AI allowances, and pricing brackets | `platform.subscriptions.manage` |
+| `GET` | `/admin/v1/subscription-plans/{id}` | Plan detail with pricing, modules, add-ons, and usage/tenant impact | `platform.subscriptions.read` |
+| `PATCH` | `/admin/v1/subscription-plans/{id}` | Update plan metadata, pricing, modules, add-ons, resource add-ons, or active status | `platform.subscriptions.manage` |
 | `POST` | `/admin/v1/subscription-plans/{id}/clone` | Clone plan with new name | `platform.subscriptions.manage` |
 | `DELETE` | `/admin/v1/subscription-plans/{id}` | Deactivate plan â€” blocks new assignments, preserves existing | `platform.subscriptions.manage` |
-| `GET` | `/admin/v1/payment-gateways` | List gateway configs â€” no secrets returned | `platform.payment_gateways.read` |
-| `POST` | `/admin/v1/payment-gateways` | Create gateway config with encrypted secrets | `platform.payment_gateways.manage` |
-| `GET` | `/admin/v1/payment-gateways/{id}` | Gateway detail â€” no secrets | `platform.payment_gateways.read` |
-| `PATCH` | `/admin/v1/payment-gateways/{id}` | Update gateway metadata | `platform.payment_gateways.manage` |
-| `PATCH` | `/admin/v1/payment-gateways/{id}/rotate-secrets` | Replace all encrypted credentials atomically | `platform.payment_gateways.manage` |
-| `DELETE` | `/admin/v1/payment-gateways/{id}` | Deactivate gateway â€” blocked if active tenant assignments exist | `platform.payment_gateways.manage` |
 | `POST` | `/admin/v1/system-config/payment-gateways/verify` | Verify gateway credentials against provider â€” does not save | `platform.system_config.manage` |
 | `GET` | `/admin/v1/subscription-invoices` | List invoices with filters | `platform.subscriptions.read` |
 | `GET` | `/admin/v1/subscription-invoices/{id}` | Invoice detail with line items | `platform.subscriptions.read` |
-| `PATCH` | `/admin/v1/subscription-invoices/{id}/mark-paid` | Manually record payment with evidence reference | `platform.subscriptions.manage` |
 | `PATCH` | `/admin/v1/subscription-invoices/{id}/void` | Void an open invoice | `platform.subscriptions.manage` |
 | `GET` | `/admin/v1/subscription-invoices/{id}/pdf` | Download invoice PDF (PayHere: generated via QuestPDF; Paddle: redirect to paddle_invoice_url) | `platform.subscriptions.read` |
 | `PATCH` | `/admin/v1/subscription-invoices/{id}/mark-uncollectible` | Write off invoice as uncollectible â€” requires reason | `platform.subscriptions.manage` |
@@ -173,25 +176,76 @@ Tenant users access their own billing information. All routes require a valid te
 | `GET` | `/api/v1/billing/invoices` | List invoices for this tenant (paginated, filterable by status/date) | `billing:read` |
 | `GET` | `/api/v1/billing/invoices/{id}` | Invoice detail with line items | `billing:read` |
 | `GET` | `/api/v1/billing/invoices/{id}/pdf` | Download invoice PDF â€” PayHere: QuestPDF stream; Paddle: redirect to Paddle-hosted URL | `billing:read` |
-| `GET` | `/api/v1/billing/subscription` | Current subscription plan, allowed plans before confirmation, status, billing dates, next renewal amount | `billing:read` |
-| `POST` | `/api/v1/billing/subscription/confirm` | Tenant owner selects allowed plan, chooses billing cycle, confirms total employee count, and triggers first invoice/payment flow | `billing:manage` |
+| `POST` | `/api/v1/billing/payment` | Pay an open invoice or start the configured payment flow | `billing:manage` |
 | `POST` | `/api/v1/billing/subscription/cancel` | Request subscription cancellation â€” takes effect at end of current billing period | `billing:manage` |
-| `POST` | `/api/v1/billing/modules/{moduleId}/add` | Add a module pack (validates payment method on file; charges proration) | `billing:manage` |
 
 **Cancel subscription rules:**
 - Sets `tenant_subscriptions.cancellation_requested_at = now()` and `cancel_at_period_end = true`
-- For Paddle tenants: calls Paddle API to cancel at period end
 - Tenant retains full access until `billing_period_end`
+- Cancellation is blocked while unpaid seat dues or unpaid added-seat dues exist.
 - Creates audit log entry: `subscription.cancel_requested`, actor, reason (optional free-text)
 - Platform admin is notified via Info alert: `billing.cancellation_requested`
 
-**Add module pack rules:**
-- Validates the module is not already entitled
-- Validates a payment method is on file for the configured gateway
-- Charges prorated amount for remainder of current billing period
-- For Paddle tenants: creates a one-time Paddle transaction for proration, then updates subscription items
-- For PayHere tenants: generates proration invoice and initiates PayHere charge
-- Updates `tenant_module_entitlements` through module interfaces on payment confirmation
+---
+
+## Demo Profiles
+
+Demo Profiles define trial/demo workspace behavior and the upgrade options visible to demo tenants.
+
+| Method | Path | Description | Permission |
+|---|---|---|---|
+| `GET` | `/admin/v1/demo-profiles` | List active/inactive demo profiles | `platform.demo_profiles.read` |
+| `POST` | `/admin/v1/demo-profiles` | Create demo profile | `platform.demo_profiles.manage` |
+| `GET` | `/admin/v1/demo-profiles/{id}` | Demo profile detail, limits, module access, allowed plans/add-ons | `platform.demo_profiles.read` |
+| `PATCH` | `/admin/v1/demo-profiles/{id}` | Update profile identity, trial duration, auto-expire, active status, resource limits | `platform.demo_profiles.manage` |
+| `PUT` | `/admin/v1/demo-profiles/{id}/modules` | Replace demo module access levels and feature permissions | `platform.demo_profiles.manage` |
+| `PUT` | `/admin/v1/demo-profiles/{id}/upgrade-options` | Replace allowed plans, allowed add-ons, hidden add-ons, add-on visibility and demo limits | `platform.demo_profiles.manage` |
+| `GET` | `/admin/v1/demo-profiles/{id}/tenants` | List demo tenants using this profile | `platform.demo_profiles.read` |
+
+---
+
+## Requests Center
+
+| Method | Path | Description | Permission |
+|---|---|---|---|
+| `GET` | `/admin/v1/requests/demo` | List demo access requests | `platform.requests.read` |
+| `GET` | `/admin/v1/requests/demo/{id}` | Demo request detail: requester, company/tenant details, requested demo profile, requested access notes, and history | `platform.requests.read` |
+| `POST` | `/admin/v1/requests/demo/{id}/approve` | Approve demo access, create or update demo tenant, and apply demo profile limits | `platform.requests.manage` |
+| `POST` | `/admin/v1/requests/demo/{id}/reject` | Reject demo access request with optional tenant-visible note | `platform.requests.manage` |
+| `GET` | `/admin/v1/requests/trial-extensions` | List trial extension requests with summary counts | `platform.requests.read` |
+| `GET` | `/admin/v1/requests/trial-extensions/{id}` | Trial extension detail with usage, reason, requested days, admin notes | `platform.requests.read` |
+| `POST` | `/admin/v1/requests/trial-extensions/{id}/approve` | Approve requested or adjusted extension days | `platform.requests.manage` |
+| `POST` | `/admin/v1/requests/trial-extensions/{id}/reject` | Reject trial extension request | `platform.requests.manage` |
+
+---
+
+## Customer Support
+
+| Method | Path | Description | Permission |
+|---|---|---|---|
+| `GET` | `/admin/v1/support/tickets` | List support tickets with tenant/category/assignee/status filters | `platform.support.read` |
+| `GET` | `/admin/v1/support/tickets/{id}` | Ticket detail with messages, attachments, timeline, internal notes | `platform.support.read` |
+| `PATCH` | `/admin/v1/support/tickets/{id}/assign` | Assign or reassign ticket | `platform.support.manage` |
+| `POST` | `/admin/v1/support/tickets/{id}/replies` | Reply to customer | `platform.support.manage` |
+| `POST` | `/admin/v1/support/tickets/{id}/internal-notes` | Add internal note | `platform.support.manage` |
+| `PATCH` | `/admin/v1/support/tickets/{id}/category` | Change ticket category | `platform.support.manage` |
+| `POST` | `/admin/v1/support/tickets/{id}/knowledgebase` | Promote issue/resolution to knowledgebase article | `platform.support.manage` |
+| `POST` | `/admin/v1/support/tickets/{id}/close` | Close ticket as resolved | `platform.support.manage` |
+
+---
+
+## Tenant Demo Upgrade and Trial Requests
+
+Tenant-facing routes are scoped to the authenticated tenant user and only apply to demo/trial tenants unless otherwise stated.
+
+| Method | Path | Description | Permission |
+|---|---|---|---|
+| `GET` | `/api/v1/demo/upgrade/options` | Allowed plans/add-ons from active demo profile | `billing:read` |
+| `POST` | `/api/v1/demo/upgrade/quote` | Calculate price, storage, AI allowance, and billing cycle totals | `billing:read` |
+| `POST` | `/api/v1/demo/upgrade/submit` | Confirm company details, employee count, selected plan/add-ons, billing cycle, and billing contact; generate first invoice for self-service payment | `billing:manage` |
+| `POST` | `/api/v1/trial-extension/request` | Submit trial extension request with requested days and reason | `billing:manage` |
+| `GET` | `/api/v1/support/tickets` | Tenant support ticket list | `support:read` |
+| `POST` | `/api/v1/support/tickets` | Create tenant support ticket | `support:manage` |
 
 ---
 
@@ -228,37 +282,37 @@ Tenant users access their own billing information. All routes require a valid te
 
 ---
 
-## Feature Flag Manager
+## Tenant Runtime Overrides
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/feature-flags` | List all flags with global defaults and override counts | `platform.feature_flags.read` |
-| `POST` | `/admin/v1/feature-flags` | Create a new feature flag | `platform.feature_flags.manage` |
-| `GET` | `/admin/v1/feature-flags/{flagKey}` | Flag detail with per-tenant override list | `platform.feature_flags.read` |
-| `PATCH` | `/admin/v1/feature-flags/{flagKey}` | Update flag default value, rollout %, or description | `platform.feature_flags.manage` |
-| `DELETE` | `/admin/v1/feature-flags/{flagKey}` | Deactivate flag | `platform.feature_flags.manage` |
-| `GET` | `/admin/v1/feature-flags/tenant-overrides` | All overrides across all flags and all tenants | `platform.feature_flags.read` |
-| `GET` | `/admin/v1/tenants/{id}/feature-flags` | Effective flag values for a specific tenant | `platform.feature_flags.read` |
-| `PUT` | `/admin/v1/tenants/{id}/feature-flags` | Replace all tenant overrides with an `overrides` value map | `platform.feature_flags.manage` |
-| `PATCH` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Set per-tenant override with `value` after module entitlement and commercial feature inclusion validation | `platform.feature_flags.manage` |
-| `DELETE` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Remove per-tenant override | `platform.feature_flags.manage` |
-| `GET` | `/admin/v1/tenants/{id}/modules/runtime-status` | All module runtime enable/disable statuses for a tenant | `platform.feature_flags.read` |
-| `PATCH` | `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status` | Toggle module runtime status â€” does not change billing | `platform.feature_flags.manage` |
+| `GET` | `/admin/v1/feature-flags` | List all flags with global defaults and override counts | `platform.runtime_flags.read` |
+| `POST` | `/admin/v1/feature-flags` | Create a new feature flag | `platform.runtime_flags.manage` |
+| `GET` | `/admin/v1/feature-flags/{flagKey}` | Flag detail with per-tenant override list | `platform.runtime_flags.read` |
+| `PATCH` | `/admin/v1/feature-flags/{flagKey}` | Update flag default value, rollout %, or description | `platform.runtime_flags.manage` |
+| `DELETE` | `/admin/v1/feature-flags/{flagKey}` | Deactivate flag | `platform.runtime_flags.manage` |
+| `GET` | `/admin/v1/feature-flags/tenant-overrides` | All overrides across all flags and all tenants | `platform.tenants.feature_overrides.read` |
+| `GET` | `/admin/v1/tenants/{id}/feature-flags` | Effective flag values for a specific tenant | `platform.tenants.feature_overrides.read` |
+| `PUT` | `/admin/v1/tenants/{id}/feature-flags` | Replace all tenant overrides with an `overrides` value map | `platform.tenants.feature_overrides.manage` |
+| `PATCH` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Set per-tenant override with `value` after module entitlement and commercial feature inclusion validation | `platform.tenants.feature_overrides.manage` |
+| `DELETE` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Remove per-tenant override | `platform.tenants.feature_overrides.manage` |
+| `GET` | `/admin/v1/tenants/{id}/modules/runtime-status` | All module runtime enable/disable statuses for a tenant | `platform.tenants.feature_overrides.read` |
+| `PATCH` | `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status` | Toggle module runtime status â€” does not change billing | `platform.tenants.feature_overrides.manage` |
 
 Tenant-facing product flags must provide both `module_key` and `feature_key`, with `feature_key` owned by the selected module in `module_features`. Only platform operational flags may omit both fields.
 
 ---
 
-## Role Template Manager
+## Template Management - Role Templates
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/role-templates` | List all global templates (system and custom) | `platform.role_templates.read` |
-| `POST` | `/admin/v1/role-templates` | Create a new global role template | `platform.role_templates.manage` |
-| `GET` | `/admin/v1/role-templates/{id}` | Template detail with full permission list | `platform.role_templates.read` |
-| `PATCH` | `/admin/v1/role-templates/{id}` | Update template â€” increments version | `platform.role_templates.manage` |
-| `POST` | `/admin/v1/role-templates/{id}/clone` | Clone system or custom template into new editable template | `platform.role_templates.manage` |
-| `DELETE` | `/admin/v1/role-templates/{id}` | Deactivate template | `platform.role_templates.manage` |
+| `GET` | `/admin/v1/role-templates` | List all global templates (system and custom) | `platform.templates.read` |
+| `POST` | `/admin/v1/role-templates` | Create a new global role template | `platform.templates.manage` |
+| `GET` | `/admin/v1/role-templates/{id}` | Template detail with full permission list | `platform.templates.read` |
+| `PATCH` | `/admin/v1/role-templates/{id}` | Update template â€” increments version | `platform.templates.manage` |
+| `POST` | `/admin/v1/role-templates/{id}/clone` | Clone system or custom template into new editable template | `platform.templates.manage` |
+| `DELETE` | `/admin/v1/role-templates/{id}` | Deactivate template | `platform.templates.manage` |
 | `GET` | `/admin/v1/tenants/{id}/permissions/catalog` | Module-filtered permission catalog for a specific tenant | `platform.tenants.read` |
 | `GET` | `/admin/v1/tenants/{id}/roles` | Materialized tenant roles | `platform.tenants.read` |
 | `POST` | `/admin/v1/tenants/{id}/roles` | Create a tenant-specific role (not saved as global template) | `platform.tenants.manage` |
@@ -331,7 +385,7 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 | `POST` | `/admin/v1/security/alerts/{id}/resolve` | Resolve alert with resolution type and note (Critical requires 20+ char note) | `platform.security.manage` |
 | `GET` | `/admin/v1/security/sessions` | Platform admin session list | `platform.security.read` |
 | `POST` | `/admin/v1/security/sessions/{sessionId}/revoke` | Revoke a platform admin session | `platform.security.manage` |
-| `POST` | `/admin/v1/platform-accounts/{id}/sessions/revoke-all` | Revoke all active sessions for a platform account | `platform.accounts.manage` |
+| `POST` | `/admin/v1/platform-users/{id}/sessions/revoke-all` | Revoke all active sessions for a platform user | `platform.accounts.manage` |
 | `GET` | `/admin/v1/security/suspicious-activity` | Below-threshold security events from audit log | `platform.security.read` |
 
 ---
@@ -354,25 +408,25 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/global-policies` | List platform policy defaults | `platform.policies.read` |
-| `POST` | `/admin/v1/global-policies` | Create a new platform policy | `platform.policies.manage` |
-| `PATCH` | `/admin/v1/global-policies/{id}` | Update policy draft value | `platform.policies.manage` |
-| `GET` | `/admin/v1/global-policies/{id}/tenant-impact` | Preview how many tenants would be affected | `platform.policies.read` |
-| `POST` | `/admin/v1/global-policies/{id}/publish` | Publish policy â€” propagates to affected tenants | `platform.policies.manage` |
+| `GET` | `/admin/v1/global-policies` | System Config -> Global Policies policy defaults endpoint; not a top-level sidebar item | `platform.system_config.read` |
+| `PATCH` | `/admin/v1/global-policies/{id}` | Update draft value for a policy key | `platform.system_config.manage` |
+| `GET` | `/admin/v1/global-policies/{id}/tenant-impact` | Count tenants affected by publishing the current draft | `platform.system_config.read` |
+| `POST` | `/admin/v1/global-policies/{id}/publish` | Publish draft as new default — future tenants only; does not auto-propagate to existing tenants | `platform.system_config.manage` |
+| `POST` | `/admin/v1/global-policies/{id}/propagate` | Propagate published value to existing tenants without an explicit override | `platform.system_config.manage` |
+| `GET` | `/admin/v1/global-policies/{id}/history` | View publish history for a policy key | `platform.system_config.read` |
 
 ---
 
-## System Operations
+## Operations
 
-Phase 1 exposes Platform Health and Services Monitor only. Device Management, Infrastructure Operations, Background Jobs, and Agent Version Manager endpoints are Phase 2.
+Phase 1 exposes Operations as the operational health and action screen. Service monitoring, dependency summaries, safe service actions, and aggregate job/config/security checks are shown inside Operations. Device Management, Infrastructure Operations, Background Jobs, and Agent Version Manager endpoints are Phase 2.
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
 | `GET` | `/admin/v1/operations/platform-health` | Overall platform health + per-service status | `platform.health.read` |
 | `GET` | `/admin/v1/operations/platform-health/dependencies` | External dependency health | `platform.health.read` |
-| `GET` | `/admin/v1/operations/services` | List all monitored services | `platform.health.read` |
-| `GET` | `/admin/v1/operations/services/{serviceKey}` | Service detail â€” metrics, uptime, error rate | `platform.health.read` |
-| `POST` | `/admin/v1/operations/services/{serviceKey}/actions/{action}` | Execute an approved safe service action | `platform.health.manage` |
+| `GET` | `/admin/v1/operations/platform-health/services/{serviceKey}` | Service detail - metrics, uptime, error rate, redacted evidence, action history | `platform.health.read` |
+| `POST` | `/admin/v1/operations/platform-health/services/{serviceKey}/actions/{action}` | Execute an approved safe service action | `platform.health.manage` |
 
 ---
 
@@ -386,6 +440,9 @@ Phase 1 exposes Platform Health and Services Monitor only. Device Management, In
 | `GET` | `/admin/v1/legal-holds` | List active and released legal holds | `platform.compliance.read` |
 | `POST` | `/admin/v1/legal-holds` | Create a legal hold on a tenant's data | `platform.compliance.manage` |
 | `PATCH` | `/admin/v1/legal-holds/{id}` | Update or release a legal hold | `platform.compliance.manage` |
+| `GET` | `/admin/v1/legal-documents` | List legal document types and published versions | `platform.compliance.read` |
+| `POST` | `/admin/v1/legal-documents/{documentType}/versions` | Publish a legal document version and notify affected users | `platform.compliance.manage` |
+| `GET` | `/admin/v1/legal-documents/{documentType}/acceptance` | Acceptance status by tenant, user, document type, and version | `platform.compliance.read` |
 | `GET` | `/admin/v1/retention-policies` | List data retention policies | `platform.compliance.read` |
 | `POST` | `/admin/v1/retention-policies` | Create a retention policy | `platform.compliance.manage` |
 | `PATCH` | `/admin/v1/retention-policies/{id}` | Update retention policy | `platform.compliance.manage` |
@@ -393,11 +450,11 @@ Phase 1 exposes Platform Health and Services Monitor only. Device Management, In
 
 ---
 
-## Analytics & Reports
+## Reports / Analytics
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/analytics/platform` | Platform-wide operational analytics | `platform.reports.read` |
+| `GET` | `/admin/v1/reports/analytics` | Platform-wide operational and commercial analytics | `platform.reports.read` |
 | `GET` | `/admin/v1/analytics/tenants` | Tenant lifecycle and churn analytics | `platform.reports.read` |
 | `GET` | `/admin/v1/analytics/subscriptions` | Commercial and billing analytics | `platform.reports.read` |
 | `GET` | `/admin/v1/analytics/modules` | Module adoption and usage analytics | `platform.reports.read` |
@@ -430,19 +487,19 @@ Phase 1 exposes Platform Health and Services Monitor only. Device Management, In
 
 ---
 
-## Configuration Template Manager
+## Template Management - Configuration Templates
 
-Full CRUD for the global reusable configuration template library. Role templates are managed separately under the Role Template Manager section.
+Full CRUD for the global reusable configuration template library. Role templates are managed in the Role Templates tab of Template Management.
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/configuration-templates` | List all global configuration templates; filter by `?type=` (position_template, leave_policy, configuration, onboarding, app_allowlist, monitoring_policy, data_import_mapping) and `?active_only=true` | `platform.config_templates.read` |
-| `GET` | `/admin/v1/configuration-templates/{id}` | Full template detail including payload JSON and version history | `platform.config_templates.read` |
-| `POST` | `/admin/v1/configuration-templates` | Create a new configuration template â€” body: `{ template_key, template_type, name, description, module_keys_json, industry_profile_tag, payload_json, is_system }` | `platform.config_templates.manage` |
-| `PATCH` | `/admin/v1/configuration-templates/{id}` | Update template name, description, or payload â€” increments `version`; system templates are read-only (clone instead) | `platform.config_templates.manage` |
-| `DELETE` | `/admin/v1/configuration-templates/{id}` | Deactivate template (`is_active = false`) â€” blocked if active tenant positions or assignment rows still reference the template | `platform.config_templates.manage` |
-| `POST` | `/admin/v1/configuration-templates/{id}/clone` | Clone a system or custom template into a new editable template | `platform.config_templates.manage` |
-| `POST` | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply template to tenant â€” body: `{ force_update: bool }`. Checks module entitlement, runs type-specific apply handler, writes audit row. Returns `{ application_id, applied_version, warnings[] }` | `platform.config_templates.manage` |
+| `GET` | `/admin/v1/configuration-templates` | List all global configuration templates; filter by `?type=` (position_template, leave_policy, configuration, onboarding, app_allowlist, monitoring_policy, data_import_mapping) and `?active_only=true` | `platform.templates.read` |
+| `GET` | `/admin/v1/configuration-templates/{id}` | Full template detail including payload JSON and version history | `platform.templates.read` |
+| `POST` | `/admin/v1/configuration-templates` | Create a new configuration template â€” body: `{ template_key, template_type, name, description, module_keys_json, industry_profile_tag, payload_json, is_system }` | `platform.templates.manage` |
+| `PATCH` | `/admin/v1/configuration-templates/{id}` | Update template name, description, or payload â€” increments `version`; system templates are read-only (clone instead) | `platform.templates.manage` |
+| `DELETE` | `/admin/v1/configuration-templates/{id}` | Deactivate template (`is_active = false`) â€” blocked if active tenant positions or assignment rows still reference the template | `platform.templates.manage` |
+| `POST` | `/admin/v1/configuration-templates/{id}/clone` | Clone a system or custom template into a new editable template | `platform.templates.manage` |
+| `POST` | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply template to tenant â€” body: `{ force_update: bool }`. Checks module entitlement, runs type-specific apply handler, writes audit row. Returns `{ application_id, applied_version, warnings[] }` | `platform.templates.manage` |
 | `GET` | `/admin/v1/tenants/{id}/configuration-template-applications` | History of all template applications for this tenant, ordered by `applied_at desc` | `platform.tenants.read` |
 
 **Query parameters for `GET /admin/v1/configuration-templates`:**
@@ -476,7 +533,7 @@ Validation error: `assignment_scope_targets_required` when department or positio
 | Method | Path | Description | Permission |
 |---|---|---|---|
 | `POST` | `/admin/v1/uploads/integration-logo` | Upload integration catalog logo â€” returns `logo_url` | `platform.module_catalog.manage` |
-| `POST` | `/admin/v1/uploads/gateway-logo` | Upload payment gateway logo â€” returns `logo_url` | `platform.payment_gateways.manage` |
+| `POST` | `/admin/v1/uploads/gateway-logo` | Upload payment gateway logo for System Config payment provider records | `platform.system_config.manage` |
 | `POST` | `/admin/v1/uploads/oauth-app-logo` | Upload OAuth app provider logo â€” returns `logo_url` | `platform.system_config.manage` |
 | `POST` | `/admin/v1/uploads/ai-provider-logo` | Upload AI provider logo â€” returns `logo_url` | `platform.system_config.manage` |
 
@@ -504,6 +561,3 @@ Both endpoints return `200` immediately on signature validation and process asyn
 | `GET` | `/admin/v1/api-keys` | List platform API keys | `platform.api_keys.read` |
 | `POST` | `/admin/v1/api-keys` | Issue a new platform API key | `platform.api_keys.manage` |
 | `DELETE` | `/admin/v1/api-keys/{id}` | Revoke a platform API key | `platform.api_keys.manage` |
-
-
-

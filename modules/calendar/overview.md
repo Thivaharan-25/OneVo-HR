@@ -251,6 +251,6 @@ Schedules, Attendance, and Overtime are time-visual concepts — they are unders
 **Connection to WMS:**
 - Shift schedule hours from this module feed into WMS Resource Management as the available capacity baseline for each employee.
 - Approved timesheets from WMS Time Tracking create Attendance correction records here when discrepancies exist.
-- Excess hours from approved timesheets create Overtime entries here for manager approval.
+- Excess hours from approved timesheets create Overtime entries here for configured overtime approval.
 
 See [[Userflow/Work-Management/time-tracking-flow|Time Tracking Flow]] for the full overtime and attendance connection.

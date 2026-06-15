@@ -169,8 +169,8 @@ Tracks breaks (lunch, prayer, smoke, etc.).
 | `PresenceSessionEnded` | Employee clocks out through an allowed source or auto-close | [[modules/agent-gateway/overview\|Agent Gateway]] (send `StopMonitoring` to agent) |
 | `BreakExceeded` | Break exceeds allowed duration | [[modules/exception-engine/overview\|Exception Engine]] (flag long break) |
 | `OvertimeRequested` | Employee requests overtime | [[modules/notifications/overview\|Notifications]] (approval workflow) |
-| `OvertimeApproved` | Manager approves overtime request | [[modules/payroll/overview\|Payroll]] (include in payroll run) |
-| `AttendanceCorrected` | Manager corrects attendance data | Audit trail |
+| `OvertimeApproved` | Configured approver approves overtime request | [[modules/payroll/overview\|Payroll]] (include in payroll run) |
+| `AttendanceCorrected` | Authorized attendance user corrects attendance data | Audit trail |
 
 ### Consumes
 

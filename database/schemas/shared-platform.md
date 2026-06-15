@@ -100,11 +100,11 @@ Global catalog of known applications managed by the OneVo dev team via the devel
 | `icon_url` | `varchar(500)` | App icon for HR admin UI display |
 | `is_public` | `boolean` | True = visible to all HR admins in catalog browser |
 | `is_productive_default` | `boolean` | Default productivity classification applied when no tenant override exists |
-| `created_by_id` | `uuid` | FK -> dev_platform_accounts |
+| `created_by_id` | `uuid` | FK -> platform_users |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Foreign Keys:** `created_by_id` -> `dev_platform_accounts`
+**Foreign Keys:** `created_by_id` -> `platform_users`
 
 **Index:** `process_name` UNIQUE - no duplicate process names in catalog.
 
@@ -230,14 +230,13 @@ Global feature flag definitions. Tenant-specific exceptions are stored in `featu
 
 ## `payment_gateway_configs`
 
-Gateway configuration for Stripe, Paddle, and PayHere. Supports global platform defaults and optional tenant-specific gateway configuration. Secrets are encrypted through `IEncryptionService`; admin APIs return safe metadata only.
+Gateway configuration for Stripe, Paddle, and PayHere. Supports platform-managed gateway configs only. Secrets are encrypted through `IEncryptionService`; admin APIs return safe metadata only. Country assignment is stored in `payment_gateway_country_routes`, not as free-form gateway selection by tenants.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | Nullable; null means platform/global default gateway config |
 | `provider` | `varchar(30)` | `stripe`, `paddle`, `payhere` |
-| `mode` | `varchar(20)` | `test`, `live` |
+| `environment` | `varchar(20)` | `sandbox`, `production` |
 | `display_name` | `varchar(100)` | Friendly operator label |
 | `public_key` | `varchar(255)` | Nullable; Stripe/Paddle public identifier or equivalent public key where applicable |
 | `merchant_id` | `varchar(100)` | Nullable; Paddle seller ID or PayHere merchant ID |
@@ -248,9 +247,28 @@ Gateway configuration for Stripe, Paddle, and PayHere. Supports global platform 
 | `is_active` | `boolean` | Whether this config can be used for payment collection |
 | `created_by_id` | `uuid` | FK -> users or dev platform account boundary |
 | `created_at` | `timestamptz` | |
+
+---
+
+## `payment_gateway_country_routes`
+
+Country-to-gateway routing for subscription and invoice collection. Operators select country names in System Config; backend stores ISO country codes.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `country_code` | `varchar(2)` | ISO 3166-1 alpha-2 |
+| `country_name_snapshot` | `varchar(120)` | Display snapshot for audit/readability |
+| `gateway_config_id` | `uuid` | FK -> payment_gateway_configs |
+| `environment` | `varchar(20)` | `sandbox`, `production` |
+| `is_active` | `boolean` | Whether this route can be used |
+| `created_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `created_at` | `timestamptz` | |
+
+**Rule:** one active route per `country_code + environment`. A single gateway config may have many country route rows.
 | `updated_at` | `timestamptz` | |
 
-**Rule:** Subscription collection and full-license maintenance collection must reference a configured gateway provider (`stripe`, `paddle`, or `payhere`) when `*_collection_mode = gateway`.
+**Rule:** Subscription and invoice collection must reference a configured payment provider when payment-provider collection is enabled.
 
 ---
 
@@ -270,49 +288,29 @@ Gateway configuration for Stripe, Paddle, and PayHere. Supports global platform 
 
 ## `module_catalog`
 
-Global commercial catalog for modules and add-ons. This supports both subscription sales and full-license plus maintenance sales. No tenant access should be inferred from this table alone; it provides default pricing and catalog metadata.
+Global catalog for actual ONEVO modules. No tenant access should be inferred from this table alone; it provides module metadata and reference values for Subscription Plans.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
-| `module_key` | `varchar(100)` | PK; e.g., `core_hr`, `leave`, `payroll`, `workforce_intelligence` |
+| `module_key` | `varchar(100)` | PK; e.g., `core_hr`, `leave`, `work_management` |
 | `name` | `varchar(150)` | Display name |
-| `pillar` | `varchar(50)` | `hr`, `workforce_intelligence`, `worksync`, `shared` |
+| `pillar` | `varchar(50)` | Product grouping only |
 | `phase` | `varchar(30)` | `phase_1`, `phase_2`, `future`, or product-defined release phase |
-| `price_brackets` | `jsonb` | Employee-count pricing tiers; see module pricing JSON below |
-| `full_license_price` | `decimal(12,2)` | Nullable one-time purchase price |
-| `maintenance_rate` | `decimal(5,2)` | Nullable yearly percentage for maintenance, e.g., 18.00 |
-| `pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
-| `requires_ai_token_limit` | `boolean` | True when tenant subscription must set an AI token limit for this module |
-| `requires_storage_limit` | `boolean` | True when tenant subscription must set a storage limit for this module |
-| `default_storage_limit_gb` | `integer` | Nullable default storage entitlement for storage-backed modules |
-| `is_active` | `boolean` | Whether the module can be sold/provisioned |
+| `pricing_reference` | `jsonb` | Company-size pricing reference only |
+| `storage_reference` | `jsonb` | Company-size storage reference only |
+| `ai_token_reference` | `jsonb` | Company-size AI token reference only |
+| `pricing_unit` | `varchar(30)` | `per_employee`, `per_user`, `flat`, `custom` |
+| `is_ai_enabled` | `boolean` | True when AI token references are relevant |
+| `is_storage_consuming` | `boolean` | True when storage references are relevant |
+| `is_active` | `boolean` | Whether the module can be selected for new plans |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Module pricing JSON contract:** `price_brackets` is the reusable catalog source for dynamic subscription-plan pricing. It uses employee-count ranges. These ranges are not module configuration and are not separate subscription plan identities. `max_employees = -1` means unlimited.
+**Reference rule:** Module Catalog references help operators build plans. Subscription Plans owns base/add-on/resource composition and live billing. Existing tenant subscriptions do not automatically change when catalog references change.
 
-```json
-{
-  "module_key": "core_hr",
-  "name": "Core HR",
-  "pricing_unit": "per_employee",
-  "is_active": true,
-  "price_brackets": [
-    { "min_employees": 0, "max_employees": 50, "monthly_price": 4, "annual_price": 40 },
-    { "min_employees": 51, "max_employees": 200, "monthly_price": 3.5, "annual_price": 35 },
-    { "min_employees": 201, "max_employees": -1, "monthly_price": 3, "annual_price": 30 }
-  ],
-  "full_license_price": 500000,
-  "maintenance_rate": 18
-}
-```
-
-**Dynamic plan pricing rule:** when an operator creates a reusable subscription plan, the plan editor selects modules and defines employee-count pricing tiers. The tenant owner confirmed employee count selects the applicable tier for the first invoice. Example: Core HR at `$3.50` for `51-200` employees plus Work Management at `$4.00` for `51-200` employees produces `$7.50` per employee. Operator-entered overrides are stored separately from calculated prices.
-
-**Permission ownership rule:** permission ownership is stored in `module_permission_ownership`, not directly on `module_catalog`. A permission code can be owned by only one module catalog item. The Developer Platform must show the owning module beside each permission and must reject attempts to assign a permission to a second module unless it is first removed from the original module through an explicit catalog update.
+**Permission ownership rule:** permission ownership is stored in `module_permission_ownership`, not directly on `module_catalog`. A permission code can be owned by only one module catalog item. The Developer Platform must show the owning module beside each permission and reject attempts to assign a permission to a second module unless it is first removed from the original module through an explicit catalog update.
 
 ---
-
 ## `module_features`
 
 Commercial feature registry inside a module. These are plan/custom-contract packaging units, not runtime rollout flags.
@@ -352,28 +350,27 @@ Exclusive ownership map between product modules and seeded tenant-facing permiss
 
 ## `tenant_module_entitlements`
 
-Tenant-level module/commercial entitlement records. Use this table for module-wise sales, quoted modules, maintenance-included modules, and manual add-ons. It complements `tenant_subscriptions` and `subscription_plans`; it does not replace RBAC.
+Tenant-level module entitlement records derived from the active subscription plan and selected optional module add-ons. Resource-only add-ons do not create rows here.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `module_key` | `varchar(100)` | FK -> module_catalog.module_key |
-| `sales_state` | `varchar(30)` | `available`, `purchased`, `quoted`, `maintenance_included`, `subscription_included`, `disabled` |
+| `sales_state` | `varchar(30)` | `subscription_included`, `purchased`, `quoted`, `available`, or `disabled` |
 | `runtime_override` | `boolean` | Nullable runtime-only override; `NULL` inherits commercial entitlement, `false` force-disables runtime access, `true` explicitly restores runtime access without bypassing commercial entitlement |
-| `pricing_model` | `varchar(30)` | `subscription`, `full_license`, `maintenance`, `custom` |
+| `pricing_model` | `varchar(30)` | `subscription`, `addon`, or `custom` |
 | `price` | `decimal(12,2)` | Nullable override price |
 | `currency` | `varchar(3)` | ISO 4217 |
 | `starts_at` | `date` | Nullable entitlement start |
 | `ends_at` | `date` | Nullable entitlement/subscription end |
-| `created_by_id` | `uuid` | FK -> users or dev platform account boundary, depending on implementation |
+| `created_by_id` | `uuid` | FK -> users or platform_users, depending on implementation boundary |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Entitlement rule:** For subscription tenants, commercially entitled modules = plan included modules + paid add-ons - disabled modules. For full-license tenants, commercially entitled modules = owned license modules + maintenance-included modules + purchased add-ons - disabled modules. `available` and `quoted` are commercial pipeline states and do not grant tenant-facing access. Runtime module access requires commercial entitlement and `runtime_override IS DISTINCT FROM false`. Permission catalogs are filtered after module entitlement and runtime override resolution.
+**Entitlement rule:** Commercially entitled modules = selected plan base modules + selected optional module add-ons - disabled modules. `available` and `quoted` are commercial pipeline states and do not grant tenant-facing access. Runtime module access requires commercial entitlement and `runtime_override IS DISTINCT FROM false`.
 
 ---
-
 ## `subscription_plan_price_history`
 
 Audit/history for reusable subscription plan catalog price changes. This preserves historical pricing decisions without silently rewriting tenant contracts.
@@ -406,12 +403,12 @@ Audit/history for reusable module catalog price changes.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `module_key` | `varchar(100)` | FK -> module_catalog.module_key |
-| `old_price_brackets` | `jsonb` | Nullable previous employee-count pricing tiers |
-| `new_price_brackets` | `jsonb` | Nullable new employee-count pricing tiers |
-| `old_full_license_price` | `decimal(12,2)` | Nullable |
-| `new_full_license_price` | `decimal(12,2)` | Nullable |
-| `old_default_maintenance_rate` | `decimal(5,2)` | Nullable |
-| `new_default_maintenance_rate` | `decimal(5,2)` | Nullable |
+| `old_pricing_reference` | `jsonb` | Nullable previous company-size pricing references |
+| `new_pricing_reference` | `jsonb` | Nullable new company-size pricing references |
+| `old_storage_reference` | `jsonb` | Nullable previous storage references |
+| `new_storage_reference` | `jsonb` | Nullable new storage references |
+| `old_ai_token_reference` | `jsonb` | Nullable previous AI token references |
+| `new_ai_token_reference` | `jsonb` | Nullable new AI token references |
 | `old_pricing_unit` | `varchar(30)` | Nullable |
 | `new_pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
 | `changed_by_id` | `uuid` | FK -> users or dev platform account boundary |
@@ -467,20 +464,16 @@ Latest activation blockers and warnings returned by `/admin/v1/tenants/{id}/prov
 
 ## Commercial Entitlement Notes
 
-The schema supports the commercial model requested by product:
+The schema supports the corrected subscription model requested by product:
 
-- `tenant_subscriptions.commercial_model` records `subscription` vs `full_license_maintenance`.
-- Subscription tenants normally use `tenant_subscriptions.subscription_collection_mode = gateway` with `gateway_provider` and gateway refs so recurring SaaS fees are collected through the payment gateway.
-- Full-license tenants can use `tenant_subscriptions.license_payment_mode = manual` for the one-time license sale; `full_license_amount`, `license_paid_at`, and `license_reference` record the manual/offline purchase.
-- `tenant_subscriptions.maintenance_collection_mode = gateway` means full-license maintenance/support is collected through the system payment gateway even when the one-time license was manually paid.
-- `tenant_subscriptions.maintenance_status`, `maintenance_start_date`, `maintenance_renewal_date`, `maintenance_rate`, and `maintenance_amount` track maintenance state and recurring fee calculation for full-license tenants.
-- Manual subscription, full-license, and maintenance payments require `manual_billing_evidence_file_id` or `manual_billing_reference` plus an audit reason. Evidence files are stored through Infrastructure file records.
-- Payment exception/grace windows can apply to subscription tenants and full-license/maintenance tenants. They are tenant-specific commercial exceptions and are not inferred from reusable plan defaults after assignment.
-- Work Management storage-backed modules require `work_management_storage_limit_gb`; AI-capable modules require `ai_token_limit_per_month`.
-- `tenant_module_entitlements.sales_state` records manual sales state per module: `available`, `purchased`, `quoted`, `maintenance_included`, `subscription_included`, or `disabled`.
-- Module pricing defaults live on `module_catalog.price_brackets`; reusable plan calculated/override prices live on `subscription_plans`; tenant-specific negotiated snapshots live on `tenant_subscriptions` and `tenant_module_entitlements`.
-- Subscription plan pricing is calculated from selected packages/modules plus employee-count pricing tiers. Tenant owner confirmed total employee count selects the first invoice pricing tier; store operator overrides separately from calculated prices.
-- AI-capable plans and tenant subscriptions must store a positive `ai_token_limit_per_month`; non-AI plans leave it null.
+- `tenant_subscriptions` records one selected plan, billing cycle, selected optional module add-ons, selected resource-only add-ons, confirmed employee count, and invoice/payment state.
+- `tenant_module_entitlements.sales_state` records module state: `available`, `purchased`, `quoted`, `subscription_included`, or `disabled`.
+- Module Catalog reference values do not automatically change existing tenant subscriptions.
+- Subscription plan pricing is calculated from the selected base plan, selected optional module add-ons, selected resource-only add-ons, and company-size pricing tiers.
+- Tenant owner confirmed total employee count selects the first invoice pricing tier.
+- Store operator overrides separately from calculated prices.
+- Shared storage and shared AI allowances are resolved into tenant resource limits.
+- Unpaid seat dues block cancellation and renewal changes.
 
 Pricing and module entitlement decide what the tenant has access to. RBAC permissions decide which users inside that tenant can use the entitled capabilities.
 
@@ -552,13 +545,13 @@ Reusable setup templates managed in the Developer Platform -> Configuration Temp
 | `payload_json` | `jsonb` | Type-specific template content - schema defined per `template_type` in the Configuration Template Manager end-to-end-logic doc |
 | `is_system` | `boolean` | `true` = ONEVO-managed default; system templates cannot be edited, only cloned |
 | `is_active` | `boolean` | Inactive templates cannot be applied; deactivation is blocked if any `job_levels` row has `pending_role_template_id` referencing a suggested role template |
-| `created_by_id` | `uuid` | FK -> dev_platform_accounts |
+| `created_by_id` | `uuid` | FK -> platform_users |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
 **Note on `role` type:** Role templates are managed separately via the Role Template Manager module and stored in `role_templates`, not here. The `job_family` payload references `role_templates.id` per level for suggested role prefill only; it must not auto-assign permissions. See `job_levels.pending_role_template_id`.
 
-**Foreign Keys:** `created_by_id` -> [[developer-platform/database/schema#dev_platform_accounts|dev_platform_accounts]]
+**Foreign Keys:** `created_by_id` -> [[developer-platform/database/schema#platform_users|platform_users]]
 
 ---
 
@@ -577,13 +570,13 @@ Audit record of every template application to a tenant. One row per apply action
 | `custom_payload_json` | `jsonb` | Nullable - tenant-specific overrides made after application; does not mutate the global template |
 | `warnings_json` | `jsonb` | Array of warning strings returned at apply time, e.g. unresolved job level rank references |
 | `status` | `varchar(20)` | `applied` -> `customized` (if tenant edited) -> `superseded` (if reapplied) -> `removed` |
-| `applied_by_id` | `uuid` | FK -> dev_platform_accounts |
+| `applied_by_id` | `uuid` | FK -> platform_users |
 | `applied_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | Nullable - set when status changes or custom payload is edited |
 
 **Rule:** Applying a template creates tenant-specific configuration; the global template record is never mutated. Editing the tenant copy sets `status = customized`. Reapplying the same template sets the previous application row to `superseded` and creates a new `applied` row.
 
-**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#tenants|tenants]], `configuration_template_id` -> [[#configuration_templates|configuration_templates]], `applied_by_id` -> [[developer-platform/database/schema#dev_platform_accounts|dev_platform_accounts]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#tenants|tenants]], `configuration_template_id` -> [[#configuration_templates|configuration_templates]], `applied_by_id` -> [[developer-platform/database/schema#platform_users|platform_users]]
 
 Catalog price changes do not silently update existing tenant commercial records. Existing tenant subscriptions and module entitlements keep their stored negotiated prices unless ONEVO runs an explicit reviewed reprice/migration process.
 
@@ -889,7 +882,7 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `flag_key` | `varchar(120)` | FK -> feature_flags(key) |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `value` | `boolean` | Override value for this tenant |
-| `granted_by_id` | `uuid` | FK -> dev_platform_accounts(id) |
+| `granted_by_id` | `uuid` | FK -> platform_users(id) |
 | `granted_at` | `timestamptz` | |
 | `reason` | `text` | Nullable audit reason |
 | UNIQUE: `(flag_key, tenant_id)` | | |
@@ -904,59 +897,31 @@ Per-tenant runtime overrides. Overrides are evaluated only after module entitlem
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `allowed_plan_ids` | `jsonb` | Operator-selected plan IDs the tenant owner may choose from during onboarding |
-| `recommended_plan_id` | `uuid` | Nullable FK -> subscription_plans; optional operator-recommended/default plan |
-| `plan_id` | `uuid` | Nullable FK -> subscription_plans; final tenant-owner-selected plan from the allowed list |
-| `billing_cycle` | `varchar(20)` | Nullable until tenant owner selects `monthly` or `annual` during subscription confirmation |
-| `status` | `varchar(30)` | `pending_confirmation`, `pending_payment`, `active`, `past_due`, `cancelled` |
-| `current_period_start` | `date` |  |
-| `current_period_end` | `date` |  |
-| `payment_provider_ref` | `varchar(100)` | Legacy provider ref; prefer explicit gateway refs below |
-| `commercial_model` | `varchar(30)` | `subscription` or `full_license_maintenance` |
-| `billing_currency` | `varchar(3)` | ISO 4217; overrides plan currency for custom contracts |
-| `subscription_collection_mode` | `varchar(20)` | `gateway` or `manual`; subscriptions normally use `gateway` |
-| `gateway_provider` | `varchar(50)` | `stripe`, `paddle`, `payhere`, or configured payment provider |
-| `gateway_customer_ref` | `varchar(100)` | Nullable payment gateway customer ID |
-| `gateway_subscription_ref` | `varchar(100)` | Nullable payment gateway recurring subscription ID |
-| `license_payment_mode` | `varchar(20)` | `manual` or `gateway`; full-license one-time sale can be manual |
-| `full_license_amount` | `decimal(12,2)` | Nullable one-time full-license amount |
-| `license_paid_at` | `date` | Nullable date the full license was paid/recorded |
-| `license_reference` | `varchar(100)` | Nullable invoice/reference number for manual full-license sale |
-| `maintenance_collection_mode` | `varchar(20)` | `gateway`, `manual`, or `waived`; maintenance normally uses gateway |
-| `maintenance_billing_cycle` | `varchar(20)` | `monthly` or `annual`, nullable when waived |
-| `contract_start_date` | `date` | Commercial agreement start date |
-| `contract_end_date` | `date` | Nullable; required if agreement is fixed-term |
-| `maintenance_status` | `varchar(20)` | `active`, `due`, `expired`, `waived`; used for full-license tenants |
-| `maintenance_start_date` | `date` | Nullable; first maintenance billing period start |
-| `maintenance_renewal_date` | `date` | Nullable; next maintenance renewal date |
-| `maintenance_rate` | `decimal(5,2)` | Nullable percentage of license value, e.g., 18.00 |
-| `maintenance_amount` | `decimal(12,2)` | Nullable explicit recurring maintenance amount when not rate-derived |
-| `confirmed_employee_count` | `integer` | Nullable until tenant owner confirms total employee count; used for first invoice quantity and pricing tier |
-| `selected_modules` | `jsonb` | Snapshot of module keys included in this tenant's commercial record |
-| `calculated_monthly_price` | `decimal(10,2)` | Snapshot of calculated monthly per-unit price at assignment time |
-| `calculated_annual_price` | `decimal(10,2)` | Snapshot of calculated annual per-unit price at assignment time |
-| `override_monthly_price` | `decimal(10,2)` | Nullable negotiated monthly per-unit price |
-| `override_annual_price` | `decimal(10,2)` | Nullable negotiated annual per-unit price |
-| `override_full_license_amount` | `decimal(12,2)` | Nullable negotiated one-time full-license amount |
-| `override_maintenance_rate` | `decimal(5,2)` | Nullable negotiated maintenance percentage |
-| `override_maintenance_amount` | `decimal(12,2)` | Nullable negotiated recurring maintenance amount |
-| `ai_token_limit_per_month` | `integer` | Nullable monthly AI token cap for this tenant subscription |
-| `work_management_storage_limit_gb` | `integer` | Nullable storage entitlement for Work Management storage-backed features |
-| `manual_billing_evidence_file_id` | `uuid` | Nullable FK -> file_records for manual subscription/license/maintenance evidence |
-| `manual_billing_reference` | `varchar(100)` | Nullable external invoice/reference for manual payment evidence |
-| `payment_exception_starts_at` | `date` | Nullable approved commercial exception start |
-| `payment_exception_ends_at` | `date` | Nullable approved commercial exception end |
-| `payment_exception_reason` | `text` | Nullable reason for approved payment grace/exception |
-| `custom_contract_value` | `decimal(12,2)` | Nullable manually-entered enterprise contract amount |
-| `discount_percent` | `decimal(5,2)` | Nullable negotiated discount applied to the tenant commercial record |
-| `created_by_id` | `uuid` | FK -> users |
-| `created_at` | `timestamptz` |  |
-| `updated_at` | `timestamptz` |  |
-
-**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `plan_id` -> [[#`subscription_plans`|subscription_plans]], `created_by_id` -> [[database/schemas/infrastructure#`users`|users]]
+| `allowed_plan_ids` | `jsonb` | Plan IDs the tenant may choose from during demo upgrade or onboarding |
+| `recommended_plan_id` | `uuid` | Nullable FK -> subscription_plans |
+| `plan_id` | `uuid` | Nullable FK -> subscription_plans; final selected plan |
+| `billing_cycle` | `varchar(20)` | `monthly` or `annual` |
+| `status` | `varchar(30)` | `pending_payment`, `active`, `past_due`, `cancelled` |
+| `current_period_start` | `date` | |
+| `current_period_end` | `date` | |
+| `billing_currency` | `varchar(3)` | ISO 4217 |
+| `confirmed_employee_count` | `integer` | Used for first invoice quantity and company-size bracket |
+| `selected_base_modules` | `jsonb` | Snapshot from selected plan |
+| `selected_addon_modules` | `jsonb` | Selected optional module add-ons |
+| `selected_resource_addons` | `jsonb` | Selected storage/AI resource packs |
+| `calculated_monthly_price` | `decimal(10,2)` | Snapshot of calculated monthly amount |
+| `calculated_annual_price` | `decimal(10,2)` | Snapshot of calculated annual amount |
+| `annual_price_override` | `decimal(10,2)` | Nullable explicit annual override |
+| `annual_discount_percent` | `decimal(5,2)` | Nullable annual discount |
+| `ai_token_limit_per_month` | `integer` | Resolved shared AI token allowance |
+| `tenant_storage_limit_gb` | `integer` | Resolved shared storage pool |
+| `payment_gateway_config_id` | `uuid` | FK -> payment_gateway_configs; resolved from tenant country route |
+| `unpaid_seat_dues_amount` | `decimal(12,2)` | Blocks cancellation/renewal changes when greater than zero |
+| `created_by_id` | `uuid` | FK -> users or platform_users |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
 
 ---
-
 ## `user_preferences`
 
 | Column | Type | Notes |
@@ -1227,7 +1192,7 @@ Delivery routing state for workflow action cards.
 | `approver_type` | `varchar(30)` | Legacy compatibility field; do not use for new definitions |
 | `approver_role_id` | `uuid` | Legacy compatibility field; do not use for new definitions |
 | `resolver_type` | `varchar(50)` | Dynamic resolver type, e.g. `reporting_manager`, `selected_permission`, `case_participants` |
-| `resolver_config` | `jsonb` | Resolver parameters such as permission code, department/team/job level, employee id, connected tenant scope |
+| `resolver_config` | `jsonb` | Resolver parameters such as permission code, legal entity/department/team/position/position branch, optional job level when configured, employee id, connected tenant scope |
 | `approval_mode` | `varchar(30)` | `only_one_required`, `all_required`, `sequential` |
 | `action_config` | `jsonb` | Action-card, request-info, escalation, or task creation settings |
 | `delivery_config` | `jsonb` | Chat, Inbox, Teams mirror, notification routing preferences |

@@ -70,7 +70,7 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 
 1. Seed active remote profile.
 2. Employee submits change request.
-3. Manager approves.
+3. Configured approver approves.
 4. Next clock-in submits new profile evidence and successful photo.
 5. Assert old profile archived and new profile active.
 
@@ -81,7 +81,7 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 3. Advance time beyond grace period.
 4. Assert `work_location_mismatch` alert exists.
 5. Assert `capture_photo` command is queued.
-6. Assert reporting manager notification is created.
+6. Assert configured reviewer notification is created.
 7. Assert hierarchy reviewer is notified only when above employee and permissioned.
 
 ---
@@ -97,7 +97,7 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 | Remote employee moves to another network during work | Alert after grace and photo challenge |
 | Employee starts break before mismatch | No collection and no alert |
 | Employee clocks out before grace expires | No alert |
-| Manager approves remote location change | Next remote clock-in replaces profile |
+| Configured approver approves remote location change | Next remote clock-in replaces profile |
 
 ---
 
@@ -105,8 +105,8 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 
 | Case | Expected |
 |:-----|:---------|
-| Non-manager requests detailed evidence | Forbidden |
-| Manager outside hierarchy opens alert | Forbidden unless explicit scope exception exists |
+| Unauthorized user requests detailed evidence | Forbidden |
+| Reviewer outside hierarchy opens alert | Forbidden unless explicit scope exception exists |
 | Raw MAC address submitted | Stored as hash or rejected by validation |
 | Photo evidence requested without identity verification policy | Command rejected |
 | Retention job runs | Old evidence deleted according to retention policy |

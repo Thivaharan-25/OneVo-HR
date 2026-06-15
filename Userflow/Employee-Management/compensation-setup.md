@@ -2,7 +2,7 @@
 
 **Area:** Employee Management  
 **Phase:** Phase 2  
-**Trigger:** HR Admin configures salary during onboarding or revision (user action)
+**Trigger:** Authorized compensation-management user configures salary during onboarding or revision (user action)
 **Required Permission(s):** `employees:write` + `payroll:write`  
 **Related Permissions:** `payroll:read` (view only)
 

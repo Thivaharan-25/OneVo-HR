@@ -24,7 +24,7 @@ public class FeatureFlagServiceTests
         // var result = await _sut.MethodAsync(command, default);
 
         // Assert
-        // Redis cache hit
+        // Cache hit
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class FeatureFlagServiceTests
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| Check flag returns cached value | Unit | Redis cache hit |
+| Check flag returns cached value | Unit | Cache hit |
 | Toggle invalidates cache | Unit | Cache cleared |
 
 ## Related

@@ -96,7 +96,7 @@ Content driven by `GET /configuration/monitoring/my-settings` — returns the ef
 
 ## Empty States
 
-- **Monitoring disabled:** Activity section hidden. Show only HR widgets (leave, profile, performance)
+- **Monitoring disabled:** Activity section hidden. Show only core employee widgets (leave, profile, performance)
 - **No activity today:** "No activity recorded yet today. Data updates every few minutes."
 - **Covert mode:** Entire activity section absent, with no explanation
 

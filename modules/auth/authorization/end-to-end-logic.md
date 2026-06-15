@@ -19,7 +19,7 @@ Any protected API endpoint
             - owning module_key
             - optional feature_key
       -> 3. Check module entitlement:
-            - tenant_module_entitlements must grant active/trial/purchased/subscription_included/maintenance_included access
+            - tenant_module_entitlements must grant active/trial/purchased/subscription_included access
             - disabled, available, quoted, expired modules do not grant access
       -> 4. If permission has feature_key:
             - current tenant_subscriptions.selected_feature_keys must include it

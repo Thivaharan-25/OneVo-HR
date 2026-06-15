@@ -32,7 +32,7 @@ Domain events are optional. They are not required by Clean Architecture or CQRS.
 |---|---|---|
 | Domain | Business entities, value objects, business rules, optional domain events | Nothing |
 | Application | CQRS handlers, interface definitions, DTOs, validation | Domain |
-| Infrastructure | EF Core, JWT, BCrypt, Redis, Hangfire, SMTP, SignalR | Application + Domain |
+| Infrastructure | EF Core, JWT, BCrypt, Phase 1 `IMemoryCache`, Hangfire, SMTP, SignalR; Redis optional/future for distributed cache | Application + Domain |
 | Api | HTTP routing, middleware, SignalR hubs | Application + Infrastructure for DI |
 
 ## Request Lifecycle

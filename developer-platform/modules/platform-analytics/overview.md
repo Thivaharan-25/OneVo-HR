@@ -1,8 +1,8 @@
-# Platform Analytics
+# Reports / Analytics
 
 ## Purpose
 
-Platform Analytics provides cross-tenant operational and commercial analytics for ONEVO operators. It surfaces aggregate trends on tenant growth, subscription distribution, product module adoption, and Phase 1 health summaries - enabling data-driven decisions about the platform's commercial and operational health.
+Reports / Analytics provides cross-tenant operational and commercial analytics for ONEVO operators. It surfaces aggregate trends on tenant growth, subscription distribution, product module adoption, and Phase 1 health summaries - enabling data-driven decisions about the platform's commercial and operational health.
 
 ## Data / Systems Read
 
@@ -27,7 +27,7 @@ Platform Analytics provides cross-tenant operational and commercial analytics fo
 
 | Route | Permission |
 |---|---|
-| `/analytics/platform` | `platform.reports.read` |
+| `/reports-analytics` | `platform.reports.read` |
 | Commercial detail | `platform.subscriptions.read` (additional) |
 
 ## Key Rules
@@ -39,7 +39,7 @@ Platform Analytics provides cross-tenant operational and commercial analytics fo
 
 ## Related
 
-- [[developer-platform/modules/platform-analytics/end-to-end-logic|Platform Analytics End-to-End Logic]]
+- [[developer-platform/modules/platform-analytics/end-to-end-logic|Reports / Analytics End-to-End Logic]]
 - [[developer-platform/modules/report-manager/overview|Report Manager]] - export specific reports
-- [[developer-platform/modules/subscription-manager/overview|Subscription Manager]] - commercial detail
+- [[developer-platform/modules/subscription-manager/overview|Subscription Plans]] - commercial detail
 

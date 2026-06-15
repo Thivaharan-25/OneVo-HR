@@ -36,7 +36,7 @@ POST /api/v1/agent/ingest
                                   null match → is_allowed = null (pending, never triggers non_allowed_app rule)
          -> "device_session" -> workforce-presence raw processing
          -> "verification_photo" -> identity-verification pipeline
-      -> 4. Rate limit check: 30 requests/min/device (Redis sliding window)
+      -> 4. Rate limit check: 30 requests/min/device (Phase 1 in-memory sliding window; Redis only if future distributed cache is enabled)
 ```
 
 ### Error Scenarios

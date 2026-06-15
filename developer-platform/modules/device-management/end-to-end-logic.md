@@ -4,7 +4,7 @@
 
 ## View Devices
 
-1. Operator opens System Operations -> Device Management.
+1. Operator opens Phase 2 Operations -> Device Management.
 2. Frontend calls `GET /admin/v1/operations/devices`.
 3. Backend verifies `platform.devices.read`.
 4. Backend returns cross-tenant device metadata.

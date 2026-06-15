@@ -1,10 +1,10 @@
-﻿# Userflow Index
+# Userflow Index
 
-**Purpose:** End-to-end user flows organized by feature area. Each flow specifies the **required permissions** â€” since roles are dynamic (created via [[Userflow/Org-Structure/job-family-setup|Job Family]]) and permissions are assigned per role or per employee, flows are **permission-based, not role-based**.
+**Purpose:** End-to-end user flows organized by feature area. Each flow specifies the **required permissions** — since roles are dynamic (created via [[Userflow/Org-Structure/job-family-setup|Job Family]]) and permissions are assigned per role or per employee, flows are **permission-based, not role-based**.
 
 **How to read:** Each flow file describes what a user with the listed permission(s) experiences step-by-step, including UI actions, API calls, backend logic, and database changes.
 
-**Key flow:** [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] â€” how permissions get assigned to roles/employees, which unlocks all other flows.
+**Key flow:** [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — how permissions get assigned to roles/employees, which unlocks all other flows.
 
 ---
 
@@ -50,21 +50,21 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 |:-------|:--------|
 | `Documented` | Flow file exists with full steps, errors, events |
 | `Stub` | Flow file exists but incomplete (missing sections) |
-| `Planned` | No file yet â€” identified but not written |
+| `Planned` | No file yet — identified but not written |
 
 | Priority | Meaning |
 |:---------|:--------|
-| `MUST` | Core flow â€” product doesn't work without it |
-| `SHOULD` | Important flow â€” expected by most users |
-| `COULD` | Nice-to-have â€” enhances experience but not critical |
+| `MUST` | Core flow — product doesn't work without it |
+| `SHOULD` | Important flow — expected by most users |
+| `COULD` | Nice-to-have — enhances experience but not critical |
 
-**Audit tool:** [[Userflow/GAP-AUDIT-CHECKLIST|Gap Audit Checklist]] â€” 6-category checklist for reviewing flows for missing paths
+**Audit tool:** [[Userflow/GAP-AUDIT-CHECKLIST|Gap Audit Checklist]] — 6-category checklist for reviewing flows for missing paths
 
 ---
 
 ## Flows by Feature Area
 
-### Platform Setup â€” `settings:admin`, `billing:manage`
+### Platform Setup — `settings:admin`, `billing:manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -74,7 +74,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Platform-Setup/feature-flag-management\|Feature Flag Management]] | Enable/disable modules per tenant | Documented | MUST |
 | [[Userflow/Platform-Setup/tenant-branding\|Tenant Branding]] | Logo, colors, tenant URL display | Documented | COULD |
 
-### Auth & Access â€” `roles:manage`, `users:manage`
+### Auth & Access — `roles:manage`, `users:manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -86,7 +86,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Auth-Access/password-reset\|Password Reset]] | Self-service + admin-initiated | Documented | MUST |
 | [[Userflow/Auth-Access/gdpr-consent\|Legal & Privacy Acceptance]] | Terms, privacy, monitoring notice, and consent flow | Documented | MUST |
 
-### Org Structure â€” `org:manage`
+### Org Structure — `org:manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -96,26 +96,26 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Org-Structure/team-creation\|Team Creation]] | Teams, team leads | Documented | SHOULD |
 | [[Userflow/Org-Structure/cost-center-setup\|Cost Center Setup]] | Cost center management (Phase 2) | Documented | COULD |
 
-### People â€” `employees:read/write/delete`
+### People — `employees:read/write/delete`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
-| [[Userflow/Employee-Management/employee-onboarding\|Employee Onboarding]] | Full hire flow: create profile â†’ assign role â†’ onboarding checklist | Documented | MUST |
+| [[Userflow/Employee-Management/employee-onboarding\|Employee Onboarding]] | Full hire flow: create profile → assign role → onboarding checklist | Documented | MUST |
 | [[Userflow/Employee-Management/profile-management\|Profile Management]] | View/edit employee profile (own or by permission) | Documented | MUST |
 | [[Userflow/Employee-Management/compensation-setup\|Compensation Setup]] | Salary, allowances, bank details (Phase 2) | Documented | COULD |
 | [[Userflow/Employee-Management/employee-transfer\|Employee Transfer]] | Department/team/location transfer | Documented | SHOULD |
 | [[Userflow/Employee-Management/employee-promotion\|Employee Promotion]] | Title change, salary revision | Documented | SHOULD |
-| [[Userflow/Employee-Management/employee-offboarding\|Employee Offboarding]] | Exit workflow: checklist â†’ access revoke â†’ final pay | Documented | MUST |
+| [[Userflow/Employee-Management/employee-offboarding\|Employee Offboarding]] | Exit workflow: checklist → access revoke → final pay | Documented | MUST |
 | [[Userflow/Employee-Management/dependent-management\|Dependent Management]] | Add/edit dependents and emergency contacts | Documented | SHOULD |
 | [[Userflow/Employee-Management/qualification-tracking\|Qualification Tracking]] | Education, certifications, experience (Phase 2) | Documented | COULD |
 
-### Data Import â€” `employees:write`
+### Data Import — `employees:write`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Data-Import/data-import-wizard\|Data Import Wizard]] | Bulk employee/org import from CSV, Excel, or PeopleHR | Documented | MUST |
 
-### Leave â€” `leave:create/approve/manage`
+### Leave — `leave:create/approve/manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -127,11 +127,11 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Leave/leave-cancellation\|Leave Cancellation]] | Employee or admin cancels leave | Documented | SHOULD |
 | [[Userflow/Leave/leave-balance-view\|Leave Balance View]] | View remaining balances, history | Documented | MUST |
 
-### Workforce Presence â€” `attendance:read/write/approve`
+### Workforce Presence — `attendance:read/write/approve`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
-| [[Userflow/Workforce-Presence/shift-schedule-setup\|Shift Schedule Setup]] | Define shifts, assign schedules â€” UI entry via Calendar sidebar, backend in Workforce Presence | Documented | MUST |
+| [[Userflow/Workforce-Presence/shift-schedule-setup\|Shift Schedule Setup]] | Define shifts, assign schedules — UI entry via Calendar sidebar, backend in Workforce Presence | Documented | MUST |
 | [[Userflow/Workforce-Presence/presence-overview\|Presence Overview]] | Live card grid, agent escalation sort, card anatomy | Documented | MUST |
 | [[Userflow/Workforce-Presence/employee-activity-detail\|Employee Activity Detail]] | Activity timeline, filters (date/task/project), productivity breakdown | Documented | MUST |
 | [[Userflow/Workforce-Presence/presence-session-view\|Presence Session View]] | View clock-in/out, active sessions | Documented | MUST |
@@ -140,7 +140,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Workforce-Presence/break-tracking\|Break Tracking]] | Break policy and tracking | Documented | COULD |
 | [[Userflow/Workforce-Presence/biometric-device-setup\|Biometric Device Setup]] | Register devices, enroll employees | Documented | COULD |
 
-### Performance â€” `performance:read/write/manage`
+### Performance — `performance:read/write/manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -153,7 +153,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 | [[Userflow/Performance/recognition-submission\|Recognition Submission]] | Peer/manager recognition | Documented | COULD |
 | [[Userflow/Performance/succession-planning\|Succession Planning]] | Identify and track successors | Documented | COULD |
 
-### Payroll â€” `payroll:read/write/run/approve`
+### Payroll — `payroll:read/write/run/approve`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -180,7 +180,7 @@ Full taxonomy management, courses, certifications, and development plans are Pha
 | [[Userflow/Skills-Learning/certification-tracking\|Certification Tracking]] | Upload/verify certifications (Phase 2) | Documented | COULD |
 | [[Userflow/Skills-Learning/development-plan\|Development Plan]] | Create learning path (Phase 2) | Documented | SHOULD |
 
-### Documents â€” `documents:read/write/manage`
+### Documents — `documents:read/write/manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -190,7 +190,7 @@ Full taxonomy management, courses, certifications, and development plans are Pha
 | [[Userflow/Documents/template-management\|Template Management]] | Create/manage document templates | Documented | SHOULD |
 | [[Userflow/Documents/document-versioning\|Document Versioning]] | Version history, rollback | Documented | COULD |
 
-### Workforce Intelligence â€” `workforce:view/manage`, `monitoring:configure`
+### Workforce Intelligence — `workforce:view/manage`, `monitoring:configure`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -201,13 +201,13 @@ Full taxonomy management, courses, certifications, and development plans are Pha
 | [[Userflow/Workforce-Intelligence/identity-verification-review\|Identity Verification Review]] | Review flagged verification failures | Documented | SHOULD |
 | [[Userflow/Workforce-Intelligence/agent-deployment\|Agent Deployment]] | Install, register, monitor desktop agent | Documented | MUST |
 
-### Discrepancy Engine â€” `exceptions:manage`
+### Discrepancy Engine — `exceptions:manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Discrepancy-Engine/discrepancy-review\|Discrepancy Review]] | Review mismatches between active time, WorkSync logs, and calendar context | Documented | MUST |
 
-### Exception Engine â€” `monitoring:alerts:read/resolve`, `exceptions:manage`
+### Exception Engine — `monitoring:alerts:read/resolve`, `exceptions:manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -216,7 +216,7 @@ Full taxonomy management, courses, certifications, and development plans are Pha
 | [[Userflow/Exception-Engine/escalation-chain-setup\|Escalation Chain Setup]] | Configure escalation paths | Documented | SHOULD |
 | [[Userflow/Exception-Engine/exception-dashboard\|Alerts Overview]] | Overview of all active alerts | Documented | MUST |
 
-### Analytics & Reporting â€” `analytics:view/export`, `reports:read/create`
+### Analytics & Reporting — `analytics:view/export`, `reports:read/create`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -226,7 +226,7 @@ Full taxonomy management, courses, certifications, and development plans are Pha
 | [[Userflow/Analytics-Reporting/scheduled-report-setup\|Scheduled Report Setup]] | Automate report delivery | Documented | COULD |
 | [[Userflow/Analytics-Reporting/data-export\|Data Export]] | CSV/Excel export flow | Documented | SHOULD |
 
-### Grievance â€” `grievance:read/write/manage`
+### Grievance — `grievance:read/write/manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -234,7 +234,7 @@ Full taxonomy management, courses, certifications, and development plans are Pha
 | [[Userflow/Grievance/grievance-investigation\|Grievance Investigation]] | Admin reviews, assigns investigator | Documented | MUST |
 | [[Userflow/Grievance/disciplinary-action\|Disciplinary Action]] | Issue disciplinary action | Documented | SHOULD |
 
-### Expense â€” `expense:read/create/approve/manage`
+### Expense — `expense:read/create/approve/manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -242,7 +242,7 @@ Full taxonomy management, courses, certifications, and development plans are Pha
 | [[Userflow/Expense/expense-approval\|Expense Approval]] | Approver reviews expense claims | Documented | MUST |
 | [[Userflow/Expense/expense-category-setup\|Expense Category Setup]] | Admin defines expense categories | Documented | SHOULD |
 
-### Calendar â€” `calendar:read/write`
+### Calendar — `calendar:read/write`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -250,7 +250,7 @@ Full taxonomy management, courses, certifications, and development plans are Pha
 | [[Userflow/Calendar/calendar-integrations\|Calendar Integrations]] | Country holiday sync plus Google/Outlook calendar pull/push sync | Documented | MUST |
 | [[Userflow/Calendar/conflict-detection\|Conflict Detection]] | View scheduling conflicts | Documented | COULD |
 
-### Notifications â€” `notifications:read/manage`
+### Notifications — `notifications:read/manage`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -266,19 +266,19 @@ Full taxonomy management, courses, certifications, and development plans are Pha
 
 ### Cross-Module Scenarios
 
-These flows track chain reactions across multiple modules â€” when one action triggers downstream effects in 3+ modules.
+These flows track chain reactions across multiple modules — when one action triggers downstream effects in 3+ modules.
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
-| [[Userflow/Cross-Module/employee-full-onboarding\|Employee Full Onboarding]] | Hire â†’ auth + leave + attendance + payroll + docs setup | Documented | MUST |
-| [[Userflow/Cross-Module/employee-full-offboarding\|Employee Full Offboarding]] | Exit â†’ access revoke + final pay + data retention | Documented | MUST |
-| [[Userflow/Cross-Module/leave-request-and-approval-chain\|Leave Request & Approval Chain]] | Request â†’ calendar + attendance override + payroll deduction | Documented | MUST |
-| [[Userflow/Cross-Module/monthly-payroll-run-chain\|Monthly Payroll Run Chain]] | Attendance + leave + expense data â†’ calculation â†’ payslips | Documented | MUST |
-| [[Userflow/Cross-Module/attendance-dispute-chain\|Attendance Dispute & Correction Chain]] | Employee/system-detected â†’ correction â†’ payroll adjustment | Documented | SHOULD |
-| [[Userflow/Cross-Module/performance-review-cycle-chain\|Performance Review Cycle Chain]] | Cycle â†’ assessments â†’ compensation + learning + succession | Documented | SHOULD |
-| [[Userflow/Cross-Module/employee-transfer-chain\|Employee Transfer Chain]] | Transfer â†’ reporting line + shift + leave policy + payroll + access | Documented | SHOULD |
+| [[Userflow/Cross-Module/employee-full-onboarding\|Employee Full Onboarding]] | Hire → auth + leave + attendance + payroll + docs setup | Documented | MUST |
+| [[Userflow/Cross-Module/employee-full-offboarding\|Employee Full Offboarding]] | Exit → access revoke + final pay + data retention | Documented | MUST |
+| [[Userflow/Cross-Module/leave-request-and-approval-chain\|Leave Request & Approval Chain]] | Request → calendar + attendance override + payroll deduction | Documented | MUST |
+| [[Userflow/Cross-Module/monthly-payroll-run-chain\|Monthly Payroll Run Chain]] | Attendance + leave + expense data → calculation → payslips | Documented | MUST |
+| [[Userflow/Cross-Module/attendance-dispute-chain\|Attendance Dispute & Correction Chain]] | Employee/system-detected → correction → payroll adjustment | Documented | SHOULD |
+| [[Userflow/Cross-Module/performance-review-cycle-chain\|Performance Review Cycle Chain]] | Cycle → assessments → compensation + learning + succession | Documented | SHOULD |
+| [[Userflow/Cross-Module/employee-transfer-chain\|Employee Transfer Chain]] | Transfer → reporting line + shift + leave policy + payroll + access | Documented | SHOULD |
 
-### Configuration â€” `settings:read/admin`
+### Configuration — `settings:read/admin`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
@@ -289,14 +289,14 @@ These flows track chain reactions across multiple modules â€” when one acti
 | [[Userflow/Configuration/app-allowlist-setup\|App Allowlist Setup]] | Configure productive/allowed applications for monitoring | Documented | SHOULD |
 | [[Userflow/Configuration/integration-connection\|Integration Connection]] | Connect and test external providers and module integrations | Documented | SHOULD |
 
-### Work Management â€” `workforce:view` + feature-specific permissions
+### Work Management — `workforce:view` + feature-specific permissions
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Work-Management/wm-overview\|WMS Overview]] | Module map, ownership, HR integration points | Documented | MUST |
 | [[Userflow/Work-Management/project-flow\|Project Management]] | Project CRUD, membership, milestones, change control | Documented | MUST |
 | [[Userflow/Work-Management/task-flow\|Task Management]] | Task lifecycle, bugs, submission, approval | Documented | MUST |
-| [[Userflow/Work-Management/planning-flow\|Planning â€” Sprints and Boards]] | Sprints, boards, roadmap, releases | Documented | MUST |
+| [[Userflow/Work-Management/planning-flow\|Planning — Sprints and Boards]] | Sprints, boards, roadmap, releases | Documented | MUST |
 | [[Userflow/Work-Management/goals-okr-flow\|Goals and OKRs]] | Objectives, key results, check-ins, alignment | Documented | MUST |
 | [[Userflow/Work-Management/time-tracking-flow\|Time Tracking]] | Time logs, timesheets, overtime and attendance connections | Documented | MUST |
 | [[Userflow/Work-Management/resource-flow\|Resource Management]] | Capacity, skills, allocation planning | Documented | MUST |
@@ -307,20 +307,20 @@ These flows track chain reactions across multiple modules â€” when one acti
 | [[Userflow/Work-Management/integration-automation-flow\|Integration Automation]] | Repository connections, code events, and automation rules | Documented | SHOULD |
 | [[Userflow/Work-Management/workspace-teams-sync\|Workspace Teams Sync]] | Link WorkSync workspaces and chat channels with Microsoft Teams | Documented | SHOULD |
 
-### Chat â€” `chat:read`
+### Chat — `chat:read`
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Chat/chat-overview\|Chat Overview]] | Channels, DMs, messages, reactions, file attachments | Documented | MUST |
 
-### Developer Platform â€” platform-admin only
+### Developer Platform — platform-admin only
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
 | [[developer-platform/userflow/overview\|Developer Platform Overview]] | Internal operator console navigation and access levels | Documented | MUST |
 | [[developer-platform/userflow/dashboard\|Dashboard]] | Cross-tenant platform summary and click-through | Documented | SHOULD |
-| [[developer-platform/userflow/platform-access\|Platform Access]] | Invite platform managers, assign roles, restrict module access, revoke sessions | Documented | MUST |
-| [[developer-platform/userflow/provisioning-flow\|Manual Customer Provisioning]] | Internal 7-step tenant provisioning wizard | Documented | SHOULD |
+| [[developer-platform/userflow/platform-access\|Platform Users and Platform Roles]] | Invite platform managers, assign roles, restrict module access, revoke sessions | Documented | MUST |
+| [[developer-platform/userflow/provisioning-flow\|Operator Customer Provisioning]] | Internal 7-step tenant provisioning wizard | Documented | SHOULD |
 | [[developer-platform/userflow/tenant-management\|Tenant Management]] | Manage tenant status, details, and operational actions | Documented | SHOULD |
 | [[developer-platform/userflow/subscription-management\|Subscription Management]] | Reusable plans, payment gateways, invoices, and tenant commercial terms | Documented | SHOULD |
 | [[developer-platform/userflow/module-catalog\|Module Catalog]] | Manage ONEVO product modules, pricing, permission ownership, and tenant impact | Documented | MUST |
@@ -329,7 +329,6 @@ These flows track chain reactions across multiple modules â€” when one acti
 | [[developer-platform/userflow/feature-flags\|Feature Flags]] | Manage global and tenant-level feature flags | Documented | SHOULD |
 | [[developer-platform/userflow/agent-versions\|Agent Versions]] | Manage desktop agent rollout rings and versions | Documented | SHOULD |
 | [[developer-platform/userflow/platform-health\|Platform Health]] | View health and dependency status | Documented | SHOULD |
-| [[developer-platform/userflow/services-monitor\|Services Monitor]] | Inspect service status and approved actions | Documented | SHOULD |
 | [[developer-platform/userflow/device-management\|Device Management]] | Inspect devices and queue approved agent commands | Documented | SHOULD |
 | [[developer-platform/userflow/infrastructure-operations\|Infrastructure Operations]] | Infrastructure capacity and dependency summary | Documented | SHOULD |
 | [[developer-platform/userflow/background-jobs\|Background Jobs]] | Job observability, retry, and schedule controls | Documented | SHOULD |

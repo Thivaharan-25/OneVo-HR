@@ -146,15 +146,15 @@ Notification routing by severity.
 | `tenant_id` | `uuid` | FK â†’ tenants |
 | `severity` | `varchar(20)` | Which severity triggers this chain |
 | `step_order` | `int` | 1, 2, 3â€¦ |
-| `resolver_type` | `varchar(50)` | `reporting_manager`, `team_lead`, `department_owner`, `permission`, `department`, `team`, `job_level`, `specific_employee`, `configured_escalation_owner`, `previous_approver`, `case_participants` |
-| `resolver_config` | `jsonb` | Resolver-specific configuration such as permission key, department/team/job level id, or selected employee id |
+| `resolver_type` | `varchar(50)` | `reporting_chain_first_eligible`, `reporting_manager`, `team_lead`, `department_owner`, `permission`, `legal_entity`, `department`, `team`, `position`, `position_branch`, `job_level` when configured, `specific_employee`, `configured_escalation_resolver`, `previous_approver`, `case_participants` |
+| `resolver_config` | `jsonb` | Resolver-specific configuration such as permission key, legal entity/department/team/position/position branch id, optional job level id, or selected employee id |
 | `delay_minutes` | `int` | Wait N minutes before escalating to next step |
 | `created_at` | `timestamptz` | |
 
 **Example chain for `critical` severity:**
 1. Employee's reporting manager â€” delay 0 min (immediate)
 2. Users with permission `exceptions:manage` â€” delay 30 min (if not acknowledged)
-3. Configured escalation owner â€” delay 60 min (if still not acknowledged)
+3. Configured escalation resolver â€” delay 60 min (if still not acknowledged)
 
 > Database note: resolver-based routing is the canonical Phase 1 shape. Do not reintroduce fixed HR/CEO role columns for exception escalation.
 
@@ -407,4 +407,4 @@ Statistical baselines (rolling avg + stddev per employee per metric) are now shi
 Phase 2 may add predictive alerting: detecting downward trends before thresholds are breached (e.g., "Employee Y's activity has been declining 5% each day for the past week"). This requires time-series analysis on `activity_daily_summary` data.
 
 ### Auto-Remediation Actions
-Phase 1 alerts require manual manager action. Phase 2 may add configurable auto-remediation: e.g., auto-send a "check-in" notification to the employee when idle exceeds a threshold, or auto-schedule a 1-on-1 when exception count exceeds N in a week.
+Phase 1 alerts require manual action by configured alert reviewers. Phase 2 may add configurable auto-remediation: e.g., auto-send a "check-in" notification to the employee when idle exceeds a threshold, or auto-schedule a follow-up when exception count exceeds N in a week.

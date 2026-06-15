@@ -21,13 +21,13 @@ The dev console does **not** get its own microservice. It talks to the existing 
 
 The existing `users` table is scoped to tenants (it has a `tenant_id` column). Developer platform accounts have no tenant association and must not live there.
 
-**New table:** `dev_platform_accounts`
+**New table:** `platform_users`
 
 | Column | Type | Notes |
 |:---|:---|:---|
 | `id` | UUID | Primary key |
 | `email` | string | Must be `@onevo.io` domain |
-| `google_sub` | string | Google OAuth subject identifier |
+| `google_sub` | string | Nullable Google OAuth subject identifier for optional invited-manager OAuth setup/sign-in |
 | `legacy_role` | enum | Compatibility preset only; effective access comes from platform roles/permissions |
 | `created_at` | timestamp | |
 | `last_login_at` | timestamp | |
@@ -134,9 +134,9 @@ No module gains a direct dependency on `ONEVO.Admin.Api/`. The dependency flows 
 |:---|:---|
 | Framework | Angular 21 |
 | Domain | `console.onevo.io` |
-| Auth provider | Google OAuth via NextAuth.js |
+| Auth provider | Email/password plus mandatory MFA; optional Google OAuth setup/sign-in for invited managers where enabled |
 | API calls | All go to `[backend]/admin/v1/*`, passing platform-admin JWT in `Authorization: Bearer` header |
-| Session storage | Server-side session (NextAuth), platform-admin JWT stored in httpOnly cookie |
+| Session storage | Platform-admin JWT stored in httpOnly cookie after MFA succeeds |
 
 The dev console is a **completely separate Angular 21 project** from the main `app.onevo.io` frontend. It shares no code, no session infrastructure, and no deployment pipeline with the main product.
 

@@ -37,8 +37,8 @@
 - **UI:** Select: Low, Medium, High, Critical → determines notification urgency and escalation speed
 
 ### Step 4: Set Routing And Escalation
-- **UI:** Select notification and escalation recipients using resolver choices, such as employee's reporting manager, employee's team lead, employee's department owner, users with selected permission, users in a selected department/team/job level, a specific employee, previous approver, case participants, or the configured escalation owner.
-- **Rule:** Do not route to fixed role names such as HR, CEO, or department head. If the customer wants an HR-like destination, they select a permission, department, team, job level, specific employee, or configured escalation owner.
+- **UI:** Select notification and escalation recipients using resolver choices, such as first eligible approver in the position reporting chain, employee's reporting manager, employee's team lead, employee's department owner, users with selected permission, users in a selected legal entity/department/team/position/position branch, optional job level when configured, a specific employee, previous approver, case participants, HR coverage resolver, or the configured escalation resolver.
+- **Rule:** Do not route to fixed role names such as HR, CEO, or department head. If the customer wants an HR-like destination, they select a permission, department, team, position branch, HR coverage resolver, specific employee, or configured escalation resolver.
 - Links: [[Userflow/Exception-Engine/escalation-chain-setup|Escalation Chain Setup]] and [[Userflow/Automation/automation-center|Automation Center]]
 
 ### Step 5: Activate

@@ -10,7 +10,7 @@
 
 ## `discrepancy_events`
 
-Daily discrepancy detection results — comparing HR active time (from agent) vs Work Management-reported task time vs calendar-explained time. Written by `DiscrepancyEngineJob` (daily 10:30 PM). Read by managers, HR Admins, and Productivity Analytics.
+Daily discrepancy detection results — comparing HR active time (from agent) vs Work Management-reported task time vs calendar-explained time. Written by `DiscrepancyEngineJob` (daily 10:30 PM). Read by position-resolved managers, configured exception/discrepancy reviewers, selected permission holders, and Productivity Analytics where permission and context allow it.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -36,13 +36,13 @@ Daily discrepancy detection results — comparing HR active time (from agent) vs
 
 **Index:** `(tenant_id, employee_id, date)`, `(tenant_id, severity, date)`
 
-**Visibility:** Discrepancy data is visible ONLY to the reporting manager and HR Admin. Employee never sees their own discrepancy record — only their personal activity timeline. Enforced at query level (`RequirePermission("exceptions:manage")`), not just UI level.
+**Visibility:** Discrepancy data is visible only to authorized resolver outputs such as the position-resolved reporting manager, configured reviewer, selected permission holder, HR coverage resolver, or approved escalation participant. Employee never sees their own discrepancy record — only their personal activity timeline. Enforced at query level (`RequirePermission("exceptions:manage")` plus resolver/context checks), not just UI level.
 
 **Severity thresholds (default, tenant-configurable):**
 - `none` — unaccounted gap < 30 min
 - `low` — 30–60 min gap (automated reminder to employee to log time)
-- `high` — 60–180 min gap (manager notified privately)
-- `critical` — 180+ min gap (escalated to HR Admin)
+- `high` — 60–180 min gap (configured discrepancy reviewer notified privately)
+- `critical` — 180+ min gap (escalated through the configured resolver/escalation chain)
 
 ---
 

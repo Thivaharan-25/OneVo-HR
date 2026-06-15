@@ -16,7 +16,7 @@ Roles & Permissions has two separate role surfaces:
 - **Security Roles**: tenant/module authority such as HR Admin, Project Admin, Payroll Admin, System Admin, or Tenant Owner. These use `roles`, `role_permissions`, and `user_roles`.
 - **Team Roles**: scoped team/workspace authority such as Admin / Lead, Member, and Viewer / Reviewer. These use `team_roles`, `team_role_permissions`, and `team_member_roles`.
 
-Tenant security roles are separate from HR team roles, WorkSync workspace membership, and WorkSync project membership. Job level, job title, and job family must not directly assign security permissions; they may only suggest assignments that an authorized admin confirms.
+Tenant security roles are separate from explicit stored team roles, WorkSync workspace membership, and WorkSync project membership. Job level, job title, and job family must not directly assign security permissions; they may only suggest assignments that an authorized admin confirms.
 
 ## Access Decision Order
 
@@ -24,13 +24,17 @@ Every protected tenant-facing action must pass these checks in this order:
 
 1. Tenant has an active module entitlement in `tenant_module_entitlements`.
 2. If the action maps to a feature key, the tenant's current subscription/custom contract includes that key in `tenant_subscriptions.selected_feature_keys`.
-3. If the feature has a runtime flag, Feature Flag Manager evaluates it as enabled for this tenant.
+3. If the feature has a runtime flag, Tenant Runtime Overrides evaluates it as enabled for this tenant.
 4. The user has the required effective permission from roles and/or valid user permission overrides.
 5. Employee-data access is inside the user's resolved hierarchy/access-policy scope.
 
 If any check fails, the API returns `403 Forbidden`.
 
 Tenant Super Admin can receive all permissions inside enabled tenant modules, but cannot access disabled, unpurchased, or commercially excluded module features.
+
+Module Catalog defines possible modules and feature keys; it does not grant tenant access. Tenant-facing access is based on the tenant subscription snapshot and active module entitlements. Runtime flags and RBAC are evaluated only after the commercial snapshot says the tenant has the module/feature.
+
+Tenant commercial state is split by level: module access is materialized in `tenant_module_entitlements`; feature commercial inclusion is stored in `tenant_subscriptions.selected_feature_keys`; runtime availability is controlled by `tenant_module_entitlements.runtime_override` and feature flag evaluation.
 
 ## Core Tables
 
@@ -68,7 +72,7 @@ Permission assignments for a role. These are filtered by module entitlement and 
 | `role_id` | `uuid` | FK to roles |
 | `permission_id` | `uuid` | FK to permissions |
 
-Security role permissions must not be used as the only check for WorkSync access. Workspace-scoped actions require active workspace membership. Project-scoped actions require active `project_members` access. When access is inherited through HR team sync, the applicable team role permission must also pass.
+Security role permissions must not be used as the only check for WorkSync access. Workspace-scoped actions require active workspace membership. Project-scoped actions require active `project_members` access. When access is inherited through explicit team sync, the applicable team role permission must also pass.
 
 Team role permission assignment must use a team-scoped permission catalog only. The backend must reject tenant security, HR admin, payroll, billing, project visibility, system settings, and security role management permissions in `team_role_permissions`.
 
@@ -109,6 +113,8 @@ Per-user grants or revocations. Overrides cannot grant access outside the tenant
 Optional role/employee feature visibility grants inside the tenant's already-commercially-included boundary.
 
 This table is not a billing table and not the source of truth for what the tenant bought. It cannot enable a module or feature that is missing from `tenant_module_entitlements` or `tenant_subscriptions.selected_feature_keys`.
+
+Example: if a tenant has the `work_management` module but `work_management.ai_sprint_planning` is not present in `tenant_subscriptions.selected_feature_keys`, a Tenant Admin cannot grant that feature through `feature_access_grants`. The tenant subscription must first be updated through an audited commercial path.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -188,4 +194,4 @@ Scope validation rules:
 - [[frontend/cross-cutting/authorization|Authorization]]
 - [[frontend/cross-cutting/feature-flags|Feature Flags]]
 - [[developer-platform/modules/module-catalog-manager/overview|Module Catalog Manager]]
-- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]]
+- [[developer-platform/modules/feature-flag-manager/overview|Tenant Runtime Overrides]]

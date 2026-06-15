@@ -253,7 +253,7 @@ Optional Phase 1 Microsoft Teams workspace sync additions (optional integration,
 | `workspaces` | 12 | tenant_id->tenants, owner_id->users |
 | `workspace_roles` | 4 | workspace_id->workspaces |
 | `workspace_members` | 11 | workspace_id->workspaces, user_id->users, employee_id->employees, workspace_role_id->workspace_roles |
-| `workspace_hr_team_links` | 10 | tenant_id->tenants, workspace_id->workspaces, hr_team_id->teams |
+| `workspace_team_links` | 10 | tenant_id->tenants, workspace_id->workspaces, team_id->teams |
 | `projects` | 13 | tenant_id->tenants, lead_id->users |
 | `project_workspaces` | 8 | project_id->projects, workspace_id->workspaces, tenant_id->tenants, linked_by_id->users |
 | `project_members` | 9 | project_id->projects, user_id->users, employee_id->employees |
@@ -401,7 +401,7 @@ Optional Phase 1 Microsoft Teams integration additions (optional integration, no
 | `case_conversations` | 12 | tenant_id->tenants, channel_id->channels, workflow_instance_id->workflow_instances |
 | `compliance_exports` | 10 | tenant_id→tenants, requested_by_id->users, target_user_id→users |
 | `escalation_rules` | 11 | tenant_id→tenants, escalate_to_role_id→roles, created_by_id->users |
-| `global_app_catalog` | 11 | created_by_id→dev_platform_accounts |
+| `global_app_catalog` | 11 | created_by_id→platform_users |
 | `feature_flags` | 9 | global flag definitions |
 | `hardware_terminals` | 11 | tenant_id→tenants |
 | `legal_holds` | 9 | tenant_id→tenants, placed_by_id→users, released_by_id→users |
@@ -420,7 +420,7 @@ Optional Phase 1 Microsoft Teams integration additions (optional integration, no
 | `subscription_plans` | 11 | — |
 | `system_settings` | 6 | updated_by_id→users |
 | `tenant_branding` | 9 | tenant_id→tenants, logo_file_id→file_records, updated_by_id→users |
-| `feature_flag_overrides` | 7 | tenant_id→tenants, granted_by_id→dev_platform_accounts |
+| `feature_flag_overrides` | 7 | tenant_id→tenants, granted_by_id→platform_users |
 | `tenant_module_entitlements` | 12 | tenant_id→tenants; module-wise sales state, pricing, trial, maintenance, and add-on entitlement |
 | `tenant_subscriptions` | 22 | tenant_id→tenants, plan_id→subscription_plans, created_by_id->users; includes commercial model, maintenance, and custom contract fields |
 | `user_preferences` | 6 | user_id→users, tenant_id→tenants |
@@ -543,8 +543,8 @@ Optional Phase 1 Microsoft Teams integration additions (optional integration, no
 
 | Table | Description |
 |:------|:-----------|
-| `dev_platform_accounts` | Developer platform user accounts |
-| `dev_platform_sessions` | Platform session tokens |
+| `platform_users` | Developer platform user accounts |
+| `platform_user_sessions` | Platform session tokens |
 | `agent_version_releases` | Desktop agent version catalog |
 | `agent_deployment_rings` | Deployment ring definitions (0=Internal, 1=Beta, 2=GA) |
 | `agent_deployment_ring_assignments` | Tenant ring assignments |

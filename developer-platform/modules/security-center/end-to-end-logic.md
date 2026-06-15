@@ -27,7 +27,7 @@ Left tab navigation:
 |---|---|---|---|
 | Active Critical Alerts | Count of unresolved `severity = 'critical'` alerts | `COUNT(*) FROM platform_alerts WHERE severity = 'critical' AND resolved_at IS NULL` | Red if > 0, green if 0 |
 | Active Warning Alerts | Count of unresolved `severity = 'warning'` alerts | Same with warning | Orange if > 0, green if 0 |
-| Active Sessions | Count of valid (non-expired) platform admin sessions | `COUNT(*) FROM dev_platform_sessions WHERE expires_at > NOW()` | Neutral |
+| Active Sessions | Count of valid (non-expired) platform admin sessions | `COUNT(*) FROM platform_user_sessions WHERE expires_at > NOW()` | Neutral |
 | Tenant Sessions Revoked Today | Count of tenant user session invalidations in last 24h | From audit log | Neutral |
 | Security Events (24h) | Security-category audit events in last 24h | Filtered from audit log | Neutral |
 
@@ -254,19 +254,19 @@ This will immediately invalidate their session. They will be logged out of the d
 ```
 
 **State written:**
-- `dev_platform_sessions` row: `revoked_at` = now()
+- `platform_user_sessions` row: `revoked_at` = now()
 - JWT blocklist entry added (or session lookup now returns revoked — implementation-specific)
 - Audit log: `action = 'session.revoked'`, actor, target_account_id, source_ip, reason
 
 **Self-revoke:** If operator revokes their own session, they are redirected to the login screen immediately after the API call responds.
 
-### Revoke All Sessions for an Account
+### Revoke All Sessions for a Platform User
 
-Available from Platform Access → Account Detail → "Revoke All Active Sessions" action.
+Available from Platform Users -> User Detail -> "Revoke All Active Sessions" action.
 
-**API:** `POST /admin/v1/platform-accounts/{accountId}/sessions/revoke-all`
+**API:** `POST /admin/v1/platform-users/{userId}/sessions/revoke-all`
 
-Revokes every non-expired session for the account. Used when an account is suspected compromised or when deactivating an account.
+Revokes every non-expired session for the platform user. Used when a platform user is suspected compromised or when deactivating a platform user.
 
 ---
 
@@ -312,7 +312,7 @@ Shows tenant-level security events that don't necessarily reach Critical alert t
 | POST | `/admin/v1/security/alerts/{id}/resolve` | Resolve alert with note | `platform.security.manage` |
 | GET | `/admin/v1/security/sessions` | Platform admin session list | `platform.security.read` |
 | POST | `/admin/v1/security/sessions/{id}/revoke` | Revoke a platform admin session | `platform.security.manage` |
-| POST | `/admin/v1/platform-accounts/{id}/sessions/revoke-all` | Revoke all sessions for an account | `platform.accounts.manage` |
+| POST | `/admin/v1/platform-users/{id}/sessions/revoke-all` | Revoke all sessions for a platform user | `platform.accounts.manage` |
 | GET | `/admin/v1/security/suspicious-activity` | Below-threshold security events | `platform.security.read` |
 
 ---
@@ -333,6 +333,6 @@ Shows tenant-level security events that don't necessarily reach Critical alert t
 ## Security Principles
 
 - Every read of the security center is itself audit-logged with the operator's identity (reading sensitive data is a security event)
-- Token hashes stored in `dev_platform_sessions` are never returned by any API — only session metadata
+- Token hashes stored in `platform_user_sessions` are never returned by any API — only session metadata
 - Alert resolution notes are stored in plaintext — operators must not include credentials or secrets in resolution notes (UI warning shown)
 - The security center cannot suppress or delete alerts — only acknowledge and resolve. The audit trail of every alert from creation to resolution is permanent.

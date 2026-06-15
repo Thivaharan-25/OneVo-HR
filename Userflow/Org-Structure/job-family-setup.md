@@ -119,7 +119,7 @@ Level names describe seniority tiers, not specific roles. "Senior" is a level; "
 ## Variations
 
 ### When a Job Title Has No Family or Level
-- Position setup proceeds normally — job title is the only required link
+- Position setup proceeds normally when a title is selected; title, family, and level are optional in Phase 1 position setup
 - Gap analysis is unavailable for employees in that title until a family is assigned
 - Suggested role prefill during onboarding falls back to the role linked on the position itself
 
@@ -158,7 +158,7 @@ Level names describe seniority tiers, not specific roles. "Senior" is a level; "
 
 ## Related Flows
 
-- [[Userflow/Org-Structure/position-setup|Position Setup]] — positions link to job titles; family and level are not required at position setup time
+- [[Userflow/Org-Structure/position-setup|Position Setup]] — positions may link to job titles, but title, family, and level are not required in Phase 1 position setup
 - [[Userflow/Auth-Access/role-creation|Role Creation]] — create roles before using them as level suggestions
 - [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] — permissions come from confirmed role assignments, not job level alone
 - [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — job family level selected during onboarding; suggested role prefills for admin review

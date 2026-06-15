@@ -21,7 +21,7 @@ Manager corrections to attendance data.
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AttendanceCorrected` | Manager corrects | Audit trail |
+| `AttendanceCorrected` | Authorized attendance user corrects | Audit trail |
 
 ## API Endpoints
 

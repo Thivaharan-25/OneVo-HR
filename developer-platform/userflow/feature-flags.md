@@ -1,18 +1,20 @@
-# Feature Flag Flows
+# Tenant Runtime Override Flows
 
 ## Purpose
 
-Feature flags control runtime availability for capabilities that are already commercially included. The Feature Flag Manager has two scopes: global defaults that apply to all tenants, and per-tenant overrides that deviate from those defaults.
+Feature flags control runtime availability for capabilities that are already commercially included. In the Developer Platform UI, tenant-specific feature flag overrides are managed from Tenant Management -> Tenant Detail -> Runtime Overrides. There is no top-level Feature Flags sidebar item.
 
-It does not define what a tenant bought or what price they pay. Module Catalog / Subscription Manager define module features and plan inclusion. A feature flag can only activate an included feature; it must not grant a feature outside the tenant's plan or custom contract.
+It does not define what a tenant bought or what price they pay. Module Catalog defines possible module features, Subscription Plans define reusable plan inclusion, and the tenant subscription snapshot defines what a specific tenant actually has. A feature flag can only activate a feature already present in `tenant_subscriptions.selected_feature_keys`; it must not grant a feature outside the tenant's plan, add-ons, or custom commercial override.
 
 All flag changes are audit-logged with the developer account and timestamp.
 
 ---
 
-## 1. Global Flag List View
+## 1. Backend Flag Definition Reference
 
-**Path:** `/feature-flags`
+There is no top-level Feature Flags route in the Developer Platform sidebar. The flag definition APIs remain available for internal/system use and for populating Tenant Detail runtime override screens.
+
+**Operator path:** Tenant Management -> Tenant Detail -> Runtime Overrides
 
 The list shows all flags defined in `feature_flags`. Each row shows:
 - Flag key (e.g. `activity_monitoring_v2`)
@@ -27,24 +29,24 @@ The list shows all flags defined in `feature_flags`. Each row shows:
 
 ---
 
-## 2. Toggle a Global Default
+## 2. Global Default Changes
 
 **Minimum role:** admin
 
-Changing the global default affects all tenants that do **not** have a per-tenant override. Tenants with an override are unaffected.
+Changing a global default affects all tenants that do **not** have a per-tenant override. This is not exposed as a top-level sidebar workflow in Phase 1; if product exposes it later, it belongs under System Config or Operations with blast-radius review. Tenants with an override are unaffected.
 
 **Steps:**
 
-1. Navigate to `/feature-flags`
+1. Navigate to the controlled internal flag definition screen if enabled
 2. Find the flag in the list (use the search bar for large lists)
 3. Click the toggle in the **Default** column, or click the flag row to open the detail view and toggle from there
 4. `ConfirmActionDialog` appears: "Change global default for `<flag_key>` from `<current>` to `<new>`?"
 5. Click **Confirm**
-6. **API call:** `PATCH /admin/v1/feature-flags/{flag}` with body `{ "default_value": true | false, "reason": "..." }`
+6. **API call:** `PATCH /admin/v1/feature-flags/{flag}` with body `{ "default_value": true | false, "reason": "..." }`. This requires `platform.runtime_flags.manage`.
 7. Toast: "Global default updated"
 8. The toggle reflects the new state immediately (optimistic update, reverted on API error)
 
-**Flag detail view** (`/feature-flags/{flag}`): shows the full list of tenants that have a per-tenant override for this flag, with each override value. Useful for assessing blast radius before changing the global default.
+**Flag detail view** shows the full list of tenants that have a per-tenant override for this flag, with each override value. Useful for assessing blast radius before changing the global default.
 
 **API for detail:** `GET /admin/v1/feature-flags/{flag}`
 
@@ -56,7 +58,7 @@ Changing the global default affects all tenants that do **not** have a per-tenan
 
 A per-tenant override lets a specific tenant have a flag value that differs from the global default. Overrides are stored in `feature_flag_overrides`.
 
-Override ON is allowed only when the tenant has the parent module entitlement and the current subscription/custom contract includes the feature key. Override OFF has no billing effect; the tenant keeps paying the same commercial price until the subscription record changes.
+Override ON is allowed only when the tenant has the parent module entitlement and the tenant subscription snapshot includes the feature key. Override OFF has no billing effect; the tenant keeps paying the same commercial price until the subscription record changes.
 
 ### Accessing the Flags Tab
 

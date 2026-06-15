@@ -25,9 +25,9 @@ An attendance dispute doesn't stay within the Attendance module. It may originat
 |:------|:-------|:-------------|:-------------|:----------------|
 | 1 | **Workforce-Presence** | Employee views attendance log, identifies incorrect record (missed clock-out, wrong hours, missing entry) | Employee reviews own attendance | — |
 | 2 | **Workforce-Presence** | Employee submits correction request with reason and evidence (e.g., "was in a meeting, forgot to clock in") | Employee submits form | `AttendanceCorrectionRequested` |
-| 3 | **Notifications** | Manager notified of pending correction request | `AttendanceCorrectionRequested` | `NotificationSent` |
-| 4 | **Workflow Engine** | Approval workflow created. May require manager + HR approval depending on policy | `AttendanceCorrectionRequested` | `WorkflowInstanceCreated` |
-| 5 | **Workforce-Presence** | Manager approves → attendance record updated with corrected times | Manager approves | `AttendanceCorrectionApproved` |
+| 3 | **Notifications** | Configured attendance-correction resolver notified of pending correction request | `AttendanceCorrectionRequested` | `NotificationSent` |
+| 4 | **Workflow Engine** | Approval workflow created. May require one or more configured resolvers depending on policy | `AttendanceCorrectionRequested` | `WorkflowInstanceCreated` |
+| 5 | **Workforce-Presence** | Configured approver approves -> attendance record updated with corrected times | Configured approver approves | `AttendanceCorrectionApproved` |
 | 6 | **Payroll** | If correction affects hours worked or overtime, payroll adjustment flagged for next run | `AttendanceCorrectionApproved` | `PayrollAdjustmentFlagged` |
 | 7 | **Exception-Engine** | If this record had triggered an alert, alert auto-resolved | `AttendanceCorrectionApproved` | `ExceptionResolved` |
 
@@ -36,11 +36,11 @@ An attendance dispute doesn't stay within the Attendance module. It may originat
 | Order | Module | What Happens | Triggered By | Event Published |
 |:------|:-------|:-------------|:-------------|:----------------|
 | 1 | **Exception-Engine** | Anomaly detected: e.g., employee clocked in but no activity for 4+ hours, or clock-in from unusual location | Scheduled anomaly scan | `ExceptionRaised` |
-| 2 | **Notifications** | Alert sent to manager and/or HR via configured escalation chain | `ExceptionRaised` | `NotificationSent` |
+| 2 | **Notifications** | Alert sent to configured resolver outputs via escalation chain | `ExceptionRaised` | `NotificationSent` |
 | 3 | **Exception-Engine** | Reviewer investigates: views attendance data, activity snapshots, employee's response | Reviewer opens alert | — |
 | 4a | **Exception-Engine** | Alert dismissed as false positive → alert status set to `dismissed` | Reviewer dismisses | `ExceptionDismissed` |
 | 4b | **Workforce-Presence** | Reviewer initiates correction on employee's behalf → same flow as Path A Step 2 onwards | Reviewer submits correction | `AttendanceCorrectionRequested` |
-| 4c | **Exception-Engine** | Alert escalated to HR for further investigation | Reviewer escalates | `ExceptionEscalated` |
+| 4c | **Exception-Engine** | Alert escalated through the configured resolver for further investigation | Reviewer escalates | `ExceptionEscalated` |
 
 ---
 
@@ -72,9 +72,9 @@ Investigation (Step 3)
 
 | Failed Step | Impact | Recovery |
 |:------------|:-------|:---------|
-| Correction request not saved | Employee must re-submit | Retry; if persistent, HR Admin submits on behalf |
-| Manager notification fails | Correction sits pending | Retry; visible in manager's approval queue |
-| Payroll adjustment not flagged | Hours/overtime calculated on uncorrected data | HR applies [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] manually |
+| Correction request not saved | Employee must re-submit | Retry; if persistent, authorized attendance-management user submits on behalf |
+| Approver notification fails | Correction sits pending | Retry; visible in the configured approver's queue |
+| Payroll adjustment not flagged | Hours/overtime calculated on uncorrected data | Authorized payroll user applies [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] manually |
 | Exception auto-resolve fails | Alert stays open after correction | Reviewer manually dismisses alert |
 
 ---

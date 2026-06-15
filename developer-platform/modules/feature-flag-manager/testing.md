@@ -1,9 +1,11 @@
-# Feature Flag Manager — Testing
+# Tenant Runtime Overrides — Testing
 
 ## Test Fixtures Required
 
-- Platform account with `platform.feature_flags.manage`
-- Platform account with `platform.feature_flags.read` only (read-only)
+- Platform account with `platform.runtime_flags.manage`
+- Platform account with `platform.runtime_flags.read` only (global flag read-only)
+- Platform account with `platform.tenants.feature_overrides.manage`
+- Platform account with `platform.tenants.feature_overrides.read` only (tenant override read-only)
 - At least 2 active tenants in `active` status
 - At least 1 active module in `module_catalog`
 - Clean `feature_flags` table (no pre-existing flags) for creation tests
@@ -14,6 +16,7 @@
 ## Flag Creation
 
 ### TC-FF-001: Create flag — happy path
+**Setup:** Account with `platform.runtime_flags.manage`
 **Input:** `flag_key: "chat_ai.streaming_responses"`, `default_value: false`, `rollout_percentage: 0`, `module_key: "chat_ai"`, `phase: 1`
 **Action:** `POST /admin/v1/feature-flags`
 **Expected:**
@@ -38,7 +41,7 @@
 **Expected:** Tenant receives `value: false` — rollout % is irrelevant when default is OFF
 
 ### TC-FF-005: Read-only account cannot create flags
-**Setup:** Account with `platform.feature_flags.read` only
+**Setup:** Account with `platform.runtime_flags.read` only
 **Action:** `POST /admin/v1/feature-flags`
 **Expected:** HTTP 403
 
@@ -47,6 +50,7 @@
 ## Global Toggle
 
 ### TC-FF-006: Toggle default value requires reason
+**Setup:** Account with `platform.runtime_flags.manage`
 **Action:** `PATCH /admin/v1/feature-flags/{flagKey}` with `default_value: true`, `reason: null`
 **Expected:** HTTP 422 — reason is required when changing `default_value`
 
@@ -72,7 +76,7 @@
 ## Per-Tenant Override
 
 ### TC-FF-010: Tenant override wins over global default regardless of rollout %
-**Setup:** Flag `default_value: false`, `rollout_percentage: 0` (all tenants get OFF by default)
+**Setup:** Account with `platform.tenants.feature_overrides.manage`. Flag `default_value: false`, `rollout_percentage: 0` (all tenants get OFF by default)
 **Action:** `PATCH /admin/v1/tenants/{tenantId}/feature-flags/{flagKey}` `{"value": true, "reason": "Beta partner"}`
 **Expected:**
 - `feature_flag_overrides` row created: `value = true`, `tenant_id`, `granted_by_id`, `reason`

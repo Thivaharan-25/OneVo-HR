@@ -2,9 +2,9 @@
 
 ## Test Fixtures Required
 
-- Platform account with `platform.role_templates.manage`
+- Platform account with `platform.templates.manage`
 - Platform account with `platform.tenants.manage` (for applying templates)
-- Platform account with `platform.role_templates.read` only
+- Platform account with `platform.templates.read` only
 - 1 active tenant entitled to `core_hr` and `leave` modules only (not `monitoring`, not `work_management`)
 - At least 2 system role templates seeded (`is_system = true`)
 - `permissions` table seeded with permission codes per module
@@ -47,7 +47,7 @@
 **Expected:** HTTP 201 — foundation module permissions are always allowed in any template
 
 ### TC-RT-005: Read-only account cannot create templates
-**Setup:** Account with `platform.role_templates.read` only
+**Setup:** Account with `platform.templates.read` only
 **Action:** `POST /admin/v1/role-templates`
 **Expected:** HTTP 403
 

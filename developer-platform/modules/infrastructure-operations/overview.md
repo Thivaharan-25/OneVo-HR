@@ -22,7 +22,7 @@ Infrastructure Operations shows platform-level infrastructure capacity and depen
 - View cloud infrastructure metrics (CPU, memory, storage across all instances)
 - View external dependency health: payment gateways, Resend, Cloudflare
 - Identify degraded dependencies with `detected_at` timestamp showing when degradation started
-- Link to Services Monitor and Background Jobs for follow-up
+- Link to Platform Health service/dependency detail and Background Jobs for follow-up
 
 ## Navigation
 
@@ -41,4 +41,4 @@ Infrastructure Operations shows platform-level infrastructure capacity and depen
 
 - [[developer-platform/modules/infrastructure-operations/end-to-end-logic|Infrastructure Operations End-to-End Logic]]
 - [[developer-platform/modules/platform-health/overview|Platform Health]] — service-level health
-- [[developer-platform/modules/services-monitor/overview|Services Monitor]] — per-service investigation
+- [[developer-platform/modules/platform-health/overview|Platform Health]] — per-service investigation

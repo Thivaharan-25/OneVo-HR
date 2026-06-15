@@ -87,7 +87,7 @@ JWT refresh token tracking with rotation.
 
 ### Sub-System 2: Subscriptions & Billing (Stripe + Paddle + PayHere)
 
-ONEVO supports Stripe, Paddle, and PayHere as payment gateways. Use `gateway_provider = "stripe"` for direct Stripe billing, `gateway_provider = "paddle"` when Paddle is the merchant of record, and `gateway_provider = "payhere"` for Sri Lanka/local gateway collection. The ONEVO operator selects the gateway during tenant commercial setup; tenant owners do not choose it. Gateway credentials are stored through payment gateway configuration and must never be returned by API responses.
+ONEVO supports Stripe, Paddle, and PayHere as payment gateways. Use `gateway_provider = "stripe"` for direct Stripe billing, `gateway_provider = "paddle"` when Paddle is the merchant of record, and `gateway_provider = "payhere"` for Sri Lanka/local gateway collection. Payment gateway credentials and country routes are configured in System Config. One gateway config can serve multiple countries, but each country can have only one active gateway route per environment. The ONEVO operator reviews the resolved gateway during tenant commercial setup; tenant owners do not choose it. Gateway credentials must never be returned by API responses.
 
 #### `subscription_plans`
 
@@ -129,7 +129,7 @@ Active subscription per tenant.
 | `tenant_id` | `uuid` | FK -> tenants |
 | `plan_id` | `uuid` | FK -> subscription_plans |
 | `billing_cycle` | `varchar(20)` | `monthly`, `annual` |
-| `status` | `varchar(20)` | `pending_confirmation`, `pending_payment`, `active`, `past_due`, `cancelled` |
+| `status` | `varchar(20)` | `pending_payment`, `active`, `past_due`, `cancelled` |
 | `current_period_start` | `date` | |
 | `current_period_end` | `date` | |
 | `payment_provider_ref` | `varchar(100)` | Legacy gateway subscription ID; prefer explicit gateway refs in the shared schema |
@@ -139,7 +139,7 @@ Active subscription per tenant.
 
 #### `subscription_invoices`
 
-Invoice records generated or synced from Stripe, Paddle, PayHere, or manual collection. Not in HTML ERD - to be added.
+Invoice records generated or synced from Stripe, Paddle, or PayHere. Not in HTML ERD - to be added.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -201,7 +201,7 @@ Per-tenant runtime overrides for global feature flags.
 | `flag_key` | `varchar(120)` | FK -> feature_flags(key) |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `value` | `boolean` | Override value for this tenant |
-| `granted_by_id` | `uuid` | FK -> dev_platform_accounts(id) |
+| `granted_by_id` | `uuid` | FK -> platform_users(id) |
 | `granted_at` | `timestamptz` | |
 | `reason` | `text` | Nullable audit reason |
 | UNIQUE: `(flag_key, tenant_id)` | | |
@@ -301,7 +301,7 @@ The workflow engine is **resource-type agnostic**. It works via `resource_type` 
 
 **How it works:**
 1. Module creates a workflow instance: `resource_type = "LeaveRequest"`, `resource_id = {leaveRequestId}`
-2. Engine resolves assignees or approvers using tenant-scoped resolvers, such as reporting manager, team lead, department owner, selected permission, selected department/team/job level, specific employee, previous approver, case participants, or configured escalation owner.
+2. Engine resolves assignees or approvers using tenant-scoped resolvers, such as first eligible approver in position reporting chain, reporting manager, team lead, department owner, selected permission, selected legal entity/department/team/position/position branch, specific employee, previous approver, case participants, or configured escalation resolver. Job level can be used only when job hierarchy is configured and linked for the tenant.
 3. Approver takes action -> engine advances to next step or reaches a final outcome
 4. Module receives `WorkflowApproved`, `WorkflowRejected`, or `WorkflowCancelled` and updates the resource state
 
@@ -401,7 +401,7 @@ Steps within a workflow definition.
 | `approver_type` | `varchar(30)` | Legacy compatibility field; do not use for new definitions |
 | `approver_role_id` | `uuid` | Legacy compatibility field; do not use for new definitions |
 | `resolver_type` | `varchar(50)` | Dynamic resolver type, e.g. `reporting_manager`, `selected_permission`, `case_participants` |
-| `resolver_config` | `jsonb` | Resolver parameters such as permission code, department/team/job level, employee id, connected tenant scope |
+| `resolver_config` | `jsonb` | Resolver parameters such as permission code, legal entity/department/team/position/position branch, optional job level when configured, employee id, connected tenant scope |
 | `approval_mode` | `varchar(30)` | `only_one_required`, `all_required`, `sequential` |
 | `action_config` | `jsonb` | Action-card, request-info, escalation, or task creation settings |
 | `delivery_config` | `jsonb` | Chat, Inbox, Teams mirror, notification routing preferences |
@@ -745,8 +745,11 @@ Hangfire job metadata for visibility/management. Not in HTML ERD - to be added.
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/sso/providers` | `settings:admin` | List SSO providers |
 | POST | `/api/v1/sso/providers` | `settings:admin` | Configure SSO |
-| GET | `/api/v1/subscriptions/current` | `billing:read` | Current subscription |
-| POST | `/api/v1/subscriptions/upgrade` | `billing:manage` | Upgrade plan |
+| GET | `/api/v1/demo/upgrade/options` | `billing:read` | Allowed demo upgrade plans/add-ons |
+| POST | `/api/v1/demo/upgrade/quote` | `billing:read` | Demo upgrade quote |
+| POST | `/api/v1/demo/upgrade/submit` | `billing:manage` | Generate first invoice for self-service demo upgrade |
+| GET | `/api/v1/billing/invoices` | `billing:read` | Tenant invoices |
+| POST | `/api/v1/billing/payment` | `billing:manage` | Pay open invoice |
 | GET | `/api/v1/feature-flags` | Authenticated | Active feature flags |
 | GET | `/api/v1/workflows/{resourceType}/{resourceId}` | Authenticated + `workflows:read` or workflow participant or resource-scoped viewer | Workflow status |
 | POST | `/api/v1/workflows/{instanceId}/approve` | Authenticated + assigned approver + required module permission | Approve step |
@@ -755,7 +758,7 @@ Hangfire job metadata for visibility/management. Not in HTML ERD - to be added.
 ## Features
 
 - [[modules/shared-platform/sso-authentication/overview|Sso Authentication]] - SSO provider configuration (Google, Microsoft, SAML, OIDC) with auto-provisioning
-- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] - Stripe/PayHere-backed subscription plans, invoices, payment methods, manual billing evidence, payment exceptions, AI token limits, and Work Management storage limits
+- [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] - Stripe/Paddle/PayHere-backed subscription plans, invoices, payment methods, payment exceptions, AI token limits, and Work Management storage limits
 - Setup Services - Global/free, paid, and module-specific implementation services selected during tenant provisioning
 - Configuration Templates - Reusable configuration, role, org, job-family, leave, onboarding, app allowlist, monitoring policy, and data import mapping templates
 - [[frontend/cross-cutting/feature-flags|Feature Flags]] - Per-tenant feature flag definitions with targeting conditions

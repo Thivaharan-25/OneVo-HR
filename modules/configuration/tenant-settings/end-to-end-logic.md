@@ -33,7 +33,7 @@ PUT /api/v1/settings
       -> 1. Load existing settings
       -> 2. Apply changes (partial update — only provided fields)
       -> 3. UPDATE tenant_settings
-      -> 4. Invalidate settings cache (Redis, tenant-scoped)
+      -> 4. Invalidate settings cache (Phase 1 in-memory, tenant-scoped)
       -> 5. Log to audit_logs
       -> Return Result.Success(updatedDto)
 ```

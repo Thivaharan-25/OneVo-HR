@@ -128,7 +128,7 @@ After sign-in and policy fetch, if identity verification is enabled and the empl
 1. TrayApp shows the required monitoring/biometric disclosure if not already completed.
 2. TrayApp opens the same camera window in reference-enrollment mode.
 3. The captured image is uploaded as a `verification_reference_photos` candidate with `status = pending_review`.
-4. The agent displays "Reference photo pending review" until HR/manager approval or tenant-approved trusted SSO/MFA auto-approval.
+4. The agent displays "Reference photo pending review" until approval by the configured identity-verification resolver or tenant-approved trusted SSO/MFA auto-approval.
 5. Future verification prompts compare against the approved reference photo.
 
 The first reference capture is not a verification failure or success. It must not trigger `VerificationFailed`.
@@ -309,7 +309,7 @@ Shown when the user clicks "Status" from the tray menu or double-clicks the tray
 │  ✓ Idle time                           │
 │  ✓ Meeting detection                   │
 │  ✓ Communication app activity          │
-│  ✗ Screenshots (manager request only)  │
+│  ✗ Screenshots (authorized request)    │
 │                                        │
 │               [Close]                  │
 └────────────────────────────────────────┘

@@ -1,7 +1,7 @@
 # Performance Review Cycle — Cross-Module Chain
 
 **Area:** Cross-Module Scenario  
-**Trigger:** Scheduled review cycle start date (system-scheduled) or HR Admin manually launches cycle  
+**Trigger:** Scheduled review cycle start date (system-scheduled) or authorized performance-management user manually launches cycle  
 **Required Permission(s):** `performance:manage` (admin), `performance:write` (employee/manager), `employees:read` (participant list)  
 **Modules Involved:** Performance, Employee-Management, Skills-Learning, Payroll, Notifications, Workflow Engine
 
@@ -25,7 +25,7 @@ A performance review cycle isn't just self-assessments and manager ratings. It p
 
 | Order | Module | What Happens | Triggered By | Event Published |
 |:------|:-------|:-------------|:-------------|:----------------|
-| 1 | **Performance** | Review cycle created: defines period, participants, deadlines, review form template | HR Admin launches or scheduled trigger | `ReviewCycleLaunched` |
+| 1 | **Performance** | Review cycle created: defines period, participants, deadlines, review form template | Authorized performance-management user launches or scheduled trigger | `ReviewCycleLaunched` |
 | 2 | **Employee-Management** | Participant list generated: all active employees matching cycle criteria (entity, department, employment type) | `ReviewCycleLaunched` | `ParticipantListGenerated` |
 | 3 | **Notifications** | All participants notified: employees (self-assessment due), managers (team reviews due), with deadlines | `ReviewCycleLaunched` | `NotificationSent` |
 
@@ -36,7 +36,7 @@ A performance review cycle isn't just self-assessments and manager ratings. It p
 | 4 | **Performance** | Employees complete self-assessments against goals and competencies | Employee submits | `SelfAssessmentCompleted` |
 | 5 | **Performance** | Peer feedback collected (if 360-degree review enabled) | Peers submit | `PeerFeedbackCompleted` |
 | 6 | **Performance** | Manager completes review: rates employee, adds comments, recommends rating | Manager submits | `ManagerReviewCompleted` |
-| 7 | **Workflow Engine** | Calibration workflow triggered: HR/leadership reviews ratings for consistency across teams | All manager reviews in | `CalibrationStarted` |
+| 7 | **Workflow Engine** | Calibration workflow triggered: configured calibration reviewers check ratings for consistency across teams | All manager reviews in | `CalibrationStarted` |
 
 ### Phase 3: Finalization & Downstream
 
@@ -76,11 +76,11 @@ Finalization (Step 8)
 
 | Failed Step | Impact | Recovery |
 |:------------|:-------|:---------|
-| Participant list incomplete | Some employees excluded from cycle | HR Admin manually adds missing employees |
-| Self-assessment deadline missed | Manager can still review, but without self-input | HR extends deadline or manager reviews without self-assessment |
-| Calibration stalls | Ratings not finalized, downstream actions blocked | HR escalates to leadership for sign-off |
-| Compensation recommendation fails | Salary revisions not generated | HR manually creates via [[Userflow/Employee-Management/employee-promotion\|Employee Promotion]] |
-| Learning plan suggestion fails | Employee misses development opportunity | Manager manually creates via [[Userflow/Skills-Learning/development-plan\|Development Plan]] |
+| Participant list incomplete | Some employees excluded from cycle | Authorized performance-management user manually adds missing employees |
+| Self-assessment deadline missed | Configured reviewer can still review, but without self-input | Authorized performance-management user extends deadline or configured reviewer reviews without self-assessment |
+| Calibration stalls | Ratings not finalized, downstream actions blocked | Configured calibration resolver escalates for sign-off |
+| Compensation recommendation fails | Salary revisions not generated | Authorized compensation/performance user manually creates via [[Userflow/Employee-Management/employee-promotion\|Employee Promotion]] |
+| Learning plan suggestion fails | Employee misses development opportunity | Authorized performance/learning user manually creates via [[Userflow/Skills-Learning/development-plan\|Development Plan]] |
 
 ---
 

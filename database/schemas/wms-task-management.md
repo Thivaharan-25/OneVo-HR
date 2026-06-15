@@ -34,6 +34,8 @@
 
 **Rule:** `workspace_id` must reference an active `project_workspaces` link for the task's project. It does not mean the project belongs to one workspace.
 
+**Authority rule:** Creating or assigning a task requires the actor to have the required task permission plus local authority in the project/workspace context. Reporting hierarchy over an assignee is not enough inside another manager's workspace or project.
+
 ---
 
 ## `task_assignments` - Phase 1
@@ -54,6 +56,8 @@
 **Indexes:** `(employee_id)`, `(availability_status)`
 
 **Rule:** Assignment APIs must resolve `employee_id` from `employees.user_id`, block inactive/deleted employees, and call Calendar/Leave availability checks for the task date range. Approved leave creates a warning by default; tenant policy can make it blocking.
+
+**Assignment scope rule:** The assignee must be an active project member, a selected member from the responsible workspace, or an approved scoped participant. If the actor is relying on reporting-manager authority, the assignee must be in the actor's position-derived hierarchy and the actor must have authority in the selected workspace/project context.
 
 ---
 

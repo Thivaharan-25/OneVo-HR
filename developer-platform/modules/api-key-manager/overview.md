@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Platform API Key Manager enables programmatic access to the Admin API for CI/CD pipelines, automation scripts, and external tooling — without requiring a human Google OAuth session. Keys are scoped to specific platform permissions, support optional expiry, and can be revoked at any time.
+Platform API Key Manager enables programmatic access to the Admin API for CI/CD pipelines, automation scripts, and external tooling without requiring a human platform-admin session. Keys are scoped to specific platform permissions, support optional expiry, and can be revoked at any time.
 
 ## Database Tables / Systems Controlled
 
@@ -50,4 +50,4 @@ A raw key is generated once, shown to the operator in a one-time display dialog,
 
 - [[developer-platform/modules/api-key-manager/end-to-end-logic|API Key Manager End-to-End Logic]]
 - [[developer-platform/auth|Developer Platform Auth]] — JWT-based human operator authentication (Phase 1)
-- [[developer-platform/modules/platform-access/overview|Platform Access]] — human operator account management
+- [[developer-platform/modules/platform-access/overview|Platform Users and Platform Roles]] — human operator account management

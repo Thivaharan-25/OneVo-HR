@@ -295,13 +295,15 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 | `tenant_id` | `uuid` | FK -> tenants |
 | `user_id` | `uuid` | FK -> users |
 | `document_type` | `varchar(80)` | `terms`, `privacy_notice`, `activity_monitoring_notice`, `screenshot_notice`, `biometric_photo_consent`, `marketing` |
-| `document_version` | `varchar(50)` | Version accepted/acknowledged |
+| `document_version` | `varchar(50)` | Version accepted/acknowledged; references the published version string from Developer Platform `legal_document_versions` |
 | `decision` | `varchar(20)` | `accepted`, `acknowledged`, `declined` |
 | `required` | `boolean` | Whether the item blocks access or collection |
 | `decided_at` | `timestamptz` | |
 | `ip_address` | `varchar(45)` | |
 | `user_agent` | `varchar(500)` | |
 | `source` | `varchar(30)` | `invite`, `web`, `desktop-agent` |
+
+Compliance Center manages legal_document_versions; Auth records user decisions in legal_acceptance_records.
 
 ## Domain Events (intra-module — MediatR)
 
@@ -335,7 +337,7 @@ Append-only audit trail. Partitioned by month via `pg_partman`.
 1. **Customer web BFF sessions** — HttpOnly session cookies with backend-held tenant auth state/JWT and `perm_ver` for real-time permission staleness checks.
 2. **Password hashing** - BCrypt with work factor 12. Do not use any other algorithm for user passwords.
 3. **Hybrid permission control** — commercial entitlement decides which modules and feature keys exist for the tenant; runtime flags decide which included features are active; RBAC decides who can use them. Effective permissions = universal auto-grants + active role permissions + valid individual overrides; filtered by subscription/module entitlements, selected feature keys, runtime flags, and optional role/employee feature visibility grants; scoped by org hierarchy.
-4. **Permission version counter** — Redis key `perm_version:{user_id}` (integer, 24h TTL). Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 → frontend silently refreshes. Fails open if Redis unavailable.
+4. **Permission version counter** — Phase 1 in-memory key `perm_version:{user_id}`. Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 -> frontend silently refreshes. Redis is optional/future distributed infrastructure for multi-instance deployments.
 5. **Access scope scoping** - employee-data access is resolved from `user_roles.scope_type` and `user_roles.scope_id`, then checked against the target employee, department, team, own-record, or reporting relationship. The frontend never sends employee ID lists. Tenant Super Admin uses `Organization` scope. Non-admin cross-tree exceptions use hierarchy bypass grants (Path C).
 6. **Never hardcode role names** — roles are custom, created by Tenant Super Admin or delegated permission admins. Always check permissions, never role names.
 7. **Role templates are provisioning blueprints** — Developer Platform templates can seed tenant roles, but tenant owners can later edit/create roles using only permissions exposed by their enabled modules.

@@ -187,8 +187,8 @@ public async Task<Result<TenantDto>> ProvisionTenantAsync(CreateTenantCommand cm
 
 - **Index on `tenant_id`** on every tenant-scoped table (composite indexes with other frequently queried columns) — see [[database/performance|Performance]]
 - **Partition large tables** by tenant_id (for very large tenants) or by time (for audit_logs, biometric_events)
-- **Redis caching** keyed by `tenant:{tenantId}:{entity}:{id}` — never cache cross-tenant data (see [[database/performance|Performance]])
-- **Rate limiting** per tenant via Redis token bucket
+- **Phase 1 in-memory caching** keyed by `tenant:{tenantId}:{entity}:{id}` — never cache cross-tenant data (see [[database/performance|Performance]])
+- **Rate limiting** per tenant via in-memory token bucket in Phase 1; Redis token bucket only if future distributed cache is enabled
 
 ## Related
 

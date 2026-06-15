@@ -10,6 +10,8 @@ Tasks are the atomic unit of work in the WMS. A task can be a feature, bug, issu
 
 Assignments are employee-backed in Phase 1. The system stores both `user_id` and `employee_id` so Work Management can respect HR status, department/team reporting, offboarding, leave, and calendar conflicts.
 
+Task assignment authority is bound to the project/workspace context. A reporting manager's hierarchy over an employee does not allow task assignment in another manager's workspace unless the actor also has local project/workspace authority there.
+
 ## Key Entities
 
 | Entity | Role |
@@ -39,11 +41,24 @@ Assignments are employee-backed in Phase 1. The system stores both `user_id` and
 
 1. User opens a project board (`/workforce/projects/[id]/board`).
 2. User clicks "+ Add Task" in a status column.
-3. User enters title, description, priority, due date, labels.
-4. System creates `TASK` record linked to the project.
-5. User optionally assigns the task to a project member.
-6. System resolves the selected user's `employee_id`, validates active employment, checks approved leave/calendar conflicts, and creates `TASK_ASSIGNEE`.
-7. If the employee is on leave or has a calendar conflict, the UI shows the warning from `availability_status`/`availability_warning`; tenant policy may block the assignment.
+3. User selects responsible workspace if the project has more than one linked workspace. The selected workspace must be active in `PROJECT_WORKSPACE`.
+4. User enters title, description, priority, due date, labels.
+5. System validates the actor has `tasks:write`, project access, and task authority in the selected workspace/project context.
+6. System creates `TASK` record linked to the project and responsible workspace.
+7. User optionally assigns the task to an allowed assignee.
+8. Assignee picker returns only employees who are active project members, selected workspace participants, or approved scoped participants for this project.
+9. If the actor is relying on reporting-manager authority, the assignee must be below the actor in the position hierarchy and the actor must control this workspace/project context.
+10. System resolves the selected user's `employee_id`, validates active employment, checks approved leave/calendar conflicts, and creates `TASK_ASSIGNEE`.
+11. If the employee is on leave or has a calendar conflict, the UI shows the warning from `availability_status`/`availability_warning`; tenant policy may block the assignment.
+
+### Assignment Examples
+
+| Scenario | Result |
+|:---------|:-------|
+| User manages a workspace created from their reporting team and assigns a task to their report inside that workspace | Allowed when `tasks:write` and local workspace/project authority are present. |
+| User is a member, not lead/admin, in another manager's workspace and tries to assign a task to their own report there | Blocked unless they have local task authority in that workspace/project. |
+| User has local project administration authority and assigns a task to an approved project member from another department | Allowed by project context, subject to project policy and availability checks. |
+| User has `tasks:write` but is not a project member and has no approved project grant | Blocked. |
 
 ### Task Lifecycle
 

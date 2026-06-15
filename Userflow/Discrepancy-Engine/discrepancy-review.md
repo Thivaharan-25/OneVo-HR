@@ -33,7 +33,7 @@
 ### Step 4: Notification Is Routed
 - **Low:** Employee receives a neutral unlogged-time reminder without seeing discrepancy analysis
 - **High:** Automation Center resolves the configured reviewer, such as employee's reporting manager, team lead, department owner, users with selected permission, or a specific employee
-- **Critical:** Automation Center resolves the configured escalation owner or escalation resolver and routes the action card through Chat or Inbox
+- **Critical:** Automation Center resolves the configured escalation resolver and routes the action card through Chat or Inbox
 - **Rule:** Discrepancy routing must not target fixed role names. It uses resolver configuration and permissions.
 - **Event:** `DiscrepancyCriticalDetected` for critical records
 

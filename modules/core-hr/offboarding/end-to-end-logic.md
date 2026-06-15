@@ -34,7 +34,7 @@ POST /api/v1/employees/{id}/offboarding
             -> leave: forfeit unused entitlements
             -> payroll: initiate final settlement
             -> agent-gateway: revoke agent access
-            -> notifications: notify HR and manager
+            -> notifications: notify configured offboarding resolvers
       -> 7. Calculate/update penalties_json (outstanding loans, notice period, asset recovery)
       -> Return Result.Success(offboardingDto)
 ```

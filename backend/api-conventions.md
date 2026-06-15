@@ -310,7 +310,7 @@ Work Management is an internal ONEVO pillar. In the customer web app it uses the
 | Layer | Scope | Limit | Enforcement |
 |:------|:------|:------|:-----------|
 | Cloudflare | IP | 1000 req/min | WAF rule |
-| .NET Middleware | Organization | Plan-based (Redis token bucket) | Per-tenant quota |
+| .NET Middleware | Organization | Plan-based in-memory token bucket in Phase 1; Redis token bucket only if future distributed cache is enabled | Per-tenant quota |
 | .NET Middleware | User | Sub-quota of org limit | Per-user within org |
 
 ## Related

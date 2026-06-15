@@ -1,8 +1,8 @@
-# Tenant Console - End-to-End Logic
+# Tenant Management - End-to-End Logic
 
 ## Purpose
 
-Tenant Console is the central management screen for all tenant organizations. Operators use it to find tenants, inspect their status, view usage, manage subscriptions, suspend or unsuspend access, impersonate tenant admins for support, and configure all tenant-level settings after initial provisioning.
+Tenant Management is the central management screen for all tenant organizations. Operators use it to find tenants, inspect their status, view usage, manage subscriptions, suspend or unsuspend access, impersonate tenant admins for support, and configure all tenant-level settings after initial provisioning.
 
 **Entry:** Platform Management -> Tenants (sidebar)
 **Route:** `/platform/tenants`
@@ -29,7 +29,7 @@ Displayed at the top of the list before the filter bar.
 | Total Tenants | Count of all non-cancelled tenants | `COUNT(*) WHERE status != 'cancelled'` | Neutral |
 | Active Tenants | Count with `status = 'active'` | Shown with percentage: "92.19%" of total | Green |
 | Suspended Tenants | Count with `status = 'suspended'` | Shown with percentage: "5.47%" of total | Orange |
-| Inactive Tenants | Count with status IN ('provisioning', 'pending_confirmation', 'pending_payment') | 2.34% of total | Gray |
+| Inactive / Pending Tenants | Count with status IN ('provisioning', 'trial_expired', 'pending_payment') | 2.34% of total | Gray |
 | Total Users | Sum of active user counts across all tenants | Cross-tenant aggregate | Blue |
 
 ### Filter Bar
@@ -39,7 +39,7 @@ Positioned between KPI cards and the tenants table.
 | Control | Type | Options | Behavior |
 |---|---|---|---|
 | Search | Text input | Searches tenant name, domain, tenant code | Debounced 300ms, calls `GET /admin/v1/tenants?search={q}` |
-| Status | Dropdown | All, Active, Suspended, Provisioning, Pending Confirmation, Pending Payment, Cancelled | Adds `?status={value}` to API call |
+| Status | Dropdown | All, Active, Trial, Trial Expired, Suspended, Provisioning, Pending Payment, Cancelled | Adds `?status={value}` to API call |
 | Subscription Plan | Dropdown | All + each plan name from plan catalog | Adds `?plan_id={id}` |
 | Work Mode | Dropdown | All, Hybrid, Remote, On-site | Adds `?work_mode={value}` |
 | Region | Dropdown | All + ISO country codes with flag + name | Adds `?country={code}` |
@@ -73,6 +73,8 @@ Positioned between KPI cards and the tenants table.
 | Active | Green dot + "Active" | `status = 'active'` |
 | Suspended | Orange dot + "Suspended" | `status = 'suspended'` |
 | In Progress | Yellow dot + "In Progress" | `status = 'provisioning'` - creation wizard not complete |
+| Trial | Purple dot + "Trial" | `status = 'trial'` - active demo tenant using a Demo Profile |
+| Trial Expired | Red dot + "Trial Expired" | `status = 'trial_expired'` - demo access expired or manually expired |
 | Pending Payment | Blue dot + "Pending Payment" | `status = 'pending_payment'` after tenant owner confirms plan and invoice is open |
 | Cancelled | Gray dot + "Cancelled" | `status = 'cancelled'` |
 
@@ -246,7 +248,7 @@ List of configured integrations with connection status badge.
 | Device Activity | Stacked bar | Online / Idle / Offline by day |
 | Exception Events | Line chart | Exception rule fires per day |
 
-Each section has: title, "View Full Report" link -> Platform Analytics, and export icon.
+Each section has: title, "View Full Report" link -> Reports / Analytics, and export icon.
 
 ---
 
@@ -321,7 +323,7 @@ Each section has: title, "View Full Report" link -> Platform Analytics, and expo
 | Billing cycle | Monthly / Annual |
 | Calculated price | e.g., "£4,200 / month" |
 | Override price | If set: "£3,800 / month (overridden)" in orange |
-| Collection mode | Gateway: "Stripe - Production" / "Paddle - Production" / "PayHere - Production" / Manual: "Manual Billing" |
+| Payment gateway | "Stripe - Production" / "Paddle - Production" / "PayHere - Production" |
 | Billing start date | "Jun 1, 2024" |
 | Next billing date | "Jun 1, 2025" |
 | AI token limit | "500,000 / month" |
@@ -360,13 +362,13 @@ Each section has: title, "View Full Report" link -> Platform Analytics, and expo
 
 ---
 
-### Tab 6 - Policies
+### Tab 6 - Runtime Overrides & Policies
 
 **API:** `GET /admin/v1/tenants/{id}/feature-flags` and `GET /admin/v1/global-policies?tenant_id={id}`
 
-**Section: Feature Flag Overrides**
+**Section: Runtime / Feature Flag Overrides**
 
-Table of all feature flags that have a per-tenant override for this tenant. Shows flag name, global default, this tenant's override, last changed by, last changed at. "Add Override" button opens side panel.
+Table of feature flags available for this tenant and all active per-tenant overrides. Shows flag name, global default, this tenant's override, entitlement validation status, last changed by, and last changed at. "Add Override" opens a side panel. This is the canonical UI for feature flag overrides; Feature Flags is not a top-level sidebar item.
 
 **Section: Global Policy Overrides**
 
@@ -466,11 +468,18 @@ White-label branding overrides - planned for Phase 2.
 
 ```
 ```
-Create wizard
+Operator provisioning wizard
   -> PROVISIONING (status = provisioning)
-  -> Tenant owner confirms plan, billing cycle, employee count
   -> PENDING_PAYMENT (status = pending_payment, first invoice open)
-  -> ACTIVE (status = active, invoice paid or manual payment approved)
+  -> ACTIVE (status = active, invoice paid through configured gateway)
+
+Demo profile flow
+  -> TRIAL (status = trial, demo profile applied)
+  -> PENDING_PAYMENT (status = pending_payment, self-service upgrade submitted and first invoice open)
+  -> ACTIVE (status = active, invoice paid through configured gateway)
+
+Trial expiry path
+  -> TRIAL_EXPIRED (status = trial_expired, demo access blocked)
   -> SUSPENDED (status = suspended, payment failure or operator action)
   -> CANCELLED (status = cancelled)
 ```
@@ -479,9 +488,11 @@ Create wizard
 
 | From -> To | Endpoint | Permission | Side Effects |
 |---|---|---|---|
-| provisioning -> pending_confirmation | `PATCH /admin/v1/tenants/{id}/provision/confirm` | `platform.tenants.activate` | Tenant owner can access onboarding/billing confirmation; no trial is created |
-| pending_confirmation -> pending_payment | `POST /api/v1/billing/subscription/confirm` | `billing:manage` | Tenant owner selects allowed plan, billing cycle, confirms employee count; first invoice generated |
-| pending_payment -> active | Gateway webhook or manual mark-paid | `platform.subscriptions.manage` for manual | Invoice paid or approved; module entitlements become active |
+| provisioning -> pending_payment | `PATCH /admin/v1/tenants/{id}/provision/confirm` | `platform.tenants.activate` | Operator provisioning is confirmed and first invoice/payment state is created where required |
+| trial -> pending_payment | `POST /api/v1/demo/upgrade/submit` | `billing:manage` | Tenant owner selects allowed plan/add-ons, billing cycle, confirms employee count and billing contact; first invoice is generated from the matching company-size price bracket |
+| pending_payment -> active | Gateway webhook | system | Invoice paid through configured gateway; module entitlements become active |
+| trial -> trial_expired | Trial expiry job or `PATCH /admin/v1/tenants/{id}/trial/expire` | job or `platform.tenants.manage` | Demo access is blocked and audit/history is written |
+| trial_expired -> trial | `PATCH /admin/v1/tenants/{id}/trial/extend` | `platform.tenants.manage` | Trial end date is extended, limits remain governed by Demo Profile unless overridden |
 | active -> suspended | `PATCH /admin/v1/tenants/{id}/status` `{"status":"suspended"}` | `platform.tenants.suspend` | All tenant user sessions invalidated immediately; tenant invisible to `/api/v1/*` except admin; audit log entry |
 | suspended -> active | `PATCH /admin/v1/tenants/{id}/status` `{"status":"active"}` | `platform.tenants.suspend` | Tenant becomes visible again; audit log entry |
 | active/suspended -> cancelled | `PATCH /admin/v1/tenants/{id}/status` `{"status":"cancelled"}` | `platform.tenants.suspend` + separate `platform.tenants.cancel` | Irreversible in normal flow; data preserved for retention period; billing stopped; all sessions invalidated; audit log entry |

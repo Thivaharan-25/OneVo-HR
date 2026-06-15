@@ -1,7 +1,7 @@
 # Employee Promotion
 
 **Area:** Employee Management  
-**Trigger:** HR Admin initiates promotion (user action)
+**Trigger:** Authorized employee-management user initiates promotion (user action)
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `payroll:write` (salary revision), `roles:manage` (confirm role changes)
 

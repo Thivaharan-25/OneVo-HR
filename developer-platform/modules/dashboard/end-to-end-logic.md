@@ -91,7 +91,7 @@ Six cards in a row. Each card shows: metric name, primary number, delta vs previ
 | Display | Large number, e.g. "12,315" |
 | Subtitle | "63.27% of total users" - calculated as `todays_active_users / total_users * 100` |
 | Delta color | Green when above 60% of total, yellow 40-60%, red below 40% |
-| Click-through | Navigates to Platform Analytics filtered to today's user activity |
+| Click-through | Navigates to Reports / Analytics filtered to today's user activity |
 
 ### Card 5 - Alerts (Total)
 | Property | Value |
@@ -128,7 +128,7 @@ Right: Service list with name, status badge, and uptime percentage.
 | Service Name | What It Represents | Healthy Threshold |
 |---|---|---|
 | API Gateway | ONEVO backend API response success rate | p99 latency < 500ms, error rate < 0.1% |
-| Auth Service | Login, token validation, Google OAuth success rate | Success rate > 99.9% |
+| Auth Service | Primary login, MFA verification, token validation, session creation success rate | Success rate > 99.9% |
 | Data Service | Database read/write success rate | Error rate < 0.01% |
 | Sync Service | Real-time SignalR hub connections | Drop rate < 1% in window |
 | Reporting Engine | Report generation job success rate | Failure rate < 1% |
@@ -250,7 +250,7 @@ Domain event published: IPublisher.Publish(new LoginFailedEvent(...))
 AlertCreationHandler : INotificationHandler<LoginFailedEvent>
         |
         |-- Checks threshold: has this IP exceeded 10 failures in 5 minutes?
-        |   (reads rolling count from Redis or in-memory cache)
+        |   (reads rolling count from Phase 1 in-memory cache)
         |
         |-- YES -> IAlertService.CreateAlertAsync(
         |           alertCode: "auth.brute_force_detected",
@@ -316,7 +316,18 @@ For each tenant_subscription where next_billing_date <= today and payment_status
   -> Schedule retry or escalate to Critical alert
 ```
 
-**TrialExpiryCheckJob removed:** Tenant creation does not create trials. Billing alerts are driven by invoice/payment status instead.
+**Job: `TrialExpiryCheckJob` (daily at 01:00 UTC)**
+```
+For each tenant where status = 'trial':
+  If trial_end_at is within configured warning window:
+    Create or update trial expiring soon attention item
+  If trial_end_at < now:
+    Set tenant.status = 'trial_expired'
+    Block demo access except upgrade/support flows where policy allows
+    Create audit log and tenant notification
+```
+
+Billing alerts are still driven by invoice/payment status. Trial follow-up alerts and payment alerts are separate dashboard attention streams.
 
 ### Pathway 3 - Webhook Handlers
 
@@ -429,14 +440,14 @@ Info alerts are informational events that require no immediate action. Auto-dism
 | `tenant.new_device_registered` | Agent Gateway | A new device checks in for the first time for a tenant |
 | `tenant.user_created` | Auth | A new user is added to a tenant |
 | `tenant.admin_invited` | Auth | Tenant admin invitation email sent |
-| `tenant.activated` | Tenant Console | A provisioning tenant is activated |
-| `tenant.suspended` | Tenant Console | A tenant is suspended |
+| `tenant.activated` | Tenant Management | A provisioning tenant is activated |
+| `tenant.suspended` | Tenant Management | A tenant is suspended |
 | `agent.version_updated` | Agent Gateway | Phase 2 only: an agent deployment ring assignment successfully pushes a new version to a device |
 | `billing.plan_changed` | Billing | Tenant subscription plan changed |
 | `billing.invoice_generated` | Billing | A new invoice is generated for a tenant |
 | `billing.payment_succeeded` | Billing | A payment is collected successfully |
 | `config.settings_changed` | Configuration | Tenant settings edited by platform admin |
-| `feature_flag.override_set` | Feature Flags | A per-tenant feature flag override is created or changed |
+| `feature_flag.override_set` | Runtime Overrides | A per-tenant feature flag override is created or changed |
 | `integration.connected` | Integrations | A tenant successfully connects an integration (e.g., Microsoft 365) |
 | `integration.disconnected` | Integrations | A tenant integration is disconnected |
 
@@ -563,7 +574,7 @@ Right-side panel with 4 shortcuts. Each is a clickable row with chevron icon.
 | Create New Tenant | `/tenants/new` | `platform.tenants.create` |
 | Add Platform Admin | `/platform/platform-users/invite` | `platform.accounts.manage` |
 | View System Health | `/operations/platform-health` | `platform.health.read` |
-| Manage Global Policies | `/platform/global-policies` | `platform.policies.read` |
+| Manage Global Policies | System Config -> Global Policies | `platform.system_config.read` |
 | Export Platform Report | `GET /admin/v1/dashboard/export` | `platform.reports.read` |
 
 **Permission enforcement:** Quick action rows that the current account lacks permission for are hidden - not shown as disabled.

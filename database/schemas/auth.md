@@ -60,13 +60,15 @@ This table is not a billing or subscription table. It can only narrow or expose 
 | `tenant_id` | `uuid` | FK → tenants |
 | `user_id` | `uuid` | FK → users |
 | `document_type` | `varchar(80)` | `terms`, `privacy_notice`, `activity_monitoring_notice`, `screenshot_notice`, `biometric_photo_consent`, `marketing` |
-| `document_version` | `varchar(50)` | Version accepted/acknowledged |
+| `document_version` | `varchar(50)` | Version accepted/acknowledged; references the published version string from Developer Platform `legal_document_versions` |
 | `decision` | `varchar(20)` | `accepted`, `acknowledged`, `declined` |
 | `required` | `boolean` | Whether the item blocks platform access or affected collection |
 | `decided_at` | `timestamptz` |  |
 | `ip_address` | `varchar(45)` |  |
 | `user_agent` | `varchar(500)` |  |
 | `source` | `varchar(30)` | `invite`, `web`, `desktop-agent` |
+
+Compliance Center manages published legal document versions in legal_document_versions. Auth records each user's acceptance, acknowledgement, or decline decision in legal_acceptance_records.
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` → [[database/schemas/infrastructure#`users`|users]]
 

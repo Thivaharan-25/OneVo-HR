@@ -222,7 +222,7 @@ These tests should run against the registry fixture and fake reader outputs befo
 | `PH-CONTRACT-012` | Critical service has one `unknown` required check and no `down` checks | Overall status cannot be better than `degraded` |
 | `PH-CONTRACT-013` | Two equal-weight services: one `healthy`, one `unknown` | `overall_health_pct = 50`; `unknown_check_count > 0` |
 | `PH-CONTRACT-014` | All enabled services are `unknown` | `overall_health_pct = 0`; `overall_status = unknown` |
-| `PH-CONTRACT-015` | Services Monitor receives service keys from Platform Health registry | It uses the same `service_key`, dependency keys, criticality, and approved actions |
+| `PH-CONTRACT-015` | Platform Health service detail receives service keys from Platform Health registry | It uses the same `service_key`, dependency keys, criticality, and approved actions |
 
 ## Score Calculation Examples
 

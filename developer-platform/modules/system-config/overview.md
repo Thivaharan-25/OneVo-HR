@@ -2,20 +2,22 @@
 
 ## Purpose
 
-System Config manages four categories of encrypted external credentials plus platform-wide operational defaults. It is the central place where ONEVO engineers configure which AI providers, payment gateways, OAuth apps, and internal services the platform uses - and where those can be overridden per tenant.
+System Config manages four categories of encrypted external credentials plus platform-wide operational defaults. It is the central place where ONEVO engineers configure which AI providers, payment gateways, OAuth apps, internal services, email, storage, and agent policy defaults the platform uses.
 
-It is also the escalation tool for support engineers who need to adjust a tenant's settings without involving the tenant's own admin.
+Tenant-specific overrides are edited from Tenant Detail -> Settings so operators work from the tenant context. System Config may link to those tenant override screens, but it is not the primary per-tenant override workspace.
 
 ## What This Module Manages
 
 | Category | Description | Stored In |
 |---|---|---|
 | AI Provider Configs | LLM API keys (any provider) with live model fetch | `ai_provider_configs` |
-| Payment Gateway Configs | Stripe/Paddle/PayHere credentials with account verification | `payment_gateway_configs` |
+| Payment Gateway Configs | Stripe/Paddle/PayHere credentials with account verification and country routing | `payment_gateway_configs`, `payment_gateway_country_routes` |
 | Platform OAuth Apps | ONEVO's OAuth app registrations for customer integrations (GitHub, Microsoft, Google, Slack) | `platform_oauth_apps` |
 | Platform Service Keys | ONEVO's own service API keys (Resend email, Cloudflare, Azure Blob) | `platform_service_keys` |
-| Global Defaults | Platform-wide setting defaults (session TTL, invite expiry, dunning schedule) | `system_settings` |
-| Per-Tenant Overrides | Setting value overrides for individual tenants | `tenant_settings` |
+| Global Settings | Platform-wide setting defaults (session TTL, invite expiry, dunning schedule) | `system_settings` |
+| Global Policies | Platform-wide auth/security policy defaults such as MFA, login method defaults, and failed-login lockout | `system_settings`, `tenant_auth_policies` |
+| Runtime Flag Definitions | Global runtime flag definitions, defaults, rollout percentages, module linkage, and feature-key linkage | `feature_flags` |
+| Tenant Override Targets | Setting keys that may be overridden from Tenant Detail -> Settings | `tenant_settings` |
 
 ## Database Tables / Systems Controlled
 
@@ -26,6 +28,7 @@ It is also the escalation tool for support engineers who need to adjust a tenant
 | `platform_oauth_apps` | Read + write - ONEVO's OAuth developer app registrations |
 | `platform_service_keys` | Read + write - Resend, Cloudflare, Azure Blob keys |
 | `system_settings` | Read + write - key-value global defaults |
+| `feature_flags` | Read + write - global runtime flag definitions |
 | `tenant_settings` | Read + write - tenant-specific setting overrides |
 | Audit log | Write every credential or setting change |
 
@@ -37,7 +40,7 @@ It is also the escalation tool for support engineers who need to adjust a tenant
 
 **Provider-agnostic:** `provider_format` (`openai_compatible` or `anthropic`) determines only the HTTP request/response shape - not the URL. The same `openai_compatible` format works for OpenAI, Azure OpenAI, Mistral, Groq, local Ollama, or any compatible endpoint. The `api_base_url` is always operator-supplied; no default URL is ever hardcoded.
 
-**Payment gateway gating:** During tenant provisioning Step 3, the gateway dropdown is filtered by the tenant's country (via `country_codes` on the gateway config). A tenant in Sri Lanka sees only PayHere gateways; a tenant in the UK sees only Stripe gateways.
+**Payment gateway routing:** During payment gateway setup, the operator selects one or more applicable countries by country name. The backend stores country codes internally in `payment_gateway_country_routes`. One gateway config can serve many countries, but each country can have only one active gateway route per environment. During tenant provisioning Step 3, the payment gateway is resolved from the tenant's country route; tenant owners do not choose the gateway.
 
 **Platform OAuth Apps vs tenant integration tokens:** `platform_oauth_apps` holds ONEVO's developer credentials (client_id, client_secret) used to initiate OAuth flows. The customer's resulting access tokens are stored separately in `tenant_integration_credentials` - these are different things in different tables.
 
@@ -47,10 +50,12 @@ It is also the escalation tool for support engineers who need to adjust a tenant
 - Configure global AI provider key + model per ONEVO purpose (Agentic Chat, AI Insights, Report Generation)
 - Fetch available models live from provider before saving - no hardcoded model names
 - Test connection using stored key and base URL
-- Set per-tenant AI key overrides; remove overrides to fall back to global
+- Support per-tenant AI key overrides edited from Tenant Detail -> Settings; remove overrides to fall back to global
 
 ### Payment Gateway
 - Configure global Stripe/Paddle/PayHere credentials with account verification before save
+- Assign one or more countries to the gateway config by country name
+- Block a country assignment if that country already has another active gateway route in the same environment
 
 ### Platform OAuth Apps
 - Register ONEVO's OAuth apps for each integration provider
@@ -61,9 +66,18 @@ It is also the escalation tool for support engineers who need to adjust a tenant
 - Store and rotate Resend, Cloudflare, Azure Blob, and other internal service keys
 - Test service connection
 
-### Global Defaults and Per-Tenant Overrides
+### Global Settings
 - Edit platform-wide defaults (session timeouts, dunning schedule, invite expiry, etc.)
-- Override any global default for a specific tenant for support escalation
+- Define which settings can be overridden from Tenant Detail -> Settings for support escalation
+
+### Global Policies
+- Edit, publish, and optionally propagate auth/security policy defaults from System Config -> Global Policies
+- Keep monitoring, work-hour, retention, and privacy-mode presets in Template Management, not Global Policies
+
+### Runtime Flag Definitions
+- Create, edit, and deactivate global runtime flag definitions from System Config -> Runtime Flags, if this internal screen is exposed.
+- Define flag key, owning module, commercial feature key, default value, rollout percentage, phase, and description.
+- Tenant-specific ON/OFF overrides are not managed here; they are managed from Tenant Management -> Tenant Detail -> Runtime Overrides.
 
 ## Navigation
 
@@ -81,7 +95,7 @@ It is also the escalation tool for support engineers who need to adjust a tenant
 
 ## Related
 
-- [[developer-platform/modules/subscription-manager/overview|Subscription Manager]] - for global payment gateway catalog management
+- [[developer-platform/modules/subscription-manager/overview|Subscription Plans]] - for paid plan catalog management
 - [[developer-platform/modules/module-catalog-manager/overview|Module Catalog Manager]] - for integration catalog and module-integration links
 - [[developer-platform/modules/system-config/end-to-end-logic|System Config End-to-End Logic]]
 

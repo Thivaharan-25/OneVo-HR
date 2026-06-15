@@ -13,6 +13,17 @@
 - Employee reporting lines are available for scoped creators. If reporting lines are missing, only unrestricted org admins can create teams until hierarchy data is complete.
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
+## Team Type Decision
+
+Do not create stored teams for normal reporting lines.
+
+| Need | Correct model |
+|:-----|:--------------|
+| "People under this manager/team lead" | Virtual reporting team resolved from position hierarchy; not stored in `teams`. |
+| Stable named group, cross-functional group, reviewer pool, or reusable workspace source | Explicit team stored in `teams` and `team_members`. |
+
+The UI may show "My Reporting Team" when creating a workspace, but that is a workspace member source, not this Team Creation flow.
+
 ## Member Pool
 
 The set of employees a creator can add as members and assign team roles is resolved from permission scope, hierarchy scope, and bypass grants.
@@ -35,6 +46,7 @@ Department is not selected on the team. If reporting needs department context, t
 ### Step 2: Define Team
 - **UI:** Enter team name and optional description
 - **Validation:** Name unique within tenant
+- **Guard:** If the selected members exactly match a reporting manager's current hierarchy branch and there is no cross-functional/reusable reason, the UI should recommend using "My Reporting Team" during workspace creation instead of storing a duplicate team.
 
 ### Step 3: Add Members And Assign Team Roles
 - **UI:** Search employee from resolved member pool -> add employee -> select a Team Role from the team-role picker
@@ -62,6 +74,7 @@ Department is not selected on the team. If reporting needs department context, t
 | Security role submitted as team role | `400 Bad Request` | "Select a team role for this team member" |
 | Unknown team role | `400 Bad Request` | "Team role is not available" |
 | No reporting-line data for scoped creator | Team creation blocked | "No eligible employees found in your hierarchy" |
+| User tries to create a duplicate reporting team | Warning or blocked by policy | "Use My Reporting Team when creating a workspace unless this is a reusable cross-functional team" |
 
 ## Events Triggered
 

@@ -6,7 +6,7 @@ Platform settings manager.
 
 ## Journey
 
-1. Operator opens Settings -> System Settings.
+1. Operator opens Settings -> System Config.
 2. Console loads global defaults.
 3. Operator updates future-tenant defaults.
 4. Operator may open a tenant-specific override view.
@@ -14,7 +14,7 @@ Platform settings manager.
 
 ## APIs Used
 
-- `GET /admin/v1/config/defaults`
-- `PATCH /admin/v1/config/defaults`
-- `GET /admin/v1/tenants/{id}/settings`
-- `PATCH /admin/v1/tenants/{id}/settings`
+- `GET /admin/v1/system-config/global-defaults`
+- `PATCH /admin/v1/system-config/global-defaults`
+- `GET /admin/v1/tenants/{id}/settings-override`
+- `PATCH /admin/v1/tenants/{id}/settings-override`

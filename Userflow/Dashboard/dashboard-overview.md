@@ -107,7 +107,7 @@
 
 ### Step 7: Trends & Charts Render (Zone 5 - conditional)
 
-- **UI:** Tab switcher - `Productivity · Attendance · Leave`. Each tab visible only if permission allows. Default active tab: Productivity (if WI module present) or headcount/leave distribution (HR-only fallback). Chart: Recharts area chart, violet gradient fill. Text summary above chart ("Productivity averaged 87% this week, up 3%"). Shared date range selector
+- **UI:** Tab switcher - `Productivity · Attendance · Leave`. Each tab visible only if permission allows. Default active tab: Productivity (if WI module present) or headcount/leave distribution (people-operations fallback). Chart: Recharts area chart, violet gradient fill. Text summary above chart ("Productivity averaged 87% this week, up 3%"). Shared date range selector
 - **API:** `GET /api/v1/dashboard/trends?type=productivity&days=14`
   ```json
   {
@@ -158,11 +158,11 @@
 
 ## Variations
 
-### HR Manager (no WI module)
+### Authorized Leave/People Operations User (no WI module)
 - Zone 1 (Exception Alert Strip): absent
 - KPI cards: On Leave Today only (no Active Now, no Exceptions, no Avg Productivity)
 - Zone 4 (Workforce Live): absent - Zone 3 expands to full width
-- Zone 5 (Charts): leave distribution chart (HR fallback)
+- Zone 5 (Charts): leave distribution chart (people-operations fallback)
 - Zone 6 (Workforce Events): present
 
 ### Team Lead (WI module + `hierarchy_scope: subordinates`)
@@ -225,7 +225,5 @@
 - [[modules/productivity-analytics/overview|Productivity Analytics]] - Zone 5 trend data (`AnalyticsService.GetTrendAsync()`)
 - [[modules/calendar/overview|Calendar]] - Zone 6 workforce events
 - [[modules/notifications/overview|Notifications]] - SignalR push for Zone 1 real-time updates
-
-
 
 

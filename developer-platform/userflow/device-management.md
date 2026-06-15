@@ -8,7 +8,7 @@ Operations or support user with device permissions.
 
 ## Journey
 
-1. Operator opens System Operations -> Device Management.
+1. Operator opens Phase 2 Operations -> Device Management.
 2. Console lists devices across tenants.
 3. Operator filters by tenant, status, version, OS, or check-in age.
 4. Operator opens device detail.

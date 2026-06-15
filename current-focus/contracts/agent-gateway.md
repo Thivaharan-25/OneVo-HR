@@ -6,7 +6,7 @@
 
 ---
 
-## GET `/api/v1/agent/fleet` (admin/manager only, cursor paginated)
+## GET `/api/v1/agent/fleet` (authorized monitoring or hierarchy-scoped reviewer only, cursor paginated)
 
 ```ts
 interface AgentFleetItemDto {

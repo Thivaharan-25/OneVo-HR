@@ -1,4 +1,4 @@
-﻿# Cross-Module Relationships
+# Cross-Module Relationships
 
 Foreign keys that cross module boundaries. These are critical for understanding data dependencies between modules and for planning migration order.
 
@@ -226,7 +226,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `system_settings` | `updated_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `tenant_branding` | `logo_file_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
 | `tenant_branding` | `updated_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
-| `feature_flag_overrides` | `granted_by_id` | [[developer-platform/database/schema#dev_platform_accounts|dev_platform_accounts]] | DevPlatform |
+| `feature_flag_overrides` | `granted_by_id` | [[developer-platform/database/schema#platform_users|platform_users]] | DevPlatform |
 | `tenant_subscriptions` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `user_preferences` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `webhook_endpoints` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
@@ -287,9 +287,9 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `workspace_members` | `workspace_id` | `workspaces` | Work Management.Foundation |
 | `workspace_members` | `user_id` | `users` | Infrastructure |
 | `workspace_members` | `employee_id` | `employees` | Core HR |
-| `workspace_hr_team_links` | `workspace_id` | `workspaces` | Work Management.Foundation |
-| `workspace_hr_team_links` | `hr_team_id` | [[database/schemas/org-structure#`teams`\|teams]] | Org Structure |
-| `workspace_hr_team_links` | `created_by_id` | `users` | Infrastructure |
+| `workspace_team_links` | `workspace_id` | `workspaces` | Work Management.Foundation |
+| `workspace_team_links` | `team_id` | [[database/schemas/org-structure#`teams`\|teams]] | Org Structure |
+| `workspace_team_links` | `created_by_id` | `users` | Infrastructure |
 | `workspace_teams_links` | `workspace_id` | `workspaces` | Work Management.Foundation |
 | `workspace_teams_links` | `created_by_id` | `users` | Infrastructure |
 | `teams_member_sync_status` | `workspace_teams_link_id` | `workspace_teams_links` | Work Management.Foundation |
@@ -420,7 +420,7 @@ Based on FK dependencies, modules should be migrated in this order:
 1. infrastructure (tenants, users, countries, file_records)
 2. auth (roles, permissions, sessions)
 3. org-structure (legal_entities, departments, job_titles, team_roles)
-4. core-hr (employees â€” the central hub)
+4. core-hr (employees — the central hub)
 5. configuration (tenant_settings, monitoring_toggles)
 6. agent-gateway (registered_agents)
 7. All HR/WFI Phase 1 modules (can be parallel):
@@ -429,16 +429,16 @@ Based on FK dependencies, modules should be migrated in this order:
    - identity-verification, productivity-analytics
    - shared-platform, notifications
 8. Work Management Phase 1 (ordered by FK dependency):
-   - wms-project-management (workspaces â†’ projects â†’ epics/milestones)
-   - wms-task-management (tasks â†’ boards â†’ board_columns)
-   - wms-planning (sprints â†’ sprint_backlog_items â†’ sprint_daily_snapshots â†’ roadmaps)
-   - wms-chat (channels â†’ messages â†’ ai_action_jobs)
-   - wms-collaboration (document extensions â†’ wiki_pages â†’ task_documents)
-   - wms-analytics (dashboards â†’ dashboard_shares)
-   - wms-integrations (repositories â†’ code_activity_events â†’ task_automation_rules)
+   - wms-project-management (workspaces → projects → epics/milestones)
+   - wms-task-management (tasks → boards → board_columns)
+   - wms-planning (sprints → sprint_backlog_items → sprint_daily_snapshots → roadmaps)
+   - wms-chat (channels → messages → ai_action_jobs)
+   - wms-collaboration (document extensions → wiki_pages → task_documents)
+   - wms-analytics (dashboards → dashboard_shares)
+   - wms-integrations (repositories → code_activity_events → task_automation_rules)
    - optional Microsoft Teams sync additions (external_account_connections -> microsoft_graph_tokens -> workspace_teams_links -> channel_teams_links -> teams_message_sync_state)
 9. IDE Extension (depends on workspaces, projects, tasks, channels):
-   - ide_extension_installs â†’ ide_sessions â†’ ide_tag_executions
+   - ide_extension_installs → ide_sessions → ide_tag_executions
    - ide_context_links, ide_chat_threads
    - agent_install_entitlements, agent_install_jobs (Agent Gateway additions)
 10. Phase 2 modules (after Phase 1 is stable):

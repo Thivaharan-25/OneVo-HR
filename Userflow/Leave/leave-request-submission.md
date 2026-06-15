@@ -68,7 +68,7 @@
   1. Creates `leave_requests` record with status `pending`
   2. Calculates and stores `total_days`, start/end dates, leave type
   3. Uploads supporting documents to storage via [[modules/documents/overview|Documents]]
-  4. Determines approver(s) from employee's reporting line
+  4. Checks for an active leave approval workflow. If found, the workflow resolver determines approver(s). If no custom workflow exists, the default hierarchy approval resolver walks the employee's position reporting chain and selects the first active manager with `leave:approve`.
   5. Creates workflow instance via [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
   6. Sends notification to approver(s) via [[backend/notification-system|Notification System]]
   7. Publishes `LeaveRequestCreatedEvent`

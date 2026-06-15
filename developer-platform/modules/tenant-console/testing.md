@@ -1,9 +1,9 @@
-# Tenant Console - Testing
+# Tenant Management - Testing
 
 ## Test Fixtures Required
 
 All tests require:
-- A seeded `dev_platform_accounts` row (super_admin role)
+- A seeded `platform_users` row (super_admin role)
 - A valid platform-admin JWT (`iss: onevo-platform-admin`, `is_active: true`)
 - At least one seeded `subscription_plans` row with price brackets for `51-200` size range
 - At least one active `payment_gateway_configs` row (provider: paddle, environment: sandbox)
@@ -44,7 +44,7 @@ All tests require:
 
 ### TC-005: Subscription saves and syncs entitlements
 **Precondition:** Tenant from TC-001 exists in provisioning state
-**Action:** `PATCH /admin/v1/tenants/{id}/subscription` with `plan_id`, `selected_module_keys: ["core_hr","leave"]`, `collection_mode: "gateway"`, `payment_gateway_id: "{gatewayId}"`
+**Action:** `PATCH /admin/v1/tenants/{id}/subscription` with `plan_id`, `selected_module_keys: ["core_hr","leave"]`, `payment_gateway_config_id: "{gatewayId}"`
 **Expected:**
 - HTTP 200, `step_3_complete: true`
 - `tenant_subscriptions` row created with `is_current = true`
@@ -59,9 +59,9 @@ All tests require:
 **Action:** `PATCH /admin/v1/tenants/{id}/subscription` with `override_price: 3500`, `override_reason: null`
 **Expected:** HTTP 422, error on `override_reason` field: "Reason is required when overriding the calculated price."
 
-### TC-008: Manual collection requires billing evidence
-**Action:** `PATCH /admin/v1/tenants/{id}/subscription` with `collection_mode: "manual"`, no `billing_evidence_reference` and no `billing_evidence_file_id`
-**Expected:** HTTP 422, error: "Billing evidence or reference is required for manual collection."
+### TC-008: Tenant country requires payment gateway route
+**Action:** `PATCH /admin/v1/tenants/{id}/subscription` for a tenant country with no active gateway route
+**Expected:** HTTP 422, error: "No active payment gateway route is configured for this tenant country."
 
 ### TC-009: AI token limit required when AI modules selected
 **Input:** `selected_module_keys: ["chat_ai"]`, `ai_monthly_token_limit: null`

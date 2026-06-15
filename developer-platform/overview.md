@@ -12,11 +12,11 @@ It is **not** customer-facing. Tenants, employees, and HR managers never interac
 
 | Role | Description |
 |:---|:---|
-| Engineering team | Manage feature flags, review platform health, debug tenant issues |
+| Engineering team | Manage tenant runtime overrides, review platform health, debug tenant issues |
 | Platform operations | Provision tenants, manage subscriptions, run impersonation sessions |
 | Viewer / read-only | Audit log access, system config review (no write access) |
 
-All users must authenticate via **Google OAuth** using an approved `@onevo.io` email. No password login.
+All users must authenticate with **email/password plus MFA** before a Developer Platform session is created. Google OAuth may be enabled for invited platform managers as an optional account setup/sign-in method, but MFA remains required.
 
 ---
 
@@ -66,30 +66,26 @@ Developer Platform modules follow the same KB shape as ONEVO product modules: ea
 | Module | Purpose |
 |:---|:---|
 | Dashboard | Cross-tenant operational summary and quick links |
-| Tenant Console | Tenant lifecycle, provisioning, activation, status changes, and impersonation |
-| Subscription Manager | Reusable plans, payment gateways, invoices, and commercial rules |
-| Platform Access | Platform account invites, platform roles, platform permissions, and session revocation |
-| Global Policies | Platform policy defaults and explicit tenant-impact propagation |
-| Module Catalog Manager | ONEVO product module catalog: pricing, commercial feature inclusion, permission ownership, limits, and setup links |
-| Template Manager | Role, position, configuration, leave policy, monitoring policy, app allowlist, onboarding, and data import templates |
-| Feature Flag Manager | Runtime rollout flags and per-tenant overrides for commercially included features |
-| Platform Health | Overall health status and dependency summary |
-| Services Monitor | Detailed service/component health and safe service actions |
-| Device Management | *(Phase 2)* Cross-tenant agent/device visibility and approved agent commands |
-| Infrastructure Operations | *(Phase 2)* Infrastructure capacity and dependency summaries |
-| Background Jobs | *(Phase 2)* Scheduled/queued job observability and approved retries |
+| Tenant Management | Tenant lifecycle, demo/trial tenants, activation, status changes, and tenant audit history |
+| Subscription Plans | Paid plan definitions, base package modules, optional module add-ons, resource-only add-ons, pricing brackets, and billing rules |
+| Module Catalog | Master list of actual ONEVO product modules, feature keys, permission keys, and pricing/storage/AI reference values |
+| Demo Profiles | Demo/trial workspace defaults, resource limits, module access levels, allowed upgrade plans, and allowed add-ons |
+| Requests Center | Demo access requests and trial extension requests |
+| Customer Support | Support ticket assignment, replies, internal notes, attachments, knowledgebase promotion, and closure |
+| Platform Users | Platform manager invites, status, role assignment, MFA state, active sessions, and access history |
+| Platform Roles | Custom platform roles, permission matrix, assigned users, and recoverable Super Admin protection |
+| Template Management | Reusable tenant setup templates: role, configuration, position, leave policy, monitoring policy, app allowlist, onboarding, and data import templates |
 | Security Center | Security overview, risky activity, and session review |
 | Audit Console | Cross-tenant read-only audit log viewer and exports |
-| Compliance Center | Compliance exports and legal holds |
-| Data Retention | Retention policy management and retention sweep observability |
-| Platform Analytics | Cross-tenant operational and commercial analytics |
-| Report Manager | Platform report catalog and exports |
-| System Config | Global defaults editor and per-tenant settings override |
-| App Catalog Manager | Global app catalog, `is_public` toggles, uncatalogued app bulk-approval |
-| Desktop Agent Version Manager | *(Phase 2)* Agent version catalog, deployment rings, force-update, and rollback |
-| Platform API Key Manager | *(Phase 2)* Platform-level API key management |
+| Compliance Center | Compliance exports, legal holds, legal document versions, and legal/privacy acceptance tracking |
+| Reports / Analytics | Cross-tenant operational, commercial, and report exports |
+| System Config | Global system configuration for provider credentials, platform service keys, system settings, email, storage, and agent policy defaults |
+| Operations | Platform health, service/dependency status, alerts, resource utilization, and approved operational actions |
+| App Catalog | Global app catalog, `is_public` toggles, and uncatalogued app bulk-approval |
 
-Module Catalog Manager manages ONEVO product modules only. It does not manage Developer Platform sidebar sections or platform manager access; those are controlled by Platform Access.
+Permission categories are part of the Platform Roles permission matrix, not a separate sidebar item.
+
+Module Catalog manages ONEVO product modules only. It does not decide whether a module is a base package module or an optional add-on; that classification belongs to Subscription Plans. It does not manage Developer Platform sidebar access or platform manager permissions; those are controlled by Platform Roles.
 
 ---
 
@@ -100,7 +96,7 @@ Module Catalog Manager manages ONEVO product modules only. It does not manage De
 | A customer developer portal | No â€” customers never access this. No customer API keys here. |
 | A second backend service | No â€” the admin API layer lives inside the existing OneVo backend. |
 | A `/platform-admin` route in the main frontend | No â€” it is a completely separate Angular application on a separate domain. |
-| A duplicate of existing data stores | No â€” feature flags, settings, and tenant data live in the existing schema. The console reads/writes those through the admin API. |
+| A duplicate of existing data stores | No â€” runtime overrides, settings, and tenant data live in the existing schema. The console reads/writes those through the admin API. |
 | Phase 2 customer webhook/API infrastructure | No â€” customer-facing developer APIs are a Phase 2 concept, entirely separate. |
 
 ---
@@ -115,7 +111,7 @@ The backend implementation plan for subscription provisioning is at [[developer-
 
 Rather than adding an admin route inside the main customer-facing frontend, the dev console is deployed as a completely separate app. The reasons are:
 
-1. **Different auth model** â€” Developer Google SSO, not tenant JWT. The two systems must not share session infrastructure.
+1. **Different auth model** â€” Developer Platform email/password plus MFA and platform-admin JWT, not tenant JWT. The two systems must not share session infrastructure.
 2. **Network isolation** â€” The console can be IP-restricted or VPN-gated without affecting customer traffic at all.
 3. **No accidental surface exposure** â€” A permission bug in the main frontend cannot expose admin controls to customers.
 4. **Independent deployment** â€” The console can be versioned, deployed, and rolled back independently of the main product release cycle.

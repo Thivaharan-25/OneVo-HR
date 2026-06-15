@@ -53,7 +53,7 @@ Offboarding Initiated (Step 1)
 
 | Failed Step | Impact | Recovery |
 |:------------|:-------|:---------|
-| Leave balance calculation fails | Final settlement will be incorrect | HR Admin manually calculates via [[Userflow/Leave/leave-balance-view\|Leave Balance View]] |
+| Leave balance calculation fails | Final settlement will be incorrect | Authorized leave-management user manually calculates via [[Userflow/Leave/leave-balance-view\|Leave Balance View]] |
 | Attendance finalization fails | Overtime/deductions in settlement may be wrong | Admin resolves pending corrections via [[Userflow/Workforce-Presence/attendance-correction\|Attendance Correction]] |
 | Final settlement fails | Employee not paid correctly | HR reruns via [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] |
 | Document generation fails | No relieving letter | Admin generates manually via [[Userflow/Documents/template-management\|Template Management]] |

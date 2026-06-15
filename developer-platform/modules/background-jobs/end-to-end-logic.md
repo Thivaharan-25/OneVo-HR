@@ -4,7 +4,7 @@
 
 ## View Jobs
 
-1. Operator opens System Operations -> Background Jobs.
+1. Operator opens Phase 2 Operations -> Background Jobs.
 2. Frontend calls `GET /admin/v1/operations/background-jobs`.
 3. Backend verifies `platform.jobs.read`.
 4. Backend returns job status, schedule, last run, duration, and failure summary.

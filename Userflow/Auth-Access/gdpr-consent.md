@@ -154,6 +154,8 @@ user_agent
 source: invite | web | desktop-agent
 ```
 
+`document_version` is the published version string from Developer Platform `legal_document_versions`, managed in Compliance Center. Auth records the user decision in `legal_acceptance_records`.
+
 ## Consequences
 
 - Missing Terms acceptance blocks platform access.

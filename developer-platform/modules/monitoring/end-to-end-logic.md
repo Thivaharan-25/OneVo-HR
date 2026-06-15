@@ -1,7 +1,7 @@
 # Activity Monitoring — End-to-End Logic
 
 **Module key:** `monitoring`  
-**Pillar:** Workforce Intelligence (Package 1)  
+**Pillar:** Workforce Intelligence
 **Pricing unit:** Per employee  
 **Entitlement guard:** All endpoints call `IsModuleEnabledAsync(tenantId, "monitoring")` → 403 `module_not_entitled` if not entitled  
 **Dependency:** See [[developer-platform/module-dependency-matrix|Module Dependency Matrix]]
@@ -92,9 +92,9 @@ Tenants can disable or restrict monitoring for specific employees. Overrides are
 | `full` (default) | All monitoring active — screenshots, idle, app usage |
 | `no_screenshots` | Activity tracked; screenshots disabled for this employee |
 | `activity_only` | App + idle tracking only; screenshots and website visits disabled |
-| `disabled` | All monitoring off for this employee. **Removes from Package 1 billable count.** |
+| `disabled` | All monitoring off for this employee. Excludes the employee from monitoring-related billable count where the selected plan uses user-based monitoring pricing. |
 
-> **Billing rule:** Employees with override = `disabled` are excluded from the Package 1 billable seat count at the monthly billing snapshot.
+> **Billing rule:** Employees with override = `disabled` are excluded from monitoring-related billable seat count when the selected plan uses user-based monitoring pricing.
 
 ---
 

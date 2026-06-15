@@ -6,7 +6,7 @@ Platform analyst or operator.
 
 ## Journey
 
-1. Operator opens Analytics & Reports -> Reports.
+1. Operator opens Reports / Analytics -> Reports.
 2. Console lists available platform reports.
 3. Operator selects report, filters, date range, and export format.
 4. Backend queues export.

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Platform Health registry is the executable contract for `GET /admin/v1/operations/platform-health`, `GET /admin/v1/operations/platform-health/dependencies`, Services Monitor, and `PlatformHealthCheckJob`.
+The Platform Health registry is the executable contract for `GET /admin/v1/operations/platform-health`, `GET /admin/v1/operations/platform-health/dependencies`, Platform Health service detail/action rows, and `PlatformHealthCheckJob`.
 
 It turns scattered module, database, authentication, authorization, endpoint, configuration, infrastructure, background job, observability, frontend, and security docs into explicit checks with owners, evidence, thresholds, status mapping, and redaction rules.
 
@@ -29,7 +29,7 @@ Every monitored service/component must define these fields.
 
 | Field | Required | Description |
 |---|---:|---|
-| `service_key` | Yes | Stable snake_case identifier returned by APIs and used by Services Monitor routes |
+| `service_key` | Yes | Stable snake_case identifier returned by APIs and used by Platform Health service detail/action routes |
 | `display_name` | Yes | Operator-facing service name |
 | `owner_module` | Yes | Module or platform area that owns the service |
 | `environment` | Yes | `local`, `dev`, `staging`, `production`, or `all` |
@@ -41,7 +41,7 @@ Every monitored service/component must define these fields.
 | `checks` | Yes | Ordered check definitions from this document |
 | `freshness_sla_seconds` | Yes | Maximum accepted age of evidence before status becomes `unknown` |
 | `timeout_ms` | Yes | Max duration for the service reader before status becomes `unknown` |
-| `safe_actions` | Yes | Approved Services Monitor actions; empty list if no actions are permitted |
+| `safe_actions` | Yes | Approved Platform Health service actions; empty list if no actions are permitted |
 | `redaction_policy` | Yes | Must be `platform_health_default` unless a stricter named policy exists |
 
 Rules:
@@ -214,7 +214,7 @@ Rules:
       ],
       "dependencies": ["postgresql", "jwt_signing_key"],
       "links": {
-        "services_monitor": "/operations/services/auth_service"
+        "service_detail": "/operations/platform-health/services/auth_service"
       }
     }
   ]
@@ -223,11 +223,11 @@ Rules:
 
 `GET /admin/v1/operations/platform-health/dependencies` returns dependency-level entries with `dependency_key`, `type`, `status`, `criticality`, `last_checked_at`, `detected_at` when degraded/down, and safe evidence fields only.
 
-Services Monitor must use the same service and dependency keys returned by these APIs. It may add historical summaries and approved actions, but it must not introduce service names, dependencies, status thresholds, or actions that are absent from the registry.
+The Platform Health Service Health section must use the same service and dependency keys returned by these APIs. It may add historical summaries and approved actions, but it must not introduce service names, dependencies, status thresholds, or actions that are absent from the registry.
 
 ## Redaction Rules
 
-Platform Health and Services Monitor must never return:
+Platform Health and its service detail/action sections must never return:
 
 - connection strings
 - API keys or signing keys
@@ -242,7 +242,7 @@ Return boolean or summarized evidence instead, such as `configured = true`, `min
 
 ## Phase 1 Minimum Registry Entries
 
-These entries align with the current System Operations docs and should exist before Platform Health is considered complete.
+These entries align with the current Platform Health docs and should exist before Platform Health is considered complete.
 
 | Service Key | Owner Module | Criticality | Required Check Groups |
 |---|---|---|---|

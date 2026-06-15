@@ -1,138 +1,106 @@
-﻿# Subscriptions & Billing - End-to-End Logic
+# Subscriptions & Billing - End-to-End Logic
 
-**Module:** Shared Platform
-**Feature:** Subscriptions & Billing (Stripe + Paddle + PayHere)
+## Purpose
 
----
+This flow supports demo-to-paid upgrade, invoice generation, payment, shared resource limit calculation, and billing audit history.
 
-## Tenant Commercial Boundary
+## Load Demo Upgrade Options
 
-Tenant profile creation, operator commercial boundary, and tenant owner subscription confirmation are separate steps. `POST /admin/v1/tenants` creates only the provisioning tenant profile. The ONEVO operator then saves allowed plans, gateway/manual collection method, setup charges, and negotiated terms. The tenant owner later chooses the final plan and billing cycle from the allowed boundary.
-
-### Operator commercial boundary flow
-
-```
-PATCH /admin/v1/tenants/{id}/subscription
-  -> TenantProvisioningService.SaveCommercialBoundaryAsync()
-    -> 1. Resolve provisioning tenant profile
-    -> 2. Store allowed plan ids and optional recommended plan id
-    -> 3. Store operator-selected gateway_provider (`stripe`, `paddle`, `payhere`) or manual collection mode
-    -> 4. Store one-time setup charges and negotiated overrides/discounts
-    -> 5. Store AI token limit and Work Management storage limit when allowed plans require them
-    -> 6. Do not finalize billing cycle or first invoice quantity, and do not create a trial
-    -> Return tenantId + commercial boundary summary
+```text
+GET /api/v1/demo/upgrade/options
+  -> Validate tenant is demo/trial
+  -> Load active Demo Profile snapshot
+  -> Return only allowed active subscription plans
+  -> Return only allowed optional add-ons from those plans
+  -> Hide add-ons already included as base modules
+  -> Return allowed resource-only add-ons
 ```
 
-Tenant owner invitation is not sent by this flow. Tenant creation does not create a trial.
+## Generate Quote
 
-### Tenant owner subscription confirmation flow
-
-```
-POST /api/v1/billing/subscription/confirm
-  -> BillingController.ConfirmSubscription(ConfirmSubscriptionCommand)
-    -> [RequirePermission("billing:manage")]
-    -> 1. Validate selected plan is in operator-allowed plan ids
-    -> 2. Validate selected billing_cycle is monthly or annual and supported by the plan
-    -> 3. Validate confirmed_employee_count > 0
-    -> 4. Snapshot selected plan, billing cycle, confirmed employee count, and billing contact
-    -> 5. Calculate first invoice using confirmed employee count and selected billing cycle
-    -> 6. Include approved one-time setup charges as separate line items
-    -> 7. Initiate payment through the operator-selected gateway/manual collection path
-    -> Return invoice/payment summary
+```text
+POST /api/v1/demo/upgrade/quote
+  -> Validate selected plan is allowed by Demo Profile
+  -> Validate selected add-ons are allowed by Demo Profile
+  -> Validate no duplicate module entitlement or charge
+  -> Select company-size pricing bracket from confirmed employee count
+  -> Calculate monthly amount
+  -> Calculate annual amount when annual billing is selected
+  -> Calculate shared storage and AI allowance
+  -> Return quote summary
 ```
 
-First invoice calculation:
+Monthly amount:
 
-```
-first_invoice_total =
-  plan_rate_for_confirmed_employee_count
-  * confirmed_employee_count
-  * billing_cycle_multiplier
-  + one_time_setup_charges
-  - discounts_or_overrides
-  + tax
+```text
+selected plan monthly price by company size
++ selected optional module add-on prices
++ selected resource-only add-on prices
+x confirmed employee count where pricing is user-based
 ```
 
-The tenant owner is not asked to classify employees by monitoring, WorkSync, or package usage during first billing.
-### One-time setup charges
+Resource limits:
 
-One-time setup charges are managed separately from the subscription via the billing API. They represent charges for ONEVO operator configuration services and are **not** recurring fees.
-
-```
-POST /admin/v1/tenants/{tenantId}/billing/one-time-charges
-  -> BillingService.CreateOneTimeChargeAsync()
-    -> Validate tenantId and charge details
-    -> INSERT one-time charge record with status "draft"
-    -> Link to setup_option key if applicable
-    -> Return charge record
-
-PATCH /admin/v1/tenants/{tenantId}/billing/one-time-charges/{chargeId}
-  -> Transition status: draft -> approved -> invoiced -> paid | void
+```text
+base plan shared storage/AI
++ selected module add-on storage/AI contribution
++ selected resource add-on storage/AI contribution
++ approved tenant-specific overrides
 ```
 
-Setup charges and the first subscription charge appear as **separate line items** on the same first invoice by default. The customer makes a single payment unless the signed contract explicitly requires setup-only prepayment.
+## Submit Upgrade
 
----
-
-## Get Current Subscription
-
-### Flow
-
-```
-GET /api/v1/subscriptions/current
-  -> SubscriptionController.GetCurrent()
-    -> [RequirePermission("billing:read")]
-    -> SubscriptionService.GetCurrentAsync(tenantId, ct)
-      -> Query tenant_subscriptions WHERE tenant_id
-      -> Include: plan details, billing cycle, status
-      -> Return Result.Success(subscriptionDto)
+```text
+POST /api/v1/demo/upgrade/submit
+  -> Validate quote inputs again server-side
+  -> Store selected plan, add-ons, billing cycle, confirmed employee count, quote snapshot, company details, and billing contact
+  -> Generate first invoice from the matching company-size price bracket
+  -> Move tenant to pending_payment until the first invoice is paid
 ```
 
-## Upgrade Plan
+The tenant remains payment-limited until the first invoice is paid. Requests Center is not part of paid activation.
 
-### Flow
+## Payment
 
-```
-POST /api/v1/subscriptions/upgrade
-  -> SubscriptionController.Upgrade(UpgradeCommand)
-    -> [RequirePermission("billing:manage")]
-    -> SubscriptionService.UpgradeAsync(command, ct)
-      -> 1. Load current subscription
-      -> 2. Validate new plan exists and is higher tier
-      -> 3. Resolve operator-selected gateway_provider (stripe, paddle, or payhere) and gateway config
-      -> 4. Call selected gateway API to update subscription
-      -> 5. UPDATE tenant_subscriptions with new plan and gateway refs
-      -> 6. Update feature_limits based on new plan
-      -> Return Result.Success(updatedDto)
-
+```text
+POST /api/v1/billing/payment
+  -> Validate invoice belongs to tenant
+  -> Validate invoice is payable
+  -> Process or record payment according to configured billing policy
+  -> Mark invoice paid when payment succeeds
+  -> Activate paid tenant if this is the first invoice for a submitted demo upgrade
+  -> Write billing audit log
 ```
 
-## Payment Gateway Configuration
+## Invoices
 
-```
-GET /admin/v1/payment-gateways
-POST /admin/v1/payment-gateways
-PATCH /admin/v1/payment-gateways/{id}
-  -> Supports provider = "stripe", "paddle", or "payhere"
-  -> Stores API keys, merchant secrets, and webhook secrets encrypted
-  -> Returns masked/public configuration only
+```text
+GET /api/v1/billing/invoices
+  -> Return tenant-scoped invoice list
 ```
 
-## Commercial Rules
+## Trial Extension Request
 
-- Subscription tenants normally collect recurring payments through the operator-selected Stripe, Paddle, or PayHere gateway.
-- Full-license tenants may record the one-time license payment manually.
-- Full-license maintenance fees are separate from the license sale and should be collected through Stripe, Paddle, or PayHere when gateway collection is enabled.
-- Manual subscription, full-license, or maintenance collection requires billing evidence/reference and an audit reason.
-- Payment exception/grace periods can apply to subscription and full-license/maintenance tenants.
-- AI-capable modules require a token limit; Work Management storage-backed modules require a storage limit.
+```text
+POST /api/v1/trial-extension/request
+  -> Validate tenant is demo/trial
+  -> Create trial extension request
+  -> Notify Requests Center
+```
 
-## Related
+## Cancellation Blocking
 
-- [[modules/shared-platform/subscriptions-billing/overview|Overview]]
-- [[modules/infrastructure/tenant-management/overview|Tenant Management]]
-- [[frontend/cross-cutting/feature-flags|Feature Flags]]
-- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
-- [[backend/messaging/event-catalog|Event Catalog]]
-- [[backend/messaging/error-handling|Error Handling]]
+Cancellation or renewal changes must be blocked while unpaid seat dues or unpaid added-seat dues exist.
 
+## Tests
+
+- Demo profile only exposes allowed plans.
+- Demo profile only exposes allowed add-ons.
+- Add-ons already included as base modules are hidden.
+- Tenant cannot be charged twice for the same module.
+- Storage is one shared tenant pool.
+- AI token limit is one shared tenant allowance.
+- Resource add-ons increase shared limits.
+- First invoice payment moves demo tenant to active paid tenant.
+- Trial extension updates tenant trial end date.
+- Unpaid seat dues block cancellation.

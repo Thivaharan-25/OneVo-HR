@@ -32,10 +32,6 @@ jobs:
           POSTGRES_USER: onevo
           POSTGRES_PASSWORD: test_password
         ports: ['5432:5432']
-      redis:
-        image: redis:7
-        ports: ['6379:6379']
-    
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -58,7 +54,6 @@ jobs:
         run: dotnet test tests/ONEVO.Tests.Integration --no-build -c Release
         env:
           ConnectionStrings__DefaultConnection: "Host=localhost;Database=onevo_test;Username=onevo;Password=test_password"
-          ConnectionStrings__Redis: "localhost:6379"
       
       - name: Code Coverage
         run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage

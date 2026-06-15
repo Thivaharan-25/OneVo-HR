@@ -11,7 +11,7 @@
 
 ## Purpose
 
-Manages the organizational hierarchy: legal entities, departments, positions, position assignments, shared job titles, and teams. Position hierarchy is the source of truth for reporting; employee records do not store manager references.
+Manages the organizational hierarchy: legal entities, departments, positions, position assignments, shared job-title catalog values, and teams. Position hierarchy is the source of truth for reporting; employee records do not store manager references.
 
 Phase 1 supports both single-company and multi-company tenants. A single-company tenant has one legal entity. A multi-company tenant has multiple legal entities under the same tenant. Departments and positions are legal-entity-specific. Job titles are tenant-shared catalog values.
 
@@ -175,11 +175,10 @@ First-class org seats used to define reporting hierarchy. Positions are legal-en
 | `position_type` | `varchar(20)` | `unique` or `pooled` |
 | `max_occupancy` | `int` | `1` for unique positions |
 | `department_id` | `uuid` | FK -> departments |
-| `job_title_id` | `uuid` | FK -> job_titles |
 | `reports_to_position_id` | `uuid` | Current reporting snapshot; FK -> same-legal-entity unique position, nullable for root positions |
 | `is_active` | `boolean` | |
 
-Minimal Phase 1 setup fields are position name, legal entity, department, job title, capacity, reports-to position, and linked roles/permissions. Location, cost center, job family, and job level are not required for Phase 1 position setup.
+Minimal Phase 1 setup fields are position name, active legal entity context, department, position type, max occupancy, reports-to position, and linked roles/permissions. Legal entity is selected from the Org Structure top-bar context switcher before creation; it is not an editable Create Position field. Job title, location, cost center, job family, and job level are not required for Phase 1 position setup.
 
 Rules: `unique` positions can be reporting targets and have one active occupant. `pooled` positions can have multiple occupants and cannot be reporting targets. Position hierarchy must reject cycles. `reports_to_position_id` is the current reporting snapshot; historical reporting changes are stored in `position_reporting_history`. A position cannot report to a position in another legal entity.
 
@@ -255,7 +254,7 @@ Teams do not own or require a department. Department reporting is derived from `
 
 ### `team_roles`
 
-Tenant-defined team role permission sets for scoped authority inside an HR team. They are configured in Roles & Permissions under Team Roles and assigned to employees only through team membership.
+Tenant-defined team role permission sets for scoped authority inside an explicit stored team. They are configured in Roles & Permissions under Team Roles and assigned to employees only through team membership.
 
 Allowed standard names:
 
@@ -297,7 +296,7 @@ Maps team roles to scoped work-context permissions.
 | `permission_id` | `uuid` | FK to permissions |
 | PK: `(team_role_id, permission_id)` | | |
 
-Team role permissions can support WorkSync actions when the HR team is linked to a workspace. They must stay scoped to the linked team/work area and must not grant tenant-wide HR, payroll, security, billing, project visibility, or system administration authority. Project visibility still requires `project_members`.
+Team role permissions can support WorkSync actions when the explicit stored team is linked to a workspace. They must stay scoped to the linked team/work area and must not grant tenant-wide HR, payroll, security, billing, project visibility, or system administration authority. Project visibility still requires `project_members`.
 
 ### `department_cost_centers` â€” Phase 2
 
@@ -326,7 +325,7 @@ Team role permissions can support WorkSync actions when the HR team is linked to
 |:------|:---------------|:----------|
 | `DepartmentChanged` | Department created, updated, or restructured | Downstream modules that index department context |
 | `PositionCreated` | New position persisted | Core HR (position context cache) |
-| `PositionUpdated` | Position name, capacity, or reporting target changed | Core HR, Exception Engine (escalation context) |
+| `PositionUpdated` | Position name, max occupancy, or reporting target changed | Core HR, Exception Engine (escalation context) |
 | `PositionDeactivated` | Position set inactive | Core HR (guard against new assignments) |
 
 ### Consumes
@@ -350,7 +349,7 @@ Team role permissions can support WorkSync actions when the HR team is linked to
 | GET | `/api/v1/org/positions/tree?legalEntityId={id}` | `employees:read` | Position reporting tree with occupancy and vacancy status |
 | POST | `/api/v1/org/positions` | `org:manage` | Create position |
 | POST | `/api/v1/org/positions/bulk` | `org:manage` | Bulk create positions; returns per-item results |
-| PUT | `/api/v1/org/positions/{id}` | `org:manage` | Update position name, capacity, job title, reports-to |
+| PUT | `/api/v1/org/positions/{id}` | `org:manage` | Update position name, max occupancy, reports-to |
 | DELETE | `/api/v1/org/positions/{id}` | `org:manage` | Deactivate position (blocked if occupied) |
 | POST | `/api/v1/employees/{id}/position-assignment` | `employees:write` | Assign employee to a position (owned by Core HR) |
 | GET | `/api/v1/org/job-titles` | `employees:read` | List job titles |
@@ -368,8 +367,8 @@ Team role permissions can support WorkSync actions when the HR team is linked to
 
 - [[modules/org-structure/legal-entities/overview|Legal Entities]] â€” Single-company and multi-company legal employer structure
 - [[modules/org-structure/departments/overview|Departments]] â€” Hierarchical department tree (`parent_department_id`, CTE-friendly)
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — Job titles (required for positions; `job_family_id` and `job_level_id` nullable), job families, and job levels with numeric rank and optional suggested role
-- [[modules/org-structure/positions/overview|Positions]] — Legal-entity-scoped positions with capacity, reporting-position validation, and position assignments → [[modules/org-structure/positions/end-to-end-logic|Logic]] · [[modules/org-structure/positions/testing|Tests]]
+- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — Tenant-shared job-title catalog values, optional job families, and job levels with numeric rank and optional suggested role. Job titles are not required for Phase 1 position creation.
+- [[modules/org-structure/positions/overview|Positions]] — Legal-entity-scoped positions with max occupancy, reporting-position validation, and position assignments → [[modules/org-structure/positions/end-to-end-logic|Logic]] · [[modules/org-structure/positions/testing|Tests]]
 - [[modules/org-structure/teams/overview|Teams]] - Tenant-scoped employee groups with leadership derived from team role assignments
 - [[modules/org-structure/cost-centers/overview|Cost Centers]] â€” Phase 2; department cost centers with budget per fiscal year
 

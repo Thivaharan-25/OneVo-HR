@@ -1,7 +1,7 @@
 # Monthly Payroll Run — Cross-Module Chain
 
 **Area:** Cross-Module Scenario  
-**Trigger:** Scheduled payroll run date (system-scheduled) or manual trigger by HR Admin  
+**Trigger:** Scheduled payroll run date (system-scheduled) or manual trigger by authorized payroll user  
 **Required Permission(s):** `payroll:run`, `payroll:approve`, `attendance:read`, `leave:read`  
 **Modules Involved:** Payroll, Workforce-Presence, Leave, Employee-Management, Expense, Documents, Notifications
 
@@ -45,9 +45,9 @@ Payroll doesn't just "run salaries." It must collect data from attendance (overt
 
 | Order | Module | What Happens | Event Published |
 |:------|:-------|:-------------|:----------------|
-| 9 | **Notifications** | HR Admin notified that payroll run is ready for review | `NotificationSent` |
-| 10 | **Payroll** | HR Admin reviews payroll summary: headcount, total gross, total net, variance from last month | — |
-| 11 | **Payroll** | HR Admin approves payroll run | `PayrollRunApproved` |
+| 9 | **Notifications** | Authorized payroll reviewer notified that payroll run is ready for review | `NotificationSent` |
+| 10 | **Payroll** | Authorized payroll reviewer reviews payroll summary: headcount, total gross, total net, variance from last month | — |
+| 11 | **Payroll** | Authorized payroll approver approves payroll run | `PayrollRunApproved` |
 
 ### Phase 4: Post-Approval Outputs
 
@@ -84,9 +84,9 @@ Post-Approval (Steps 12-16)
 
 | Failed Step | Impact | Recovery |
 |:------------|:-------|:---------|
-| Attendance data incomplete | Payroll uses last confirmed data; flagged for review | HR finalizes attendance, re-runs calculation |
-| Leave data has pending approvals | Unpaid leave deductions may be incorrect | Manager completes approvals, HR re-runs |
-| Employee salary change not captured | Employee paid at old rate | HR applies [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] in next run |
+| Attendance data incomplete | Payroll uses last confirmed data; flagged for review | Authorized attendance/payroll user finalizes attendance and re-runs calculation |
+| Leave data has pending approvals | Unpaid leave deductions may be incorrect | Configured leave approver completes approvals; authorized payroll user re-runs |
+| Employee salary change not captured | Employee paid at old rate | Authorized compensation/payroll user applies [[Userflow/Payroll/payroll-adjustment\|Payroll Adjustment]] in next run |
 | Payslip generation fails | Employee can't view payslip | Admin re-triggers from [[Userflow/Documents/template-management\|Template Management]] |
 | Bank file generation fails | Payment delayed | Admin retries; payroll status stays `approved` until bank file succeeds |
 

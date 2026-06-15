@@ -26,7 +26,7 @@
 - **UI:** Add escalation levels using resolver choices:
   - Level 1: Employee's reporting manager -> notify immediately -> wait X hours for acknowledgement
   - Level 2: Users with permission `exceptions:manage` -> if unacknowledged after X hours
-  - Level 3: Configured escalation owner -> if still unacknowledged after Y hours
+  - Level 3: Configured escalation resolver -> if still unacknowledged after Y hours
 - **Backend:** `EscalationService.CreateChainAsync()` stores resolver type/config, delay, and action.
 - **DB:** `escalation_chains`, `escalation_levels` after the approved resolver schema migration
 
@@ -44,7 +44,7 @@
 | No levels defined | Validation fails | "Add at least one escalation level" |
 | Resolver returns no users | Chain pauses and notifies automation owner | "No eligible escalation recipient found" |
 | Same person resolves at multiple levels | Warning | "This resolver may route multiple levels to the same person" |
-| Fixed role name selected | Not allowed | "Select a resolver, permission, department, team, job level, or employee" |
+| Fixed role name selected | Not allowed | "Select a resolver, permission, legal entity, department, team, position branch, optional job level, HR coverage resolver, or employee" |
 
 ## Events Triggered
 

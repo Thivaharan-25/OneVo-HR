@@ -1,7 +1,7 @@
 # Identity Verification — End-to-End Logic
 
 **Module key:** `verification`  
-**Pillar:** Workforce Intelligence (Package 1)  
+**Pillar:** Workforce Intelligence
 **Pricing unit:** Per employee  
 **Entitlement guard:** All endpoints call `IsModuleEnabledAsync(tenantId, "verification")` → 403 `module_not_entitled` if not entitled  
 **Dependency:** See [[developer-platform/module-dependency-matrix|Module Dependency Matrix]]
@@ -130,7 +130,7 @@ This alert fires regardless of whether `monitoring` or `exceptions` are entitled
 |:---|:---|:---|:---|
 | `verification.require_photo_clock_in` | Tenant configuration settings | `true` | Prompt for photo on clock-in |
 | `verification.require_photo_clock_out` | Tenant configuration settings | `true` | Prompt for photo on clock-out |
-| `camera_photo_verification_enabled` | Step 4 provisioning / Tenant Console config tab | **Off** | Must be explicitly enabled; agent spot-checks require this |
+| `camera_photo_verification_enabled` | Step 4 provisioning / Tenant Management config tab | **Off** | Must be explicitly enabled; agent spot-checks require this |
 | Photo retention days | Tenant configuration settings | 90 days | Verification photos older than this are automatically deleted from file storage |
 
 ---

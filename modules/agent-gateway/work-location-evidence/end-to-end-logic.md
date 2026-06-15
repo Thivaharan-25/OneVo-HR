@@ -86,7 +86,7 @@
 1. Employee opens **Employee Settings -> Remote Work Location**.
 2. Employee submits a reason.
 3. System creates `remote_work_location_change_requests` with `status = pending`.
-4. Reporting manager approves or rejects.
+4. Configured work-location approver approves or rejects.
 5. If approved, the next remote clock-in starts re-capture.
 6. After successful photo verification:
    - old profile is archived

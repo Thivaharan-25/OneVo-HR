@@ -24,6 +24,7 @@ Reporting targets must be `unique` positions. `pooled` positions (e.g. "Software
 ## Phase 1 Rules
 
 - Positions belong to one legal entity; `legal_entity_id` is immutable after creation.
+- Legal entity is selected as the active Org Structure context before creating a position. It is not an editable field inside the Create Position form.
 - A position can report only to a `unique` position in the same legal entity.
 - Root positions (no `reports_to_position_id`) are allowed — used for CEO, Country Head, etc.
 - Cycles in reporting chains are rejected.
@@ -45,8 +46,7 @@ Reporting targets must be `unique` positions. `pooled` positions (e.g. "Software
 | `department_id` | `uuid` | FK → departments; must belong to same legal entity |
 | `name` | `varchar` | Unique within legal entity |
 | `position_type` | `varchar(20)` | `unique` or `pooled` |
-| `capacity` | `int` | Headcount ceiling; ≥ 1 |
-| `max_occupancy` | `int` | `1` for unique; ≥ 1 for pooled |
+| `max_occupancy` | `int` | Headcount ceiling; `1` for unique; ≥ 1 for pooled |
 | `reports_to_position_id` | `uuid` | FK → positions (same legal entity, unique type); nullable for root positions |
 | `suggested_role_id` | `uuid` | FK → roles; optional onboarding/promotion suggestion only — never auto-applied |
 | `is_active` | `bool` | |
@@ -93,7 +93,7 @@ Derived reporting tree rebuilt from current `positions`, `position_reporting_his
 | GET | `/api/v1/org/positions/tree?legalEntityId={id}` | `employees:read` | Reporting tree with occupancy and vacancy status |
 | POST | `/api/v1/org/positions` | `org:manage` | Create position |
 | POST | `/api/v1/org/positions/bulk` | `org:manage` | Create multiple positions in one request; returns per-item results |
-| PUT | `/api/v1/org/positions/{id}` | `org:manage` | Update position name, capacity, reports-to |
+| PUT | `/api/v1/org/positions/{id}` | `org:manage` | Update position name, max occupancy, reports-to |
 | DELETE | `/api/v1/org/positions/{id}` | `org:manage` | Deactivate position (blocked if occupied) |
 
 Employee assignment (`POST /api/v1/employees/{id}/position-assignment`) is owned by Core HR, not this module. Org Structure exposes `IOrgStructureService` for position resolution.

@@ -23,6 +23,8 @@ Module Catalog Manager or Platform Super Admin.
 3. Backend validates feature keys use `{module_key}.{feature_name}` and are unique.
 4. Plans and custom contracts can include a subset of these features. Feature flags can only control runtime access after this commercial inclusion exists.
 
+Adding a feature key to Module Catalog only makes that feature available for plan configuration, custom tenant commercial snapshots, permission mapping, and runtime flag mapping. It must not update existing subscription plans, update existing tenant subscriptions, or grant access to every tenant with the parent module.
+
 ### Update Permission Ownership
 
 1. Operator opens a module detail page -> **Permissions** tab.
@@ -74,4 +76,6 @@ Module Catalog Manager or Platform Super Admin.
 
 ## Boundary
 
-Module Catalog manages ONEVO product modules, commercial feature lists, and module-to-permission ownership. Permission codes themselves are seeded/version-controlled by the backend permission catalog. Developer Platform screen access is managed by Platform Access. Feature Flag Manager handles runtime rollout only; it does not define commercial inclusion or pricing.
+Module Catalog manages ONEVO product modules, commercial feature lists, and module-to-permission ownership. Permission codes themselves are seeded/version-controlled by the backend permission catalog. Developer Platform screen access is managed by Platform Users and Platform Roles. Tenant Runtime Overrides handle runtime rollout only; it does not define commercial inclusion or pricing.
+
+Module Catalog defines the possible product surface. Subscription Plans define reusable commercial packages. Tenant subscription snapshots define what a specific tenant actually has. A tenant with a module entitlement does not automatically receive every feature key registered under that module.

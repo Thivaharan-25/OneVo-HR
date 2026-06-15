@@ -36,7 +36,7 @@ Per-tenant runtime overrides for a flag. An override is evaluated only after mod
 
 ## Related
 
-- [[developer-platform/modules/feature-flag-manager/overview|Developer Platform Feature Flag Manager]]
+- [[developer-platform/modules/feature-flag-manager/overview|Developer Platform Tenant Runtime Overrides]]
 - [[developer-platform/modules/module-catalog-manager/end-to-end-logic|Module Catalog Feature Registry]]
 - [[frontend/cross-cutting/feature-flags|Frontend Feature Flags]]
 - [[modules/shared-platform/overview|Shared Platform Module]]

@@ -86,7 +86,7 @@ If not resolved after:
 2 working days
 
 Then:
-Escalate to configured escalation owner
+Escalate to configured escalation resolver
 ```
 
 ### Step 2: Select Trigger
@@ -108,29 +108,32 @@ Supported triggers:
 
 ### Step 3: Add Conditions
 
-Conditions can check request type, alert type, severity, count, time window, working-day calendar, employee, department, team, job level, permission, case state, previous approver, or integration state.
+Conditions can check request type, alert type, severity, count, time window, working-day calendar, employee, legal entity, department, team, position, position branch, permission, case state, previous approver, or integration state. Job level can be used only when the tenant has configured and linked job hierarchy data.
 
 ### Step 4: Choose Resolver
 
 Supported resolvers:
 
+- First eligible approver in employee's position reporting chain
 - Employee's reporting manager
 - Employee's team lead
 - Employee's department owner
 - Users with selected permission
 - Users in selected department
 - Users in selected team
-- Users in selected job level
+- Users in selected position or position branch
+- Users in selected job level, only when job levels are configured and linked
 - Specific employee
-- Configured escalation owner
+- Configured escalation resolver
 - Previous workflow approver
 - Case conversation participants
 
 Examples:
 
 - Send to users with permission `exceptions:manage`.
-- Send to the configured escalation owner.
+- Send to the configured escalation resolver.
 - Assign to employee's reporting manager.
+- For default leave approval, resolve the first active reporting-chain approver with `leave:approve` when no custom workflow exists.
 
 ### Step 5: Configure Actions
 
@@ -158,9 +161,9 @@ When a resolver returns multiple approvers, the approval step asks:
 - All assigned approvers must approve
 - Approve in order
 
-Use "Only one approval is required" when either approver has authority and the company wants fast approvals. Once one manager approves, the request is completed and other assigned managers see it as already completed.
+Use "Only one approval is required" when either approver has authority and the company wants fast approvals. Once one configured approver approves, the request is completed and other assigned approvers see it as already completed.
 
-Use "All assigned approvers must approve" when dual approval is required. Example: Manager A approves, then the status becomes "Waiting for Manager B"; only after Manager B approves is the request approved.
+Use "All assigned approvers must approve" when dual approval is required. Example: Approver A approves, then the status becomes "Waiting for Approver B"; only after Approver B approves is the request approved.
 
 Use "Approve in order" when hierarchy-based approval is required. Example: reporting manager first, then department owner.
 
@@ -224,7 +227,7 @@ Templates appear only after the customer clicks Templates.
 
 Purpose: Creates standard approval automations for common HR requests.
 
-Includes leave request, attendance correction, overtime request, and remote work location request routing to employee's reporting manager, case conversation creation, approver notification, and escalation if unresolved after configured working days.
+Includes leave request, attendance correction, overtime request, and remote work location request routing through hierarchy-aware resolvers, case conversation creation, approver notification, and escalation if unresolved after configured working days.
 
 Best for most companies that want approval requests to flow automatically without designing every rule manually.
 
@@ -240,7 +243,7 @@ Best for companies that want visibility without disturbing employees and manager
 
 Purpose: Creates faster escalation for companies that need stricter workforce monitoring.
 
-Includes low activity notifications, excess idle case conversations, presence without laptop activity cases, agent heartbeat gap notifications, and quick escalation to configured escalation owner.
+Includes low activity notifications, excess idle case conversations, presence without laptop activity cases, agent heartbeat gap notifications, and quick escalation to configured escalation resolver.
 
 Best for remote-work risk, compliance, or operational sensitivity.
 
@@ -280,7 +283,7 @@ Best for remote or hybrid companies using camera-based identity verification.
 
 Purpose: Prevents leave, overtime, attendance corrections, and other approvals from getting stuck.
 
-Includes reminders, escalation to next resolver, and second-delay escalation to configured owner.
+Includes reminders, escalation to next resolver, and second-delay escalation to configured resolver.
 
 Best for companies where managers often delay approvals.
 

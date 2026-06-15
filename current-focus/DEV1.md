@@ -362,8 +362,8 @@ Delivered the foundational RBAC slice that the Tenant Creation API (and every ot
 - [x] Entitlement DTO supports web and IDE consumers.
 - [x] Tests cover active module resolution and focused entitlement reads.
 - [ ] Developer Platform provisioning can create a draft tenant in `provisioning` status before activation.
-- [ ] Developer Platform provisioning can set commercial terms via `/admin/v1/tenants/{id}/subscription`, including `subscription` vs `full_license_maintenance`, subscription gateway collection, manual one-time full-license payment evidence, gateway-collected maintenance, maintenance status, renewal date, and custom contract values.
-- [ ] Developer Platform provisioning can set tenant modules through the same entitlement/module registry via `/admin/v1/tenants/{id}/modules`, including module sales states: `purchased`, `trial`, `quoted`, `maintenance_included`, `subscription_included`, and `disabled`.
+- [ ] Developer Platform provisioning can set commercial terms via `/admin/v1/tenants/{id}/subscription`, including selected plan, billing cycle, selected optional add-ons, selected resource-only add-ons, resolved payment gateway config, first-invoice state, shared storage limit, and shared AI token allowance.
+- [ ] Developer Platform provisioning can set tenant modules through the same entitlement/module registry via `/admin/v1/tenants/{id}/modules`, including module sales states: `purchased`, `trial`, `quoted`, `subscription_included`, and `disabled`.
 - [ ] Permission catalog endpoint returns only permissions for enabled tenant modules plus universal permissions.
 - [ ] Provisioning can attach role templates to the tenant and materialize them into tenant-scoped roles.
 - [ ] Tenant owner invite creates a user without requiring an operator-entered final password and sends a set-password link.
@@ -383,9 +383,9 @@ Delivered the foundational RBAC slice that the Tenant Creation API (and every ot
 - [[infrastructure/multi-tenancy|Multi Tenancy]] (infrastructure/multi-tenancy.md)
 - [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
 - [[database/schemas/shared-platform|Shared Platform Schema]] (database/schemas/shared-platform.md)
-- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md)
+- [[developer-platform/modules/feature-flag-manager/overview|Tenant Runtime Overrides]] (developer-platform/modules/feature-flag-manager/overview.md)
 - [[developer-platform/modules/role-template-manager/overview|Role Template Manager]] (developer-platform/modules/role-template-manager/overview.md)
-- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
+- [[developer-platform/userflow/provisioning-flow|Operator Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
 
 ### Verification
 
@@ -443,13 +443,13 @@ dotnet test ONEVO.sln --filter Audit
 
 - [ ] SSO provider configuration exists for Google only in Phase 1, with encrypted client credentials.
 - [ ] Subscription plan catalog exists with plan features and tenant subscription state.
-- [ ] Stripe/PayHere-facing subscription, maintenance, and invoice records are represented behind module interfaces.
+- [ ] Payment-provider-facing subscription, payment, and invoice records are represented behind module interfaces.
 - [ ] Feature flag service resolves tenant flags and module gates.
 - [ ] Tenant branding records exist for logo and colors; default tenant URL comes from `tenants.slug`.
 - [ ] Notification templates and notification channel configuration exist.
 - [ ] Workflow definitions, workflow steps, workflow instances, workflow step instances, and approval actions are mapped.
 - [ ] Workflow engine can start an instance for any `resource_type` + `resource_id`.
-- [ ] Workflow engine resolves approvers through dynamic resolvers, including reporting manager, team lead, department owner, selected permission, selected department, selected team, selected job level, specific employee, configured escalation owner, previous approver, and case conversation participants.
+- [ ] Workflow engine resolves approvers through dynamic resolvers, including first eligible approver in the position reporting chain, reporting manager, team lead, department owner, selected permission, selected legal entity, selected department, selected team, selected position or position branch, optional selected job level when configured, specific employee, HR coverage resolver, configured escalation resolver, previous approver, and case conversation participants.
 - [ ] Workflow approval steps support multiple-approver modes: only one approval is required, all assigned approvers must approve, and approve in order.
 - [ ] Workflow engine supports approve, reject, delegate, request info, condition steps, SLA deadline, and timeout action.
 - [ ] Workflow engine publishes step events (`WorkflowStepAssigned`, `WorkflowStepApproved`, `WorkflowStepRejected`) and final outcome events (`WorkflowApproved`, `WorkflowRejected`, `WorkflowCancelled`).
@@ -549,10 +549,10 @@ dotnet test ONEVO.sln --filter AppAllowlist
 - [ ] Admin controllers are thin and call application/module interfaces through DI.
 - [ ] Platform admin auth validates Google OAuth login through `POST /admin/v1/auth/google-callback`.
 - [ ] Google token validation enforces `@onevo.io` email domain.
-- [ ] Login checks `dev_platform_accounts.google_sub`, `email`, and `is_active`.
+- [ ] Login checks `platform_users.google_sub`, `email`, and `is_active`.
 - [ ] Successful login issues a 30-minute platform-admin JWT with `iss`, `aud`, `sub`, `email`, and `platform_role`.
-- [ ] `dev_platform_accounts` and `dev_platform_sessions` are mapped in `ApplicationDbContext`.
-- [ ] `dev_platform_accounts` and `dev_platform_sessions` have no `TenantId`.
+- [ ] `platform_users` and `platform_user_sessions` are mapped in `ApplicationDbContext`.
+- [ ] `platform_users` and `platform_user_sessions` have no `TenantId`.
 - [ ] DevPlatform entities are excluded from tenant query filters.
 - [ ] Platform admin JWT is accepted only by `/admin/v1/*` endpoints.
 - [ ] Tenant JWT is rejected by every `/admin/v1/*` endpoint.
@@ -582,7 +582,7 @@ dotnet test ONEVO.sln --filter AdminApi
 
 ---
 
-## Task 8: Developer Platform Tenant Console Backend
+## Task 8: Developer Platform Tenant Management Backend
 
 **Goal:** implement the admin tenant lifecycle APIs used by `console.onevo.io`.
 
@@ -603,8 +603,8 @@ dotnet test ONEVO.sln --filter AdminApi
 - [ ] Tenant list includes company name, slug, plan tier, status, employee count, created date, agent count, and last login summary.
 - [ ] `GET /admin/v1/subscription-plans` returns reusable plan catalog records with included modules, company-size price band, calculated monthly/annual price, override monthly/annual price, currency, active state, pricing unit, and AI monthly token limit; operators do not create a plan per tenant.
 - [ ] `POST /admin/v1/subscription-plans` and `PATCH /admin/v1/subscription-plans/{id}` create/update reusable plans from selected modules and `module_catalog.price_brackets`, using the same company-size values as tenant creation, with optional override prices and audit reason.
-- [ ] `GET /admin/v1/modules/catalog` returns reusable module catalog records with pillar, phase, sellable state, price brackets, full-license price, maintenance rate, and pricing unit.
-- [ ] `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module price brackets, full-license price, maintenance rate, active state, and pricing unit with audit reason.
+- [ ] `GET /admin/v1/modules/catalog` returns reusable module catalog records with pillar, phase, active state, pricing references, storage references, AI token references, and pricing unit.
+- [ ] `POST /admin/v1/modules/catalog` and `PATCH /admin/v1/modules/catalog/{moduleKey}` create/update reusable module reference values, active state, and pricing unit with audit reason.
 - [ ] `GET /admin/v1/tenants/validate` validates tenant slug, company name, email domain, registration number, and country rules with conflicts and warnings.
 - [ ] `POST /admin/v1/tenants` creates a draft tenant in `provisioning` status from account setup data.
 - [ ] `PATCH /admin/v1/tenants/{id}` edits draft tenant details before activation without bypassing activation guards.
@@ -631,9 +631,9 @@ dotnet test ONEVO.sln --filter AdminApi
 
 ### References
 
-- [[developer-platform/modules/tenant-console/overview|Tenant Console]] (developer-platform/modules/tenant-console/overview.md)
+- [[developer-platform/modules/tenant-console/overview|Tenant Management]] (developer-platform/modules/tenant-console/overview.md)
 - [[developer-platform/userflow/tenant-management|Tenant Management Flows]] (developer-platform/userflow/tenant-management.md)
-- [[developer-platform/userflow/provisioning-flow|Manual Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
+- [[developer-platform/userflow/provisioning-flow|Operator Customer Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md)
 - [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
 - [[database/schemas/shared-platform|Shared Platform Schema]] (database/schemas/shared-platform.md)
 - [[Userflow/Platform-Setup/billing-subscription|Billing & Subscription]] (Userflow/Platform-Setup/billing-subscription.md)
@@ -690,8 +690,8 @@ dotnet test ONEVO.sln --filter Impersonation
 
 ### References
 
-- [[developer-platform/modules/feature-flag-manager/overview|Feature Flag Manager]] (developer-platform/modules/feature-flag-manager/overview.md)
-- [[developer-platform/userflow/feature-flags|Feature Flag Flows]] (developer-platform/userflow/feature-flags.md)
+- [[developer-platform/modules/feature-flag-manager/overview|Tenant Runtime Overrides]] (developer-platform/modules/feature-flag-manager/overview.md)
+- [[developer-platform/userflow/feature-flags|Tenant Runtime Override Flows]] (developer-platform/userflow/feature-flags.md)
 - [[developer-platform/modules/audit-console/overview|Audit Console]] (developer-platform/modules/audit-console/overview.md)
 - [[developer-platform/modules/system-config/overview|System Config]] (developer-platform/modules/system-config/overview.md)
 - [[developer-platform/modules/app-catalog-manager/overview|App Catalog Manager]] (developer-platform/modules/app-catalog-manager/overview.md)

@@ -10,9 +10,23 @@
 ## Preconditions
 
 - A leave request has been submitted with status `pending`: [[Userflow/Leave/leave-request-submission|Leave Request Submission Flow]]
-- The tenant has an active Automation Center workflow for leave requests or a default approval workflow.
-- Approver assignment is resolved dynamically, such as employee's reporting manager, users with selected permission, department owner, team lead, specific employee, or configured escalation owner.
+- The tenant may have an active Automation Center workflow for leave requests. If no custom workflow is configured, ONEVO uses the default hierarchy approval resolver.
+- Approver assignment is resolved dynamically, such as employee's reporting manager, users with selected permission, department owner, team lead, specific employee, HR coverage resolver, or configured escalation resolver.
 - Approver has `leave:approve` permission through the tenant's dynamic permission model.
+
+## Default Hierarchy Approval
+
+When no custom leave workflow is configured, ONEVO must resolve the approver from the employee's position reporting chain:
+
+1. Load the employee's current active position assignment.
+2. Walk upward through `positions.reports_to_position_id`.
+3. At each reporting position, resolve the current active occupant.
+4. A candidate is valid only when the occupant is an active employee, has an active linked user account, has `leave:approve`, and is not approving their own request unless policy explicitly allows self-approval.
+5. Assign the request to the first valid candidate found in hierarchy order.
+6. If a reporting position is vacant, inactive, has no active user, or lacks `leave:approve`, continue to the next position above it.
+7. If no valid approver exists before the root, mark the workflow step as blocked and notify the automation owner or authorized admin to fix routing.
+
+This default path must not use a fixed HR role name. HR users can approve leave through a configured workflow, selected permission resolver, specific employee resolver, or HR coverage resolver when that feature exists.
 
 ---
 
@@ -96,11 +110,15 @@ Approver can delegate the current workflow action to another allowed approver. T
 
 ### When Approver Is Unavailable Or Does Not Act
 
-If the assigned approver does not act before the workflow SLA, the unresolved item follows the configured escalation path. For normal leave, the default escalation target should be department owner or configured escalation owner, not a fixed HR role name.
+If the assigned approver does not act before the workflow SLA, the unresolved item follows the configured escalation path. For normal leave, the default unresolved path should first use hierarchy-aware escalation when available, then department owner, selected permission, specific employee, HR coverage resolver, or configured escalation resolver. It must not target a fixed HR role name.
 
 ### When Administrative Intervention Is Allowed
 
 Users with broader leave permissions can intervene only when the workflow, permission, or override policy permits it. ONEVO must not assume a fixed HR role name.
+
+### When HR Approves Leave
+
+HR approval is workflow routing, not reporting hierarchy. If the company wants HR to approve leave for everyone, configure a leave workflow resolver such as selected permission, specific employee, selected team/department, or HR coverage assignment. Do not set every employee's `reports_to_position_id` to an HR position just because HR approves leave.
 
 ---
 
@@ -128,6 +146,7 @@ Users with broader leave permissions can intervene only when the workflow, permi
 
 - [[Userflow/Automation/automation-center|Automation Center]]
 - [[Userflow/Leave/leave-request-submission|Leave Request Submission]]
+- [[Userflow/Leave/hr-coverage-routing|HR Coverage Routing]]
 - [[Userflow/Leave/leave-cancellation|Leave Cancellation]]
 - [[Userflow/Notifications/inbox|Inbox]]
 - [[Userflow/Chat/chat-overview|Chat Overview]]

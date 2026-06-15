@@ -17,10 +17,11 @@ POST /api/v1/exceptions/escalation-chains
       -> 1. Validate severity: info, warning, critical
       -> 2. For each step:
          -> Validate resolver_type and resolver_config
-         -> Resolver may target reporting manager, team lead, department owner,
-            selected permission, selected department/team/job level,
-            specific employee, previous approver, case participants,
-            or configured escalation owner
+         -> Resolver may target reporting chain first eligible, reporting manager,
+            team lead, department owner, selected permission, selected legal entity,
+            selected department/team/position/position branch, optional job level
+            when configured, specific employee, previous approver, case participants,
+            HR coverage resolver, or configured escalation resolver
          -> Validate delay_minutes >= 0
       -> 3. INSERT into escalation_chains (one row per step)
          -> step_order = 1, 2, 3...

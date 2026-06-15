@@ -57,7 +57,7 @@ Access policy is only for permissions that operate on employee-owned or employee
 
 | module | module_key | feature_key | owner_permissions | dependency_permissions | access_policy_applies | notes |
 |---|---|---|---|---|---|---|
-| Auth & Security | `auth` | `auth.google_login` | None | None | No | Login capability; not controlled by tenant role permission. Operational runtime flag candidate only. |
+| Auth & Security | `auth` | `auth.optional_google_oauth` | None | None | No | Optional invited-manager OAuth setup/sign-in capability; not controlled by tenant role permission. Operational runtime flag candidate only. |
 | Auth & Security | `auth` | `auth.mfa_enforcement` | `users:manage` for admin reset/enforcement actions | `settings:admin` if changing tenant-wide auth policy | No | End users enabling their own MFA do not need a grantable permission. |
 | Configuration | `configuration` | `configuration.tenant_settings` | `settings:read`, `settings:admin` | None | No | Foundation tenant setting capability. |
 | Roles & Permissions | `roles` | `roles.permission_management` | `roles:create`, `roles:update`, `roles:delete`, `roles:assign`, `permissions:manage` | `users:read` when selecting users for assignment | No | Older docs use `roles:manage`; split permissions are preferred for new design. |

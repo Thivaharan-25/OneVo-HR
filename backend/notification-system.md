@@ -90,12 +90,12 @@ Configured in `escalation_rules` table:
 ```
 If leave_request status = "pending" for > 48 hours:
   -> Send reminder to assigned approver resolver
-  -> If still pending after 72 hours: escalate to configured escalation owner
+  -> If still pending after 72 hours: escalate to configured escalation resolver
 ```
 
 Checked by a Hangfire recurring job (every hour).
 
-Escalation rules and workflow notifications must not target fixed role names. They should target resolver outputs such as employee's reporting manager, users with selected permission, users in selected department/team/job level, specific employee, previous workflow approver, case conversation participants, or configured escalation owner.
+Escalation rules and workflow notifications must not target fixed role names. They should target resolver outputs such as first eligible approver in the position reporting chain, employee's reporting manager, users with selected permission, users in selected legal entity/department/team/position/position branch, optional job level when configured, specific employee, previous workflow approver, case conversation participants, HR coverage resolver, or configured escalation resolver.
 
 ## Related
 

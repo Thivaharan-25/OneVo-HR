@@ -6,7 +6,7 @@
 
 ## Purpose
 
-ONEVO's Work Management System, branded as **WorkSync**, is the project and task management layer inside ONEVO. It is sold through Package 2. It answers what teams are building through projects, chat, third-party integrations, and the IDE extension. When Package 1 is also enabled, Work Management can be shown beside attendance, monitoring, productivity, and exception data.
+ONEVO's Work Management System, branded as **WorkSync**, is the project and task management layer inside ONEVO. It is sold through Subscription Plans as a base module or optional add-on. It answers what teams are building through projects, chat, third-party integrations, and the IDE extension. When HR/Workforce Intelligence modules are also enabled, Work Management can be shown beside attendance, monitoring, productivity, and exception data.
 
 ## Ownership
 
@@ -46,16 +46,27 @@ ONEVO's Work Management System, branded as **WorkSync**, is the project and task
 
 All WorkSync data is tenant-scoped. Workspaces, projects, tasks, goals, and docs remain legal-entity-local by default when a legal entity is selected. Cross-tenant collaboration requires an active company connection and explicit member/data-sharing scope; it must not be modeled as legal-entity switching inside one tenant.
 
+Workspaces and projects use context-specific access:
+
+- Position hierarchy resolves reporting authority and virtual reporting teams.
+- Workspace membership controls workspace collaboration.
+- Project membership controls project visibility and work.
+- Project-workspace links show participation context and responsible workspace, but do not automatically expose the project to every workspace member.
+- Cross-legal-entity participation requires request/approval; it does not grant reporting authority over another legal entity's employees.
+
+Project dashboards are filtered by viewer context. Full project administration sees overall health. Legal-entity context sees only that entity contribution. Workspace context sees only that workspace contribution. Reporting managers see only their reports' contribution inside projects/workspaces they can access. Members see own work and published updates.
+
 ## Packaging Rules
 
-- Work Management is sold through Package 2.
-- Package 2 includes Project Management, Agentic Chat, Third Party Integrations, and IDE Extension.
-- Package 1 covers HR Core + Intelligence modules.
+- Work Management is sold through Subscription Plans as a base module or optional add-on.
+- Related add-ons can include Project Management, Agentic Chat, Third Party Integrations, and IDE Extension.
+- HR Core and Workforce Intelligence modules are separate plan-selected modules.
 - The React frontend must hide disabled modules on every device size; route guards and backend APIs must enforce the same module entitlements server-side.
 - There are no WorkManage Pro bridge endpoints. Do not call `/api/v1/bridges/*`.
 
 ## Related Flows
 
+- [[Userflow/Work-Management/workspace-creation-flow|Workspace Creation]]
 - [[Userflow/Work-Management/project-flow|Project Management]]
 - [[Userflow/Work-Management/task-flow|Task Management]]
 - [[Userflow/Work-Management/planning-flow|Planning — Sprints and Boards]]
