@@ -74,7 +74,7 @@ public class TimeServiceTests
 | Stop with no active timer | Unit | NO_ACTIVE_TIMER |
 | Log for future date | Unit | Failure |
 | Submitted timesheet locked | Unit | Cannot modify entries |
-| IDE tag @time:log source = "ide_tag" | Unit | source field set correctly |
+| Phase 2 IDE tag @time:log source = "ide_tag" | Unit | source field set correctly |
 
 ## Related
 

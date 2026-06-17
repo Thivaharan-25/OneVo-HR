@@ -33,16 +33,16 @@ Records each detected assistant intent from a message. Key columns:
 
 ### `ai_action_jobs`
 
-Universal undo state machine. Used by Chat AI with a 10 second undo window and IDE tags with a 30 second undo window. Key columns:
+Universal undo state machine. Used by Phase 1 Chat AI with a 10 second undo window and Phase 2 IDE tags with a 30 second undo window. Key columns:
 
 - `status` - `pending`, `finalized`, `undone`, `failed`
-- `source` - `onevo_chat`, `microsoft_teams`, `ide_tag`, `system`
+- `source` - Phase 1: `onevo_chat`, `microsoft_teams`, `system`; Phase 2 adds `ide_tag`
 - `source_message_id`, `channel_id`
 - `entity_type`, `action_type`
 - `action_params` JSONB used by finalization
 - `undo_expires_at`
 - `undone_at`, `finalized_at`
-- `tag_execution_id` nullable FK to IDE tag execution
+- `tag_execution_id` nullable Phase 2 FK to IDE tag execution
 - `workspace_id`, `tenant_id`, `created_by_id`
 
 Hangfire scans `status = 'pending' AND undo_expires_at < now()` every 5 seconds.

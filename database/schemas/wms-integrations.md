@@ -55,7 +55,7 @@ Unified event stream from GitHub/GitLab webhooks and IDE extension.
 | `task_id` | uuid | FK → tasks, nullable — auto-resolved from commit message or PR |
 | `event_metadata` | jsonb | Raw event payload (sanitized) |
 | `occurred_at` | timestamptz | |
-| `source` | varchar(30) | ide_extension / github_webhook / gitlab_webhook |
+| `source` | varchar(30) | Phase 1: github_webhook / gitlab_webhook; Phase 2 adds ide_extension |
 
 **Index:** `(repository_id, occurred_at DESC)`, `(task_id)` where not null, `(tenant_id, occurred_at DESC)`
 

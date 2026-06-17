@@ -112,7 +112,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 
 | Flow | Description | Status | Priority |
 |:-----|:------------|:-------|:---------|
-| [[Userflow/Data-Import/data-import-wizard\|Data Import Wizard]] | Bulk employee/org import from CSV, Excel, or PeopleHR | Documented | MUST |
+| [[Userflow/Data-Import/data-import-wizard\|Data Import Wizard]] | Bulk employee/org import from CSV or Excel; PeopleHR is Phase 2 | Documented | MUST |
 
 ### Leave — `leave:create/approve/manage`
 

@@ -25,9 +25,9 @@ Explicit user-created task-to-repo links. Key columns: `task_id`, `repository_id
 Distinct from commit-level auto-detection in `commit_records.task_ids`.
 
 ### `code_activity_events`
-Unified stream of all code events. Key columns: `repository_id`, `workspace_id`, `tenant_id`, `event_type` (`push`, `pr_opened`, `pr_merged`, `pr_closed`, `ci_started`, `ci_completed`), `source` (`github_webhook`, `ide_extension`), `actor_user_id`, `payload_json`, `received_at`.
+Unified stream of all code events. Key columns: `repository_id`, `workspace_id`, `tenant_id`, `event_type` (`push`, `pr_opened`, `pr_merged`, `pr_closed`, `ci_started`, `ci_completed`), `source` (Phase 1: `github_webhook`; Phase 2 adds `ide_extension`), `actor_user_id`, `payload_json`, `received_at`.
 
-Both GitHub webhooks and VS Code IDE extension events write here, differentiated by `source`.
+Phase 1 GitHub webhooks and Phase 2 VS Code IDE extension events write here, differentiated by `source`.
 
 ### `commit_records`
 Parsed commit data. Key columns: `code_activity_event_id`, `repository_id`, `commit_sha`, `message`, `author_name`, `author_email`, `committed_at`, `task_ids uuid[]` (auto-detected from `[TASK-123]` or `#123` patterns in commit message).

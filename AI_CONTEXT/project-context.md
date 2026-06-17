@@ -51,7 +51,7 @@ ONEVO is designed around **always-included Foundation modules** plus **two sella
 | 10 | Project Management | Work Management | Plan-selected module | Full |
 | 11 | Agentic Chat | Work Management | Plan-selected module | Full |
 | 12 | Third Party Integrations | Work Management | Plan-selected module | Full |
-| 13 | IDE Extension | Work Management | Plan-selected module | Full |
+| 13 | IDE Extension | Work Management | Phase 2 plan-selected module | Full |
 
 **WorkSync (Pillar 3)** is a fully-integrated Jira/Slack-equivalent built directly inside ONEVO — same backend, same database, no external bridges.
 

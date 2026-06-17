@@ -174,7 +174,7 @@ For single-company tenants the `Legal Entity` column is omitted — the wizard i
 - [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]] — must exist before import
 - [[Userflow/Org-Structure/position-setup|Position Setup]] — must exist before import
 - [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — single-employee alternative
-- [[Userflow/Data-Import/data-import-wizard|Data Import Wizard]] — underlying wizard mechanism and PeopleHR path
+- [[Userflow/Data-Import/data-import-wizard|Data Import Wizard]] — underlying Phase 1 CSV/Excel wizard mechanism; PeopleHR is Phase 2
 
 ---
 

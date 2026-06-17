@@ -15,7 +15,7 @@ POST /api/v1/settings/integrations
     -> [RequirePermission("settings:admin")]
     -> Validation: integration_type, config_json required
     -> IntegrationService.CreateAsync(command, ct)
-      -> 1. Validate integration_type: peoplehr, stripe, resend, google_calendar, slack, lms
+      -> 1. Validate integration_type: Phase 1 allows stripe, payhere, resend, google_calendar; Phase 2 adds peoplehr, slack, lms
       -> 2. Encrypt credentials via IEncryptionService (AES-256)
       -> 3. INSERT into integration_connections
          -> status = 'active'
@@ -32,7 +32,7 @@ POST /api/v1/settings/integrations
 | Unknown integration_type | Return 422 |
 | Connection test failure | Integration created with status = 'error' |
 | Duplicate integration type | Return 409 (one per type per tenant) |
-| PeopleHR API key lacks selected scope | Save connection as active only for detected scopes; migration preflight blocks unavailable areas |
+| PeopleHR API key lacks selected scope | Phase 2 only. Save connection as active only for detected scopes; migration preflight blocks unavailable areas |
 
 ## Related
 

@@ -417,9 +417,9 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 
 ---
 
-## Operations
+## Operations (Phase 2)
 
-Phase 1 exposes Operations as the operational health and action screen. Service monitoring, dependency summaries, safe service actions, and aggregate job/config/security checks are shown inside Operations. Device Management, Infrastructure Operations, Background Jobs, and Agent Version Manager endpoints are Phase 2.
+Operations is Phase 2. Service monitoring, dependency summaries, safe service actions, aggregate job/config/security checks, Device Management, Infrastructure Operations, Background Jobs, and Agent Version Manager endpoints are not part of Phase 1 navigation or API scope.
 
 | Method | Path | Description | Permission |
 |---|---|---|---|

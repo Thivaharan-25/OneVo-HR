@@ -1,7 +1,7 @@
 # Module: IDE Extension
 
 **Namespace:** `ONEVO.Modules.IDEExtension`
-**Phase:** 1
+**Phase:** 2
 **Pillar:** Cross-Pillar (WorkSync + HR + Workforce Intelligence)
 **Owner:** Dev 7 (core + tag engine) + Dev 8 (context engine + agent entitlement)
 **Tables:** 5 (`ide_extension_installs`, `ide_sessions`, `ide_tag_executions`, `ide_context_links`, `ide_chat_threads`)
@@ -43,7 +43,7 @@ The extension is a **client** of the same backend APIs used by the web frontend.
 
 ## Database Tables
 
-### `ide_extension_installs` — Phase 1
+### `ide_extension_installs` — Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
@@ -61,7 +61,7 @@ The extension is a **client** of the same backend APIs used by the web frontend.
 
 ---
 
-### `ide_sessions` — Phase 1
+### `ide_sessions` — Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
@@ -76,7 +76,7 @@ The extension is a **client** of the same backend APIs used by the web frontend.
 
 ---
 
-### `ide_tag_executions` — Phase 1
+### `ide_tag_executions` — Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
@@ -100,7 +100,7 @@ The extension is a **client** of the same backend APIs used by the web frontend.
 
 ---
 
-### `ide_context_links` — Phase 1
+### `ide_context_links` — Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
@@ -120,7 +120,7 @@ The extension is a **client** of the same backend APIs used by the web frontend.
 
 ---
 
-### `ide_chat_threads` — Phase 1
+### `ide_chat_threads` — Phase 2
 
 | Column | Type | Notes |
 |---|---|---|

@@ -46,10 +46,10 @@ PATCH /api/v1/me/timer/stop
     → Return Result<TimeLogDto>
 ```
 
-## IDE Tag: @time:log 2h
+## IDE Tag: @time:log 2h (Phase 2)
 
 ```
-Handled by IDE Tag Engine (see modules/ide-extension/overview)
+Handled by IDE Tag Engine in Phase 2 (see modules/ide-extension/overview)
   → Creates time_log row with source = "ide_tag"
   → duration_minutes calculated from tag param (e.g. "2h" → 120)
   → Links to tag_execution_id in ide_tag_executions for undo

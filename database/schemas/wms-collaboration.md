@@ -6,9 +6,10 @@
 
 ---
 
-## `documents` — Phase 1 (Extended)
+## `documents` — Phase 1 for Work Management Collaboration (Extended)
 
 > The `documents` table is shared with the HR Documents module. Work Management extends it with `workspace_id`, `project_id`, `document_scope`, lock fields, and `approved` status. Do not create a separate Work Management documents table.
+> Phase 1 document upload/linking is limited to Work Management collaboration and task documents. The full HR Documents module remains Phase 2.
 
 **Columns added to existing `documents` table:**
 
@@ -81,7 +82,7 @@
 
 ---
 
-## `task_documents` — Phase 1
+## `task_documents` — Phase 1 for Work Management Tasks
 
 Durable relationship between a Work Management task and an editable document. This is for document-editor links, not file attachments (file attachments use the existing `attachments` table).
 

@@ -20,7 +20,7 @@ ONEVO PLATFORM
   │  ONEVO Frontend (Vite + React 19)                           │
   │    HR Sidebar ──────┐                               │
   │    Work Management Sidebar─┼──→  ONEVO.Api (.NET 10)│
-  │    IDE Extension ───┘      single host, all pillars  │
+  │    IDE Extension (Phase 2) ─┘ single host, all pillars│
   └─────────────────────────────────────────────────────┘
                                ↕ ApplicationDbContext
                             PostgreSQL (single database)
@@ -48,7 +48,7 @@ ONEVO uses Subscription Plans with base modules, optional module add-ons, resour
 | 10 | Project Management | Work Management | Plan-selected module | Full |
 | 11 | Agentic Chat | Work Management | Plan-selected module | Full |
 | 12 | Third Party Integrations | Work Management | Plan-selected module | Full |
-| 13 | IDE Extension | Work Management | Plan-selected module | Full |
+| 13 | IDE Extension | Work Management | Phase 2 plan-selected module | Full |
 
 ---
 
@@ -127,7 +127,7 @@ Schema files: [[database/schemas/wms-project-management|Project Management]], [[
 
 | # | Feature | Feature Folder | Tables | Phase |
 |:--|:--------|:---------------|:-------|:------|
-| IDE | IDE Extension | `Features/IDEExtension` | 5 | Phase 1 |
+| IDE | IDE Extension | `Features/IDEExtension` | 5 | Phase 2 |
 
 Schema file: [[database/schemas/ide-extension|IDE Extension]]
 
@@ -141,7 +141,7 @@ Tag engine, context engine, agent entitlement, and SignalR IDEHub spec: [[module
 | 16 | Notifications | `Features/Notifications` | 0 own tables | — |
 | 17 | Configuration | `Features/Configuration` | 6 | Phase 1 |
 | 18 | Calendar | `Features/Calendar` | 1 | Phase 1 |
-| 19 | Reporting Engine | `Features/ReportingEngine` | 3 | Phase 2 |
+| 19 | Reporting Engine | `Features/ReportingEngine` | 3 | Phase 1 |
 | 20 | Grievance | `Features/Grievance` | 2 | Phase 2 |
 | 21 | Expense | `Features/Expense` | 3 | Phase 2 |
 | 22 | Agent Gateway | `Features/AgentGateway` | 6 | Phase 1 |

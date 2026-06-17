@@ -1,6 +1,7 @@
 # PeopleHR Full Migration
 
 **Module:** [[modules/data-import/overview|DataImport]]  
+**Phase:** Phase 2  
 **Source:** PeopleHR API  
 **Purpose:** Lossless, auditable migration of PeopleHR tenant data into ONEVO canonical HR modules  
 **Mode:** Initial onboarding migration first; recurring sync may reuse the same adapter later

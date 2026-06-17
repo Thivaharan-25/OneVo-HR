@@ -604,7 +604,7 @@ Pre-filled when a Configuration Template is selected above. All fields are indiv
 
 | Field | Label | Type | Required | Options | Notes |
 |---|---|---|---|---|---|
-| Data Import Source | "Primary Migration Source" | Dropdown | No | PeopleHR, CSV/Excel, None | Narrows the template list |
+| Data Import Source | "Primary Migration Source" | Dropdown | No | CSV/Excel, None | Narrows the template list. PeopleHR is Phase 2. |
 | Import Mapping Template | "Import Mapping Template" | Dropdown | No | Loaded from `GET /admin/v1/configuration-templates?type=data_import_mapping` | Seeds field mapping definition; editable after apply |
 
 ### Section: Onboarding (shown only if Core HR selected)

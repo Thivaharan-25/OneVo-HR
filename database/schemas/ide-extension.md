@@ -1,12 +1,12 @@
 # Schema: IDE Extension
 
 **Module:** `ONEVO.Modules.IDEExtension`
-**Phase:** 1
+**Phase:** 2
 **Owner:** DEV7 (core + tag engine) + DEV8 (context engine + entitlement)
 
 ---
 
-## `ide_extension_installs` — Phase 1
+## `ide_extension_installs` — Phase 2
 
 One row per device-user-editor combination. Tracks all active IDE extension installs.
 
@@ -28,7 +28,7 @@ One row per device-user-editor combination. Tracks all active IDE extension inst
 
 ---
 
-## `ide_sessions` — Phase 1
+## `ide_sessions` — Phase 2
 
 One row per editor session (extension activated → deactivated). Used for tag execution audit and context tracking.
 
@@ -47,7 +47,7 @@ One row per editor session (extension activated → deactivated). Used for tag e
 
 ---
 
-## `ide_tag_executions` — Phase 1
+## `ide_tag_executions` — Phase 2
 
 Full audit trail of every `@entity:action` command typed in the IDE extension.
 
@@ -75,7 +75,7 @@ Full audit trail of every `@entity:action` command typed in the IDE extension.
 
 ---
 
-## `ide_context_links` — Phase 1
+## `ide_context_links` — Phase 2
 
 User-created or auto-detected links between code context (branch/file) and Work Management entities.
 
@@ -98,7 +98,7 @@ User-created or auto-detected links between code context (branch/file) and Work 
 
 ---
 
-## `ide_chat_threads` — Phase 1
+## `ide_chat_threads` — Phase 2
 
 Tracks chat threads that were started with code context (e.g. user opened a task-linked chat from within the IDE).
 

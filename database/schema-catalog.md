@@ -10,10 +10,10 @@ Central index of all database tables across ONEVO modules. This is the **single 
 
 - **Total Tables:** 257 unique product schema tables after removing old external-provisioning entities, removing Phase 1 job family/title/level catalogs, adding Microsoft Teams sync entities, adding work-location compliance tables, promoting country holiday + Google/Outlook calendar sync to Phase 1, adding the Phase 1 HR-to-Work-Management bridge tables, and adding position-generated access approval tables. MassTransit outbox/idempotency infrastructure tables are intentionally not part of this catalog.
 - **Pillars:** HR Management · Workforce Intelligence · Work Management
-- **IDE Extension:** 5 tables (Phase 1)
+- **IDE Extension:** 5 tables (Phase 2)
 - **Entity-map sections:** 39 numbered sections; these are planning/domain sections, not necessarily one backend module each
 
-> **Note:** Work Management is now Pillar 3 - internal to ONEVO, not external. Old external-provisioning tables are removed from Shared Platform. Phase 1 SSO is Google only; Microsoft Teams is modeled as an optional integration for team/member sync and ONEVO Chat collaboration sync, not as a login provider. `agent_install_entitlements` and `agent_install_jobs` added to Agent Gateway for IDE Extension entitlement gating. Org Structure gains 3 team permission tables (`team_roles`, `team_role_permissions`, `team_member_roles`). The `documents` table is shared between WorkManagement.Collaboration (Phase 1, which defines it) and HR Documents (Phase 2, which adds HR-specific columns). Work Management schemas (W5 OKR, W6 Time, W7 Resource) are pending detailed schema docs - table counts are estimates.
+> **Note:** Work Management is now Pillar 3 - internal to ONEVO, not external. Old external-provisioning tables are removed from Shared Platform. Phase 1 SSO is Google only; Microsoft Teams is modeled as an optional integration for team/member sync and ONEVO Chat collaboration sync, not as a login provider. `agent_install_entitlements` and `agent_install_jobs` are Phase 2 IDE Extension entitlement-gating tables. Org Structure gains 3 team permission tables (`team_roles`, `team_role_permissions`, `team_member_roles`). The `documents` table is shared between WorkManagement.Collaboration (Phase 1, which defines it) and HR Documents (Phase 2, which adds HR-specific columns). Work Management schemas (W5 OKR, W6 Time, W7 Resource) are pending detailed schema docs - table counts are estimates.
 
 ---
 
@@ -318,10 +318,10 @@ Optional Phase 1 Microsoft Teams chat sync additions (optional integration, not 
 | `message_attachments` | 3 | message_id→messages, file_asset_id→file_assets |
 | `message_pins` | 5 | channel_id→channels, message_id→messages, pinned_by_id->users |
 | `premium_ai_detections` | 10 | message_id→messages, channel_id→channels |
-| `ai_action_jobs` | 14 | detection_id→premium_ai_detections, tag_execution_id→ide_tag_executions, user_id→users |
+| `ai_action_jobs` | 14 | detection_id→premium_ai_detections, tag_execution_id→ide_tag_executions (Phase 2), user_id→users |
 | `chat_reminder_items` | 8 | channel_id→channels, task_id→tasks, user_id→users |
 
-> `ai_action_jobs` is the universal undo state machine for both Chat AI (10s window) and IDE tag executions (30s window). Hangfire scans `status=pending AND undo_expires_at < now()` every 5 seconds to finalize.
+> `ai_action_jobs` is the universal undo state machine for Phase 1 Chat AI (10s window). Phase 2 IDE tag executions use the same state machine with a 30s window. Hangfire scans `status=pending AND undo_expires_at < now()` every 5 seconds to finalize.
 
 ### [[database/schemas/wms-collaboration|Collaboration — Documents, Wiki]] (4 new tables + shared documents)
 
@@ -359,7 +359,7 @@ Optional Phase 1 Microsoft Teams chat sync additions (optional integration, not 
 
 ---
 
-## Phase 1 — IDE Extension
+## Phase 2 — IDE Extension
 
 ### [[database/schemas/ide-extension|IDE Extension]] (5 tables)
 
@@ -371,7 +371,7 @@ Optional Phase 1 Microsoft Teams chat sync additions (optional integration, not 
 | `ide_context_links` | 11 | user_id→users, tenant_id→tenants (repository_url + branch_name → entity_id) |
 | `ide_chat_threads` | 7 | channel_id→channels, ide_session_id→ide_sessions, context_task_id→tasks |
 
-> `ide_tag_executions.id` is referenced by `ai_action_jobs.tag_execution_id` — IDE tag undo and Chat AI undo share the same state machine.
+> Phase 2: `ide_tag_executions.id` is referenced by `ai_action_jobs.tag_execution_id` so IDE tag undo and Chat AI undo share the same state machine.
 
 ---
 
@@ -443,8 +443,8 @@ Optional Phase 1 Microsoft Teams integration additions (optional integration, no
 |:------|:--------|:--------|
 | `agent_commands` | 12 | tenant_id→tenants, requested_by_id->users |
 | `agent_health_logs` | 8 | tenant_id→tenants |
-| `agent_install_entitlements` | 8 | tenant_id→tenants, granted_by→users — checked server-side on every IDE install request |
-| `agent_install_jobs` | 9 | tenant_id→tenants, user_id→users, install_id→ide_extension_installs — created when user approves monitoring agent install from IDE |
+| `agent_install_entitlements` | 8 | tenant_id→tenants, granted_by→users — Phase 2, checked server-side on every IDE install request |
+| `agent_install_jobs` | 9 | tenant_id→tenants, user_id→users, install_id→ide_extension_installs — Phase 2, created when user approves monitoring agent install from IDE |
 | `agent_policies` | 7 | tenant_id→tenants |
 | `registered_agents` | 12 | tenant_id→tenants, employee_id→employees |
 
