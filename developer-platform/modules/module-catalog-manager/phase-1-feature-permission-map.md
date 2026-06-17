@@ -14,7 +14,7 @@ It is intended to support Module Catalog seeding and permission ownership design
 | `feature_key` | Commercial feature inside a module. Plans/custom contracts select these keys. |
 | `owner_permissions` | Permissions that control actions inside the feature's owning module. |
 | `dependency_permissions` | Permissions required only because the feature reads or writes another module's data. These permissions are not owned by the feature's module. |
-| `access_policy_applies` | Whether employee-data scope must be resolved with access policy, such as `self`, `direct_reports`, `reporting_tree`, or `organization`. |
+| `access_policy_applies` | Whether employee-data scope must be resolved with access policy, such as `Own`, `DirectReports`, `ReportingTree`, or `Organization`. |
 | `notes` | Clarifies non-permission-controlled features, runtime-flag behavior, or wording inconsistencies. |
 
 ## Access Policy Values
@@ -23,15 +23,15 @@ Access policy is only for permissions that operate on employee-owned or employee
 
 | Access policy | Meaning | Use when |
 |---|---|---|
-| `self` | Own employee record only. | Employee self-service views and default fallback when no broader policy is assigned. |
-| `direct_reports` | Employees who report directly to the current employee. | Line-manager approval or direct team visibility. |
-| `reporting_tree` | All employees below the current employee in the reporting hierarchy. | Manager-of-managers visibility. |
-| `department` | Active employees in the same department. | Department-level HR or operational support. |
-| `department_tree` | Active employees in the department and its child departments. | Department heads with nested department ownership. |
-| `org_unit_tree` | Active employees under the user's org unit. | Regional/business-unit hierarchy when org units are modeled separately from departments. |
-| `organization` | All active employees in the tenant. | HR, payroll, compliance, or executive access. |
+| `Own` | Own employee record only. | Employee self-service views and default fallback when no broader policy is assigned. |
+| `DirectReports` | Employees who report directly to the current employee. | Line-manager approval or direct team visibility. |
+| `ReportingTree` | All employees below the current employee in the reporting hierarchy. | Manager-of-managers visibility. |
+| `Department` | Active employees in the selected department. | Department-level HR or operational support. |
+| `DepartmentTree` | Active employees in the department and its child departments. | Department heads with nested department ownership. |
+| `Team` | Active employees in the selected team. | Team-level operational support. |
+| `Organization` | All active employees in the tenant. | HR, payroll, compliance, or executive access. |
 
-`department_tree` and `org_unit_tree` should only be used when the tenant org model has those hierarchy concepts populated. If the implementation only has position-derived reporting hierarchy and flat departments, use `direct_reports`, `reporting_tree`, `department`, or `organization` until department/org-unit hierarchy tables exist.
+`DepartmentTree` should only be used when the tenant department hierarchy is populated. If the implementation only has position-derived reporting hierarchy and flat departments, use `DirectReports`, `ReportingTree`, `Department`, or `Organization`.
 
 ## Important Rules
 

@@ -8,7 +8,7 @@ Central index of all database tables across ONEVO modules. This is the **single 
 
 ## Summary
 
-- **Total Tables:** 258 unique product schema tables after removing old external-provisioning entities, adding Microsoft Teams sync entities, adding work-location compliance tables, promoting country holiday + Google/Outlook calendar sync to Phase 1, and adding the Phase 1 HR-to-Work-Management bridge tables. MassTransit outbox/idempotency infrastructure tables are intentionally not part of this catalog.
+- **Total Tables:** 257 unique product schema tables after removing old external-provisioning entities, removing Phase 1 job family/title/level catalogs, adding Microsoft Teams sync entities, adding work-location compliance tables, promoting country holiday + Google/Outlook calendar sync to Phase 1, adding the Phase 1 HR-to-Work-Management bridge tables, and adding position-generated access approval tables. MassTransit outbox/idempotency infrastructure tables are intentionally not part of this catalog.
 - **Pillars:** HR Management · Workforce Intelligence · Work Management
 - **IDE Extension:** 5 tables (Phase 1)
 - **Entity-map sections:** 39 numbered sections; these are planning/domain sections, not necessarily one backend module each
@@ -58,33 +58,37 @@ These tables are referenced by many others — design changes here have wide imp
 
 > `users` tracks account setup and security reset state: `must_change_password boolean`, `password_setup_required boolean`, `password_setup_expires_at timestamptz`. Backend returns `403 MUST_CHANGE_PASSWORD` only for explicit security reset flows.
 
-### [[database/schemas/auth|Auth & Security]] (10 tables)
+### [[database/schemas/auth|Auth & Security]] (17 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
 | `audit_logs` | 11 | tenant_id→tenants, user_id→users |
 | `feature_access_grants` | 12 | tenant_id→tenants, granted_by→users |
+| `invitation_tokens` | 18 | tenant_id->tenants, user_id->users, role_id->roles, revoked_by_id->users, created_by_id->users |
 | `legal_acceptance_records` | 11 | tenant_id→tenants, user_id→users |
 | `permissions` | 4 | — |
 | `role_permissions` | 2 | — |
-| `role_templates` | 10 | global/operator-managed template; materializes into tenant roles |
+| `role_templates` | 9 | global/operator-managed template; materializes into tenant roles |
 | `roles` | 6 | tenant_id→tenants |
-| `job_levels` | 6 | tenant_id→tenants, suggested_role_id→roles |
 | `sessions` | 9 | user_id→users, tenant_id→tenants |
-| `user_permission_overrides` | 8 | tenant_id→tenants, user_id→users, granted_by→users |
-| `user_roles` | 8 | tenant_id->tenants, user_id->users, role_id->roles, assigned_by->users |
+| `tenant_auth_policies` | 8 | tenant_id->tenants |
+| `user_external_identities` | 9 | tenant_id->tenants, user_id->users |
+| `user_permission_overrides` | 12 | tenant_id->tenants, user_id->users, permission_id->permissions, granted_by->users |
+| `user_roles` | 16 | tenant_id->tenants, user_id->users, role_id->roles, assigned_by->users, approved_by->users, source_position_id->positions, source_position_access_template_id->position_access_templates |
+| `access_grant_requests` | 19 | tenant_id->tenants, employee_id->employees, user_id->users, requested_by->users, approved_by->users, target_position_id->positions, target_department_id->departments, position_access_template_id->position_access_templates, requested_role_id->roles |
+| `refresh_tokens` | 7 | user_id->users, replaced_by_id->refresh_tokens |
+| `user_mfa` | 9 | user_id->users, tenant_id->tenants |
+| `mfa_recovery_codes` | 5 | user_id->users |
 
-### [[database/schemas/org-structure|Org Structure]] (16 tables)
+### [[database/schemas/org-structure|Org Structure]] (14 tables)
 
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
 | `legal_entities` | 10 | tenant_id->tenants, parent_legal_entity_id->legal_entities, country_id->countries |
 | `department_cost_centers` | 6 | tenant_id→tenants |
 | `departments` | 10 | tenant_id→tenants, legal_entity_id->legal_entities, head_position_id→positions (unique type only, nullable) |
-| `job_families` | 5 | tenant_id→tenants |
-| `job_levels` | 5 | tenant_id→tenants |
-| `job_titles` | 7 | tenant_id->tenants |
 | `positions` | 11 | tenant_id->tenants, legal_entity_id->legal_entities, reports_to_position_id->positions, department_id->departments |
+| `position_access_templates` | 14 | tenant_id->tenants, position_id->positions, role_id->roles, created_by->users |
 | `position_reporting_history` | 7 | tenant_id->tenants, position_id->positions, reports_to_position_id->positions |
 | `position_assignments` | 9 | tenant_id->tenants, employee_id->employees, position_id->positions |
 | `employee_hierarchy_closure` | 6 | tenant_id->tenants, ancestor_employee_id->employees, descendant_employee_id->employees, source_position_assignment_id->position_assignments |
@@ -110,9 +114,9 @@ These tables are referenced by many others — design changes here have wide imp
 | `employee_qualifications` | 9 | document_file_id→file_records |
 | `employee_salary_history` | 8 | approved_by_id→users |
 | `employee_work_history` | 8 | — |
-| `employees` | 26 | tenant_id->tenants, user_id->users, nationality_id->countries |
-| `employee_assignment_history` | 10 | tenant_id->tenants, employee_id->employees, position_id->positions |
-| `employee_transfers` | 18 | tenant_id->tenants, employee_id->employees, from_position_id->positions, to_position_id->positions |
+| `employees` | 23 | tenant_id->tenants, user_id->users, nationality_id->countries |
+| `employee_assignment_history` | 7 | tenant_id->tenants, employee_id->employees, position_id->positions |
+| `employee_transfers` | 12 | tenant_id->tenants, employee_id->employees, from_position_id->positions, to_position_id->positions |
 | `offboarding_records` | 10 | — |
 | `onboarding_tasks` | 9 | assigned_to_id→users |
 | `onboarding_templates` | 5 | department_id→departments |
@@ -122,7 +126,7 @@ These tables are referenced by many others — design changes here have wide imp
 | Table | Columns | Key FKs |
 |:------|:--------|:--------|
 | `employee_skills` | 11 | tenant_id→tenants, employee_id→employees, validated_by_id→employees |
-| `job_skill_requirements` | 7 | tenant_id→tenants, job_family_id→job_families |
+| `position_skill_requirements` | 7 | tenant_id->tenants, position_id->positions |
 | `skill_categories` | 7 | tenant_id→tenants, created_by_id->users |
 | `skill_validation_requests` | 11 | tenant_id→tenants, employee_id→employees, validator_id→employees |
 | `skills` | 9 | tenant_id→tenants, category_id→skill_categories, created_by_id->users |

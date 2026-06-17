@@ -110,7 +110,7 @@
 
 ## Related Flows
 
-- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] - creates/selects skills for job-family required skills
+- [[Userflow/Org-Structure/position-setup|Position Setup]] - creates/selects skills for position required skills
 - [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]] â€” manager validates this declaration
 - [[Userflow/Skills-Learning/development-plan|Development Plan]] â€” skill gaps drive development planning
 - [[Userflow/Skills-Learning/course-enrollment|Course Enrollment]] â€” courses linked to skills

@@ -1,6 +1,6 @@
 # Userflow Index
 
-**Purpose:** End-to-end user flows organized by feature area. Each flow specifies the **required permissions** — since roles are dynamic (created via [[Userflow/Org-Structure/job-family-setup|Job Family]]) and permissions are assigned per role or per employee, flows are **permission-based, not role-based**.
+**Purpose:** End-to-end user flows organized by feature area. Each flow specifies the **required permissions**. Roles are dynamic tenant security roles, and permissions are assigned per role, per position-generated grant, or per employee override, so flows are **permission-based, not role-based**.
 
 **How to read:** Each flow file describes what a user with the listed permission(s) experiences step-by-step, including UI actions, API calls, backend logic, and database changes.
 
@@ -92,7 +92,6 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 |:-----|:------------|:-------|:---------|
 | [[Userflow/Org-Structure/legal-entity-setup\|Legal Entity Setup]] | Configure single-company or multi-company legal entities | Documented | MUST |
 | [[Userflow/Org-Structure/department-hierarchy\|Department Hierarchy]] | Create departments, set parent-child | Documented | MUST |
-| [[Userflow/Org-Structure/job-family-setup\|Job Family Setup]] | Job families, levels, salary bands | Documented | MUST |
 | [[Userflow/Org-Structure/team-creation\|Team Creation]] | Teams, team leads | Documented | SHOULD |
 | [[Userflow/Org-Structure/cost-center-setup\|Cost Center Setup]] | Cost center management (Phase 2) | Documented | COULD |
 
@@ -167,7 +166,7 @@ See [[frontend/cross-cutting/authorization|RBAC Overview]] for the full 90+ perm
 
 ### Skills & Learning - `skills:read/write/validate/manage` *(Mixed phase)*
 
-Phase 1 does not include a customer-facing Skills sidebar. Phase 1 includes embedded Job Family Required Skills plus employee skill requests and manager validation for existing tenant skills.
+Phase 1 does not include a customer-facing Skills sidebar. Phase 1 includes embedded position required skills plus employee skill requests and manager validation for existing tenant skills.
 
 Full taxonomy management, courses, certifications, and development plans are Phase 2.
 

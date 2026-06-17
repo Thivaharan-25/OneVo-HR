@@ -16,7 +16,7 @@ Roles & Permissions has two separate role surfaces:
 - **Security Roles**: tenant/module authority such as HR Admin, Project Admin, Payroll Admin, System Admin, or Tenant Owner. These use `roles`, `role_permissions`, and `user_roles`.
 - **Team Roles**: scoped team/workspace authority such as Admin / Lead, Member, and Viewer / Reviewer. These use `team_roles`, `team_role_permissions`, and `team_member_roles`.
 
-Tenant security roles are separate from explicit stored team roles, WorkSync workspace membership, and WorkSync project membership. Job level, job title, and job family must not directly assign security permissions; they may only suggest assignments that an authorized admin confirms.
+Tenant security roles are separate from explicit stored team roles, WorkSync workspace membership, and WorkSync project membership. Positions may define access templates, but templates only generate scoped grants after confirmation or approval; the position template itself is not an active grant.
 
 ## Access Decision Order
 
@@ -86,11 +86,20 @@ Security role assignment with explicit scope. Scope belongs here so the same rol
 | `tenant_id` | `uuid` | FK to tenants |
 | `user_id` | `uuid` | FK to users |
 | `role_id` | `uuid` | FK to roles |
-| `scope_type` | `varchar(30)` | `Organization`, `Department`, `Team`, `Own`, or `DirectReports` |
-| `scope_id` | `uuid` | Nullable boundary id. Required for `Department` and `Team`; null for `Organization`, `Own`, and `DirectReports` |
+| `scope_type` | `varchar(30)` | `Organization`, `Department`, `DepartmentTree`, `Team`, `Own`, `DirectReports`, or `ReportingTree` |
+| `scope_id` | `uuid` | Nullable boundary id. Required for `Department`, `DepartmentTree`, and `Team`; null for `Organization`, `Own`, `DirectReports`, and `ReportingTree` |
+| `source_type` | `varchar(30)` | `Manual`, `PositionTemplate`, or `EmployeeOverride` |
+| `source_position_id` | `uuid` | Nullable source position for generated grants |
+| `source_position_access_template_id` | `uuid` | Nullable source position access template |
+| `effective_from` | `timestamptz` | Nullable |
+| `effective_to` | `timestamptz` | Nullable |
+| `status` | `varchar(20)` | `Active`, `Scheduled`, `PendingApproval`, `Expired`, or `Revoked` |
 | `assigned_at` | `timestamptz` | |
 | `assigned_by` | `uuid` | FK to users |
-| `expires_at` | `timestamptz` | nullable |
+| `approved_by` | `uuid` | Nullable FK to users; approver for generated or requested grants |
+| `expires_at` | `timestamptz` | Deprecated compatibility alias; use `effective_to` for time-bound role grants |
+
+**Uniqueness rule:** Role assignments must use `NULLS NOT DISTINCT` or an equivalent normalized/partial unique index for `(tenant_id, user_id, role_id, scope_type, scope_id)` so null `scope_id` values cannot create duplicate grants.
 
 ### `user_permission_overrides`
 
@@ -153,22 +162,33 @@ EffectivePermissions(userId, tenantId):
 
 ## Access Policy Scoping
 
-Employee-data queries are scoped by the effective `user_roles.scope_type` and `scope_id` for the role assignment. The frontend never sends employee ID lists.
+Employee-data queries are scoped by the effective active `user_roles.scope_type` and `scope_id` for the role assignment. Position access templates only generate `user_roles` rows or access approval requests; templates are not active grants by themselves. The frontend never sends employee ID lists.
 
 | Policy | Meaning |
 |:-------|:--------|
 | `Own` | Current employee only |
 | `DirectReports` | Direct reports only |
+| `ReportingTree` | Direct and indirect reports |
 | `Department` | Employees in the assigned department boundary |
+| `DepartmentTree` | Employees in the assigned department and child departments |
 | `Team` | Employees in the assigned team boundary |
 | `Organization` | All active employees in tenant |
 
 Scope validation rules:
 
-- `Department` scope requires `scope_id` pointing to an active department in the same tenant.
+- `Department` and `DepartmentTree` scope require `scope_id` pointing to an active department in the same tenant.
 - `Team` scope requires `scope_id` pointing to an active team in the same tenant.
-- `Organization`, `Own`, and `DirectReports` require `scope_id = null`.
+- `Organization`, `Own`, `DirectReports`, and `ReportingTree` require `scope_id = null`.
 - A permission check must verify both that the user has the permission and that the target record is inside the resolved scope.
+
+### Position-Generated Access Approval
+
+When onboarding, transfer, promotion, or position assignment generates access from a position template:
+
+1. If the template does not require approval, create or schedule the `user_roles` grant.
+2. If the template requires approval and the actor has `roles:manage` or `access:approve`, show the grant diff and create/schedule the grant after confirmation.
+3. If the template requires approval and the actor lacks access authority, create an `access_grant_requests` record and keep the grant inactive.
+4. Route approval by target position department: scoped access approvers covering that department, then tenant-wide access approvers, then Tenant Admin. If multiple match, notify all and first approval wins.
 
 ## API Endpoints
 
@@ -184,6 +204,8 @@ Scope validation rules:
 | POST | `/api/v1/users/{id}/roles` | `roles:manage` | Assign role to employee |
 | GET | `/api/v1/users/{id}/permissions` | `roles:manage` | Get effective permissions |
 | POST | `/api/v1/users/{id}/permission-overrides` | `roles:manage` | Grant/revoke individual permission inside active module/feature boundary |
+| GET | `/api/v1/access-grant-requests` | `access:approve` OR `roles:manage` | List pending generated access grants in the approver's scope |
+| POST | `/api/v1/access-grant-requests/{id}/decision` | `access:approve` OR `roles:manage` | Approve, reject, narrow, or expire a generated position-template access grant |
 | GET | `/api/v1/feature-access` | `roles:manage` | List role/employee feature visibility grants |
 | POST | `/api/v1/feature-access` | `roles:manage` | Grant role/employee visibility inside commercial boundary |
 | DELETE | `/api/v1/feature-access/{id}` | `roles:manage` | Revoke role/employee visibility grant |

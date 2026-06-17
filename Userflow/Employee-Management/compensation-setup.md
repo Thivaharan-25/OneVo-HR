@@ -11,7 +11,7 @@
 ## Preconditions
 
 - Employee exists → [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
-- Job family level with salary band configured → [[Userflow/Org-Structure/job-family-setup|Job Family Setup]]
+- Employee has an active position assignment -> [[Userflow/Org-Structure/position-setup|Position Setup]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps

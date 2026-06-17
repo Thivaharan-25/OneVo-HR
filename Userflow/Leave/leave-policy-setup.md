@@ -11,7 +11,7 @@
 
 - At least one leave type has been configured: [[Userflow/Leave/leave-type-configuration|Leave Type Configuration Flow]]
 - Legal entities exist in the system: [[modules/org-structure/legal-entities/overview|Legal Entities]]
-- User has `leave:manage` permission assigned via their Job Family role
+- User has `leave:manage` permission through a security role or employee override
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps

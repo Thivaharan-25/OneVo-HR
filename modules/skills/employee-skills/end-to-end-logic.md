@@ -27,8 +27,8 @@ GET /api/v1/skills/gap-analysis/{employeeId}
   -> SkillController.GetGapAnalysis(employeeId)
     -> [RequirePermission("skills:manage")]
     -> SkillsService.GetSkillGapAnalysisAsync(employeeId, ct)
-      -> 1. Get employee's job_family via IOrgStructureService
-      -> 2. Get required skills: job_skill_requirements for job_family
+      -> 1. Get employee's active position via IOrgStructureService
+      -> 2. Get required skills: position_skill_requirements for position
       -> 3. Get employee's current skills: employee_skills
       -> 4. Compare: for each required skill:
          -> If missing: gap = full requirement

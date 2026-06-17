@@ -37,7 +37,7 @@ Most specific non-null value wins. Null means inherit.
 Scope override precedence when multiple scopes apply:
 
 1. `role`
-2. `job_family`
+2. `position`
 3. `department`
 4. `team`
 
@@ -53,8 +53,8 @@ The later scope can override earlier scopes only for fields it explicitly sets. 
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `scope_type` | `varchar(30)` | `role`, `department`, `team`, `job_family` |
-| `scope_id` | `uuid` | ID of the matching role/department/team/job family |
+| `scope_type` | `varchar(30)` | `role`, `department`, `team`, `position` |
+| `scope_id` | `uuid` | ID of the matching role/department/team/position |
 | `activity_monitoring` | `boolean` | Nullable |
 | `application_tracking` | `boolean` | Nullable |
 | `document_tracking` | `boolean` | Nullable |

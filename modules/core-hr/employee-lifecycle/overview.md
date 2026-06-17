@@ -27,7 +27,7 @@ Audit trail for promotions, within-company transfers, salary changes, suspension
 
 ### `employee_assignment_history`
 
-Effective-dated assignment history for department, position, job family, job level, and job title. Current profile snapshots are stored on `employees`; reporting history is resolved from `position_assignments` and `position_reporting_history` by date.
+Effective-dated assignment history for department and position. Current profile snapshots are stored on `employees`; reporting history is resolved from `position_assignments` and `position_reporting_history` by date.
 
 ### `employee_transfers`
 

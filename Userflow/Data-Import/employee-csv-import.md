@@ -81,7 +81,7 @@ For single-company tenants the `Legal Entity` column is omitted — the wizard i
 ### Step 4: Show Access Impact
 - **UI:** After org resolution, the wizard shows the roles and permissions linked to each resolved position across all rows — grouped by position for review
 - **Behaviour:** Admin reviews the access that will be granted to imported employees by position assignment
-- **Rule:** This is a confirmation preview only. Position-linked roles are applied per employee after import using the same confirmation model as individual onboarding — they are not auto-applied in bulk without admin review
+- **Rule:** This is a confirmation preview only. Position access templates generate per-employee grants or approval requests using the same model as individual onboarding. Users without `roles:manage` or `access:approve` do not see role lists, permission details, or scope controls.
 
 ### Step 5: Validate Rows
 - **UI:** Validation summary groups rows into: valid, warnings, hard errors, and skipped
@@ -117,7 +117,7 @@ For single-company tenants the `Legal Entity` column is omitted — the wizard i
   3. Position assignment created
   4. User account created
   5. Policy assignments applied (leave, attendance, monitoring per legal entity)
-  6. Position-linked roles applied (as confirmed in Step 4)
+  6. Approved or non-approval-required position-template grants applied; approval-required sensitive grants created as pending requests when needed
   7. Onboarding tasks generated
 
 ### Step 7: Send Invitations

@@ -142,7 +142,7 @@ ONEVO follows **Clean Architecture + CQRS** (.NET 10 / C# 14). See [[backend/fol
 - **User** — Login identity (authentication)
 - **Employee** — HR identity linked 1:1 to User (the central hub entity)
 - **Department** — Hierarchical org unit (unlimited nesting)
-- **Job Family / Level / Title** — Career ladder structure
+- **Position** — Phase 1 org seat, reporting, capacity, occupancy, and access-template structure
 - **Legal Entity** — Company/employer entity inside a tenant; single-company tenants have one, multi-company tenants can have many
 - **Activity Snapshot** — Periodic activity data from desktop agent (keyboard/mouse counts, active app, idle time)
 - **Presence Session** — Unified daily presence record per employee (combines biometric + agent data)
@@ -177,7 +177,7 @@ ONEVO follows **Clean Architecture + CQRS** (.NET 10 / C# 14). See [[backend/fol
 
 ## 6. Monitoring Configuration Model
 
-Definitive policy hierarchy: tenant defaults -> scope overrides (`role`, `department`, `team`, `job_family`) -> employee override -> consent/disclosure gate -> Workforce Presence lifecycle gate -> resolved app allowlist -> privacy/transparency mode. The agent receives only the final resolved policy for the signed-in employee/device. Missing required consent disables desktop collection even when admin settings are enabled.
+Definitive policy hierarchy: tenant defaults -> scope overrides (`role`, `position`, `department`, `team`) -> employee override -> consent/disclosure gate -> Workforce Presence lifecycle gate -> resolved app allowlist -> privacy/transparency mode. The agent receives only the final resolved policy for the signed-in employee/device. Missing required consent disables desktop collection even when admin settings are enabled.
 
 ```
 Tenant Level (Company Settings)

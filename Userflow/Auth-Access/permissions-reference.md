@@ -46,19 +46,19 @@ Derived permissions never appear in the role creation browser or override picker
 
 ## Access Policies
 
-A permission answers **what action** is allowed. An access policy answers **whose data** the action can reach. The two are configured independently â€” the same permission (`leave:read`) assigned with policy `direct_reports` (manager) or `organization` (HR) operates on a completely different data set without needing separate permission codes.
+A permission answers **what action** is allowed. An access policy answers **whose data** the action can reach. The two are configured independently - the same permission (`leave:read`) assigned with policy `DirectReports` (manager) or `Organization` (HR) operates on a completely different data set without needing separate permission codes.
 
 Access policy applies only to permissions that operate on employee records. Tenant-wide permissions (`settings:*`, `analytics:*`, `payroll:run`, `org:*`) are not scoped by access policy.
 
 | Policy | Data Scope |
 |:--|:--|
-| `self` | Own employee record only (default when no policy is set) |
-| `direct_reports` | Employees directly below the current employee in `employee_hierarchy_closure` (depth = 1), derived from position hierarchy |
-| `reporting_tree` | All employees anywhere below this user in the org tree (depth â‰¥ 1) |
-| `department` | All active employees in the same department |
-| `department_tree` | All active employees in the department's full org subtree |
-| `org_unit_tree` | All active employees under this user's org unit |
-| `organization` | All active employees in the tenant |
+| `Own` | Own employee record only (default when no policy is set) |
+| `DirectReports` | Employees directly below the current employee in `employee_hierarchy_closure` (depth = 1), derived from position hierarchy |
+| `ReportingTree` | All employees anywhere below this user in the org tree (depth >= 1) |
+| `Department` | All active employees in the selected department |
+| `DepartmentTree` | All active employees in the department's full org subtree |
+| `Team` | All active employees in the selected team |
+| `Organization` | All active employees in the tenant |
 
 Access scope is assigned when a security role is assigned to a user through `user_roles.scope_type` and `user_roles.scope_id`. Per-employee permission overrides can also carry `scope_type` and `scope_id`. The backend resolves the scope at query time; the frontend never sends employee ID lists.
 
@@ -165,6 +165,8 @@ See [[Userflow/Auth-Access/access-policy|Access Policy Reference]] for full deta
 | 48b | `roles:delete` | Delete custom roles |
 | 48c | `roles:assign` | Assign roles to users |
 | 48d | `permissions:manage` | Grant or revoke permissions within delegation scope |
+| 48e | `roles:manage` | Aggregate tenant role-management permission used by Phase 1 flows; equivalent to role create/update/delete/assign plus permission management within scope |
+| 48f | `access:approve` | Approve generated access grants from position access templates without full role catalog management |
 
 ### Billing
 | # | Permission | Description |
@@ -350,7 +352,7 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `exceptions:view` | Renamed to `monitoring:alerts:read` |
 | `exceptions:acknowledge` | Renamed to `monitoring:alerts:resolve` |
 | `exceptions:resolve` | Same as `monitoring:alerts:resolve` â€” removed |
-| `roles:manage` | Split into `roles:create`, `roles:update`, `roles:delete`, `roles:assign`, `permissions:manage` |
+| `roles:manage` | Kept as the Phase 1 aggregate role-management permission; granular permissions may be used later for delegated administration |
 | `expense:admin` | Covered by `expense:manage` |
 | `goals:read` / `goals:write` | Renamed to `okr:read` / `okr:write` |
 | `hr:read` | Covered by `employees:read` |
@@ -387,11 +389,11 @@ These were in the original 153 but are invalid, renamed, or redundant:
 | `workforce:dashboard` | Module auto-grant (workforce module) |
 | `workforce:manage-biometric` | Renamed to `settings:device:configure` |
 | `workforce:read` | Renamed to `workforce:view` |
-| `employees:read-team` | Access policy model â€” use `employees:read` with policy `direct_reports` |
-| `leave:read-team` | Access policy model â€” use `leave:read` with policy `direct_reports` |
-| `attendance:read-team` | Access policy model â€” use `attendance:read` with policy `direct_reports` |
-| `performance:read-team` | Access policy model â€” use `performance:read` with policy `direct_reports` |
-| `skills:write-team` | Access policy model â€” use `skills:write` with policy `direct_reports` |
+| `employees:read-team` | Access policy model - use `employees:read` with policy `DirectReports` |
+| `leave:read-team` | Access policy model - use `leave:read` with policy `DirectReports` |
+| `attendance:read-team` | Access policy model - use `attendance:read` with policy `DirectReports` |
+| `performance:read-team` | Access policy model - use `performance:read` with policy `DirectReports` |
+| `skills:write-team` | Access policy model - use `skills:write` with policy `DirectReports` |
 ---
 
 ## Validation Rules
@@ -400,7 +402,7 @@ These were in the original 153 but are invalid, renamed, or redundant:
 - Explicitly grantable permissions are the only permissions shown in role creation, role editing, and employee override pickers.
 - Any permission used by a user flow, frontend route, API endpoint, or module overview must appear either in Universal Permissions or Explicitly Grantable Permissions.
 - Any legacy permission must appear in Removed from Original List with a replacement or a reason.
-- `roles:manage` is retired â€” use `roles:create`, `roles:update`, `roles:delete`, `roles:assign`, and `permissions:manage` individually. Assign all five to replicate the old `roles:manage` scope.
+- `roles:manage` remains active as the Phase 1 aggregate role-management permission. `access:approve` is narrower and can approve generated position-template access grants without exposing full role catalog management.
 - `exceptions:view` and `exceptions:acknowledge` are retired â€” use `monitoring:alerts:read` and `monitoring:alerts:resolve`. `exceptions:manage` remains for rule configuration.
 - The `*` permission remains tenant-local. Cross-company access requires an active company connection, explicit cross-company permission, grant scope, and audit.
 

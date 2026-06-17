@@ -28,7 +28,7 @@ No PeopleHR field may be discarded without a migration result row explaining why
 |:--------------|:--------------------------|:-----------------|:------|
 | Employees | Core HR: `employees`, employee profile tables | Supported | Primary identity source. |
 | Departments | Org Structure: `departments` | Supported | Create or resolve during org grouping. |
-| Job titles / roles | Org Structure: `job_titles`, job families/levels | Supported with review | HR admin confirms job family and level mapping. |
+| Positions / roles | Org Structure: `positions` and position access templates | Supported with review | HR admin confirms position mapping and generated access. |
 | Reporting hierarchy | Org Structure: `positions`, `position_reporting_history`, `position_assignments`, `employee_hierarchy_closure` | Supported with org review | Source reporting relationships are converted into effective-dated position reporting rows after employees and positions are staged. |
 | Legal entities / locations | Org Structure: legal entities and locations | Supported with review | Unknown legal entity values require admin resolution. Single-company tenants can default unresolved company values to the tenant's only legal entity when the admin confirms. |
 | Salary / compensation | Core HR / Payroll: compensation, salary history, payroll profile | Supported with review | Currency, salary amount, pay frequency, and effective date must validate. |
@@ -75,7 +75,7 @@ The adapter must fetch raw PeopleHR records before any transformation. Mapping a
 | `PeopleHrAdapter` | Coordinates PeopleHR API calls and exposes module-level fetchers. |
 | `PeopleHrPreflightService` | Tests API key access for every selected PeopleHR area before migration. |
 | `PeopleHrEmployeeFetcher` | Fetches employee identity, contact, job, source reporting relationship, status, and custom field data. |
-| `PeopleHrOrgFetcher` | Fetches departments, job titles, locations, work patterns, and reporting relationships where available. |
+| `PeopleHrOrgFetcher` | Fetches departments, positions, locations, work patterns, and reporting relationships where available. |
 | `PeopleHrSalaryFetcher` | Fetches salary, compensation, payroll identifier, and pay history data where the API key allows it. |
 | `PeopleHrLeaveFetcher` | Fetches leave balances, holidays, absence, sickness, maternity, and paternity records. |
 | `PeopleHrTimesheetFetcher` | Fetches timesheet, lateness, rota, and work pattern records. |
@@ -237,7 +237,7 @@ The migration cannot be labelled "full" unless every selected area passes prefli
 
 PeopleHR data must commit in dependency order:
 
-1. Org structure: legal entities, departments, positions, job titles, locations, work patterns.
+1. Org structure: legal entities, departments, positions, locations, work patterns.
 2. Employees and identity links.
 3. Position reporting history and position assignment second pass.
 4. User/auth invitation settings.

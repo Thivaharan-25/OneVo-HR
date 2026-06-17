@@ -11,7 +11,7 @@
 
 - Leave policies have been created and assigned to legal entities: [[Userflow/Leave/leave-policy-setup|Leave Policy Setup Flow]]
 - Employees exist and are assigned to a primary legal entity
-- User has `leave:manage` permission assigned via their Job Family role
+- User has `leave:manage` permission through a security role or employee override
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps

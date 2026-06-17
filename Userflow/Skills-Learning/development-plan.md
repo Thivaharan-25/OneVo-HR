@@ -24,7 +24,7 @@ The steps below are Phase 2 only. Do not build Skills development plan pages or 
 
 ### Step 2: Identify Skill Gaps
 - **UI:** System shows current skills vs target role requirements → highlights gaps → add target skills to plan
-- Links: [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]], [[Userflow/Org-Structure/job-family-setup|Job Family Setup]]
+- Links: [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]], [[Userflow/Org-Structure/position-setup|Position Setup]]
 
 ### Step 3: Assign Learning Actions
 - **UI:** For each target skill → assign actions: enroll in course, assign mentor, set stretch project, attend training → set milestones with dates

@@ -10,8 +10,8 @@ Permissions come from backend session endpoints such as `/api/v1/auth/session` o
   "displayTitle": "Engineering Manager",
   "modules": ["core-hr", "leave", "workforceIntelligence"],
   "capabilities": [
-    { "permission": "employees:read",  "policy": "reporting_tree", "source": "role" },
-    { "permission": "leave:approve",   "policy": "direct_reports", "source": "role" },
+    { "permission": "employees:read",  "policy": "ReportingTree", "source": "role" },
+    { "permission": "leave:approve",   "policy": "DirectReports", "source": "role" },
     { "permission": "workforce:view",  "policy": null,             "source": "role" },
     { "permission": "monitoring:alerts:read", "policy": null,      "source": "role" }
   ],
@@ -121,17 +121,17 @@ The frontend does not enforce data scoping. The backend resolves the assignment 
 
 | Effective capability | What the frontend shows |
 |:---------------------|:------------------------|
-| `employees:read` + `self` | Own profile only |
-| `employees:read` + `direct_reports` / `reporting_tree` | Team/subordinate views |
-| `employees:read` + `organization` | All-employee views |
+| `employees:read` + `Own` | Own profile only |
+| `employees:read` + `DirectReports` / `ReportingTree` | Team/subordinate views |
+| `employees:read` + `Organization` | All-employee views |
 | `leave:approve` + any policy | Approvals inbox |
 | `analytics:view` (no policy) | Analytics section |
 
 ```typescript
 // Derive UI flags from capabilities, not role names
 const empRead = capabilities().find(c => c.permission === 'employees:read');
-showTeamFilter = empRead?.policy === 'direct_reports' || empRead?.policy === 'reporting_tree';
-showOrgFilter  = empRead?.policy === 'organization';
+showTeamFilter = empRead?.policy === 'DirectReports' || empRead?.policy === 'ReportingTree';
+showOrgFilter  = empRead?.policy === 'Organization';
 ```
 
 ## Monitoring Config Gating
@@ -174,7 +174,7 @@ export class WorkforceSectionComponent {
 ### HR Management
 | Permission | Grants |
 |:-----------|:-------|
-| `employees:read` | View employees — scope determined by access policy on role (`self` / `direct_reports` / `reporting_tree` / `organization`) |
+| `employees:read` | View employees - scope determined by access policy on role (`Own` / `DirectReports` / `ReportingTree` / `Organization`) |
 | `employees:write` | Create, edit employees |
 | `leave:read` | View leave records — scope determined by access policy |
 | `leave:approve` | Approve/reject leave — scope determined by access policy |

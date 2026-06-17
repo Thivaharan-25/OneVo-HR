@@ -54,7 +54,7 @@
   - **Notifications:** `notifications:manage`
   - **Settings:** `settings:read`, `settings:admin`, `settings:billing`, `settings:branding`, `settings:integrations`, `settings:notifications`, `settings:alerts`, `settings:system`, `settings:device`, `settings:device:configure`
   - **Users:** `users:read`, `users:manage`
-  - **Roles:** `roles:read`, `roles:manage`
+  - **Roles:** `roles:read`, `roles:manage`, `access:approve`
   - **Billing:** `billing:read`, `billing:manage`
   - **Integrations:** `integrations:read`, `integrations:manage`
   - **Agent:** `agent:command`, `agent:register`, `agent:manage`, `agent:view-health`
@@ -111,10 +111,10 @@
 - On save: all users with this role immediately get updated permissions
 - Active sessions pick up new permissions on next token refresh (within 15 minutes)
 
-### When role is suggested by a Job Family Level
-- A security role created here can be selected as a suggested role for a [[Userflow/Org-Structure/job-family-setup|Job Family Level]]
-- Employees assigned to that job family level do not automatically receive this role. An authorized admin must confirm the assignment.
-- Changes to the role permissions affect only employees who already have the confirmed security role assignment.
+### When role is used by a Position Access Template
+- A security role created here can be selected by an authorized admin in a position access template.
+- Employees assigned to that position do not receive the role directly from the role catalog. The backend creates a scoped `user_roles` grant only after the position-template grant is confirmed or approved.
+- Changes to the role permissions affect only employees who already have an active confirmed security role assignment.
 
 ## Error Scenarios
 
@@ -134,7 +134,7 @@
 
 - [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] - assign permissions to roles or override per employee
 - [[Userflow/Auth-Access/user-invitation|User Invitation]] - assign role during user invitation
-- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] - link role to job family levels as a suggested role prefill; admin confirmation is required
+- [[Userflow/Org-Structure/position-setup|Position Setup]] - configure position access templates that generate scoped grants after confirmation or approval
 - [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] - role assigned during onboarding
 
 ## Module References

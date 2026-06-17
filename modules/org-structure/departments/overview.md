@@ -29,7 +29,6 @@ Fields: `legal_entity_id` (FK → legal_entities), `name`, `code`, `parent_depar
 - [[modules/org-structure/overview|Org Structure Module]]
 - [[modules/org-structure/cost-centers/overview|Cost Centers]]
 - [[modules/org-structure/legal-entities/overview|Legal Entities]]
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
 - [[modules/org-structure/teams/overview|Teams]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 - [[frontend/cross-cutting/authorization|Authorization]]

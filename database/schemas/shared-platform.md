@@ -535,8 +535,8 @@ Reusable setup templates managed in the Developer Platform -> Configuration Temp
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `template_key` | `varchar(100)` | Unique machine-readable key, e.g. `uk-standard-leave`, `engineering-job-family` |
-| `template_type` | `varchar(50)` | `configuration`, `job_family`, `leave_policy`, `onboarding`, `app_allowlist`, `monitoring_policy`, `data_import_mapping` |
+| `template_key` | `varchar(100)` | Unique machine-readable key, e.g. `uk-standard-leave`, `engineering-positions` |
+| `template_type` | `varchar(50)` | `configuration`, `org_structure`, `leave_policy`, `onboarding`, `app_allowlist`, `monitoring_policy`, `data_import_mapping` |
 | `name` | `varchar(150)` | Display name |
 | `description` | `varchar(500)` | Nullable - human-readable summary shown in the template picker |
 | `version` | `integer` | Incremented on every edit; applied version is snapshotted in `tenant_configuration_template_applications` |
@@ -544,12 +544,12 @@ Reusable setup templates managed in the Developer Platform -> Configuration Temp
 | `industry_profile_tag` | `varchar(50)` | Nullable - links monitoring policy templates to an industry for auto-selection during provisioning |
 | `payload_json` | `jsonb` | Type-specific template content - schema defined per `template_type` in the Configuration Template Manager end-to-end-logic doc |
 | `is_system` | `boolean` | `true` = ONEVO-managed default; system templates cannot be edited, only cloned |
-| `is_active` | `boolean` | Inactive templates cannot be applied; deactivation is blocked if any `job_levels` row has `pending_role_template_id` referencing a suggested role template |
+| `is_active` | `boolean` | Inactive templates cannot be applied |
 | `created_by_id` | `uuid` | FK -> platform_users |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Note on `role` type:** Role templates are managed separately via the Role Template Manager module and stored in `role_templates`, not here. The `job_family` payload references `role_templates.id` per level for suggested role prefill only; it must not auto-assign permissions. See `job_levels.pending_role_template_id`.
+**Note on role templates:** Role templates are managed separately via the Role Template Manager module and stored in `role_templates`, not here. Org structure templates may create departments and positions, but they must not auto-assign security roles.
 
 **Foreign Keys:** `created_by_id` -> [[developer-platform/database/schema#platform_users|platform_users]]
 

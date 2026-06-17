@@ -133,7 +133,7 @@ Scope-level monitoring feature overrides. These are used when a tenant wants dif
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `scope_type` | `varchar(30)` | `role`, `department`, `team`, `job_family` |
+| `scope_type` | `varchar(30)` | `role`, `department`, `team`, `position` |
 | `scope_id` | `uuid` | FK to the corresponding scope table |
 | `activity_monitoring` | `boolean` | Nullable - null means inherit from tenant |
 | `application_tracking` | `boolean` | Nullable |
@@ -152,7 +152,7 @@ Scope-level monitoring feature overrides. These are used when a tenant wants dif
 
 **Indexes:** `(tenant_id, scope_type, scope_id)` UNIQUE, `(tenant_id, scope_type)`
 
-**Scope precedence:** Employee override wins over every scope override. When more than one scope applies to the employee, resolve in this order: role -> job family -> department -> team, with the later/more operational scope overriding earlier defaults when it explicitly sets a value. Null always means "continue inheriting."
+**Scope precedence:** Employee override wins over every scope override. When more than one scope applies to the employee, resolve in this order: role -> position -> department -> team, with the later/more operational scope overriding earlier defaults when it explicitly sets a value. Null always means "continue inheriting."
 
 ### `employee_monitoring_overrides`
 
@@ -183,7 +183,7 @@ Per-employee feature overrides. **Employee override wins over tenant toggle and 
 Resolution order:
 
 1. Start with `monitoring_feature_toggles` tenant defaults.
-2. Apply `monitoring_policy_overrides` for matching workforce scopes (`role`, `job_family`, `department`, `team`). Only non-null fields override inherited values.
+2. Apply `monitoring_policy_overrides` for matching workforce scopes (`role`, `position`, `department`, `team`). Only non-null fields override inherited values.
 3. Apply `employee_monitoring_overrides`. Only non-null fields override inherited values.
 4. Apply consent and legal gates. If a required notice/consent is missing, the affected desktop collector is disabled regardless of admin settings.
 5. Apply lifecycle gates from Workforce Presence. The agent collects only while monitoring is active, never during breaks or after clock-out.

@@ -50,7 +50,7 @@ The UI must keep these surfaces separate. Team creation and team editing can sho
   - Change summary panel: "Adding 3, Removing 1"
 - **API:** N/A (client-side selection)
 - **Backend:** N/A
-- **Validation:** At least one explicitly grantable permission must remain. Universal permissions cannot be added, removed, selected, or submitted. Access policy defaults to `self` for employee-data permissions if not explicitly chosen.
+- **Validation:** At least one explicitly grantable permission must remain. Universal permissions cannot be added, removed, selected, or submitted. Access policy defaults to `Own` for employee-data permissions if not explicitly chosen.
 - **DB:** None
 
 #### Step A3: Save Permission Changes
@@ -205,11 +205,39 @@ The UI must keep these surfaces separate. Team creation and team editing can sho
 
 ---
 
-### Path D: Delegate `roles:manage` with Module Scope
+### Path E: Approve Generated Position Access
+
+Triggered when onboarding, transfer, promotion, or position assignment evaluates a position access template where `requires_approval = true`, and the movement actor does not have `roles:manage` or `access:approve`.
+
+#### Step E1: Access Approval Request Created
+- **Backend:** The employee movement flow creates an `access_grant_requests` row instead of activating the generated grant.
+- **Target department:** The request stores `target_department_id` from the target position. Approval routing never uses the actor's department.
+- **DB:** `access_grant_requests`
+
+#### Step E2: Resolve Approvers
+- **Backend resolver order:**
+  1. Users with `roles:manage` or `access:approve` whose own scope covers `target_department_id`.
+  2. If none exist, tenant-wide users with `roles:manage` or `access:approve`.
+  3. If none exist, Tenant Admin.
+- If multiple users match a step, notify all; first approval wins.
+- **Validation:** A department-scoped approver can approve only requests inside their own scope.
+
+#### Step E3: Approver Reviews Diff
+- **UI:** Approver sees employee, source action, requester, target position, target department, requested role, permission effect, scope, effective dates, and source template.
+- **Allowed actions:** Approve, reject, narrow scope, set expiry, or add comment. Widening scope is allowed only if the approver's own authority covers the wider scope.
+
+#### Step E4: Decision
+- **Approve:** Create or schedule the `user_roles` grant with `source_type = PositionTemplate`, set `approved_by`, and mark request `Approved`.
+- **Reject:** Mark request `Rejected`; employee position/promotion/transfer remains, but the sensitive access remains inactive.
+- **Audit:** Write full before/after access diff, requester, approver, decision, and comment.
+
+---
+
+### Path F: Delegate `roles:manage` with Module Scope
 
 Triggered automatically when granting `roles:manage` to an employee via role assignment or per-employee override (Path A or Path B).
 
-#### Step D1: Module Scope Panel Appears
+#### Step F1: Module Scope Panel Appears
 - **UI:** After selecting the `roles:manage` permission in the permission browser, a **"Delegation Scope"** panel appears below automatically.
   - Module checklist is shown â€” one checkbox per module
   - Tenant root admin sees all modules enabled for that tenant, not the full ONEVO product catalog
@@ -218,7 +246,7 @@ Triggered automatically when granting `roles:manage` to an employee via role ass
 - **Validation:** At least one module must be selected before save is enabled.
 - **DB:** None (client-side)
 
-#### Step D2: Save Delegation
+#### Step F2: Save Delegation
 - **UI:** Included in the existing "Save Changes" or "Save Overrides" action â€” no separate save step
 - **API:** Existing permission save endpoints (`PUT /api/v1/roles/{roleId}/permissions` or `PUT /api/v1/employees/{employeeId}/permission-overrides`) receive an additional `delegationScope` field:
   ```json
@@ -277,9 +305,9 @@ Angular renders `navigation` exactly as returned. No navigation item is shown or
 
 ## Variations
 
-### When job family level changes suggest role changes
-- Employee is promoted/transferred to a new [[Userflow/Org-Structure/job-family-setup|Job Family Level]]
-- New level may suggest a different role; the user's role changes only after an authorized admin confirms it
+### When position changes generate access changes
+- Employee is promoted/transferred to a new [[Userflow/Org-Structure/position-setup|Position]]
+- The target position may generate scoped access from position access templates; the user's role changes only after an authorized admin confirms it or an approval request is approved
 - Existing per-employee overrides are preserved unless the admin explicitly changes them
 - Admin is warned: "This employee has 3 permission overrides that will carry over if you confirm this role change"
 ### When viewing permission audit trail
@@ -324,9 +352,9 @@ Angular renders `navigation` exactly as returned. No navigation item is shown or
 ## Related Flows
 
 - [[Userflow/Auth-Access/role-creation|Role Creation]] â€” create roles before assigning permissions
-- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] â€” suggested role prefill via job family levels; admin confirmation is required
+- [[Userflow/Org-Structure/position-setup|Position Setup]] - position access templates generate scoped grants after confirmation or approval
 - [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] â€” initial permission assignment during onboarding
-- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] â€” permission changes when promoted to new job family level
+- [[Userflow/Employee-Management/employee-promotion|Employee Promotion]] - permission changes when moved to a position with access templates
 - [[Userflow/Auth-Access/login-flow|Login Flow]] â€” JWT contains effective permissions
 
 ## Module References
@@ -335,7 +363,7 @@ Angular renders `navigation` exactly as returned. No navigation item is shown or
 - [[security/rbac-frontend|Rbac Frontend]] â€” permission browser UI components
 - [[frontend/cross-cutting/authentication|Authentication]] â€” backend session metadata with permission set
 - [[modules/auth/session-management/overview|Session Management]] â€” token refresh for permission propagation
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] â€” job family to role mapping
+- [[modules/org-structure/positions/overview|Positions]] - position access templates and generated grants
 - [[modules/auth/audit-logging/overview|Audit Logging]] â€” permission change audit trail
 
 

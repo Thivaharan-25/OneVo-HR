@@ -43,6 +43,17 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `user_permission_overrides` | `granted_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `user_roles` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `user_roles` | `assigned_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `user_roles` | `approved_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `user_roles` | `source_position_id` | [[database/schemas/org-structure#`positions`\|positions]] | Org Structure |
+| `user_roles` | `source_position_access_template_id` | [[database/schemas/org-structure#`position_access_templates`\|position_access_templates]] | Org Structure |
+| `access_grant_requests` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
+| `access_grant_requests` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `access_grant_requests` | `requested_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `access_grant_requests` | `approved_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `access_grant_requests` | `target_position_id` | [[database/schemas/org-structure#`positions`\|positions]] | Org Structure |
+| `access_grant_requests` | `target_department_id` | [[database/schemas/org-structure#`departments`\|departments]] | Org Structure |
+| `access_grant_requests` | `position_access_template_id` | [[database/schemas/org-structure#`position_access_templates`\|position_access_templates]] | Org Structure |
+| `access_grant_requests` | `requested_role_id` | [[database/schemas/auth#`roles`\|roles]] | Auth & Security |
 
 ## Calendar
 
@@ -151,6 +162,8 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | Source Table | Column | Target Table | Target Module |
 |:------------|:-------|:-------------|:-------------|
 | `legal_entities` | `country_id` | [[database/schemas/infrastructure#`countries`|countries]] | Infrastructure |
+| `position_access_templates` | `role_id` | [[database/schemas/auth#`roles`\|roles]] | Auth & Security |
+| `position_access_templates` | `created_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `team_members` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `team_member_roles` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `team_role_permissions` | `permission_id` | [[database/schemas/auth#`permissions`\|permissions]] | Auth & Security |
@@ -256,7 +269,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `employee_skills` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `employee_skills` | `validated_by_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `employee_skills` | `last_assessed_in_review_id` | [[database/schemas/performance#`review_cycles`\|review_cycles]] | Performance |
-| `job_skill_requirements` | `job_family_id` | [[database/schemas/org-structure#`job_families`\|job_families]] | Org Structure |
+| `position_skill_requirements` | `position_id` | [[database/schemas/org-structure#`positions`\|positions]] | Org Structure |
 | `lms_providers` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `skill_assessment_responses` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `skill_assessment_responses` | `file_record_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
@@ -419,7 +432,7 @@ Based on FK dependencies, modules should be migrated in this order:
 ```
 1. infrastructure (tenants, users, countries, file_records)
 2. auth (roles, permissions, sessions)
-3. org-structure (legal_entities, departments, job_titles, team_roles)
+3. org-structure (legal_entities, departments, positions, team_roles)
 4. core-hr (employees — the central hub)
 5. configuration (tenant_settings, monitoring_toggles)
 6. agent-gateway (registered_agents)

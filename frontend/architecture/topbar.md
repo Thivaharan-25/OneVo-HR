@@ -60,7 +60,7 @@ Command palette trigger. Opens on click or keyboard shortcut. Shows quick naviga
 
 - Notification bell: unread inbox count.
 - Theme toggle: system / light / dark.
-- User avatar menu: user name, job title, employee profile link, sign out.
+- User avatar menu: user name, current position, employee profile link, sign out.
 
 ## Responsive Behavior
 

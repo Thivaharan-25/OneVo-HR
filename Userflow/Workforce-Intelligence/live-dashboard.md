@@ -56,7 +56,7 @@
 ## Variations
 
 ### Team-scoped view
-- With `attendance:read` assigned with `direct_reports` or `reporting_tree` policy: sees only direct reports / team members
+- With `attendance:read` assigned with `DirectReports` or `ReportingTree` scope: sees only direct reports / team members
 
 ## Error Scenarios
 

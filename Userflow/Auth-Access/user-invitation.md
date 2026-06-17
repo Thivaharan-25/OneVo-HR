@@ -30,7 +30,7 @@
   - Last Name (required)
   - Role (dropdown, required) - lists all tenant roles
   - Department (dropdown, optional) - if employee profile should be created
-  - Job Family Level (dropdown, optional) - can prefill a suggested role from [[Userflow/Org-Structure/job-family-setup|Job Family]], but does not auto-assign permissions
+  - Position (dropdown, optional) - if employee profile and initial position assignment should be created
   - Send welcome email (checkbox, default: checked)
 - **API:** N/A (client-side form)
 - **Backend:** N/A
@@ -213,5 +213,5 @@
 - [[frontend/cross-cutting/authorization|Authorization]] - role assignment during invitation
 - [[backend/notification-system|Notification System]] - invitation email delivery
 - [[modules/core-hr/employee-profiles/overview|Employee Profiles]] - employee profile stub creation
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] - suggested role during invitation/onboarding
+- [[modules/org-structure/positions/overview|Positions]] - optional position assignment during invitation/onboarding
 

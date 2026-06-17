@@ -78,8 +78,8 @@ public interface IPermissionResolver
 public interface IAccessPolicyResolver
 {
     /// Resolves the effective access policy for a given (userId, permissionCode, tenantId).
-    /// Returns one of: self | direct_reports | reporting_tree | department |
-    ///                  department_tree | org_unit_tree | organization
+    /// Returns one of: Own | DirectReports | ReportingTree | Department |
+    ///                  DepartmentTree | Team | Organization
     /// Returns null for tenant-wide permissions that are not employee-record scoped.
     Task<string?> ResolveAsync(Guid userId, string permissionCode, Guid tenantId, CancellationToken ct);
 }
@@ -124,7 +124,7 @@ API endpoints:
 
 ---
 
-## Database Tables (13)
+## Key Database Tables (13)
 
 ### `roles`
 
@@ -182,12 +182,45 @@ Global permission definitions — NOT tenant-scoped.
 | `tenant_id` | `uuid` | FK -> tenants |
 | `user_id` | `uuid` | FK → users |
 | `role_id` | `uuid` | FK → roles |
-| `scope_type` | `varchar(30)` | `Organization`, `Department`, `Team`, `Own`, or `DirectReports` |
+| `scope_type` | `varchar(30)` | `Organization`, `Department`, `DepartmentTree`, `Team`, `Own`, `DirectReports`, or `ReportingTree` |
 | `scope_id` | `uuid` | nullable boundary id for scoped assignments |
+| `source_type` | `varchar(30)` | `Manual`, `PositionTemplate`, or `EmployeeOverride` |
+| `source_position_id` | `uuid` | nullable source position for generated grants |
+| `source_position_access_template_id` | `uuid` | nullable source position access template |
+| `effective_from` | `timestamptz` | nullable |
+| `effective_to` | `timestamptz` | nullable |
+| `status` | `varchar(20)` | `Active`, `Scheduled`, `PendingApproval`, `Expired`, or `Revoked` |
 | `assigned_at` | `timestamptz` | |
 | `assigned_by` | `uuid` | FK → users (who granted this) |
-| `expires_at` | `timestamptz` | nullable; use for temporary role assignment |
-| UNIQUE: `(tenant_id, user_id, role_id, scope_type, scope_id)` | | |
+| `approved_by` | `uuid` | Nullable FK -> users; approver for generated or requested grants |
+| `expires_at` | `timestamptz` | Deprecated compatibility alias; use `effective_to` for time-bound role grants |
+| UNIQUE: `(tenant_id, user_id, role_id, scope_type, scope_id)` | | Must use `NULLS NOT DISTINCT` or an equivalent normalized/partial unique index so null `scope_id` values cannot create duplicate grants |
+
+### `access_grant_requests`
+
+Approval records for sensitive position-template access generated during onboarding, transfer, promotion, or position assignment when the actor does not have `roles:manage` or `access:approve`.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `user_id` | `uuid` | FK -> users who will receive the grant |
+| `action_type` | `varchar(30)` | `Onboarding`, `Transfer`, `Promotion`, or `PositionAssignment` |
+| `target_position_id` | `uuid` | FK -> positions |
+| `target_department_id` | `uuid` | FK -> departments; used for approver routing |
+| `position_access_template_id` | `uuid` | FK -> position_access_templates |
+| `requested_role_id` | `uuid` | FK -> roles |
+| `requested_scope_type` | `varchar(30)` | Requested grant scope |
+| `requested_scope_id` | `uuid` | Nullable requested grant boundary |
+| `approval_status` | `varchar(20)` | `Pending`, `Approved`, `Rejected`, or `Cancelled` |
+| `requested_by` | `uuid` | FK -> users |
+| `approved_by` | `uuid` | Nullable FK -> users |
+| `requested_at` | `timestamptz` | |
+| `decided_at` | `timestamptz` | Nullable |
+| `effective_from` | `timestamptz` | Grant effective start after approval |
+| `effective_to` | `timestamptz` | Nullable grant end |
+| `decision_comment` | `varchar(500)` | Nullable |
 
 ### `user_permission_overrides`
 
@@ -267,7 +300,7 @@ Current position-derived closure table for org hierarchy. Owned by Org Structure
 | `depth` | `int` | 0 = self-row; 1 = direct report; 2+ = skip-level |
 | PK: `(tenant_id, ancestor_employee_id, descendant_employee_id)` | | |
 
-Every employee has a self-row (`depth = 0`). Queries: `depth = 1` for `direct_reports`; `depth >= 1` for `reporting_tree`.
+Every employee has a self-row (`depth = 0`). Queries: `depth = 1` for `DirectReports`; `depth >= 1` for `ReportingTree`.
 
 ### `audit_logs`
 
@@ -338,7 +371,7 @@ Compliance Center manages legal_document_versions; Auth records user decisions i
 2. **Password hashing** - BCrypt with work factor 12. Do not use any other algorithm for user passwords.
 3. **Hybrid permission control** — commercial entitlement decides which modules and feature keys exist for the tenant; runtime flags decide which included features are active; RBAC decides who can use them. Effective permissions = universal auto-grants + active role permissions + valid individual overrides; filtered by subscription/module entitlements, selected feature keys, runtime flags, and optional role/employee feature visibility grants; scoped by org hierarchy.
 4. **Permission version counter** — Phase 1 in-memory key `perm_version:{user_id}`. Incremented on any permission/role change. `PermissionVersionMiddleware` rejects JWTs with stale `perm_ver` with 401 -> frontend silently refreshes. Redis is optional/future distributed infrastructure for multi-instance deployments.
-5. **Access scope scoping** - employee-data access is resolved from `user_roles.scope_type` and `user_roles.scope_id`, then checked against the target employee, department, team, own-record, or reporting relationship. The frontend never sends employee ID lists. Tenant Super Admin uses `Organization` scope. Non-admin cross-tree exceptions use hierarchy bypass grants (Path C).
+5. **Access scope scoping** - employee-data access is resolved from active `user_roles.scope_type` and `user_roles.scope_id`, then checked against the target employee, department, team, own-record, or reporting relationship. Position access templates only generate `user_roles` rows or `access_grant_requests`; templates are not active grants. The frontend never sends employee ID lists. Tenant Super Admin uses `Organization` scope. Non-admin cross-tree exceptions use hierarchy bypass grants.
 6. **Never hardcode role names** — roles are custom, created by Tenant Super Admin or delegated permission admins. Always check permissions, never role names.
 7. **Role templates are provisioning blueprints** — Developer Platform templates can seed tenant roles, but tenant owners can later edit/create roles using only permissions exposed by their enabled modules.
 8. **Device JWT** for agents — contains `device_id` + `tenant_id` + `type: "agent"` claim. No user permissions.
@@ -373,6 +406,8 @@ Compliance Center manages legal_document_versions; Auth records user decisions i
 | GET | `/api/v1/users/{id}/permissions` | `roles:manage` | Get effective permissions |
 | POST | `/api/v1/users/{id}/permission-overrides` | `roles:manage` | Grant/revoke permission override |
 | DELETE | `/api/v1/users/{id}/permission-overrides/{permId}` | `roles:manage` | Remove override |
+| GET | `/api/v1/access-grant-requests` | `access:approve` OR `roles:manage` | List pending generated access grants in the approver's scope |
+| POST | `/api/v1/access-grant-requests/{id}/decision` | `access:approve` OR `roles:manage` | Approve, reject, narrow, or expire a generated position-template access grant |
 | GET | `/api/v1/feature-access` | `roles:manage` | List role/employee feature visibility grants |
 | POST | `/api/v1/feature-access` | `roles:manage` | Grant role/employee visibility inside commercial boundary |
 | DELETE | `/api/v1/feature-access/{id}` | `roles:manage` | Revoke role/employee visibility grant |

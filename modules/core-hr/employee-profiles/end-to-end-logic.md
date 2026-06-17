@@ -66,7 +66,7 @@ GET /api/v1/employees/me
     â†’ Extract user_id from backend-held auth/session state
     â†’ IEmployeeService.GetByUserIdAsync(userId, tenantId)
       â†’ Query employees WHERE user_id = @userId AND tenant_id = @tenantId AND is_deleted = false
-      â†’ Include: addresses, emergency contacts, department, job title
+      -> Include: addresses, emergency contacts, department, position
       â†’ Return EmployeeDetailResponse (200 OK)
 ```
 
@@ -102,7 +102,7 @@ sequenceDiagram
     Controller->>Service: CreateAsync(dto, tenantId, userId)
     Service->>DB: Check email uniqueness
     Service->>DB: Check employee_number uniqueness
-    Service->>DB: Verify FK references (dept, job title, position)
+    Service->>DB: Verify FK references (department, position)
     Service->>DB: INSERT INTO employees
     Service->>Bus: Publish EmployeeCreated
     Bus->>Bus: NotificationHandler â†’ queue welcome email

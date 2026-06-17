@@ -83,7 +83,7 @@ One row per completed sprint. Post-mortem summary.
 
 ## `sprint_report_contributors` - Phase 1
 
-Typed contributor rows for completed sprint reports. This keeps contributor data queryable by HR dimensions such as department, job title, and employment status.
+Typed contributor rows for completed sprint reports. This keeps contributor data queryable by HR dimensions such as department, position, and employment status.
 
 | Column | Type | Notes |
 |---|---|---|
