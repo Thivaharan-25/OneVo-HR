@@ -21,7 +21,6 @@ Legal entity is the boundary for departments, positions, employee primary employ
 - Positions belong to one legal entity.
 - Positions cannot be shared across legal entities.
 - A position can report only to another position inside the same legal entity.
-- Job titles can be shared across the tenant.
 - A person can hold assignments in more than one legal entity when needed, but each assignment points to a legal-entity-specific position.
 - Root positions with no reporting manager are allowed.
 
@@ -53,5 +52,4 @@ Key fields:
 
 - [[modules/org-structure/overview|Org Structure]]
 - [[modules/org-structure/departments/overview|Departments]]
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
 - [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]

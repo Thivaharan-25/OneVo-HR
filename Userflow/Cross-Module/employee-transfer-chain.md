@@ -9,12 +9,12 @@
 
 ## Context
 
-Transferring an employee isn't just updating a department field. It can change their legal entity, reporting line, job title, shift schedule, leave policy, payroll/legal context where enabled, and access permissions. Team membership changes are handled separately through Org Structure > Teams.
+Transferring an employee isn't just updating a department field. It can change their legal entity, reporting line, position, shift schedule, leave policy, payroll/legal context where enabled, and access permissions. Team membership changes are handled separately through Org Structure > Teams.
 
 ## Preconditions
 
 - Target legal entity exists when changing company.
-- Target position exists inside the selected legal entity; department and job title are derived from the position where configured â†’ [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Target position exists inside the selected legal entity; department is derived from the position -> [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
 - Position occupancy capacity must be validated for the target position; broader headcount planning remains out of scope unless a future headcount-planning module is enabled
 - Target position must not report to a position in another legal entity.
 - Transfer effective date set (can be future-dated)
@@ -25,7 +25,7 @@ Transferring an employee isn't just updating a department field. It can change t
 
 | Order | Module | What Happens | Triggered By | Event Published |
 |:------|:-------|:-------------|:-------------|:----------------|
-| 1 | **Employee-Management** | Transfer record created with old/new legal entity where applicable, old/new position, derived department/job title snapshots, effective date, and reason. Employee status temporarily set to "Transferring" | Authorized employee-management user submits transfer | `EmployeeTransferInitiated` |
+| 1 | **Employee-Management** | Transfer record created with old/new legal entity where applicable, old/new position, derived department snapshots, effective date, and reason. Employee status temporarily set to "Transferring" | Authorized employee-management user submits transfer | `EmployeeTransferInitiated` |
 | 2 | **Org-Structure** | Position assignment and derived reporting context updated. Org chart reflects change on effective date | `EmployeeTransferInitiated` | `ReportingLineChanged` |
 | 3 | **Auth-Access** | Position-linked access impact is applied after admin confirmation. Approval routing updated: new position-resolved manager becomes approver for leave, expense, attendance. Old position-resolved manager loses approval authority for this employee | `ReportingLineChanged` | `ApprovalRoutingUpdated` |
 | 4 | **Workforce-Presence** | Shift schedule reassigned if new department has different shift pattern. Old schedule ends on transfer date, new schedule starts | `EmployeeTransferInitiated` | `ShiftScheduleReassigned` |

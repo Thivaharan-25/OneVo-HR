@@ -17,7 +17,7 @@ If the exception engine or desktop agent detects a problem with an employee (mis
 │ 🔴 AGENT ALERT: Missed clock-in 09:00   │  ← alert banner (only when flagged)
 ├──────────────────────────────────────────┤
 │  [Avatar]  Sarah Johnson                 │
-│            Senior Engineer   ● Online    │  ← name, job title, online status dot
+│            Senior Engineer   ● Online    │  ← name, position, online status dot
 │  Productivity  ████████░░  82%          │  ← weekly productivity score
 │  Now: "Fix login redirect bug"           │  ← current assigned task (from WMS)
 └──────────────────────────────────────────┘
@@ -54,7 +54,7 @@ If the exception engine or desktop agent detects a problem with an employee (mis
 
 ## Filtering and Search
 
-- Search bar filters cards by employee name or job title
+- Search bar filters cards by employee name or position
 - Department filter (dropdown) — narrows to employees within a department
 - Status filter — show only: Online / On Break / Offline / Flagged
 

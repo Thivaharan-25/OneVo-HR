@@ -2,7 +2,7 @@
 
 ## Userflow Folder (NEW)
 - **Added:** `Userflow/` — 93 end-to-end user flow files across 18 feature areas
-- **Added:** Flows are **permission-based, not role-based** — since roles are dynamic (created via Job Family with custom permissions)
+- **Added:** Flows are **permission-based, not role-based** - roles are dynamic tenant security roles, and Phase 1 position access templates can generate scoped grants after confirmation or approval
 - **Added:** Each flow includes: required permissions, UI steps, API calls, backend logic, DB tables, error scenarios, events triggered, and wikilinks to module docs
 - **Added:** Flow areas: Platform-Setup, Auth-Access, Org-Structure, Employee-Management, Leave, Workforce-Presence, Performance, Payroll, Skills-Learning, Documents, Workforce-Intelligence, Exception-Engine, Analytics-Reporting, Grievance, Expense, Calendar, Notifications, Configuration
 

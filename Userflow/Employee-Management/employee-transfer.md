@@ -1,9 +1,9 @@
-﻿# Employee Transfer
+# Employee Transfer
 
 **Area:** Employee Management  
 **Trigger:** Authorized employee-management user initiates a position, department, or legal entity transfer inside the tenant  
 **Required Permission(s):** `employees:write`  
-**Related Permissions:** `org:manage` (department/legal entity changes), `attendance:write` (schedule reassignment)
+**Related Permissions:** `org:manage` (department/legal entity changes), `attendance:write` (schedule reassignment), `roles:manage` or `access:approve` (view/change generated access)
 
 ---
 
@@ -34,25 +34,43 @@ Separate-tenant company connections are not part of Phase 1 employee transfer. P
 - **UI:** Select legal entity if changing company -> select department -> select new position -> set effective date -> enter reason.
 - **Validation:** Effective date must be today or future. The selected position must be active, belong to the selected legal entity, and have available occupancy. The target position's reporting position must belong to the same legal entity. If the new position reports to a vacant unique position, transfer can proceed with a warning that reporting manager will be unresolved until staffed.
 
-### Step 2b: Confirm Access Impact
-- **UI:** Show access to add/remove based on old and new position-linked roles/permissions.
-- **Rule:** Remove old position-linked access, add new position-linked access, and keep manual access only if admin confirms.
+### Step 2b: Resolve Access Impact
+- **Backend:** Compare old position-template grants with the target position's access templates.
+- Old grants sourced from the old position are scheduled to end on the transfer effective date.
+- New grants sourced from the target position are generated using the target position's templates.
+- Manual user roles and employee overrides are not removed unless an authorized access user explicitly changes them.
+
+### Step 2c: Access UI Rules
+- If the actor has `roles:manage` or `access:approve`, show the generated access diff and allow confirm/change/remove within the actor's authority.
+- If the actor does not have `roles:manage` or `access:approve`, do not show role lists, permission details, scope controls, or access-template details. The UI may show only: "Access changes require approval."
+- If the target position is pooled and an authorized actor changes generated access, the UI must force a choice:
+  - Apply to the position template, affecting all current and future occupants.
+  - Apply only to this employee, creating an employee-specific grant or override.
 
 ### Step 3: Submit Transfer
 - **API:** `POST /api/v1/employees/{id}/transfer`
 - **Backend:** EmployeeLifecycleService.TransferAsync() -> [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
 - **DB:** `employee_transfers` record created; `employees` updated on effective date
 
-### Step 4: Approval (if configured)
-- **Backend:** Workflow triggers if approval required -> [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
-- Resolver-selected approvers may include the current department owner, new department owner, position-resolved reporting manager, team lead, users with a selected permission, HR coverage resolver, or configured escalation resolver. Multiple approvers use the workflow approval mode: only one required, all required, or approve in order.
+### Step 4: Access Approval (if required)
+- **Rule:** If a generated position access template has `requires_approval = true` and the actor does not have `roles:manage` or `access:approve`, create an access approval request. The transfer can continue, but the sensitive grant remains pending.
+- **Target department:** Approval routing uses the target position's department, not the actor's department.
+- **Approver resolver:**
+  1. Find users with `roles:manage` or `access:approve` whose own access scope covers the target department.
+  2. If none exist, find tenant-wide users with `roles:manage` or `access:approve`.
+  3. If none exist, route to Tenant Admin.
+  4. If multiple users match a step, notify all; first approval wins.
+- **Approver view:** Show employee, requested transfer, target position, target department, role grant, permission effect, scope, effective dates, requester, and source template.
+- If the actor already has `roles:manage` or `access:approve`, no approval request is needed; generated access can be materialized immediately or scheduled for the effective date after confirmation.
 
 ### Step 5: Effective Date Processing
 - **Backend:** On effective date:
   - Old `position_assignments` row closed and new row created
   - Employee primary legal entity updated when this is a legal-entity transfer
-  - Department and job title profile snapshots updated from the new position where configured
+  - Department and legal-entity profile snapshots updated from the new position
   - Old `employee_assignment_history` row closed and new row created with the new `position_id`
+  - Old position-template `user_roles` grants end
+  - Approved new position-template `user_roles` grants activate; pending sensitive grants remain inactive until approved
   - Current `employee_hierarchy_closure` rebuilt for the affected branch if the transfer is effective today; future-dated transfers rebuild when they become effective
   - Shift schedule may need reassignment -> [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
   - Notifications sent to old and new position-resolved managers where resolved from the effective-date assignment and reporting history
@@ -66,10 +84,13 @@ Separate-tenant company connections are not part of Phase 1 employee transfer. P
 | Target position belongs to another legal entity | Blocked | "Position does not belong to selected legal entity" |
 | Reporting position belongs to another legal entity | Blocked | "Reporting position must be inside the same legal entity" |
 | Position capacity exceeded | Blocked | "This position has reached its capacity" |
+| Access approval pending | Transfer proceeds; sensitive grant inactive | "Access changes are pending approval" |
 
 ## Events Triggered
 
 - `EmployeeTransferred` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `AccessGrantRequested` -> emitted when sensitive generated access requires approval
+- `UserRoleScheduled` -> emitted when generated access is approved or does not require approval
 - Notification to position-resolved managers -> [[backend/notification-system|Notification System]]
 
 ## Related Flows
@@ -77,6 +98,7 @@ Separate-tenant company connections are not part of Phase 1 employee transfer. P
 - [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
 - [[Userflow/Employee-Management/employee-promotion|Employee Promotion]]
 - [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
+- [[Userflow/Auth-Access/access-policy|Access Policy Reference]]
 
 ## Module References
 

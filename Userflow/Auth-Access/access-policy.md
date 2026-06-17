@@ -9,15 +9,15 @@
 
 A **permission** answers *what action* a user can perform. An **access policy** answers *whose data* that action can reach.
 
-Access policy must not become a required per-permission setup step for every role. Role templates and assignment flows should provide practical defaults, such as self-service for employees and position-derived reporting hierarchy for managers. Administrators change access policy only when they need broader or exceptional employee-data access.
+Access policy must not become a required per-permission setup step for every role. Role templates and assignment flows should provide practical defaults, such as self-service for employees, position-derived reporting hierarchy for managers, and position access templates for sensitive HR/administrative coverage. Administrators change access policy only when they need broader or exceptional employee-data access.
 
 Example:
 
 | User | Permission | Access Policy | Effect |
 |---|---|---|---|
-| Team Manager | `leave:read` | `reporting_tree` | Sees leave records for all direct and indirect reports |
-| HR Generalist | `leave:read` | `organization` | Sees leave records for all active employees in the tenant |
-| Department-level approver | `leave:approve` | `direct_reports` | Can only approve leave for employees who report directly to them |
+| Team Manager | `leave:read` | `ReportingTree` | Sees leave records for all direct and indirect reports |
+| HR Generalist | `leave:read` | `Organization` | Sees leave records for all active employees in the tenant |
+| Department-level approver | `leave:approve` | `DirectReports` | Can only approve leave for employees who report directly to them |
 
 The same permission (`leave:read`) can produce a different data scope from assignment context without needing separate permission codes. The normal default for manager-style access is resolved from position hierarchy.
 
@@ -27,13 +27,13 @@ The same permission (`leave:read`) can produce a different data scope from assig
 
 | Policy | Data Scope | Typical Assignment |
 |---|---|---|
-| `self` | Own employee record only | Default when no policy is set |
-| `direct_reports` | Employees directly below this user in `employee_hierarchy_closure` (depth = 1), derived from position hierarchy | Manager approvals |
-| `reporting_tree` | All employees anywhere below this user in the org tree (depth â‰¥ 1) | Manager read access |
-| `department` | All active employees in the selected department | Dept-level support or approved coverage |
-| `department_tree` | All active employees in the dept's full org subtree | Department-level leadership |
-| `org_unit_tree` | All active employees under this user's org unit | Regional managers |
-| `organization` | All active employees in the tenant | Explicit organization-wide employee-data authority |
+| `Own` | Own employee record only | Default when no policy is set |
+| `DirectReports` | Employees directly below this user in `employee_hierarchy_closure` (depth = 1), derived from position hierarchy | Manager approvals |
+| `ReportingTree` | All employees anywhere below this user in the org tree (depth >= 1) | Manager read access |
+| `Department` | All active employees in the selected department | Dept-level support or approved coverage |
+| `DepartmentTree` | All active employees in the dept's full org subtree | Department-level leadership |
+| `Team` | All active employees in the selected team | Team-level support or approved coverage |
+| `Organization` | All active employees in the tenant | Explicit organization-wide employee-data authority |
 
 ---
 
@@ -71,6 +71,36 @@ Example assignments:
 | HR Generalist | Employee Data Reviewer | `Organization` | null | Can access employee data across the tenant |
 | Department support user | Employee Data Reviewer | `Department` | EngineeringDepartmentId | Can access employees inside Engineering |
 
+### Through a Position Access Template
+
+Positions can define access templates, but the position itself is not the active permission grant. A position access template generates a `user_roles` grant or an `access_grant_requests` approval record when an employee is assigned, transferred, promoted, or onboarded into that position.
+
+Position access templates are used for default access tied to a position:
+
+| Position | Template role | Template scope | Approval |
+|---|---|---|---|
+| Software Engineer | Employee | `Own` | Not required |
+| Engineering Team Lead | Team Manager | `DirectReports` | Not required unless configured sensitive |
+| HR Manager - Engineering | HR Manager | `Department = EngineeringDepartmentId` | Required |
+
+For HR roles, the scope is the coverage area, not necessarily the HR employee's own department. If an HR employee sits in the HR department but supports Engineering, the template should grant `Department = EngineeringDepartmentId`.
+
+If a template has `requires_approval = true` and the actor assigning/transferring/promoting the employee does not have `roles:manage` or `access:approve`, the backend creates an access approval request instead of activating the grant. If the actor already has `roles:manage` or `access:approve`, the backend may materialize the grant immediately after the actor confirms the generated access.
+
+Approver resolution always uses the target position's department:
+
+1. Find users with `roles:manage` or `access:approve` whose own scope covers the target department.
+2. If none exist, find tenant-wide users with `roles:manage` or `access:approve`.
+3. If none exist, route to Tenant Admin.
+4. If multiple approvers match a step, notify all; the first approval wins.
+
+Users without `roles:manage` or `access:approve` must not see role lists, permission details, or access editing controls during onboarding, transfer, promotion, or position assignment. They may only see a neutral message such as "Access changes require approval."
+
+For pooled positions, editing the position template affects all current and future occupants. The UI must force authorized users to choose between:
+
+- Apply to the position template, affecting all occupants.
+- Apply only to this employee, creating an employee-specific override or user role grant.
+
 ### Per-Employee Permission Override
 
 A `user_permission_overrides` row can also carry `scope_type` and `scope_id`. Use this for explicit individual grants or revokes that differ from the role assignment scope.
@@ -85,7 +115,7 @@ The backend resolves access policy at query time. The frontend never receives em
 Frontend: GET /api/leave/requests?view=team
 Backend:
   1. User has leave:read â†’ âœ“
-  2. Resolve employee-data scope from assignment defaults, hierarchy, approved coverage, or explicit override
+  2. Resolve employee-data scope from assignment defaults, active position-template grants materialized in `user_roles`, hierarchy, approved coverage, or explicit override
   3. Resolve descendant employee IDs from employee_hierarchy_closure table
   4. Filter leave requests to those employees
   5. Return filtered results
@@ -97,7 +127,7 @@ Backend:
 Frontend: POST /api/leave/requests/{id}/approve
 Backend:
   1. User has leave:approve â†’ âœ“
-  2. Resolve employee-data scope from assignment defaults, workflow assignment, hierarchy, approved coverage, or explicit override
+  2. Resolve employee-data scope from assignment defaults, workflow assignment, active position-template grants materialized in `user_roles`, hierarchy, approved coverage, or explicit override
   3. Verify target employee is in resolved scope
   4. If not in scope â†’ 403 Forbidden
   5. If in scope â†’ proceed with approval
@@ -120,10 +150,10 @@ Every employee may also have a self-row (`ancestor = descendant`, `depth = 0`) i
 **Query patterns:**
 
 ```sql
--- direct_reports
+-- DirectReports
 WHERE tenant_id = @t AND ancestor_employee_id = @me AND depth = 1
 
--- reporting_tree
+-- ReportingTree
 WHERE tenant_id = @t AND ancestor_employee_id = @me AND depth >= 1
 ```
 
@@ -168,7 +198,7 @@ Angular renders the `navigation` array exactly as returned. No navigation is com
 
 **Bypass grants (Path C in [[Userflow/Auth-Access/permission-assignment|Permission Assignment]])** are for exceptional access that no named policy covers â€” temporary person-specific grants, feature-scoped delegation, or cross-company scenarios.
 
-Normal HR, Payroll, and Executive access uses `organization` policy on the relevant permissions â€” **not** bypass grants. Bypass grants should be rare and always time-bounded.
+Normal HR, Payroll, and Executive access uses `Organization` policy on the relevant permissions - **not** bypass grants. Bypass grants should be rare and always time-bounded.
 
 ---
 

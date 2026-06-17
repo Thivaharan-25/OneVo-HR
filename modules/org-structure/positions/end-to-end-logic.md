@@ -170,7 +170,6 @@ DELETE /api/v1/org/positions/{id}
 - [[modules/org-structure/positions/overview|Overview]]
 - [[modules/org-structure/legal-entities/overview|Legal Entities]]
 - [[modules/org-structure/departments/overview|Departments]]
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
 - [[modules/core-hr/overview|Core HR]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]

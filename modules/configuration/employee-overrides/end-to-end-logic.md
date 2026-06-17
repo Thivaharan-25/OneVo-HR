@@ -32,7 +32,7 @@ POST /api/v1/settings/monitoring/overrides/bulk
   -> MonitoringController.BulkOverride(SetBulkOverrideCommand)
     -> [RequirePermission("monitoring:configure")]
     -> ConfigurationService.SetBulkOverrideAsync(command, ct)
-      -> 1. Resolve target employees by department/team/job_family
+      -> 1. Resolve target employees by department/team/position
       -> 2. For each employee: UPSERT override
          -> Skip employees who already have individual overrides (individual > bulk)
       -> 3. Invalidate cache for all affected employees

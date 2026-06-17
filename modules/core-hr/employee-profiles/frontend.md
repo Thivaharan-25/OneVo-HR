@@ -17,7 +17,7 @@ Central employee directory with search, filters, and CRUD. Links to all HR data 
 ├─────────────────────────────────────────────────────────────┤
 │ Employee Table                                              │
 │ ┌──────┬────────┬────────┬──────────┬─────────┬──────────┐ │
-│ │ Name │ Email  │ Dept   │ Job Title│ Status  │ Actions  │ │
+│ │ Name │ Email  │ Dept   │ Position │ Status  │ Actions  │ │
 │ ├──────┼────────┼────────┼──────────┼─────────┼──────────┤ │
 │ │ J.D. │ j@...  │ Eng    │ Sr Dev   │ 🟢 Act  │ [View]   │ │
 │ │ M.K. │ m@...  │ Sales  │ AE       │ 🟢 Act  │ [View]   │ │

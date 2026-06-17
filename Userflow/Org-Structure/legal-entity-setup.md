@@ -38,7 +38,6 @@
 - Departments belong to one legal entity.
 - Positions belong to one legal entity.
 - Employees have one primary legal entity in Phase 1.
-- Job titles can be shared across the tenant.
 - Positions cannot be shared across legal entities.
 - A position can report only to another position inside the same legal entity.
 - Root positions with no reporting manager are allowed.
@@ -70,4 +69,3 @@
 - [[modules/org-structure/legal-entities/overview|Legal Entities]]
 - [[modules/org-structure/departments/overview|Departments]]
 - [[modules/org-structure/positions/overview|Positions]]
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]

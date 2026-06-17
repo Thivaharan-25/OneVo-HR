@@ -102,13 +102,13 @@ Auto-populated by the ingest processor whenever an app is seen on an employee de
 
 ## `monitoring_policy_overrides`
 
-Scope-level monitoring feature overrides for role, department, team, and job-family policies. This table fills the gap between tenant-wide defaults and per-employee exceptions.
+Scope-level monitoring feature overrides for role, department, team, and position policies. This table fills the gap between tenant-wide defaults and per-employee exceptions.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `scope_type` | `varchar(30)` | `role`, `department`, `team`, `job_family` |
+| `scope_type` | `varchar(30)` | `role`, `department`, `team`, `position` |
 | `scope_id` | `uuid` | FK to the corresponding scope table; validated by application logic |
 | `activity_monitoring` | `boolean` | Nullable - null means inherit |
 | `application_tracking` | `boolean` | Nullable |
@@ -129,7 +129,7 @@ Scope-level monitoring feature overrides for role, department, team, and job-fam
 
 **Unique constraint:** `(tenant_id, scope_type, scope_id)` - one override row per scope.
 
-**Resolution:** tenant defaults -> role -> job_family -> department -> team -> employee override. Only non-null fields override inherited values. Consent and Workforce Presence lifecycle gates are applied after this table is merged.
+**Resolution:** tenant defaults -> role -> position -> department -> team -> employee override. Only non-null fields override inherited values. Consent and Workforce Presence lifecycle gates are applied after this table is merged.
 
 ---
 

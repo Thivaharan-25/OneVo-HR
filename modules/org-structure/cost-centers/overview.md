@@ -20,7 +20,6 @@ Fields: `department_id`, `cost_center_code`, `budget_amount`, `fiscal_year`.
 - [[modules/org-structure/overview|Org Structure Module]]
 - [[modules/org-structure/departments/overview|Departments]]
 - [[modules/org-structure/legal-entities/overview|Legal Entities]]
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
 - [[modules/org-structure/teams/overview|Teams]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 - [[frontend/cross-cutting/authorization|Authorization]]

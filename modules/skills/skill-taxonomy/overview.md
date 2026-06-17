@@ -23,8 +23,8 @@ Groupings: `name`, `is_active`.
 ### `skills`
 Individual skills: `category_id`, `name`, `proficiency_levels` (jsonb with level 1-5 definitions), `evidence_required`.
 
-### `job_skill_requirements`
-Required skills per job family: `job_family_id`, `skill_id`, `min_proficiency`, `is_mandatory`.
+### `position_skill_requirements`
+Required skills per position: `position_id`, `skill_id`, `min_proficiency`, `is_mandatory`.
 
 ## API Endpoints
 

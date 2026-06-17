@@ -31,7 +31,7 @@
 | `tenant_id` | `uuid` | FK → tenants |
 | `severity` | `varchar(20)` | Which severity triggers this chain |
 | `step_order` | `int` | 1, 2, 3… |
-| `resolver_type` | `varchar(50)` | `reporting_chain_first_eligible`, `reporting_manager`, `team_lead`, `department_owner`, `permission`, `legal_entity`, `department`, `team`, `position`, `position_branch`, `job_level` when configured, `specific_employee`, `configured_escalation_resolver`, `previous_approver`, `case_participants` |
+| `resolver_type` | `varchar(50)` | `reporting_chain_first_eligible`, `reporting_manager`, `team_lead`, `department_owner`, `permission`, `legal_entity`, `department`, `team`, `position`, `position_branch`, `specific_employee`, `configured_escalation_resolver`, `previous_approver`, `case_participants` |
 | `resolver_config` | `jsonb` | Resolver-specific configuration such as permission key, legal entity/department/team/position/position branch id, optional job level id, or selected employee id |
 | `delay_minutes` | `int` | Wait N minutes before escalating to next step |
 | `created_at` | `timestamptz` |  |

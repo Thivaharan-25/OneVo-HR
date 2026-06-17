@@ -9,7 +9,7 @@
 
 Legal entities are the company records inside a tenant. A single-company tenant has one legal entity. A multi-company tenant has multiple legal entities under the same tenant, such as a Sri Lankan company, UK company, and US company inside one group account.
 
-Legal entities are first-class Phase 1 org-structure records. Departments and positions belong to one legal entity. Employees have one primary legal entity. Job titles can be shared across the tenant, but departments and positions cannot be shared across legal entities.
+Legal entities are first-class Phase 1 org-structure records. Departments and positions belong to one legal entity. Employees have one primary legal entity. Departments and positions cannot be shared across legal entities.
 
 When a legal entity country is set, Calendar creates or updates the Phase 1 holiday calendar setting for that legal entity. Calendar admins can later disable holiday sync or choose a different calendar country from the Calendar screen without changing the legal entity registration country.
 
@@ -27,7 +27,6 @@ Fields: `name`, `registration_number`, `country_id`, `currency_code`, `tax_ident
 - Departments belong to one legal entity.
 - Positions belong to one legal entity.
 - A position can report only to another position inside the same legal entity.
-- Job titles can be shared across the tenant and selected by positions in different legal entities.
 - The same person can hold assignments in more than one legal entity when needed, but each assignment still points to a legal-entity-specific position.
 
 ## API Endpoints
@@ -46,7 +45,6 @@ Updating a legal entity country publishes `LegalEntityCountrySet` with the tenan
 
 - [[modules/org-structure/overview|Org Structure Module]]
 - [[modules/org-structure/departments/overview|Departments]]
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]
 - [[modules/org-structure/teams/overview|Teams]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 - [[frontend/cross-cutting/authorization|Authorization]]

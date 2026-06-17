@@ -7,7 +7,7 @@
 **Tables:** 15 (5 Phase 1, 10 Phase 2)
 
 > [!NOTE]
-> **Phase 1 (build now):** `skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, and `skill_validation_requests` support embedded Job Family required skills plus employee skill requests and manager validation. Skills can be created inline only from `Org Structure -> Job Families -> Required Skills`; employees can request existing tenant skills, especially skills required by their job family.
+> **Phase 1 (build now):** `skill_categories`, `skills`, `position_skill_requirements`, `employee_skills`, and `skill_validation_requests` support position-required skills plus employee skill requests and manager validation. Skills can be created inline only from position required-skill setup; employees can request existing tenant skills, especially skills required by their active position.
 >
 > **No Phase 1 Skills sidebar:** Do not build a customer-facing `Skills -> Taxonomy` area in Phase 1. Full taxonomy management, LMS integrations, courses, course enrollments, quiz-based assessments, development plans, and certifications are Phase 2 unless explicitly pulled forward.
 
@@ -24,7 +24,7 @@ Manages skills taxonomy, employee skill assessments, learning courses, LMS provi
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Job family skill requirements |
+| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Position skill requirements |
 
 ---
 
@@ -99,21 +99,21 @@ Individual skill definitions within a category.
 | `updated_at` | `timestamptz` | |
 
 
-### `job_skill_requirements`
+### `position_skill_requirements`
 
-Required skills per job family with minimum proficiency.
+Required skills per position with minimum proficiency.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK â†’ tenants |
-| `job_family_id` | `uuid` | FK â†’ job_families |
+| `position_id` | `uuid` | FK -> positions |
 | `skill_id` | `uuid` | FK â†’ skills |
 | `min_proficiency` | `integer` | Minimum required level (1â€“5) â€” check `BETWEEN 1 AND 5` |
 | `is_mandatory` | `boolean` | |
 | `created_at` | `timestamptz` | |
 
-> **Note:** HTML ERD uses `job_family_required_skills` â€” renamed to match module convention.
+> **Note:** Position-required skills are tied to the employee's active position assignment in Phase 1.
 
 ### `employee_skills`
 
@@ -359,7 +359,7 @@ Employee certification records with expiry tracking.
 ## Key Business Rules
 
 1. **Skill proficiency levels:** 1 (Beginner) â†’ 5 (Expert).
-2. **Skill gap analysis** compares `employee_skills` against `job_skill_requirements` for the employee's job family.
+2. **Skill gap analysis** compares `employee_skills` against `position_skill_requirements` for the employee's active position.
 3. **`tenant_id`** is used consistently on all tables â€” no column mapping workarounds needed.
 4. **Certification expiry tracking** â€” Hangfire job alerts 30 days before expiry, sets `renewal_reminder_sent` flag.
 5. **Skill request and validation (Phase 1)** - employees request existing tenant skills for their profile; the manager reviews, approves, adjusts proficiency, or rejects.
@@ -392,8 +392,8 @@ Employee certification records with expiry tracking.
 ## Features
 
 ### Phase 1
-- Embedded Required Skills in [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] - assign mandatory/optional skills with minimum proficiency level to job families.
-- Inline skill search/create - create simple tenant skills only from the Job Family Required Skills flow when the skill does not already exist.
+- Embedded Required Skills in [[modules/org-structure/positions/overview|Positions]] - assign mandatory/optional skills with minimum proficiency level to positions.
+- Inline skill search/create - create simple tenant skills only from the position required-skills flow when the skill does not already exist.
 - [[modules/skills/employee-skills/overview|Employee Skills]] - employees request existing tenant skills for their profile; managers validate, adjust, or reject those requests.
 
 ### Phase 2 (deferred)

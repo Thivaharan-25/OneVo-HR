@@ -23,10 +23,10 @@ Contains:
 - Legal entity setup
 - Department setup
 - Team setup
-- Job title setup
+- Position setup
 - Position setup
 - Reporting structure setup
-- Position-linked roles/permissions
+- Position access templates
 - Role and permission setup
 - System admin assignment
 - Leave policy setup

@@ -24,7 +24,7 @@ A background Hangfire job handles the heavy lifting: it downloads uploaded files
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/core-hr/overview|CoreHR]] | `employees` and profile tables | Bulk-writes imported employee records. |
-| **Depends on** | [[modules/org-structure/overview|OrgStructure]] | Legal entity, department, position, and access resolvers | Resolves legal entity, department, position, capacity, and position-linked access references. |
+| **Depends on** | [[modules/org-structure/overview|OrgStructure]] | Legal entity, department, position, and access resolvers | Resolves legal entity, department, position, capacity, and position access templates. |
 | **Depends on** | [[modules/auth/overview|Auth]] | `employees:write` permission | Permission gate on all import endpoints. |
 | **Depends on** | [[infrastructure/file-storage|Infrastructure / FileStorage]] | `IImportFileStorage` | Railway S3-compatible blob storage for uploaded files. |
 | **Depends on** | [[modules/leave/overview|Leave]] | Leave entitlement/request tables | Imports PeopleHR leave, holiday, absence, sickness, maternity, and paternity records. |
@@ -87,7 +87,7 @@ Employment Type
 
 For single-company tenants, the only legal entity is inferred. If a `Legal Entity` column is present, it must match the tenant's legal entity name exactly.
 
-The wizard resolves `Legal Entity → Department → Position`, shows access impact from position-linked roles/permissions, and requires admin confirmation before import. If a business name is ambiguous inside the selected legal entity, the row moves to a review screen where the admin selects the correct record.
+The wizard resolves `Legal Entity -> Department -> Position`, evaluates position access templates, and applies the same access handling rules as individual onboarding. Users without `roles:manage` or `access:approve` do not see role lists, permission details, or scope controls. If a business name is ambiguous inside the selected legal entity, the row moves to a review screen where the admin selects the correct record.
 
 **Hard errors** — block the row; cannot be imported without correction:
 
@@ -122,11 +122,10 @@ Required org setup columns:
 Legal Entity
 Department
 Position Name
-Job Title
 Capacity
 Reports To Position
 Reporting Effective From
-Linked Roles/Permissions
+Position Access Templates
 ```
 
 Validation must reject missing legal entities, departments outside the selected legal entity, positions outside the selected legal entity, duplicate positions inside a legal entity where ambiguity would be created, missing reporting positions, reporting positions in another legal entity, pooled reporting targets, overlapping unique-position assignments, overlapping position reporting rows, and position reporting cycles for the effective date range.
@@ -228,7 +227,7 @@ Full PeopleHR migration also uses the staging and audit tables defined in [[modu
 | 2a   | Upload File      | `Step2aUploadFile`                        | Drag-drop upload; PUT directly to pre-signed S3 URL.                     |
 | 2b   | Connect PeopleHR | `Step2bConnectPeopleHR`                   | API key entry with masked display and API permission preflight.          |
 | 3    | Map Fields       | `Step3FieldMapping` / `FieldMappingTable` | Editable dropdowns; source fields/custom screens -> canonical HR fields. |
-| 4    | Org Resolution   | `Step4OrgResolution`                      | Resolve legal entity, department, position, and position-linked access. |
+| 4    | Org Resolution   | `Step4OrgResolution`                      | Resolve legal entity, department, position, and generated position-template access. |
 | 5    | Validate         | `Step5Validation`                         | Review ETL errors/warnings; skip, fix, or accept raw archive.            |
 | 6    | Confirm          | `Step6ConfirmImport`                      | Summary counts; triggers dry-run or import job.                          |
 | 7    | Done             | `Step7Done`                               | Reconciliation spot-check list, final counts, and audit report.          |
@@ -267,5 +266,3 @@ PeopleHR full migration extends these steps with dry-run reconciliation, admin a
 - [[backend/module-catalog|Module Catalog]]
 - [[current-focus/DEV1-hr-import-onboarding|DEV1: HR Import Onboarding]]
 - [[docs/superpowers/plans/2026-04-24-hr-import-onboarding|Implementation Plan]]
-
-

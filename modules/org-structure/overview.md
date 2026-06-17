@@ -13,7 +13,7 @@
 
 Manages the organizational hierarchy: legal entities, departments, positions, position assignments, shared job-title catalog values, and teams. Position hierarchy is the source of truth for reporting; employee records do not store manager references.
 
-Phase 1 supports both single-company and multi-company tenants. A single-company tenant has one legal entity. A multi-company tenant has multiple legal entities under the same tenant. Departments and positions are legal-entity-specific. Job titles are tenant-shared catalog values.
+Phase 1 supports both single-company and multi-company tenants. A single-company tenant has one legal entity. A multi-company tenant has multiple legal entities under the same tenant. Departments and positions are legal-entity-specific.
 
 ---
 
@@ -72,7 +72,7 @@ API endpoints:
 
 ---
 
-## Database Tables (10)
+## Key Database Tables
 
 ### `legal_entities`
 
@@ -124,43 +124,6 @@ Legal-entity-scoped department hierarchy via `parent_department_id`.
 
 Department names are used in customer-facing setup and import screens. Department codes remain internal/stable references for integrations and audit; normal employee CSV imports should not require HR admins to provide codes.
 
-### `job_families`
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK â†’ tenants |
-| `name` | `varchar(100)` | e.g., "Engineering", "Sales" |
-| `description` | `varchar(500)` | |
-| `created_at` | `timestamptz` | |
-
-### `job_levels`
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK â†’ tenants |
-| `job_family_id` | `uuid` | FK -> job_families |
-| `name` | `varchar(50)` | e.g., "Junior", "Senior", "Lead", "Director" |
-| `rank` | `int` | Numeric ordering, unique within job family |
-| `suggested_role_id` | `uuid` | FK to roles (nullable) - optional onboarding/promotion suggestion only; never auto-assigned |
-| `created_at` | `timestamptz` | |
-
-Job levels describe career hierarchy and compensation bands. They must not directly grant security permissions, team authority, or WorkSync access. A job level may prefill a suggested role during onboarding or promotion, but an authorized admin must confirm the actual security role, team role, workspace membership, and project membership.
-
-### `job_titles`
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK â†’ tenants |
-| `name` | `varchar(100)` | e.g., "Software Engineer" |
-| `job_family_id` | `uuid` | FK → job_families; nullable — a title can exist without a family |
-| `job_level_id` | `uuid` | FK → job_levels; nullable — a title can exist without a level |
-| `is_active` | `boolean` | |
-| `created_at` | `timestamptz` | |
-
-
 ### `positions`
 
 First-class org seats used to define reporting hierarchy. Positions are legal-entity-scoped. A position can report only to a `unique` position in the same legal entity so manager resolution is unambiguous.
@@ -178,11 +141,11 @@ First-class org seats used to define reporting hierarchy. Positions are legal-en
 | `reports_to_position_id` | `uuid` | Current reporting snapshot; FK -> same-legal-entity unique position, nullable for root positions |
 | `is_active` | `boolean` | |
 
-Minimal Phase 1 setup fields are position name, active legal entity context, department, position type, max occupancy, reports-to position, and linked roles/permissions. Legal entity is selected from the Org Structure top-bar context switcher before creation; it is not an editable Create Position field. Job title, location, cost center, job family, and job level are not required for Phase 1 position setup.
+Minimal Phase 1 setup fields are position name, active legal entity context, department, position type, max occupancy, reports-to position, and optional position access templates. Legal entity is selected from the Org Structure top-bar context switcher before creation; it is not an editable Create Position field. Job title, job family, and job level catalogs are not part of the Phase 1 org model.
 
 Rules: `unique` positions can be reporting targets and have one active occupant. `pooled` positions can have multiple occupants and cannot be reporting targets. Position hierarchy must reject cycles. `reports_to_position_id` is the current reporting snapshot; historical reporting changes are stored in `position_reporting_history`. A position cannot report to a position in another legal entity.
 
-Position-linked roles/permissions are confirmed when an employee is assigned, transferred, or promoted into the position. Old position-linked access is removed on position change unless the admin confirms it should remain as manual access.
+Position access templates generate scoped `user_roles` grants or `access_grant_requests` when an employee is assigned, transferred, promoted, or onboarded into the position. Templates are not active grants by themselves. Sensitive templates can require approval; approval routing uses the target position's department. Users without `roles:manage` or `access:approve` must not see role lists, permission details, or access editing controls during employee movement flows.
 
 ### `position_reporting_history`
 
@@ -352,13 +315,6 @@ Team role permissions can support WorkSync actions when the explicit stored team
 | PUT | `/api/v1/org/positions/{id}` | `org:manage` | Update position name, max occupancy, reports-to |
 | DELETE | `/api/v1/org/positions/{id}` | `org:manage` | Deactivate position (blocked if occupied) |
 | POST | `/api/v1/employees/{id}/position-assignment` | `employees:write` | Assign employee to a position (owned by Core HR) |
-| GET | `/api/v1/org/job-titles` | `employees:read` | List job titles |
-| POST | `/api/v1/org/job-titles` | `org:manage` | Create job title; `job_family_id` and `job_level_id` are optional |
-| PUT | `/api/v1/org/job-titles/{id}` | `org:manage` | Update job title, or link/unlink family and level |
-| GET | `/api/v1/org/job-families` | `employees:read` | List job families |
-| GET | `/api/v1/org/job-levels?familyId={id}` | `employees:read` | List job levels for a job family |
-| POST | `/api/v1/org/job-levels` | `org:manage` | Create job level within a job family |
-| PUT | `/api/v1/org/job-levels/{id}` | `org:manage` | Update job level name or rank |
 | GET | `/api/v1/org/teams` | `employees:read` | List teams |
 | POST | `/api/v1/org/teams` | `org:manage` | Create team and assign team roles only |
 | PUT | `/api/v1/org/teams/{id}/members/{employeeId}/roles` | `org:manage` | Replace this member's team roles; accepts `team_roles` only |
@@ -367,7 +323,6 @@ Team role permissions can support WorkSync actions when the explicit stored team
 
 - [[modules/org-structure/legal-entities/overview|Legal Entities]] â€” Single-company and multi-company legal employer structure
 - [[modules/org-structure/departments/overview|Departments]] â€” Hierarchical department tree (`parent_department_id`, CTE-friendly)
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]] — Tenant-shared job-title catalog values, optional job families, and job levels with numeric rank and optional suggested role. Job titles are not required for Phase 1 position creation.
 - [[modules/org-structure/positions/overview|Positions]] — Legal-entity-scoped positions with max occupancy, reporting-position validation, and position assignments → [[modules/org-structure/positions/end-to-end-logic|Logic]] · [[modules/org-structure/positions/testing|Tests]]
 - [[modules/org-structure/teams/overview|Teams]] - Tenant-scoped employee groups with leadership derived from team role assignments
 - [[modules/org-structure/cost-centers/overview|Cost Centers]] â€” Phase 2; department cost centers with budget per fiscal year

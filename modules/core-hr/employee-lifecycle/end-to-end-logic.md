@@ -24,7 +24,7 @@ EmployeeTransferProcessor.ApplyDueTransfersAsync(today)
       - Validate employee is still active
       - Close current employee_assignment_history row by setting effective_to = effective_date - 1 day
       - Insert new employee_assignment_history row from transfer target values
-      - Update employee current department/job family/job level/job title snapshots from the new position
+      - Update employee current department/legal-entity snapshots from the new position
       - Set employee_transfers.status = "Applied"
       - Record transferred lifecycle event
       - Publish EmployeeTransferred

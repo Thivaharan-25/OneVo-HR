@@ -108,4 +108,3 @@ If the source is "My Reporting Team", the workspace stores only `workspace_membe
 - [[modules/auth/authorization/end-to-end-logic|Authorization]] - IHierarchyScope, bypass resolution
 - [[modules/org-structure/legal-entities/overview|Legal Entities]]
 - [[modules/org-structure/cost-centers/overview|Cost Centers]]
-- [[modules/org-structure/job-hierarchy/overview|Job Hierarchy]]

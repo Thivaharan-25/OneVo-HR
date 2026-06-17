@@ -138,7 +138,7 @@ OKR-style goals with parent-child hierarchy.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `position_id` | `uuid` | FK → job_titles |
+| `position_id` | `uuid` | FK -> positions |
 | `current_holder_id` | `uuid` | FK → employees |
 | `successor_id` | `uuid` | FK → employees |
 | `readiness` | `varchar(20)` | `ready_now`, `1_year`, `2_years`, `not_ready` |

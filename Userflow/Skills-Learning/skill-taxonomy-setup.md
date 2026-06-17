@@ -2,7 +2,7 @@
 
 **Area:** Skills & Learning
 **Phase:** Phase 2 for the full Skills sidebar experience
-**Phase 1 exception:** Required skills can be created inline from Org Structure -> Job Families -> Required Skills.
+**Phase 1 exception:** Required skills can be created inline from Position Setup -> Required Skills.
 **Trigger:** Admin manages the full skill catalog, categories, duplicate cleanup, imports, and proficiency labels.
 **Required Permission(s):** `skills:manage`
 **Related Permissions:** `skills:read` to view taxonomy without editing
@@ -13,12 +13,12 @@
 
 The customer-facing `Skills -> Taxonomy` sidebar is not built in Phase 1.
 
-Phase 1 only supports the skill records needed by Job Family required-skill setup:
+Phase 1 only supports the skill records needed by position required-skill setup:
 
 ```text
 Org Structure
-  Job Families
-    Job Family Detail
+  Positions
+    Position Detail
       Required Skills tab
         Search skill
         Select existing skill if found
@@ -27,9 +27,9 @@ Org Structure
         Mark mandatory or optional
 ```
 
-Inline-created skills are saved as tenant-scoped `skills` records so they can be reused by other job families later. The admin does not manage the full taxonomy tree in Phase 1.
+Inline-created skills are saved as tenant-scoped `skills` records so they can be reused by other positions later. The admin does not manage the full taxonomy tree in Phase 1.
 
-See [[Userflow/Org-Structure/job-family-setup|Job Family Setup]].
+See [[Userflow/Org-Structure/position-setup|Position Setup]].
 
 ---
 
@@ -96,7 +96,7 @@ All steps below are Phase 2 only. They must not create Phase 1 sidebar navigatio
 ### Merge Duplicate Skills
 
 - Select two or more skills -> Merge -> choose primary skill.
-- All employee skill records and job skill requirements move to the primary skill.
+- All employee skill records and position skill requirements move to the primary skill.
 - Duplicate skill records are soft-deleted.
 
 ## Error Scenarios
@@ -110,7 +110,7 @@ All steps below are Phase 2 only. They must not create Phase 1 sidebar navigatio
 
 ## Related Flows
 
-- [[Userflow/Org-Structure/job-family-setup|Job Family Setup]] - Phase 1 inline required-skill setup
+- [[Userflow/Org-Structure/position-setup|Position Setup]] - Phase 1 inline required-skill setup
 - [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]] - Phase 2
 - [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]] - Phase 2
 - [[Userflow/Skills-Learning/development-plan|Development Plan]] - Phase 2

@@ -63,7 +63,6 @@ Tenant owner choice rule:
   - Role Templates
   - Configuration Templates
   - Org Structure Templates
-  - Job Family Templates
   - Leave Policy Templates
   - Onboarding Templates
   - App Allowlist Templates

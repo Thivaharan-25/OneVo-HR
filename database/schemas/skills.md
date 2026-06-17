@@ -4,7 +4,7 @@
 **Phase:** Mixed — 5 tables Phase 1, 10 tables Phase 2
 **Tables:** 15 (5 Phase 1 · 10 Phase 2)
 
-> **Phase 1 tables** (built with Phase 1 release): `skill_categories`, `skills`, `job_skill_requirements`, `employee_skills`, `skill_validation_requests`
+> **Phase 1 tables** (built with Phase 1 release): `skill_categories`, `skills`, `position_skill_requirements`, `employee_skills`, `skill_validation_requests`
 > **Phase 2 tables** (deferred — LMS, courses, assessments, development plans): all others
 
 ---
@@ -144,19 +144,19 @@
 
 ---
 
-## `job_skill_requirements`
+## `position_skill_requirements`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK → tenants |
-| `job_family_id` | `uuid` | FK → job_families |
+| `position_id` | `uuid` | FK -> positions |
 | `skill_id` | `uuid` | FK → skills |
 | `min_proficiency` | `integer` | Minimum required level (1–5) |
 | `is_mandatory` | `boolean` |  |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `job_family_id` → [[database/schemas/org-structure#`job_families`|job_families]], `skill_id` → [[#`skills`|skills]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `position_id` -> [[database/schemas/org-structure#`positions`|positions]], `skill_id` -> [[#`skills`|skills]]
 
 ---
 

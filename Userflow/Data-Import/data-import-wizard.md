@@ -93,7 +93,7 @@ Customer-facing CSV templates use business names, not technical codes. If a name
 - **Backend:** Creates `migration_runs` or `peoplehr_migration_runs` with `Pending` status and enqueues the background import job.
 - **UI:** Progress screen begins polling `GET /api/v1/migration/runs/{id}/progress`.
 - **PeopleHR:** First confirmation runs as `DryRun`; commit is enabled only after blocking validation errors are resolved or explicitly skipped where allowed.
-- **Customer copy:** Label dry-run as "Preview import" and commit as "Import now". CSV/Excel confirmation shows access impact from position-linked roles/permissions before import.
+- **Customer copy:** Label dry-run as "Preview import" and commit as "Import now". CSV/Excel confirmation shows generated position-template access only to users with `roles:manage` or `access:approve`; other users see only whether access approval is required.
 
 ### Step 7: Reconcile Imported Records
 
@@ -157,7 +157,7 @@ The wizard must not expose the full technical migration model to customers. Cust
 | Module | Impact |
 |:-------|:-------|
 | Core HR | Creates employee records and profile data. |
-| Org Structure | Resolves legal entities, departments, positions, and position-linked access. |
+| Org Structure | Resolves legal entities, departments, positions, and position access templates. |
 | Leave | Imports leave balances, leave requests, absence, sickness, maternity, and paternity where mapped. |
 | Payroll | Imports salary, payroll identifiers, compensation history, and benefits where mapped. |
 | Workforce Presence / Time | Imports work patterns, timesheets, lateness, and attendance-like records where mapped. |
@@ -184,5 +184,4 @@ The wizard must not expose the full technical migration model to customers. Cust
 - [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]]
 - [[modules/core-hr/overview|Core HR]]
 - [[modules/org-structure/overview|Org Structure]]
-
 

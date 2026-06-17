@@ -84,64 +84,6 @@
 
 ---
 
-## `job_families`
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK â†’ tenants |
-| `name` | `varchar(100)` | e.g., "Engineering", "Sales" |
-| `description` | `varchar(500)` |  |
-| `created_at` | `timestamptz` |  |
-
-**Foreign Keys:** `tenant_id` â†’ [[database/schemas/infrastructure#`tenants`|tenants]]
-
----
-
-## `job_levels`
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK â†’ tenants |
-| `job_family_id` | `uuid` | FK â†’ job_families |
-| `name` | `varchar(50)` | e.g., "Junior", "Senior", "Lead", "Director" |
-| `rank` | `int` | Numeric ordering â€” unique per job family |
-| `salary_minimum` | `decimal(14,2)` | Nullable â€” indicative band minimum in tenant currency |
-| `salary_maximum` | `decimal(14,2)` | Nullable â€” indicative band maximum in tenant currency |
-| `suggested_role_id` | `uuid` | Nullable FK to roles - suggested assignment only; never auto-assigned to employees |
-| `pending_role_template_id` | `uuid` | Nullable FK to role_templates - pending suggested role template; cleared and `suggested_role_id` is set when the template is later applied |
-| `created_at` | `timestamptz` |  |
-
-**Foreign Keys:** `tenant_id` â†’ [[database/schemas/infrastructure#`tenants`|tenants]], `job_family_id` â†’ [[#`job_families`|job_families]], `suggested_role_id` â†’ [[database/schemas/auth#`roles`|roles]], `pending_role_template_id` â†’ [[database/schemas/auth#`role_templates`|role_templates]]
-
-**Unique constraint:** `(job_family_id, rank)` â€” rank must be unique within a family.
-
-**Suggested role prefill rule:** When a Job Family template is applied and a level references a `role_template_id`:
-- If that role template has already been applied to this tenant (`roles.source_template_id = role_template_id`): `suggested_role_id` is set immediately, `pending_role_template_id` stays null.
-- If the role template has not been applied yet: `pending_role_template_id` is set, `suggested_role_id` stays null.
-- When the role template is later applied, the system scans all `job_levels` for this tenant where `pending_role_template_id` matches, sets `suggested_role_id`, and clears `pending_role_template_id`.
-- `suggested_role_id` only pre-fills onboarding, promotion, or transfer screens. It must not auto-assign security roles, team roles, workspace membership, or project membership.
-- Employees at a level with no `suggested_role_id` require manual role selection when a role is needed.
-
----
-
-## `job_titles`
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK â†’ tenants |
-| `name` | `varchar(100)` | e.g., "Software Engineer" |
-| `job_family_id` | `uuid` | FK â†’ job_families |
-| `job_level_id` | `uuid` | FK â†’ job_levels |
-| `is_active` | `boolean` |  |
-| `created_at` | `timestamptz` |  |
-
-**Foreign Keys:** `tenant_id` â†’ [[database/schemas/infrastructure#`tenants`|tenants]], `job_family_id` â†’ [[#`job_families`|job_families]], `job_level_id` â†’ [[#`job_levels`|job_levels]]
-
----
-
 ## `positions`
 
 First-class org seats used to define reporting hierarchy. Positions are legal-entity-scoped. Position hierarchy is the source of truth for reporting; employees do not store a manager reference.
@@ -163,7 +105,7 @@ First-class org seats used to define reporting hierarchy. Positions are legal-en
 
 **Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `legal_entity_id` -> [[#`legal_entities`|legal_entities]], `department_id` -> [[#`departments`|departments]], `reports_to_position_id` -> [[#`positions`|positions]]
 
-**Phase 1 setup fields:** Position Name, active Legal Entity Context, Department, Position Type, Capacity / Max Occupancy, Reports To Position, Linked Roles/Permissions. Legal entity is selected as the Org Structure working context before creation and is not an editable Create Position field. Job Title, Job Family, Job Level, Location, and Cost Center are not required in Phase 1 position setup.
+**Phase 1 setup fields:** Position Name, active Legal Entity Context, Department, Position Type, Capacity / Max Occupancy, Reports To Position, and optional Position Access Templates. Legal entity is selected as the Org Structure working context before creation and is not an editable Create Position field. Job title, job family, and job level catalogs are not part of the Phase 1 org model.
 
 **Position reporting rules:**
 - `unique` positions must have `max_occupancy = 1`.
@@ -174,6 +116,38 @@ First-class org seats used to define reporting hierarchy. Positions are legal-en
 - Position hierarchy updates must reject circular reporting chains.
 - Inactive positions cannot be selected as reporting targets.
 - `reports_to_position_id` is the current reporting snapshot only. Historical reporting changes are stored in `position_reporting_history`.
+
+---
+
+## `position_access_templates`
+
+Position-defined access templates used to generate scoped `user_roles` grants or access approval requests when an employee is onboarded, assigned, transferred, or promoted into a position. The template itself is not an active permission grant.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `position_id` | `uuid` | FK -> positions |
+| `role_id` | `uuid` | FK -> roles |
+| `scope_type` | `varchar(30)` | `Organization`, `Department`, `DepartmentTree`, `Team`, `Own`, `DirectReports`, or `ReportingTree` |
+| `scope_id` | `uuid` | Nullable. Department/team id when scope needs a boundary; null for `Organization`, `Own`, `DirectReports`, and `ReportingTree` |
+| `requires_approval` | `boolean` | True for sensitive or broad grants that must be confirmed by access authority |
+| `is_sensitive` | `boolean` | Marks templates that expose sensitive HR, payroll, security, or broad employee data |
+| `effective_from_rule` | `varchar(30)` | `assignment_effective_from` or explicit date rule |
+| `effective_to_rule` | `varchar(30)` | Nullable. Usually `assignment_effective_to` |
+| `is_active` | `boolean` | Inactive templates are ignored for future assignments |
+| `created_by` | `uuid` | FK -> users |
+| `created_at` | `timestamptz` |  |
+| `updated_at` | `timestamptz` | nullable |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `position_id` -> [[#`positions`|positions]], `role_id` -> [[database/schemas/auth#`roles`|roles]], `created_by` -> [[database/schemas/infrastructure#`users`|users]]
+
+**Rules:**
+- Creating or editing templates requires `roles:manage` or `access:approve`.
+- For HR positions, `scope_id` is the coverage department, not necessarily `positions.department_id`.
+- If `requires_approval = true` and the employee movement actor lacks `roles:manage` or `access:approve`, the backend creates an `access_grant_requests` record instead of activating the grant.
+- Approval routing uses the target position's department.
+- Pooled position template edits affect all current and future occupants unless the authorized user chooses an employee-specific grant/override during assignment.
 
 ---
 

@@ -235,16 +235,18 @@ Developer Platform starter role definitions. Templates are global/operator-manag
 | `user_id` | `uuid` | FK → users |
 | `permission_id` | `uuid` | FK → permissions |
 | `grant_type` | `varchar(10)` | `grant` or `revoke` |
-| `scope_type` | `varchar(30)` | Nullable. `Organization`, `Department`, `Team`, `Own`, or `DirectReports` |
-| `scope_id` | `uuid` | Nullable. Department/team id when scope needs a boundary; null for `Organization`, `Own`, and `DirectReports` |
+| `scope_type` | `varchar(30)` | Nullable. `Organization`, `Department`, `DepartmentTree`, `Team`, `Own`, `DirectReports`, or `ReportingTree` |
+| `scope_id` | `uuid` | Nullable. Department/team id when scope needs a boundary; null for `Organization`, `Own`, `DirectReports`, and `ReportingTree` |
 | `reason` | `varchar(255)` | Why this override exists |
+| `valid_from` | `timestamptz` | Nullable |
+| `expires_at` | `timestamptz` | Nullable |
 | `granted_by` | `uuid` | FK → users (Super Admin who set this) |
 | `created_at` | `timestamptz` |  |
 | UNIQUE: `(tenant_id, user_id, permission_id)` | | |
 
 **Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` → [[database/schemas/infrastructure#`users`|users]], `permission_id` → [[#`permissions`|permissions]], `granted_by` → [[database/schemas/infrastructure#`users`|users]]
 
-**Scope rule:** Scoped overrides may narrow or explicitly grant an employee-data permission at a boundary. If `scope_type` is `Department` or `Team`, `scope_id` is required. If `scope_type` is `Organization`, `Own`, or `DirectReports`, `scope_id` must be null.
+**Scope rule:** Scoped overrides may narrow or explicitly grant an employee-data permission at a boundary. If `scope_type` is `Department`, `DepartmentTree`, or `Team`, `scope_id` is required. If `scope_type` is `Organization`, `Own`, `DirectReports`, or `ReportingTree`, `scope_id` must be null.
 
 ---
 
@@ -256,16 +258,57 @@ Developer Platform starter role definitions. Templates are global/operator-manag
 | `tenant_id` | `uuid` | FK -> tenants |
 | `user_id` | `uuid` | FK -> users |
 | `role_id` | `uuid` | FK -> roles |
-| `scope_type` | `varchar(30)` | `Organization`, `Department`, `Team`, `Own`, or `DirectReports` |
-| `scope_id` | `uuid` | Nullable. Department/team id when scope needs a boundary; null for `Organization`, `Own`, and `DirectReports` |
+| `scope_type` | `varchar(30)` | `Organization`, `Department`, `DepartmentTree`, `Team`, `Own`, `DirectReports`, or `ReportingTree` |
+| `scope_id` | `uuid` | Nullable. Department/team id when scope needs a boundary; null for `Organization`, `Own`, `DirectReports`, and `ReportingTree` |
+| `source_type` | `varchar(30)` | `Manual`, `PositionTemplate`, or `EmployeeOverride` |
+| `source_position_id` | `uuid` | Nullable FK -> positions when generated from a position |
+| `source_position_access_template_id` | `uuid` | Nullable FK -> position_access_templates |
+| `effective_from` | `timestamptz` | Nullable; defaults to immediate when null |
+| `effective_to` | `timestamptz` | Nullable |
+| `status` | `varchar(20)` | `Active`, `Scheduled`, `PendingApproval`, `Expired`, or `Revoked` |
 | `assigned_at` | `timestamptz` |  |
 | `assigned_by` | `uuid` | FK -> users (who granted this) |
-| `expires_at` | `timestamptz` | Nullable; set for time-bound role grants |
-| UNIQUE: `(tenant_id, user_id, role_id, scope_type, scope_id)` | | |
+| `approved_by` | `uuid` | Nullable FK -> users |
+| `expires_at` | `timestamptz` | Deprecated compatibility alias; use `effective_to` for time-bound role grants |
+| UNIQUE: `(tenant_id, user_id, role_id, scope_type, scope_id)` | | Must use `NULLS NOT DISTINCT` or an equivalent normalized/partial unique index so null `scope_id` values cannot create duplicate grants |
 
-**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` -> [[database/schemas/infrastructure#`users`|users]], `role_id` -> [[#`roles`|roles]], `assigned_by` -> [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` -> [[database/schemas/infrastructure#`users`|users]], `role_id` -> [[#`roles`|roles]], `assigned_by` -> [[database/schemas/infrastructure#`users`|users]], `approved_by` -> [[database/schemas/infrastructure#`users`|users]], `source_position_id` -> [[database/schemas/org-structure#`positions`|positions]], `source_position_access_template_id` -> [[database/schemas/org-structure#`position_access_templates`|position_access_templates]]
 
-**Scope rule:** Scope belongs to the role assignment, not the permission. The same security role can be assigned to different users at organization, department, team, own-record, or direct-report scope.
+**Source rule:** Position access templates generate real `user_roles` rows. The generated row is the active grant after confirmation or approval; the position template itself is never treated as an active permission grant.
+
+---
+
+## `access_grant_requests`
+
+Approval records for sensitive position-template access generated during onboarding, transfer, promotion, or position assignment when the actor does not have `roles:manage` or `access:approve`.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `user_id` | `uuid` | FK -> users who will receive the grant |
+| `action_type` | `varchar(30)` | `Onboarding`, `Transfer`, `Promotion`, or `PositionAssignment` |
+| `target_position_id` | `uuid` | FK -> positions |
+| `target_department_id` | `uuid` | FK -> departments; used for approver routing |
+| `position_access_template_id` | `uuid` | FK -> position_access_templates |
+| `requested_role_id` | `uuid` | FK -> roles |
+| `requested_scope_type` | `varchar(30)` | Requested grant scope |
+| `requested_scope_id` | `uuid` | Nullable requested grant boundary |
+| `approval_status` | `varchar(20)` | `Pending`, `Approved`, `Rejected`, or `Cancelled` |
+| `requested_by` | `uuid` | FK -> users |
+| `approved_by` | `uuid` | Nullable FK -> users |
+| `requested_at` | `timestamptz` |  |
+| `decided_at` | `timestamptz` | Nullable |
+| `effective_from` | `timestamptz` | Grant effective start after approval |
+| `effective_to` | `timestamptz` | Nullable grant end |
+| `decision_comment` | `varchar(500)` | Nullable |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` -> [[database/schemas/core-hr#`employees`|employees]], `user_id` -> [[database/schemas/infrastructure#`users`|users]], `target_position_id` -> [[database/schemas/org-structure#`positions`|positions]], `target_department_id` -> [[database/schemas/org-structure#`departments`|departments]], `position_access_template_id` -> [[database/schemas/org-structure#`position_access_templates`|position_access_templates]], `requested_role_id` -> [[#`roles`|roles]], `requested_by` -> [[database/schemas/infrastructure#`users`|users]], `approved_by` -> [[database/schemas/infrastructure#`users`|users]]
+
+**Routing rule:** Approver resolution uses `target_department_id`: first users with `roles:manage` or `access:approve` whose own scope covers the target department, then tenant-wide users with that authority, then Tenant Admin. If multiple approvers match, all are notified and the first approval wins.
+
+**Scope rule:** Scope belongs to the role assignment or scoped override, not the permission. The same security role can be assigned to different users at `Organization`, `Department`, `DepartmentTree`, `Team`, `Own`, `DirectReports`, or `ReportingTree` scope.
 
 ---
 

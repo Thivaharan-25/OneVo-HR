@@ -91,7 +91,6 @@ Country/level-specific with versioning via `superseded_by_id`.
 | `tenant_id` | `uuid` | FK → tenants |
 | `leave_type_id` | `uuid` | FK → leave_types |
 | `country_id` | `uuid` | FK → countries (nullable — global) |
-| `job_level_id` | `uuid` | FK → job_levels (nullable — all levels) |
 | `annual_entitlement_days` | `decimal(5,1)` | |
 | `carry_forward_max_days` | `decimal(5,1)` | |
 | `carry_forward_expiry_months` | `int` | |

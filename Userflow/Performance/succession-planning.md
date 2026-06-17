@@ -9,7 +9,7 @@
 
 ## Preconditions
 
-- Critical roles identified in org structure → [[Userflow/Org-Structure/job-family-setup|Job Family Setup]]
+- Critical positions identified in org structure -> [[Userflow/Org-Structure/position-setup|Position Setup]]
 - Employees have performance reviews and skill assessments → [[Userflow/Performance/manager-review|Manager Review]], [[Userflow/Skills-Learning/skill-assessment|Skill Assessment]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 

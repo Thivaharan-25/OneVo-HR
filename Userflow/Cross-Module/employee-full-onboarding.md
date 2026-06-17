@@ -13,7 +13,7 @@ When a new employee is onboarded, the action doesn't stop at creating a profile.
 
 ## Preconditions
 
-- Department and job family exist → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]], [[Userflow/Org-Structure/job-family-setup|Job Family Setup]]
+- Department and target position exist -> [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]], [[Userflow/Org-Structure/position-setup|Position Setup]]
 - Leave policies configured for employee's country/entity → [[Userflow/Leave/leave-policy-setup|Leave Policy Setup]]
 - Shift schedules defined → [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
 - Payroll provider configured → [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]

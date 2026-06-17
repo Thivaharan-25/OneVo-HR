@@ -20,7 +20,7 @@ The **central hub** of ONEVO. Manages employee profiles, lifecycle events (onboa
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext`, `IUserService`, `IFileService` | Multi-tenancy, user linking, avatar uploads |
-| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Department, job title, team context |
+| **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Department, position, team context |
 | **Consumed by** | [[modules/leave/overview\|Leave]] | `IEmployeeService` | Employee context for leave |
 | **Consumed by** | [[modules/payroll/overview\|Payroll]] | `IEmployeeService` | Employee salary, bank details |
 | **Consumed by** | [[database/performance\|Performance]] | `IEmployeeService` | Employee context for reviews |
@@ -91,9 +91,6 @@ Central hub entity. Linked 1:1 to `users` via `user_id`.
 | `gender` | `varchar(10)` | |
 | `nationality_id` | `uuid` | FK â†’ countries |
 | `department_id` | `uuid` | FK â†’ departments, nullable |
-| `job_title_id` | `uuid` | FK â†’ job_titles, nullable |
-| `job_family_id` | `uuid` | FK â†’ job families, nullable |
-| `job_level_id` | `uuid` | FK â†’ job levels, nullable |
 | `legal_entity_id` | `uuid` | FK â†’ legal_entities |
 | `employment_type` | `varchar(20)` | `full_time`, `part_time`, `contract`, `intern` |
 | `employment_status` | `varchar(20)` | `active`, `on_leave`, `suspended`, `terminated`, `resigned` |
@@ -110,7 +107,7 @@ Central hub entity. Linked 1:1 to `users` via `user_id`.
 
 ### `employee_assignment_history`
 
-Effective-dated assignment snapshot for department, position, job family, job level, and job title changes. Reporting history is resolved from `position_assignments` and position hierarchy by date.
+Effective-dated assignment snapshot for department and position changes. Reporting history is resolved from `position_assignments` and position hierarchy by date.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -119,9 +116,6 @@ Effective-dated assignment snapshot for department, position, job family, job le
 | `employee_id` | `uuid` | FK -> employees |
 | `department_id` | `uuid` | FK -> departments, nullable |
 | `position_id` | `uuid` | FK -> positions, nullable |
-| `job_family_id` | `uuid` | FK -> job_families, nullable |
-| `job_level_id` | `uuid` | FK -> job_levels, nullable |
-| `job_title_id` | `uuid` | FK -> job_titles, nullable |
 | `effective_from` | `date` | Start date |
 | `effective_to` | `date` | nullable; null means current open assignment |
 
@@ -138,12 +132,6 @@ Workflow/request record for employee position or assignment transfer. Approved t
 | `to_department_id` | `uuid` | nullable |
 | `from_position_id` | `uuid` | nullable |
 | `to_position_id` | `uuid` | nullable |
-| `from_job_family_id` | `uuid` | nullable |
-| `to_job_family_id` | `uuid` | nullable |
-| `from_job_level_id` | `uuid` | nullable |
-| `to_job_level_id` | `uuid` | nullable |
-| `from_job_title_id` | `uuid` | nullable |
-| `to_job_title_id` | `uuid` | nullable |
 | `effective_date` | `date` | When approved transfer becomes active |
 | `status` | `varchar(30)` | `Pending`, `Approved`, `Rejected`, `Cancelled`, `Applied` |
 | `reason` | `varchar(500)` | Business reason |

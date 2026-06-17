@@ -172,9 +172,6 @@
 | `gender` | `varchar(10)` |  |
 | `nationality_id` | `uuid` | FK â†’ countries |
 | `department_id` | `uuid` | FK -> departments, nullable; current profile snapshot derived from active position when available |
-| `job_title_id` | `uuid` | FK -> job_titles, nullable; current profile snapshot derived from active position when available |
-| `job_family_id` | `uuid` | FK -> job_families, nullable; current profile snapshot derived from active position when available |
-| `job_level_id` | `uuid` | FK -> job_levels, nullable; current profile snapshot derived from active position when available |
 | `legal_entity_id` | `uuid` | FK â†’ legal_entities |
 | `employment_type` | `varchar(20)` | `full_time`, `part_time`, `contract`, `intern` |
 | `employment_status` | `varchar(20)` | `active`, `on_leave`, `suspended`, `terminated`, `resigned` |
@@ -187,12 +184,12 @@
 | `updated_at` | `timestamptz` |  |
 | `is_deleted` | `boolean` | Soft delete |
 
-**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` -> [[database/schemas/infrastructure#`users`|users]], `nationality_id` -> [[database/schemas/infrastructure#`countries`|countries]], `department_id` -> [[database/schemas/org-structure#`departments`|departments]], `job_family_id` -> [[database/schemas/org-structure#`job_families`|job_families]], `job_level_id` -> [[database/schemas/org-structure#`job_levels`|job_levels]], `job_title_id` -> [[database/schemas/org-structure#`job_titles`|job_titles]], `legal_entity_id` -> [[database/schemas/org-structure#`legal_entities`|legal_entities]], `avatar_file_id` -> [[database/schemas/infrastructure#`file_records`|file_records]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `user_id` -> [[database/schemas/infrastructure#`users`|users]], `nationality_id` -> [[database/schemas/infrastructure#`countries`|countries]], `department_id` -> [[database/schemas/org-structure#`departments`|departments]], `legal_entity_id` -> [[database/schemas/org-structure#`legal_entities`|legal_entities]], `avatar_file_id` -> [[database/schemas/infrastructure#`file_records`|file_records]]
 ---
 
 ## `employee_assignment_history`
 
-Effective-dated assignment history for department and job hierarchy snapshots. Reporting history is resolved from `position_assignments` and the position hierarchy, not from an employee-level manager field.
+Effective-dated assignment history for department and position snapshots. Reporting history is resolved from `position_assignments` and the position hierarchy, not from an employee-level manager field.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -201,9 +198,6 @@ Effective-dated assignment history for department and job hierarchy snapshots. R
 | `employee_id` | `uuid` | FK -> employees |
 | `department_id` | `uuid` | FK -> departments, nullable |
 | `position_id` | `uuid` | FK -> positions, nullable |
-| `job_family_id` | `uuid` | FK -> job_families, nullable |
-| `job_level_id` | `uuid` | FK -> job_levels, nullable |
-| `job_title_id` | `uuid` | FK -> job_titles, nullable |
 | `effective_from` | `date` | Start date for this assignment |
 | `effective_to` | `date` | Nullable. Null means current open assignment |
 
@@ -222,12 +216,6 @@ Workflow/request record for employee transfer. Approved transfers update current
 | `to_department_id` | `uuid` | nullable |
 | `from_position_id` | `uuid` | nullable |
 | `to_position_id` | `uuid` | nullable |
-| `from_job_family_id` | `uuid` | nullable |
-| `to_job_family_id` | `uuid` | nullable |
-| `from_job_level_id` | `uuid` | nullable |
-| `to_job_level_id` | `uuid` | nullable |
-| `from_job_title_id` | `uuid` | nullable |
-| `to_job_title_id` | `uuid` | nullable |
 | `effective_date` | `date` | When approved transfer becomes active |
 | `status` | `varchar(30)` | `Pending`, `Approved`, `Rejected`, `Cancelled`, `Applied` |
 | `reason` | `varchar(500)` | Business reason |

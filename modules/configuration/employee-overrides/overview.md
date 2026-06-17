@@ -45,7 +45,7 @@ effectivePolicy.ActivityMonitoring =
 Resolution order for every monitoring feature:
 
 1. Tenant default from `monitoring_feature_toggles`.
-2. Scope override from `monitoring_policy_overrides` (`role`, `job_family`, `department`, `team`).
+2. Scope override from `monitoring_policy_overrides` (`role`, `position`, `department`, `team`).
 3. Employee override from `employee_monitoring_overrides`.
 4. Consent/disclosure gate. Missing required WorkPulse notice or consent disables only the affected desktop collection category.
 5. Workforce Presence lifecycle gate. No collection during breaks or after clock-out.

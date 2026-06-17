@@ -52,7 +52,7 @@ Plus an **IDE Extension** — a full chat sidebar and tag-based automation surfa
 | 1 | **Infrastructure** | Multi-tenancy, file management, reference data | [[modules/infrastructure/overview\|Infrastructure]] |
 | 2 | **Auth** | Login, MFA, JWT, hybrid permission model, temporary-password forced-change flow | [[modules/auth/overview\|Auth]] |
 | 3 | **Core HR** | Employee profiles, lifecycle events, HR-managed credential creation | [[modules/core-hr/overview\|Core HR]] |
-| 4 | **Org Structure** | Departments, teams, job titles, team roles, permission stacking | [[modules/org-structure/overview\|Org Structure]] |
+| 4 | **Org Structure** | Legal entities, departments, positions, teams, team roles, permission stacking | [[modules/org-structure/overview\|Org Structure]] |
 | 5 | **Shared Platform** | SSO, workflow engine, approval routing, subscription plans, entitlements | [[modules/shared-platform/overview\|Shared Platform]] |
 | 6 | **Agent Gateway** | Desktop agent communication, policy distribution, remote commands, agent install jobs | [[modules/agent-gateway/overview\|Agent Gateway]] |
 | 7 | **Configuration** | Monitoring toggles, app allowlist (tenant→role→employee), retention policies | [[modules/configuration/overview\|Configuration]] |
@@ -126,7 +126,7 @@ Users type `@entity:action params` in the chat sidebar or in code comments/commi
 |:----------------------|:--------|
 | `skill_categories` | Taxonomy root |
 | `skills` | Individual skill records |
-| `job_skill_requirements` | Required skills per job title |
+| `position_skill_requirements` | Required skills per position |
 | `employee_skills` | Employee skill proficiency |
 | `skill_validation_requests` | Peer/manager validation requests |
 
@@ -156,7 +156,7 @@ The remaining 10 Skills tables (courses, LMS, assessments, dev plans, certificat
 Week 1 (Foundation — all 8 devs in parallel):
   DEV1: Infrastructure (tenants, users, file storage, primary legal entity seeding)
   DEV2: Auth & Security (roles, permissions, sessions, JWT, temporary-password fields on users)
-  DEV3: Org Structure (departments, teams, job_titles, team_roles, team_role_permissions)
+  DEV3: Org Structure (legal_entities, departments, positions, team_roles, team_role_permissions)
   DEV4: Shared Platform + Agent Gateway (subscriptions, entitlements, agent_install_entitlements)
   DEV5: WorkSync Foundation (workspaces, workspace_members, workspace_roles)
   DEV6: Task foundation (tasks, task_assignments — depends on DEV5 workspaces + DEV3 legal_entities)

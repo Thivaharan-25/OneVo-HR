@@ -14,7 +14,7 @@ POST /api/v1/performance/succession-plans
   -> SuccessionController.Create(CreateSuccessionPlanCommand)
     -> [RequirePermission("performance:manage")]
     -> SuccessionService.CreateAsync(command, ct)
-      -> 1. Validate position (job_title) exists
+      -> 1. Validate position exists
       -> 2. Validate current holder and successor are active employees
       -> 3. Assess readiness: ready_now, 1_year, 2_years, not_ready
       -> 4. INSERT into succession_plans

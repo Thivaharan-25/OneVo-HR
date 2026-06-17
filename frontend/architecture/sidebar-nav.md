@@ -27,9 +27,8 @@ Primary sections:
 | Legal Entities | `/org/legal-entities` | `org:manage` | Single-company / multi-company setup |
 | Departments | `/org/departments` | `org:manage` | Legal-entity-scoped departments |
 | Teams | `/org/teams` | `org:manage` | Team setup |
-| Job Titles | `/org/job-titles` | `org:manage` | Shared job title catalog |
 | Positions | `/org/positions` | `org:manage` | Legal-entity-scoped positions, reporting structure, capacity |
-| Roles & Permissions | `/access/roles` | `roles:manage` | Tenant roles, permission templates, position-linked access |
+| Roles & Permissions | `/access/roles` | `roles:manage` | Tenant roles, permission templates, position access templates |
 | Policies | `/policies` | `settings:read` | Leave, attendance, overtime, monitoring/privacy policies |
 | Workflows | `/workflows` | `workflows:manage` | Approval and escalation rules |
 | Employee Import | `/people/import` | `employees:write` | CSV/Excel/PeopleHR import and initial employee onboarding |
