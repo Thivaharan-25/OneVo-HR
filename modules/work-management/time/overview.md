@@ -20,7 +20,7 @@ Like other HR-aware Work Management tables, time records must carry an employee 
 
 ### `time_logs`
 
-Key columns: `task_id` (FK -> tasks), `user_id`, `employee_id`, `workspace_id`, `tenant_id`, `logged_date`, `duration_minutes`, `description`, `source` (`manual`, `timer`, `ide_tag`), `timesheet_entry_id` (FK -> timesheet_entries, nullable).
+Key columns: `task_id` (FK -> tasks), `user_id`, `employee_id`, `workspace_id`, `tenant_id`, `logged_date`, `duration_minutes`, `description`, `source` (Phase 1: `manual`, `timer`; Phase 2 adds `ide_tag`), `timesheet_entry_id` (FK -> timesheet_entries, nullable).
 
 `employee_id` is resolved from `employees.user_id` at write time. Do not rely on application-only joins for payroll, department, or employment-status reporting.
 
@@ -37,7 +37,7 @@ Individual day entries within a timesheet. Key columns: `timesheet_id`, `logged_
 ## Key Business Rules
 
 1. Only one active timer per user at a time: `time_logs` row with `ended_at = null`. Application layer enforces uniqueness.
-2. IDE tag `@time:log 2h` creates a `time_logs` row with `source = ide_tag`.
+2. Phase 2 IDE tag `@time:log 2h` creates a `time_logs` row with `source = ide_tag`.
 3. `time_logs` feed `wms_daily_time_logs` in the Discrepancy Engine; Hangfire aggregates daily.
 4. `overtime_records.task_id` (nullable) references `tasks.id` for overtime-to-task correlation.
 5. Timesheet submission locks entries; no changes allowed after `status = submitted`.

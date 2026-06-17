@@ -128,18 +128,18 @@ One row per message that the AI processes. Only created when tenant has `premium
 
 ## `ai_action_jobs` — Phase 1
 
-Universal undo state machine for all AI-triggered and IDE-tag-triggered reversible creates.
+Universal undo state machine for AI-triggered reversible creates in Phase 1. IDE tag-triggered reversible creates are Phase 2.
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
 | `detection_id` | uuid | FK → premium_ai_detections, nullable |
-| `tag_execution_id` | uuid | FK → ide_tag_executions, nullable |
+| `tag_execution_id` | uuid | Phase 2 FK -> ide_tag_executions, nullable |
 | `user_id` | uuid | FK → users |
 | `tenant_id` | uuid | FK → tenants |
-| `channel_id` | uuid | FK -> channels, nullable for IDE tag actions |
+| `channel_id` | uuid | FK -> channels, nullable for non-channel actions |
 | `source_message_id` | uuid | FK -> messages, nullable |
-| `source` | varchar(30) | `onevo_chat`, `microsoft_teams`, `ide_tag`, `system` |
+| `source` | varchar(30) | Phase 1: `onevo_chat`, `microsoft_teams`, `system`; Phase 2 adds `ide_tag` |
 | `action_type` | varchar(50) | auto_create_task / auto_create_reminder / auto_update_status |
 | `action_params` | jsonb | Params used to create the entity |
 | `status` | varchar(20) | pending / finalized / undone / failed |

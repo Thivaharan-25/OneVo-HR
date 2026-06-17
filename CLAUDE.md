@@ -12,7 +12,7 @@ The only runnable code here is the `OneVo/` folder — a Vite + React frontend p
 - **HR Management** — employee lifecycle, leave, performance, payroll, skills
 - **Workforce Intelligence** — activity monitoring, presence, identity verification, exception engine, productivity analytics
 - **WorkSync** — projects, tasks, sprints, OKR, chat, documents, roadmaps, GitHub integration (internal modules, NOT a separate system)
-- **IDE Extension** — VS Code sidebar with tag-based automation for all OneVo actions a user has permission for
+- **IDE Extension (Phase 2)** — VS Code sidebar with tag-based automation for all OneVo actions a user has permission for
 
 Platform shape: `OneVo frontend → OneVo unified backend → single PostgreSQL database`. No bridge APIs.
 

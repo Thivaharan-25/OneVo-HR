@@ -21,7 +21,7 @@ The Developer Platform frontend is an Angular 21 application with a flat Super A
 | Compliance Center | `/security/compliance` |
 | Reports / Analytics | `/reports-analytics` |
 | System Config | `/settings/system` |
-| Operations | `/operations` |
+| Operations | `/operations` (Phase 2) |
 | App Catalog | `/settings/app-catalog` |
 
 Permission categories are shown inside the Platform Roles permission matrix only; they are not a separate sidebar item.
@@ -133,5 +133,5 @@ Components must not check role names. They must use `PermissionService` or a sha
 
 ## Phase 2 Note
 
-The `/settings/api-keys`, `/operations/devices`, `/operations/infrastructure`, `/operations/background-jobs`, and `/operations/agent-versions` routes are Phase 2. Keep them hidden in Phase 1 unless the Phase 2 permission contract is implemented.
+The `/operations`, `/settings/api-keys`, `/operations/devices`, `/operations/infrastructure`, `/operations/background-jobs`, and `/operations/agent-versions` routes are Phase 2. Keep them hidden in Phase 1 unless the Phase 2 permission contract is implemented.
 

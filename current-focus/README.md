@@ -19,7 +19,7 @@ Use these files as the active source of truth:
 | Dev 5 | Frontend | [[current-focus/DEV5|DEV5]] (current-focus/DEV5.md) | Main app foundation, auth UI, shared components, standalone Developer Platform console |
 | Dev 6 | Frontend | [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) | HR, leave, calendar, presence, agent management UI |
 | Dev 7 | Frontend | [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md) | WorkSync web UI, projects, tasks, boards, docs, time, analytics |
-| Dev 8 | Frontend | [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) | VS Code IDE extension |
+| Dev 8 | Frontend | [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) | Phase 2 VS Code IDE extension |
 
 Only these eight developer files are active in this folder. Supporting architecture, schema, module, and userflow references live outside `current-focus`.
 
@@ -46,11 +46,11 @@ If a dependency is missing, build the smallest mock or contract stub needed for 
 ## Ownership Rules
 
 - Backend Devs 1-4 own server code, database schema, permissions, SignalR contracts, background jobs, and the Windows monitoring agent.
-- Frontend Devs 5-8 own web UI and the VS Code IDE extension.
+- Frontend Devs 5-8 own web UI and the Phase 2 VS Code IDE extension.
 - Dev 4 owns the monitoring agent lifecycle: installer, TrayApp enrollment, device credential, policy, telemetry, health, ingestion, and rollout rings.
-- Dev 8 owns the IDE extension UX. The extension can request an agent install job, but backend entitlement and the monitoring agent own enrollment.
-- Authorization is always backend-enforced. Frontend and IDE clients only hide/show actions based on backend responses.
-- Every IDE tag execution attempt must be logged server-side.
+- Dev 8 owns the Phase 2 IDE extension UX. The extension can request an agent install job, but backend entitlement and the monitoring agent own enrollment.
+- Authorization is always backend-enforced. Frontend and Phase 2 IDE clients only hide/show actions based on backend responses.
+- Every Phase 2 IDE tag execution attempt must be logged server-side.
 
 ---
 
@@ -216,10 +216,10 @@ This matrix is the coverage check. If ADE is asked to build an unfinished task, 
 | WorkSync Foundation, Projects, Tasks, Boards, Planning, OKR, Time, Resources | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
 | WorkSync Chat + Chat AI | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
 | WorkSync Collaboration, Docs/Wiki, Integrations, Analytics | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
-| IDE Extension backend APIs | Dev 3 | Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
+| IDE Extension backend APIs (Phase 2) | Dev 3 | Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
 | Agent Gateway + Windows monitoring agent | Dev 4 | Dev 6, Dev 8 | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
 | Activity Monitoring | Dev 4 | Dev 6 | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
-| Identity Verification + Biometric Device Backend | Dev 4 | Dev 6 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
+| Identity Verification + Biometric Device Backend (Phase 1); management UI is Phase 2 | Dev 4 | Dev 6 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | Exception Engine | Dev 4 | Dev 6 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | Discrepancy Engine | Dev 4 | Dev 6, Dev 7 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md) |
 | Productivity Analytics | Dev 4 | Dev 6, Dev 7 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md) |

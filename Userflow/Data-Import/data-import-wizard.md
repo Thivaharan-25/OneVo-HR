@@ -1,7 +1,7 @@
 ﻿# Data Import Wizard
 
 **Area:** People -> Import  
-**Trigger:** HR admin starts a bulk employee import or PeopleHR full migration  
+**Trigger:** HR admin starts a Phase 1 CSV/Excel bulk employee import  
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `org:manage` for resolving departments/job structure during review
 
@@ -14,15 +14,15 @@
 - Departments exist within each legal entity → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
 - Positions exist within each department → [[Userflow/Org-Structure/position-setup|Position Setup]]
 - Required permissions are assigned → [[Userflow/Auth-Access/permission-assignment|Permission Assignment]]
-- For PeopleHR, the admin has an API key with the selected PeopleHR areas enabled.
 
 > Org structure must exist before running a CSV employee import. The wizard resolves employees into existing legal entities, departments, and positions — it does not create org structure from CSV values.
+> PeopleHR migration is Phase 2 and is not available in the Phase 1 import wizard.
 
 ## Flow Steps
 
 ### Step 1: Choose Import Method
 
-- **UI:** People -> Import -> select CSV, Excel, or PeopleHR.
+- **UI:** People -> Import -> select CSV or Excel.
 - **Backend:** Wizard state stores the selected source.
 - **Module:** [[modules/data-import/overview|DataImport]].
 
@@ -30,17 +30,12 @@
 
 - **CSV/Excel UI:** User uploads file through a drag-drop surface.
 - **API:** `POST /api/v1/migration/upload-url` returns a pre-signed upload URL.
-- **PeopleHR UI:** User enters API credentials in the integration card.
-- **Security:** Credentials are masked and stored through the configured encrypted integration path.
-- **PeopleHR Preflight:** System checks API key access for selected areas before fetching data.
-- **Customer copy:** Show this as "Checking what your API key can access." Do not expose endpoint names, scopes, or adapter details.
 
 ### Step 3: Analyse and Map Fields
 
 - **API:** `POST /api/v1/migration/analyse`.
 - **UI:** Field mapping table shows source columns/fields, sample values, and suggested canonical fields.
 - **User Action:** HR admin accepts suggestions or changes mappings manually.
-- **PeopleHR Result:** Every source field is mapped to a canonical ONEVO field, marked as review-needed, or retained as raw archive. No field is silently discarded.
 - **Customer copy:** Show only mappings that need confirmation. Confident auto-matches stay collapsed under "Matched automatically."
 
 ### Step 4: Resolve Legal Entity, Department, And Position
@@ -90,40 +85,33 @@ Customer-facing CSV templates use business names, not technical codes. If a name
 ### Step 6: Confirm Import
 
 - **API:** `POST /api/v1/migration/bulk-import`.
-- **Backend:** Creates `migration_runs` or `peoplehr_migration_runs` with `Pending` status and enqueues the background import job.
+- **Backend:** Creates `migration_runs` with `Pending` status and enqueues the background import job.
 - **UI:** Progress screen begins polling `GET /api/v1/migration/runs/{id}/progress`.
-- **PeopleHR:** First confirmation runs as `DryRun`; commit is enabled only after blocking validation errors are resolved or explicitly skipped where allowed.
 - **Customer copy:** Label dry-run as "Preview import" and commit as "Import now". CSV/Excel confirmation shows generated position-template access only to users with `roles:manage` or `access:approve`; other users see only whether access approval is required.
 
 ### Step 7: Reconcile Imported Records
 
 - **UI:** Done screen shows success/failed/skipped/raw-archived counts and a 10-15 employee spot-check sample.
-- **Backend:** CSV/Excel records are written to Core HR employee tables; PeopleHR writes approved records to each canonical module after dry-run approval.
+- **Backend:** CSV/Excel records are written to Core HR employee tables.
 - **User Action:** Admin opens sampled profiles for human verification. Imported employees receive email invitations when the admin confirms invite sending.
-- **PeopleHR Audit:** Final report lists selected API areas, detected API access, fetched records, imported records, raw-archived records, skipped records, unresolved mappings, and validation decisions.
 - **Customer copy:** Completion screen focuses on imported data, follow-up items, and safe archive. Full audit details live behind "View audit report".
 
 ## Variations
 
-### PeopleHR Import
+### PeopleHR Import (Phase 2)
 
-- Skips file upload.
-- Uses the configured PeopleHR adapter to fetch raw records.
-- Stages raw records before mapping so source data can be retried or remapped later.
-- Runs API permission preflight before migration and clearly shows unavailable areas.
-- Continues through mapping, grouping, validation, dry-run reconciliation, admin approval, commit, and audit report.
-- Supports `DryRun`, `Commit`, `Rollback`, and `Resume`.
+PeopleHR is not part of Phase 1. It is deferred to [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]] for Phase 2.
 
-PeopleHR import is not limited to employee rows. Full migration scope is defined in [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]] and may include employees, org structure, position reporting hierarchy, salary, leave, absence, timesheets, documents, training, benefits, appraisals, work patterns, and custom screens depending on API key access.
+Phase 2 PeopleHR scope may include employees, org structure, position reporting hierarchy, salary, leave, absence, timesheets, documents, training, benefits, appraisals, work patterns, and custom screens depending on API key access.
 
 ### Customer Simplicity Rule
 
-The wizard must not expose the full technical migration model to customers. Customers see a guided flow: connect PeopleHR, choose data, check access, review only needed matches, preview import, import now, and view summary. Technical details such as raw staging, payload hashes, adapter fetchers, and canonical table names belong in audit/admin detail views only.
+The wizard must not expose technical import internals to customers. Phase 1 customers see a guided CSV/Excel flow: upload file, review only needed matches, preview import, import now, and view summary. Technical details such as raw staging, payload hashes, parser decisions, and canonical table names belong in audit/admin detail views only.
 
 ### Partial Import
 
 - Admin can skip rows with warnings or validation failures.
-- Skipped rows are counted in `migration_runs.skipped_rows` or PeopleHR mapping results.
+- Skipped rows are counted in `migration_runs.skipped_rows`.
 - The completed run keeps enough metadata for audit and follow-up.
 
 ## Error Scenarios
@@ -138,9 +126,9 @@ The wizard must not expose the full technical migration model to customers. Cust
 | Department not in legal entity | Row blocked | "Department does not belong to selected legal entity" |
 | Position not in legal entity | Row blocked | "Position does not belong to selected legal entity" |
 | Position capacity exceeded | Row blocked | "Position has reached its capacity" |
-| PeopleHR unavailable | Source connection fails | "PeopleHR is temporarily unavailable" |
-| PeopleHR API scope missing | Preflight marks selected area unavailable | "API key cannot access Salary. Continue without it or update the key." |
-| PeopleHR field has no ONEVO destination | Record/field is marked raw archive or review-needed | "This field will be retained as raw source data unless mapped." |
+| PeopleHR unavailable | Phase 2 source connection fails | "PeopleHR is temporarily unavailable" |
+| PeopleHR API scope missing | Phase 2 preflight marks selected area unavailable | "API key cannot access Salary. Continue without it or update the key." |
+| PeopleHR field has no ONEVO destination | Phase 2 record/field is marked raw archive or review-needed | "This field will be retained as raw source data unless mapped." |
 | Background job fails | Migration run status becomes `Failed` | Failure summary with retry option |
 
 ## Events Triggered
@@ -148,9 +136,9 @@ The wizard must not expose the full technical migration model to customers. Cust
 - `MigrationRunCreated`
 - `MigrationRunCompleted`
 - `EmployeesImported`
-- `PeopleHrPreflightCompleted`
-- `PeopleHrDryRunCompleted`
-- `PeopleHrMigrationCommitted`
+- Phase 2: `PeopleHrPreflightCompleted`
+- Phase 2: `PeopleHrDryRunCompleted`
+- Phase 2: `PeopleHrMigrationCommitted`
 
 ## Cross-Module Impact
 
@@ -184,4 +172,3 @@ The wizard must not expose the full technical migration model to customers. Cust
 - [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]]
 - [[modules/core-hr/overview|Core HR]]
 - [[modules/org-structure/overview|Org Structure]]
-

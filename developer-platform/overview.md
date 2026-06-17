@@ -80,7 +80,7 @@ Developer Platform modules follow the same KB shape as ONEVO product modules: ea
 | Compliance Center | Compliance exports, legal holds, legal document versions, and legal/privacy acceptance tracking |
 | Reports / Analytics | Cross-tenant operational, commercial, and report exports |
 | System Config | Global system configuration for provider credentials, platform service keys, system settings, email, storage, and agent policy defaults |
-| Operations | Platform health, service/dependency status, alerts, resource utilization, and approved operational actions |
+| Operations | Phase 2 platform health, service/dependency status, alerts, resource utilization, and approved operational actions |
 | App Catalog | Global app catalog, `is_public` toggles, and uncatalogued app bulk-approval |
 
 Permission categories are part of the Platform Roles permission matrix, not a separate sidebar item.

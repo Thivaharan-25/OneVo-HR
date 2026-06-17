@@ -16,7 +16,7 @@ The AI-optimized knowledge base for the ONEVO development team. Single source of
 - **Pillar 1: HR Management** — Employee lifecycle, leave, performance, payroll, skills
 - **Pillar 2: Workforce Intelligence** — Activity monitoring, presence tracking, identity verification, exception detection, productivity analytics
 - **Pillar 3: WorkSync** — Projects, tasks, sprints, OKR, chat, documents, roadmaps, GitHub integration — built as internal modules in the same backend and database as HR
-- **IDE Extension** — Full WorkSync chat sidebar + tag-based automation for every OneVo feature the user has permission to use, embedded in VS Code
+- **IDE Extension (Phase 2)** — Full WorkSync chat sidebar + tag-based automation for every OneVo feature the user has permission to use, embedded in VS Code
 - **~288 database tables** across **38 modules**
 - **.NET 10 / C# 14** backend (Clean Architecture + CQRS, single deployable monolith)
 - **.NET MAUI + Windows Service** desktop monitoring agent (separate solution `ONEVO.Agent.sln`, independent release cycle)
@@ -46,7 +46,7 @@ ONEVO uses Subscription Plans with base modules, optional module add-ons, resour
 | 10 | Project Management | Work Management | Plan-selected module | Full |
 | 11 | Agentic Chat | Work Management | Plan-selected module | Full |
 | 12 | Third Party Integrations | Work Management | Plan-selected module | Full |
-| 13 | IDE Extension | Work Management | Plan-selected module | Full |
+| 13 | IDE Extension | Work Management | Phase 2 plan-selected module | Full |
 
 **Foundation:** Always active for every tenant.  
 **Plan-selected modules:** Classified as base package modules or optional add-ons inside Subscription Plans.

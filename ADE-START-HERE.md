@@ -12,13 +12,13 @@ ONEVO is a **unified multi-tenant SaaS** platform combining three product pillar
 2. **Workforce Intelligence** — Desktop activity monitoring, presence tracking, biometric verification, exception detection, productivity analytics
 3. **WorkSync** — Work management built internally: projects, tasks, sprints, boards, roadmaps, OKR, chat, AI, documents, GitHub integration — all in the same backend and database as HR, no bridge APIs
 
-Plus an **IDE Extension** — a full chat sidebar and tag-based automation surface embedded in VS Code. Developers can trigger any OneVo action they have permission for without leaving their editor, using `@entity:action params` syntax.
+Plus a **Phase 2 IDE Extension** — a full chat sidebar and tag-based automation surface embedded in VS Code. Developers can trigger any OneVo action they have permission for without leaving their editor, using `@entity:action params` syntax.
 
 **Core value propositions:**
 - HR: "Who works here, what is their status, are they compliant?"
 - Workforce Intelligence: "Is this employee present and productive? Any anomalies?"
 - WorkSync: "What is the team building, in what sprint, by when?"
-- IDE Extension: "Every OneVo action, one tag away, inside your editor."
+- IDE Extension (Phase 2): "Every OneVo action, one tag away, inside your editor."
 
 ---
 
@@ -37,7 +37,7 @@ Plus an **IDE Extension** — a full chat sidebar and tag-based automation surfa
 | **Email** | Resend |
 | **Auth** | JWT (RS256) + refresh tokens, MFA (TOTP) |
 | **Search** | PostgreSQL FTS (Phase 1) |
-| **IDE Extension** | VS Code Extension API (TypeScript) |
+| **IDE Extension (Phase 2)** | VS Code Extension API (TypeScript) |
 
 **Architecture:** Clean Architecture + CQRS. Single `ApplicationDbContext` for all 38 modules. No microservices. No bridge APIs. Desktop monitoring agent is a separate solution (`ONEVO.Agent.sln`) with its own release cycle and ring-based deployment — it is not part of the main web deployment.
 
@@ -90,7 +90,7 @@ All WorkSync modules live in the same .NET solution, same `ApplicationDbContext`
 
 ---
 
-## Phase 1 — IDE Extension
+## Phase 2 — IDE Extension
 
 | # | Module | Purpose | Owner | Spec |
 |:--|:-------|:--------|:------|:-----|

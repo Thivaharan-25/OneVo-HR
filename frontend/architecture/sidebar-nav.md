@@ -31,7 +31,7 @@ Primary sections:
 | Roles & Permissions | `/access/roles` | `roles:manage` | Tenant roles, permission templates, position access templates |
 | Policies | `/policies` | `settings:read` | Leave, attendance, overtime, monitoring/privacy policies |
 | Workflows | `/workflows` | `workflows:manage` | Approval and escalation rules |
-| Employee Import | `/people/import` | `employees:write` | CSV/Excel/PeopleHR import and initial employee onboarding |
+| Employee Import | `/people/import` | `employees:write` | CSV/Excel import and initial employee onboarding; PeopleHR is Phase 2 |
 | Add-ons / Licenses | `/billing/requests` | `settings:billing` | Request add-ons, employee/license increases, device/agent limit increases |
 
 ## Operations / Lifecycle Application Navigation

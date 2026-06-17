@@ -35,7 +35,8 @@ Message received
              INSERT premium_ai_detections
              INSERT ai_action_jobs:
                status = pending
-               source = onevo_chat | microsoft_teams | ide_tag
+               source = onevo_chat | microsoft_teams
+               Phase 2 adds source = ide_tag
                source_message_id = message id
                channel_id = channel id
                action_type = detected action
@@ -132,7 +133,7 @@ DELETE /api/v1/ai-actions/{jobId}/undo
     -> 4. UPDATE ai_action_jobs:
            status = undone
            undone_at = now()
-    -> 5. If tag_execution_id is not null:
+    -> 5. Phase 2 only: if tag_execution_id is not null:
            UPDATE ide_tag_executions.status = undone
     -> 6. Fire SignalR ai:action_finalized:
            { job_id, status: "undone", undone: true }

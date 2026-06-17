@@ -29,7 +29,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `agent_install_entitlements` | `tenant_id` | [[database/schemas/infrastructure#`tenants`\|tenants]] | Infrastructure |
 | `agent_install_entitlements` | `granted_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `agent_install_jobs` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
-| `agent_install_jobs` | `install_id` | [[database/schemas/ide-extension#`ide_extension_installs`\|ide_extension_installs]] | IDE Extension |
+| `agent_install_jobs` | `install_id` | [[database/schemas/ide-extension#`ide_extension_installs`\|ide_extension_installs]] | IDE Extension (Phase 2) |
 
 ## Auth & Security
 
@@ -369,7 +369,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `messages` | `user_id` | `users` | Infrastructure |
 | `premium_ai_detections` | `message_id` | `messages` | Work Management.Chat |
 | `ai_action_jobs` | `detection_id` | `premium_ai_detections` | Work Management.ChatAI |
-| `ai_action_jobs` | `tag_execution_id` | `ide_tag_executions` | IDE Extension |
+| `ai_action_jobs` | `tag_execution_id` | `ide_tag_executions` | IDE Extension (Phase 2) |
 | `ai_action_jobs` | `user_id` | `users` | Infrastructure |
 | `chat_reminder_items` | `task_id` | `tasks` | Work Management.TaskManagement |
 | `channel_teams_links` | `workspace_id` | `workspaces` | Work Management.Foundation |
@@ -409,16 +409,16 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `commit_records` | `repository_id` | `repositories` | Work Management.Integrations |
 | `task_automation_rules` | `workspace_id` | `workspaces` | Work Management.Foundation |
 
-## IDE Extension
+## IDE Extension (Phase 2)
 
 | Source Table | Column | Target Table | Target Module |
 |:------------|:-------|:-------------|:-------------|
 | `ide_extension_installs` | `user_id` | `users` | Infrastructure |
 | `ide_extension_installs` | `tenant_id` | `tenants` | Infrastructure |
 | `ide_extension_installs` | `workspace_id` | `workspaces` | Work Management.Foundation |
-| `ide_sessions` | `install_id` | `ide_extension_installs` | IDE Extension |
+| `ide_sessions` | `install_id` | `ide_extension_installs` | IDE Extension (Phase 2) |
 | `ide_sessions` | `active_project_id` | `projects` | Work Management.ProjectManagement |
-| `ide_tag_executions` | `session_id` | `ide_sessions` | IDE Extension |
+| `ide_tag_executions` | `session_id` | `ide_sessions` | IDE Extension (Phase 2) |
 | `ide_context_links` | `entity_id` | tasks / projects / sprints / documents (polymorphic) | varies |
 | `ide_chat_threads` | `channel_id` | `channels` | Work Management.Chat |
 | `ide_chat_threads` | `context_task_id` | `tasks` | Work Management.TaskManagement |
@@ -450,7 +450,7 @@ Based on FK dependencies, modules should be migrated in this order:
    - wms-analytics (dashboards → dashboard_shares)
    - wms-integrations (repositories → code_activity_events → task_automation_rules)
    - optional Microsoft Teams sync additions (external_account_connections -> microsoft_graph_tokens -> workspace_teams_links -> channel_teams_links -> teams_message_sync_state)
-9. IDE Extension (depends on workspaces, projects, tasks, channels):
+9. IDE Extension (Phase 2; depends on workspaces, projects, tasks, channels):
    - ide_extension_installs → ide_sessions → ide_tag_executions
    - ide_context_links, ide_chat_threads
    - agent_install_entitlements, agent_install_jobs (Agent Gateway additions)
