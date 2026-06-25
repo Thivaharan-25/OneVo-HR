@@ -51,7 +51,7 @@ TrayApp Sign in
 - Device credential is not a user JWT. It contains `device_id`, `tenant_id`, and `type: "agent"` only.
 - The employee never enters API keys, tenant keys, tenant IDs, or server URLs.
 - Employee-device binding is stored in `agent_sessions`; ingest validates against the active session.
-- Monitoring does not start from enrollment alone. It starts only after policy fetch, consent gate, and Workforce Presence lifecycle allow collection.
+- Monitoring does not start from enrollment alone. It starts only after policy fetch, consent gate, and Time & Attendance lifecycle allow collection.
 
 ## Related
 

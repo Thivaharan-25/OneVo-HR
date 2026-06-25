@@ -1,4 +1,4 @@
-# DEV1: Backend Platform Foundation + Auth + Developer Platform Admin API
+﻿# DEV1: Backend Platform Foundation + Auth + Developer Platform Admin API
 
 **Track:** Backend
 **Primary ownership:** platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API
@@ -97,8 +97,8 @@ dotnet test ONEVO.sln --filter "LayerDependency|Architecture|Auth"
 - Deleted `src/ONEVO.Domain/Features/Auth/Events/UserLoggedOut.cs`.
 - Removed the now-empty `src/ONEVO.Domain/Features/Auth/Events/` folder.
 - Added two new architecture tests in `tests/ONEVO.Tests.Architecture/LayerDependencyTests.cs`:
-  - `ApplicationFeatures_ShouldNotUse_FeatureLevelValidatorsFolder` — fails if any type lives under `ONEVO.Application.Features.*.Validators` namespace, enforcing the colocated-validator rule.
-  - `ApplicationFeatures_ShouldNotUse_FeatureLevelEventsFolder` — fails if any type lives under `ONEVO.Application.Features.*.Events` namespace, enforcing that domain events live in the Domain layer.
+  - `ApplicationFeatures_ShouldNotUse_FeatureLevelValidatorsFolder` - fails if any type lives under `ONEVO.Application.Features.*.Validators` namespace, enforcing the colocated-validator rule.
+  - `ApplicationFeatures_ShouldNotUse_FeatureLevelEventsFolder` - fails if any type lives under `ONEVO.Application.Features.*.Events` namespace, enforcing that domain events live in the Domain layer.
 
 **FluentValidation scanning:** already configured via `services.AddValidatorsFromAssembly(assembly)` in `ONEVO.Application/DependencyInjection.cs`, which discovers validators anywhere in the Application assembly. Colocated `LoginCommandValidator` continues to be picked up automatically; no DI changes needed.
 
@@ -111,7 +111,6 @@ dotnet test ONEVO.sln --filter "LayerDependency|Architecture|Auth"
 
 **Stylistic deviations flagged (not in Task 0 scope, no changes made):**
 
-- Application Auth feature uses `Repositories/` folder name; the canonical rule shape lists `Interfaces/`. The team has standardized on `Repositories/` via Task 2A's repository boundary work, so leaving as-is.
 - Command handler files use `{UseCase}CommandHandler.cs` (e.g., `LoginCommandHandler.cs`) instead of strict `{UseCase}Handler.cs`. Both readings are valid against the rule and the codebase is internally consistent; no rename done.
 
 **Outcome:** Task 0 complete. Backend structure now matches the cleaned KB architecture and is enforced by automated tests. Dev 1 may proceed to finish the remaining 2 items in Task 2A and then start Task 2.
@@ -265,7 +264,7 @@ dotnet test ONEVO.sln --filter "Auth|LayerDependency"
 - [~] Role permission assignment API exists and only accepts permissions available to the tenant's enabled modules. *(Permission-exists validation shipped; tenant-module-filtering deferred until T3 ships `IModuleEntitlementService`.)*
 - [ ] User role assignment API exists and increments the permission version counter.
 - [ ] User permission override APIs exist for grant/revoke/remove and increment the permission version counter.
-- [ ] Effective permission query returns universal grants, role grants, module filtering, hierarchy scope, and user overrides.
+- [ ] Effective permission query returns universal grants, role grants, module filtering, feature flags, valid user overrides, and capability metadata. Employee-data visibility is resolved separately through management coverage predicates.
 - [ ] Role template support exists for provisioning: templates can be created from module-filtered permissions and materialized into tenant roles.
 - [ ] Tests cover TOTP setup, TOTP verify success, TOTP wrong code, TOTP replay protection, email fallback generation, fallback delivery boundary call, fallback expired, fallback wrong code, attempt lockout, role CRUD, role permission assignment, user role assignment, permission overrides, module-filtered permission visibility, and permission version refresh.
 
@@ -291,16 +290,16 @@ Delivered the foundational RBAC slice that the Tenant Creation API (and every ot
 
 **Endpoints shipped under `/api/v1/roles` (gated by `[Authorize(Policy = "TenantPolicy")]`):**
 
-- `GET /api/v1/roles` — list tenant roles (`roles:read`).
-- `GET /api/v1/roles/{id}` — get one role with its permissions (`roles:read`).
-- `POST /api/v1/roles` — create a tenant-scoped role with optional initial permissions (`roles:manage`).
-- `PATCH /api/v1/roles/{id}` — rename / re-describe a non-system role (`roles:manage`).
-- `DELETE /api/v1/roles/{id}` — soft-archive a non-system role via `SoftDeleteInterceptor` (`roles:manage`).
-- `PUT /api/v1/roles/{id}/permissions` — atomically replace a role's permission set (`roles:manage`).
+- `GET /api/v1/roles` - list tenant roles (`roles:read`).
+- `GET /api/v1/roles/{id}` - get one role with its permissions (`roles:read`).
+- `POST /api/v1/roles` - create a tenant-scoped role with optional initial permissions (`roles:manage`).
+- `PATCH /api/v1/roles/{id}` - rename / re-describe a non-system role (`roles:manage`).
+- `DELETE /api/v1/roles/{id}` - soft-archive a non-system role via `SoftDeleteInterceptor` (`roles:manage`).
+- `PUT /api/v1/roles/{id}/permissions` - atomically replace a role's permission set (`roles:manage`).
 
 **Application layer (under `Features/Auth`):**
 
-- Commands: `CreateRole`, `UpdateRole`, `ArchiveRole`, `AssignRolePermissions` — each with `Command`, `Handler`, and (where input has user data) a colocated `Validator`.
+- Commands: `CreateRole`, `UpdateRole`, `ArchiveRole`, `AssignRolePermissions` - each with `Command`, `Handler`, and (where input has user data) a colocated `Validator`.
 - Queries: `ListRoles`, `GetRoleById`.
 - DTOs: `Requests/{CreateRole,UpdateRole,AssignRolePermissions}Request.cs`, `Responses/{RoleSummary,RoleDetail}Dto.cs`.
 - Repository interfaces extended in `AuthRepositoryInterfaces.cs`:
@@ -317,7 +316,7 @@ Delivered the foundational RBAC slice that the Tenant Creation API (and every ot
 **Behavioural rules enforced:**
 
 - All operations are tenant-scoped; cross-tenant access is impossible because every repository call carries `tenantId` from `ICurrentUser` and the DB index `(tenant_id, name)` is unique.
-- System roles (`IsSystem = true`) are protected from update, archive, and permission reassignment — handler returns 403.
+- System roles (`IsSystem = true`) are protected from update, archive, and permission reassignment - handler returns 403.
 - Role name uniqueness is enforced per tenant in the create + rename paths; conflict returns 409.
 - Permission ids are validated against the seeded `permissions` catalog before any DB write; unknown ids return 400 without persisting.
 - TODO marker placed in `CreateRoleCommandHandler` and `AssignRolePermissionsCommandHandler` for module-filtered permission validation, to be wired once T3 ships `IModuleEntitlementService`.
@@ -326,7 +325,7 @@ Delivered the foundational RBAC slice that the Tenant Creation API (and every ot
 
 - 19 new unit tests in `tests/ONEVO.Tests.Unit/Features/Auth/Roles/` covering: success paths, system-role protection, name conflict, unknown permission id, empty-list (clear all), unauthenticated/no-tenant, persistence side-effects.
 - Added `Moq 4.20.72` to `ONEVO.Tests.Unit.csproj` (consistent with the Moq convention in user rules).
-- ArchUnit suite still passes 7/7 — repository boundary is preserved (handlers depend only on Application interfaces, no EF Core types).
+- ArchUnit suite still passes 7/7 - repository boundary is preserved (handlers depend only on Application interfaces, no EF Core types).
 
 **Verification:**
 
@@ -339,7 +338,7 @@ Delivered the foundational RBAC slice that the Tenant Creation API (and every ot
 
 - User role assignment API + `perm_ver` increment.
 - User permission override APIs (grant/revoke/remove).
-- Effective permission query (universal + role + module filter + hierarchy + overrides).
+- Effective permission query (universal + role + module filter + feature flags + valid overrides + capability metadata).
 - Role template support (operator-managed, materialisable).
 - MFA TOTP authenticator-app flow + replay protection.
 - MFA email fallback OTP (hashed, 5-min expiry, single-use, lock after 3).
@@ -401,7 +400,7 @@ dotnet test ONEVO.sln --filter Entitlement
 
 **Requires:** DEV1 Task 1 complete
 
-> **Pickup assigned to Dev 4** — Dev 4 is blocked waiting for Task 2 (Auth); Task 4 only needs Task 1. Dev 4 executes this in that idle window. Dev 1 proceeds T1 → T2 → T3 → T5 → T6 without stopping for T4. See DEV4.md early-pickup section.
+> **Pickup assigned to Dev 4** - Dev 4 is blocked waiting for Task 2 (Auth); Task 4 only needs Task 1. Dev 4 executes this in that idle window. Dev 1 proceeds T1 ? T2 ? T3 ? T5 ? T6 without stopping for T4. See DEV4.md early-pickup section.
 
 ### Acceptance Criteria
 
@@ -427,17 +426,17 @@ dotnet test ONEVO.sln --filter Audit
 
 ---
 
-## Task 5: Shared Platform Core + Workflow Engine
+## Task 5: Shared Platform Core + Phase 1 Notifications/Lightweight Approvals
 
-**Goal:** build the cross-cutting platform services that other modules depend on, including the workflow/approval engine.
+**Goal:** build the cross-cutting platform services that other modules depend on, excluding the Phase 2 Workflow Engine.
 
 **Requires:** DEV1 Task 3 complete
 
 ### Backend Module Location
 
 - Feature: `Features/SharedPlatform`
-- API: `/api/v1/sso/*`, `/api/v1/subscriptions/*`, `/api/v1/feature-flags`, `/api/v1/workflows/*`
-- Consumed by: Leave, Workforce Presence, WorkSync Collaboration, Notifications, Developer Platform
+- API: `/api/v1/sso/*`, `/api/v1/subscriptions/*`, `/api/v1/feature-flags`
+- Consumed by: Time Off, Time & Attendance, Work Collaboration, Notifications, Developer Platform
 
 ### Acceptance Criteria
 
@@ -447,21 +446,20 @@ dotnet test ONEVO.sln --filter Audit
 - [ ] Feature flag service resolves tenant flags and module gates.
 - [ ] Tenant branding records exist for logo and colors; default tenant URL comes from `tenants.slug`.
 - [ ] Notification templates and notification channel configuration exist.
-- [ ] Workflow definitions, workflow steps, workflow instances, workflow step instances, and approval actions are mapped.
-- [ ] Workflow engine can start an instance for any `resource_type` + `resource_id`.
-- [ ] Workflow engine resolves approvers through dynamic resolvers, including first eligible approver in the position reporting chain, reporting manager, team lead, department owner, selected permission, selected legal entity, selected department, selected team, selected position or position branch, optional selected job level when configured, specific employee, HR coverage resolver, configured escalation resolver, previous approver, and case conversation participants.
-- [ ] Workflow approval steps support multiple-approver modes: only one approval is required, all assigned approvers must approve, and approve in order.
-- [ ] Workflow engine supports approve, reject, delegate, request info, condition steps, SLA deadline, and timeout action.
-- [ ] Workflow engine publishes step events (`WorkflowStepAssigned`, `WorkflowStepApproved`, `WorkflowStepRejected`) and final outcome events (`WorkflowApproved`, `WorkflowRejected`, `WorkflowCancelled`).
-- [ ] Leave approval can use the workflow engine rather than a hard-coded approval path.
-- [ ] Overtime approval can use the workflow engine rather than a hard-coded approval path.
-- [ ] Workflow status endpoint exists for resource lookup.
-- [ ] Tests cover workflow start, approver resolution, approve, reject, delegate, SLA timeout, event publish, leave workflow integration, and tenant isolation.
+- [ ] Phase 2 only: workflow definitions, steps, instances, step instances, and approval actions are retained as future design reference, not built in Phase 1.
+- [ ] Phase 2 only: Workflow Engine instance start for `resource_type` + `resource_id`.
+- [ ] Phase 2 only: multiple-approver workflow modes.
+- [ ] Phase 2 only: Workflow Engine approve, reject, delegate, request info, condition steps, SLA deadline, and timeout action.
+- [ ] Phase 2 only: Workflow Engine step and outcome events.
+- [ ] Time Off approval uses management coverage / authorized-reviewer routing in Phase 1.
+- [ ] Overtime approval uses management coverage / authorized-reviewer routing in Phase 1.
+- [ ] Phase 2 only: workflow status endpoint for resource lookup.
+- [ ] Tests cover Phase 1 SSO, subscription, feature flags, branding, notification templates, lightweight approval routing contracts, and tenant isolation. Workflow tests are Phase 2.
 
 ### References
 
 - [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md)
-- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] (modules/shared-platform/workflow-engine/overview.md)
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] (modules/shared-platform/workflow-engine/overview.md) - Phase 2 reference only
 - [[modules/shared-platform/sso-authentication/overview|SSO Authentication]] (modules/shared-platform/sso-authentication/overview.md)
 - [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] (modules/shared-platform/subscriptions-billing/overview.md)
 - [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]] (modules/shared-platform/notification-infrastructure/overview.md)
@@ -472,7 +470,7 @@ dotnet test ONEVO.sln --filter Audit
 
 ```bash
 dotnet test ONEVO.sln --filter SharedPlatform
-dotnet test ONEVO.sln --filter Workflow
+# Workflow Engine tests are Phase 2.
 ```
 
 ---
@@ -487,7 +485,7 @@ dotnet test ONEVO.sln --filter Workflow
 
 - Feature: `Features/Configuration`
 - API: `/api/v1/settings/*`
-- Consumed by: Agent Gateway, Activity Monitoring, Identity Verification, Exception Engine, Developer Platform System Config
+- Consumed by: Agent Gateway, Activity Monitoring, Identity Verification, lightweight monitoring alerts, Developer Platform System Config
 
 ### Acceptance Criteria
 
@@ -495,7 +493,6 @@ dotnet test ONEVO.sln --filter Workflow
 - [ ] Monitoring feature toggles exist for activity monitoring, application tracking, screenshot capture, meeting detection, device tracking, identity verification, and biometric.
 - [ ] Industry profile defaults seed monitoring toggles at tenant creation.
 - [ ] Employee monitoring overrides support nullable inherit/override behavior.
-- [ ] Bulk overrides can apply by department, team, or job family.
 - [ ] Integration connections support encrypted credentials and health status.
 - [ ] Shared encryption abstraction is available for Calendar Google/Outlook OAuth token storage owned by DEV2.
 - [ ] Retention policy records exist per data type.
@@ -530,7 +527,7 @@ dotnet test ONEVO.sln --filter AppAllowlist
 
 **Requires:** DEV1 Tasks 1, 2, and 4 complete
 
-> **Pickup assigned to Dev 3** — Dev 3 is blocked the longest (needs Tasks 1–3 before DEV3.T1 starts). Task 7 only needs Tasks 1, 2, and 4, so Dev 3 can build it during that wait. Dev 1 is free to run the critical chain T3 → T5 → T6 without interruption. See DEV3.md early-pickup section.
+> **Pickup assigned to Dev 3** - Dev 3 is blocked the longest (needs Tasks 1-3 before DEV3.T1 starts). Task 7 only needs Tasks 1, 2, and 4, so Dev 3 can build it during that wait. Dev 1 is free to run the critical chain T3 ? T5 ? T6 without interruption. See DEV3.md early-pickup section.
 
 ### Backend Module Location
 
@@ -543,7 +540,7 @@ dotnet test ONEVO.sln --filter AppAllowlist
 ### Acceptance Criteria
 
 - [ ] `ONEVO.Api` hosts both tenant `/api/v1/*` and admin `/admin/v1/*` endpoints in one deployment.
-- [ ] `ONEVO.Admin.Api` remains deprecated scaffold only; no new admin controllers are added there.
+- [ ] No separate admin backend service is introduced; admin controllers stay under `ONEVO.Api` `/admin/v1/*`.
 - [ ] Admin controllers live under `ONEVO.Api/Controllers/Admin` and are routed under `/admin/v1/*`.
 - [ ] Admin API has OpenAPI grouping, health coverage, environment config, and explicit `PlatformAdmin` policy registration inside `ONEVO.Api`.
 - [ ] Admin controllers are thin and call application/module interfaces through DI.
@@ -567,7 +564,7 @@ dotnet test ONEVO.sln --filter AppAllowlist
 - [[modules/dev-platform/overview|Dev Platform Feature]] (modules/dev-platform/overview.md)
 - [[developer-platform/overview|Developer Platform Overview]] (developer-platform/overview.md)
 - [[developer-platform/auth|Developer Platform Auth]] (developer-platform/auth.md)
-- [[developer-platform/system-design|Developer Platform System Design]] (developer-platform/system-design.md)
+- [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md)
 - [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md)
 - [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
 - [[developer-platform/database/schema|Developer Platform Schema]] (developer-platform/database/schema.md)
@@ -588,8 +585,8 @@ dotnet test ONEVO.sln --filter AdminApi
 
 **Requires:** DEV1 Tasks 3, 5, and 7 complete
 
-> **Parallel with Task 9** — both unlock when Task 7 is done. Run them simultaneously.
-> **Overflow to Dev 2** — Dev 2 picks this up after completing DEV2 Tasks 1–5. Dev 2 owns org structure and employee lifecycle data that Task 8 reads through module interfaces, making this a natural fit.
+> **Parallel with Task 9** - both unlock when Task 7 is done. Run them simultaneously.
+> **Overflow to Dev 2** - Dev 2 picks this up after completing DEV2 Tasks 1-5. Dev 2 owns org structure and employee lifecycle data that Task 8 reads through module interfaces, making this a natural fit.
 
 ### Backend Module References
 
@@ -618,7 +615,6 @@ dotnet test ONEVO.sln --filter AdminApi
 - [ ] `PATCH /admin/v1/role-templates/{id}` edits reusable non-system templates with versioning and audit.
 - [ ] `POST /admin/v1/tenants/{id}/role-templates/{templateId}/apply` materializes a role template into tenant-scoped roles.
 - [ ] `GET /admin/v1/tenants/{id}/roles` lists materialized tenant roles during provisioning.
-- [ ] `POST /admin/v1/tenants/{id}/roles` creates tenant-specific roles during provisioning without requiring job levels.
 - [ ] `PUT /admin/v1/tenants/{id}/roles/{roleId}/permissions` lets Developer Platform adjust a provisioned role using only permissions available to that tenant.
 - [ ] Tenant owner can later create/edit tenant roles inside `/api/v1/roles`, still limited by enabled modules.
 - [ ] `PATCH /admin/v1/tenants/{id}/settings` writes tenant setting overrides through the Configuration module interface.
@@ -661,8 +657,8 @@ dotnet test ONEVO.sln --filter Impersonation
 
 **Requires:** DEV1 Tasks 4, 5, and 7 complete
 
-> **Parallel with Task 8** — both unlock when Task 7 is done. Run them simultaneously.
-> **Overflow to Dev 3** — Dev 3 picks this up after completing DEV3 Tasks 1–5 (and after having already built Task 7 earlier).
+> **Parallel with Task 8** - both unlock when Task 7 is done. Run them simultaneously.
+> **Overflow to Dev 3** - Dev 3 picks this up after completing DEV3 Tasks 1-5 (and after having already built Task 7 earlier).
 
 ### Backend Module References
 
@@ -707,4 +703,3 @@ dotnet test ONEVO.sln --filter Audit
 dotnet test ONEVO.sln --filter SystemConfig
 dotnet test ONEVO.sln --filter AppCatalog
 ```
-

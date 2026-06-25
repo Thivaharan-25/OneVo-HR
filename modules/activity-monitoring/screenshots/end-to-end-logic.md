@@ -10,24 +10,24 @@
 ### Flow
 
 ```
-Manager/user explicitly requests screenshot command
+Authorized user explicitly requests screenshot command, or monitoring detects a deviation while auto screenshot capture is enabled
   -> Agent Gateway creates capture_screenshot command
   -> Agent receives command through SignalR or command polling
-  -> Agent captures screenshot with trigger_type = manual or on_demand
+  -> Agent captures screenshot with trigger_type = on_demand or auto_deviation
   -> POST /api/v1/agent/ingest (type: "screenshot_capture")
     -> Agent Gateway routes to ActivityMonitoring
       -> ScreenshotService.ProcessScreenshotAsync(payload, ct)
-        -> 1. Check monitoring toggle: screenshot_capture enabled for employee
-        -> 2. Validate trigger_type is manual or on_demand
+        -> 1. Check effective monitoring policy: screenshot_capture enabled for employee
+        -> 2. Validate trigger_type is on_demand or auto_deviation
         -> 3. Upload image to blob storage via IFileService.UploadFileAsync()
            -> Returns file_record_id
-        -> 4. INSERT into screenshots table:
-           -> employee_id, captured_at, file_record_id, trigger_type
+        -> 4. INSERT into monitoring_evidence_assets:
+           -> employee_id, captured_at, file_record_id, evidence_type = screenshot, trigger_type, metadata
         -> 5. Publish ScreenshotCaptured event (audit trail)
         -> Return Result.Success()
 ```
 
-Scheduled and random screenshot capture are not part of Phase 1.
+Interval and random screenshot capture are not supported. For `auto_deviation`, the deviation reason is stored in metadata, not as a separate trigger type.
 
 ## View Screenshot
 
@@ -36,9 +36,9 @@ Scheduled and random screenshot capture are not part of Phase 1.
 ```
 GET /api/v1/activity/screenshots/{id}/view
   -> ScreenshotController.View(id)
-    -> [RequirePermission("workforce:view")]
+    -> [RequirePermission("monitoring:view")]
     -> ScreenshotService.GetScreenshotUrlAsync(id, ct)
-      -> 1. Load screenshot metadata from DB
+      -> 1. Load screenshot evidence metadata from DB
       -> 2. Verify caller has access (manager of employee or admin)
       -> 3. Generate time-limited signed URL via IFileService
       -> 4. Return signed blob URL (expires in 15 min)
@@ -57,8 +57,8 @@ GET /api/v1/activity/screenshots/{id}/view
 ### Edge Cases
 
 - **RESTRICTED data classification** - screenshots are the most sensitive data in the system.
-- **Retention policy enforced** by `PurgeExpiredScreenshotsJob` (daily 4:00 AM). Default: 30 days.
-- **Screenshots stored in blob storage only** - never in the database. Only metadata lives in `screenshots` table.
+- **Retention policy enforced** by `PurgeExpiredMonitoringEvidenceJob` (daily 4:00 AM). Default: 30 days.
+- **Screenshots stored in blob storage only** - never in the database. Only evidence metadata lives in `monitoring_evidence_assets`.
 
 ## Related
 

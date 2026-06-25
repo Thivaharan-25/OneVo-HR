@@ -1,4 +1,4 @@
-﻿# Module: DataImport
+# Module: DataImport
 
 **Namespace:** `ONEVO.Modules.DataImport`  
 **Phase:** Phase 1 CSV/Excel import; Phase 2 PeopleHR migration  
@@ -15,7 +15,7 @@ Bulk employee and org-structure setup/import for new tenants. In Phase 1, HR adm
 
 CSV and Excel imports focus on employee/profile rows. PeopleHR imports are Phase 2 and use the full migration pipeline in [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]]: raw API records are staged first, API permissions are preflighted, source fields are mapped to canonical ONEVO modules, and unmapped records are retained as raw archive instead of being silently dropped.
 
-A background Hangfire job handles the heavy lifting: in Phase 1 it downloads uploaded CSV/Excel files from Railway S3-compatible blob storage, runs ETL transformations, validates rows, and bulk-writes approved records into canonical module tables owned by CoreHR and OrgStructure. Phase 2 PeopleHR migration can write approved records into additional canonical module tables owned by Leave, Payroll, Documents, Skills, Performance, WorkforcePresence, and related modules where those modules are enabled.
+A background Hangfire job handles the heavy lifting: in Phase 1 it downloads uploaded CSV/Excel files from Cloudflare R2 object storage, runs ETL transformations, validates rows, and bulk-writes approved records into canonical module tables owned by CoreHR and OrgStructure. Phase 2 PeopleHR migration can write approved records into additional canonical module tables owned by Time Off, Payroll, Documents, Skills, Performance, TimeAttendance, and related modules where those modules are enabled.
 
 ---
 
@@ -24,10 +24,10 @@ A background Hangfire job handles the heavy lifting: in Phase 1 it downloads upl
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/core-hr/overview|CoreHR]] | `employees` and profile tables | Bulk-writes imported employee records. |
-| **Depends on** | [[modules/org-structure/overview|OrgStructure]] | Legal entity, department, position, and access resolvers | Resolves legal entity, department, position, capacity, and position access templates. |
+| **Depends on** | [[modules/org-structure/overview|OrgStructure]] | Legal entity, department, position, and access resolvers | Resolves legal entity, department, position, capacity, and position-based access grants. |
 | **Depends on** | [[modules/auth/overview|Auth]] | `employees:write` permission | Permission gate on all import endpoints. |
-| **Depends on** | [[infrastructure/file-storage|Infrastructure / FileStorage]] | `IImportFileStorage` | Railway S3-compatible blob storage for uploaded files. |
-| **Phase 2 depends on** | [[modules/leave/overview|Leave]] | Leave entitlement/request tables | Imports PeopleHR leave, holiday, absence, sickness, maternity, and paternity records. |
+| **Depends on** | [[infrastructure/file-storage|Infrastructure / FileStorage]] | `IImportFileStorage` | Cloudflare R2 object storage for uploaded files. |
+| **Phase 2 depends on** | [[modules/time-off/overview|Time Off]] | Time Off entitlement/request tables | Imports PeopleHR time_off, holiday, absence, sickness, maternity, and paternity records. |
 | **Phase 2 depends on** | [[modules/payroll/overview|Payroll]] | Compensation/payroll tables | Imports salary, pay history, payroll identifiers, and benefits where mapped. |
 | **Phase 2 depends on** | [[modules/documents/overview|Documents]] | Documents and versions | Imports PeopleHR document metadata and retryable file downloads. |
 | **Phase 2 depends on** | [[modules/skills/overview|Skills]] | Phase 1 skills tables; raw archive for deferred learning data | Imports mapped employee skill requests where possible; training, CPD, qualifications, certifications, and courses are staged or archived until Phase 2 canonical tables are enabled. |
@@ -54,9 +54,8 @@ public record UploadUrlResult(string UploadUrl, string FileKey, DateTime Expires
 
 ### Employee CSV/Excel Import
 
-CSV and Excel employee imports use customer-friendly business headers. They do not require HR admins to know internal technical identifiers for departments, positions, job hierarchy, roles, locations, or cost centers.
 
-> Org structure (legal entities, departments, positions) must exist before running a CSV employee import. The wizard resolves employees into existing records — it does not create org structure from CSV values.
+> Org structure (legal entities, departments, positions) must exist before running a CSV employee import. The wizard resolves employees into existing records - it does not create org structure from CSV values.
 
 Required multi-company employee columns:
 
@@ -87,9 +86,9 @@ Employment Type
 
 For single-company tenants, the only legal entity is inferred. If a `Legal Entity` column is present, it must match the tenant's legal entity name exactly.
 
-The wizard resolves `Legal Entity -> Department -> Position`, evaluates position access templates, and applies the same access handling rules as individual onboarding. Users without `roles:manage` or `access:approve` do not see role lists, permission details, or scope controls. If a business name is ambiguous inside the selected legal entity, the row moves to a review screen where the admin selects the correct record.
+The wizard resolves `Legal Entity -> Department -> Position`, evaluates **Grant system access from this position**, and applies the same access handling rules as individual onboarding. Users without `roles:manage` do not see role template details; approval actions require `position:approve`. If a business name is ambiguous inside the selected Company, the row moves to a review screen where the admin selects the correct record.
 
-**Hard errors** — block the row; cannot be imported without correction:
+**Hard errors** - block the row; cannot be imported without correction:
 
 | Error | Description |
 |:------|:------------|
@@ -102,7 +101,7 @@ The wizard resolves `Legal Entity -> Department -> Position`, evaluates position
 | Duplicate employee number in legal entity | Employee number already exists in the resolved legal entity |
 | Duplicate work email in tenant | Work email already exists for any employee across the tenant |
 
-**Warnings** — row can proceed after acknowledgement:
+**Warnings** - row can proceed after acknowledgement:
 
 | Warning | Description |
 |:--------|:------------|
@@ -128,7 +127,7 @@ Reporting Effective From
 Position Access Templates
 ```
 
-Validation must reject missing legal entities, departments outside the selected legal entity, positions outside the selected legal entity, duplicate positions inside a legal entity where ambiguity would be created, missing reporting positions, reporting positions in another legal entity, pooled reporting targets, overlapping unique-position assignments, overlapping position reporting rows, and position reporting cycles for the effective date range.
+Validation must reject missing legal entities, departments outside the selected Company, positions outside the selected Company, duplicate positions inside a legal entity where ambiguity would be created, missing reporting positions, reporting positions in another legal entity, pooled reporting targets, overlapping unique-position assignments, overlapping position reporting rows, and position reporting cycles for the effective date range.
 ## Database Tables
 
 ### `migration_runs`
@@ -171,7 +170,7 @@ Full PeopleHR migration also uses the staging and audit tables defined in [[modu
 ## Key Business Rules
 
 1. **Source branching** - CSV and Excel follow the Phase 1 upload path. PeopleHR is Phase 2; it skips file upload, stores encrypted API credentials, and runs API permission preflight before fetch.
-2. **Pre-signed upload** - CSV/Excel files are PUT directly from the browser to Railway S3 using a 1-hour pre-signed URL. The server never proxies file bytes.
+2. **Pre-signed upload** - CSV/Excel files are PUT directly from the browser to Cloudflare R2 using a 1-hour pre-signed URL. The server never proxies file bytes.
 3. **Raw-first PeopleHR import (Phase 2)** - PeopleHR responses are written to `peoplehr_raw_records` before transformation. Unmapped or unsupported fields are archived raw and reported.
 4. **ETL normalisation** - `EtlTransformService` normalises dates to ISO-8601, phone numbers to E.164, salary to decimal, and enums to canonical ONEVO values.
 5. **Fuzzy field mapping** - `FieldMappingService` auto-suggests canonical HR mappings using alias matching, and users can override mappings in the wizard.
@@ -195,7 +194,7 @@ Full PeopleHR migration also uses the staging and audit tables defined in [[modu
 | `FieldMappingService` | Auto-maps source fields to canonical HR fields and stores mapping results. |
 | `IHrSystemAdapter` / `PeopleHrAdapter` | Phase 2: coordinates PeopleHR API fetchers and writes raw staged records. |
 | `PeopleHrPreflightService` | Phase 2: tests API key access for selected PeopleHR areas before migration. |
-| `PeopleHr*Fetcher` components | Phase 2: fetch employees, org data, salary, leave, timesheets, documents, training, benefits, appraisals, and custom screens. |
+| `PeopleHr*Fetcher` components | Phase 2: fetch employees, org data, salary, time_off, timesheets, documents, training, benefits, appraisals, and custom screens. |
 | `ImportController` | REST endpoints permission-gated with `employees:write`. |
 | `ImportBackgroundJob` | Hangfire job: fetch/download -> stage -> ETL -> validate -> reconcile -> commit. |
 | `ReconciliationService` | Builds dry-run reconciliation counts, review items, and spot-check samples. |
@@ -255,14 +254,14 @@ PeopleHR full migration extends these steps with dry-run reconciliation, admin a
 
 ## Related
 
-- [[Userflow/Data-Import/employee-csv-import|Employee CSV Import]] — focused CSV flow with hard error/warning rules, org resolution, and invite confirmation
-- [[Userflow/Data-Import/data-import-wizard|Data Import Wizard]] — Phase 1 wizard covering CSV and Excel paths
-- [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]] — raw-first, auditable PeopleHR migration design
-- [[modules/core-hr/overview|CoreHR]] — employee table target for bulk writes
-- [[modules/org-structure/overview|OrgStructure]] — legal entity, department, position, and access resolution during ETL
-- [[modules/org-structure/positions/overview|Positions]] — capacity and reporting-chain validation during import
-- [[Userflow/Org-Structure/position-setup|Position Setup]] — positions must exist before CSV employee import
-- [[modules/auth/overview|Auth]] — `employees:write` permission
+- [[Userflow/Data-Import/employee-csv-import|Employee CSV Import]] - focused CSV flow with hard error/warning rules, org resolution, and invite confirmation
+- [[Userflow/Data-Import/data-import-wizard|Data Import Wizard]] - Phase 1 wizard covering CSV and Excel paths
+- [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]] - raw-first, auditable PeopleHR migration design
+- [[modules/core-hr/overview|CoreHR]] - employee table target for bulk writes
+- [[modules/org-structure/overview|OrgStructure]] - legal entity, department, position, and access resolution during ETL
+- [[modules/org-structure/positions/overview|Positions]] - capacity and reporting-chain validation during import
+- [[Userflow/Org-Structure/position-setup|Position Setup]] - positions must exist before CSV employee import
+- [[modules/auth/overview|Auth]] - `employees:write` permission
 - [[backend/module-catalog|Module Catalog]]
 - [[current-focus/DEV1-hr-import-onboarding|DEV1: HR Import Onboarding]]
 - [[docs/superpowers/plans/2026-04-24-hr-import-onboarding|Implementation Plan]]

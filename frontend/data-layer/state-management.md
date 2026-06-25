@@ -1,10 +1,10 @@
-# State Management
+﻿# State Management
 
 ## Three Types of State
 
 | Type | Technology | Examples |
 |:-----|:-----------|:--------|
-| Server / async state | Angular `resource()` + `toSignal()` | Employees, leave requests, activity data |
+| Server / async state | Angular `resource()` + `toSignal()` | Employees, Time Off requests, activity data |
 | Client / UI state | Angular Signals (`signal()`) | Sidebar open/closed, filter preferences, theme |
 | URL state | Angular Router `queryParams` | Page number, search query, date range, filters |
 
@@ -12,7 +12,7 @@ No NgRx, no RxJS `BehaviorSubject` for component or service state in Phase 1. An
 
 ---
 
-## Server State — `resource()` and `toSignal()`
+## Server State - `resource()` and `toSignal()`
 
 ### `resource()` for parameterised async data
 
@@ -31,10 +31,10 @@ export class EmployeeListComponent {
   });
 
   // Usage in template:
-  // employeesResource.value()   — current data (undefined while loading)
-  // employeesResource.isLoading() — boolean signal
-  // employeesResource.error()   — error signal
-  // employeesResource.reload()  — manual refresh
+  // employeesResource.value()   - current data (undefined while loading)
+  // employeesResource.isLoading() - boolean signal
+  // employeesResource.error()   - error signal
+  // employeesResource.reload()  - manual refresh
 }
 ```
 
@@ -49,26 +49,26 @@ departments = toSignal(this.orgService.getDepartments(), { initialValue: [] });
 
 | Data Type | Refresh Strategy | Rationale |
 |:----------|:----------------|:----------|
-| Static data (countries, departments) | `toSignal` — fetched once on init | Rarely changes |
-| Employee list | `resource()` — reload on filter change | Moderate change |
-| Leave requests | `resource()` — reload + SignalR invalidation | Active workflow |
-| Activity summaries | `resource()` — 60 s timer effect | Aggregated |
-| Live workforce status | SignalR push → `resource.reload()` | Real-time |
-| Exception alerts | SignalR push → `resource.reload()` | Real-time |
+| Static data (countries, departments) | `toSignal` - fetched once on init | Rarely changes |
+| Employee list | `resource()` - reload on filter change | Moderate change |
+| Time Off requests | `resource()` - reload + SignalR invalidation | Active request workflow |
+| Activity summaries | `resource()` - 60 s timer effect | Aggregated |
+| Live monitoring status | SignalR push -> `resource.reload()` | Real-time |
+| Exception alerts | SignalR push -> `resource.reload()` | Real-time |
 
 ### SignalR as a cache invalidation trigger
 
 ```typescript
-// workforce-live.component.ts
-export class WorkforceLiveComponent implements OnInit {
+// monitoring-live.component.ts
+export class MonitoringLiveComponent implements OnInit {
   private signalR = inject(SignalRService);
 
   presenceResource = resource({
-    loader: () => firstValueFrom(this.workforceService.getLiveStatus()),
+    loader: () => firstValueFrom(this.monitoringService.getLiveStatus()),
   });
 
   ngOnInit() {
-    this.signalR.on('workforce-live', 'PresenceChanged', () => {
+    this.signalR.on('monitoring-live', 'PresenceChanged', () => {
       this.presenceResource.reload();
     });
   }
@@ -77,7 +77,7 @@ export class WorkforceLiveComponent implements OnInit {
 
 ---
 
-## Client State — Angular Signals
+## Client State - Angular Signals
 
 Use `signal()` for all ephemeral UI state. Keep signals in services when state is shared across components; keep them local to the component when they're not.
 
@@ -182,7 +182,7 @@ export class ThemeService {
 
 ---
 
-## URL State — Angular Router `queryParams`
+## URL State - Angular Router `queryParams`
 
 Use for any state that should be bookmarkable or shareable: pagination, search, filters, date ranges.
 
@@ -234,17 +234,17 @@ export class EmployeeListComponent {
 
 ## Rules
 
-- **No `BehaviorSubject` for UI state** — use `signal()` instead
-- **No `async` pipe** for component state — use `resource()` or `toSignal()` and read synchronously
-- **No duplicating server state** in a local signal — derive from the `resource` value directly
-- **No NgRx** in Phase 1 — Angular Signals cover all needs
-- **`effect()` for side effects only** (localStorage sync, DOM, analytics) — never for data transformation; use `computed()` for that
+- **No `BehaviorSubject` for UI state** - use `signal()` instead
+- **No `async` pipe** for component state - use `resource()` or `toSignal()` and read synchronously
+- **No duplicating server state** in a local signal - derive from the `resource` value directly
+- **No NgRx** in Phase 1 - Angular Signals cover all needs
+- **`effect()` for side effects only** (localStorage sync, DOM, analytics) - never for data transformation; use `computed()` for that
 
 ---
 
 ## Related
 
-- [[frontend/architecture/app-structure|App Structure]] — frontend architecture
-- [[frontend/data-layer/api-integration|API Integration]] — Angular HttpClient services
-- [[frontend/data-layer/real-time|Real-Time Architecture]] — SignalR integration
-- [[frontend/coding-standards|Coding Standards]] — Angular conventions
+- [[frontend/architecture/app-structure|App Structure]] - frontend architecture
+- [[frontend/data-layer/api-integration|API Integration]] - Angular HttpClient services
+- [[frontend/data-layer/real-time|Real-Time Architecture]] - SignalR integration
+- [[frontend/coding-standards|Coding Standards]] - Angular conventions

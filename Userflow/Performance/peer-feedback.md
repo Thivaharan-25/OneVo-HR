@@ -1,7 +1,7 @@
-# Peer Feedback
+﻿# Peer Feedback
 
 **Area:** Performance  
-**Trigger:** Nominated peer receives feedback request (reaction — triggered by cycle configuration)
+**Trigger:** Nominated peer receives feedback request (reaction - triggered by cycle configuration)
 **Required Permission(s):** `performance:read-own` (for nominated employees)  
 **Related Permissions:** `performance:manage` (configure 360-degree reviews)
 
@@ -9,7 +9,7 @@
 
 ## Preconditions
 
-- Review cycle configured as 360-degree → [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
+- Review cycle configured as 360-degree -> [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
 - Peer feedback nominations assigned
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
@@ -20,13 +20,13 @@
 - **API:** `GET /api/v1/performance/feedback/requests`
 
 ### Step 2: Provide Feedback
-- **UI:** Performance → Feedback Requests → select colleague → answer structured questions (strengths, areas for improvement, collaboration rating) → rate on scale → option for anonymous submission
+- **UI:** Performance -> Feedback Requests -> select colleague -> answer structured questions (strengths, areas for improvement, collaboration rating) -> rate on scale -> option for anonymous submission
 - **API:** `POST /api/v1/performance/feedback`
-- **Backend:** FeedbackService.SubmitAsync() → [[modules/performance/feedback/overview|Feedback]]
-- **DB:** `peer_feedback` — record with optional `is_anonymous` flag
+- **Backend:** FeedbackService.SubmitAsync() -> [[modules/performance/feedback/overview|Feedback]]
+- **DB:** `peer_feedback` - record with optional `is_anonymous` flag
 
 ### Step 3: Aggregation
-- **Backend:** All peer feedback aggregated into employee's review → anonymized if configured → visible to manager during manager review
+- **Backend:** All peer feedback aggregated into employee's review -> anonymized if configured -> visible to manager during manager review
 
 ## Error Scenarios
 
@@ -37,7 +37,7 @@
 
 ## Events Triggered
 
-- `PeerFeedbackSubmitted` → [[backend/messaging/event-catalog|Event Catalog]]
+- `PeerFeedbackSubmitted` -> [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 

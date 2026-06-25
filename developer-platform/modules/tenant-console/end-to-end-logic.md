@@ -1,4 +1,4 @@
-# Tenant Management - End-to-End Logic
+﻿# Tenant Management - End-to-End Logic
 
 ## Purpose
 
@@ -61,7 +61,7 @@ Positioned between KPI cards and the tenants table.
 | Plan | "Subscription Plan" | Yes | 130px | Colored badge: Enterprise (dark blue), Business (medium blue), Professional (light blue), Custom (gray) |
 | Users | "Users" | Yes | 70px | Total user count for this tenant |
 | Status | "Status <->" | Yes | 120px | Colored badge - see Status Badge Logic below |
-| Work Mode | "Work Mode" | Yes | 110px | Icon + label: ðŸ  Hybrid, ðŸ¡ Remote, ðŸ¢ On-site |
+| Work Mode | "Work Mode" | Yes | 110px | Text label: Hybrid, Remote, On-site |
 | Region | "Region" | Yes | 90px | Country flag emoji + ISO country code |
 | Created | "Created On <->" | Yes | 120px | "May 12, 2024" format |
 | Actions | "Actions" | No | 80px | Eye icon (view) + `...` kebab |
@@ -321,8 +321,8 @@ Each section has: title, "View Full Report" link -> Reports / Analytics, and exp
 | Plan name | e.g., "Enterprise" |
 | Commercial model | Subscription or Full License + Maintenance |
 | Billing cycle | Monthly / Annual |
-| Calculated price | e.g., "£4,200 / month" |
-| Override price | If set: "£3,800 / month (overridden)" in orange |
+| Calculated price | e.g., "GBP 4,200 / month" |
+| Override price | If set: "GBP 3,800 / month (overridden)" in orange |
 | Payment gateway | "Stripe - Production" / "Paddle - Production" / "PayHere - Production" |
 | Billing start date | "Jun 1, 2024" |
 | Next billing date | "Jun 1, 2025" |
@@ -334,8 +334,8 @@ Each section has: title, "View Full Report" link -> Reports / Analytics, and exp
 
 | Column | Description |
 |---|---|
-| Module name | Full name, e.g., "Leave Management" |
-| Pillar | HR / Workforce Intelligence / WorkSync badge |
+| Module name | Full name, e.g., "Time Off Management" |
+| Pillar | HR / Monitoring / WorkSync badge |
 | Status | Active (green), Available (gray), Disabled (gray) |
 | Sales state | purchased / subscription_included / quoted / available / disabled |
 | Expiry date | If applicable for a fixed-term purchased entitlement |
@@ -445,7 +445,7 @@ Each field shows current value, edit icon, saved/error state.
 | Reporting currency | Dropdown | Yes | |
 | Date format | Radio | Yes | |
 | Work mode | Radio | Yes | |
-| Leave year start month | Dropdown | Yes | |
+| Time Off year start month | Dropdown | Yes | |
 
 **Section: Monitoring Configuration** (shown only if monitoring modules entitled)
 
@@ -488,7 +488,7 @@ Trial expiry path
 
 | From -> To | Endpoint | Permission | Side Effects |
 |---|---|---|---|
-| provisioning -> pending_payment | `PATCH /admin/v1/tenants/{id}/provision/confirm` | `platform.tenants.activate` | Operator provisioning is confirmed and first invoice/payment state is created where required |
+| provisioning -> pending_payment | `PATCH /admin/v1/tenants/{id}/provision/confirm` | `platform.tenants.activate` | First invoice/payment state is created; tenant remains payment-limited |
 | trial -> pending_payment | `POST /api/v1/demo/upgrade/submit` | `billing:manage` | Tenant owner selects allowed plan/add-ons, billing cycle, confirms employee count and billing contact; first invoice is generated from the matching company-size price bracket |
 | pending_payment -> active | Gateway webhook | system | Invoice paid through configured gateway; module entitlements become active |
 | trial -> trial_expired | Trial expiry job or `PATCH /admin/v1/tenants/{id}/trial/expire` | job or `platform.tenants.manage` | Demo access is blocked and audit/history is written |
@@ -621,7 +621,7 @@ Actions dropdown -> "Impersonate as Admin" (visible only when status = active an
 ```json
 {
   "target_user_id": "user-uuid-...",
-  "reason": "Customer reported they cannot see their leave balance. Investigating configuration issue before call."
+  "reason": "Customer reported they cannot see their Time Off balance. Investigating configuration issue before call."
 }
 ```
 

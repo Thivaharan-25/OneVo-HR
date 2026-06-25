@@ -1,4 +1,4 @@
-# Cross-Module Relationships
+﻿# Cross-Module Relationships
 
 Foreign keys that cross module boundaries. These are critical for understanding data dependencies between modules and for planning migration order.
 
@@ -17,8 +17,8 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `application_usage` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `device_tracking` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `meeting_sessions` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `screenshots` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `screenshots` | `file_record_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
+| `monitoring_evidence_assets` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
+| `monitoring_evidence_assets` | `file_record_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
 
 ## Agent Gateway
 
@@ -82,8 +82,9 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `employees` | `department_id` | [[database/schemas/org-structure#`departments`\|departments]] | Org Structure |
 | `employees` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`|legal_entities]] | Org Structure |
 | `employees` | `avatar_file_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
-| `onboarding_tasks` | `assigned_to_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
-| `onboarding_templates` | `department_id` | [[database/schemas/org-structure#`departments`\|departments]] | Org Structure |
+| `employee_checklist_tasks` | `assigned_to_id` | [[database/schemas/infrastructure#`users`|users]] | Infrastructure |
+| `employee_checklist_tasks` | `template_id` | [[database/schemas/core-hr#`checklist_templates`|checklist_templates]] | Core HR |
+| `checklist_templates` | `department_id` | [[database/schemas/org-structure#`departments`|departments]] | Org Structure |
 
 ## Documents
 
@@ -131,14 +132,20 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 
 | Source Table | Column | Target Table | Target Module |
 |:------------|:-------|:-------------|:-------------|
-| `biometric_devices` | `office_location_id` | [[database/schemas/org-structure#`office_locations`\|office_locations]] | Org Structure |
+| `biometric_devices` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure |
+| `biometric_audit_logs` | `biometric_device_id` | [[database/schemas/identity-verification#`biometric_devices`\|biometric_devices]] | Identity Verification |
+| `biometric_enrollments` | `biometric_device_id` | [[database/schemas/identity-verification#`biometric_devices`\|biometric_devices]] | Identity Verification |
+| `biometric_events` | `biometric_device_id` | [[database/schemas/identity-verification#`biometric_devices`\|biometric_devices]] | Identity Verification |
 | `biometric_enrollments` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `biometric_events` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `verification_records` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `verification_records` | `photo_file_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
-| `verification_records` | `device_id` | [[database/schemas/agent-gateway#`registered_agents`\|registered_agents]] | Agent Gateway |
+| `verification_evidence_assets` | `file_record_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
+| `verification_records` | `agent_id` | [[database/schemas/agent-gateway#`registered_agents`\|registered_agents]] | Agent Gateway |
+| `verification_records` | `biometric_device_id` | [[database/schemas/identity-verification#`biometric_devices`\|biometric_devices]] | Identity Verification |
+| `verification_evidence_assets` | `agent_id` | [[database/schemas/agent-gateway#`registered_agents`\|registered_agents]] | Agent Gateway |
+| `verification_evidence_assets` | `biometric_device_id` | [[database/schemas/identity-verification#`biometric_devices`\|biometric_devices]] | Identity Verification |
 | `verification_records` | `requested_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
-| `verification_records` | `alert_id` | [[database/schemas/exception-engine#`exception_alerts`\|exception_alerts]] | Exception Engine |
+| `verification_records` | `alert_id` | Nullable — linked alert/notification ID (for on-demand captures triggered from a review case) | Notifications / Shared Platform |
 
 ## Infrastructure
 
@@ -146,16 +153,17 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 |:------------|:-------|:-------------|:-------------|
 | `tenants` | `subscription_plan_id` | [[database/schemas/shared-platform#`subscription_plans`\|subscription_plans]] | Shared Platform |
 
-## Leave
+## Time Off
 
 | Source Table | Column | Target Table | Target Module |
 |:------------|:-------|:-------------|:-------------|
-| `leave_balances_audit` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `leave_entitlements` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `leave_policies` | `country_id` | [[database/schemas/infrastructure#`countries`\|countries]] | Infrastructure |
-| `leave_requests` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `leave_requests` | `approved_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
-| `leave_requests` | `document_file_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
+| `time_off_balances_audit` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
+| `time_off_balances_audit` | `attendance_record_id` | [[database/schemas/time-attendance#`attendance_records`\|attendance_records]] | Time & Attendance |
+| `time_off_entitlements` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
+| `time_off_policies` | `country_id` | [[database/schemas/infrastructure#`countries`\|countries]] | Infrastructure |
+| `time_off_requests` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
+| `time_off_requests` | `approved_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `time_off_requests` | `document_file_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
 
 ## Org Structure
 
@@ -164,9 +172,9 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `legal_entities` | `country_id` | [[database/schemas/infrastructure#`countries`|countries]] | Infrastructure |
 | `position_access_templates` | `role_id` | [[database/schemas/auth#`roles`\|roles]] | Auth & Security |
 | `position_access_templates` | `created_by` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
-| `team_members` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `team_member_roles` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
-| `team_role_permissions` | `permission_id` | [[database/schemas/auth#`permissions`\|permissions]] | Auth & Security |
+| `management_coverage_records` | `owner_position_id` | [[database/schemas/org-structure#`positions`\|positions]] | Org Structure |
+| `management_coverage_records` | `covered_position_id` | [[database/schemas/org-structure#`positions`\|positions]] | Org Structure |
+| `management_coverage_records` | `covered_department_id` | [[database/schemas/org-structure#`departments`\|departments]] | Org Structure |
 
 ## Payroll
 
@@ -228,6 +236,14 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `legal_holds` | `released_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `notification_channels` | `configured_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `notification_templates` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `support_tickets` | `created_by_user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `support_tickets` | `assigned_to_id` | [[developer-platform/database/schema#platform_users|platform_users]] | DevPlatform |
+| `support_tickets` | `resolved_by_id` | [[developer-platform/database/schema#platform_users|platform_users]] | DevPlatform |
+| `support_ticket_messages` | `sender_user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `support_ticket_messages` | `sender_platform_user_id` | [[developer-platform/database/schema#platform_users|platform_users]] | DevPlatform |
+| `support_ticket_internal_notes` | `author_platform_user_id` | [[developer-platform/database/schema#platform_users|platform_users]] | DevPlatform |
+| `support_ticket_events` | `actor_user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `support_ticket_events` | `actor_platform_user_id` | [[developer-platform/database/schema#platform_users|platform_users]] | DevPlatform |
 | `refresh_tokens` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `retention_policies` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `signalr_connections` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
@@ -240,7 +256,8 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `tenant_branding` | `logo_file_id` | [[database/schemas/infrastructure#`file_records`\|file_records]] | Infrastructure |
 | `tenant_branding` | `updated_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `feature_flag_overrides` | `granted_by_id` | [[developer-platform/database/schema#platform_users|platform_users]] | DevPlatform |
-| `tenant_subscriptions` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
+| `tenant_subscriptions` | `created_by_user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure; tenant self-service actor |
+| `tenant_subscriptions` | `created_by_platform_user_id` | [[developer-platform/database/schema#platform_users|platform_users]] | DevPlatform; platform-operator actor |
 | `user_preferences` | `user_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `webhook_endpoints` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 | `workflow_definitions` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
@@ -280,7 +297,7 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `skill_validation_requests` | `validator_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `skills` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 
-## Workforce Presence
+## Time & Attendance
 
 | Source Table | Column | Target Table | Target Module |
 |:------------|:-------|:-------------|:-------------|
@@ -288,6 +305,16 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `device_sessions` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
 | `device_sessions` | `device_id` | [[database/schemas/agent-gateway#`registered_agents`\|registered_agents]] | Agent Gateway |
 | `presence_sessions` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
+| `work_schedules` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure |
+| `schedule_assignments` | `legal_entity_id` | [[database/schemas/org-structure#`legal_entities`\|legal_entities]] | Org Structure |
+| `schedule_assignments` | `work_schedule_id` | [[database/schemas/time-attendance#`work_schedules`\|work_schedules]] | Time & Attendance |
+| `schedule_assignments` | `department_id` | [[database/schemas/org-structure#`departments`\|departments]] | Org Structure |
+| `schedule_assignments` | `position_id` | [[database/schemas/org-structure#`positions`\|positions]] | Org Structure |
+| `schedule_assignments` | `employee_id` | [[database/schemas/core-hr#`employees`\|employees]] | Core HR |
+| `clock_in_late_deduction_rules` | `time_off_type_id` | [[database/schemas/time_off#`time_off_types`\|time_off_types]] | Time Off |
+| `work_schedule_holidays` | `work_schedule_id` | [[database/schemas/time-attendance#`work_schedules`\|work_schedules]] | Time & Attendance |
+| `work_schedule_holidays` | `public_holiday_id` | [[database/schemas/time-attendance#`public_holidays`\|public_holidays]] | Time & Attendance |
+| `work_schedule_holidays` | `created_by_id` | [[database/schemas/infrastructure#`users`\|users]] | Infrastructure |
 
 ## Work Management.Foundation
 
@@ -300,9 +327,6 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | `workspace_members` | `workspace_id` | `workspaces` | Work Management.Foundation |
 | `workspace_members` | `user_id` | `users` | Infrastructure |
 | `workspace_members` | `employee_id` | `employees` | Core HR |
-| `workspace_team_links` | `workspace_id` | `workspaces` | Work Management.Foundation |
-| `workspace_team_links` | `team_id` | [[database/schemas/org-structure#`teams`\|teams]] | Org Structure |
-| `workspace_team_links` | `created_by_id` | `users` | Infrastructure |
 | `workspace_teams_links` | `workspace_id` | `workspaces` | Work Management.Foundation |
 | `workspace_teams_links` | `created_by_id` | `users` | Infrastructure |
 | `teams_member_sync_status` | `workspace_teams_link_id` | `workspace_teams_links` | Work Management.Foundation |
@@ -313,11 +337,23 @@ Foreign keys that cross module boundaries. These are critical for understanding 
 | Source Table | Column | Target Table | Target Module |
 |:------------|:-------|:-------------|:-------------|
 | `projects` | `tenant_id` | `tenants` | Infrastructure |
+| `projects` | `workspace_id` | `workspaces` | Work Management.Foundation |
 | `projects` | `lead_id` | `users` | Infrastructure |
-| `project_workspaces` | `project_id` | `projects` | Work Management.ProjectManagement |
-| `project_workspaces` | `workspace_id` | `workspaces` | Work Management.Foundation |
-| `project_workspaces` | `tenant_id` | `tenants` | Infrastructure |
-| `project_workspaces` | `linked_by_id` | `users` | Infrastructure |
+| `project_workspaces` | `project_id` | `projects` | Work Management.ProjectManagement (Phase 2 reference) |
+| `project_workspaces` | `workspace_id` | `workspaces` | Work Management.Foundation (Phase 2 reference) |
+| `project_workspaces` | `tenant_id` | `tenants` | Infrastructure (Phase 2 reference) |
+| `project_workspaces` | `linked_by_id` | `users` | Infrastructure (Phase 2 reference) |
+| `project_member_invitations` | `project_id` | `projects` | Work Management.ProjectManagement |
+| `project_member_invitations` | `invited_user_id` | `users` | Infrastructure |
+| `project_member_invitations` | `invited_employee_id` | `employees` | Core HR |
+| `project_member_invitations` | `invited_by_id` | `users` | Infrastructure |
+| `project_link_invitations` | `source_project_id` | `projects` | Work Management.ProjectManagement |
+| `project_link_invitations` | `target_project_id` | `projects` | Work Management.ProjectManagement |
+| `project_link_invitations` | `invited_project_admin_id` | `users` | Infrastructure |
+| `project_link_invitations` | `invited_by_id` | `users` | Infrastructure |
+| `project_links` | `source_project_id` | `projects` | Work Management.ProjectManagement |
+| `project_links` | `target_project_id` | `projects` | Work Management.ProjectManagement |
+| `project_links` | `created_by_id` | `users` | Infrastructure |
 | `project_members` | `project_id` | `projects` | Work Management.ProjectManagement |
 | `project_members` | `user_id` | `users` | Infrastructure |
 | `project_members` | `employee_id` | `employees` | Core HR |
@@ -432,26 +468,25 @@ Based on FK dependencies, modules should be migrated in this order:
 ```
 1. infrastructure (tenants, users, countries, file_records)
 2. auth (roles, permissions, sessions)
-3. org-structure (legal_entities, departments, positions, team_roles)
-4. core-hr (employees — the central hub)
+4. core-hr (employees - the central hub)
 5. configuration (tenant_settings, monitoring_toggles)
 6. agent-gateway (registered_agents)
 7. All HR/WFI Phase 1 modules (can be parallel):
-   - leave, calendar, workforce-presence
+   - time_off, calendar, time-attendance
    - activity-monitoring, discrepancy-engine, exception-engine
    - identity-verification, productivity-analytics
    - shared-platform, notifications
 8. Work Management Phase 1 (ordered by FK dependency):
-   - wms-project-management (workspaces → projects → epics/milestones)
-   - wms-task-management (tasks → boards → board_columns)
-   - wms-planning (sprints → sprint_backlog_items → sprint_daily_snapshots → roadmaps)
-   - wms-chat (channels → messages → ai_action_jobs)
-   - wms-collaboration (document extensions → wiki_pages → task_documents)
-   - wms-analytics (dashboards → dashboard_shares)
-   - wms-integrations (repositories → code_activity_events → task_automation_rules)
+   - wms-project-management (workspaces -> projects -> epics/milestones)
+   - wms-task-management (tasks -> boards -> board_columns)
+   - wms-planning (sprints -> sprint_backlog_items -> sprint_daily_snapshots -> roadmaps)
+   - wms-chat (channels -> messages -> ai_action_jobs)
+   - wms-collaboration (document extensions -> wiki_pages -> task_documents)
+   - wms-analytics (dashboards -> dashboard_shares)
+   - wms-integrations (repositories -> code_activity_events -> task_automation_rules)
    - optional Microsoft Teams sync additions (external_account_connections -> microsoft_graph_tokens -> workspace_teams_links -> channel_teams_links -> teams_message_sync_state)
 9. IDE Extension (Phase 2; depends on workspaces, projects, tasks, channels):
-   - ide_extension_installs → ide_sessions → ide_tag_executions
+   - ide_extension_installs -> ide_sessions -> ide_tag_executions
    - ide_context_links, ide_chat_threads
    - agent_install_entitlements, agent_install_jobs (Agent Gateway additions)
 10. Phase 2 modules (after Phase 1 is stable):

@@ -1,4 +1,4 @@
-# User Management — Testing
+﻿# User Management - Testing
 
 **Module:** Infrastructure
 **Feature:** User Management

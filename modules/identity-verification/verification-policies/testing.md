@@ -1,4 +1,4 @@
-# Verification Policies — Testing
+﻿# Verification Policies - Testing
 
 **Module:** Identity Verification
 **Feature:** Verification Policies
@@ -52,7 +52,7 @@ public class VerificationPolicyServiceTests
 ## Related
 
 - [[modules/identity-verification/overview|Identity Verification Module]]
-- [[modules/identity-verification/verification-policies/end-to-end-logic|Verification Policies — End-to-End Logic]]
+- [[modules/identity-verification/verification-policies/end-to-end-logic|Verification Policies - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

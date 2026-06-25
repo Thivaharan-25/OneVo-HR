@@ -1,4 +1,4 @@
-# Tamper Resistance
+﻿# Tamper Resistance
 
 ## Detection Strategy
 
@@ -84,13 +84,13 @@ Tamper events are included in the heartbeat payload:
 }
 ```
 
-Server-side, the `AgentHeartbeatLost` event + tamper report triggers an exception alert via [[modules/exception-engine/overview|Exception Engine]].
+Server-side, the `AgentHeartbeatLost` event + tamper report triggers a Phase 1 lightweight alert via [[modules/notifications/overview|Notifications]], recipient resolved by Monitoring Policy. Phase 2 may route this through [[modules/exception-engine/overview|Exception Engine]] configurable rules.
 
 ## What We Do NOT Do
 
-- **No rootkit-style hiding** — the agent is visible in Task Manager and Services
-- **No anti-uninstall** — admins can uninstall via MSIX. Missing heartbeat alerts the server.
-- **No kernel-level protection** — user-mode service only
-- **No BIOS/firmware anchoring** — MSIX packaging is sufficient
+- **No rootkit-style hiding** - the agent is visible in Task Manager and Services
+- **No anti-uninstall** - admins can uninstall via MSIX. Missing heartbeat alerts the server.
+- **No kernel-level protection** - user-mode service only
+- **No BIOS/firmware anchoring** - MSIX packaging is sufficient
 
 The goal is **detection and reporting**, not prevention. If someone disables the agent, the server knows about it.

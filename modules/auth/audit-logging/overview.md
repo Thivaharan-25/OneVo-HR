@@ -1,4 +1,4 @@
-# Audit Logging
+﻿# Audit Logging
 
 **Module:** Auth & Security
 **Feature:** Audit Logging
@@ -16,10 +16,10 @@ Append-only audit trail for all significant actions. Partitioned by month via `p
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `user_id` | `uuid` | FK → users (nullable for system actions) |
-| `action` | `varchar(100)` | e.g., `employee.created`, `leave.approved` |
-| `resource_type` | `varchar(50)` | e.g., `Employee`, `LeaveRequest` |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `user_id` | `uuid` | FK -> users (nullable for system actions) |
+| `action` | `varchar(100)` | e.g., `employee.created`, `time_off.approved` |
+| `resource_type` | `varchar(50)` | e.g., `Employee`, `TimeOffRequest` |
 | `resource_id` | `uuid` | |
 | `old_values_json` | `jsonb` | Previous state |
 | `new_values_json` | `jsonb` | New state |

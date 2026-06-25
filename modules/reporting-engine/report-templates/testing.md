@@ -1,4 +1,4 @@
-# Report Templates — Testing
+﻿# Report Templates - Testing
 
 **Module:** Reporting Engine
 **Feature:** Report Templates

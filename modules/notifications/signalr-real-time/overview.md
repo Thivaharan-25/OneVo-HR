@@ -14,8 +14,8 @@ Real-time push notifications via SignalR channels.
 | Channel | Purpose |
 |:--------|:--------|
 | `notifications-{userId}` | Per-user in-app notifications |
-| `exception-alerts` | Exception alerts (managers/admins) |
-| `workforce-live` | Live workforce status updates |
+| `notifications-{userId}` | Phase 1 monitoring/attendance alerts for authorized recipients |
+| `monitoring-live` | Live monitoring status updates |
 | `agent-status` | Agent online/offline status |
 
 ## Related

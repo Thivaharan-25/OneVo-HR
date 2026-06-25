@@ -1,4 +1,4 @@
-# File Handling
+﻿# File Handling
 
 ## File Operations in ONEVO
 
@@ -18,24 +18,24 @@
 
 ```
 User selects file(s)
-    │
-    ├── Client-side validation (size, type, dimensions)
-    │
-    ├── Request presigned upload URL from API
-    │   POST /api/v1/files/upload-url
-    │   Body: { fileName, contentType, category }
-    │   Response: { uploadUrl, fileId, expiresAt }
-    │
-    ├── Upload directly to object storage (Cloudflare R2 preferred)
-    │   PUT {uploadUrl}
-    │   Body: file binary
-    │   Headers: Content-Type, x-ms-blob-type
-    │
-    ├── Confirm upload with API
-    │   POST /api/v1/files/{fileId}/confirm
-    │   Triggers: virus scan, metadata extraction
-    │
-    └── Poll for processing status (or receive SignalR push)
+    |
+    +-- Client-side validation (size, type, dimensions)
+    |
+    +-- Request presigned upload URL from API
+    |   POST /api/v1/files/upload-url
+    |   Body: { fileName, contentType, category }
+    |   Response: { uploadUrl, fileId, expiresAt }
+    |
+    +-- Upload directly to object storage (Cloudflare R2 preferred)
+    |   PUT {uploadUrl}
+    |   Body: file binary
+    |   Headers: Content-Type, x-ms-blob-type
+    |
+    +-- Confirm upload with API
+    |   POST /api/v1/files/{fileId}/confirm
+    |   Triggers: virus scan, metadata extraction
+    |
+    +-- Poll for processing status (or receive SignalR push)
         GET /api/v1/files/{fileId}/status
         Response: { status: 'scanning' | 'ready' | 'rejected', reason? }
 ```
@@ -100,7 +100,7 @@ function FileUpload({ category, accept, maxSize, onComplete }: FileUploadProps) 
           <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
           <p className="text-sm">Drop file here or click to browse</p>
           <p className="text-xs text-muted-foreground mt-1">
-            {accept} — Max {formatBytes(maxSize)}
+            {accept} - Max {formatBytes(maxSize)}
           </p>
         </>
       )}
@@ -162,8 +162,8 @@ function useExportReport() {
 |:-----|:---------------|
 | Images (JPEG, PNG, WebP) | `<img>` with signed URL |
 | PDF | Embedded `<iframe>` or `react-pdf` |
-| DOCX | Server-side PDF conversion → `<iframe>` |
-| CSV/XLSX | Parse client-side → render in DataTable |
+| DOCX | Server-side PDF conversion -> `<iframe>` |
+| CSV/XLSX | Parse client-side -> render in DataTable |
 
 ```tsx
 function FilePreviewDialog({ file }: { file: FileMetadata }) {
@@ -199,13 +199,13 @@ function FilePreviewDialog({ file }: { file: FileMetadata }) {
 
 ## Security
 
-- All uploads go through presigned URLs — the frontend never holds storage credentials
+- All uploads go through presigned URLs - the frontend never holds storage credentials
 - Files are virus-scanned before being marked as `ready`
 - Download URLs are time-limited (15 min) and scoped to the tenant
 - Sensitive documents (salary, medical) require additional permission check for download
 
 ## Related
 
-- [[frontend/data-layer/api-integration|Api Integration]] — API client patterns
-- [[frontend/design-system/patterns/form-patterns|Form Patterns]] — file upload in forms
-- [[frontend/cross-cutting/security|Security]] — file upload security
+- [[frontend/data-layer/api-integration|Api Integration]] - API client patterns
+- [[frontend/design-system/patterns/form-patterns|Form Patterns]] - file upload in forms
+- [[frontend/cross-cutting/security|Security]] - file upload security

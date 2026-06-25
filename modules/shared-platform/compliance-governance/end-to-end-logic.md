@@ -1,4 +1,4 @@
-# Compliance & Governance — End-to-End Logic
+﻿# Compliance & Governance - End-to-End Logic
 
 **Module:** Shared Platform
 **Feature:** Compliance & Data Governance

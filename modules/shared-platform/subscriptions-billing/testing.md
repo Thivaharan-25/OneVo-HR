@@ -1,4 +1,4 @@
-# Subscriptions & Billing — Testing
+﻿# Subscriptions & Billing - Testing
 
 **Module:** Shared Platform
 **Feature:** Subscriptions & Billing

@@ -1,4 +1,4 @@
-# 2026-04-05 - Initial Setup
+﻿# 2026-04-05 - Initial Setup
 
 - **Added:** Complete ONEVO Backend Secondary Brain with all directories and files
 - **Added:** AI_CONTEXT files: [[AI_CONTEXT/project-context|Project Context]], [[AI_CONTEXT/rules|Rules]], [[AI_CONTEXT/tech-stack|Tech Stack]], [[current-focus/README|Current Focus]], [[AI_CONTEXT/known-issues|Known Issues]]
@@ -11,4 +11,4 @@
 - **Added:** Guide docs: [[frontend/coding-standards|Coding Standards]], [[code-standards/git-workflow|Git Workflow]], [[code-standards/logging-standards|Logging Standards]]
 - **Added:** 4-week delivery plan with developer assignments
 - **Added:** Cursor rules for AI agent guidance
-- **Why:** Initial project setup — establishing the complete secondary brain for ONEVO backend development with .NET 10
+- **Why:** Initial project setup - establishing the complete secondary brain for ONEVO backend development with .NET 10

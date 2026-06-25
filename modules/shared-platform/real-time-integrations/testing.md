@@ -1,4 +1,4 @@
-# Real-Time Integrations — Testing
+﻿# Real-Time Integrations - Testing
 
 **Module:** Shared Platform
 **Feature:** Real-Time Integrations

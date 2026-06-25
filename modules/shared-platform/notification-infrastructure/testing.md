@@ -1,4 +1,4 @@
-# Notification Infrastructure — Testing
+﻿# Notification Infrastructure - Testing
 
 **Module:** Shared Platform
 **Feature:** Notification Infrastructure

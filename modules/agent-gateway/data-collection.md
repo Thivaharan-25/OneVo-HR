@@ -1,8 +1,8 @@
-# Data Collection Architecture
+﻿# Data Collection Architecture
 
 ## Collection Pipeline
 
-Each collector runs on its own timer. Data flows: Collector → SQLite Buffer → Sync Service → Agent Gateway.
+Each collector runs on its own timer. Data flows: Collector -> SQLite Buffer -> Sync Service -> Agent Gateway.
 
 **Lifecycle-aware:** All collectors respect the monitoring lifecycle state. When the agent receives a `StopMonitoring` or `PauseMonitoring` command (via SignalR or heartbeat polling), all collectors stop immediately. NO data is captured during breaks or after clock-out. Collectors resume only when `StartMonitoring` or `ResumeMonitoring` is received.
 
@@ -115,15 +115,14 @@ var isIdle = idleMs > _policy.IdleThresholdSeconds * 1000;
 
 **Idle threshold:** Configurable via policy (default 300 seconds / 5 min).
 
-**Break detection:** If idle exceeds threshold, mark as break candidate. Server-side reconciliation in [[modules/workforce-presence/overview|Workforce Presence]] creates the break record.
+**Break detection:** If idle exceeds threshold, mark as break candidate. Server-side reconciliation in [[modules/time-attendance/overview|Time & Attendance]] creates the break record.
 
 ### 4. Meeting Detector (`MeetingDetector.cs`)
 
 **What:** Detects active video/audio meeting applications.
 
-**How (Phase 1 — process name matching):**
+**How (Phase 1 - process name matching):**
 ```csharp
-private static readonly string[] MeetingProcesses = { "Teams", "Zoom", "zoom", "meet" };
 
 var processes = Process.GetProcesses();
 var meetingProcess = processes.FirstOrDefault(p => MeetingProcesses.Any(m => 
@@ -141,14 +140,12 @@ if (meetingProcess != null)
 **Output:**
 ```json
 {
-  "platform": "teams",
   "meeting_start": "2026-04-05T10:00:00Z",
   "had_camera_on": true,
   "had_mic_activity": true
 }
 ```
 
-**Limitations:** Process name matching has false positives (Teams running in background).
 
 ### 5. Device Tracker (`DeviceTracker.cs`)
 
@@ -161,7 +158,7 @@ if (meetingProcess != null)
 
 ### 5b. Work Location Evidence Collector (`WorkLocationEvidenceCollector.cs`)
 
-**What:** Captures network evidence used to verify that a clocked-in employee is working from an approved office or approved remote workplace.
+**What:** Captures network evidence used to verify that an employee in paid working time is working from the selected Company's office location or the employee's approved remote work location.
 
 **How:** Reads public IP from the backend request context, and local network signals from the agent:
 - local IP
@@ -186,7 +183,7 @@ if (meetingProcess != null)
 
 **Frequency:** Sent with heartbeat while monitoring is active. Never collected before clock-in, after clock-out, or during breaks.
 
-**Privacy:** This proves network/workplace compliance, not precise physical location. See [[modules/agent-gateway/work-location-evidence|Work Location Evidence]].
+**Privacy:** This supports work-location compliance review, not precise physical tracking. See [[modules/agent-gateway/work-location-evidence|Work Location Evidence]].
 
 ### 6. Document Tracker (`DocumentTracker.cs`)
 
@@ -271,7 +268,7 @@ public enum DocumentCategory { Document, Spreadsheet, Presentation, Design, Unkn
 | `OUTLOOK` | Microsoft Outlook | Active foreground time; email send count via accessibility API |
 | `zoom` / `Zoom` | Zoom | Active foreground time (meeting detection handled by MeetingDetector) |
 
-**How (active time — same as AppTracker):**
+**How (active time - same as AppTracker):**
 ```csharp
 // Active time reuses foreground window detection from AppTracker.
 // CommunicationTracker is a specialised view over AppTracker output.
@@ -279,7 +276,6 @@ public class CommunicationTracker : ICollector
 {
     private static readonly HashSet<string> CommunicationProcesses = new(StringComparer.OrdinalIgnoreCase)
     {
-        "Teams", "slack", "OUTLOOK", "zoom", "Zoom"
     };
 
     public bool IsActiveCommunicationApp(string processName)
@@ -287,7 +283,7 @@ public class CommunicationTracker : ICollector
 }
 ```
 
-**Message/email send count:** Detected via OS Accessibility API (UIAutomation) — counts send button activation events. **Content is technically impossible to capture** using this method; only the count is recorded.
+**Message/email send count:** Detected via OS Accessibility API (UIAutomation) - counts send button activation events. **Content is technically impossible to capture** using this method; only the count is recorded.
 
 **Output:**
 ```json
@@ -305,9 +301,9 @@ public class CommunicationTracker : ICollector
 
 ### 8. Screenshot Capturer (`ScreenshotCapturer.cs`)
 
-**What:** Captures screenshot of the primary display **only on explicit remote command** from an authorized hierarchy reviewer or monitoring user.
+**What:** Captures screenshot of the primary display when allowed by effective monitoring policy.
 
-**Trigger:** ONLY via remote command (`capture_screenshot` from `agent_commands` table). **NEVER automated, NEVER scheduled, NEVER random.** The `screenshots` table accepts only `manual` and `on_demand` trigger types.
+**Trigger:** `on_demand` from an authorized live capture request, or `auto_deviation` when monitoring detects a deviation and auto screenshot capture is enabled. Interval and random screenshots are never allowed. The `monitoring_evidence_assets` table accepts screenshot rows only with `on_demand` and `auto_deviation` trigger types; the deviation reason is stored in metadata.
 
 **How:**
 ```csharp
@@ -315,12 +311,12 @@ public class ScreenshotCapturer
 {
     public async Task<string?> CaptureScreenshotAsync(string reason, CancellationToken ct)
     {
-        // 1. Show employee notification (GDPR requirement — mandatory)
+        // 1. Show employee notification (GDPR requirement - mandatory)
         await _notificationService.ShowToastAsync(
             "Screen Capture Requested",
-            $"Your manager has requested a screen capture. Reason: {reason}");
+            $"An authorized reviewer has requested a screen capture. Reason: {reason}");
         
-        // 2. Wait 3 seconds (mandatory awareness window — do not reduce)
+        // 2. Wait 3 seconds (mandatory awareness window - do not reduce)
         await Task.Delay(3000, ct);
         
         // 3. Capture primary screen
@@ -383,12 +379,12 @@ The batch payload includes `employee_id`. The ingest endpoint validates this aga
 
 **Flow:**
 1. Employee opens tray app and enters credentials in the login window
-2. Tray app → Service (IPC): `{type: "employee_login", email: "...", password: "..."}`
+2. Tray app -> Service (IPC): `{type: "employee_login", email: "...", password: "..."}`
 3. Service authenticates the employee against ONEVO and calls `POST /api/v1/agent/login` (Device JWT)
-4. Server creates an `agent_sessions` record linking `device_id → employee_id`
+4. Server creates an `agent_sessions` record linking `device_id -> employee_id`
 5. Agent includes `employee_id` in every ingest batch payload
 6. Server validates: `payload.employee_id == agent_sessions[device_id].employee_id`
-7. Mismatch or no active session → `403` — batch rejected
+7. Mismatch or no active session -> `403` - batch rejected
 
 This prevents a registered device from submitting data attributed to a different employee, even if the payload is crafted manually.
 
@@ -396,10 +392,10 @@ This prevents a registered device from submitting data attributed to a different
 
 ## Related
 
-- [[modules/agent-gateway/overview|Agent Gateway Module]] — server-side module
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — API endpoints and payload schemas
-- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — detection and reporting
-- [[security/data-classification|Data Classification]] — PII/RESTRICTED data handling
-- [[modules/configuration/retention-policies/overview|Retention Policies]] — data retention rules
-- [[code-standards/logging-standards|Logging Standards]] — never log activity content
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — implementation task
+- [[modules/agent-gateway/overview|Agent Gateway Module]] - server-side module
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] - API endpoints and payload schemas
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] - detection and reporting
+- [[security/data-classification|Data Classification]] - PII/RESTRICTED data handling
+- [[modules/configuration/retention-policies/overview|Retention Policies]] - data retention rules
+- [[code-standards/logging-standards|Logging Standards]] - never log activity content
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] - implementation task

@@ -1,4 +1,4 @@
-# Table Patterns
+﻿# Table Patterns
 
 ## DataTable Architecture
 
@@ -254,7 +254,7 @@ function ExportButton({ filters }: { filters: EmployeeFilters }) {
 
 ## Related
 
-- [[frontend/design-system/patterns/form-patterns|Form Patterns]] — filter forms
-- [[frontend/design-system/components/component-catalog|Composed Components]] — DataTable component spec
-- [[frontend/data-layer/state-management|State Management]] — TanStack Query patterns
-- [[frontend/data-layer/api-integration|Api Integration]] — pagination types
+- [[frontend/design-system/patterns/form-patterns|Form Patterns]] - filter forms
+- [[frontend/design-system/components/component-catalog|Composed Components]] - DataTable component spec
+- [[frontend/data-layer/state-management|State Management]] - TanStack Query patterns
+- [[frontend/data-layer/api-integration|Api Integration]] - pagination types

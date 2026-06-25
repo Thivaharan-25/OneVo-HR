@@ -1,6 +1,6 @@
-﻿# Configuration Template Manager â€” End-to-End Logic
+﻿# Configuration Template Manager - End-to-End Logic
 
-**Module:** Developer Platform â†’ Configuration Template Manager
+**Module:** Developer Platform -> Configuration Template Manager
 **Phase:** Phase 1
 
 ---
@@ -15,15 +15,15 @@ Full field specifications, payload schemas, apply behaviour, reapply rules, and 
 
 ```
 Developer Platform
-└── Templates / Template Manager  (/platform/templates)
-    ├── Role Templates      ← Role Template Manager (separate module)
-    ├── Configuration       ← This module
-    ├── Position          ← This module
-    ├── Leave Policy        ← This module
-    ├── Monitoring Policy   ← This module
-    ├── App Allowlist       ← This module
-    ├── Onboarding          ← This module
-    └── Data Import         ← This module
++-- Templates / Template Manager  (/platform/templates)
+    +-- Role Templates      ? Role Template Manager (separate module)
+    +-- Configuration       ? This module
+    +-- Position          ? This module
+    +-- Time Off Policy        ? This module
+    +-- Monitoring Policy   ? This module
+    +-- App Allowlist       ? This module
+    +-- Onboarding          ? This module
+    +-- Data Import         ? This module
         (each tab: Template Library -> list + create + template detail)
 ```
 
@@ -40,7 +40,7 @@ Developer Platform
 | Title | "Template Manager" |
 | Subtitle | "Reusable setup presets applied to tenants during provisioning or ongoing configuration." |
 | Primary action | "New Template" button |
-| Tab strip | Role Templates \| Configuration \| Position Templates \| Leave Policy \| Monitoring Policy \| App Allowlist \| Onboarding \| Data Import |
+| Tab strip | Role Templates \| Configuration \| Position Templates \| Time Off Policy \| Monitoring Policy \| App Allowlist \| Onboarding \| Data Import |
 
 ### Templates Table
 
@@ -58,14 +58,14 @@ Developer Platform
 
 ---
 
-## Create / Edit Template â€” Full Field Specification
+## Create / Edit Template - Full Field Specification
 
 ### Section 1: Identity
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
 | Name | "Template Name" | Text | Yes | Max 150 chars | Display name shown in dropdowns |
-| Template Key | "Template Key" | Text | Yes | Max 100 chars, lowercase, hyphens only, globally unique | Machine-readable stable ID â€” cannot be changed after creation |
+| Template Key | "Template Key" | Text | Yes | Max 100 chars, lowercase, hyphens only, globally unique | Machine-readable stable ID - cannot be changed after creation |
 | Description | "Description" | Textarea | No | Max 500 chars | Shown in the provisioning wizard template picker |
 | Template Type | "Template Type" | Select | Yes | See type enum | Cannot be changed after creation |
 | Industry Profile Tag | "Industry Profile Tag" | Select | No | Applies to `monitoring_policy` type only | Used for auto-selection during provisioning based on tenant industry |
@@ -81,15 +81,15 @@ Developer Platform
 
 ### Section 3: Payload Editor
 
-The payload editor is a structured form â€” not a raw JSON editor for operators. Each `template_type` has its own form sections below. The form serialises to `payload_json` on save.
+The payload editor is a structured form - not a raw JSON editor for operators. Each `template_type` has its own form sections below. The form serialises to `payload_json` on save.
 
 ---
 
-## Payload Schemas â€” Per Template Type
+## Payload Schemas - Per Template Type
 
-### `configuration` â€” Configuration Template
+### `configuration` - Configuration Template
 
-Seeds `tenant_settings`. Configuration templates are recommended by tenant country and legal-entity scope. All fields are optional â€” partial application is allowed (only non-null fields are written).
+Seeds `tenant_settings`. Configuration templates are recommended by tenant country and legal-entity scope. All fields are optional - partial application is allowed (only non-null fields are written).
 
 ```json
 {
@@ -116,7 +116,7 @@ Seeds `tenant_settings`. Configuration templates are recommended by tenant count
 | `timezone` | string | IANA timezone e.g. `"Europe/London"` | Null = skip |
 | `date_format` | string | `"DD/MM/YYYY"`, `"MM/DD/YYYY"`, `"YYYY-MM-DD"` | Null = skip |
 | `currency_code` | string | ISO 4217 3-letter code | Null = skip |
-| `work_week_days` | int[] | 1=Mon â€¦ 7=Sun | Null = skip |
+| `work_week_days` | int[] | 1=Mon ... 7=Sun | Null = skip |
 | `work_hours_start` | string | `"HH:MM"` 24h | Null = skip |
 | `work_hours_end` | string | `"HH:MM"` 24h | Null = skip |
 | `privacy_mode` | string | `"full_transparency"`, `"summary_only"`, `"covert"` | Null = skip |
@@ -128,7 +128,7 @@ Seeds `tenant_settings`. Configuration templates are recommended by tenant count
 
 ### `position_template` - Position Template Pack
 
-Seeds a reusable pack of tenant positions. Each pack is matched from the tenant's real `estimated_employee_count` into an employee count range. Each position may link to one global role template. The position template does not own monitoring, app allowlist, onboarding, or leave policy assignment; those templates assign themselves to tenant, department, or position scopes from their dedicated screens.
+Seeds a reusable pack of tenant positions. Each pack is matched from the tenant's real `estimated_employee_count` into an employee count range. Each position may link to one global role template. The position template does not own monitoring, app allowlist, onboarding, or Time Off policy assignment; those templates assign themselves to tenant, department, or position scopes from their dedicated screens.
 
 ```json
 {
@@ -196,40 +196,44 @@ When a position template with `linked_role_template_id` is applied:
 3. Link the tenant position to the resulting tenant role.
 4. Return included and excluded permission counts. Excluded permissions must include the reason, e.g. module not entitled.
 
-The position screen owns role linkage only. Monitoring policy, app allowlist, onboarding, and leave policy assignments are configured from their own template screens.
+The position screen owns role linkage only. Monitoring policy, app allowlist, onboarding, and Time Off policy assignments are configured from their own template screens.
 
 ---
 
-### `leave_policy` â€” Leave Policy Template
+### `time_off_policy` - Time Off Policy Template
 
-Seeds `leave_types` and `leave_policies`. One rule = one leave type + one policy row.
+Seeds `time_off_types` and `time_off_policies`. One rule = one Time Off type + one policy row. Admin enters policy entitlement in hours/minutes. The system converts and stores entitlement balances in minutes. The UI displays hours/minutes.
 
 ```json
 {
   "rules": [
     {
-      "leave_type_name": "Annual Leave",
+      "time_off_type_name": "Annual Time Off",
       "is_paid": true,
       "requires_approval": true,
       "requires_document": false,
-      "max_consecutive_days": null,
-      "annual_entitlement_days": 25,
-      "carry_forward_max_days": 5,
-      "carry_forward_expiry_months": 3,
+
+      "entitlement_minutes": 12000,
+      "max_consecutive_minutes": null,
+      "carry_forward_allowed": true,
+      "carry_forward_limit_minutes": 2400,
+      "carry_forward_expiry": "P3M",
       "accrual_method": "annual",
       "proration_method": "calendar_days",
       "minimum_notice_days": 1,
       "negative_balance_allowed": false
     },
     {
-      "leave_type_name": "Sick Leave",
+      "time_off_type_name": "Sick Time Off",
       "is_paid": true,
       "requires_approval": false,
       "requires_document": true,
-      "max_consecutive_days": 5,
-      "annual_entitlement_days": 10,
-      "carry_forward_max_days": 0,
-      "carry_forward_expiry_months": 0,
+
+      "entitlement_minutes": 4800,
+      "max_consecutive_minutes": 2400,
+      "carry_forward_allowed": false,
+      "carry_forward_limit_minutes": 0,
+      "carry_forward_expiry": null,
       "accrual_method": "annual",
       "proration_method": "calendar_days",
       "minimum_notice_days": 0,
@@ -241,28 +245,29 @@ Seeds `leave_types` and `leave_policies`. One rule = one leave type + one policy
 
 | Field | Type | Required | Allowed Values | Notes |
 |---|---|---|---|---|
-| `leave_type_name` | string | Yes | Max 50 chars | If a leave type with this name already exists for the tenant, it is reused (upsert by name) |
+| `time_off_type_name` | string | Yes | Max 50 chars | If a Time Off type with this name already exists for the tenant, it is reused (upsert by name) |
 | `is_paid` | bool | Yes | | |
 | `requires_approval` | bool | Yes | | |
 | `requires_document` | bool | Yes | | |
-| `max_consecutive_days` | int | No | | Null = no limit |
-| `annual_entitlement_days` | decimal | Yes | | |
-| `carry_forward_max_days` | decimal | Yes | | 0 = no carry forward |
-| `carry_forward_expiry_months` | int | Yes | | 0 = never expires |
+| `entitlement_minutes` | int | Yes | | Annual entitlement in minutes. Admin enters hours/minutes in UI. Phase 1 Time Off templates create duration-based behavior by default; templates do not configure request modes |
+| `max_consecutive_minutes` | int | No | | Null = no limit |
+| `carry_forward_allowed` | bool | Yes | | |
+| `carry_forward_limit_minutes` | int | Required if carry-forward allowed | | 0 = no carry forward |
+| `carry_forward_expiry` | string | No | ISO-8601 duration or null | Null = never expires |
 | `accrual_method` | string | Yes | `"annual"`, `"monthly"`, `"daily"` | |
-| `proration_method` | string | Yes | `"calendar_days"`, `"working_days"` | |
+| `proration_method` | string | Yes | `"calendar_days"`, `"working_days"`, `"schedule_hours"` | |
 | `minimum_notice_days` | int | Yes | | |
 | `negative_balance_allowed` | bool | Yes | | |
 
-**Assignment scope:** Leave policy templates are assigned from the Leave Policy screen to the entire tenant, selected departments, or selected positions. Leave policy resolution must never reduce an employee below the statutory country/legal-entity baseline.
+**Assignment scope:** Time Off policy templates are assigned from the Time Off Policy screen to the entire tenant, selected departments, or selected positions. Time Off policy resolution must never reduce an employee below the statutory country/legal-entity baseline.
 
 ---
 
-### `monitoring_policy` â€” Monitoring Policy Template
+### `monitoring_policy` - Monitoring Policy Template
 
 > **Phase 1.** Monitoring Policy templates are managed by the Template Manager and can be selected during provisioning Step 4.
 
-Seeds one `monitoring_feature_toggles` row for the tenant (upsert â€” one row per tenant).
+Seeds one `monitoring_feature_toggles` row for the tenant (upsert - one row per tenant).
 
 ```json
 {
@@ -271,6 +276,7 @@ Seeds one `monitoring_feature_toggles` row for the tenant (upsert â€” one r
   "document_tracking": false,
   "communication_tracking": true,
   "screenshot_capture": false,
+  "auto_screenshot_capture": false,
   "meeting_detection": true,
   "device_tracking": true,
   "work_location_verification": false,
@@ -285,12 +291,13 @@ Seeds one `monitoring_feature_toggles` row for the tenant (upsert â€” one r
 | `application_tracking` | bool | Yes | App usage tracking |
 | `document_tracking` | bool | Yes | Document tool time tracking |
 | `communication_tracking` | bool | Yes | Communication tool active time |
-| `screenshot_capture` | bool | Yes | Screenshot command eligibility â€” never scheduled in Phase 1 |
+| `screenshot_capture` | bool | Yes | Allows authorized on-demand screenshot capture |
+| `auto_screenshot_capture` | bool | Yes | Allows automatic screenshot capture when monitoring detects a deviation |
 | `meeting_detection` | bool | Yes | Meeting time tracking |
 | `device_tracking` | bool | Yes | Device online/offline tracking |
 | `work_location_verification` | bool | Yes | Network-based work-location compliance |
 | `identity_verification` | bool | Yes | Photo verification via tray app |
-| `biometric` | bool | Yes | Fingerprint terminal events |
+| `biometric` | bool | Yes | Biometric/attendance terminal events |
 
 **Auto-selection rule:** During provisioning Step 4, if a tenant has an `industry_profile_tag` set, the system automatically pre-selects the monitoring policy template whose `industry_profile_tag` matches. The operator can override.
 
@@ -298,7 +305,7 @@ Seeds one `monitoring_feature_toggles` row for the tenant (upsert â€” one r
 
 ---
 
-### `app_allowlist` â€” App Allowlist Template
+### `app_allowlist` - App Allowlist Template
 
 > **Phase 1.** App Allowlist templates are managed by the Template Manager and can be selected during provisioning Step 4.
 
@@ -333,8 +340,8 @@ Seeds `app_allowlists` rows and app allowlist assignment rows.
 | Field | Type | Required | Allowed Values | Notes |
 |---|---|---|---|---|
 | `mode` | string | Yes | `"allowlist"`, `"blocklist"` | Stored on tenant settings for agent policy |
-| `entries[].process_name` | string | Yes | Max 100 chars | Authoritative matching key â€” case-insensitive on agent side |
-| `entries[].application_display_name` | string | Yes | Max 200 chars | Metadata only â€” not used for matching |
+| `entries[].process_name` | string | Yes | Max 100 chars | Authoritative matching key - case-insensitive on agent side |
+| `entries[].application_display_name` | string | Yes | Max 200 chars | Metadata only - not used for matching |
 | `entries[].category` | string | Yes | `"browser"`, `"communication"`, `"development"`, `"office"`, `"design"`, `"productivity"`, `"other"` | |
 | `entries[].is_allowed` | bool | Yes | | |
 
@@ -342,9 +349,9 @@ Seeds `app_allowlists` rows and app allowlist assignment rows.
 
 ---
 
-### `onboarding` â€” Onboarding Template
+### `onboarding` - Onboarding Template
 
-Seeds `onboarding_templates` and `onboarding_template_tasks`. Does **not** create live tasks â€” task instances are created per new hire at onboarding time using this template.
+Seeds `checklist_templates` with `template_type = onboarding`. Does **not** create live `employee_checklist_tasks` - task instances are created per new hire at onboarding time using this template.
 
 ```json
 {
@@ -387,7 +394,7 @@ Seeds `onboarding_templates` and `onboarding_template_tasks`. Does **not** creat
 | `position_keys[]` | string[] | Required if scope = `position` | Position keys created by position template packs |
 | `tasks[].title` | string | Yes | Max 200 chars | |
 | `tasks[].description` | string | No | Max 1000 chars | |
-| `tasks[].due_days_offset` | int | Yes | 1â€“365 | Days from hire date |
+| `tasks[].due_days_offset` | int | Yes | 1-365 | Days from hire date |
 | `tasks[].assigned_to` | string | Yes | `"employee"`, `"hr_admin"`, `"it_admin"`, `"manager"` | Who the task is created for |
 | `tasks[].required_document_key` | string | No | Document key or null | If set, task includes a document acknowledgement step |
 | `tasks[].order_index` | int | Yes | 0-based | Display and dependency ordering |
@@ -396,7 +403,7 @@ Seeds `onboarding_templates` and `onboarding_template_tasks`. Does **not** creat
 
 ---
 
-### `data_import_mapping` â€” Data Import Mapping Template
+### `data_import_mapping` - Data Import Mapping Template
 
 Seeds `data_import_mapping_templates` and `data_import_field_mappings`.
 
@@ -452,12 +459,12 @@ Seeds `data_import_mapping_templates` and `data_import_field_mappings`.
 
 ---
 
-## Apply Flow â€” Step by Step
+## Apply Flow - Step by Step
 
 **Entry points:**
 - Provisioning wizard Step 4 (bulk apply of multiple templates in sequence)
-- Template detail â†’ "Apply to Tenant" button
-- Tenant card â†’ Configuration tab â†’ "Apply Template" action
+- Template detail -> "Apply to Tenant" button
+- Tenant card -> Configuration tab -> "Apply Template" action
 
 **Apply sequence:**
 
@@ -465,17 +472,17 @@ Seeds `data_import_mapping_templates` and `data_import_field_mappings`.
 1. Validate tenant exists and is not cancelled
 2. Validate template exists and is_active = true
 3. Check module entitlement (see entitlement table in overview)
-   â†’ If not entitled: return 400, write nothing
+   -> If not entitled: return 400, write nothing
 4. Deserialise payload_json into the typed payload record
-   â†’ If deserialisation fails: return 400 with field-level errors
+   -> If deserialisation fails: return 400 with field-level errors
 5. Run type-specific apply handler:
-   â†’ configuration     â†’ ApplyConfigurationPayloadHandler
-   â†’ position_template        â†’ ApplyPositionTemplatePayloadHandler
-   â†’ leave_policy      â†’ ApplyLeavePolicyPayloadHandler
-   â†’ monitoring_policy â†’ ApplyMonitoringPolicyPayloadHandler
-   â†’ app_allowlist     â†’ ApplyAppAllowlistPayloadHandler
-   â†’ onboarding        â†’ ApplyOnboardingPayloadHandler
-   â†’ data_import_mapping â†’ ApplyDataImportMappingPayloadHandler
+   -> configuration     -> ApplyConfigurationPayloadHandler
+   -> position_template        -> ApplyPositionTemplatePayloadHandler
+   -> time_off_policy      -> ApplyTimeOffPolicyPayloadHandler
+   -> monitoring_policy -> ApplyMonitoringPolicyPayloadHandler
+   -> app_allowlist     -> ApplyAppAllowlistPayloadHandler
+   -> onboarding        -> ApplyOnboardingPayloadHandler
+   -> data_import_mapping -> ApplyDataImportMappingPayloadHandler
 6. Collect warnings (non-blocking)
 7. Write audit row to tenant_configuration_template_applications
 8. SaveChanges (all writes in one transaction)
@@ -490,23 +497,23 @@ Seeds `data_import_mapping_templates` and `data_import_field_mappings`.
 |---|---|---|
 | **Configuration** | Writes only null/missing tenant_settings fields | Overwrites all fields in payload |
 | **Position Template Pack** | Creates departments and positions that do not already exist. Materializes linked role templates with tenant-entitlement-filtered permissions | Updates position names, department links, reports-to links, and linked role template references where safe. Positions with assigned employees are updated only for non-destructive fields |
-| **Leave Policy** | Creates new leave_type (if name not found) and new policy row | Creates new leave_type (if name not found). If leave_type exists, creates new policy row (does not overwrite â€” policies are versioned) |
+| **Time Off Policy** | Creates new time_off_type (if name not found) and new policy row | Creates new time_off_type (if name not found). If time_off_type exists, creates new policy row (does not overwrite - policies are versioned) |
 | **Monitoring Policy** | Creates or updates policy and assignment rows | Creates or updates policy and assignment rows |
 | **App Allowlist** | Creates or updates allowlist entries and assignment rows | Creates or updates allowlist entries and assignment rows |
-| **Onboarding** | Creates new onboarding template (allows multiple templates per tenant/role) | Creates new onboarding template â€” does not overwrite existing ones |
-| **Data Import Mapping** | Creates new mapping template | Creates new mapping template â€” does not overwrite existing ones |
+| **Onboarding** | Creates new onboarding template (allows multiple templates per tenant/role) | Creates new onboarding template - does not overwrite existing ones |
+| **Data Import Mapping** | Creates new mapping template | Creates new mapping template - does not overwrite existing ones |
 
 ---
 
 ## Module Entitlement Guard
 
-Checked before any writes. If the tenant lacks the required module, the apply is blocked entirely â€” no partial writes.
+Checked before any writes. If the tenant lacks the required module, the apply is blocked entirely - no partial writes.
 
 | Template type | Required module key |
 |---|---|
-| `configuration` | _(none â€” always allowed)_ |
+| `configuration` | _(none - always allowed)_ |
 | `position_template` | `core_hr` |
-| `leave_policy` | `leave` |
+| `time_off_policy` | `time_off` |
 | `monitoring_policy` | `monitoring` |
 | `app_allowlist` | `configuration` |
 | `onboarding` | `core_hr` |
@@ -516,17 +523,17 @@ Error response when blocked: `400 "Module '{key}' is not entitled for this tenan
 
 ---
 
-## APIs â€” Full Catalog
+## APIs - Full Catalog
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
 | `GET` | `/admin/v1/configuration-templates` | List templates; filter by `?type=`, `?active_only=`, `?industry_tag=` | `platform.templates.read` |
 | `GET` | `/admin/v1/configuration-templates/{id}` | Template detail + version history | `platform.templates.read` |
 | `POST` | `/admin/v1/configuration-templates` | Create new template | `platform.templates.manage` |
-| `PATCH` | `/admin/v1/configuration-templates/{id}` | Update name / description / payload â€” increments version | `platform.templates.manage` |
+| `PATCH` | `/admin/v1/configuration-templates/{id}` | Update name / description / payload - increments version | `platform.templates.manage` |
 | `DELETE` | `/admin/v1/configuration-templates/{id}` | Deactivate - blocked if active tenant positions or assignment rows still reference the template | `platform.templates.manage` |
 | `POST` | `/admin/v1/configuration-templates/{id}/clone` | Clone into new editable template | `platform.templates.manage` |
-| `POST` | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply to tenant â€” body: `{ force_update: bool }` | `platform.templates.manage` |
+| `POST` | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply to tenant - body: `{ force_update: bool }` | `platform.templates.manage` |
 | `GET` | `/admin/v1/tenants/{id}/configuration-template-applications` | Apply history for this tenant | `platform.tenants.read` |
 
 ---
@@ -540,7 +547,7 @@ Error response when blocked: `400 "Module '{key}' is not entitled for this tenan
 | `system_template_not_editable` | 400 | Attempt to edit a system template directly |
 | `template_key_taken` | 409 | `template_key` already exists |
 | `module_not_entitled` | 400 | Tenant lacks required module for this template type |
-| `payload_invalid` | 400 | Payload JSON fails schema validation â€” returns field-level errors |
+| `payload_invalid` | 400 | Payload JSON fails schema validation - returns field-level errors |
 | `deactivation_blocked` | 400 | Active tenant positions or assignment rows still reference this template |
 | `tenant_not_found` | 404 | Tenant ID not found on apply |
 

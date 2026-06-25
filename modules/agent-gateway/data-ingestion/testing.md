@@ -1,4 +1,4 @@
-# Data Ingestion — Testing
+﻿# Data Ingestion - Testing
 
 **Module:** Agent Gateway
 **Feature:** Data Ingestion
@@ -63,7 +63,7 @@ public class DataIngestionServiceTests
 ## Related
 
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
-- [[modules/agent-gateway/data-ingestion/end-to-end-logic|Data Ingestion — End-to-End Logic]]
+- [[modules/agent-gateway/data-ingestion/end-to-end-logic|Data Ingestion - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

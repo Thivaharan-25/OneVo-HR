@@ -1,8 +1,9 @@
 # Semantic Kernel Assistant Integration
 
-**Module:** Shared Platform + WorkSync Chat AI
-**Phase:** 1
-**Purpose:** Build ONEVO's first-party Semantic Kernel assistant inside the ONEVO backend so HR Management, Workforce Intelligence, and WorkSync actions use the same tenant context, RBAC, module entitlements, audit trail, and undo workflow.
+**Phase:** Phase 2. Not part of Phase 1 implementation scope.
+
+**Module:** Shared Platform + Work Chat AI
+**Purpose:** Phase 2 design for ONEVO's first-party Semantic Kernel assistant inside the ONEVO backend so HR Management, Monitoring, and WorkSync actions use the same tenant context, RBAC, module entitlements, audit trail, and undo workflow.
 
 > [!IMPORTANT]
 > ONEVO owns this assistant. It is not an external WMS chatbot and it must not bypass ONEVO application services. Semantic Kernel is the orchestration layer that chooses permission-checked ONEVO functions; the functions execute through existing CQRS handlers or application service interfaces.
@@ -32,7 +33,6 @@ The assistant is a backend capability. Browser JavaScript never receives provide
 
 | Boundary | Rule |
 |---|---|
-| Tenant context | Resolved from the authenticated web/IDE/Teams-mapped ONEVO user, never from AI text. |
 | Permissions | Every tool call checks the same effective permissions used by REST endpoints. |
 | Module entitlements | Tools are disabled when the tenant lacks the module or add-on. |
 | Data access | Kernel functions call application-layer services/CQRS handlers, not DbContext directly. |
@@ -68,13 +68,10 @@ IDEHub chat message
 ```text
 Graph webhook/delta
   -> TeamsMessageWebhookHandler
-  -> map Teams sender to ONEVO user
   -> insert ONEVO message with external_source = "microsoft_teams"
   -> invoke SemanticKernelChatOrchestrator if assistant is enabled for the channel
-  -> assistant reply can sync back to Teams when policy allows
 ```
 
-Teams messages are discussion by default. Official state changes still execute only through ONEVO application commands after user mapping and permission checks.
 
 ---
 
@@ -86,11 +83,11 @@ Use typed in-process Kernel Functions for Phase 1. OpenAPI import is allowed lat
 
 | Function | Required permission | Result |
 |---|---|---|
-| `GetEmployeeProfile` | `employees:read` (access policy scopes results to allowed employees) | Returns scoped employee summary. |
-| `GetLeaveBalance` | `leave:read` or own employee context | Returns leave balance. |
-| `CreateLeaveRequest` | `leave:write` | Creates leave request through Leave module. |
-| `ApproveLeaveRequest` | `leave:approve` | Approves through workflow API. |
-| `GetAttendanceStatus` | `attendance:read` (access policy scopes results to allowed employees) | Returns presence/activity summary. |
+| `GetEmployeeProfile` | `employees:read` (management coverage filters results to allowed employees) | Returns covered employee summary. |
+| `GetTimeOffBalance` | `time_off:read` or own employee context | Returns Time Off balance. |
+| `CreateTimeOffRequest` | `time_off:write` | Creates Time Off request through Time Off module. |
+| `ApproveTimeOffRequest` | `time_off:approve` | Approves through workflow API. |
+| `GetAttendanceStatus` | `attendance:read` (management coverage filters results to allowed employees) | Returns presence/activity summary. |
 | `ListExceptionAlerts` | `monitoring:alerts:read` | Returns visible exception alerts. |
 
 ### WorkSync Plugin
@@ -186,7 +183,6 @@ Use typed in-process Kernel Functions for Phase 1. OpenAPI import is allowed lat
 
 ## Data Processing Flow
 
-1. Save the original user/Teams/IDE message before AI processing.
 2. Build `KernelInputContext` from trusted server-side context.
 3. Register only the tools allowed by the user's permissions and tenant modules.
 4. Invoke Semantic Kernel with a system instruction that requires tool use for product data/actions and forbids guessing.
@@ -209,19 +205,15 @@ Use typed in-process Kernel Functions for Phase 1. OpenAPI import is allowed lat
 | Pending action | Inline AI action card with countdown and Undo button. |
 | Finalized action | Chat shows created entity link, e.g. "Task created: Review payroll". |
 | Failed action | Chat shows failure card with retry only if the action is safe to retry. |
-| Teams-originated action | Prefer confirmation in ONEVO unless the tenant explicitly allows Teams-originated auto-actions. |
 
 ---
 
 ## Microsoft Teams Sync Rules
 
-The assistant runs on normalized ONEVO messages. Teams is an input/output channel, not a separate authority.
 
 | Direction | Rule |
 |---|---|
 | ONEVO -> Teams | Assistant replies and normal chat messages may sync when `channel_teams_links.status = active` and policy allows outbound sync. |
-| Teams -> ONEVO | Teams messages are imported, deduplicated by Graph message id, mapped to a ONEVO user, then processed by the same assistant flow. |
-| Workflow actions | Teams discussion does not change workflow state unless the message maps to a ONEVO user and the assistant executes a permission-checked ONEVO command. |
 | Audit | Store the source as `microsoft_teams` and the external message id on imported messages and tool runs. |
 
 ---
@@ -251,7 +243,6 @@ Implementation should add assistant-run audit storage if existing audit logs can
 
 - [[modules/work-management/chat/overview|Chat]]
 - [[modules/work-management/chat-ai/overview|Chat AI]]
-- [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync]]
 - [[database/schemas/wms-chat|WMS Chat Schema]]
 - [[current-focus/contracts/signalr-events|SignalR Events]]
 - [[AI_CONTEXT/rules|Rules]]

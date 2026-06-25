@@ -1,4 +1,4 @@
-# CQRS Patterns: ONEVO
+﻿# CQRS Patterns: ONEVO
 
 **Last Updated:** 2026-05-08
 
@@ -26,11 +26,11 @@ ONEVO.Application/Features/{Feature}/{SubFeature}/
 |   `-- I{SubFeature}Repository.cs
 |-- ServiceInterfaces/
 |   `-- I{SubFeature}Service.cs
-|-- Mappings/                   # optional — manual entity→DTO mapping; only when non-trivial
+|-- Mappings/                   # optional - manual entity->DTO mapping; only when non-trivial
 |   `-- {SubFeature}Mappings.cs
-|-- Helpers/                    # optional — SubFeature-scoped utility logic with no DI deps
+|-- Helpers/                    # optional - SubFeature-scoped utility logic with no DI deps
 |   `-- {SubFeature}Helper.cs
-`-- EventHandlers/              # optional — only when a justified domain event exists
+`-- EventHandlers/              # optional - only when a justified domain event exists
 ```
 
 No feature-level `Validators/` folder. A validator belongs beside the command it validates.
@@ -40,38 +40,38 @@ No feature-level `Validators/` folder. A validator belongs beside the command it
 A Command changes state. It returns `Result<TResponse>`.
 
 ```csharp
-// ONEVO.Application/Features/Leave/Request/Commands/ApproveLeaveRequest/
-public record ApproveLeaveRequestCommand(
-    Guid LeaveRequestId,
+// ONEVO.Application/Features/TimeOff/Request/Commands/ApproveTimeOffRequest/
+public record ApproveTimeOffRequestCommand(
+    Guid TimeOffRequestId,
     Guid ApproverId
-) : IRequest<Result<LeaveRequestDto>>;
+) : IRequest<Result<TimeOffRequestDto>>;
 
-public class ApproveLeaveRequestHandler
-    : IRequestHandler<ApproveLeaveRequestCommand, Result<LeaveRequestDto>>
+public class ApproveTimeOffRequestHandler
+    : IRequestHandler<ApproveTimeOffRequestCommand, Result<TimeOffRequestDto>>
 {
-    private readonly ILeaveRequestRepository _leaveRequests;
+    private readonly ITimeOffRequestRepository _leaveRequests;
     private readonly IUnitOfWork _uow;
 
-    public ApproveLeaveRequestHandler(ILeaveRequestRepository leaveRequests, IUnitOfWork uow)
+    public ApproveTimeOffRequestHandler(ITimeOffRequestRepository leaveRequests, IUnitOfWork uow)
     {
         _leaveRequests = leaveRequests;
         _uow = uow;
     }
 
-    public async Task<Result<LeaveRequestDto>> Handle(
-        ApproveLeaveRequestCommand command,
+    public async Task<Result<TimeOffRequestDto>> Handle(
+        ApproveTimeOffRequestCommand command,
         CancellationToken ct)
     {
-        var request = await _leaveRequests.GetByIdAsync(command.LeaveRequestId, ct);
+        var request = await _leaveRequests.GetByIdAsync(command.TimeOffRequestId, ct);
 
         if (request is null)
-            return Result<LeaveRequestDto>.Failure("Leave request not found");
+            return Result<TimeOffRequestDto>.Failure("Time Off request not found");
 
         request.Approve(command.ApproverId);
 
         await _uow.SaveChangesAsync(ct);
 
-        return Result<LeaveRequestDto>.Success(request.ToDto());
+        return Result<TimeOffRequestDto>.Success(request.ToDto());
     }
 }
 ```
@@ -83,13 +83,13 @@ The command handler owns the use case. It may call domain methods, repositories,
 Every command that modifies state has a FluentValidation validator colocated with the command.
 
 ```csharp
-// ONEVO.Application/Features/Leave/Request/Commands/ApproveLeaveRequest/
-public class ApproveLeaveRequestValidator
-    : AbstractValidator<ApproveLeaveRequestCommand>
+// ONEVO.Application/Features/TimeOff/Request/Commands/ApproveTimeOffRequest/
+public class ApproveTimeOffRequestValidator
+    : AbstractValidator<ApproveTimeOffRequestCommand>
 {
-    public ApproveLeaveRequestValidator()
+    public ApproveTimeOffRequestValidator()
     {
-        RuleFor(x => x.LeaveRequestId).NotEmpty();
+        RuleFor(x => x.TimeOffRequestId).NotEmpty();
         RuleFor(x => x.ApproverId).NotEmpty();
     }
 }
@@ -102,30 +102,30 @@ public class ApproveLeaveRequestValidator
 A Query reads state. It never modifies data.
 
 ```csharp
-// ONEVO.Application/Features/Leave/Request/Queries/GetLeaveBalance/
-public record GetLeaveBalanceQuery(
+// ONEVO.Application/Features/TimeOff/Request/Queries/GetTimeOffBalance/
+public record GetTimeOffBalanceQuery(
     Guid EmployeeId,
     int Year
-) : IRequest<Result<LeaveBalanceDto>>;
+) : IRequest<Result<TimeOffBalanceDto>>;
 
-public class GetLeaveBalanceHandler
-    : IRequestHandler<GetLeaveBalanceQuery, Result<LeaveBalanceDto>>
+public class GetTimeOffBalanceHandler
+    : IRequestHandler<GetTimeOffBalanceQuery, Result<TimeOffBalanceDto>>
 {
-    private readonly ILeaveBalanceReader _leaveBalances;
+    private readonly ITimeOffBalanceReader _leaveBalances;
 
-    public GetLeaveBalanceHandler(ILeaveBalanceReader leaveBalances)
+    public GetTimeOffBalanceHandler(ITimeOffBalanceReader leaveBalances)
         => _leaveBalances = leaveBalances;
 
-    public async Task<Result<LeaveBalanceDto>> Handle(
-        GetLeaveBalanceQuery query,
+    public async Task<Result<TimeOffBalanceDto>> Handle(
+        GetTimeOffBalanceQuery query,
         CancellationToken ct)
     {
         var balance = await _leaveBalances.GetBalanceAsync(query.EmployeeId, query.Year, ct);
 
         if (balance is null)
-            return Result<LeaveBalanceDto>.Failure("No entitlement found");
+            return Result<TimeOffBalanceDto>.Failure("No entitlement found");
 
-        return Result<LeaveBalanceDto>.Success(balance);
+        return Result<TimeOffBalanceDto>.Success(balance);
     }
 }
 ```
@@ -135,12 +135,12 @@ Queries use repository or reader interfaces that return DTOs/read models. Querie
 ## DTOs
 
 ```text
-Application/Features/Leave/Request/DTOs/
+Application/Features/TimeOff/Request/DTOs/
 |-- Requests/
-|   `-- CreateLeaveRequestDto.cs
+|   `-- CreateTimeOffRequestDto.cs
 `-- Responses/
-    |-- LeaveRequestDto.cs
-    `-- LeaveBalanceDto.cs
+    |-- TimeOffRequestDto.cs
+    `-- TimeOffBalanceDto.cs
 ```
 
 Handlers never return Domain entities. They return response DTOs or read models wrapped in `Result<T>`.
@@ -198,7 +198,7 @@ Controllers stay thin. They map HTTP input to commands/queries and map `Result<T
 
 ```csharp
 [ApiController]
-[Route("api/v1/leave")]
+[Route("api/v1/time_off")]
 public class LeaveController : ControllerBase
 {
     private readonly ISender _mediator;
@@ -206,14 +206,14 @@ public class LeaveController : ControllerBase
     public LeaveController(ISender mediator) => _mediator = mediator;
 
     [HttpPost("{id}/approve")]
-    [RequirePermission("leave:approve")]
+    [RequirePermission("time_off:approve")]
     public async Task<IActionResult> Approve(
         Guid id,
-        ApproveLeaveRequestDto dto,
+        ApproveTimeOffRequestDto dto,
         CancellationToken ct)
     {
         var result = await _mediator.Send(
-            new ApproveLeaveRequestCommand(id, dto.ApproverId),
+            new ApproveTimeOffRequestCommand(id, dto.ApproverId),
             ct);
 
         return result.IsSuccess

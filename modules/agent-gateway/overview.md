@@ -29,9 +29,9 @@ Agent Gateway uses **device-level JWT authentication**, separate from user JWT. 
 | **Depends on** | [[modules/configuration/overview\|Configuration]] | `IConfigurationService` | Build monitoring policy for agent |
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Link employee to device at login |
 | **Consumed by** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | - (writes to raw buffer) | Raw activity data |
-| **Consumed by** | [[modules/workforce-presence/overview\|Workforce Presence]] | - (writes device sessions) | Device session data |
+| **Consumed by** | [[modules/time-attendance/overview\|Time & Attendance]] | - (writes device sessions) | Device session data |
 | **Consumed by** | [[modules/identity-verification/overview\|Identity Verification]] | - (routes verification photos) | Photo verification requests |
-| **Listens to** | [[modules/workforce-presence/overview\|Workforce Presence]] | `PresenceSessionStarted/Ended`, `BreakStarted/Ended` | Controls agent monitoring lifecycle |
+| **Listens to** | [[modules/time-attendance/overview\|Time & Attendance]] | `PresenceSessionStarted/Ended`, `BreakStarted/Ended` | Controls agent monitoring lifecycle |
 | **Listens to** | [[modules/exception-engine/overview\|Exception Engine]] | `RemoteCaptureRequested` | Dispatches capture command to agent |
 
 ---
@@ -128,18 +128,19 @@ Policy pushed to each agent - defines what features are enabled for the linked e
   "communication_tracking": true,
   "browser_extension_enabled": false,
   "screenshot_capture": false,
+  "auto_screenshot_capture": false,
   "meeting_detection": true,
   "device_tracking": true,
   "work_location_verification": true,
   "identity_verification": true,
-  "verification_on_login": true,
-  "verification_on_logout": false,
-  "verification_interval_minutes": 60,
+  "photo_clock_in_required": true,
+  "photo_clock_out_required": true,
+  "absence_photo_capture": false,
   "idle_threshold_seconds": 300,
   "snapshot_interval_seconds": 150,
   "heartbeat_interval_seconds": 60,
   "work_location": {
-    "mode": "office",
+    "mode": "onsite",
     "grace_period_minutes": 5,
     "strict_unknown_evidence": false,
     "photo_challenge_on_mismatch": true
@@ -152,15 +153,14 @@ Policy pushed to each agent - defines what features are enabled for the linked e
       { "name": "Google Chrome", "category": "browser", "is_allowed": true }
     ],
     "alert_on_violation": true,
-    "violation_threshold_minutes": 5
+    "non_allowed_app_threshold_minutes": 5
   }
 }
 
 // Note: screenshot_capture = false by default. No screenshot_interval - screenshots are
-// ONLY triggered via remote command (manual/on_demand). Never scheduled or automated.
+// triggered only by authorized on_demand request or auto_deviation when enabled. Never interval or random.
 ```
 
-Policy is resolved by the Configuration module before Agent Gateway stores or sends it. The monitoring feature part resolves `monitoring_feature_toggles` (tenant default) -> `monitoring_policy_overrides` (role/job-family/department/team scope overrides) -> `employee_monitoring_overrides` (employee override). The app allowlist part resolves `app_allowlists` tenant -> role -> employee. Consent/disclosure and Workforce Presence lifecycle gates are applied before collectors can run. Most specific non-null value wins. See [[modules/configuration/overview|Configuration]] and [[modules/configuration/app-allowlist/overview|App Allowlist Configuration]].
 
 ### `agent_health_logs`
 
@@ -199,7 +199,8 @@ Network and optional coarse location evidence captured only while the agent moni
 | `vpn_detected` | `boolean` | Default false |
 | `match_status` | `varchar(20)` | `matched`, `mismatch`, `unknown`, `not_evaluated` |
 | `confidence` | `varchar(20)` | `high`, `medium`, `low`, `unknown` |
-| `matched_work_location_id` | `uuid` | Nullable FK -> work_locations |
+| `matched_location_source` | `varchar(30)` | Nullable; `company_office`, `remote_profile`, or `none` |
+| `matched_location_source_id` | `uuid` | Nullable; `legal_entities.id` for `company_office`, `employee_remote_work_profiles.id` for `remote_profile` |
 
 ### `agent_commands`
 
@@ -210,7 +211,7 @@ Pending and completed commands sent from server to agent.
 | `id` | `uuid` | PK |
 | `agent_id` | `uuid` | FK -> registered_agents |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `capture_remote_workplace`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
+| `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `capture_remote_work_location`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
 | `requested_by` | `uuid` | FK -> users (authorized user who initiated) |
 | `payload_json` | `jsonb` | Command-specific parameters |
 | `status` | `varchar(20)` | `pending`, `delivered`, `completed`, `failed`, `expired` |
@@ -228,7 +229,7 @@ Pending and completed commands sent from server to agent.
 
 ## Domain Events (intra-module - MediatR)
 
-> These events are published and consumed within this module only. They never leave the module.
+> These events are published and consumed within this module only. They never cross the module boundary.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
@@ -241,7 +242,7 @@ Pending and completed commands sent from server to agent.
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
 | `AgentRegistered` | New device registered | [[modules/configuration/overview\|Configuration]] (push initial policy) |
-| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview\|Exception Engine]] (flag offline agent) |
+| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/notifications/overview\|Notifications]] (Phase 1 lightweight alert, recipient resolved by Monitoring Policy); Phase 2: [[modules/exception-engine/overview\|Exception Engine]] |
 | `AgentRevoked` | Admin revokes agent access | Agent receives 401 on next request |
 
 ### Consumes
@@ -413,7 +414,7 @@ fields such as `application_name` are for reports and UI labels only.
 - **App allowlist matching uses `process_name`.** `application_name` is not authoritative.
 - **Rate limiting:** Per device, not per user. Default: 30 requests/minute/device.
 - **Data routing:** The ingestion handler routes different `type` values to different modules: `activity_snapshot` -> `activity_raw_buffer`, `device_session` -> `device_sessions`, `verification_photo` -> [[modules/identity-verification/overview|Identity Verification]].
-- **Agent does NOT have HR permissions.** It cannot read employee profiles, leave data, or any HR information.
+- **Agent does NOT have HR permissions.** It cannot read employee profiles, Time Off data, or any HR information.
 
 ## Features (Server-Side)
 
@@ -422,7 +423,7 @@ fields such as `application_name` are for reports and UI labels only.
 - [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]] - Monitoring policy computation and push to agents (includes app allowlist)
 - [[modules/agent-gateway/data-ingestion/overview|Data Ingestion]] - High-throughput batch activity data ingestion (202 Accepted)
 - [[modules/agent-gateway/remote-commands/overview|Remote Commands]] - Bidirectional SignalR command channel for server->agent push (capture requests, monitoring lifecycle, policy refresh)
-- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] - Listens to workforce-presence events, sends start/stop/pause/resume commands to agent
+- [[modules/agent-gateway/monitoring-lifecycle/overview|Monitoring Lifecycle]] - Listens to time-attendance events, sends start/stop/pause/resume commands to agent
 
 ## WorkPulse Agent Docs
 
@@ -450,7 +451,7 @@ fields such as `application_name` are for reports and UI labels only.
 - [[security/compliance|Compliance]] - WorkPulse notices/consent, privacy modes
 - [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] - Implementation task file (Agent Gateway section)
 
-See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/identity-verification/overview|Identity Verification]], [[modules/auth/overview|Auth]], [[AI_CONTEXT/tech-stack|Tech Stack]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/time-attendance/overview|Time & Attendance]], [[modules/identity-verification/overview|Identity Verification]], [[modules/auth/overview|Auth]], [[AI_CONTEXT/tech-stack|Tech Stack]]
 
 ---
 

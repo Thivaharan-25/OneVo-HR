@@ -1,7 +1,7 @@
-# Module: Notifications
+﻿# Module: Notifications
 
 **Feature Folder:** `Application/Features/Notifications`
-**Phase:** 1 — Build
+**Phase:** 1 - Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 2
 **Owned Tables:** 0
@@ -19,7 +19,7 @@ Centralized notification pipeline for the entire platform. Handles in-app notifi
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Consumed by** | All modules | — (via domain events) | Notification delivery |
+| **Consumed by** | All modules | - (via domain events) | Notification delivery |
 
 ---
 
@@ -62,10 +62,18 @@ API endpoints:
 
 ## Database Tables
 
+**Notifications module owns delivery behavior. Shared Platform owns physical notification tables.**
+
 Notifications currently owns no physical database tables. `database/schemas/notifications.md`
-marks notification configuration as physically owned by Shared Platform. The tables below are
+marks notification tables as physically owned by Shared Platform. The tables below are
 referenced by Notifications but must be implemented in the Shared Platform schema/migrations,
 not as separate Notifications-owned tables.
+
+### `notifications`
+
+Owner: Shared Platform. See [[database/schemas/shared-platform#`notifications`|full schema]].
+
+Key columns: `recipient_user_id`, `category`, `type`, `title`, `message`, `severity` (`info`/`warning`/`critical`), `delivery_surface` (`bell`/`inbox`/`email`/`signalr`), `related_entity_type`, `related_entity_id`, `action_required`, `is_read`.
 
 ### `notification_templates`
 
@@ -74,8 +82,8 @@ Owner: Shared Platform.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `event_type` | `varchar(50)` | e.g., `leave.approved`, `exception.alert.created`, `alert.escalated` |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `event_type` | `varchar(50)` | e.g., `time_off.approved`, `monitoring.app_violation`, `verification.failed` |
 | `channel` | `varchar(20)` | `email`, `in_app`, `push`, `signalr` |
 | `subject_template` | `varchar(255)` | |
 | `body_template` | `text` | Liquid/Handlebars template |
@@ -88,8 +96,8 @@ Owner: Shared Platform.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `channel_type` | `varchar(20)` | `email`, `slack`, `webhook` |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `channel_type` | `varchar(20)` | `email`, `slack` (Phase 2), `webhook` |
 | `config_json` | `jsonb` | Channel-specific config |
 | `credentials_encrypted` | `bytea` | API keys etc. |
 | `is_active` | `boolean` | |
@@ -99,15 +107,21 @@ Owner: Shared Platform.
 ## Notification Pipeline
 
 See [[backend/notification-system|Notification System]] for the full 6-step pipeline:
-1. Domain event published → 2. Handler resolves recipients → 3. Load template → 4. Render → 5. Dispatch per channel → 6. Log delivery
+1. Domain event published -> 2. Handler resolves recipients -> 3. Load template -> 4. Render -> 5. Dispatch per channel -> 6. Log delivery
 
-**New event types for Workforce Intelligence:**
-- `exception.alert.created` — New exception alert
-- `exception.alert.escalated` — Alert escalated to next level
-- `verification.failed` — Identity verification failed
-- `agent.heartbeat.lost` — Agent went offline
-- `productivity.daily.report` — Daily report ready
-- `productivity.weekly.report` — Weekly report ready
+**Phase 1 monitoring event types:**
+- `monitoring.app_violation` - Non-allowed app usage threshold exceeded (from Activity Monitoring)
+- `monitoring.idle_threshold` - Idle time threshold exceeded (from Activity Monitoring)
+- `verification.failed` - Identity verification failed (from Identity Verification)
+- `verification.expired` - Identity verification challenge expired (from Identity Verification)
+- `monitoring.work_location_mismatch` - Work location mismatch detected (from Work Location Evidence)
+- `discrepancy.high` - High-severity discrepancy detected (from Discrepancy Engine)
+- `discrepancy.critical` - Critical-severity discrepancy detected (from Discrepancy Engine)
+- `agent.heartbeat.lost` - Agent went offline
+- `productivity.daily.report` - Daily report ready
+- `productivity.weekly.report` - Weekly report ready
+
+Phase 1 monitoring alerts do not use Exception Engine configurable rules. They are produced directly by Identity Verification, Activity Monitoring, Discrepancy Engine, and Work Location Evidence.
 
 ---
 
@@ -116,39 +130,39 @@ See [[backend/notification-system|Notification System]] for the full 6-step pipe
 | Channel | Purpose |
 |:--------|:--------|
 | `notifications-{userId}` | Per-user in-app notifications |
-| `exception-alerts` | Exception alerts (managers/admins) |
-| `workforce-live` | Live workforce status updates |
+| `notifications-{userId}` | Phase 1 monitoring/attendance alerts for authorized recipients |
+| `monitoring-live` | Live monitoring status updates |
 | `agent-status` | Agent online/offline status |
 
 ---
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module - MediatR)
 
-> These events are published and consumed within this module only. They never leave the module.
+> These events are published and consumed within this module only. They never cross the module boundary.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module - MediatR INotification)
 
 ### Publishes
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
 ### Consumes
 
 | Event | Source Module | Action Taken |
 |:------|:-------------|:-------------|
-| `LeaveRequested` | [[modules/leave/overview\|Leave]] | Notify manager of pending leave request |
-| `LeaveApproved` | [[modules/leave/overview\|Leave]] | Notify employee of approval |
-| `LeaveRejected` | [[modules/leave/overview\|Leave]] | Notify employee of rejection |
+| `TimeOffRequested` | [[modules/time-off/overview\|Time Off]] | Notify manager of pending Time Off request |
+| `TimeOffApproved` | [[modules/time-off/overview\|Time Off]] | Notify employee of Time Off approval |
+| `TimeOffRejected` | [[modules/time-off/overview\|Time Off]] | Notify employee of Time Off rejection |
 | `EmployeeHired` | [[modules/core-hr/overview\|Core HR]] | Send onboarding welcome notification |
 | `PayrollRunCompleted` | [[modules/payroll/overview\|Payroll]] | Notify employees that payslips are ready |
 | `ReviewCompleted` | [[modules/performance/overview\|Performance]] | Notify employee of completed review |
-| `ExceptionAlertCreated` | [[modules/exception-engine/overview\|Exception Engine]] | Send alert notification via escalation chain |
+| `MonitoringAlertCreated` | Monitoring Alerts | Send Phase 1 alert notification to the owner resolved through management coverage |
 
 ---
 
@@ -168,17 +182,17 @@ Template and channel feature pages describe notification pipeline behavior only.
 template/channel configuration remains Shared Platform-owned unless a later migration plan
 changes table ownership.
 
-- [[modules/notifications/notification-templates/overview|Notification Templates]] — Per-channel, per-event templates (Liquid/Handlebars)
-- [[modules/notifications/notification-channels/overview|Notification Channels]] — Channel provider configuration (email, Slack, webhook)
-- [[modules/notifications/signalr-real-time/overview|Signalr Real Time]] — Real-time push channels (`exception-alerts`, `workforce-live`, `agent-status`)
+- [[modules/notifications/notification-templates/overview|Notification Templates]] - Per-channel, per-event templates (Liquid/Handlebars)
+- [[modules/notifications/notification-channels/overview|Notification Channels]] - Channel provider configuration (email, webhook; Slack is Phase 2)
+- [[modules/notifications/signalr-real-time/overview|Signalr Real Time]] - Real-time push channels (`notifications-{userId}`, `monitoring-live`, `agent-status`; `exception-alerts` is Phase 2)
 
 ---
 
 ## Related
 
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — All templates and channels are tenant-scoped
-- [[backend/messaging/event-catalog|Event Catalog]] — `exception.alert.created`, `verification.failed`, `agent.heartbeat.lost`, `productivity.daily.report`
-- [[backend/messaging/error-handling|Error Handling]] — Delivery failures logged per channel; retry logic
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - All templates and channels are tenant-scoped
+- [[backend/messaging/event-catalog|Event Catalog]] - `exception.alert.created`, `verification.failed`, `agent.heartbeat.lost`, `productivity.daily.report`
+- [[backend/messaging/error-handling|Error Handling]] - Delivery failures logged per channel; retry logic
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[backend/notification-system|Notification System]], [[modules/exception-engine/overview|Exception Engine]]

@@ -1,56 +1,15 @@
-# Hardware Terminals — Testing
+# Hardware Terminals - Testing
 
-**Module:** Shared Platform
-**Feature:** Hardware Terminals
-**Location:** `tests/ONEVO.Tests.Unit/Modules/SharedPlatform/HardwareTerminalServiceTests.cs`
+**Module:** Shared Platform  
+**Feature:** Compatibility Redirect
 
 ---
 
-## Unit Tests
+There are no Shared Platform hardware-terminal service tests because Shared Platform does not own a terminal table or terminal write flow.
 
-```csharp
-public class HardwareTerminalServiceTests
-{
-    private readonly Mock<IHardwareTerminalRepository> _repoMock = new();
-    private readonly HardwareTerminalService _sut;
-
-    [Fact]
-    public async Task Register_terminal_encrypts_API_key()
-    {
-        // Arrange
-        // ... setup mocks for register terminal encrypts api key
-
-        // Act
-        // var result = await _sut.MethodAsync(command, default);
-
-        // Assert
-        // Key encrypted
-    }
-
-    [Fact]
-    public async Task Offline_terminal_detected()
-    {
-        // Arrange
-        // ... setup mocks for offline terminal detected
-
-        // Act
-        // var result = await _sut.MethodAsync(command, default);
-
-        // Assert
-        // Alert generated
-    }
-}
-```
-
-## Test Scenarios
-
-| Scenario | Type | Expected |
-|:---------|:-----|:---------|
-| Register terminal encrypts API key | Unit | Key encrypted |
-| Offline terminal detected | Unit | Alert generated |
+Test physical terminal registration, HMAC/API-key validation, heartbeat/offline detection, and punch-method normalization under [[modules/identity-verification/biometric-devices/testing|Biometric Devices - Testing]] and Time & Attendance device ingestion tests.
 
 ## Related
 
-- [[modules/shared-platform/hardware-terminals/overview|Overview]]
-- [[code-standards/testing-strategy|Testing Standards]]
-- [[database/migration-patterns|Migration Patterns]]
+- [[modules/identity-verification/biometric-devices/testing|Biometric Devices - Testing]]
+- [[database/schemas/identity-verification#`biometric_devices`|biometric_devices]]

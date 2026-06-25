@@ -1,4 +1,4 @@
-# Document Templates — End-to-End Logic
+﻿# Document Templates - End-to-End Logic
 
 **Module:** Documents
 **Feature:** Templates

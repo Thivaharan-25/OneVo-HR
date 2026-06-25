@@ -1,4 +1,4 @@
-# Raw Data Processing — Testing
+﻿# Raw Data Processing - Testing
 
 **Module:** Activity Monitoring
 **Feature:** Raw Data Processing
@@ -83,7 +83,7 @@ public class RawDataProcessorTests
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
-- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
+- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

@@ -16,7 +16,7 @@
 - [[backend/real-time|Real-Time Architecture]] - SignalR architecture
 - [[backend/search-architecture|Search Architecture]] - PostgreSQL FTS first
 - [[backend/monitoring-data-flow|Monitoring Data Flow]] - Agent -> API -> Dashboard data flow
-- [[backend/external-integrations|External Integrations]] - Stripe, Resend, biometric terminals, calendar, Slack, Microsoft Teams, payroll, LMS
+- [[backend/external-integrations|External Integrations]] - Stripe, Resend, attendance/biometric terminals, calendar, Microsoft Teams, payroll, LMS (Slack is Phase 2)
 
 ## Default Backend Flow
 
@@ -33,7 +33,7 @@ Domain events are optional. Use [[backend/domain-events|Domain Events]] only for
 
 ## Related
 
-- [[frontend/README|Frontend]] - Angular 21 three-app monorepo
+- [[frontend/README|Frontend]] - Angular 21 customer-app + dev-console monorepo
 - [[database/README|Database]] - PostgreSQL 16.13 baseline / PostgreSQL 18 target after validation
 - [[code-standards/backend-standards|Backend Standards]] - .NET naming and patterns
 - [[Userflow/README|User Flows]] - end-to-end feature flows

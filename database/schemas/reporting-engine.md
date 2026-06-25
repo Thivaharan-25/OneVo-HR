@@ -1,4 +1,4 @@
-# Reporting Engine — Schema
+﻿# Reporting Engine - Schema
 
 **Module:** [[modules/reporting-engine/overview|Reporting Engine]]
 **Phase:** Phase 2
@@ -13,9 +13,9 @@
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
 | `name` | `varchar(100)` |  |
-| `report_type` | `varchar(30)` | `headcount`, `turnover`, `leave_utilization`, `productivity_daily`, `productivity_weekly`, `workforce_summary`, `exception_summary` |
+| `report_type` | `varchar(30)` | `headcount`, `turnover`, `time_off_utilization`, `productivity_daily`, `productivity_weekly`, `monitoring_summary`, `exception_summary` |
 | `parameters_json` | `jsonb` | Filters, date ranges |
-| `schedule_cron` | `varchar(50)` | Cron expression (nullable — on-demand) |
+| `schedule_cron` | `varchar(50)` | Cron expression (nullable - on-demand) |
 | `output_format` | `varchar(10)` | `csv`, `xlsx` |
 | `recipients_json` | `jsonb` | Email recipients |
 | `is_active` | `boolean` |  |
@@ -30,15 +30,15 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `definition_id` | `uuid` | FK → report_definitions |
+| `definition_id` | `uuid` | FK -> report_definitions |
 | `status` | `varchar(20)` | `queued`, `running`, `completed`, `failed` |
-| `file_record_id` | `uuid` | FK → file_records (generated report) |
+| `file_record_id` | `uuid` | FK -> file_records (generated report) |
 | `row_count` | `int` |  |
 | `started_at` | `timestamptz` |  |
 | `completed_at` | `timestamptz` |  |
 | `error_message` | `text` |  |
 
-**Foreign Keys:** `definition_id` → [[#`report_definitions`|report_definitions]], `file_record_id` → [[database/schemas/infrastructure#`file_records`|file_records]]
+**Foreign Keys:** `definition_id` -> [[#`report_definitions`|report_definitions]], `file_record_id` -> [[database/schemas/infrastructure#`file_records`|file_records]]
 
 ---
 
@@ -58,7 +58,7 @@
 
 ## Messaging Note
 
-Reporting Engine does not publish integration events or consume them via the message bus. It reads data directly from other modules via query service interfaces (`ILeaveService`, `IPayrollService`, etc.). No outbox or idempotency tables are needed.
+Reporting Engine does not publish integration events or consume them via the message bus. It reads data directly from other modules via query service interfaces (`ITimeOffService`, `IPayrollService`, etc.). No outbox or idempotency tables are needed.
 
 ## Related
 

@@ -1,4 +1,4 @@
-# Frontend Testing Strategy
+﻿# Frontend Testing Strategy
 
 ## Test Stack
 
@@ -14,25 +14,25 @@ Tests live next to the code they test:
 
 ```
 projects/
-├── shared/src/lib/
-│   ├── api/endpoints/
-│   │   ├── employees.service.ts
-│   │   └── employees.service.spec.ts       # Service unit test
-│   └── utils/
-│       ├── format-date.ts
-│       └── format-date.spec.ts             # Utility unit test
-├── operations-lifecycle-app/src/app/features/
-│   ├── leave/
-│   │   ├── leave-overview.component.ts
-│   │   └── leave-overview.component.spec.ts # Component test
-├── setup-control-app/src/app/features/
-│   ├── legal-entities/
-│   │   ├── legal-entity-list.component.ts
-│   │   └── legal-entity-list.component.spec.ts # Component test
++-- shared/src/lib/
+|   +-- api/endpoints/
+|   |   +-- employees.service.ts
+|   |   +-- employees.service.spec.ts       # Service unit test
+|   +-- utils/
+|       +-- format-date.ts
+|       +-- format-date.spec.ts             # Utility unit test
++-- customer-app/src/app/features/
+|   +-- time_off/
+|   |   +-- time_off-overview.component.ts
+|   |   +-- time_off-overview.component.spec.ts # Component test
++-- customer-app/src/app/features/
+|   +-- legal-entities/
+|   |   +-- legal-entity-list.component.ts
+|   |   +-- legal-entity-list.component.spec.ts # Component test
 e2e/
-├── leave-request.spec.ts                    # E2E test
-├── exception-management.spec.ts
-└── login.spec.ts
++-- time-off-request.spec.ts                    # E2E test
++-- exception-management.spec.ts
++-- login.spec.ts
 ```
 
 ## Unit Tests (Jest)
@@ -106,9 +106,9 @@ import { LiveDashboardComponent } from './live-dashboard.component';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { setupServer } from 'msw/node';
-import { workforceHandlers, monitoringDisabledHandler } from '../../../../test/handlers/workforce';
+import { monitoringHandlers, monitoringDisabledHandler } from '../../../../test/handlers/monitoring';
 
-const server = setupServer(...workforceHandlers);
+const server = setupServer(...monitoringHandlers);
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
@@ -139,23 +139,23 @@ describe('LiveDashboardComponent', () => {
     await user.click(row);
 
     // Angular Router navigation assertion
-    expect(location.pathname).toBe('/workforce/emp-123');
+    expect(location.pathname).toBe('/monitoring/employees/emp-123');
   });
 });
 ```
 
 ## MSW Handlers
 
-Centralised mock API handlers — shared across unit and E2E tests:
+Centralised mock API handlers - shared across unit and E2E tests:
 
 ```typescript
-// test/handlers/workforce.ts
+// test/handlers/monitoring.ts
 import { http, HttpResponse } from 'msw';
 
-export const workforceHandlers = [
-  http.get('/api/v1/workforce/presence/live', () =>
+export const monitoringHandlers = [
+  http.get('/api/v1/monitoring/live', () =>
     HttpResponse.json({
-      total: 487, active: 342, idle: 89, onLeave: 41, absent: 15,
+      total: 487, active: 342, idle: 89, onTimeOff: 41, absent: 15,
       departments: [
         { name: 'Engineering', activePercent: 82 },
         { name: 'Sales', activePercent: 71 },
@@ -174,7 +174,7 @@ export const workforceHandlers = [
 ];
 
 export const monitoringDisabledHandler = http.get(
-  '/api/v1/workforce/presence/live',
+  '/api/v1/monitoring/live',
   () => HttpResponse.json(null, { status: 403 })
 );
 ```
@@ -249,13 +249,13 @@ for (const width of [375, 430, 768, 1024, 1280, 1440]) {
 
 ## E2E Tests (Playwright)
 
-Critical user flows only — not exhaustive coverage.
+Critical user flows only - not exhaustive coverage.
 
 ```typescript
-// e2e/leave-request.spec.ts
+// e2e/time-off-request.spec.ts
 import { test, expect } from '@playwright/test';
 
-test.describe('Leave Request Flow', () => {
+test.describe('Time Off Request Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.fill('[name=email]', 'hr@test.com');
@@ -264,12 +264,12 @@ test.describe('Leave Request Flow', () => {
     await page.waitForURL('/home');
   });
 
-  test('approve a leave request', async ({ page }) => {
-    await page.goto('/leave');
+  test('approve a Time Off request', async ({ page }) => {
+    await page.goto('/time-off');
     await page.click('text=Pending');
     await page.click('text=John Doe');
     await page.click('button:has-text("Approve")');
-    await expect(page.locator('mat-snack-bar-container')).toContainText('Leave approved');
+    await expect(page.locator('mat-snack-bar-container')).toContainText('Time Off approved');
   });
 });
 ```
@@ -279,14 +279,13 @@ test.describe('Leave Request Flow', () => {
 | Flow | File | What It Tests |
 |:-----|:-----|:-------------|
 | Login + MFA | `login.spec.ts` | Login, MFA verification, redirect to home |
-| Leave approval | `leave-request.spec.ts` | Submit, approve, reject leave |
+| Time Off approval | `time-off-request.spec.ts` | Submit, approve, reject time off |
 | Exception management | `exception-management.spec.ts` | View alerts, acknowledge, dismiss |
 | Employee CRUD | `employee-crud.spec.ts` | Create, edit, view employee |
-| App context switch | `context-switch.spec.ts` | Switch between Setup / Control and Operations / Lifecycle |
+| Customer route group navigation | `context-navigation.spec.ts` | Move between People, Time Off, Time & Attendance, Work, Calendar, Inbox, Monitoring, and Settings areas in customer-app |
 
 ## What NOT to Test
 
-- Angular Material component internals (already tested by Angular team)
 - CSS/styling (visual regression is a separate concern)
 - Implementation details (internal signals, private methods, lifecycle hooks)
 - Snapshot tests (break on every UI change, catch nothing meaningful)
@@ -303,8 +302,7 @@ test.describe('Leave Request Flow', () => {
 ## Run Commands
 
 ```bash
-ng test setup-control-app     # Jest unit + component tests
-ng test operations-lifecycle-app
+ng test customer-app          # Jest unit + component tests
 ng test dev-console
 ng test shared
 ng e2e                        # Playwright E2E

@@ -1,4 +1,4 @@
-# Monthly Reports — End-to-End Logic
+﻿# Monthly Reports - End-to-End Logic
 
 **Module:** Productivity Analytics
 **Feature:** Monthly Reports
@@ -32,7 +32,7 @@ GenerateMonthlyReportsJob (Hangfire, 1st of month 2:00 AM)
 
 - **Department ranking is only visible to managers** with `analytics:view` permission, never to the employee.
 - **Department rank is not based on raw active percentage.** Use `productivity_score` only when score basis and coverage are comparable.
-- **Monthly reports include pattern analysis** — weekday and hourly activity/output patterns.
+- **Monthly reports include pattern analysis** - weekday and hourly activity/output patterns.
 
 ## Related
 

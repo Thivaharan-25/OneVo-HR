@@ -1,4 +1,4 @@
-# Employee Overrides — End-to-End Logic
+﻿# Employee Overrides - End-to-End Logic
 
 **Module:** Configuration
 **Feature:** Per-Employee Monitoring Overrides
@@ -32,7 +32,6 @@ POST /api/v1/settings/monitoring/overrides/bulk
   -> MonitoringController.BulkOverride(SetBulkOverrideCommand)
     -> [RequirePermission("monitoring:configure")]
     -> ConfigurationService.SetBulkOverrideAsync(command, ct)
-      -> 1. Resolve target employees by department/team/position
       -> 2. For each employee: UPSERT override
          -> Skip employees who already have individual overrides (individual > bulk)
       -> 3. Invalidate cache for all affected employees
@@ -43,7 +42,7 @@ POST /api/v1/settings/monitoring/overrides/bulk
 
 - **Null means inherit from tenant toggle.** Only non-null values override.
 - **Individual overrides take precedence** over bulk overrides.
-- **Merge logic:** `effectivePolicy.Feature = employeeOverride?.Feature ?? tenantToggles.Feature`
+- **Merge logic:** `effectivePolicy.Feature = employeeOverride?.Feature ?? scopePolicy.Feature ?? tenantToggles.Feature`
 
 ## Related
 

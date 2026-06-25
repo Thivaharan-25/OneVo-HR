@@ -1,15 +1,14 @@
-# Configuration Template Manager â€” Testing
+﻿# Configuration Template Manager - Testing
 
-**Module:** Developer Platform â†’ Configuration Template Manager
+**Module:** Developer Platform -> Configuration Template Manager
 **Phase:** Phase 1
 
 ---
 
 ## Test Fixtures Required
 
-- One active tenant with `core_hr`, `leave`, `monitoring`, `configuration` modules entitled
+- One active tenant with `core_hr`, `time_off`, `monitoring`, `configuration` modules entitled
 - One active tenant with no modules entitled (for entitlement guard tests)
-- One global role template with `template_key = "team-lead"` available for position template linkage
 - One global role template with `template_key = "engineer"` available for position template linkage and materialized during position template apply
 - Platform operator account with `platform.templates.manage`
 - Platform read-only account with `platform.templates.read` only
@@ -18,10 +17,10 @@
 
 ## Template Creation
 
-### TC-CT-001: Create configuration template â€” happy path
+### TC-CT-001: Create configuration template - happy path
 **Input:** `{ template_key: "uk-office-defaults", template_type: "configuration", name: "UK Office Defaults", payload_json: { "timezone": "Europe/London", "currency_code": "GBP", "work_week_days": [1,2,3,4,5] } }`
 **Action:** `POST /admin/v1/configuration-templates`
-**Expected:** HTTP 201 â€” template created with `version = 1`, `is_active = true`, `is_system = false`
+**Expected:** HTTP 201 - template created with `version = 1`, `is_active = true`, `is_system = false`
 
 ### TC-CT-002: Duplicate template_key rejected
 **Input:** Same `template_key` as an existing template
@@ -51,11 +50,11 @@
 ### TC-CT-007: Clone system template creates editable copy
 **Input:** System template
 **Action:** `POST /admin/v1/configuration-templates/{id}/clone`
-**Expected:** HTTP 201 â€” new template with `is_system = false`, `version = 1`, new unique `template_key` (appended `-copy`)
+**Expected:** HTTP 201 - new template with `is_system = false`, `version = 1`, new unique `template_key` (appended `-copy`)
 
 ---
 
-## Apply â€” Configuration Template
+## Apply - Configuration Template
 
 ### TC-CT-008: Apply configuration template writes tenant_settings
 **Input:** Configuration template with `timezone = "Europe/London"`, `currency_code = "GBP"`
@@ -69,7 +68,7 @@
 
 ### TC-CT-010: Apply creates audit row
 **Action:** Apply any template to a tenant
-**Expected:** Row in `tenant_configuration_template_applications` with correct `template_id`, `applied_version`, `status = "applied"`, `applied_by_id`, `applied_at`
+**Expected:** Row in `tenant_configuration_template_applications` with correct `configuration_template_id`, `applied_version`, `status = "applied"`, `applied_by_id`, `applied_at`
 
 ---
 
@@ -110,34 +109,34 @@
 
 ---
 
-## Apply - Leave Policy Template
+## Apply - Time Off Policy Template
 
-### TC-CT-017: Apply leave policy - tenant scope
-**Input:** Leave policy template with `assignment_scope = "tenant"`
+### TC-CT-017: Apply Time Off policy - tenant scope
+**Input:** Time Off policy template with `assignment_scope = "tenant"`
 **Action:** Apply
-**Expected:** Leave types and policies are created; assignment row targets the full tenant
+**Expected:** Time Off types and policies are created; assignment row targets the full tenant
 
-### TC-CT-018: Apply leave policy - department scope
+### TC-CT-018: Apply Time Off policy - department scope
 **Setup:** Department "Engineering" exists for tenant
-**Input:** Leave policy template with `assignment_scope = "department"` and `department_names = ["Engineering"]`
+**Input:** Time Off policy template with `assignment_scope = "department"` and `department_names = ["Engineering"]`
 **Action:** Apply
-**Expected:** Leave types and policies are created; assignment row targets the Engineering department
+**Expected:** Time Off types and policies are created; assignment row targets the Engineering department
 
-### TC-CT-019: Apply leave policy - position scope target missing
+### TC-CT-019: Apply Time Off policy - position scope target missing
 **Setup:** No position exists with `position_key = "software-engineer"`
-**Input:** Leave policy template with `assignment_scope = "position"` and `position_keys = ["software-engineer"]`
+**Input:** Time Off policy template with `assignment_scope = "position"` and `position_keys = ["software-engineer"]`
 **Action:** Apply
 **Expected:** HTTP 422, error code `assignment_target_not_found`; no policy assignment rows written
 
-### TC-CT-020: Apply leave policy - leave type already exists - reuses existing type
-**Setup:** `leave_types` row with `name = "Annual Leave"` already exists for tenant
-**Input:** Leave rule with `leave_type_name = "Annual Leave"`
+### TC-CT-020: Apply Time Off policy - Time Off type already exists - reuses existing type
+**Setup:** `time_off_types` row with `name = "Annual Time Off"` already exists for tenant
+**Input:** Time Off rule with `time_off_type_name = "Annual Time Off"`
 **Action:** Apply
-**Expected:** No new `leave_types` row created; new `leave_policies` row linked to existing type
+**Expected:** No new `time_off_types` row created; new `time_off_policies` row linked to existing type
 
 ---
 
-## Apply â€” Module Entitlement Guard
+## Apply - Module Entitlement Guard
 
 ### TC-CT-021: Apply position_template - tenant not entitled to core_hr - blocked
 **Setup:** Tenant with no `core_hr` entitlement
@@ -145,40 +144,40 @@
 **Action:** Apply
 **Expected:** HTTP 400, error code `module_not_entitled`, message includes `"core_hr"`, no rows written
 
-### TC-CT-022: Apply leave_policy template â€” tenant not entitled to leave â€” blocked
-**Setup:** Tenant with no `leave` entitlement
+### TC-CT-022: Apply time_off_policy template - tenant not entitled to Time Off - blocked
+**Setup:** Tenant with no `time_off` entitlement
 **Expected:** HTTP 400, error code `module_not_entitled`
 
-### TC-CT-023: Apply configuration template â€” no module required â€” always allowed
+### TC-CT-023: Apply configuration template - no module required - always allowed
 **Setup:** Tenant with no modules entitled
 **Input:** Configuration template
 **Action:** Apply
-**Expected:** HTTP 200 â€” applies successfully
+**Expected:** HTTP 200 - applies successfully
 
 ---
 
-## Apply â€” Monitoring Policy Template
+## Apply - Monitoring Policy Template
 
-### TC-CT-024: Apply monitoring policy template â€” seeds monitoring_feature_toggles
+### TC-CT-024: Apply monitoring policy template - seeds monitoring_feature_toggles
 **Input:** Monitoring policy template with `activity_monitoring = true`, `screenshot_capture = false`
 **Action:** Apply
 **Expected:** `monitoring_feature_toggles.activity_monitoring = true`, `screenshot_capture = false`; upsert (not insert) if row already exists
 
-### TC-CT-025: Reapply monitoring policy â€” overwrites all toggles
+### TC-CT-025: Reapply monitoring policy - overwrites all toggles
 **Setup:** Existing `monitoring_feature_toggles` row
 **Action:** Apply different monitoring policy template
 **Expected:** All toggle values replaced with new template values
 
 ---
 
-## Apply â€” App Allowlist Template
+## Apply - App Allowlist Template
 
-### TC-CT-026: Apply app allowlist template â€” seeds entries and assignment rows
+### TC-CT-026: Apply app allowlist template - seeds entries and assignment rows
 **Input:** App allowlist template with 3 entries
 **Action:** Apply
 **Expected:** 3 `app_allowlists` rows plus assignment rows for the configured tenant, department, or position scope
 
-### TC-CT-027: Reapply app allowlist â€” upserts by process_name
+### TC-CT-027: Reapply app allowlist - upserts by process_name
 **Setup:** `app_allowlists` row for `chrome.exe` already exists for the same tenant
 **Input:** Template includes `chrome.exe` with updated `is_allowed = false`
 **Action:** Apply, `force_update = true`
@@ -186,12 +185,12 @@
 
 ---
 
-## Apply â€” Onboarding Template
+## Apply - Onboarding Template
 
-### TC-CT-028: Apply onboarding template â€” seeds template definition only (no live tasks)
+### TC-CT-028: Apply onboarding template - seeds template definition only (no live tasks)
 **Input:** Onboarding template with 3 tasks
 **Action:** Apply
-**Expected:** `onboarding_templates` row created, 3 `onboarding_template_tasks` rows created; no employee task records created
+**Expected:** `checklist_templates` row created with `template_type = onboarding`; no employee task records created
 
 ### TC-CT-029: Onboarding task order_index preserved
 **Input:** Tasks with `order_index` 0, 1, 2
@@ -200,7 +199,7 @@
 ### TC-CT-030: Onboarding template with department targeting
 **Input:** Onboarding template with `assignment_scope = "department"` and `department_names = ["Engineering"]`
 **Action:** Create/apply template
-**Expected:** `onboarding_templates` row stores assignment scope and targets; generated onboarding task template applies only to new hires in the targeted department
+**Expected:** `checklist_templates` row stores onboarding template scope and targets; generated checklist template applies only to new hires in the targeted department
 
 ### TC-CT-031: Onboarding scoped target without selected targets is rejected
 **Input:** Onboarding template with `assignment_scope = "position"` and empty `position_keys`
@@ -209,14 +208,14 @@
 
 ---
 
-## Apply â€” Data Import Mapping Template
+## Apply - Data Import Mapping Template
 
-### TC-CT-032: Apply data import mapping â€” seeds template and field mappings
+### TC-CT-032: Apply data import mapping - seeds template and field mappings
 **Input:** Data import mapping template with `source_type = "csv"` and 4 field mappings
 **Action:** Apply
 **Expected:** 1 `data_import_mapping_templates` row, 4 `data_import_field_mappings` rows
 
-### TC-CT-033: Required field mapping â€” validation_rule stored correctly
+### TC-CT-033: Required field mapping - validation_rule stored correctly
 **Input:** Field mapping with `validation_rule = "date:DD/MM/YYYY"`
 **Expected:** Stored verbatim; returned on GET
 
@@ -247,10 +246,9 @@
 **Action:** Apply same template again
 **Expected:** Previous row updated to `status = "superseded"`; new row with `status = "applied"`
 
-### TC-CT-038: Apply with warnings â€” warnings stored in audit row
-**Action:** Apply leave policy template with unmatched rank reference
+### TC-CT-038: Apply with warnings - warnings stored in audit row
+**Action:** Apply Time Off policy template with unmatched rank reference
 **Expected:** Warning text stored in `tenant_configuration_template_applications.warnings_json`
-
 
 
 

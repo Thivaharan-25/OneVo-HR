@@ -1,4 +1,4 @@
-# Task Management — Testing
+﻿# Task Management - Testing
 
 **Module:** WorkSync
 **Feature:** Task Management
@@ -32,7 +32,7 @@ public class TaskServiceTests
     [Fact]
     public async Task UpdateStatus_ToDone_WithApprovalRequired_ReturnsFailure()
     {
-        SetupProjectApprovalFlowEnabled();
+        SetupProjectStatusApprovalRequired();
         SetupNoApprovedApproval(taskId: _taskId);
         var result = await _sut.UpdateStatusAsync(_taskId, "done", default);
         result.IsSuccess.Should().BeFalse();
@@ -42,7 +42,7 @@ public class TaskServiceTests
     [Fact]
     public async Task UpdateStatus_ToDone_WithApprovalApproved_Succeeds()
     {
-        SetupProjectApprovalFlowEnabled();
+        SetupProjectStatusApprovalRequired();
         SetupApprovedApproval(taskId: _taskId);
         var result = await _sut.UpdateStatusAsync(_taskId, "done", default);
         result.IsSuccess.Should().BeTrue();
@@ -113,7 +113,7 @@ public class TaskEndpointTests : IClassFixture<ONEVOWebFactory>
 | Done blocked by approval requirement | Unit | APPROVAL_REQUIRED error |
 | Move card exceeds WIP limit | Unit | WIP_LIMIT_EXCEEDED error |
 | Move card updates task.status | Unit | status = column.status_key |
-| Full create → complete flow | Integration | Status progresses correctly |
+| Full create -> complete flow | Integration | Status progresses correctly |
 | Tenant isolation | Integration | Cannot access other tenant tasks |
 | Workspace isolation | Integration | Cannot access other workspace tasks |
 | Custom field required but null | Unit | Validation failure |

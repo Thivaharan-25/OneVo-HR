@@ -1,4 +1,4 @@
-# Global Policies Userflow
+﻿# Global Policies Userflow
 
 ## Actor
 
@@ -8,7 +8,7 @@ Platform policy manager (`platform.system_config.read` to view, `platform.system
 
 ## List Page - System Config -> Global Policies
 
-Shows all six auth/security policy keys in a table. No create button — the keys are fixed.
+Shows all six auth/security policy keys in a table. No create button - the keys are fixed.
 
 | Column | Description |
 |---|---|
@@ -16,7 +16,7 @@ Shows all six auth/security policy keys in a table. No create button — the key
 | Key | Machine-readable key (e.g. `auth.mfa_required_default`) |
 | Type | `boolean` or `integer` |
 | Published Default | Current live default value |
-| Draft Value | Pending unpublished value — shown only if an unpublished draft exists |
+| Draft Value | Pending unpublished value - shown only if an unpublished draft exists |
 | Last Published | Timestamp and actor of the most recent publish |
 
 Operator clicks any row to open the detail/edit view.
@@ -50,27 +50,27 @@ Table below the edit form showing previous publish events:
 
 ---
 
-## Step 1 — Edit Draft
+## Step 1 - Edit Draft
 
-Operator changes the **New Default Value** field and saves. This creates a draft — the published default is not changed yet. The list page shows the Draft Value column populated for this policy.
+Operator changes the **New Default Value** field and saves. This creates a draft - the published default is not changed yet. The list page shows the Draft Value column populated for this policy.
 
 **API:** `PATCH /admin/v1/global-policies/{id}` `{ "draft_value": ... }`
 
 ---
 
-## Step 2 — Preview Impact
+## Step 2 - Preview Impact
 
 Operator clicks **Preview Impact**.
 
 **API:** `GET /admin/v1/global-policies/{id}/tenant-impact`
 
 Displays:
-- **X tenants will receive this change** — tenants whose current auth policy value matches the existing published default (no explicit override set). These tenants would be updated if the operator propagates after publishing.
-- **Y tenants are unaffected** — tenants that have an explicit override and will not be changed regardless.
+- **X tenants will receive this change** - tenants whose current auth policy value matches the existing published default (no explicit override set). These tenants would be updated if the operator propagates after publishing.
+- **Y tenants are unaffected** - tenants that have an explicit override and will not be changed regardless.
 
 ---
 
-## Step 3 — Publish
+## Step 3 - Publish
 
 Operator clicks **Publish**.
 
@@ -83,7 +83,7 @@ Publishing alone does not touch any existing tenant's auth policy.
 
 ---
 
-## Step 4 — Propagate to Existing Tenants (optional, separate action)
+## Step 4 - Propagate to Existing Tenants (optional, separate action)
 
 Available after publish via a **Propagate to existing tenants** button on the detail view.
 
@@ -104,7 +104,7 @@ Available after publish via a **Propagate to existing tenants** button on the de
 |---|---|
 | Publish without audit reason | Form validation: "Reason is required" |
 | Propagate without audit reason | Form validation: "Reason is required" |
-| Propagation job partially fails | Platform Health shows: "Global policy propagation completed with [N] failures" — drill down shows per-tenant results |
+| Propagation job partially fails | Platform Health shows: "Global policy propagation completed with [N] failures" - drill down shows per-tenant results |
 
 ---
 
@@ -121,8 +121,8 @@ Available after publish via a **Propagate to existing tenants** button on the de
 
 ## Rules
 
-- Policies cannot be created or deleted — only the six fixed auth keys exist
-- Publishing requires a reason — no silent default changes
-- Propagation is always a separate explicit action after publishing — publishing never auto-propagates
+- Policies cannot be created or deleted - only the six fixed auth keys exist
+- Publishing requires a reason - no silent default changes
+- Propagation is always a separate explicit action after publishing - publishing never auto-propagates
 - Tenant-specific overrides in `tenant_auth_policies` are never overwritten by publish or propagate
-- `auth.failed_login_lockout_threshold` and `auth.failed_login_lockout_minutes` have no propagation step — they apply platform-wide immediately on publish
+- `auth.failed_login_lockout_threshold` and `auth.failed_login_lockout_minutes` have no propagation step - they apply platform-wide immediately on publish

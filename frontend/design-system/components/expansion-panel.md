@@ -1,6 +1,6 @@
-# Expansion Panel
+﻿# Expansion Panel
 
-The expansion panel is the secondary navigation layer that slides out to the right of the rail when a pillar with sub-navigation is selected. It is an independent floating card — not attached to the rail or the content area.
+The expansion panel is the secondary navigation layer that slides out to the right of the rail when a pillar with sub-navigation is selected. It is an independent floating card - not attached to the rail or the content area.
 
 **Pillars with no panel (Home, Inbox, Chat):** Clicking these closes the panel entirely and navigates directly.
 
@@ -17,7 +17,7 @@ The expansion panel is the secondary navigation layer that slides out to the rig
 
 | Property | Value |
 |:---------|:------|
-| Background | `#FAF9F6` — warm off-white, not pure white |
+| Background | `#FAF9F6` - warm off-white, not pure white |
 | Border | `1px solid #E8E8EC` |
 | Shadow | `0 2px 12px rgba(0,0,0,0.08)` |
 
@@ -25,7 +25,7 @@ The expansion panel is the secondary navigation layer that slides out to the rig
 
 | Property | Value |
 |:---------|:------|
-| Background | `#000000` — pure black |
+| Background | `#000000` - pure black |
 | Border | `1px solid rgba(255,255,255,0.06)` |
 | Shadow | `0 2px 12px rgba(0,0,0,0.40)` |
 
@@ -58,7 +58,7 @@ In Tailwind:
 )}>
 ```
 
-> Easing: `cubic-bezier(0.16,1,0.3,1)` — the `ease-out` spring curve. See [[frontend/design-system/foundations/motion|Motion]].
+> Easing: `cubic-bezier(0.16,1,0.3,1)` - the `ease-out` spring curve. See [[frontend/design-system/foundations/motion|Motion]].
 
 ## Panel Head
 
@@ -74,15 +74,15 @@ Height: **44px**
 
 ### Head Buttons (+ and close)
 
-Size: **22×22px**, border-radius: **5px**
+Size: **22x22px**, border-radius: **5px**
 
 | State | Light bg | Light color | Dark bg | Dark color |
 |:------|:---------|:------------|:--------|:-----------|
 | Default | transparent | `#9499B0` | transparent | `rgba(255,255,255,0.25)` |
 | Hover | `#EEECEA` | `#4C5278` | `rgba(255,255,255,0.07)` | `rgba(255,255,255,0.60)` |
 
-- Close (`X`) icon: **12×12px**, stroke-width **1.75**
-- Plus (`+`) icon: **14×14px**, stroke-width **2**
+- Close (`X`) icon: **12x12px**, stroke-width **1.75**
+- Plus (`+`) icon: **14x14px**, stroke-width **2**
 
 ### + Create Dropdown
 
@@ -98,14 +98,14 @@ padding: 5px
 Light: bg `#FFFFFF`, border `1px solid #E2E3EA`, shadow `0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06)`
 Dark: bg `#1C1D27`, border `rgba(255,255,255,0.08)`
 
-Entry animation: `opacity 0 → 1`, `translateY(-6px) scale(0.97) → translateY(0) scale(1)` over `140ms cubic-bezier(0.16,1,0.3,1)`
+Entry animation: `opacity 0 -> 1`, `translateY(-6px) scale(0.97) -> translateY(0) scale(1)` over `140ms cubic-bezier(0.16,1,0.3,1)`
 
 **Dropdown item:**
 - Padding: `7px 9px`, border-radius: `7px`
 - Font-size: 12.5px, color: `#4C5278` / `rgba(255,255,255,0.55)` dark
 - Hover bg: `#F4F5F8` / `rgba(255,255,255,0.06)` dark
 - Hover color: `#1E2140` / `rgba(255,255,255,0.90)` dark
-- Icon: 13×13px, default `#9499B0`, hover turns `#5B4FE8`
+- Icon: 13x13px, default `#9499B0`, hover turns `#5B4FE8`
 
 **Separator inside dropdown:** `height: 1px`, bg `#F0F0F4` / `rgba(255,255,255,0.07)` dark
 
@@ -126,17 +126,17 @@ Scrollbar: `width: 3px`, thumb `#DDDBD5` (light) / `rgba(255,255,255,0.08)` (dar
 | Property | Default | Hover | Active |
 |:---------|:--------|:------|:-------|
 | Padding | `5px 8px` | same | same |
-| Border-radius | 6px | — | — |
+| Border-radius | 6px | - | - |
 | Font-size | **12.5px** | same | same |
 | Font-weight | 400 | 400 | **500** |
 | Color (light) | `#6B7194` | `#1E2140` | `#5B4FE8` |
 | Background (light) | transparent | `#EEECEA` | `#ECEAFD` |
 | Color (dark) | `rgba(255,255,255,0.38)` | `rgba(255,255,255,0.72)` | `#8C86F2` |
 | Background (dark) | transparent | `rgba(255,255,255,0.05)` | `rgba(91,79,232,0.20)` |
-| Icon size | **13×13px** (`size={13}`) | same | same |
+| Icon size | **13x13px** (`size={13}`) | same | same |
 | Icon stroke-width | **1.6** | same | same |
-| Gap (icon + text) | 8px | — | — |
-| Transition | `background 120ms, color 120ms` | — | — |
+| Gap (icon + text) | 8px | - | - |
+| Transition | `background 120ms, color 120ms` | - | - |
 
 ```tsx
 <a className={cn(
@@ -158,77 +158,75 @@ All panel items, exact Lucide icon names, routes, and permission keys:
 | Label | Lucide Icon | Route | Permission |
 |:------|:------------|:------|:-----------|
 | Employees | `UserCheck` | `/people/employees` | `employees:read` |
-| Leave | `PlaneTakeoff` | `/people/leave` | `leave:read` |
+| Onboarding | `UserPlus` | `/people/onboarding` | `employees:write` |
+| Offboarding | `UserMinus` | `/people/offboarding` | `employees:write` |
+| Checklist Templates | `ListChecks` | `/people/checklist-templates` | `employees:write` |
 
-Create actions: `UserPlus` Invite employee · `PlaneTakeoff` Submit leave request
+Create actions: `UserPlus` Add employee , `Upload` Bulk onboarding/import
 
-### Workforce
+### Time Off
 | Label | Lucide Icon | Route | Permission |
 |:------|:------------|:------|:-----------|
-| Presence | `Radio` | `/workforce` | `workforce:view` |
-| Projects | `FolderKanban` | `/workforce/projects` | `projects:read` |
-| My Work | `CircleCheck` | `/workforce/my-work` | `tasks:read` |
-| Planner | `GanttChart` | `/workforce/planner` | `sprints:read` |
-| Goals | `Target` | `/workforce/goals` | `okr:read` |
-| Docs | `FileText` | `/workforce/docs` | `documents:read` |
-| Timesheets | `Clock` | `/workforce/time` | `time:read` |
-| Analytics | `BarChart2` | `/workforce/analytics` | `analytics:read` |
+| My Time Off | `CalendarCheck` | `/time-off` | `time_off:create` OR `time_off:read-own` |
+| Team Time Off | `UsersRound` | `/time-off/team` | `time_off:approve` OR `time_off:read` |
+| Time Off Types | `Tags` | `/time-off/types` | `time_off:manage` |
+| Time Off Policies | `ClipboardList` | `/time-off/policies` | `time_off:manage` |
+| Entitlements | `WalletCards` | `/time-off/entitlements` | `time_off:manage` |
 
-Create actions: `FolderPlus` New project · `CirclePlus` New task · `Target` New goal · `Clock` Log time
+Create actions: `PlaneTakeoff` Apply time off
 
-### Org
+### Time & Attendance
 | Label | Lucide Icon | Route | Permission |
 |:------|:------------|:------|:-----------|
-| Org Chart | `Network` | `/org` | `org:read` |
-| Departments | `Building2` | `/org/departments` | `org:read` |
-| Teams | `Users2` | `/org/teams` | `org:read` |
-| Job Families | `Briefcase` | `/org/job-families` | `org:manage` |
-| Legal Entities | `Landmark` | `/org/legal-entities` | `org:manage` |
+| Attendance | `UserCheck2` | `/time-attendance/attendance` | `attendance:read-own` OR `attendance:read` |
+| Schedules | `CalendarClock` | `/time-attendance/schedules` | `attendance:read` |
+| Clock-in Policy | `Clock` | `/time-attendance/clock-in-policy` | `attendance:write` |
+| Overtime Rules | `Timer` | `/time-attendance/overtime-rules` | `attendance:write` |
 
-Create actions: `Building2` New department · `Users2` New team · `Briefcase` New job family · `Landmark` New legal entity
+Create actions: row-level correction actions , overtime request actions
+
+### Work
+| Label | Lucide Icon | Route | Permission |
+|:------|:------------|:------|:-----------|
+| Projects | `FolderKanban` | `/work/projects` | `projects:read` |
+| Work Items | `CircleCheck` | `/work/items` | `tasks:read` |
+| Documents | `FileText` | `/work/documents` | `documents:read` |
+| Project Members | `UsersRound` | `/work/members` | `projects:read` |
+| Worklogs | `Clock` | `/work/worklogs` | `time:read` |
+
+Create actions: `FolderPlus` New project , `CirclePlus` New work item , `Clock` Log work
 
 ### Calendar
+Calendar is a direct main sidebar item at `/calendar` with `calendar:read`. It does not open a Time & Attendance setup panel and must not contain separate setup links for schedules, holiday calendars, or attendance rules.
+
+Create actions: `CalendarPlus` New event , `Send` Send invite
+
+### Monitoring
 | Label | Lucide Icon | Route | Permission |
 |:------|:------------|:------|:-----------|
-| Calendar | `CalendarDays` | `/calendar` | `calendar:read` |
-| Schedules | `CalendarClock` | `/calendar/schedule` | `calendar:read` |
-| Attendance | `UserCheck2` | `/calendar/attendance` | `attendance:read` |
-| Overtime | `Timer` | `/calendar/overtime` | `attendance:read` |
-
-Create actions: `CalendarPlus` New schedule · `Timer` Add overtime
-
-### Admin
-| Label | Lucide Icon | Route | Permission |
-|:------|:------------|:------|:-----------|
-| People Access | `Users` | `/admin/users` | `users:manage` |
-| Permissions | `Lock` | `/admin/roles` | `roles:manage` |
-| Activity Trail | `ScrollText` | `/admin/audit` | `settings:system` |
-| Agents | `Bot` | `/admin/agents` | `agent:manage` |
-| Devices | `Monitor` | `/admin/devices` | `settings:device` |
-| Data & Privacy | `ShieldCheck` | `/admin/compliance` | `settings:system` |
-
-Create actions: `UserPlus` Add user · `Lock` New role · `Bot` Add agent
+| Live Status | `Activity` | `/monitoring` | `monitoring:view` |
+| Alerts | `Bell` | `/monitoring/alerts` | `monitoring:alerts:read` |
+| Device Health | `Monitor` | `/monitoring/devices` | `agent:view-health` |
 
 ### Settings
 | Label | Lucide Icon | Route | Permission |
 |:------|:------------|:------|:-----------|
 | General | `Sliders` | `/settings/general` | `settings:read` |
-| Alerts | `Bell` | `/settings/alert-rules` | `settings:alerts` |
-| Notifications | `BellRing` | `/settings/notifications` | `settings:notifications` |
-| Integrations | `Plug` | `/settings/integrations` | `settings:integrations` |
 | Branding | `Palette` | `/settings/branding` | `settings:branding` |
+| Users | `Users` | `/settings/users` | `users:manage` |
+| Roles & Permissions | `Lock` | `/settings/roles` | `roles:manage` |
+| Notifications | `BellRing` | `/settings/notifications` | `settings:notifications` |
 | Billing | `CreditCard` | `/settings/billing` | `settings:billing` |
-| System | `Cpu` | `/settings/system` | `settings:system` |
+| Devices | `Monitor` | `/settings/devices` | `settings:device` |
+| Audit Log | `ScrollText` | `/settings/audit` | `audit:read` |
 
-Create actions: `BellPlus` New alert rule · `Plug` Add integration
-
+Create actions: `UserPlus` Add user , `Lock` New role , `Monitor` Add device
 ## Related
 
-- [[frontend/design-system/components/shell-layout|Shell Layout]] — overall layout this panel sits in
-- [[frontend/design-system/components/nav-rail|Nav Rail]] — rail that triggers this panel
-- [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] — canonical nav reference
-- [[frontend/design-system/foundations/motion|Motion]] — animation timing, `ease-out` curve
-- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — brand accent color values
-- [[Userflow/Dashboard/shell-navigation|Shell Navigation]] — interaction flow
-
+- [[frontend/design-system/components/shell-layout|Shell Layout]] - overall layout this panel sits in
+- [[frontend/design-system/components/nav-rail|Nav Rail]] - rail that triggers this panel
+- [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] - canonical nav reference
+- [[frontend/design-system/foundations/motion|Motion]] - animation timing, `ease-out` curve
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] - brand accent color values
+- [[Userflow/Dashboard/shell-navigation|Shell Navigation]] - interaction flow
 

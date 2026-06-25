@@ -1,4 +1,4 @@
-# Resource Management — Testing
+﻿# Resource Management - Testing
 
 **Module:** WorkSync
 **Feature:** Resource Management
@@ -33,14 +33,14 @@ public class ResourceServiceTests
     }
 
     [Fact]
-    public async Task CalculateAvailability_SubtractsLeaveDays()
+    public async Task CalculateAvailability_SubtractsTimeOffHours()
     {
         SetupContractedHours(_userId, hoursPerDay: 8);
         SetupNoOverrides(_userId);
-        SetupLeaveDays(_userId, leaveDays: 5, inPeriod: (_startDate, _endDate));
+        SetupTimeOffHours(_userId, leaveHours: 40, inPeriod: (_startDate, _endDate));
         var workingDays = 20; // assume 4 working weeks
         var availability = await _sut.GetAvailabilityAsync(_userId, _startDate, _endDate, default);
-        availability.AvailableHours.Should().Be((workingDays - 5) * 8); // 120 hours
+        availability.AvailableHours.Should().Be((workingDays * 8) - 40); // 120 hours
     }
 
     [Fact]
@@ -56,11 +56,13 @@ public class ResourceServiceTests
 
 ## Test Scenarios
 
+Time Off remains stored and calculated in minutes. Resource Management converts approved Time Off minutes into derived capacity hours only for planning calculations.
+
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
 | Over-allocation (> 100%) emits warning | Unit | Success + warning event |
 | User not in workspace | Unit | Failure |
-| Availability subtracts leave days | Unit | Correct available hours |
+| Availability subtracts derived Time Off capacity hours | Unit | Approved Time Off minutes are converted to derived hours before capacity calculation |
 | Override takes precedence | Unit | Override hours used |
 | Allocation percentage 0 | Unit | Validation failure |
 

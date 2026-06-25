@@ -1,4 +1,4 @@
-# Tenant Settings — Testing
+﻿# Tenant Settings - Testing
 
 **Module:** Configuration
 **Feature:** Tenant Settings

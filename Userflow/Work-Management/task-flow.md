@@ -1,16 +1,15 @@
 # Task Management
 
-**Area:** Workforce -> My Work / Workforce -> Projects -> Board
-**Trigger:** User clicks "My Work" in Workforce panel, or opens a project board
+**Area:** Work -> Work Items / Work -> Projects -> Items
+**Trigger:** User clicks "Work Items" in the Work panel, or opens a project Kanban/List/Calendar view
 **Required Permission:** `tasks:read` (view); `tasks:write` (create/edit/assign)
 
 ## Purpose
 
 Tasks are the atomic unit of work in the WMS. A task can be a feature, bug, issue, or any actionable item. Tasks live inside projects and support a full lifecycle: creation -> assignment -> work -> submission -> approval -> close. Bugs are a specialised task type with additional reproduction steps and resolution tracking.
 
-Assignments are employee-backed in Phase 1. The system stores both `user_id` and `employee_id` so Work Management can respect HR status, department/team reporting, offboarding, leave, and calendar conflicts.
 
-Task assignment authority is bound to the project/workspace context. A reporting manager's hierarchy over an employee does not allow task assignment in another manager's workspace unless the actor also has local project/workspace authority there.
+Task assignment authority is bound to the project context. The task's workspace context is inherited from the owning project. Reporting-manager relationship does not grant task assignment rights; assignment requires local project authority and an active accepted project member assignee.
 
 ## Key Entities
 
@@ -30,33 +29,30 @@ Task assignment authority is bound to the project/workspace context. A reporting
 
 ## Flow Steps
 
-### View My Work (`/workforce/my-work`)
+### View My Work (`/work/items`)
 
-1. User opens Workforce -> My Work.
+1. User opens Work -> Work Items.
 2. System loads all tasks assigned to the current employee across all projects in the current company tenant scope.
 3. Tasks are grouped by project and filterable by status, priority, due date.
 4. User clicks a task to open its detail panel.
 
-### Create Task (from project board)
+### Create Task (from project view)
 
-1. User opens a project board (`/workforce/projects/[id]/board`).
+1. User opens a project Kanban, List, or Calendar view (`/work/projects/[id]/items`).
 2. User clicks "+ Add Task" in a status column.
-3. User selects responsible workspace if the project has more than one linked workspace. The selected workspace must be active in `PROJECT_WORKSPACE`.
-4. User enters title, description, priority, due date, labels.
-5. System validates the actor has `tasks:write`, project access, and task authority in the selected workspace/project context.
-6. System creates `TASK` record linked to the project and responsible workspace.
-7. User optionally assigns the task to an allowed assignee.
-8. Assignee picker returns only employees who are active project members, selected workspace participants, or approved scoped participants for this project.
-9. If the actor is relying on reporting-manager authority, the assignee must be below the actor in the position hierarchy and the actor must control this workspace/project context.
-10. System resolves the selected user's `employee_id`, validates active employment, checks approved leave/calendar conflicts, and creates `TASK_ASSIGNEE`.
-11. If the employee is on leave or has a calendar conflict, the UI shows the warning from `availability_status`/`availability_warning`; tenant policy may block the assignment.
+3. User enters title, description, priority, due date, labels.
+4. System validates the actor has `tasks:write`, project access, and task authority in the project context.
+5. System creates `TASK` record linked to the project and inherited project workspace.
+6. User optionally assigns the task to an allowed assignee.
+7. Assignee picker returns only active accepted project members.
+8. System resolves the selected user's `employee_id`, validates active employment, checks approved time off/calendar conflicts, and creates `TASK_ASSIGNEE`.
+9. If the employee is on time off or has a calendar conflict, the UI shows the warning from `availability_status`/`availability_warning`; tenant policy may block the assignment.
 
 ### Assignment Examples
 
 | Scenario | Result |
 |:---------|:-------|
-| User manages a workspace created from their reporting team and assigns a task to their report inside that workspace | Allowed when `tasks:write` and local workspace/project authority are present. |
-| User is a member, not lead/admin, in another manager's workspace and tries to assign a task to their own report there | Blocked unless they have local task authority in that workspace/project. |
+| User is a member, not lead/admin, in another manager's project and tries to assign a task to their own report there | Blocked unless they have local task authority in that project. |
 | User has local project administration authority and assigns a task to an approved project member from another department | Allowed by project context, subject to project policy and availability checks. |
 | User has `tasks:write` but is not a project member and has no approved project grant | Blocked. |
 
@@ -93,11 +89,11 @@ Open -> In Progress -> In Review -> Approved -> Closed
 
 | Connects to | How |
 |---|---|
-| Workforce -> Presence | Assignee's current task shows on their presence card |
-| Workforce -> Timesheets | Time logs are attached to tasks and flow into timesheets |
-| Leave + Calendar | Assignment warns or blocks when the employee is on approved leave or has a calendar conflict |
+| Monitoring -> Live Status | Assignee's current task may show on their presence card when enabled |
+| Work -> Worklogs | Time logs are attached to tasks and flow into worklogs |
+| Time Off + Calendar | Assignment warns or blocks when the employee is on approved time off or has a calendar conflict |
 | Inbox | Task approvals, assignment notifications, and mentions land in Inbox |
-| Workforce -> Planner | Tasks are organised into sprints on the Planner board |
+| Work -> Planner (Phase 2) | Tasks may be organised into sprints when Phase 2 planning is enabled |
 
 ## Related Flows
 

@@ -1,7 +1,8 @@
 # Integration Connection
 
 **Area:** Configuration -> Integrations  
-**Trigger:** Admin connects or updates an external integration  
+**Trigger:** Admin connects or updates a generic or legacy tenant integration  
+**Phase:** Phase 2  
 **Required Permission(s):** `settings:admin`  
 **Related Permissions:** `integrations:manage`
 
@@ -12,16 +13,18 @@
 - Tenant is active -> [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
 - Required permissions are assigned -> [[Userflow/Auth-Access/permission-assignment|Permission Assignment]]
 - Target integration is enabled for the tenant package or feature flags
+- This flow is Phase 2 only. It must not be exposed as a usable Phase 1 connection path.
+- Stripe, PayHere, Resend, Google Calendar, and Outlook Calendar use dedicated payment, notification, service-key, or calendar OAuth setup flows instead of this generic `integration_connections` flow.
 
 ## Flow Steps
 
 ### Step 1: Open Integrations
 - **UI:** Settings -> Integrations
-- **API:** `GET /api/v1/configuration/integrations`
+- **API:** `GET /api/v1/settings/integrations`
 - **UI:** Shows available connectors, connection status, last sync, and required permissions
 
 ### Step 2: Select Integration
-- **UI:** Admin opens a connector card such as PeopleHR, Microsoft Teams, GitHub, payroll provider, or SSO-related provider
+- **UI:** Admin opens a generic/legacy connector card such as PeopleHR, Slack (Phase 2), LMS, payroll provider, or SSO-related provider
 - **Backend:** Checks module entitlement and tenant feature flags
 
 ### Step 3: Enter Credentials or Start OAuth
@@ -30,12 +33,12 @@
 - **Security:** Secrets are encrypted before storage
 
 ### Step 4: Test Connection
-- **API:** `POST /api/v1/configuration/integrations/{id}/test`
+- **API:** `POST /api/v1/settings/integrations/{id}/test`
 - **Backend:** Validates credentials and required scopes
 - **UI:** Shows success, missing scope, invalid credentials, or provider unavailable
 
 ### Step 5: Save Connection
-- **API:** `PUT /api/v1/configuration/integrations/{id}`
+- **API:** `PUT /api/v1/settings/integrations/{id}`
 - **DB:** `integration_connections`
 - **Result:** Integration becomes available to the owning module
 
@@ -75,7 +78,6 @@
 
 - [[Userflow/Data-Import/data-import-wizard|Data Import Wizard]]
 - [[Userflow/Platform-Setup/sso-configuration|SSO Configuration]]
-- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]]
 - [[Userflow/Work-Management/integration-automation-flow|WorkSync Integration Automation]]
 
 ## Module References

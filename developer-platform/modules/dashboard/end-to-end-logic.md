@@ -2,7 +2,6 @@
 
 ## Purpose
 
-The Dashboard is the first screen shown after login at `console.onevo.io`. It gives the platform operations team a real-time cross-tenant view of platform health, tenant activity, aggregate device health, billing state, and security alerts. It is read-only - no mutations happen from the dashboard; Phase 1 device data is summary-only.
 
 ---
 
@@ -276,7 +275,7 @@ AlertCreationHandler : INotificationHandler<LoginFailedEvent>
 | `SubscriptionExpiringEvent` | Billing job | `billing.subscription_expiring` |
 | `AgentTamperDetectedEvent` | Agent Gateway | `agent.tamper_detected` |
 | `AgentMassDisconnectEvent` | Agent Gateway | `agent.mass_disconnect` (threshold: >=20% devices in 5 min) |
-| `ExceptionRuleFiredEvent` | Exception Engine | `exception.rule_triggered` |
+| `MonitoringAlertRaisedEvent` | Activity Monitoring | `monitoring.high_idle_time` / `monitoring.device_inactive` |
 | `WebhookProcessingFailedEvent` | Billing / SharedPlatform | `billing.webhook_processing_failed` (dead-letter) |
 | `TenantActivatedEvent` | SharedPlatform | `tenant.activated` (Info) |
 | `TenantSuspendedEvent` | SharedPlatform | `tenant.suspended` (Info) |
@@ -392,7 +391,7 @@ Critical alerts require immediate attention. They are displayed in red in the da
 | `infra.service_down` | Infrastructure | Any monitored service health check fails for >= 2 consecutive checks (5-minute interval) | Health check job records `status = 'down'` for service |
 | `infra.database_unreachable` | Infrastructure | Database connection pool exhausted or primary unreachable | Connection error rate > 80% in 1 minute |
 | `agent.tamper_detected` | Agent Gateway | Agent binary hash does not match expected hash for that version | Agent integrity check fails on device check-in |
-| `monitoring.data_exfiltration_pattern` | Activity Monitoring / Exception Engine | Bulk file access or download event above configured exception rule threshold | Exception engine fires exfiltration rule |
+| `monitoring.device_inactive` | Activity Monitoring | No activity heartbeat from an active monitored device during configured working time | Monitoring health check finds the inactive-device condition |
 | `agent.mass_disconnect` | Agent Gateway | >= 20% of a tenant's devices disconnect simultaneously within 5 minutes | Device heartbeat loss spike above threshold |
 
 **Critical alert display rules:**
@@ -421,7 +420,7 @@ Warning alerts indicate a condition that needs attention but is not immediately 
 | `tenant.ai_token_limit_approaching` | SharedPlatform | Tenant AI token usage > 80% of monthly limit | Token usage drops (new month reset) or limit increased |
 | `agent.device_offline` | Agent Gateway | A registered device has not sent a heartbeat for > 1 hour during configured work hours | Device reconnects |
 | `agent.outdated_version` | Agent Gateway | >= 30% of a tenant's devices running a version older than current GA by 2+ major versions | Devices update to current version |
-| `exception.rule_triggered` | Exception Engine | An active exception rule fires for a tenant user | Rule condition no longer met or alert acknowledged |
+| `monitoring.high_idle_time` | Activity Monitoring | Tenant-level idle time pattern exceeds the Phase 1 monitoring-owned threshold | Monitoring condition clears or authorized operator acknowledges it |
 
 **Warning alert display rules:**
 - Orange badge component on Alerts KPI card

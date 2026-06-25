@@ -1,36 +1,32 @@
-# Hardware Terminals — End-to-End Logic
+# Hardware Terminals - End-to-End Logic
 
-**Module:** Shared Platform
-**Feature:** Hardware Terminal Management
+**Module:** Shared Platform  
+**Feature:** Compatibility Redirect
 
 ---
 
-## Register Terminal
+## Canonical Flow
 
-### Flow
+Do not implement a Shared Platform terminal-registration route or write to a separate hardware-terminal table. Physical attendance/biometric terminal registration uses the canonical device flow:
 
 ```
-POST /api/v1/hardware/terminals
-  -> HardwareController.Register(RegisterTerminalCommand)
-    -> [RequirePermission("settings:admin")]
-    -> HardwareTerminalService.RegisterAsync(command, ct)
-      -> 1. Validate: terminal_code unique, terminal_type valid
-      -> 2. Encrypt API key via IEncryptionService
-      -> 3. INSERT into hardware_terminals
-         -> status = 'active'
-      -> Return Result.Success(terminalDto)
+POST /api/v1/time-attendance/devices
+  -> Register attendance/biometric terminal
+  -> INSERT into biometric_devices
+  -> Configure direct webhook, vendor middleware, local gateway, polling API, or manual import
+  -> Terminal/gateway authenticates with HMAC/API key
 ```
 
-### Key Rules
+## Key Rules
 
-- **Terminal types:** biometric, rfid, kiosk — each connects via webhook.
-- **Health monitoring:** `last_heartbeat_at` checked by scheduled job.
+- `biometric_devices` is the canonical physical terminal table.
+- Card/PIN are attendance credentials, not biometric modalities.
+- `legal_entity_id` is required. Phase 1 does not assign terminals to a separate office-location table.
+- Physical terminals and vendor middleware/local gateways use HMAC/API-key authentication, not WorkPulse Device JWT.
+- WorkPulse desktop agents remain separate and are stored in `registered_agents`.
 
 ## Related
 
-- [[modules/shared-platform/hardware-terminals/overview|Overview]]
-- [[modules/shared-platform/real-time-integrations/overview|Real Time Integrations]]
-- [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
-- [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
-- [[backend/messaging/event-catalog|Event Catalog]]
-- [[backend/messaging/error-handling|Error Handling]]
+- [[modules/identity-verification/biometric-devices/overview|Biometric Devices]]
+- [[modules/identity-verification/biometric-devices/end-to-end-logic|Biometric Devices - End-to-End Logic]]
+- [[database/schemas/identity-verification#`biometric_devices`|biometric_devices]]

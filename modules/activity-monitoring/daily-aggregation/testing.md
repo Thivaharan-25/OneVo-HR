@@ -1,4 +1,4 @@
-# Daily Aggregation — Testing
+﻿# Daily Aggregation - Testing
 
 **Module:** Activity Monitoring
 **Feature:** Daily Aggregation
@@ -61,7 +61,7 @@ public class DailyAggregationServiceTests
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
-- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation — End-to-End Logic]]
+- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

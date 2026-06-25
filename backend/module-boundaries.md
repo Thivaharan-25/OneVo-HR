@@ -1,4 +1,4 @@
-# Layer Boundary Rules: ONEVO
+﻿# Layer Boundary Rules: ONEVO
 
 **Last Updated:** 2026-05-08
 
@@ -45,7 +45,7 @@ Domain entities have no EF Core attributes and no framework dependencies. All ma
 
 ```csharp
 // Correct
-public class LeaveRequest : BaseEntity
+public class TimeOffRequest : BaseEntity
 {
     public Guid EmployeeId { get; private set; }
     public DateOnly StartDate { get; private set; }
@@ -60,8 +60,8 @@ public class LeaveRequest : BaseEntity
 
 ```csharp
 // Forbidden
-[Table("leave_requests")]
-public class LeaveRequest
+[Table("time_off_requests")]
+public class TimeOffRequest
 {
 }
 ```
@@ -71,14 +71,14 @@ public class LeaveRequest
 Handlers return `Result<T>` for business failures. Exceptions are for infrastructure failures and truly unexpected states.
 
 ```csharp
-public async Task<Result<LeaveRequestDto>> Handle(CreateLeaveRequestCommand command, CancellationToken ct)
+public async Task<Result<TimeOffRequestDto>> Handle(CreateTimeOffRequestCommand command, CancellationToken ct)
 {
     var employee = await _employees.GetByIdAsync(command.EmployeeId, ct);
 
     if (employee is null)
-        return Result<LeaveRequestDto>.Failure("Employee not found");
+        return Result<TimeOffRequestDto>.Failure("Employee not found");
 
-    return Result<LeaveRequestDto>.Success(dto);
+    return Result<TimeOffRequestDto>.Success(dto);
 }
 ```
 
@@ -88,10 +88,10 @@ Handlers, services, optional event handlers, permission resolvers, tenant provis
 
 ```csharp
 // Correct
-public class CreateLeaveRequestHandler : IRequestHandler<CreateLeaveRequestCommand, Result<LeaveRequestDto>>
+public class CreateTimeOffRequestHandler : IRequestHandler<CreateTimeOffRequestCommand, Result<TimeOffRequestDto>>
 {
     private readonly IEmployeeReader _employees;
-    private readonly ILeaveRequestRepository _leaveRequests;
+    private readonly ITimeOffRequestRepository _leaveRequests;
 }
 ```
 

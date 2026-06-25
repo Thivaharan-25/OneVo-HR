@@ -31,14 +31,7 @@ Microsoft Teams sync imports and exports workplace communication data through Mi
 | Requirement | Implementation |
 |:------------|:---------------|
 | Tenant consent | Tenant admin enables Microsoft Teams integration and approves Graph scopes |
-| User account linking | Each user links their Teams account before ONEVO sends messages as/for that user |
-| Data minimization | Import only linked workspace/channel/chat messages; do not import unrelated Teams content |
-| Transparency | Workspace admins see sync status, missing linked members, and existing Team member differences before linking |
-| Retention | Synced Teams messages follow chat retention, legal hold, and compliance export rules |
-| Legal hold | Teams-synced messages must be included when a chat/channel/workspace legal hold is active |
-| Access control | ONEVO RBAC and workspace/channel membership checks apply before showing synced Teams content |
 
-Meeting transcripts and AI meeting summaries are not part of Teams chat/group sync unless separately documented and consented.
 
 ### Zero Trust Architecture
 

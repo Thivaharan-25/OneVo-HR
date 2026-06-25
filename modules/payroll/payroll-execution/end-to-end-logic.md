@@ -1,4 +1,4 @@
-# Payroll Execution — End-to-End Logic
+﻿# Payroll Execution - End-to-End Logic
 
 **Module:** Payroll
 **Feature:** Payroll Execution
@@ -20,8 +20,8 @@ POST /api/v1/payroll/runs
       -> 3. Get active employees for legal_entity in period
       -> 4. For each employee:
          -> a. Get base_salary from employee_salary_history (latest effective)
-         -> b. Get worked_hours from IWorkforcePresenceService.GetTotalWorkedHoursAsync()
-         -> c. Get leave_days from ILeaveService.GetUsedDaysAsync() for period
+         -> b. Get worked_hours from ITimeAttendanceService.GetTotalWorkedHoursAsync()
+         -> c. Get time_off_hours from ITimeOffService.GetUsedHoursAsync() for period
          -> d. Get allowances from employee_allowances (active for period)
          -> e. Get pension enrollment from employee_pension_enrollments
          -> f. Calculate:
@@ -30,7 +30,7 @@ POST /api/v1/payroll/runs
             -> pension_employer = base_salary * employer_contribution_pct
             -> taxable_income = base_salary + taxable_allowances - pension_employee
             -> tax_amount = apply progressive brackets from tax_configurations
-            -> total_deductions = tax + pension_employee + leave deductions
+            -> total_deductions = tax + pension_employee + time_off-hour deductions
             -> net_pay = base_salary + total_allowances - total_deductions
          -> g. INSERT into payslips
       -> 5. Sum totals -> UPDATE payroll_runs (total_gross, total_net, total_tax, status = 'completed')

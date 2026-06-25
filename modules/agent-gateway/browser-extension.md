@@ -1,4 +1,4 @@
-# Browser Extension — Domain Activity Tracking
+﻿# Browser Extension - Domain Activity Tracking
 
 **Phase:** Phase 2 (optional add-on, tenant-configurable)
 **Supported Browsers:** Chrome, Microsoft Edge, Firefox
@@ -8,10 +8,10 @@
 
 ## Purpose
 
-The browser extension provides domain-level visibility into how employees spend time in the browser. It captures only the **domain name** and time spent — never the URL path, page content, search queries, or any personal data within the page.
+The browser extension provides domain-level visibility into how employees spend time in the browser. It captures only the **domain name** and time spent - never the URL path, page content, search queries, or any personal data within the page.
 
 This is the only way to reliably detect:
-- Google Meet sessions (no desktop process — fully browser-based)
+- Google Meet sessions (no desktop process - fully browser-based)
 - Time in Google Docs/Sheets/Slides
 - Research time on work-relevant domains (GitHub, Confluence, Jira)
 - Work vs personal browsing ratio
@@ -26,7 +26,7 @@ This is the only way to reliably detect:
 | Time on domain | Seconds active | Page content or text |
 | Domain classification | `work` / `personal` / `meeting` | Search query |
 | Browser name | `chrome`, `edge`, `firefox` | Browsing history list |
-| Meeting detection | `meet.google.com` → meeting start/end | Call content or participants |
+| Meeting detection | `meet.google.com` -> meeting start/end | Call content or participants |
 
 ---
 
@@ -36,14 +36,14 @@ The extension is a standard browser extension (Manifest V3) that communicates wi
 
 ```
 Browser Extension (JS)
-    ↓  chrome.tabs.onActivated / onUpdated
-    ↓  domain extracted from tab.url (hostname only)
-    ↓  Native Messaging API
+    v  chrome.tabs.onActivated / onUpdated
+    v  domain extracted from tab.url (hostname only)
+    v  Native Messaging API
 Native Messaging Host (C# console app, registered per-browser)
-    ↓  Named Pipe → ONEVO.Agent.Service
+    v  Named Pipe -> ONEVO.Agent.Service
 WorkPulse Agent Service
-    ↓  Buffers to SQLite
-    ↓  Syncs to Agent Gateway API
+    v  Buffers to SQLite
+    v  Syncs to Agent Gateway API
 ```
 
 ### Native Messaging Host
@@ -92,13 +92,13 @@ public class BrowserBridgeHost
 ```
 
 ```javascript
-// background.js — domain tracking only
+// background.js - domain tracking only
 let activeTabDomain = null;
 let sessionStart = null;
 
 function getDomain(url) {
   try {
-    return new URL(url).hostname; // domain only — path stripped
+    return new URL(url).hostname; // domain only - path stripped
   } catch {
     return null;
   }
@@ -146,7 +146,6 @@ Domains are classified by a configurable lookup engine on the server. The tenant
 | `confluence.*.com`, `jira.*.com`, `atlassian.net` | `work` |
 | `docs.google.com`, `sheets.google.com`, `slides.google.com` | `work` |
 | `meet.google.com` | `meeting` |
-| `teams.microsoft.com` | `meeting` |
 | `zoom.us` | `meeting` |
 | `youtube.com`, `netflix.com`, `reddit.com` | `personal` |
 | Unknown domain | `unknown` (admin can classify) |
@@ -159,8 +158,8 @@ Classification is applied server-side during `ProcessRawBufferJob`. The agent se
 
 The browser extension **requires explicit separate consent** from the employee beyond the base WorkPulse consent:
 
-1. The base HRMS consent flow includes a dedicated screen: "Enable browser domain tracking" — employee can accept or decline this specific feature independently.
-2. If the employee declines browser tracking, `browser_extension_enabled: false` is set in their policy — the extension installs but collects nothing.
+1. The base HRMS consent flow includes a dedicated screen: "Enable browser domain tracking" - employee can accept or decline this specific feature independently.
+2. If the employee declines browser tracking, `browser_extension_enabled: false` is set in their policy - the extension installs but collects nothing.
 3. The extension icon in the browser toolbar shows green (active) or grey (paused/disabled) status at all times.
 4. Employee can view all recorded domains in their personal ONEVO dashboard.
 
@@ -181,7 +180,7 @@ The browser extension is installed separately from the MSIX package. Options:
 The native messaging host (`ONEVO.Agent.BrowserBridge.exe`) is registered during MSIX install:
 
 ```json
-// com.onevo.workpulse.json — placed in browser's native messaging registry
+// com.onevo.workpulse.json - placed in browser's native messaging registry
 {
   "name": "com.onevo.workpulse",
   "description": "WorkPulse Browser Bridge",
@@ -199,22 +198,22 @@ The native messaging host (`ONEVO.Agent.BrowserBridge.exe`) is registered during
 
 ```
 Browser tab change
-  → extension extracts domain (hostname only)
-  → sends to native messaging host via chrome.runtime.sendNativeMessage
-  → BrowserBridge.exe receives via stdin
-  → forwards to ONEVO.Agent.Service via Named Pipe
-  → buffered in SQLite as type: "browser_domain"
-  → synced to Agent Gateway /api/v1/agent/ingest
-  → ProcessRawBufferJob writes to browser_activity table
-  → activity_daily_summary.browser_active_minutes updated
+  -> extension extracts domain (hostname only)
+  -> sends to native messaging host via chrome.runtime.sendNativeMessage
+  -> BrowserBridge.exe receives via stdin
+  -> forwards to ONEVO.Agent.Service via Named Pipe
+  -> buffered in SQLite as type: "browser_domain"
+  -> synced to Agent Gateway /api/v1/agent/ingest
+  -> ProcessRawBufferJob writes to browser_activity table
+  -> activity_daily_summary.browser_active_minutes updated
 ```
 
 ---
 
 ## Related
 
-- [[modules/agent-gateway/agent-overview|Agent Overview]] — WorkPulse Agent architecture
-- [[modules/agent-gateway/data-collection|Data Collection]] — All 7 collectors
-- [[database/schemas/activity-monitoring|Activity Monitoring Schema]] — `browser_activity` table
-- [[modules/configuration/monitoring-toggles/overview|Configuration]] — `browser_extension_enabled` toggle
-- [[modules/auth/gdpr-consent/overview|Legal & Privacy Acceptance]] — separate consent required for browser tracking
+- [[modules/agent-gateway/agent-overview|Agent Overview]] - WorkPulse Agent architecture
+- [[modules/agent-gateway/data-collection|Data Collection]] - All 7 collectors
+- [[database/schemas/activity-monitoring|Activity Monitoring Schema]] - `browser_activity` table
+- [[modules/configuration/monitoring-toggles/overview|Configuration]] - `browser_extension_enabled` toggle
+- [[modules/auth/gdpr-consent/overview|Legal & Privacy Acceptance]] - separate consent required for browser tracking

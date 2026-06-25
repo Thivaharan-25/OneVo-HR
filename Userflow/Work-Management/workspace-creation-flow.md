@@ -1,29 +1,25 @@
 # Workspace Creation
 
-**Area:** WorkSync Workspace Creation  
-**Trigger:** User creates a workspace for a reporting team, explicit team, or manually invited group  
+**Area:** Work Workspace Creation  
 **Required Permission:** `workspaces:create`; member management requires `workspaces:manage`
 
 ---
 
 ## Purpose
 
-A workspace is a regular collaboration area for a group. It can hold members, chat, workspace-level resources, and links to projects. A workspace is not the same as a project, and it is not the source of truth for company reporting hierarchy.
+A workspace is a regular collaboration area for a group. It can hold members, chat, workspace-level resources, and projects. A workspace is not the same as a project, and it is not the source of truth for company reporting hierarchy.
 
 Workspace members can come from:
 
-| Source | Meaning | Stored as Org Team? |
+| Source | Meaning | Creates employee record |
 |:-------|:--------|:--------------------|
-| My Reporting Team | Employees below the creator in position hierarchy | No |
-| Existing Explicit Team | Stored cross-functional or reusable Org Structure team | Yes |
-| Manual Invite | Selected employees filtered by allowed pool or invite approval | No |
+| Manual Invite | Selected employees/members receive a direct workspace invite and accept or decline | No |
 
 ---
 
 ## Preconditions
 
 - Employee records exist and have active user links for workspace access.
-- Position hierarchy exists if the user wants to use "My Reporting Team".
 - User has `workspaces:create`.
 - User's active legal entity context is resolved before workspace creation.
 
@@ -33,27 +29,16 @@ Workspace members can come from:
 
 ### Step 1: Open Create Workspace
 
-- **UI:** WorkSync -> Workspaces -> Create Workspace
+- **UI:** Work -> Workspaces -> Create Workspace
 - **Backend:** Checks module entitlement and `workspaces:create`.
 - **Context:** Active legal entity is shown as read-only context.
 
-### Step 2: Choose Member Source
+### Step 2: Invite Initial Members
 
-User selects one source:
-
-1. **My Reporting Team**
-   - Backend resolves employees under the creator from `employee_hierarchy_closure`.
-   - No `teams` row is created.
-   - This is the default for a manager or team lead creating a workspace for their own people.
-
-2. **Existing Explicit Team**
-   - User selects a stored Org Structure team they are allowed to manage.
-   - Workspace can optionally sync the team through `workspace_team_links`.
-
-3. **Manual Invite**
-   - User searches employees.
-   - Search results are filtered by hierarchy, legal-entity authority, bypass grants, or approved invite state.
-   - Outside-scope employees require a participation request instead of direct add.
+1. User searches active employees/members in the current tenant and permitted Company context.
+2. System validates the actor has authority to invite members in the selected Company context.
+3. Selected members receive direct invitations and accept or decline.
+4. Phase 1 does not use workspace source pools, owner-to-owner participation requests, or linked workspace membership pools.
 
 ### Step 3: Assign Workspace Roles
 
@@ -64,16 +49,13 @@ User selects one source:
 ### Step 4: Save Workspace
 
 - **DB:** `workspaces`, `workspace_roles`, `workspace_members`.
-- **If source is My Reporting Team:** only `workspace_members` are inserted; no duplicate stored team is created.
-- **If source is Existing Explicit Team and sync is enabled:** `workspace_team_links` is created.
 
-### Step 5: Add Outside Member Later
+### Step 5: Add Member Later
 
 - **UI:** Workspace Settings -> Members -> Invite.
-- Search defaults to the user's allowed pool.
-- If the selected employee is outside the allowed pool, ONEVO creates a participation request.
-- Target manager, workspace owner, legal-entity approver, or configured resolver approves/rejects.
-- On approval, ONEVO adds the employee as a workspace member.
+- Search is filtered by the user's active Company context and member-management authority.
+- The selected member receives a direct invite and accepts or declines.
+- On acceptance, ONEVO adds the employee-backed user as a workspace member.
 
 ---
 
@@ -85,14 +67,10 @@ When a workspace authority holder creates a project from a workspace:
 2. System checks `projects:create` plus local workspace authority.
 3. Project owning legal entity is set from active legal entity context.
 4. Creator becomes project admin.
-5. Workspace is auto-linked through `project_workspaces`.
+5. Project stores the workspace as its single `workspace_id`.
+6. Project opens with Kanban, List, and Calendar views for its work items.
 
-When a project outside this workspace requests participation:
-
-1. Workspace authority holder receives a participation request.
-2. Request shows project purpose, requesting legal entity, requested members/data visibility, and expected responsibility.
-3. Approver accepts, rejects, or limits the request.
-4. Approved workspace becomes active in `project_workspaces`.
+Simple project-link invitations are handled between project admins. They create project-link records after acceptance; they do not link workspaces or create workspace source pools in Phase 1.
 
 ---
 
@@ -101,7 +79,7 @@ When a project outside this workspace requests participation:
 - Workspace Admin/Lead sees workspace progress, members, tasks, blockers, and project links for this workspace.
 - Workspace Member sees workspace resources and their own/project-visible work.
 - Workspace Viewer sees read-only workspace content allowed by workspace policy.
-- Being a reporting manager over an employee does not grant control over that employee inside another manager's workspace.
+- Reporting-manager relationship does not grant control over that employee inside another user's workspace.
 
 ---
 
@@ -110,17 +88,13 @@ When a project outside this workspace requests participation:
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | User lacks `workspaces:create` | Blocked | "You do not have permission to create workspaces" |
-| Reporting hierarchy missing | My Reporting Team unavailable | "Reporting hierarchy is not ready" |
-| Selected employee outside allowed pool | Direct add blocked; request flow offered | "Request participation from this employee's owner" |
-| Existing explicit team not manageable by user | Blocked | "You cannot use this team as a workspace source" |
-| User tries to create duplicate stored team for reporting branch | Warning | "Use My Reporting Team instead of storing a duplicate team" |
+| Selected employee outside authority | Invite blocked | "You do not have permission to invite this member in the selected Company context" |
 
 ---
 
 ## Related
 
-- [[modules/work-management/foundation/overview|WorkSync Foundation]]
-- [[modules/org-structure/teams/overview|Org Structure Teams]]
+- [[modules/work-management/foundation/overview|Work Foundation]]
 - [[modules/org-structure/positions/overview|Positions]]
 - [[Userflow/Work-Management/project-flow|Project Management]]
 - [[Userflow/Work-Management/task-flow|Task Management]]

@@ -1,4 +1,4 @@
-# Recognitions — Testing
+﻿# Recognitions - Testing
 
 **Module:** Performance
 **Feature:** Recognitions

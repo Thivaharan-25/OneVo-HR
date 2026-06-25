@@ -1,107 +1,116 @@
 # Employee Transfer
 
 **Area:** Employee Management  
-**Trigger:** Authorized employee-management user initiates a position, department, or legal entity transfer inside the tenant  
-**Required Permission(s):** `employees:write`  
-**Related Permissions:** `org:manage` (department/legal entity changes), `attendance:write` (schedule reassignment), `roles:manage` or `access:approve` (view/change generated access)
+**Trigger:** Authorized user transfers an employee to a new department, position, or legal entity  
+**Required Permission(s):** `employees:write` to start a transfer; `position:approve` with valid coverage to approve/apply a position-changing transfer
 
 ---
 
-## Transfer Types
+## Phase 1 Source of Truth
 
-| Type | Meaning | Boundary |
-|:-----|:--------|:---------|
-| Same-legal-entity transfer | Position or department change inside the employee's current legal entity | Employee primary legal entity remains unchanged |
-| Legal-entity transfer | Move from one legal entity to another legal entity inside the same tenant | Employee primary legal entity and position assignment change to the target legal entity |
+Transfer is a compact operational modal or compact flow. It is not a five-step wizard and it does not use Workflow Engine in Phase 1.
 
-Separate-tenant company connections are not part of Phase 1 employee transfer. Phase 1 multi-company support is handled through legal entities inside one tenant.
+Transfer approvals use management coverage, `position:approve`, and lightweight approval requests/notifications.
 
-## Preconditions
+---
 
-- Employee is active -> [[Userflow/Employee-Management/profile-management|Profile Management]]
-- Target legal entity exists when changing legal entity.
-- Target position exists inside the selected legal entity and department -> [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
-- Team membership changes are handled separately through Org Structure > Teams; employee transfers do not directly move team membership.
-- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+## Modal Fields
 
-## Transfer Flow
+| Field | Required | Notes |
+|:---|:---|:---|
+| Target legal entity | Conditional | Required only for legal-entity transfer |
+| Target department | Yes | Filtered by target legal entity |
+| Target position | Yes | Must belong to target department/legal entity and have capacity |
+| Effective date | Yes | Today or future |
+| Reason | Yes | Audit and approver context |
 
-### Step 1: Initiate Transfer
-- **UI:** Employee Profile -> Actions -> "Transfer" -> form opens
-- **API:** `GET /api/v1/org/legal-entities`, `GET /api/v1/org/departments?legalEntityId={id}`, `GET /api/v1/org/positions?legalEntityId={id}`
+Do not expose generic technical scope selectors.
 
-### Step 2: Select Transfer Details
-- **UI:** Select legal entity if changing company -> select department -> select new position -> set effective date -> enter reason.
-- **Validation:** Effective date must be today or future. The selected position must be active, belong to the selected legal entity, and have available occupancy. The target position's reporting position must belong to the same legal entity. If the new position reports to a vacant unique position, transfer can proceed with a warning that reporting manager will be unresolved until staffed.
+---
 
-### Step 2b: Resolve Access Impact
-- **Backend:** Compare old position-template grants with the target position's access templates.
-- Old grants sourced from the old position are scheduled to end on the transfer effective date.
-- New grants sourced from the target position are generated using the target position's templates.
-- Manual user roles and employee overrides are not removed unless an authorized access user explicitly changes them.
+## Access Impact
 
-### Step 2c: Access UI Rules
-- If the actor has `roles:manage` or `access:approve`, show the generated access diff and allow confirm/change/remove within the actor's authority.
-- If the actor does not have `roles:manage` or `access:approve`, do not show role lists, permission details, scope controls, or access-template details. The UI may show only: "Access changes require approval."
-- If the target position is pooled and an authorized actor changes generated access, the UI must force a choice:
-  - Apply to the position template, affecting all current and future occupants.
-  - Apply only to this employee, creating an employee-specific grant or override.
+When target position is selected, load a read-only access summary:
 
-### Step 3: Submit Transfer
-- **API:** `POST /api/v1/employees/{id}/transfer`
-- **Backend:** EmployeeLifecycleService.TransferAsync() -> [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
-- **DB:** `employee_transfers` record created; `employees` updated on effective date
+- Role granted from target position
+- Can manage employees in
+- Requires approval
 
-### Step 4: Access Approval (if required)
-- **Rule:** If a generated position access template has `requires_approval = true` and the actor does not have `roles:manage` or `access:approve`, create an access approval request. The transfer can continue, but the sensitive grant remains pending.
-- **Target department:** Approval routing uses the target position's department, not the actor's department.
-- **Approver resolver:**
-  1. Find users with `roles:manage` or `access:approve` whose own access scope covers the target department.
-  2. If none exist, find tenant-wide users with `roles:manage` or `access:approve`.
-  3. If none exist, route to Tenant Admin.
-  4. If multiple users match a step, notify all; first approval wins.
-- **Approver view:** Show employee, requested transfer, target position, target department, role grant, permission effect, scope, effective dates, requester, and source template.
-- If the actor already has `roles:manage` or `access:approve`, no approval request is needed; generated access can be materialized immediately or scheduled for the effective date after confirmation.
+If the target position does not grant system access, no access section is shown.
 
-### Step 5: Effective Date Processing
-- **Backend:** On effective date:
-  - Old `position_assignments` row closed and new row created
-  - Employee primary legal entity updated when this is a legal-entity transfer
-  - Department and legal-entity profile snapshots updated from the new position
-  - Old `employee_assignment_history` row closed and new row created with the new `position_id`
-  - Old position-template `user_roles` grants end
-  - Approved new position-template `user_roles` grants activate; pending sensitive grants remain inactive until approved
-  - Current `employee_hierarchy_closure` rebuilt for the affected branch if the transfer is effective today; future-dated transfers rebuild when they become effective
-  - Shift schedule may need reassignment -> [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
-  - Notifications sent to old and new position-resolved managers where resolved from the effective-date assignment and reporting history
+If direct apply is allowed and the target position does not require approval, the actor may apply directly. If the actor lacks valid authority or the target position requires approval, create an approval request and resolve one owner through management coverage.
+
+Do not use role-name bypasses. Direct apply depends on held permissions and authority grants, not labels such as CEO or HR Manager.
+
+Approval routing:
+
+1. Position coverage owners in order: Primary owner, Backup owner 1, Backup owner 2, etc.
+2. Department coverage owners in the same order.
+3. Company-wide coverage owners in the same order.
+4. Routing issue.
+
+If no valid owner exists, create a routing issue with: "No eligible owner could approve this request. Check position coverage and permissions."
+
+---
+
+## Primary vs Authority Assignment
+
+If transfer changes the employee's Primary Employment Assignment:
+
+- Close the old primary assignment.
+- Create the new primary assignment.
+- Re-evaluate primary legal entity, time off policy, attendance policy, work schedule, holiday calendar, and payroll/statutory context from the new primary assignment.
+- Keep additional authority assignments only when business rules allow.
+
+If transfer adds only an Additional Authority Assignment:
+
+- Do not recalculate Time Off, schedule, attendance, payroll, holiday calendar, or primary legal entity.
+- Apply only the granted role/access/approval authority from that assignment.
+
+Hard rules:
+
+- One employee cannot hold two active employment assignments inside the same legal entity.
+- Cross-legal-entity authority assignments are allowed.
+- Cross-legal-entity reporting lines are not allowed.
+
+---
+
+## Backend Flow
+
+1. Validate employee is active.
+2. Validate target legal entity, department, and position.
+3. Validate target position capacity and same-legal-entity reporting chain.
+4. Resolve access impact from target position.
+5. If direct apply is allowed, create/schedule the new assignment and active role grant.
+6. If approval is required, create an approval request and notify the single eligible owner resolved from management coverage.
+7. On effective date, close/open `position_assignments`, update assignment history, and rebuild hierarchy closure for affected branches.
+
+---
 
 ## Error Scenarios
 
-| Scenario | What happens | User sees |
-|:---------|:-------------|:----------|
-| Same position | Validation fails | "Employee is already assigned to this position" |
-| Pending transfer exists | Blocked | "Employee has a pending transfer - cancel first" |
-| Target position belongs to another legal entity | Blocked | "Position does not belong to selected legal entity" |
-| Reporting position belongs to another legal entity | Blocked | "Reporting position must be inside the same legal entity" |
-| Position capacity exceeded | Blocked | "This position has reached its capacity" |
-| Access approval pending | Transfer proceeds; sensitive grant inactive | "Access changes are pending approval" |
+| Scenario | User sees |
+|:---|:---|
+| Same position selected | "Employee is already assigned to this position." |
+| Target position has no capacity | "This position has reached its capacity." |
+| Target department belongs to another legal entity | "Department does not belong to the selected Company." |
+| Reporting line crosses legal entity | "Reporting line must stay inside one Company." |
+| Second active employment assignment in same legal entity | "Use transfer or promotion for another seat in the same Company." |
+| Access requires approval | "Access changes are pending approval." |
+
+---
 
 ## Events Triggered
 
-- `EmployeeTransferred` -> [[backend/messaging/event-catalog|Event Catalog]]
-- `AccessGrantRequested` -> emitted when sensitive generated access requires approval
-- `UserRoleScheduled` -> emitted when generated access is approved or does not require approval
-- Notification to position-resolved managers -> [[backend/notification-system|Notification System]]
+- `EmployeeTransferRequested`
+- `EmployeeTransferred`
+- `AccessGrantRequested`
+- Notification to the single owner resolved from management coverage
 
-## Related Flows
+---
 
-- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+## Related
+
+- [[Userflow/Org-Structure/position-setup|Position Setup]]
 - [[Userflow/Employee-Management/employee-promotion|Employee Promotion]]
-- [[Userflow/Workforce-Presence/shift-schedule-setup|Shift Schedule Setup]]
-- [[Userflow/Auth-Access/access-policy|Access Policy Reference]]
-
-## Module References
-
-- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
-- [[modules/org-structure/departments/overview|Departments]]
-- [[modules/org-structure/teams/overview|Teams]]
+- [[Userflow/Auth-Access/access-policy|Management Coverage Reference]]

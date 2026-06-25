@@ -32,7 +32,7 @@
 
 ### Step 3: Assign to Rules or Automation
 
-- **UI:** Select which exception rules or Automation Center workflows use this chain.
+- **UI:** Select which Phase 2 exception rules or Automation Center workflows use this chain. Phase 1 uses lightweight alert routing, not configurable chains.
 - **Result:** When an alert is unresolved, the system resolves the next target dynamically and routes the action card through Chat or Inbox.
 
 ---
@@ -44,7 +44,6 @@
 | No levels defined | Validation fails | "Add at least one escalation level" |
 | Resolver returns no users | Chain pauses and notifies automation owner | "No eligible escalation recipient found" |
 | Same person resolves at multiple levels | Warning | "This resolver may route multiple levels to the same person" |
-| Fixed role name selected | Not allowed | "Select a resolver, permission, legal entity, department, team, position branch, optional job level, HR coverage resolver, or employee" |
 
 ## Events Triggered
 
@@ -54,7 +53,7 @@
 
 ## Related Flows
 
-- [[Userflow/Automation/automation-center|Automation Center]]
+- [[Userflow/Automation/automation-center|Automation Center (Phase 2)]]
 - [[Userflow/Exception-Engine/exception-rule-setup|Exception Rule Setup]]
 - [[Userflow/Exception-Engine/alert-review|Alert Review]]
 
@@ -62,5 +61,5 @@
 
 - [[modules/exception-engine/escalation-chains/overview|Escalation Chains]]
 - [[modules/exception-engine/exception-rules/overview|Exception Rules]]
-- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine (Phase 2)]]
 - [[backend/notification-system|Notification System]]

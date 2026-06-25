@@ -1,4 +1,4 @@
-# Session Management — Testing
+﻿# Session Management - Testing
 
 **Module:** Auth
 **Feature:** Session Management

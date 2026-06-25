@@ -1,5 +1,7 @@
 # Chat AI - End-to-End Logic
 
+**Phase:** Phase 2. Not part of Phase 1 implementation scope.
+
 **Module:** WorkSync
 **Feature:** ONEVO Semantic Kernel Assistant / Chat AI
 
@@ -173,7 +175,6 @@ FinalizeAiActionsJob (every 5s)
 Graph webhook/delta notification
   -> TeamsMessageWebhookHandler
   -> Resolve channel_teams_links
-  -> Map Teams sender to ONEVO user
   -> INSERT messages with:
        external_source = microsoft_teams
        external_message_id = Graph message id
@@ -184,8 +185,6 @@ Graph webhook/delta notification
 
 Rules:
 
-- Unmapped Teams senders cannot execute assistant tools.
-- Teams-originated high-risk actions should ask for confirmation in ONEVO unless tenant policy explicitly allows Teams-originated auto-actions.
 - Assistant replies may sync back to Teams only when `channel_teams_links.sync_direction` allows outbound sync.
 
 ## Error Scenarios
@@ -199,7 +198,6 @@ Rules:
 | Undo non-existent job | 404 | "Action not found" |
 | Undo already-finalized job | 409 | "Action already finalized" |
 | Entity creation fails | failed | Job status failed, SignalR failure event, safe retry only |
-| Teams sender unmapped | skipped | Import discussion only; no assistant tool execution |
 
 ## Idempotency
 
@@ -209,6 +207,5 @@ Hangfire may process a job more than once if a node crashes mid-execution. Guard
 
 - [[modules/work-management/chat-ai/overview|Chat AI Overview]]
 - [[modules/shared-platform/chatbot-api-integration|Semantic Kernel Assistant Integration]]
-- [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync]]
 - [[modules/ide-extension/overview|IDE Extension]]
 - [[modules/work-management/chat-ai/testing|Chat AI Testing]]

@@ -7,22 +7,28 @@
 
 ## Purpose
 
-Optional manual/on-demand screenshot capture. **RESTRICTED data classification.** Screenshots are stored in blob storage, NOT in the database - only metadata lives here.
+Policy-controlled screenshot capture. **RESTRICTED data classification.** Screenshots are stored in blob storage, NOT in the database - only evidence metadata lives in `monitoring_evidence_assets`.
 
-Phase 1 does not support scheduled or random screenshot capture. Screenshots are created only from explicit manager/user commands using `manual` or `on_demand` trigger types.
+Screenshots are created only from live on-demand requests by authorized users or automatic deviation capture when the effective monitoring policy allows it. Random and interval screenshots are not supported.
 
 ## Database Tables
 
-### `screenshots`
+### `monitoring_evidence_assets`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `employee_id` | `uuid` | FK -> employees |
+| `agent_device_id` | `uuid` | Nullable FK -> registered_agents |
+| `activity_snapshot_id` | `uuid` | Nullable FK -> activity_snapshots |
 | `captured_at` | `timestamptz` | |
 | `file_record_id` | `uuid` | FK -> file_records (blob storage) |
-| `trigger_type` | `varchar(20)` | `manual`, `on_demand` only |
+| `evidence_type` | `varchar(40)` | `screenshot` |
+| `source` | `varchar(30)` | `agent` or `system` |
+| `trigger_type` | `varchar(20)` | `on_demand`, `auto_deviation` |
+| `retention_policy_id` | `uuid` | Nullable FK -> retention_policies |
+| `legal_hold_id` | `uuid` | Nullable FK -> legal_holds |
 | `created_at` | `timestamptz` | |
 
 **Retention:** Per tenant retention policy (default 30 days).
@@ -30,9 +36,9 @@ Phase 1 does not support scheduled or random screenshot capture. Screenshots are
 ## Key Business Rules
 
 1. Screenshots require feature toggle enabled via `IConfigurationService`.
-2. Screenshots are captured only by explicit manager/user command (`manual` / `on_demand`). Do not build scheduled or random screenshot capture in Phase 1.
+2. Screenshots are captured only by authorized live on-demand request or by automatic deviation capture when `auto_screenshot_capture` is enabled. Do not build interval or random screenshot capture.
 3. RESTRICTED data classification - encrypted at rest, access-logged.
-4. **Screenshot URLs are time-limited signed URLs only** (15-minute expiry). The `/view` endpoint calls `IFileService.GetTemporaryUrlAsync(fileRecordId, expiry: TimeSpan.FromMinutes(15))` and returns the signed URL. It never redirects to or returns a permanent object URL. This ensures RBAC revocation is effective: a revoked `workforce:view` permission stops access on the next request.
+4. **Screenshot URLs are time-limited signed URLs only** (15-minute expiry). The `/view` endpoint calls `IFileService.GetTemporaryUrlAsync(fileRecordId, expiry: TimeSpan.FromMinutes(15))` and returns the signed URL. It never redirects to or returns a permanent object URL. This ensures RBAC revocation is effective: a revoked `monitoring:view` permission stops access on the next request.
 
 ## Domain Events
 
@@ -44,14 +50,14 @@ Phase 1 does not support scheduled or random screenshot capture. Screenshots are
 
 | Job | Schedule | Purpose |
 |:----|:---------|:--------|
-| `PurgeExpiredScreenshotsJob` | Daily 4:00 AM | Delete screenshots past retention policy |
+| `PurgeExpiredMonitoringEvidenceJob` | Daily 4:00 AM | Delete screenshot evidence past retention policy, unless held |
 
 ## API Endpoints
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/activity/screenshots/{employeeId}` | `workforce:view` | Screenshot list (metadata only) |
-| GET | `/api/v1/activity/screenshots/{id}/view` | `workforce:view` | Returns 15-minute SAS URL for screenshot blob (never a permanent URL) |
+| GET | `/api/v1/activity/screenshots/{employeeId}` | `monitoring:view` | Screenshot list (metadata only) |
+| GET | `/api/v1/activity/screenshots/{id}/view` | `monitoring:view` | Returns 15-minute SAS URL for screenshot blob (never a permanent URL) |
 
 ## Related
 

@@ -1,8 +1,8 @@
 # User Flow: IDE Context Detection (Branch -> Task)
 
 **Module:** IDE Extension - Context Engine (Week 5)
-**Pillar:** WorkSync (Pillar 3)
-**Phase:** Phase 1
+**Pillar:** Work (Pillar 3, Phase 2 IDE context)
+**Phase:** Phase 2 - deferred
 **Owner:** Dev 8 (IDE Context Engine)
 
 ---
@@ -18,7 +18,7 @@ When a developer switches branches in VS Code, the context engine automatically 
 | Priority | Source | Description |
 |:---------|:-------|:------------|
 | 1 | `ide_context_links` | Explicit user-created link: developer manually mapped this branch to a task in VS Code |
-| 2 | `task_repository_links` | Repo management link: PM/developer linked a task to a repo via WorkSync UI |
+| 2 | `task_repository_links` | Repo management link: PM/developer linked a task to a repo via Work UI (Phase 2 repository integration) |
 | 3 | Branch name pattern | Branch name contains task ID: `feature/TASK-123-fix-login` or `TASK-123` |
 
 ---
@@ -186,7 +186,7 @@ repository lookup: must be linked to workspace
 ## Tables Involved
 
 - `ide_context_links` - explicit branch->task links (Priority 1)
-- `task_repository_links` - task-to-repo links from WorkSync UI (Priority 2)
+- `task_repository_links` - task-to-repo links from Work UI (Phase 2 repository integration) (Priority 2)
 - `repositories` - repo metadata (clone_url for matching)
 - `ide_sessions` - active_project_id updated on context change
 - `tasks` - task lookup for branch pattern match (Priority 3)

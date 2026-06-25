@@ -1,4 +1,4 @@
-# Weekly Reports — Testing
+﻿# Weekly Reports - Testing
 
 **Module:** Productivity Analytics
 **Feature:** Weekly Reports

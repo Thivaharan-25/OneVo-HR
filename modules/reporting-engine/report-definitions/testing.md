@@ -1,4 +1,4 @@
-# Report Definitions — Testing
+﻿# Report Definitions - Testing
 
 **Module:** Reporting Engine
 **Feature:** Report Definitions

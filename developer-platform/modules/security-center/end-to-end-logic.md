@@ -2,7 +2,6 @@
 
 ## Purpose
 
-Security Center is the single screen where platform security team members review active alerts, investigate suspicious activity, revoke sessions, and take security actions. It is read-heavy — most actions are targeted responses to alerts that were raised by the detection pathways documented in [[developer-platform/modules/dashboard/end-to-end-logic|Dashboard End-to-End Logic]].
 
 **Route:** `/security/security-center`
 **Permission:** `platform.security.read`
@@ -160,7 +159,6 @@ Resolving closes the alert. Critical alerts require a written reason of minimum 
 | `false_positive` | "False Positive" | Alert fired but no real security issue existed |
 | `issue_resolved` | "Issue Resolved" | Real issue identified and fixed |
 | `accepted_risk` | "Accepted Risk" | Issue acknowledged, risk accepted, no further action |
-| `escalated_externally` | "Escalated Externally" | Handed off to external team or authority |
 | `no_action_required` | "No Action Required" | Alert was informational; no response needed |
 
 **API:** `POST /admin/v1/security/alerts/{alertId}/resolve`
@@ -168,7 +166,6 @@ Resolving closes the alert. Critical alerts require a written reason of minimum 
 ```json
 {
   "resolution_type": "issue_resolved",
-  "resolution_note": "Confirmed brute force attempt from IP 82.45.12.99. IP blocked at WAF level. No successful logins from that IP. Auth team notified. Tenant advised to reset admin password as precaution."
 }
 ```
 
@@ -240,7 +237,7 @@ This will immediately invalidate their session. They will be logged out of the d
 
 ```json
 {
-  "reason": "Suspicious concurrent login from unexpected IP while account holder is on leave."
+  "reason": "Suspicious concurrent login from unexpected IP while account holder is on Time Off."
 }
 ```
 

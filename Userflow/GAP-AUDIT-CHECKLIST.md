@@ -1,4 +1,4 @@
-# Userflow Gap Audit Checklist
+﻿# Userflow Gap Audit Checklist
 
 **Purpose:** Use this checklist when reviewing any existing flow or writing a new one. It ensures no common path type is missed. Based on 6 gap categories that cover the most frequently forgotten user journeys.
 
@@ -16,14 +16,14 @@
 
 ## Category 1: Error & Failure Paths
 
-Every flow should document what happens when things go wrong — not just the happy path.
+Every flow should document what happens when things go wrong - not just the happy path.
 
-- [ ] **Validation failure** — What does the user see when input is invalid?
-- [ ] **Permission denied** — What happens if the user lacks the required permission?
-- [ ] **Dependency unavailable** — What if a downstream service/module is down?
-- [ ] **Duplicate/conflict** — What if the action conflicts with existing data?
-- [ ] **Timeout/network failure** — What does the user experience during connectivity issues?
-- [ ] **Concurrent edit** — What if two users modify the same record simultaneously?
+- [ ] **Validation failure** - What does the user see when input is invalid?
+- [ ] **Permission denied** - What happens if the user lacks the required permission?
+- [ ] **Dependency unavailable** - What if a downstream service/module is down?
+- [ ] **Duplicate/conflict** - What if the action conflicts with existing data?
+- [ ] **Timeout/network failure** - What does the user experience during connectivity issues?
+- [ ] **Concurrent edit** - What if two users modify the same record simultaneously?
 
 ---
 
@@ -31,11 +31,11 @@ Every flow should document what happens when things go wrong — not just the ha
 
 Can the user reverse or correct what they just did?
 
-- [ ] **Cancel before completion** — Can the user abandon mid-flow? What state is left behind?
-- [ ] **Undo after submission** — Can the user retract a submitted action (e.g., cancel leave request)?
-- [ ] **Edit after save** — Can the user modify a saved-but-not-finalized record?
-- [ ] **Admin override/reversal** — Can an admin reverse a completed action on behalf of someone?
-- [ ] **Cascade reversal** — If this action triggered downstream events, what gets reversed when undone?
+- [ ] **Cancel before completion** - Can the user abandon mid-flow? What state is left behind?
+- [ ] **Undo after submission** - Can the user retract a submitted action (e.g., cancel Time Off request)?
+- [ ] **Edit after save** - Can the user modify a saved-but-not-finalized record?
+- [ ] **Admin override/reversal** - Can an admin reverse a completed action on behalf of someone?
+- [ ] **Cascade reversal** - If this action triggered downstream events, what gets reversed when undone?
 
 ---
 
@@ -43,11 +43,11 @@ Can the user reverse or correct what they just did?
 
 Admins often need to act outside the normal flow.
 
-- [ ] **Act on behalf** — Can an admin perform this action for another employee?
-- [ ] **Skip approval** — Can an admin bypass the normal approval workflow?
-- [ ] **Backdate** — Can this action be applied retroactively (past dates)?
-- [ ] **Bulk action** — Can this be done for multiple employees at once?
-- [ ] **Override validation** — Can an admin override system validation rules (e.g., exceed leave balance)?
+- [ ] **Act on behalf** - Can an admin perform this action for another employee?
+- [ ] **Skip approval** - Can an admin bypass the normal approval workflow?
+- [ ] **Backdate** - Can this action be applied retroactively (past dates)?
+- [ ] **Bulk action** - Can this be done for multiple employees at once?
+- [ ] **Override validation** - Can an admin override system validation rules (e.g., exceed Time Off balance)?
 
 ---
 
@@ -55,10 +55,10 @@ Admins often need to act outside the normal flow.
 
 What does the user see before any data exists?
 
-- [ ] **Empty state** — What does the page/screen look like with zero records?
-- [ ] **First-time setup prompt** — Does the system guide the user through initial configuration?
-- [ ] **Missing prerequisite** — What if a dependency hasn't been configured yet (e.g., no leave types exist)?
-- [ ] **Onboarding tooltip/guide** — Is there contextual help for first-time users of this feature?
+- [ ] **Empty state** - What does the page/screen look like with zero records?
+- [ ] **First-time setup prompt** - Does the system guide the user through initial configuration?
+- [ ] **Missing prerequisite** - What if a dependency hasn't been configured yet (e.g., no Time Off types exist)?
+- [ ] **Onboarding tooltip/guide** - Is there contextual help for first-time users of this feature?
 
 ---
 
@@ -66,12 +66,12 @@ What does the user see before any data exists?
 
 Does this flow affect or depend on other modules?
 
-- [ ] **Events published** — What events does this flow emit? Who consumes them?
-- [ ] **Events consumed** — Does this flow react to events from other modules?
-- [ ] **Data dependency** — Does this flow read data from another module (e.g., leave reads calendar holidays)?
-- [ ] **Approval routing** — Does this flow use the workflow engine for approvals?
-- [ ] **Notification triggers** — What notifications are sent, to whom, via which channels?
-- [ ] **Audit trail** — Is this action logged for compliance/audit purposes?
+- [ ] **Events published** - What events does this flow emit? Who consumes them?
+- [ ] **Events consumed** - Does this flow react to events from other modules?
+- [ ] **Data dependency** - Does this flow read data from another module (e.g., Time Off reads calendar holidays)?
+- [ ] **Approval routing** - Does this flow use the workflow engine for approvals?
+- [ ] **Notification triggers** - What notifications are sent, to whom, via which channels?
+- [ ] **Audit trail** - Is this action logged for compliance/audit purposes?
 
 If the cross-module impact is significant (3+ modules), consider creating a Cross-Module scenario doc (see `Userflow/Cross-Module/` folder).
 
@@ -81,11 +81,11 @@ If the cross-module impact is significant (3+ modules), consider creating a Cros
 
 Not all flows are user-initiated. What happens automatically?
 
-- [ ] **Scheduled jobs** — Does anything run on a schedule related to this feature (e.g., leave accrual, payroll run)?
-- [ ] **Auto-expiry** — Do records expire or auto-close after a period (e.g., pending requests auto-rejected after 30 days)?
-- [ ] **Threshold triggers** — Does the system act when a threshold is reached (e.g., leave balance hits 0)?
-- [ ] **Digest/summary notifications** — Are periodic summaries sent (e.g., weekly attendance summary)?
-- [ ] **Data retention** — Is data automatically archived or deleted per retention policy?
+- [ ] **Scheduled jobs** - Does anything run on a schedule related to this feature (e.g., time_off accrual, payroll run)?
+- [ ] **Auto-expiry** - Do records expire or auto-close after a period (e.g., pending requests auto-rejected after 30 days)?
+- [ ] **Threshold triggers** - Does the system act when a threshold is reached (e.g., Time Off balance hits 0)?
+- [ ] **Digest/summary notifications** - Are periodic summaries sent (e.g., weekly attendance summary)?
+- [ ] **Data retention** - Is data automatically archived or deleted per retention policy?
 
 ---
 
@@ -99,13 +99,13 @@ When documenting the **Trigger** field in a flow, use one of these categories:
 | **Reaction** | Triggered by another flow/event | Manager gets approval notification |
 | **Scheduled** | Runs on a time schedule | Monthly payroll run |
 | **System-triggered** | System detects a condition | Exception engine flags anomaly |
-| **Configuration** | Admin sets up system rules | Leave type creation |
+| **Configuration** | Admin sets up system rules | Time Off type creation |
 | **Self-service** | User manages own profile/settings | Employee updates profile |
-| **View only** | User reads data, no state change | Employee views leave balance |
+| **View only** | User reads data, no state change | Employee views Time Off balance |
 | **First-time setup** | One-time initial configuration | Tenant provisioning |
 | **Error recovery** | Correcting a previous mistake | Payroll adjustment |
-| **Cascade/chain** | Automatic downstream reaction | Leave approval updates calendar + attendance |
+| **Cascade/chain** | Automatic downstream reaction | Time Off approval updates calendar + attendance |
 
 ---
 
-*Use this checklist during flow creation, sprint reviews, or periodic audits. Not every item applies to every flow — use judgment.*
+*Use this checklist during flow creation, sprint reviews, or periodic audits. Not every item applies to every flow - use judgment.*

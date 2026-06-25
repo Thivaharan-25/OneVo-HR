@@ -7,16 +7,14 @@
 
 ## Purpose
 
-Authorization combines tenant commercial availability, runtime feature flags, tenant roles, per-user permission overrides, and hierarchy-scoped data access.
+Authorization combines tenant commercial availability, runtime feature flags, tenant roles, per-user permission overrides, and Org Structure management coverage for employee visibility.
 
 This is not simple RBAC. Roles are convenience bundles. They never override tenant commercial boundaries.
 
 Roles & Permissions has two separate role surfaces:
 
 - **Security Roles**: tenant/module authority such as HR Admin, Project Admin, Payroll Admin, System Admin, or Tenant Owner. These use `roles`, `role_permissions`, and `user_roles`.
-- **Team Roles**: scoped team/workspace authority such as Admin / Lead, Member, and Viewer / Reviewer. These use `team_roles`, `team_role_permissions`, and `team_member_roles`.
 
-Tenant security roles are separate from explicit stored team roles, WorkSync workspace membership, and WorkSync project membership. Positions may define access templates, but templates only generate scoped grants after confirmation or approval; the position template itself is not an active grant.
 
 ## Access Decision Order
 
@@ -26,7 +24,7 @@ Every protected tenant-facing action must pass these checks in this order:
 2. If the action maps to a feature key, the tenant's current subscription/custom contract includes that key in `tenant_subscriptions.selected_feature_keys`.
 3. If the feature has a runtime flag, Tenant Runtime Overrides evaluates it as enabled for this tenant.
 4. The user has the required effective permission from roles and/or valid user permission overrides.
-5. Employee-data access is inside the user's resolved hierarchy/access-policy scope.
+5. Employee-data access is inside the user's resolved management coverage.
 
 If any check fails, the API returns `403 Forbidden`.
 
@@ -49,6 +47,7 @@ Custom tenant roles created by Tenant Super Admin or delegated permission admins
 | `name` | `varchar(100)` | Custom name; never hardcoded |
 | `description` | `varchar(255)` | |
 | `is_system` | `boolean` | Seeded roles only; role names are not authorization rules |
+| `source_template_id` | `uuid` | Nullable FK to role_templates when materialized from a reusable template |
 | `created_at` | `timestamptz` | |
 
 ### `permissions`
@@ -58,7 +57,7 @@ Global permission definitions. Permissions belong to exactly one module through 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `code` | `varchar(120)` | e.g. `employees:read`, `leave:approve` |
+| `code` | `varchar(120)` | e.g. `employees:read`, `time_off:approve` |
 | `description` | `varchar(255)` | |
 | `module` | `varchar(80)` | Owning module key |
 | `feature_key` | `varchar(120)` | Nullable; set only when a permission is tied to a commercial feature key |
@@ -72,13 +71,11 @@ Permission assignments for a role. These are filtered by module entitlement and 
 | `role_id` | `uuid` | FK to roles |
 | `permission_id` | `uuid` | FK to permissions |
 
-Security role permissions must not be used as the only check for WorkSync access. Workspace-scoped actions require active workspace membership. Project-scoped actions require active `project_members` access. When access is inherited through explicit team sync, the applicable team role permission must also pass.
 
-Team role permission assignment must use a team-scoped permission catalog only. The backend must reject tenant security, HR admin, payroll, billing, project visibility, system settings, and security role management permissions in `team_role_permissions`.
 
 ### `user_roles`
 
-Security role assignment with explicit scope. Scope belongs here so the same role can be assigned at different boundaries.
+Security role assignment. Employee visibility does not live here; it is resolved from Org Structure `management_coverage_records`.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -86,11 +83,9 @@ Security role assignment with explicit scope. Scope belongs here so the same rol
 | `tenant_id` | `uuid` | FK to tenants |
 | `user_id` | `uuid` | FK to users |
 | `role_id` | `uuid` | FK to roles |
-| `scope_type` | `varchar(30)` | `Organization`, `Department`, `DepartmentTree`, `Team`, `Own`, `DirectReports`, or `ReportingTree` |
-| `scope_id` | `uuid` | Nullable boundary id. Required for `Department`, `DepartmentTree`, and `Team`; null for `Organization`, `Own`, `DirectReports`, and `ReportingTree` |
-| `source_type` | `varchar(30)` | `Manual`, `PositionTemplate`, or `EmployeeOverride` |
+| `source_type` | `varchar(30)` | `Manual`, `PositionGrant`, or `EmployeeOverride` |
 | `source_position_id` | `uuid` | Nullable source position for generated grants |
-| `source_position_access_template_id` | `uuid` | Nullable source position access template |
+| `source_position_access_template_id` | `uuid` | Nullable internal source row behind "Grant system access from this position" |
 | `effective_from` | `timestamptz` | Nullable |
 | `effective_to` | `timestamptz` | Nullable |
 | `status` | `varchar(20)` | `Active`, `Scheduled`, `PendingApproval`, `Expired`, or `Revoked` |
@@ -99,7 +94,7 @@ Security role assignment with explicit scope. Scope belongs here so the same rol
 | `approved_by` | `uuid` | Nullable FK to users; approver for generated or requested grants |
 | `expires_at` | `timestamptz` | Deprecated compatibility alias; use `effective_to` for time-bound role grants |
 
-**Uniqueness rule:** Role assignments must use `NULLS NOT DISTINCT` or an equivalent normalized/partial unique index for `(tenant_id, user_id, role_id, scope_type, scope_id)` so null `scope_id` values cannot create duplicate grants.
+**Uniqueness rule:** Prevent duplicate active grants for the same user, role, source position, and effective start.
 
 ### `user_permission_overrides`
 
@@ -111,11 +106,11 @@ Per-user grants or revocations. Overrides cannot grant access outside the tenant
 | `user_id` | `uuid` | FK to users |
 | `permission_id` | `uuid` | FK to permissions |
 | `grant_type` | `varchar(10)` | `grant` or `revoke` |
-| `scope_type` | `varchar(30)` | Optional scope for this individual override |
-| `scope_id` | `uuid` | Nullable boundary id for scoped overrides |
 | `reason` | `varchar(255)` | Audit reason |
 | `valid_from` | `timestamptz` | Nullable |
 | `expires_at` | `timestamptz` | Nullable |
+
+**Uniqueness rule:** One override row exists per tenant/user/permission. Permission overrides do not define employee visibility or approval routing.
 
 ### `feature_access_grants`
 
@@ -141,7 +136,7 @@ Example: if a tenant has the `work_management` module but `work_management.ai_sp
 | `updated_at` | `timestamptz` | |
 | UNIQUE: `(tenant_id, grantee_type, grantee_id, module, feature_key)` | | |
 
-`grantee_id` is resolved based on `grantee_type`: when `grantee_type = role`, it points to `roles.id`; when `grantee_type = employee`, it points to `users.id`. Employee-data hierarchy scope is still resolved separately through the logged-in user's `employees.user_id` mapping and `employee_hierarchy`.
+`grantee_id` is resolved based on `grantee_type`: when `grantee_type = role`, it points to `roles.id`; when `grantee_type = employee`, it points to `users.id`. Employee visibility is resolved separately through Org Structure management coverage.
 
 ## Effective Permission Resolution
 
@@ -160,35 +155,27 @@ EffectivePermissions(userId, tenantId):
  11. Return final permission codes.
 ```
 
-## Access Policy Scoping
+## Management Coverage
 
-Employee-data queries are scoped by the effective active `user_roles.scope_type` and `scope_id` for the role assignment. Position access templates only generate `user_roles` rows or access approval requests; templates are not active grants by themselves. The frontend never sends employee ID lists.
+Employee-data queries and Phase 1 approval routing use Org Structure `management_coverage_records`.
 
-| Policy | Meaning |
-|:-------|:--------|
-| `Own` | Current employee only |
-| `DirectReports` | Direct reports only |
-| `ReportingTree` | Direct and indirect reports |
-| `Department` | Employees in the assigned department boundary |
-| `DepartmentTree` | Employees in the assigned department and child departments |
-| `Team` | Employees in the assigned team boundary |
-| `Organization` | All active employees in tenant |
+Supported levels:
 
-Scope validation rules:
+1. Position coverage.
+2. Department coverage.
+3. Company-wide coverage.
 
-- `Department` and `DepartmentTree` scope require `scope_id` pointing to an active department in the same tenant.
-- `Team` scope requires `scope_id` pointing to an active team in the same tenant.
-- `Organization`, `Own`, `DirectReports`, and `ReportingTree` require `scope_id = null`.
-- A permission check must verify both that the user has the permission and that the target record is inside the resolved scope.
+Resolution order is Position, then Department, then Company-wide. Within a target, try Primary owner, Backup owner 1, Backup owner 2, and so on. A permission check must verify both that the user has the required permission and that the target employee is covered by that user's active management coverage. The frontend never sends employee ID lists.
 
 ### Position-Generated Access Approval
 
 When onboarding, transfer, promotion, or position assignment generates access from a position template:
 
 1. If the template does not require approval, create or schedule the `user_roles` grant.
-2. If the template requires approval and the actor has `roles:manage` or `access:approve`, show the grant diff and create/schedule the grant after confirmation.
-3. If the template requires approval and the actor lacks access authority, create an `access_grant_requests` record and keep the grant inactive.
-4. Route approval by target position department: scoped access approvers covering that department, then tenant-wide access approvers, then Tenant Admin. If multiple match, notify all and first approval wins.
+2. If approval is required, create an `access_grant_requests` record and keep the grant inactive.
+3. Resolve one eligible owner through management coverage using Position, Department, Company-wide order.
+4. A valid owner has an active occupant, active user account, required permission, same Company context, and is not blocked by self-approval rules.
+5. If no valid owner exists, create a routing issue. Do not send duplicate approval requests.
 
 ## API Endpoints
 
@@ -198,14 +185,11 @@ When onboarding, transfer, promotion, or position assignment generates access fr
 | POST | `/api/v1/roles` | `roles:manage` | Create custom role |
 | PUT | `/api/v1/roles/{id}` | `roles:manage` | Update role |
 | POST | `/api/v1/roles/{id}/permissions` | `roles:manage` | Set role permissions within active module/feature boundary |
-| GET | `/api/v1/team-roles` | `roles:manage` | List standard team roles and their scoped permission sets |
-| PUT | `/api/v1/team-roles/{id}/permissions` | `roles:manage` | Set team-role permissions from team-scoped catalog only |
-| GET | `/api/v1/permissions/team-catalog` | `roles:manage` | List permissions eligible for team roles |
 | POST | `/api/v1/users/{id}/roles` | `roles:manage` | Assign role to employee |
 | GET | `/api/v1/users/{id}/permissions` | `roles:manage` | Get effective permissions |
 | POST | `/api/v1/users/{id}/permission-overrides` | `roles:manage` | Grant/revoke individual permission inside active module/feature boundary |
-| GET | `/api/v1/access-grant-requests` | `access:approve` OR `roles:manage` | List pending generated access grants in the approver's scope |
-| POST | `/api/v1/access-grant-requests/{id}/decision` | `access:approve` OR `roles:manage` | Approve, reject, narrow, or expire a generated position-template access grant |
+| GET | `/api/v1/access-grant-requests` | `position:approve` | List pending generated access grants assigned to the current owner |
+| POST | `/api/v1/access-grant-requests/{id}/decision` | `position:approve` | Approve, reject, narrow, or expire a generated position-template access grant |
 | GET | `/api/v1/feature-access` | `roles:manage` | List role/employee feature visibility grants |
 | POST | `/api/v1/feature-access` | `roles:manage` | Grant role/employee visibility inside commercial boundary |
 | DELETE | `/api/v1/feature-access/{id}` | `roles:manage` | Revoke role/employee visibility grant |

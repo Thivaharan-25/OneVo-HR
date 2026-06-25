@@ -1,4 +1,4 @@
-# Notification Channels — End-to-End Logic
+﻿# Notification Channels - End-to-End Logic
 
 **Module:** Notifications
 **Feature:** Notification Channels
@@ -11,7 +11,7 @@
 
 ```
 Channel configuration via shared-platform notification_channels table:
-  -> Admin configures: email (Resend API key), Slack (webhook URL), push (FCM)
+  -> Admin configures: email (Resend API key), push (FCM); Slack is Phase 2
   -> Credentials encrypted via IEncryptionService
 ```
 
@@ -25,7 +25,7 @@ INotificationService.SendAsync(command)
   -> 2. For each active channel:
      -> Email: Resend API call with rendered template
      -> In-App: INSERT into user notifications + SignalR push
-     -> Slack: POST to webhook URL
+     -> Slack: POST to webhook URL (Phase 2)
   -> 3. Track delivery status
 ```
 

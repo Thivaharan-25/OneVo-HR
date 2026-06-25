@@ -1,4 +1,4 @@
-# App Allowlist Configuration
+﻿# App Allowlist Configuration
 
 **Module:** Configuration
 **Feature:** App Allowlist (Three-Tier)
@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Configurable application allowlist that defines which apps are permitted during work time. Follows the **hybrid permission model** — tenant sets defaults, roles can override, individual employees can have further overrides. Non-allowed app usage is logged and triggers exception alerts (NOT blocked).
+Configurable application allowlist that defines which apps are permitted during work time. Follows the **hybrid permission model** - tenant sets defaults, roles can override, individual employees can have further overrides. Non-allowed app usage is logged and triggers exception alerts (NOT blocked).
 
 App identities should come from the Developer Platform App Catalog wherever possible. The App Catalog can be seeded by ONEVO, bulk-approved from tenant observations, or created from a Super Admin/operator Tray App discovery session that captures currently running applications before tenant rollout.
 
@@ -15,15 +15,15 @@ App identities should come from the Developer Platform App Catalog wherever poss
 
 ```
 Tenant Default (all employees)
-  └── Role Override (per role — e.g., "Developer" gets IDE tools)
-       └── Employee Override (per individual — e.g., John gets Figma)
+  +-- Role Override (per role - e.g., "Developer" gets IDE tools)
+       +-- Employee Override (per individual - e.g., John gets Figma)
 ```
 
 **Resolution order (most specific wins per app name):**
-1. Employee-level entry → use it
-2. Role-level entry → use it
-3. Tenant-level entry → use it
-4. App not listed → depends on `allowlist_mode`:
+1. Employee-level entry -> use it
+2. Role-level entry -> use it
+3. Tenant-level entry -> use it
+4. App not listed -> depends on `allowlist_mode`:
    - `allowlist` mode: **not allowed** (flag it)
    - `blocklist` mode: **allowed** (only listed-as-blocked apps are flagged)
 
@@ -31,8 +31,8 @@ Tenant Default (all employees)
 
 | Mode | Unlisted Apps | Use Case |
 |:-----|:-------------|:---------|
-| `allowlist` | Flagged as violation | Strict environments — only approved apps allowed |
-| `blocklist` | Allowed | Permissive environments — only specific apps blocked |
+| `allowlist` | Flagged as violation | Strict environments - only approved apps allowed |
+| `blocklist` | Allowed | Permissive environments - only specific apps blocked |
 
 Default: `allowlist` (configurable in `tenant_settings.settings_json`)
 
@@ -50,7 +50,7 @@ When an admin changes the app allowlist, the resolved list for each affected emp
       { "name": "Visual Studio Code", "category": "development", "is_allowed": true }
     ],
     "alert_on_violation": true,
-    "violation_threshold_minutes": 5
+    "non_allowed_app_threshold_minutes": 5
   }
 }
 ```
@@ -60,17 +60,20 @@ The agent caches this allowlist locally. On policy change, agent-gateway sends `
 ### Activity Monitoring Integration
 During activity data aggregation, each `app_usage` record is checked against the resolved allowlist. If an app is not allowed:
 1. The usage is tagged with `is_allowed = false` in `application_usage` table
-2. If cumulative non-allowed usage exceeds `violation_threshold_minutes`, a domain event is published
-3. Exception engine evaluates and fires alert to reporting manager
+2. If cumulative non-allowed usage exceeds `non_allowed_app_threshold_minutes` (Phase 1 config key), a `AppAllowlistViolationDetected` event is published
+3. Phase 1 lightweight alert detection evaluates and sends notification to the recipient resolved by Monitoring Policy
 
-### Exception Engine Integration
-New rule type: `non_allowed_app_usage`
+### Phase 2 Exception Engine Integration
+
+Phase 1 does not require Exception Engine rules for non-allowed app detection. Phase 1 detection is owned by Activity Monitoring lightweight alerts using the `non_allowed_app_threshold_minutes` config key. See [[modules/activity-monitoring/overview|Activity Monitoring]].
+
+Phase 2 may add configurable Exception Engine rule type `non_allowed_app` with `violation_threshold_minutes` inside `threshold_json`:
 
 ```json
 {
-  "rule_type": "non_allowed_app_usage",
+  "rule_type": "non_allowed_app",
   "threshold_json": {
-    "max_minutes_per_day": 15,
+    "violation_threshold_minutes": 15,
     "max_consecutive_minutes": 5,
     "alert_severity": "medium"
   }
@@ -97,15 +100,15 @@ New rule type: `non_allowed_app_usage`
 2. **Allowlist changes send `RefreshPolicy`** to all affected agents within 60 seconds.
 3. **Role changes cascade.** If an employee's role changes, their resolved allowlist updates on next policy sync.
 4. **Audit trail.** All allowlist changes are logged in `app_allowlist_audit` with who changed what and when.
-5. **Categories are informational.** Category is for reporting grouping only — it doesn't affect allow/block logic.
+5. **Categories are informational.** Category is for reporting grouping only - it doesn't affect allow/block logic.
 6. **Process name is authoritative.** Matching should use the catalog/agent `process_name` case-insensitively. Display app name is metadata only.
 7. **Templates use catalog identities.** App Allowlist Templates should reference catalog ids/process names and categories such as browser, communication/meeting, development, office/documentation, design, productivity, and other.
 
 ## Related
 
 - [[modules/configuration/overview|Configuration Module]]
-- [[modules/configuration/employee-overrides/overview|Employee Overrides]] — Same three-tier pattern for monitoring feature toggles
-- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]] — Includes resolved allowlist in agent policy
-- [[modules/agent-gateway/remote-commands/overview|Remote Commands]] — Sends RefreshPolicy on allowlist change
-- [[modules/activity-monitoring/overview|Activity Monitoring]] — Checks allowlist during app usage aggregation
-- [[modules/exception-engine/overview|Exception Engine]] — `non_allowed_app_usage` rule type
+- [[modules/configuration/employee-overrides/overview|Employee Overrides]] - Same three-tier pattern for monitoring feature toggles
+- [[modules/agent-gateway/policy-distribution/overview|Policy Distribution]] - Includes resolved allowlist in agent policy
+- [[modules/agent-gateway/remote-commands/overview|Remote Commands]] - Sends RefreshPolicy on allowlist change
+- [[modules/activity-monitoring/overview|Activity Monitoring]] - Checks allowlist during app usage aggregation
+- [[modules/exception-engine/overview|Exception Engine]] - Phase 2: `non_allowed_app` rule type

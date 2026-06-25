@@ -1,4 +1,4 @@
-# User Flow Overview
+﻿# User Flow Overview
 
 ## Purpose
 
@@ -77,8 +77,8 @@ The platform-admin JWT includes account identity and effective platform permissi
 | `demo-profiles.md` | Demo/trial profile setup, module access, limits, and upgrade options |
 | `requests-center.md` | Demo access requests and trial extension requests |
 | `customer-support.md` | Support ticket queue, assignment, replies, notes, and closure |
-| `configuration-template-management.md` | Template Management — unified library, type filter chips, type-picker-first creation |
-| `role-template-management.md` | Template Management — role template creation and tenant role materialization |
+| `configuration-template-management.md` | Template Management - unified library, type filter chips, type-picker-first creation |
+| `role-template-management.md` | Template Management - role template creation and tenant role materialization |
 | `global-policies.md` | System Config policy defaults: edit, impact preview, and publish |
 | `feature-flags.md` | Tenant Detail runtime overrides and feature flag override rules |
 | `agent-versions.md` | *(Phase 2)* Version catalog, publish, force-update ring, ring assignment, rollback |

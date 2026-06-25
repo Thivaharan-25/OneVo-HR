@@ -1,7 +1,7 @@
-# Productivity Dashboard
+﻿# Productivity Dashboard
 
 **Area:** Analytics & Reporting  
-**Trigger:** Manager opens analytics page (user action — view only)
+**Trigger:** Manager opens analytics page (user action - view only)
 **Required Permission(s):** `analytics:view`  
 **Related Permissions:** `analytics:export` (download data)
 
@@ -9,14 +9,14 @@
 
 ## Preconditions
 
-- Activity monitoring running → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
-- Daily aggregation processed → [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
+- Activity monitoring running -> [[Userflow/Monitoring/monitoring-configuration|Monitoring Configuration]]
+- Daily aggregation processed -> [[Userflow/Monitoring/activity-snapshot-view|Activity Snapshot View]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Open Dashboard
-- **UI:** Sidebar → Analytics → Productivity → select period: Day / Week / Month
+- **UI:** Sidebar -> Analytics -> Productivity -> select period: Day / Week / Month
 - **API:** `GET /api/v1/analytics/productivity?period={period}`
 
 ### Step 2: View Org-Wide Metrics
@@ -30,22 +30,21 @@
 
 ### Step 3: Department Breakdown
 - **UI rule:** Rank departments by comparable productivity score only when score basis and data coverage are comparable. Otherwise show separate activity-derived and composite groups.
-- **UI:** Bar chart → departments ranked by avg productivity → click department → see team-level breakdown → click team → see individual employees
 - **API:** `GET /api/v1/analytics/productivity?group_by=department`
 
 ### Step 4: App Usage Analysis
 - **UI rule:** Label app data as work-classified, communication, meeting, personal/non-allowed, or unknown. Do not use app time alone as the final productivity score.
-- **UI:** Top work-classified apps, top personal/non-allowed apps, unknown app review queue, app category distribution → [[modules/activity-monitoring/application-tracking/overview|Application Tracking]]
+- **UI:** Top work-classified apps, top personal/non-allowed apps, unknown app review queue, app category distribution -> [[modules/activity-monitoring/application-tracking/overview|Application Tracking]]
 
 ### Step 5: Export
-- **UI:** Export → CSV/Excel/PDF with current filters and period
+- **UI:** Export -> CSV/Excel/PDF with current filters and period
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | No data for period | Empty | "No activity data available for this period" |
-| Insufficient data | Warning | "Data from only 3 out of 50 employees — results may be incomplete" |
+| Insufficient data | Warning | "Data from only 3 out of 50 employees - results may be incomplete" |
 
 ## Events Triggered
 
@@ -53,8 +52,8 @@
 
 ## Related Flows
 
-- [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
-- [[Userflow/Analytics-Reporting/workforce-snapshot|Workforce Snapshot]]
+- [[Userflow/Monitoring/activity-snapshot-view|Activity Snapshot View]]
+- [[Userflow/Analytics-Reporting/monitoring-snapshot|Monitoring Snapshot]]
 - [[Userflow/Analytics-Reporting/data-export|Data Export]]
 
 ## Module References

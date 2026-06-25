@@ -2,44 +2,19 @@
 
 Canonical reference for ONEVO customer app navigation. Navigation components, permission gates, labels, and routes must reference this document. Do not hardcode role names.
 
-## Application Split
+## Application Model
 
-ONEVO has two customer-facing applications plus the internal Developer Platform:
+ONEVO has one customer-facing application plus the internal Developer Platform:
 
-- Setup / Control Application
-- Operations / Lifecycle Application
+- Customer App
 - Developer Platform
 
-## Setup / Control Application Navigation
+## Customer App Navigation
 
 Purpose:
 
 ```text
-Configure structure, access, policies, workflows, positions, and initial onboarding.
-```
-
-Primary sections:
-
-| Section | Default Route | Visible When | Notes |
-|---|---|---|---|
-| Setup Home | `/` | `settings:read` OR `org:read` | Setup progress, missing configuration, warnings |
-| Tenant Setup | `/tenant` | `settings:read` | Tenant profile, branding, defaults |
-| Legal Entities | `/org/legal-entities` | `org:manage` | Single-company / multi-company setup |
-| Departments | `/org/departments` | `org:manage` | Legal-entity-scoped departments |
-| Teams | `/org/teams` | `org:manage` | Team setup |
-| Positions | `/org/positions` | `org:manage` | Legal-entity-scoped positions, reporting structure, capacity |
-| Roles & Permissions | `/access/roles` | `roles:manage` | Tenant roles, permission templates, position access templates |
-| Policies | `/policies` | `settings:read` | Leave, attendance, overtime, monitoring/privacy policies |
-| Workflows | `/workflows` | `workflows:manage` | Approval and escalation rules |
-| Employee Import | `/people/import` | `employees:write` | CSV/Excel import and initial employee onboarding; PeopleHR is Phase 2 |
-| Add-ons / Licenses | `/billing/requests` | `settings:billing` | Request add-ons, employee/license increases, device/agent limit increases |
-
-## Operations / Lifecycle Application Navigation
-
-Purpose:
-
-```text
-Run daily employee, manager, HR, workforce, and operational work.
+Run employee self-service, manager work, HR operations, monitoring, work management, and tenant settings in one shell.
 ```
 
 Primary sections:
@@ -47,15 +22,16 @@ Primary sections:
 | Section | Default Route | Visible When | Notes |
 |---|---|---|---|
 | Home | `/` | Any authenticated user | Personal and operational overview |
-| Inbox | `/inbox` | Any authenticated user | Approvals, tasks, mentions, exception alerts |
-| My Profile | `/profile` | Any authenticated user | Own profile and self-service details |
-| Leave | `/leave` | `leave:create` OR `leave:read` | Leave requests and approvals |
-| Attendance | `/attendance` | `attendance:read-own` OR `attendance:read` | Attendance, overtime, corrections |
-| People | `/people/employees` | `employees:read` | Employee profiles, transfer, promotion, offboarding |
-| Workforce | `/workforce` | `workforce:view` | Monitoring review, exceptions, discrepancies |
-| WorkSync | `/work` | `projects:read` OR `tasks:read` | Projects, tasks, time, chat when enabled |
-| Reports | `/reports` | `reports:read` | Operational reports and exports |
-| Compliance | `/compliance` | `settings:system` | Compliance exports and audit review |
+| People | `/people/employees` | `employees:read` | Employees, onboarding, offboarding, checklist templates, employee detail lifecycle actions |
+| Time Off | `/time-off` | `time_off:create` OR `time_off:read` | Time off self-service, balances, requests, approvals, policy reminders; management policy/type/entitlement setup when permitted |
+| Time & Attendance | `/time-attendance/attendance` | `attendance:read-own` OR `attendance:read` | Operational attendance, schedules, clock-in policy, overtime rules, and row-level corrections |
+| Work | `/work` | `projects:read` OR `tasks:read` | Phase 1 projects, work items, documents, project members, project settings, worklogs |
+| Calendar | `/calendar` | `calendar:read` | Visual calendar for events, holidays, schedules, Time Off, meetings, invitations, reminders, and conflicts |
+| Inbox | `/inbox` | Any authenticated user | Approvals, requests, notifications, invitations, assignments, mentions, action items |
+| Monitoring | `/monitoring` | `monitoring:view` | Monitoring review, live status, alerts, discrepancies |
+| Settings | `/settings/general` | `settings:read` | General, branding, users, roles & permissions, notifications, billing, devices, audit log |
+
+Do not add a separate customer-facing `Admin` top-level module. Tenant/system administration belongs under `Settings`.
 
 ## Tenant / Legal Entity Context
 
@@ -65,7 +41,10 @@ Rules:
 
 - Single-company tenants may hide legal entity context and default to the only legal entity.
 - Multi-company tenants show legal entity context only where relevant and permission-scoped.
-- Legal entity switching must never bypass backend authorization.
+- Company creation is started from the topbar tenant/company dropdown, not from the Org sub-sidebar.
+- Company context is switched from the topbar tenant/company dropdown.
+- Company-scoped General settings are edited from Settings > General after selecting a Company. Do not imply a separate entity-settings page.
+- Company switching must never bypass backend authorization.
 
 ## Permission Rules
 

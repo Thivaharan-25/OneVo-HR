@@ -1,7 +1,7 @@
-# DEV6: Frontend HR + Workforce UI
+﻿# DEV6: Frontend HR + Monitoring UI
 
 **Track:** Frontend
-**Primary ownership:** HR screens, leave, calendar, presence, agent management UI
+**Primary ownership:** HR screens, time_off, calendar, presence, agent management UI
 **Current Unfinished Task:** Task 1 - HR employee screens
 **Blocked By:** DEV5 app foundation; DEV2 Core HR API for live data
 
@@ -25,7 +25,6 @@ When Dev 6 asks to continue, start with the first unchecked item in **Current Un
 ### Acceptance Criteria
 
 - [ ] Employee list supports search, filters, cursor pagination, and status badges.
-- [ ] Employee detail shows profile, employment, manager, department, team, and activity summary.
 - [ ] Create/edit form validates required fields and server errors.
 - [ ] Onboarding flow supports staged employee creation.
 - [ ] Offboarding flow supports reason, date, asset checklist placeholder, and confirmation.
@@ -47,21 +46,21 @@ npm run build
 
 ---
 
-> **Parallel group** — Tasks 2, 3, and 4 all require DEV5 Tasks 1–4 and DEV6 Task 1, but are independent of each other. Run all three simultaneously.
+> **Parallel group** - Tasks 2, 3, and 4 all require DEV5 Tasks 1-4 and DEV6 Task 1, but are independent of each other. Run all three simultaneously.
 
-## Task 2: Leave + Calendar Screens
+## Task 2: Time Off + Calendar Screens
 
-**Goal:** build leave and calendar workflows used by employees and managers.
+**Goal:** build time_off and calendar workflows used by employees and managers.
 
 **Requires:** DEV5 Tasks 1-4 and DEV6 Task 1 complete  
 **Live integration:** DEV2 Task 3 (use MSW until ready) - Contract: `current-focus/contracts/hr-employee.md`
 
 ### Acceptance Criteria
 
-- [ ] Leave balance view shows available, used, pending, and upcoming leave.
-- [ ] Leave request form validates leave type, date range, overlap, and reason.
+- [ ] Time Off balance view shows available, used, pending, and upcoming time_off.
+- [ ] Time Off request form validates time off type, date range, overlap, and reason.
 - [ ] Approval screen supports approve, reject, and comment for configured approvers.
-- [ ] Calendar screen combines holidays, shifts, leave, and company events.
+- [ ] Calendar screen combines holidays, shifts, time_off, and company events.
 - [ ] Shift and holiday admin screens exist.
 - [ ] Calendar holiday settings screen lets admins disable country holiday sync or override the country calendar from the legal entity default.
 - [ ] Google/Outlook calendar connection controls support connect, disconnect, sync direction, sync status, and manual sync.
@@ -69,8 +68,8 @@ npm run build
 
 ### References
 
-- [[Userflow/Leave/leave-request-submission|Leave Request Submission]] (Userflow/Leave/leave-request-submission.md)
-- [[Userflow/Leave/leave-approval|Leave Approval]] (Userflow/Leave/leave-approval.md)
+- [[Userflow/Time-Off/time-off-request-submission|Time Off Request Submission]] (Userflow/Time-Off/time-off-request-submission.md)
+- [[Userflow/Time-Off/time-off-approval|Time Off Approval]] (Userflow/Time-Off/time-off-approval.md)
 - [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]] (Userflow/Calendar/calendar-event-creation.md)
 - [[Userflow/Calendar/calendar-integrations|Calendar Integrations]] (Userflow/Calendar/calendar-integrations.md)
 - [[modules/calendar/overview|Calendar Module]] (modules/calendar/overview.md)
@@ -79,19 +78,19 @@ npm run build
 ### Verification
 
 ```bash
-npm run test -- leave
+npm run test -- time_off
 npm run test -- calendar
 npm run build
 ```
 
 ---
 
-## Task 3: Presence + Workforce Screens
+## Task 3: Presence + Monitoring Screens
 
 **Goal:** build the live presence, attendance, overtime, and monitoring settings surfaces.
 
 **Requires:** DEV5 Tasks 1-4 and DEV6 Task 1 complete  
-**Live integration:** DEV2 Task 4, DEV1 Task 6 (use MSW until ready) - Contract: `current-focus/contracts/workforce-presence.md`
+**Live integration:** DEV2 Task 4, DEV1 Task 6 (use MSW until ready) - Contract: `current-focus/contracts/time-attendance.md`
 
 ### Acceptance Criteria
 
@@ -104,9 +103,9 @@ npm run build
 
 ### References
 
-- [[Userflow/Workforce-Presence/presence-overview|Presence Overview]] (Userflow/Workforce-Presence/presence-overview.md)
-- [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]] (Userflow/Workforce-Presence/presence-session-view.md)
-- [[Userflow/Workforce-Presence/overtime-management|Overtime Management]] (Userflow/Workforce-Presence/overtime-management.md)
+- [[Userflow/Time-Attendance/presence-overview|Presence Overview]] (Userflow/Time-Attendance/presence-overview.md)
+- [[Userflow/Time-Attendance/presence-session-view|Presence Session View]] (Userflow/Time-Attendance/presence-session-view.md)
+- [[Userflow/Time-Attendance/overtime-management|Overtime Management]] (Userflow/Time-Attendance/overtime-management.md)
 - [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]] (Userflow/Configuration/monitoring-toggles.md)
 
 ### Verification
@@ -136,7 +135,7 @@ npm run build
 
 ### References
 
-- [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]] (Userflow/Workforce-Intelligence/agent-deployment.md)
+- [[Userflow/Monitoring/agent-deployment|Agent Deployment]] (Userflow/Monitoring/agent-deployment.md)
 - [[modules/agent-gateway/heartbeat-monitoring/overview|Heartbeat Monitoring]] (modules/agent-gateway/heartbeat-monitoring/overview.md)
 - [[frontend/data-layer/real-time|Real-Time Data]] (frontend/data-layer/real-time.md)
 
@@ -151,7 +150,7 @@ npm run build
 
 ## Open Backend Contracts
 
-- [x] Employee and leave balance DTOs -> `current-focus/contracts/hr-employee.md`
+- [x] Employee and Time Off balance DTOs -> `current-focus/contracts/hr-employee.md`
 - [x] Agent fleet health DTOs -> `current-focus/contracts/agent-gateway.md`
 - [ ] Calendar holiday settings DTO and external calendar connection DTO from DEV2 (pending).
 

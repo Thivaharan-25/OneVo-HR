@@ -1,4 +1,4 @@
-# User Management — End-to-End Logic
+﻿# User Management - End-to-End Logic
 
 **Module:** Infrastructure
 **Feature:** User Management

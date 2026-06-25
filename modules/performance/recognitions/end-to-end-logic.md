@@ -1,4 +1,4 @@
-# Recognitions — End-to-End Logic
+﻿# Recognitions - End-to-End Logic
 
 **Module:** Performance
 **Feature:** Recognitions

@@ -1,4 +1,4 @@
-# Offboarding — End-to-End Logic
+﻿# Offboarding - End-to-End Logic
 
 **Module:** Core HR
 **Feature:** Offboarding
@@ -19,7 +19,7 @@ POST /api/v1/employees/{id}/offboarding
          -> reason, last_working_date, knowledge_risk_level
          -> penalties_json initialized with any known outstanding loans / notice period items
          -> status = 'initiated'
-      -> 3. Create offboarding workflow checklist
+      -> 3. Create offboarding checklist tasks from checklist_templates where template_type = 'offboarding'
          -> IT: revoke access and collect devices
          -> HR: exit interview and final documents
          -> Finance: final settlement inputs
@@ -27,11 +27,11 @@ POST /api/v1/employees/{id}/offboarding
          -> Admin: badge/key return and org chart updates
       -> 4. If knowledge_risk_level is high or critical:
          -> Mark knowledge transfer task as mandatory
-         -> If critical: trigger additional handover workflow
+         -> If critical: require additional handover checklist items
       -> 5. Create lifecycle event: event_type = 'terminated' or 'resigned'
       -> 6. Publish EmployeeOffboardingStarted event
          -> Consumers:
-            -> leave: forfeit unused entitlements
+            -> time_off: forfeit unused entitlements
             -> payroll: initiate final settlement
             -> agent-gateway: revoke agent access
             -> notifications: notify configured offboarding resolvers
@@ -49,8 +49,8 @@ PUT /api/v1/offboarding/{id}/knowledge-transfer
     -> [RequirePermission("employees:write")]
     -> OffboardingService.UpdateKnowledgeTransferAsync(id, command, ct)
       -> 1. Load offboarding_record and validate status != 'completed'
-      -> 2. Validate caller is assigned manager, HR/Admin, or workflow assignee
-      -> 3. Store handover status in workflow step / details_json:
+      -> 2. Validate caller is assigned manager, HR/Admin, or checklist assignee
+      -> 3. Store handover status in checklist task details:
          -> completed_by_id
          -> completed_at
          -> notes
@@ -71,7 +71,7 @@ POST /api/v1/offboarding/{id}/knowledge-transfer/bypass
     -> OffboardingService.BypassKnowledgeTransferAsync(id, command, ct)
       -> 1. Load offboarding_record and validate status != 'completed'
       -> 2. Validate knowledge_risk_level is high or critical, or tenant policy allows bypass recording for all risk levels
-      -> 3. Validate caller is authorized to approve bypass (HR/Admin or configured workflow approver)
+      -> 3. Validate caller is authorized to approve bypass
       -> 4. Require bypass reason
       -> 5. Resolve penalty amount:
          -> If command.amount is provided, use manual amount
@@ -81,7 +81,7 @@ POST /api/v1/offboarding/{id}/knowledge-transfer/bypass
          -> type = 'knowledge_transfer_bypass'
          -> amount, currency, reason
          -> approved_by_id, approved_at
-         -> source = 'offboarding_workflow'
+         -> source = 'offboarding'
       -> 7. Update penalties_json.total_amount
       -> 8. Mark knowledge transfer checklist item as bypassed
       -> 9. Audit log entry
@@ -122,7 +122,7 @@ PUT /api/v1/offboarding/{id}/complete
 
 ### Edge Cases
 
-- **Knowledge risk assessment:** Critical employees trigger additional handover workflows.
+- **Knowledge risk assessment:** Critical employees require additional handover checklist tasks.
 - **Notice period tracking:** Tracked in penalties_json with expected end date.
 - **Knowledge transfer bypass:** High/critical risk offboarding requires completed handover or approved bypass. Bypass is stored in `penalties_json`; penalty amount can be manual, tenant-policy driven, or zero for audit-only cases.
 

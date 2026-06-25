@@ -1,7 +1,7 @@
-# SSO Configuration
+﻿# SSO Configuration
 
 **Area:** Platform Setup
-**Trigger:** Admin navigates to SSO settings (user action — configuration)
+**Trigger:** Admin navigates to SSO settings (user action - configuration)
 **Required Permission(s):** `settings:admin`
 **Related Permissions:** `users:manage` (to enforce SSO-only login for specific users)
 
@@ -18,7 +18,7 @@
 ### Step 1: Navigate to SSO Settings
 - **UI:** Settings > Security > Single Sign-On. Page shows current SSO status (Disabled/Enabled), configured provider (if any), and login method settings (SSO only, SSO + password, password only)
 - **API:** `GET /api/v1/settings/sso`
-- **Backend:** `SsoConfigurationService.GetConfigAsync()` → [[modules/shared-platform/sso-authentication/overview|Sso Authentication]]
+- **Backend:** `SsoConfigurationService.GetConfigAsync()` -> [[modules/shared-platform/sso-authentication/overview|Sso Authentication]]
 - **Validation:** Permission check for `settings:admin`
 - **DB:** `sso_configurations`
 
@@ -58,14 +58,14 @@
 ### Step 6: Test Connection
 - **UI:** Click "Test Connection" button. Opens a popup window that redirects to the identity provider login page. After successful authentication, popup closes and shows test results: connected user's email, mapped attributes, any warnings
 - **API:** `POST /api/v1/settings/sso/test`
-- **Backend:** `SsoConfigurationService.TestConnectionAsync()` — performs OAuth/SAML flow with the provider, validates response, returns mapped user data without creating a session
+- **Backend:** `SsoConfigurationService.TestConnectionAsync()` - performs OAuth/SAML flow with the provider, validates response, returns mapped user data without creating a session
 - **Validation:** Provider must return a valid response. Email attribute must be present. Certificate must be valid (SAML)
 - **DB:** None (test only, nothing persisted)
 
 ### Step 7: Save and Enable SSO
 - **UI:** Review configuration summary. Toggle "Enable SSO" switch. Select login policy: "SSO Only" (password login disabled), "SSO + Password" (both allowed), or "SSO Preferred" (SSO shown first, password link available). Click "Save Configuration"
 - **API:** `POST /api/v1/settings/sso`
-- **Backend:** `SsoConfigurationService.SaveAndEnableAsync()` → [[modules/shared-platform/sso-authentication/overview|Sso Authentication]]
+- **Backend:** `SsoConfigurationService.SaveAndEnableAsync()` -> [[modules/shared-platform/sso-authentication/overview|Sso Authentication]]
   1. Encrypts and stores client secret using AES-256
   2. Saves configuration to `sso_configurations` table
   3. Updates tenant authentication settings
@@ -102,20 +102,20 @@
 
 ## Events Triggered
 
-- `SsoConfiguredEvent` → [[backend/messaging/event-catalog|Event Catalog]] — consumed by audit logging
-- `AuditLogEntry` (action: `sso.configured`) → [[modules/auth/audit-logging/overview|Audit Logging]]
-- `AuditLogEntry` (action: `sso.enabled`) → [[modules/auth/audit-logging/overview|Audit Logging]]
+- `SsoConfiguredEvent` -> [[backend/messaging/event-catalog|Event Catalog]] - consumed by audit logging
+- `AuditLogEntry` (action: `sso.configured`) -> [[modules/auth/audit-logging/overview|Audit Logging]]
+- `AuditLogEntry` (action: `sso.enabled`) -> [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[Userflow/Auth-Access/login-flow|Login Flow]] — SSO changes the login experience
-- [[Userflow/Auth-Access/user-invitation|User Invitation]] — invited users may use SSO instead of password
-- [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]] — SSO typically configured after initial setup
+- [[Userflow/Auth-Access/login-flow|Login Flow]] - SSO changes the login experience
+- [[Userflow/Auth-Access/user-invitation|User Invitation]] - invited users may use SSO instead of password
+- [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]] - SSO typically configured after initial setup
 
 ## Module References
 
-- [[modules/shared-platform/sso-authentication/overview|Sso Authentication]] — SSO implementation details
-- [[security/auth-architecture|Auth Architecture]] — how SSO fits into the auth stack
-- [[frontend/cross-cutting/authentication|Authentication]] — JWT issuance after SSO validation
-- [[modules/auth/session-management/overview|Session Management]] — session handling with SSO
-- [[modules/configuration/overview|Configuration]] — tenant-level SSO settings
+- [[modules/shared-platform/sso-authentication/overview|Sso Authentication]] - SSO implementation details
+- [[security/auth-architecture|Auth Architecture]] - how SSO fits into the auth stack
+- [[frontend/cross-cutting/authentication|Authentication]] - JWT issuance after SSO validation
+- [[modules/auth/session-management/overview|Session Management]] - session handling with SSO
+- [[modules/configuration/overview|Configuration]] - tenant-level SSO settings

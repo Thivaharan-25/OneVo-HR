@@ -1,4 +1,4 @@
-# Agent Version and Ring Management Flows
+﻿# Agent Version and Ring Management Flows
 
 > Phase 2 only. These flows are absent from Phase 1 navigation and API scope.
 
@@ -16,7 +16,7 @@ Rings control rollout scope. Every tenant is assigned to exactly one ring.
 |---|---|---|
 | Ring 0 | Internal | OneVo's own internal test tenants |
 | Ring 1 | Beta | Opted-in customer tenants who accept early releases |
-| Ring 2 | GA | All remaining tenants — general availability |
+| Ring 2 | GA | All remaining tenants - general availability |
 
 A force-update command pushes a new version to all agents in a given ring. Normal (non-forced) upgrades are pulled by agents on their own update check cycle.
 
@@ -48,7 +48,7 @@ Lists all published agent versions from `agent_version_releases`. Each row shows
 1. Navigate to `/agents/versions`
 2. Click **Publish Version**
 3. Fill in the form:
-   - Version number (semver, e.g. `1.5.0`) — validated for uniqueness
+   - Version number (semver, e.g. `1.5.0`) - validated for uniqueness
    - Release channel (`stable` or `beta`)
    - Minimum OS version
    - Release notes (markdown supported)
@@ -79,7 +79,7 @@ Force-update sends an `UPDATE_AGENT` command to every agent currently in the spe
 
 The command is published to all agents in the ring via AgentGateway. Agents that are offline will receive it on next reconnect.
 
-**Typical rollout sequence:** publish → force Ring 0 → verify → force Ring 1 → verify → force Ring 2.
+**Typical rollout sequence:** publish -> force Ring 0 -> verify -> force Ring 1 -> verify -> force Ring 2.
 
 ---
 
@@ -113,7 +113,7 @@ Shows each ring with the list of tenants assigned to it.
 
 1. Navigate to `/platform/tenants/{id}` -> **Overview** tab
 2. Current ring is shown in the agent section
-3. Click **Change Ring** → same dropdown and confirm flow as above
+3. Click **Change Ring** -> same dropdown and confirm flow as above
 
 ---
 
@@ -133,14 +133,14 @@ Rollback force-pins a tenant's agents to a previous stable version, overriding t
 4. Select the target version
 5. `ConfirmActionDialog`: "Force-pin `<tenant>` to version `<version>`? Their agents will receive a downgrade command."
 6. Click **Confirm**
-7. **API call:** `POST /admin/v1/agent-versions/{id}/force-update` with body `{ "ring": <tenant's current ring> }` targeting the selected older version, or use channel change to `recalled` on the bad version followed by force-update with the prior version — whichever applies.
+7. **API call:** `POST /admin/v1/agent-versions/{id}/force-update` with body `{ "ring": <tenant's current ring> }` targeting the selected older version, or use channel change to `recalled` on the bad version followed by force-update with the prior version - whichever applies.
 8. Toast: "Rollback command dispatched"
 
 **For platform-wide rollback** (bad version reached Ring 2):
 
-1. Go to `/agents/versions` → click the bad version
-2. Click **Change Channel** → set to `recalled`
+1. Go to `/agents/versions` -> click the bad version
+2. Click **Change Channel** -> set to `recalled`
    - **API call:** `PATCH /admin/v1/agent-versions/{id}/channel` with body `{ "channel": "recalled" }`
-3. Force-update all three rings to the last known-good stable version (repeat the Force-Update flow three times, Ring 0 → 1 → 2)
+3. Force-update all three rings to the last known-good stable version (repeat the Force-Update flow three times, Ring 0 -> 1 -> 2)
 
 Recalled versions are flagged in the catalog with a red **"Recalled"** badge and are excluded from all future force-update selections.

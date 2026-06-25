@@ -1,6 +1,6 @@
-# Nav Rail
+﻿# Nav Rail
 
-The icon rail is the narrow dark navigation strip on the far left of the shell. It is always rendered — it never collapses or hides. It is a standalone floating card with a dark background that does not change in dark mode.
+The icon rail is the narrow dark navigation strip on the far left of the shell. It is always rendered - it never collapses or hides. It is a standalone floating card with a dark background that does not change in dark mode.
 
 ## Dimensions & Shape
 
@@ -8,7 +8,7 @@ The icon rail is the narrow dark navigation strip on the far left of the shell. 
 |:---------|:------|
 | Width | **52px** (fixed, never changes) |
 | Height | 100% of the bottom row |
-| Background | `#17181F` — always dark, light and dark mode identical |
+| Background | `#17181F` - always dark, light and dark mode identical |
 | Border-radius | **12px** on all corners |
 | Border | none |
 | Shadow | `0 2px 16px rgba(0,0,0,0.20)` |
@@ -18,22 +18,22 @@ The icon rail is the narrow dark navigation strip on the far left of the shell. 
 ## Internal Structure
 
 ```
-┌── rail (52px) ─────────────────┐
-│  ┌── rail-nav (flex:1) ──────┐ │   ← 5px horizontal padding, overflow hidden
-│  │  [item 42px wide]         │ │
-│  │  [item]                   │ │
-│  │  [item]  ← 9 pillars total│ │
-│  │  [item]                   │ │
-│  │  [item]                   │ │
-│  │  [item]                   │ │
-│  │  [item]                   │ │
-│  │  ─── separator ───        │ │   ← 24px wide, 1px, between Chat and Admin
-│  │  [item]                   │ │
-│  │  [item]                   │ │
-│  └───────────────────────────┘ │
-│  ─── separator ───             │   ← above avatar
-│  [avatar 26px circle]          │
-└────────────────────────────────┘
++-- rail (52px) -----------------+
+|  +-- rail-nav (flex:1) ------+ |   <- 5px horizontal padding, overflow hidden
+|  |  [item 42px wide]         | |
+|  |  [item]                   | |
+|  |  [item]  <- 9 pillars total| |
+|  |  [item]                   | |
+|  |  [item]                   | |
+|  |  [item]                   | |
+|  |  [item]                   | |
+|  |  --- separator ---        | |   <- 24px wide, 1px, before Settings
+|  |  [item]                   | |
+|  |  [item]                   | |
+|  +---------------------------+ |
+|  --- separator ---             |   <- above avatar
+|  [avatar 26px circle]          |
++--------------------------------+
 ```
 
 ## Rail Item
@@ -45,14 +45,14 @@ The icon rail is the narrow dark navigation strip on the far left of the shell. 
 | Border-radius | 8px | 8px | 8px |
 | Background | transparent | `rgba(255,255,255,0.07)` | `rgba(255,255,255,0.10)` |
 | Color | `rgba(255,255,255,0.28)` | `rgba(255,255,255,0.72)` | `rgba(255,255,255,0.95)` |
-| Transition | `background 120ms, color 120ms` | — | — |
+| Transition | `background 120ms, color 120ms` | - | - |
 
 ### Icon (inside rail item)
 
 | Property | Value |
 |:---------|:------|
-| Size | **16×16px** (`size={16}` in Lucide) |
-| Stroke-width | **1.6** — same in all states, never changes on active |
+| Size | **16x16px** (`size={16}` in Lucide) |
+| Stroke-width | **1.6** - same in all states, never changes on active |
 | Color | inherited from rail item |
 
 ### Label (below icon)
@@ -76,22 +76,22 @@ margin: 4px 0;
 flex-shrink: 0;
 ```
 
-One separator appears between the Chat and Admin items. A second separator appears above the avatar.
+One separator appears before Settings. A second separator appears above the avatar.
 
 ## Avatar (Bottom of Rail)
 
 | Property | Value |
 |:---------|:------|
-| Size | 26×26px |
+| Size | 26x26px |
 | Shape | Full circle (`border-radius: 50%`) |
-| Background | `linear-gradient(135deg, #C9A96E, #E8C98A)` — gold gradient |
+| Background | `linear-gradient(135deg, #C9A96E, #E8C98A)` - gold gradient |
 | Font-size | 10px |
 | Font-weight | 700 |
-| Text color | `#1a1208` — near-black brown |
+| Text color | `#1a1208` - near-black brown |
 | Margin-top | 4px |
 | Hover | `opacity: 0.85` |
 
-## Pillar Map — Exact Icon Names (Lucide React)
+## Pillar Map - Exact Icon Names (Lucide React)
 
 Display order top to bottom. Pillars marked **No Panel** navigate directly without opening the expansion panel.
 
@@ -99,16 +99,15 @@ Display order top to bottom. Pillars marked **No Panel** navigate directly witho
 |:---------|:-------|:------------------|:----------|:--------------|:-----------|
 | 1 | Home | `House` | **No** | `/` | Any authenticated |
 | 2 | Inbox | `Inbox` | **No** | `/inbox` | Any authenticated |
-| 3 | People | `Users` | Yes | `/people/employees` | `employees:read` OR `leave:read` |
-| 4 | Workforce | `LayoutDashboard` | Yes | `/workforce` | `workforce:view` |
-| 5 | Org | `Network` | Yes | `/org` | `org:read` |
-| 6 | Calendar | `Calendar` | Yes | `/calendar` | `calendar:read` |
-| 7 | Chat | `MessageCircle` | **No** | `/chat` | `chat:read` |
-| — | *separator* | — | — | — | — |
-| 8 | Admin | `Shield` | Yes | `/admin/users` | `users:read` |
+| 3 | People | `Users` | Yes | `/people/employees` | `employees:read` |
+| 4 | Time Off | `CalendarCheck` | Yes | `/time-off` | `time_off:create` OR `time_off:read` |
+| 5 | Time & Attendance | `Clock` | Yes | `/time-attendance` | `attendance:read-own` OR `attendance:read` |
+| 6 | Work | `BriefcaseBusiness` | Yes | `/work` | `projects:read` OR `tasks:read` |
+| 7 | Calendar | `Calendar` | Yes | `/calendar` | `calendar:read` |
+| 8 | Monitoring | `Activity` | Yes | `/monitoring` | `monitoring:view` |
 | 9 | Settings | `Settings` | Yes | `/settings/general` | `settings:read` |
 
-> **Critical:** Home, Inbox, and Chat have **no panel**. Clicking them closes any open panel and navigates directly. Do not render a panel for these three.
+> **Critical:** Home and Inbox have **no panel**. Clicking them closes any open panel and navigates directly. Do not render a separate customer-facing Admin top-level item.
 
 ## Tailwind Implementation
 
@@ -116,8 +115,8 @@ Display order top to bottom. Pillars marked **No Panel** navigate directly witho
 // src/components/layout/rail.tsx
 'use client';
 
-import { House, Inbox, Users, LayoutDashboard, Network, Calendar,
-         MessageCircle, Shield, Settings } from 'lucide-react';
+import { House, Inbox, Users, CalendarCheck, Clock, BriefcaseBusiness,
+         Calendar, Activity, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavStore } from '@/stores/use-nav-store';
 
@@ -125,16 +124,15 @@ const PILLARS = [
   { key: 'home',      label: 'Home',      Icon: House,           hasPanel: false, route: '/' },
   { key: 'inbox',     label: 'Inbox',     Icon: Inbox,           hasPanel: false, route: '/inbox' },
   { key: 'people',    label: 'People',    Icon: Users,           hasPanel: true,  route: '/people/employees' },
-  { key: 'workforce', label: 'Workforce', Icon: LayoutDashboard, hasPanel: true,  route: '/workforce' },
-  { key: 'org',       label: 'Org',       Icon: Network,         hasPanel: true,  route: '/org' },
+  { key: 'timeOff',   label: 'Time Off',  Icon: CalendarCheck,   hasPanel: true,  route: '/time-off' },
+  { key: 'timeAttendance', label: 'Time & Attendance', Icon: Clock, hasPanel: true, route: '/time-attendance' },
+  { key: 'work',      label: 'Work',      Icon: BriefcaseBusiness, hasPanel: true, route: '/work' },
   { key: 'calendar',  label: 'Calendar',  Icon: Calendar,        hasPanel: true,  route: '/calendar' },
-  { key: 'chat',      label: 'Chat',      Icon: MessageCircle,   hasPanel: false, route: '/chat' },
-  // separator here
-  { key: 'admin',     label: 'Admin',     Icon: Shield,          hasPanel: true,  route: '/admin/users' },
+  { key: 'monitoring', label: 'Monitoring', Icon: Activity,      hasPanel: true,  route: '/monitoring' },
   { key: 'settings',  label: 'Settings',  Icon: Settings,        hasPanel: true,  route: '/settings/general' },
 ];
 
-const SEPARATOR_BEFORE = new Set(['admin']); // separator rendered before these keys
+const SEPARATOR_BEFORE = new Set(['settings']); // separator rendered before Settings
 
 export function NavRail() {
   const { activePillar, setActivePillar } = useNavStore();
@@ -195,7 +193,7 @@ interface NavStore {
 }
 
 export const useNavStore = create<NavStore>((set) => ({
-  activePillar: 'workforce',
+  activePillar: 'monitoring',
   isPanelOpen: true,
   setActivePillar: (key, hasPanel) =>
     set({ activePillar: key, isPanelOpen: hasPanel }),
@@ -204,8 +202,8 @@ export const useNavStore = create<NavStore>((set) => ({
 
 ## Related
 
-- [[frontend/design-system/components/shell-layout|Shell Layout]] — overall layout this rail sits in
-- [[frontend/design-system/components/expansion-panel|Expansion Panel]] — the panel this rail controls
-- [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] — canonical pillar + permission reference
-- [[frontend/design-system/foundations/iconography|Iconography]] — Lucide icon system, sizes
-- [[Userflow/Dashboard/shell-navigation|Shell Navigation]] — interaction flow
+- [[frontend/design-system/components/shell-layout|Shell Layout]] - overall layout this rail sits in
+- [[frontend/design-system/components/expansion-panel|Expansion Panel]] - the panel this rail controls
+- [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] - canonical pillar + permission reference
+- [[frontend/design-system/foundations/iconography|Iconography]] - Lucide icon system, sizes
+- [[Userflow/Dashboard/shell-navigation|Shell Navigation]] - interaction flow

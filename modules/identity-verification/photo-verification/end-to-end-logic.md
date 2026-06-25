@@ -30,10 +30,10 @@ POST /api/v1/verification/verify (Internal — called by agent via gateway)
             -> match_confidence < match_threshold -> 'failed'
       -> 7. If failed:
          -> Publish VerificationFailed event
-         -> Exception engine creates alert, notifications sent to manager
+         -> Phase 1 lightweight alert detection creates alert notification, recipient resolved by Monitoring Policy
       -> 8. If verified:
          -> Publish VerificationCompleted event
-         -> Workforce presence confirms identity
+         -> Time & Attendance presence confirms identity
       -> Return Result.Success(verificationDto)
 ```
 

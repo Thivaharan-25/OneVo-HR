@@ -1,4 +1,4 @@
-# Alert Generation — End-to-End Logic
+﻿# Alert Generation - End-to-End Logic
 
 **Module:** Exception Engine
 **Feature:** Alert Generation
@@ -16,14 +16,13 @@ ExceptionEngineEvaluationJob (Hangfire, every 5 min during work hours)
        -> If not -> skip evaluation, return
     -> 2. Load all active exception_rules for tenant
     -> 3. For each rule:
-       -> a. Determine target employees (all / department / team / specific)
        -> b. For each employee:
           -> Check monitoring enabled: IConfigurationService
              -> If disabled -> skip
           -> Fetch relevant data based on rule_type:
              -> low_activity: IActivityMonitoringService.GetSnapshotsAsync()
-             -> excess_idle: IWorkforcePresenceService.GetDeviceSessionsAsync()
-             -> no_presence: IWorkforcePresenceService.GetPresenceForDateAsync()
+             -> excess_idle: ITimeAttendanceService.GetDeviceSessionsAsync()
+             -> no_presence: ITimeAttendanceService.GetPresenceForDateAsync()
              -> break_exceeded: break_records query
           -> Evaluate threshold_json against fetched data
           -> If breached:
@@ -41,7 +40,7 @@ ExceptionEngineEvaluationJob (Hangfire, every 5 min during work hours)
 |:------|:---------|
 | Invalid threshold_json on rule | Skip rule, log warning |
 | Data service unavailable | Skip evaluation cycle, retry on next run |
-| Duplicate alert (dedup) | Skip — existing active alert covers this condition |
+| Duplicate alert (dedup) | Skip - existing active alert covers this condition |
 
 ## Related
 

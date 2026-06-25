@@ -1,8 +1,8 @@
-# Shared Platform - Schema
+﻿# Shared Platform - Schema
 
 **Module:** [[modules/shared-platform/overview|Shared Platform]]
-**Phase:** Phase 1, including optional Microsoft Teams integration additions
-**Tables:** 36
+**Phase:** Phase 1 shared platform tables; Microsoft Teams integration additions are Phase 2 unless explicitly reactivated
+**Tables:** 63
 
 ---
 
@@ -26,7 +26,9 @@
 
 ---
 
-## `approval_actions`
+> Phase 1 note: Workflow / Automation Engine tables in this schema are Phase 2 unless a row is explicitly described as notification, auth, billing, configuration, or lightweight access approval. Phase 1 approvals for transfer, promotion, position-based access, and monitoring alerts use direct records plus Notifications, not workflow instances.
+
+## `approval_actions` - Phase 2
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -66,13 +68,13 @@
 
 ## `escalation_rules`
 
-> **Scope:** Workflow SLA timeouts - fires when a workflow item (leave request, expense claim, etc.) sits in a pending state longer than `sla_hours`. See [[database/schemas/exception-engine#`escalation_chains`|escalation_chains]] for alert routing on system-detected anomalies - that is a separate system.
+> **Scope:** Workflow SLA timeouts - fires when a workflow item (Time Off request, expense claim, etc.) sits in a pending state longer than `sla_hours`. See [[database/schemas/exception-engine#`escalation_chains`|escalation_chains]] for alert routing on system-detected anomalies - that is a separate system.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `resource_type` | `varchar(50)` | e.g., `leave_request`, `expense_claim` |
+| `resource_type` | `varchar(50)` | e.g., `time_off_request`, `expense_claim` |
 | `trigger_condition` | `varchar(100)` | e.g., `status = 'pending'` |
 | `sla_hours` | `integer` | Hours before escalation fires |
 | `action_type` | `varchar(30)` | `remind`, `escalate`, `auto_approve` |
@@ -88,7 +90,6 @@
 
 ## `global_app_catalog`
 
-Global catalog of known applications managed by the OneVo dev team via the developer platform. No `tenant_id` - shared across all tenants. HR admins browse this when configuring app allowlists.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -128,27 +129,13 @@ Global catalog of known applications managed by the OneVo dev team via the devel
 
 Global feature flag definitions. Tenant-specific exceptions are stored in `feature_flag_overrides`.
 
-**Linkage rule:** Tenant-facing product feature flags must set both `module_key` and `feature_key`, and `feature_key` must reference a feature owned by that module in `module_features`. Only platform operational flags that are not sold as tenant features may leave `module_key` and `feature_key` null.
+**Linkage rule:** Tenant-facing product feature flags must set both `module_key` and `feature_key`, and `feature_key` must reference a feature owned by that module in `module_features`. Only platform operational flags that are not sold as tenant features may keep `module_key` and `feature_key` null.
 
 ---
 
-## `hardware_terminals`
+## Physical Attendance Terminals
 
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK -> tenants |
-| `office_location_id` | `uuid` | FK -> office_locations |
-| `terminal_code` | `varchar(50)` | Unique device code |
-| `terminal_type` | `varchar(30)` | `biometric`, `rfid`, `kiosk` |
-| `webhook_url` | `varchar(500)` | Callback URL for events |
-| `api_key_encrypted` | `bytea` | Encrypted terminal API key |
-| `status` | `varchar(20)` | `active`, `offline`, `maintenance` |
-| `last_heartbeat_at` | `timestamptz` |  |
-| `created_at` | `timestamptz` |  |
-| `updated_at` | `timestamptz` |  |
-
-**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `office_location_id` -> [[database/schemas/org-structure#`office_locations`|office_locations]]
+Shared Platform does not own a separate hardware-terminal table. Physical attendance/biometric terminal records are stored in [[database/schemas/identity-verification#`biometric_devices`|biometric_devices]], which is the canonical table for direct terminals, vendor middleware, local gateways, polling integrations, and manual imports. Shared Platform may expose navigation or integration catalog metadata for these devices, but it must not duplicate device rows.
 
 ---
 
@@ -176,8 +163,8 @@ Global feature flag definitions. Tenant-specific exceptions are stored in `featu
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `channel_type` | `varchar(30)` | `email`, `push`, `slack` |
-| `provider` | `varchar(50)` | `resend`, `fcm`, `slack_webhook` |
+| `channel_type` | `varchar(30)` | `email`, `push`, `slack` (Phase 2) |
+| `provider` | `varchar(50)` | `resend`, `fcm`, `slack_webhook` (Phase 2) |
 | `credentials_encrypted` | `jsonb` | Encrypted API keys/tokens |
 | `is_active` | `boolean` |  |
 | `configured_by_id` | `uuid` | FK -> users |
@@ -188,13 +175,41 @@ Global feature flag definitions. Tenant-specific exceptions are stored in `featu
 
 ---
 
+## `notifications`
+
+In-app notification records. Notifications module owns delivery behavior. Shared Platform owns this physical table.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `recipient_user_id` | `uuid` | FK -> users |
+| `category` | `varchar(40)` | e.g., `time_off`, `monitoring`, `discrepancy`, `system` |
+| `type` | `varchar(80)` | e.g., `time_off.approved`, `monitoring.app_violation`, `verification.failed` |
+| `title` | `varchar(200)` | |
+| `message` | `text` | |
+| `severity` | `varchar(20)` | `info`, `warning`, `critical` |
+| `delivery_surface` | `varchar(30)` | `bell`, `inbox`, `email`, `signalr` |
+| `related_entity_type` | `varchar(80)` | Nullable - polymorphic resource type |
+| `related_entity_id` | `uuid` | Nullable - polymorphic resource id |
+| `action_required` | `boolean` | Whether the recipient must take action |
+| `is_read` | `boolean` | |
+| `read_at` | `timestamptz` | Nullable |
+| `created_at` | `timestamptz` | |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `recipient_user_id` -> [[database/schemas/infrastructure#`users`|users]]
+
+**Indexes:** `(tenant_id, recipient_user_id, is_read, created_at)`, `(tenant_id, category, created_at)`
+
+---
+
 ## `notification_templates`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `template_code` | `varchar(50)` | e.g., `leave_requested`, `payroll_completed` |
+| `template_code` | `varchar(50)` | e.g., `time_off_requested`, `payroll_completed` |
 | `channel` | `varchar(20)` | `email`, `push`, `in_app` |
 | `subject_template` | `text` | For email subject line |
 | `body_template` | `text` | Handlebars/Liquid template |
@@ -206,6 +221,129 @@ Global feature flag definitions. Tenant-specific exceptions are stored in `featu
 | `updated_at` | `timestamptz` |  |
 
 **Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `created_by_id` -> [[database/schemas/infrastructure#`users`|users]]
+
+---
+
+## `email_delivery_logs`
+
+Email-only delivery/audit log for Resend-backed transactional email. This table makes invitation, password reset, onboarding, scheduled report, and notification troubleshooting visible without storing raw provider secrets.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `notification_template_id` | `uuid` | Nullable FK -> notification_templates |
+| `notification_channel_id` | `uuid` | Nullable FK -> notification_channels |
+| `recipient_email` | `varchar(255)` | Recipient address used for the attempt |
+| `subject_snapshot` | `varchar(500)` | Rendered subject at send time |
+| `provider` | `varchar(50)` | `resend` |
+| `provider_message_id` | `varchar(255)` | Nullable until provider accepts the message |
+| `provider_event_id` | `varchar(255)` | Nullable; webhook event id for idempotency |
+| `status` | `varchar(30)` | `queued`, `sent`, `delivered`, `bounced`, `failed`, `complained` |
+| `attempt_count` | `integer` | Number of send attempts |
+| `last_error` | `text` | Nullable provider or rendering error |
+| `sent_at` | `timestamptz` | Nullable |
+| `delivered_at` | `timestamptz` | Nullable |
+| `bounced_at` | `timestamptz` | Nullable |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Rules:** Create a row before dispatch with `status = queued`; update to `sent` when Resend accepts the message; update delivery/bounce/complaint status from Resend webhooks using `provider_event_id` idempotently. Admin retry actions create a new log row rather than overwriting the old attempt.
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `notification_template_id` -> [[#`notification_templates`|notification_templates]], `notification_channel_id` -> [[#`notification_channels`|notification_channels]]
+
+---
+
+## `support_tickets`
+
+Tenant support tickets created by tenant users and managed by Developer Platform support agents.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `subject` | `varchar(200)` | NOT NULL |
+| `description` | `text` | NOT NULL |
+| `category` | `varchar(80)` | NOT NULL |
+| `priority` | `varchar(20)` | NOT NULL |
+| `status` | `varchar(30)` | `open`, `in_progress`, `waiting_for_customer`, `resolved` |
+| `created_by_user_id` | `uuid` | FK -> users |
+| `assigned_to_id` | `uuid` | Nullable FK -> platform_users |
+| `last_customer_reply_at` | `timestamptz` | Nullable |
+| `last_platform_reply_at` | `timestamptz` | Nullable |
+| `last_activity_at` | `timestamptz` | NOT NULL |
+| `resolved_by_id` | `uuid` | Nullable FK -> platform_users |
+| `created_at` | `timestamptz` | NOT NULL |
+| `updated_at` | `timestamptz` | NOT NULL |
+| `resolved_at` | `timestamptz` | Nullable |
+
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `created_by_user_id` -> [[database/schemas/infrastructure#`users`|users]], `assigned_to_id` -> platform_users, `resolved_by_id` -> platform_users
+
+---
+
+## `support_ticket_messages`
+
+Customer-visible support conversation entries between tenant users and platform support users.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `support_ticket_id` | `uuid` | FK -> support_tickets |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `sender_type` | `varchar(30)` | `tenant_user`, `platform_user`, `system` |
+| `sender_user_id` | `uuid` | Nullable FK -> users; required when `sender_type = tenant_user` |
+| `sender_platform_user_id` | `uuid` | Nullable FK -> platform_users; required when `sender_type = platform_user` |
+| `message_body` | `text` | NOT NULL |
+| `message_format` | `varchar(20)` | `text`, `markdown` |
+| `is_customer_visible` | `boolean` | Always true for tenant/platform replies returned to tenant APIs |
+| `created_at` | `timestamptz` | NOT NULL |
+| `updated_at` | `timestamptz` | Nullable |
+| `edited_at` | `timestamptz` | Nullable |
+| `deleted_at` | `timestamptz` | Nullable; soft delete |
+
+**Foreign Keys:** `support_ticket_id` -> [[#`support_tickets`|support_tickets]], `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `sender_user_id` -> [[database/schemas/infrastructure#`users`|users]], `sender_platform_user_id` -> platform_users
+
+---
+
+## `support_ticket_internal_notes`
+
+Platform-only notes for support investigation. These notes are never returned by tenant-facing support APIs.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `support_ticket_id` | `uuid` | FK -> support_tickets |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `author_platform_user_id` | `uuid` | FK -> platform_users |
+| `note_body` | `text` | NOT NULL |
+| `created_at` | `timestamptz` | NOT NULL |
+| `updated_at` | `timestamptz` | Nullable |
+| `edited_at` | `timestamptz` | Nullable |
+| `deleted_at` | `timestamptz` | Nullable; soft delete |
+
+**Foreign Keys:** `support_ticket_id` -> [[#`support_tickets`|support_tickets]], `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `author_platform_user_id` -> platform_users
+
+---
+
+## `support_ticket_events`
+
+Activity timeline for support ticket lifecycle changes, replies, internal note creation, attachment changes, and closure.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `support_ticket_id` | `uuid` | FK -> support_tickets |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `event_type` | `varchar(80)` | e.g., `ticket.created`, `ticket.assigned`, `ticket.reply_added`, `ticket.internal_note_added`, `ticket.category_changed`, `ticket.status_changed`, `ticket.resolved`, `ticket.attachment_added` |
+| `actor_type` | `varchar(30)` | `tenant_user`, `platform_user`, `system` |
+| `actor_user_id` | `uuid` | Nullable FK -> users |
+| `actor_platform_user_id` | `uuid` | Nullable FK -> platform_users |
+| `old_values_json` | `jsonb` | Nullable previous state snapshot |
+| `new_values_json` | `jsonb` | Nullable new state snapshot |
+| `metadata_json` | `jsonb` | Nullable safe non-secret metadata |
+| `created_at` | `timestamptz` | NOT NULL |
+
+**Foreign Keys:** `support_ticket_id` -> [[#`support_tickets`|support_tickets]], `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `actor_user_id` -> [[database/schemas/infrastructure#`users`|users]], `actor_platform_user_id` -> platform_users
 
 ---
 
@@ -230,23 +368,47 @@ Global feature flag definitions. Tenant-specific exceptions are stored in `featu
 
 ## `payment_gateway_configs`
 
-Gateway configuration for Stripe, Paddle, and PayHere. Supports platform-managed gateway configs only. Secrets are encrypted through `IEncryptionService`; admin APIs return safe metadata only. Country assignment is stored in `payment_gateway_country_routes`, not as free-form gateway selection by tenants.
+Gateway metadata for Stripe, Paddle, and PayHere. Supports platform-managed gateway configs only. Secrets are stored in `payment_gateway_credentials`, not in this table. Country assignment is stored in `payment_gateway_country_routes`, not as free-form gateway selection by tenants.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
+| `gateway_key` | `varchar(80)` | UNIQUE NOT NULL - operator-set readable slug, e.g. `'paddle-global-prod'` |
 | `provider` | `varchar(30)` | `stripe`, `paddle`, `payhere` |
 | `environment` | `varchar(20)` | `sandbox`, `production` |
 | `display_name` | `varchar(100)` | Friendly operator label |
+| `logo_url` | `varchar(500)` | Nullable gateway logo uploaded through admin upload flow |
 | `public_key` | `varchar(255)` | Nullable; Stripe/Paddle public identifier or equivalent public key where applicable |
 | `merchant_id` | `varchar(100)` | Nullable; Paddle seller ID or PayHere merchant ID |
+| `webhook_url` | `varchar(500)` | Gateway callback/notify URL |
+| `is_active` | `boolean` | Whether this config can be used for payment collection |
+| `created_by_id` | `uuid` | FK -> platform_users |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**Rule:** Gateway selection is resolved through active `payment_gateway_country_routes` rows. Do not add an `is_default` gateway flag; it conflicts with country/environment routing.
+
+---
+
+## `payment_gateway_credentials`
+
+Encrypted payment credentials for a gateway config. A new secret creates a new credential row; old rows are deactivated instead of overwritten.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `payment_gateway_config_id` | `uuid` | FK -> payment_gateway_configs |
 | `secret_encrypted` | `bytea` | Encrypted Stripe secret key, Paddle API key, or PayHere merchant secret |
 | `webhook_secret_encrypted` | `bytea` | Encrypted Stripe/Paddle webhook secret or PayHere notify/hash secret when separate |
-| `webhook_url` | `varchar(500)` | Gateway callback/notify URL |
-| `is_default` | `boolean` | Default gateway for tenant/platform |
-| `is_active` | `boolean` | Whether this config can be used for payment collection |
-| `created_by_id` | `uuid` | FK -> users or dev platform account boundary |
-| `created_at` | `timestamptz` | |
+| `encryption_key_version` | `varchar(50)` | Key version used by `IEncryptionService` |
+| `credential_version` | `integer` | Monotonic version per gateway config |
+| `is_active` | `boolean` | Only the active row may be used for provider calls |
+| `rotated_by_id` | `uuid` | FK -> platform_users |
+| `rotated_at` | `timestamptz` | When this credential version was added |
+| `deactivated_by_id` | `uuid` | Nullable FK -> platform_users |
+| `deactivated_at` | `timestamptz` | Nullable |
+
+**Rules:** only one active credential row per `payment_gateway_config_id`. Admin GET APIs never return encrypted secret columns.
 
 ---
 
@@ -262,11 +424,11 @@ Country-to-gateway routing for subscription and invoice collection. Operators se
 | `gateway_config_id` | `uuid` | FK -> payment_gateway_configs |
 | `environment` | `varchar(20)` | `sandbox`, `production` |
 | `is_active` | `boolean` | Whether this route can be used |
-| `created_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `created_by_id` | `uuid` | FK -> platform_users |
 | `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
 
 **Rule:** one active route per `country_code + environment`. A single gateway config may have many country route rows.
-| `updated_at` | `timestamptz` | |
 
 **Rule:** Subscription and invoice collection must reference a configured payment provider when payment-provider collection is enabled.
 
@@ -292,7 +454,7 @@ Global catalog for actual ONEVO modules. No tenant access should be inferred fro
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
-| `module_key` | `varchar(100)` | PK; e.g., `core_hr`, `leave`, `work_management` |
+| `module_key` | `varchar(100)` | PK; e.g., `core_hr`, `time_off`, `work_management` |
 | `name` | `varchar(150)` | Display name |
 | `pillar` | `varchar(50)` | Product grouping only |
 | `phase` | `varchar(30)` | `phase_1`, `phase_2`, `future`, or product-defined release phase |
@@ -364,11 +526,12 @@ Tenant-level module entitlement records derived from the active subscription pla
 | `currency` | `varchar(3)` | ISO 4217 |
 | `starts_at` | `date` | Nullable entitlement start |
 | `ends_at` | `date` | Nullable entitlement/subscription end |
-| `created_by_id` | `uuid` | FK -> users or platform_users, depending on implementation boundary |
+| `created_by_user_id` | `uuid` | Nullable FK -> users; tenant self-service entitlement creation |
+| `created_by_platform_user_id` | `uuid` | Nullable FK -> platform_users; platform-operator entitlement creation |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Entitlement rule:** Commercially entitled modules = selected plan base modules + selected optional module add-ons - disabled modules. `available` and `quoted` are commercial pipeline states and do not grant tenant-facing access. Runtime module access requires commercial entitlement and `runtime_override IS DISTINCT FROM false`.
+**Entitlement rule:** Commercially entitled modules = selected plan base modules + selected optional module add-ons - disabled modules. `available` and `quoted` are commercial pipeline states and do not grant tenant-facing access. Runtime module access requires commercial entitlement and `runtime_override IS DISTINCT FROM false`. Exactly one of `created_by_user_id` or `created_by_platform_user_id` must be set when the entitlement is created by a human actor; system-derived rows are linked to the subscription event that caused them.
 
 ---
 ## `subscription_plan_price_history`
@@ -387,7 +550,7 @@ Audit/history for reusable subscription plan catalog price changes. This preserv
 | `new_currency` | `varchar(3)` | ISO 4217 |
 | `old_pricing_unit` | `varchar(30)` | Nullable |
 | `new_pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
-| `changed_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `changed_by_id` | `uuid` | FK -> platform_users |
 | `reason` | `text` | Required business reason |
 | `changed_at` | `timestamptz` | |
 
@@ -411,7 +574,7 @@ Audit/history for reusable module catalog price changes.
 | `new_ai_token_reference` | `jsonb` | Nullable new AI token references |
 | `old_pricing_unit` | `varchar(30)` | Nullable |
 | `new_pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
-| `changed_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `changed_by_id` | `uuid` | FK -> platform_users |
 | `reason` | `text` | Required business reason |
 | `changed_at` | `timestamptz` | |
 
@@ -436,7 +599,7 @@ Draft-safe provisioning wizard state. This is the source for resume behavior and
 | `owner_invite_completed_at` | `timestamptz` | Nullable |
 | `activation_ready` | `boolean` | Cached readiness after latest validation |
 | `activated_at` | `timestamptz` | Nullable |
-| `last_updated_by_id` | `uuid` | FK -> users or dev platform account boundary |
+| `last_updated_by_id` | `uuid` | FK -> platform_users |
 | `updated_at` | `timestamptz` | |
 
 **Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
@@ -519,8 +682,8 @@ Tenant-specific service setup checklist and charge state.
 | `status` | `varchar(30)` | `needed`, `in_progress`, `configured`, `waived`, `cancelled` |
 | `is_billable` | `boolean` | Snapshot from service and tenant agreement |
 | `price` | `decimal(12,2)` | Nullable tenant-specific setup price |
-| `selected_by_id` | `uuid` | FK -> users or dev platform account boundary |
-| `configured_by_id` | `uuid` | Nullable FK -> users or dev platform account boundary |
+| `selected_by_id` | `uuid` | FK -> platform_users |
+| `configured_by_id` | `uuid` | Nullable FK -> platform_users |
 | `configured_at` | `timestamptz` | Nullable |
 | `notes` | `text` | Nullable |
 | `created_at` | `timestamptz` | |
@@ -535,8 +698,8 @@ Reusable setup templates managed in the Developer Platform -> Configuration Temp
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `template_key` | `varchar(100)` | Unique machine-readable key, e.g. `uk-standard-leave`, `engineering-positions` |
-| `template_type` | `varchar(50)` | `configuration`, `org_structure`, `leave_policy`, `onboarding`, `app_allowlist`, `monitoring_policy`, `data_import_mapping` |
+| `template_key` | `varchar(100)` | Unique machine-readable key, e.g. `uk-standard-time_off`, `engineering-positions` |
+| `template_type` | `varchar(50)` | `configuration`, `org_structure`, `time_off_policy`, `onboarding`, `app_allowlist`, `monitoring_policy`, `data_import_mapping` |
 | `name` | `varchar(150)` | Display name |
 | `description` | `varchar(500)` | Nullable - human-readable summary shown in the template picker |
 | `version` | `integer` | Incremented on every edit; applied version is snapshotted in `tenant_configuration_template_applications` |
@@ -568,7 +731,7 @@ Audit record of every template application to a tenant. One row per apply action
 | `applied_version` | `integer` | Template version that was applied |
 | `applied_payload_json` | `jsonb` | Snapshot of the payload that was applied - immutable after creation |
 | `custom_payload_json` | `jsonb` | Nullable - tenant-specific overrides made after application; does not mutate the global template |
-| `warnings_json` | `jsonb` | Array of warning strings returned at apply time, e.g. unresolved job level rank references |
+| `warnings_json` | `jsonb` | Nullable apply-time warnings shown to the operator and retained for audit |
 | `status` | `varchar(20)` | `applied` -> `customized` (if tenant edited) -> `superseded` (if reapplied) -> `removed` |
 | `applied_by_id` | `uuid` | FK -> platform_users |
 | `applied_at` | `timestamptz` | |
@@ -588,7 +751,7 @@ Catalog price changes do not silently update existing tenant commercial records.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants (nullable - null for global rules) |
-| `endpoint_pattern` | `varchar(200)` | e.g., `/api/v1/leave/*` |
+| `endpoint_pattern` | `varchar(200)` | e.g., `/api/v1/time-off/*` |
 | `max_requests` | `integer` | Per window |
 | `window_seconds` | `integer` | Sliding window size |
 | `is_active` | `boolean` |  |
@@ -701,7 +864,6 @@ User-level links to external product accounts such as Microsoft Teams. Used to v
 | `tenant_id` | `uuid` | FK -> tenants |
 | `user_id` | `uuid` | FK -> users |
 | `provider` | `varchar(30)` | `microsoft_teams`, future providers |
-| `external_user_id` | `varchar(255)` | Azure AD user id for Teams |
 | `external_email` | `varchar(255)` | Email/mail returned by Graph |
 | `display_name` | `varchar(200)` | External display name |
 | `status` | `varchar(20)` | `active`, `reauth_required`, `revoked`, `disabled` |
@@ -716,7 +878,6 @@ User-level links to external product accounts such as Microsoft Teams. Used to v
 
 ## `microsoft_graph_tokens`
 
-Encrypted Microsoft Graph token material for Teams sync. Raw tokens are never logged or returned by API.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -736,14 +897,12 @@ Encrypted Microsoft Graph token material for Teams sync. Raw tokens are never lo
 
 ## `teams_webhook_subscriptions`
 
-Microsoft Graph change notification subscriptions for linked Teams channels/chats.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `resource_type` | `varchar(30)` | `channel_messages`, `chat_messages` |
-| `resource_id` | `varchar(500)` | Graph resource path or Teams channel/chat id |
 | `subscription_id` | `varchar(255)` | Graph subscription id |
 | `client_state_hash` | `varchar(255)` | Hash of webhook client state |
 | `expires_at` | `timestamptz` | Graph subscription expiry |
@@ -757,14 +916,12 @@ Microsoft Graph change notification subscriptions for linked Teams channels/chat
 
 ## `teams_delta_sync_state`
 
-Stores Microsoft Graph delta tokens and cursor state for reliable Teams message import.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `resource_type` | `varchar(30)` | `team_channel`, `chat` |
-| `resource_id` | `varchar(500)` | Teams channel/chat id |
 | `delta_token_encrypted` | `bytea` | Encrypted delta token |
 | `last_delta_at` | `timestamptz` | Nullable |
 | `status` | `varchar(20)` | `active`, `reset_required`, `failed` |
@@ -783,15 +940,16 @@ Stores Microsoft Graph delta tokens and cursor state for reliable Teams message 
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `subscription_id` | `uuid` | FK -> tenant_subscriptions |
+| `payment_gateway_config_id` | `uuid` | FK -> payment_gateway_configs; gateway metadata used for collection |
 | `invoice_number` | `varchar(50)` |  |
 | `amount` | `decimal(10,2)` |  |
 | `currency` | `varchar(3)` |  |
 | `status` | `varchar(20)` | `draft`, `open`, `paid`, `void` |
-| `payment_provider_ref` | `varchar(100)` | Stripe invoice ID |
+| `external_invoice_id` | `varchar(100)` | Gateway invoice ID from Stripe, Paddle, or PayHere |
 | `issued_at` | `timestamptz` |  |
 | `paid_at` | `timestamptz` | Nullable |
 
-**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `subscription_id` -> [[#`tenant_subscriptions`|tenant_subscriptions]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `subscription_id` -> [[#`tenant_subscriptions`|tenant_subscriptions]], `payment_gateway_config_id` -> [[#`payment_gateway_configs`|payment_gateway_configs]]
 
 ---
 
@@ -824,7 +982,7 @@ End-of-month snapshot of billable units per tenant. Used to generate `subscripti
 | `name` | `varchar(100)` |  |
 | `code` | `varchar(20)` | `starter`, `professional`, `enterprise` |
 | `tier` | `varchar(20)` | Ordering tier |
-| `feature_limits` | `jsonb` | e.g., `{"max_employees": 50, "modules": ["core_hr","leave"]}` |
+| `feature_limits` | `jsonb` | e.g., `{"max_employees": 50, "modules": ["core_hr","time_off"]}` |
 | `included_modules` | `jsonb` | Plan-allowed/included module keys used by entitlement resolution |
 | `price_tiers` | `jsonb` | Employee-count pricing tiers/rate table; not a plan identity and not module configuration |
 | `pricing_unit` | `varchar(30)` | `per_employee`, `per_device`, `flat`, `custom` |
@@ -917,9 +1075,33 @@ Per-tenant runtime overrides. Overrides are evaluated only after module entitlem
 | `tenant_storage_limit_gb` | `integer` | Resolved shared storage pool |
 | `payment_gateway_config_id` | `uuid` | FK -> payment_gateway_configs; resolved from tenant country route |
 | `unpaid_seat_dues_amount` | `decimal(12,2)` | Blocks cancellation/renewal changes when greater than zero |
-| `created_by_id` | `uuid` | FK -> users or platform_users |
+| `created_by_user_id` | `uuid` | Nullable FK -> users; set for tenant self-service subscription creation |
+| `created_by_platform_user_id` | `uuid` | Nullable FK -> platform_users; set for platform-operator subscription creation |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
+
+**Actor rule:** exactly one of `created_by_user_id` or `created_by_platform_user_id` must be set. Tenant self-service upgrades use `created_by_user_id`; platform-operator commercial changes use `created_by_platform_user_id`.
+
+---
+
+## `tenant_subscription_events`
+
+Commercial subscription change history for tenant self-service and platform-operator changes. This is the audit source for who changed a subscription, what changed, and why.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_subscription_id` | `uuid` | FK -> tenant_subscriptions |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `event_type` | `varchar(80)` | e.g. `created`, `plan_changed`, `addons_changed`, `billing_cycle_changed`, `cancel_requested`, `platform_adjusted` |
+| `actor_user_id` | `uuid` | Nullable FK -> users |
+| `actor_platform_user_id` | `uuid` | Nullable FK -> platform_users |
+| `old_values_json` | `jsonb` | Nullable previous commercial snapshot |
+| `new_values_json` | `jsonb` | New commercial snapshot |
+| `reason` | `text` | Nullable tenant reason or required platform operator reason depending on event type |
+| `created_at` | `timestamptz` | |
+
+**Actor rule:** exactly one of `actor_user_id` or `actor_platform_user_id` must be set.
 
 ---
 ## `user_preferences`
@@ -972,7 +1154,7 @@ Per-tenant runtime overrides. Overrides are evaluated only after module entitlem
 
 ---
 
-## `automation_definitions`
+## `automation_definitions` - Phase 2
 
 Customer-created Automation Center definitions.
 
@@ -1028,7 +1210,7 @@ Operator-managed starter templates that customers can apply and edit.
 
 ---
 
-## `automation_runs`
+## `automation_runs` - Phase 2
 
 Execution record for an automation definition version.
 
@@ -1051,7 +1233,7 @@ Execution record for an automation definition version.
 
 ---
 
-## `workflow_definitions`
+## `workflow_definitions` - Phase 2
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -1059,7 +1241,7 @@ Execution record for an automation definition version.
 | `tenant_id` | `uuid` | FK -> tenants |
 | `name` | `varchar(100)` |  |
 | `code` | `varchar(50)` | Unique identifier |
-| `resource_type` | `varchar(50)` | e.g., `LeaveRequest`, `ExpenseClaim` |
+| `resource_type` | `varchar(50)` | e.g., `TimeOffRequest`, `ExpenseClaim` (Phase 2) |
 | `description` | `text` |  |
 | `is_active` | `boolean` |  |
 | `version` | `integer` | Versioning for definition changes |
@@ -1071,14 +1253,14 @@ Execution record for an automation definition version.
 
 ---
 
-## `workflow_instances`
+## `workflow_instances` - Phase 2
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `workflow_definition_id` | `uuid` | FK -> workflow_definitions |
-| `resource_type` | `varchar(50)` | Polymorphic - e.g., `LeaveRequest` |
+| `resource_type` | `varchar(50)` | Polymorphic - e.g., `TimeOffRequest` |
 | `resource_id` | `uuid` | Polymorphic - FK to resource |
 | `initiated_by_id` | `uuid` | FK -> employees |
 | `current_step_order` | `integer` | Which step is active |
@@ -1098,7 +1280,7 @@ Execution record for an automation definition version.
 
 ---
 
-## `workflow_step_instances`
+## `workflow_step_instances` - Phase 2
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -1115,7 +1297,7 @@ Execution record for an automation definition version.
 
 ---
 
-## `workflow_step_assignments`
+## `workflow_step_assignments` - Phase 2
 
 Resolved assignees/approvers for one active workflow step.
 
@@ -1137,7 +1319,7 @@ Resolved assignees/approvers for one active workflow step.
 
 ---
 
-## `case_conversations`
+## `case_conversations` - Phase 2
 
 Shared Platform metadata linking workflow/case state to WorkSync Chat private channels.
 
@@ -1160,9 +1342,9 @@ Shared Platform metadata linking workflow/case state to WorkSync Chat private ch
 
 ---
 
-## `workflow_delivery_routes`
+## `workflow_delivery_routes` - Phase 2
 
-Delivery routing state for workflow action cards.
+Phase 2 delivery routing state for workflow action cards.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -1170,7 +1352,6 @@ Delivery routing state for workflow action cards.
 | `tenant_id` | `uuid` | FK -> tenants |
 | `workflow_instance_id` | `uuid` | FK -> workflow_instances |
 | `workflow_step_instance_id` | `uuid` | FK -> workflow_step_instances |
-| `target_type` | `varchar(30)` | `employee`, `user`, `channel`, `inbox`, `teams` |
 | `target_id` | `uuid` | Target id where available |
 | `delivery_surface` | `varchar(30)` | `chat`, `inbox`, `teams_mirror`, `email`, `push`, `signalr` |
 | `status` | `varchar(20)` | `pending`, `sent`, `failed`, `cancelled` |
@@ -1181,7 +1362,7 @@ Delivery routing state for workflow action cards.
 
 ---
 
-## `workflow_steps`
+## `workflow_steps` - Phase 2
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -1192,10 +1373,8 @@ Delivery routing state for workflow action cards.
 | `approver_type` | `varchar(30)` | Legacy compatibility field; do not use for new definitions |
 | `approver_role_id` | `uuid` | Legacy compatibility field; do not use for new definitions |
 | `resolver_type` | `varchar(50)` | Dynamic resolver type, e.g. `reporting_manager`, `selected_permission`, `case_participants` |
-| `resolver_config` | `jsonb` | Resolver parameters such as permission code, legal entity/department/team/position/position branch, optional job level when configured, employee id, connected tenant scope |
 | `approval_mode` | `varchar(30)` | `only_one_required`, `all_required`, `sequential` |
 | `action_config` | `jsonb` | Action-card, request-info, escalation, or task creation settings |
-| `delivery_config` | `jsonb` | Chat, Inbox, Teams mirror, notification routing preferences |
 | `conditions` | `jsonb` | Step conditions (e.g., skip if amount < threshold) |
 | `sla_hours` | `integer` | Hours before timeout action |
 | `on_timeout_action` | `varchar(30)` | `escalate`, `auto_approve`, `auto_reject` |
@@ -1210,4 +1389,3 @@ Delivery routing state for workflow action cards.
 - [[database/schema-catalog|Schema Catalog]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[database/performance|Performance]]
-

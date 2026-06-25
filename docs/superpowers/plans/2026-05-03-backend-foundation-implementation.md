@@ -4,7 +4,7 @@
 
 This plan is historical and must not be executed.
 
-It described an older foundation that exposed `IApplicationDbContext` from Application and included a separate `ONEVO.Admin.Api` host. That direction conflicts with the current backend architecture.
+It described an older foundation that exposed `IApplicationDbContext` from Application and included a separate admin API host. That direction conflicts with the current backend architecture.
 
 Current source of truth:
 

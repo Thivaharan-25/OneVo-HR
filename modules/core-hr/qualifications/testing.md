@@ -1,4 +1,4 @@
-# Qualifications — Testing
+﻿# Qualifications - Testing
 
 **Module:** Core HR
 **Feature:** Qualifications  

@@ -1,4 +1,4 @@
-# Coding Standards: ONEVO (.NET 10 / C# 14)
+﻿# Coding Standards: ONEVO (.NET 10 / C# 14)
 
 **Last Updated:** 2026-05-13
 
@@ -100,23 +100,23 @@ Do not add a domain event unless the use case needs a decoupled post-save side e
 ## Error Handling
 
 ```csharp
-public async Task<Result<LeaveRequestDto>> ApproveLeaveRequest(
-    ApproveLeaveRequestCommand command,
+public async Task<Result<TimeOffRequestDto>> ApproveTimeOffRequest(
+    ApproveTimeOffRequestCommand command,
     CancellationToken ct)
 {
-    var request = await _leaveRequests.GetByIdAsync(command.LeaveRequestId, ct);
+    var request = await _leaveRequests.GetByIdAsync(command.TimeOffRequestId, ct);
 
     if (request is null)
-        return Result<LeaveRequestDto>.Failure("Leave request not found");
+        return Result<TimeOffRequestDto>.Failure("Time Off request not found");
 
     if (!request.CanBeApproved)
-        return Result<LeaveRequestDto>.Failure("Only pending requests can be approved");
+        return Result<TimeOffRequestDto>.Failure("Only pending requests can be approved");
 
     request.Approve(command.ApproverId);
 
     await _unitOfWork.SaveChangesAsync(ct);
 
-    return Result<LeaveRequestDto>.Success(request.ToDto());
+    return Result<TimeOffRequestDto>.Success(request.ToDto());
 }
 ```
 
@@ -137,13 +137,13 @@ public async Task<Result<LeaveRequestDto>> ApproveLeaveRequest(
 - Do not create `Events/` or `EventHandlers/` as default folders.
 - Do not log PII.
 - Do not hardcode secrets.
-- Do not use `Interfaces/`, `Repositories/`, or `Services/` as folder names for Application interfaces — use `RepositoryInterfaces/` and `ServiceInterfaces/`.
-- Do not use `Tenancy` as a top-level Feature name — it is a SubFeature of `DevPlatform`.
+- Do not use `Interfaces/`, `Repositories/`, or `Services/` as folder names for Application interfaces - use `RepositoryInterfaces/` and `ServiceInterfaces/`.
+- Do not use `Tenancy` as a top-level Feature name - it is a SubFeature of `DevPlatform`.
 - Do not reference `ApplicationDbContext` or `DbSet<T>` in handlers.
 - Do not return domain entities directly from API controllers.
-- Do not use AutoMapper — all mapping is done via static manual methods.
-- Do not put mapping or helper logic directly inside handlers — extract to `Mappings/` or `Helpers/`.
-- Do not use `SharedPlatform` as a Feature name for billing commands/queries — use `DevPlatform/Billing/`.
+- Do not use AutoMapper - all mapping is done via static manual methods.
+- Do not put mapping or helper logic directly inside handlers - extract to `Mappings/` or `Helpers/`.
+- Do not use `SharedPlatform` as a Feature name for billing commands/queries - use `DevPlatform/Billing/`.
 
 ## Mapping
 
@@ -151,7 +151,7 @@ public async Task<Result<LeaveRequestDto>> ApproveLeaveRequest(
 - Common reusable mappings: `Application/Common/Mappings/{Entity}MappingExtensions.cs`
 - Feature-scoped mappings: `Features/{Feature}/{SubFeature}/Mappings/{SubFeature}Mappings.cs`
 - Naming convention: `ToDto()`, `ToResponse()`, `ToDomain()` as static extension or plain methods.
-- `Mappings/` folder is optional — skip it if the handler can do a direct object initializer inline.
+- `Mappings/` folder is optional - skip it if the handler can do a direct object initializer inline.
 
 ## Helpers
 
@@ -167,7 +167,7 @@ public async Task<Result<LeaveRequestDto>> ApproveLeaveRequest(
 - API DI registration helpers: `Api/Extensions/ServiceCollectionExtensions.cs`
 - API middleware/pipeline helpers: `Api/Extensions/WebApplicationExtensions.cs`
 - Naming: always suffix with `Extensions.cs`; one logical group per file.
-- Do not put extension methods inside feature subfolders — extensions are cross-cutting.
+- Do not put extension methods inside feature subfolders - extensions are cross-cutting.
 
 ## Related
 

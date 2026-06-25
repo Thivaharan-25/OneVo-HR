@@ -1,4 +1,4 @@
-﻿# Contract: IDE Entitlements + Tag Execution
+# Contract: IDE Entitlements + Tag Execution
 
 **Backend owner:** DEV3 Task 4 (endpoint shell + tag execution), DEV4 Task 7 (monitoring entitlement registration)  
 **Consumers:** DEV8 Tasks 1-5  
@@ -13,7 +13,7 @@ interface IDEEntitlementsDto {
   workspace_id: string
   active_modules: string[]           // active module keys, e.g. ["core_hr", "work_management", "monitoring"]
   active_features: string[]          // commercially included and runtime-enabled feature keys
-  permitted_tag_actions: string[]    // e.g. ["leave:request", "clockin", "task:view"]
+  permitted_tag_actions: string[]    // e.g. ["time_off:request", "clockin", "task:view"]
   has_monitoring_entitlement: boolean
   agent_installed: boolean
   install_job_id: string | null      // non-null if an install job is in progress
@@ -24,7 +24,7 @@ interface IDEEntitlementsDto {
 
 ```ts
 interface TagExecutionRequestDto {
-  tag_action: string                 // e.g. "leave:request"
+  tag_action: string                 // e.g. "time_off:request"
   params: Record<string, string>
   context: {
     branch: string | null

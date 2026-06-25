@@ -12,7 +12,7 @@
 |---|---|---|
 | `id` | uuid | PK |
 | `project_id` | uuid | FK -> projects |
-| `workspace_id` | uuid | FK -> workspaces; task's team/workspace context |
+| `workspace_id` | uuid | FK -> workspaces; copied from owning project workspace |
 | `tenant_id` | uuid | FK -> tenants |
 | `parent_task_id` | uuid | FK -> tasks, nullable; subtasks |
 | `epic_id` | uuid | FK -> epics, nullable |
@@ -32,9 +32,9 @@
 
 **Indexes:** `(project_id, status)`, `(workspace_id)`, `(tenant_id)`, `(parent_task_id)`, `(due_date)` where not null
 
-**Rule:** `workspace_id` must reference an active `project_workspaces` link for the task's project. It does not mean the project belongs to one workspace.
+**Rule:** `workspace_id`, when stored on a task, must match the owning `projects.workspace_id`. Phase 1 does not resolve task authority through `project_workspaces`.
 
-**Authority rule:** Creating or assigning a task requires the actor to have the required task permission plus local authority in the project/workspace context. Reporting hierarchy over an assignee is not enough inside another manager's workspace or project.
+**Authority rule:** Creating or assigning a task requires the actor to have the required task permission plus local authority in the project context. A reporting relationship to the assignee does not grant task authority.
 
 ---
 
@@ -55,9 +55,9 @@
 **Unique:** `(task_id, user_id)`
 **Indexes:** `(employee_id)`, `(availability_status)`
 
-**Rule:** Assignment APIs must resolve `employee_id` from `employees.user_id`, block inactive/deleted employees, and call Calendar/Leave availability checks for the task date range. Approved leave creates a warning by default; tenant policy can make it blocking.
+**Rule:** Assignment APIs must resolve `employee_id` from `employees.user_id`, block inactive/deleted employees, and call Calendar/Time Off availability checks for the task date range. Approved Time Off creates a warning by default; tenant policy can make it blocking.
 
-**Assignment scope rule:** The assignee must be an active project member, a selected member from the responsible workspace, or an approved scoped participant. If the actor is relying on reporting-manager authority, the assignee must be in the actor's position-derived hierarchy and the actor must have authority in the selected workspace/project context.
+**Assignment scope rule:** The assignee must be an active accepted project member. Reporting-manager relationship is not authorization evidence for task assignment.
 
 ---
 
@@ -167,7 +167,7 @@
 
 ---
 
-## `boards` - Phase 1
+## `boards` - Phase 2 planning support
 
 | Column | Type | Notes |
 |---|---|---|
@@ -180,7 +180,7 @@
 
 ---
 
-## `board_columns` - Phase 1
+## `board_columns` - Phase 2 planning support
 
 | Column | Type | Notes |
 |---|---|---|
@@ -192,11 +192,11 @@
 | `wip_limit` | int | nullable; max tasks allowed in column |
 | `color` | varchar(20) | nullable |
 
-**Note:** Each board has its own column configuration. Moving a task between columns updates `tasks.status` via the `status_key` mapping.
+**Note:** Board configuration is retained for Phase 2 planning. Phase 1 may update `tasks.status` directly without exposing board screens.
 
 ---
 
-## `board_task_positions` - Phase 1
+## `board_task_positions` - Phase 2 planning support
 
 | Column | Type | Notes |
 |---|---|---|

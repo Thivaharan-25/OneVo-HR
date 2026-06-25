@@ -1,4 +1,4 @@
-# Audit Console — Testing
+﻿# Audit Console - Testing
 
 ## Test Fixtures Required
 
@@ -12,13 +12,13 @@
 
 ## Query Permissions and Bounds
 
-### TC-AC-001: Audit query requires date range — unbounded queries blocked
+### TC-AC-001: Audit query requires date range - unbounded queries blocked
 **Action:** `GET /admin/v1/audit-logs` (no `from` or `to`)
-**Expected:** HTTP 400, `code: "missing_date_range"` — unbounded queries are never allowed
+**Expected:** HTTP 400, `code: "missing_date_range"` - unbounded queries are never allowed
 
 ### TC-AC-002: Date range over 90 days blocked
 **Action:** `GET /admin/v1/audit-logs?from=2025-01-01T00:00:00Z&to=2026-05-17T00:00:00Z`
-**Expected:** HTTP 400, `code: "date_range_too_large"` — use narrower window or export
+**Expected:** HTTP 400, `code: "date_range_too_large"` - use narrower window or export
 
 ### TC-AC-003: Audit read permission required
 **Setup:** Account with no permissions
@@ -62,23 +62,23 @@
 
 ---
 
-## Data Integrity — Sensitive Field Redaction
+## Data Integrity - Sensitive Field Redaction
 
 ### TC-AC-011: API keys and secrets are redacted in previous_state and new_state
-**Setup:** Audit log entry for `system_config.ai_key_updated` — action that stored an AI provider key. Actual key stored as `[REDACTED]` in the audit row's `new_state`.
+**Setup:** Audit log entry for `system_config.ai_key_updated` - action that stored an AI provider key. Actual key stored as `[REDACTED]` in the audit row's `new_state`.
 **Action:** `GET /admin/v1/audit-logs/{id}` (single entry detail)
 **Expected:**
-- Response `new_state.api_key = "[REDACTED]"` — raw value never stored or returned
+- Response `new_state.api_key = "[REDACTED]"` - raw value never stored or returned
 - `previous_state.api_key = "[REDACTED]"` if it existed
 - All other non-sensitive fields returned normally
 
 ### TC-AC-012: Audit records cannot be modified through API
 **Action:** Any `PATCH`, `PUT`, or `DELETE` against `/admin/v1/audit-logs/{id}`
-**Expected:** HTTP 405 Method Not Allowed — audit records are append-only
+**Expected:** HTTP 405 Method Not Allowed - audit records are append-only
 
 ### TC-AC-013: Audit records cannot be deleted through API
 **Action:** `DELETE /admin/v1/audit-logs/{id}`
-**Expected:** HTTP 405 — no deletion endpoint exists
+**Expected:** HTTP 405 - no deletion endpoint exists
 
 ---
 
@@ -126,7 +126,7 @@
 ### TC-AC-019: Export blocked when too large
 **Setup:** Filters match 150,000 rows
 **Action:** `POST /admin/v1/audit-logs/export`
-**Expected:** HTTP 422, `code: "export_too_large"` — must narrow filters below 100,000 rows
+**Expected:** HTTP 422, `code: "export_too_large"` - must narrow filters below 100,000 rows
 
 ### TC-AC-020: JSON export includes previous_state and new_state (with redaction)
 **Action:** `POST /admin/v1/audit-logs/export` `{"format": "json", "filters": {...}}`
@@ -138,4 +138,4 @@
 
 ### TC-AC-021: Tenant-scoped audit endpoint pre-filters to tenant
 **Action:** `GET /admin/v1/tenants/{tenantId}/audit?from=...&to=...`
-**Expected:** Identical to `GET /admin/v1/audit-logs?tenant_id={tenantId}&from=...&to=...` — same results, same columns, same filters available
+**Expected:** Identical to `GET /admin/v1/audit-logs?tenant_id={tenantId}&from=...&to=...` - same results, same columns, same filters available

@@ -1,16 +1,16 @@
-# Activity Monitoring — End-to-End Logic
+﻿# Activity Monitoring - End-to-End Logic
 
 **Module key:** `monitoring`  
-**Pillar:** Workforce Intelligence
+**Pillar:** Monitoring
 **Pricing unit:** Per employee  
-**Entitlement guard:** All endpoints call `IsModuleEnabledAsync(tenantId, "monitoring")` → 403 `module_not_entitled` if not entitled  
+**Entitlement guard:** All endpoints call `IsModuleEnabledAsync(tenantId, "monitoring")` -> 403 `module_not_entitled` if not entitled  
 **Dependency:** See [[developer-platform/module-dependency-matrix|Module Dependency Matrix]]
 
 ---
 
 ## What This Module Does
 
-Activity Monitoring tracks employee computer usage during work hours via the WorkPulse desktop agent. It collects app usage, active window time, idle periods, website visits, and periodic screenshots. Data is aggregated into daily summaries and surfaced as timelines, productivity scores, and dashboard alerts.
+Activity Monitoring tracks employee computer usage during work hours via the WorkPulse desktop agent. It collects app usage, active window time, idle periods, website visits, and policy-controlled screenshots. Data is aggregated into daily summaries and surfaced as timelines, productivity scores, and dashboard alerts.
 
 It is the **data source** for the Exception Engine. Without `monitoring`, the exception engine has no data to evaluate.
 
@@ -26,20 +26,20 @@ The WorkPulse Windows service collects activity data **only between clock-in and
 |:---|:---|:---|
 | Active window change | App name, window title (SHA-256 hashed) | Title never stored in plain text |
 | Keyboard/mouse activity | Count of events per minute (not keystrokes) | Content never captured |
-| Idle detection | Consecutive minutes with zero keyboard/mouse events | — |
-| Screenshot | Compressed screenshot image → file storage | Frequency configurable per tenant; default: every 10 min during active period |
-| Website visit (browser extension) | Domain only, not full URL | — |
+| Idle detection | Consecutive minutes with zero keyboard/mouse events | - |
+| Screenshot | Compressed screenshot image -> file storage | Captured only by authorized on-demand request or auto-deviation capture when enabled; no interval or random capture |
+| Website visit (browser extension) | Domain only, not full URL | - |
 
 Collection stops immediately when:
 - Employee clocks out
 - Employee manually pauses monitoring (if tenant allows it)
 - Monitoring is disabled for that employee via `employee_monitoring_overrides`
 
-### Raw Buffer → Daily Summary
+### Raw Buffer -> Daily Summary
 
 1. Agent sends batched events to `POST /agent/v1/activity/batch` every 60 seconds
 2. Events are written to `activity_raw_buffer` (append-only, never UPDATE)
-3. A Hangfire background job aggregates raw buffer rows into `activity_daily_summary` — runs every 15 minutes for the current day, once at midnight to finalise the previous day
+3. A Hangfire background job aggregates raw buffer rows into `activity_daily_summary` - runs every 15 minutes for the current day, once at midnight to finalise the previous day
 4. Raw buffer rows older than 30 days are archived (configurable retention)
 
 ---
@@ -48,14 +48,14 @@ Collection stops immediately when:
 
 ### Activity Timeline
 
-A per-employee chronological view of the work session. Available at the employee detail page in the Operations / Lifecycle app.
+A per-employee chronological view of the work session. Available at the employee detail page in customer-app.
 
 | Component | Data source | Notes |
 |:---|:---|:---|
-| Clock-in / clock-out markers | `verification_records` (type `clock_in`, `clock_out`) | Shows even without `verification` module — uses agent clock-in event if no photo verification |
+| Clock-in / clock-out markers | Time & Attendance clock events, plus `verification_records.trigger = clock_in/clock_out` when photo verification is required | Shows even without `verification` module by using the agent clock-in/out event |
 | App usage segments | `activity_daily_summary.app_usage_json` | Colour-coded by app category |
 | Idle segments | `activity_daily_summary.idle_minutes_json` | Grey blocks |
-| Screenshot thumbnails | `screenshots` joined to `file_records` | Click to expand full image |
+| Screenshot thumbnails | `monitoring_evidence_assets` joined to `file_records` where `evidence_type = 'screenshot'` | Click to expand full image |
 | Website usage (if browser ext.) | `activity_daily_summary.website_usage_json` | Domain-level only |
 
 ### Screenshot Gallery
@@ -71,7 +71,7 @@ Daily and weekly cards per employee showing:
 - Active time (minutes with keyboard/mouse activity)
 - Idle time (minutes with zero input)
 - Top 5 apps by time
-- Productivity score = active_minutes / (active_minutes + idle_minutes) × 100
+- Productivity score = active_minutes / (active_minutes + idle_minutes) x 100
 
 ### Idle-Time Alert
 
@@ -89,7 +89,7 @@ Tenants can disable or restrict monitoring for specific employees. Overrides are
 
 | Override value | Effect |
 |:---|:---|
-| `full` (default) | All monitoring active — screenshots, idle, app usage |
+| `full` (default) | All monitoring active - screenshots, idle, app usage |
 | `no_screenshots` | Activity tracked; screenshots disabled for this employee |
 | `activity_only` | App + idle tracking only; screenshots and website visits disabled |
 | `disabled` | All monitoring off for this employee. Excludes the employee from monitoring-related billable count where the selected plan uses user-based monitoring pricing. |
@@ -102,8 +102,8 @@ Tenants can disable or restrict monitoring for specific employees. Overrides are
 
 | Setting | Location | Effect on monitoring |
 |:---|:---|:---|
-| Screenshot interval | Tenant config (Configuration module, Step 4 provisioning) | Minutes between screenshots; default 10; min 5, max 60 |
-| Enable Camera Photo Verification | Tenant config (Step 4 provisioning) | When On, WorkPulse agent may capture a photo for identity spot-checks — requires `verification` module entitlement |
+| Screenshot capture | Tenant config (Configuration module, Step 4 provisioning) | Enables authorized on-demand screenshot capture. Auto screenshot capture can be enabled separately for monitoring deviations. No interval or random capture is supported. |
+| Enable Camera Photo Verification | Tenant config (Step 4 provisioning) | When On, WorkPulse agent may capture identity verification photos for clock-in, clock-out, on-demand reviewer request, or absence-detected checks. Camera photos are stored by `verification`, not `monitoring`. |
 | Work hours | Tenant config (Core HR) | Idle-time thresholds only count during configured work hours |
 | Per-employee overrides | `employee_monitoring_overrides` | See table above |
 
@@ -113,9 +113,9 @@ Tenants can disable or restrict monitoring for specific employees. Overrides are
 
 | Missing module | Effect on `monitoring` |
 |:---|:---|
-| No `exceptions` | Activity data fully collected and stored. No rule-based alert evaluation. Dashboard `monitoring.data_exfiltration_pattern` alert will never fire (that alert requires the exception engine). `monitoring.high_idle_time` still fires — it is generated by a monitoring-owned health-check job, not the exception engine. |
+| No `exceptions` | Activity data fully collected and stored. No rule-based alert evaluation. Dashboard `monitoring.data_exfiltration_pattern` alert will never fire (that alert requires the exception engine). `monitoring.high_idle_time` still fires - it is generated by a monitoring-owned health-check job, not the exception engine. |
 | No `verification` | Activity timeline does not show clock-in/out photo thumbnails. Clock-in markers are based on agent clock events only. Otherwise unaffected. |
-| No `workforce` | Workforce productivity reports are not available. Raw monitoring data is still collected and accessible via the Monitoring module UI. |
+| No `monitoring` | Monitoring productivity reports are not available. Raw monitoring data is still collected and accessible via the Monitoring module UI. |
 | No `analytics` | Cross-module analytics dashboard does not show monitoring-derived charts. Monitoring module's own UI is unaffected. |
 
 ---
@@ -134,7 +134,7 @@ HTTP 200 OK
 { ... daily summary ... }
 ```
 
-The Operations / Lifecycle app hides the "Monitoring" sidebar section entirely for non-entitled tenants based on the entitlement list in the JWT claims.
+Customer-app hides the "Monitoring" sidebar section entirely for non-entitled tenants based on the entitlement list in the session claims.
 
 ---
 
@@ -144,7 +144,7 @@ The Operations / Lifecycle app hides the "Monitoring" sidebar section entirely f
 |:---|:---|:---|
 | `activity_raw_buffer` | monitoring | Append-only raw events from agent (30-day rolling retention) |
 | `activity_daily_summary` | monitoring | Aggregated per-employee per-day stats (permanent) |
-| `screenshots` | monitoring | Screenshot metadata; image stored in file storage |
+| `monitoring_evidence_assets` | monitoring | Screenshot/app/browser/idle evidence metadata; image stored in file storage |
 | `employee_monitoring_overrides` | configuration | Per-employee monitoring policy overrides |
 
 ---
@@ -180,13 +180,13 @@ All endpoints require `IsModuleEnabledAsync(tenantId, "monitoring")` check befor
 | Alert code | Trigger | Auto-resolves |
 |:---|:---|:---|
 | `monitoring.high_idle_time` | >50% of active employees idle >2 consecutive hours during work hours | Idle % drops below 30% |
-| `monitoring.data_exfiltration_pattern` | **Generated by Exception Engine** when bulk-download rule fires — attributed to monitoring as the data source | Exception engine clears the rule threshold |
+| `monitoring.data_exfiltration_pattern` | **Generated by Exception Engine** when bulk-download rule fires - attributed to monitoring as the data source | Exception engine clears the rule threshold |
 
 ---
 
 ## Related
 
 - [[developer-platform/module-dependency-matrix|Module Dependency Matrix]]
-- [[developer-platform/modules/exceptions/end-to-end-logic|Exception Engine — End-to-End Logic]]
-- [[developer-platform/modules/verification/end-to-end-logic|Identity Verification — End-to-End Logic]]
-- [[developer-platform/modules/workforce/end-to-end-logic|Workforce Analytics — End-to-End Logic]]
+- [[developer-platform/modules/exceptions/end-to-end-logic|Exception Engine - End-to-End Logic]]
+- [[developer-platform/modules/verification/end-to-end-logic|Identity Verification - End-to-End Logic]]
+- [[developer-platform/modules/monitoring/end-to-end-logic|Monitoring Analytics - End-to-End Logic]]

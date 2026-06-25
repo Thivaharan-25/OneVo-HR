@@ -1,4 +1,4 @@
-# Monitoring Toggles — End-to-End Logic
+﻿# Monitoring Toggles - End-to-End Logic
 
 **Module:** Configuration
 **Feature:** Monitoring Feature Toggles
@@ -39,7 +39,7 @@ PUT /api/v1/settings/monitoring
 
 ### Key Rules
 
-- **Industry profile sets defaults during operator provisioning** — admin can change any toggle anytime.
+- **Industry profile sets defaults during operator provisioning** - admin can change any toggle anytime.
 - **Server must double-validate** toggles even though agent checks policy on login.
 - **Toggle changes propagate to agents** on next policy poll (pull-based, up to 5 min delay).
 

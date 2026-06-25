@@ -1,4 +1,4 @@
-# Courses & Learning
+﻿# Courses & Learning
 
 **Module:** Skills & Learning  
 **Feature:** Courses & Learning
@@ -36,12 +36,12 @@ Enrollment tracking: `course_id`, `employee_id`, `assigned_by_id`, `status`, `co
 
 ## Related
 
-- [[skills|Skills Module]] — parent module
-- [[modules/skills/certifications/overview|Certifications]] — certifications earned upon course completion
-- [[modules/skills/employee-skills/overview|Employee Skills]] — skills tagged to courses via course_skill_tags
-- [[modules/skills/development-plans/overview|Development Plans]] — plan milestones linked to course enrollments
-- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — skills that courses build
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped course and enrollment data
-- [[backend/messaging/event-catalog|Event Catalog]] — enrollment and completion events
-- [[backend/messaging/error-handling|Error Handling]] — LMS integration and sync error handling
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task
+- [[skills|Skills Module]] - parent module
+- [[modules/skills/certifications/overview|Certifications]] - certifications earned upon course completion
+- [[modules/skills/employee-skills/overview|Employee Skills]] - skills tagged to courses via course_skill_tags
+- [[modules/skills/development-plans/overview|Development Plans]] - plan milestones linked to course enrollments
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] - skills that courses build
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - tenant-scoped course and enrollment data
+- [[backend/messaging/event-catalog|Event Catalog]] - enrollment and completion events
+- [[backend/messaging/error-handling|Error Handling]] - LMS integration and sync error handling
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - implementation task

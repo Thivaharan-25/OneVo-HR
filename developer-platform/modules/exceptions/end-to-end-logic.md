@@ -1,16 +1,19 @@
 # Exception Engine — End-to-End Logic
 
 **Module key:** `exceptions`  
-**Pillar:** Workforce Intelligence
+**Pillar:** Monitoring
+**Phase:** 2 - full Exception Engine deferred  
 **Pricing unit:** Per employee  
-**Entitlement guard:** All endpoints call `IsModuleEnabledAsync(tenantId, "exceptions")` → 403 `module_not_entitled` if not entitled  
+**Entitlement guard:** All endpoints call `IsModuleEnabledAsync(tenantId, "exceptions")` ? 403 `module_not_entitled` if not entitled  
 **Dependency:** See [[developer-platform/module-dependency-matrix|Module Dependency Matrix]]
 
 ---
 
 ## What This Module Does
 
-The Exception Engine is a rule-based alerting layer that runs on top of activity monitoring data. Tenant admins define exception rules (thresholds, conditions, target groups, severity levels). A Hangfire background job evaluates each active rule against `activity_daily_summary` rows and creates `exception_alerts` when a threshold is breached. Alerts are reviewed, acknowledged, and optionally escalated via the Workflow Engine.
+The Exception Engine is a Phase 2 rule-based alerting layer that runs on top of activity monitoring data. Tenant admins define exception rules (thresholds, conditions, target groups, severity levels). A Hangfire background job evaluates each active rule against `activity_daily_summary` rows and creates `exception_alerts` when a threshold is breached. Alerts are reviewed, acknowledged, and optionally escalated via the Workflow Engine.
+
+Phase 1 Developer Platform may expose module catalog, provisioning warnings, and platform dashboard visibility for lightweight monitoring alerts, but it must not require full Exception Engine rules or Workflow Engine escalation.
 
 > **Critical:** The Exception Engine reads data produced by the `monitoring` module. Without `monitoring`, rules can be created and the engine runs, but it finds no activity data — zero alerts are ever generated. This is documented behavior, not an error. See the [Without Monitoring section](#behavior-without-monitoring-module).
 
@@ -20,7 +23,7 @@ The Exception Engine is a rule-based alerting layer that runs on top of activity
 
 ### Creating a Rule
 
-1. Admin navigates to **Exceptions → Rules → + New Rule**
+1. Admin navigates to **Exceptions ? Rules ? + New Rule**
 2. Fills in the rule definition form:
 
 | Field | Type | Description |
@@ -35,7 +38,7 @@ The Exception Engine is a rule-based alerting layer that runs on top of activity
 | Escalation after (hours) | Number | Hours before unacknowledged alert escalates via workflow engine (0 = no escalation) |
 | Enabled | Toggle | Default: On |
 
-3. `POST /tenant/v1/exceptions/rules` → creates `exception_rules` row
+3. `POST /tenant/v1/exceptions/rules` ? creates `exception_rules` row
 4. Rule becomes active at the next evaluation job run
 
 ### Enabling / Disabling a Rule
@@ -64,7 +67,7 @@ For each tenant with `exceptions` entitled:
 3. Query `activity_daily_summary` for the relevant time window
 4. **If no rows found:** log "no monitoring data for tenant {id}" at Debug level, skip to next rule. **No error thrown. No alert created.**
 5. If threshold is breached for any employee: create `exception_alerts` row
-6. Publish `ExceptionAlertCreatedEvent` → notification handler sends notifications to `notify_on_trigger` users
+6. Publish `ExceptionAlertCreatedEvent` ? notification handler sends notifications to `notify_on_trigger` users
 
 ### Conditions and Data Source
 
@@ -85,8 +88,8 @@ An alert is not created if an **open** alert already exists for the same `(rule_
 ## Alert Lifecycle
 
 ```
-created → open → acknowledged → closed
-                ↘ escalated (if unacknowledged past deadline)
+created ? open ? acknowledged ? closed
+                ? escalated (if unacknowledged past deadline)
 ```
 
 | State | Meaning |
@@ -102,15 +105,15 @@ created → open → acknowledged → closed
 2. Fills acknowledgement note (required)
 3. `POST /tenant/v1/exceptions/alerts/{id}/acknowledge` with `{ "note": "Spoke with employee — resolved" }`
 4. Creates `alert_acknowledgements` row
-5. Alert status → `acknowledged`
-6. If the triggering condition is no longer met at the next job run → status → `closed`
+5. Alert status ? `acknowledged`
+6. If the triggering condition is no longer met at the next job run ? status ? `closed`
 
 ### Escalation via Workflow Engine
 
 If `escalation_after_hours > 0` and the alert remains `open` after that many hours:
-1. Workflow Engine (Foundation module — always available) fires an escalation task
+1. Phase 2 Workflow Engine fires an escalation task when the tenant has the required workflow capability enabled
 2. Escalation task notified to designated manager or HR role
-3. Alert status → `escalated`
+3. Alert status ? `escalated`
 4. Alert remains visible and acknowledgeable — escalation is informational
 
 ---
@@ -124,7 +127,7 @@ When a `bulk_download_detected` rule fires, the platform Dashboard alert `monito
 | Alert code | `monitoring.data_exfiltration_pattern` |
 | Source | Exception Engine (fires via `bulk_download_detected` rule) |
 | Trigger | Bulk file access or download above tenant-configured exception rule threshold |
-| Auto-resolve | Exception engine evaluates condition no longer met |
+| Auto-resolve | Phase 1 lightweight alert detection evaluates condition no longer met; full Exception Engine auto-resolution is Phase 2 |
 | Visible in | Developer Platform Dashboard |
 
 ---
@@ -157,7 +160,7 @@ HTTP 200 OK
 { "rules": [...] }
 ```
 
-The Operations / Lifecycle app hides the "Exceptions" navigation section for non-entitled tenants.
+Customer-app hides the Phase 2 "Exceptions" navigation section for non-entitled tenants.
 
 ---
 
@@ -170,9 +173,9 @@ The Operations / Lifecycle app hides the "Exceptions" navigation section for non
 | `alert_acknowledgements` | Acknowledgement records: alert_id, acknowledged_by_id, note, acknowledged_at |
 
 Cross-module FKs:
-- `exception_alerts.employee_id → employees` (Core HR)
-- `exception_rules.created_by_id → users` (Infrastructure)
-- `alert_acknowledgements.acknowledged_by_id → users` (Infrastructure)
+- `exception_alerts.employee_id -> employees` (Core HR)
+- `exception_rules.created_by_id -> users` (Infrastructure)
+- `alert_acknowledgements.acknowledged_by_id -> users` (Infrastructure)
 
 ---
 

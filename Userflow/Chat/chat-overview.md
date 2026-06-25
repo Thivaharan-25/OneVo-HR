@@ -1,4 +1,6 @@
-# Chat
+﻿# Chat
+
+**Phase:** Phase 2. Not part of Phase 1 implementation scope.
 
 **Area:** Chat pillar (`/chat`)  
 **Trigger:** User clicks the Chat icon on the icon rail  
@@ -6,13 +8,12 @@
 
 ## Purpose
 
-Chat is real-time team communication within ONEVO. It is a first-class pillar — not nested inside Workforce — because communication happens across HR, project, and org contexts. Channels can be tied to projects, teams, or be open workspace-wide. Chat also hosts the ONEVO Semantic Kernel assistant for permission-scoped HR and WorkSync questions/actions.
 
 ## Key Entities
 
 | Entity | Role |
 |---|---|
-| `CHANNEL` | A named conversation space — public, private, or project-linked |
+| `CHANNEL` | A named conversation space - public, private, or project-linked |
 | `CHANNEL_MEMBER` | User-to-channel membership with role |
 | `MESSAGE` | A single chat message with optional attachments and reactions |
 | `MESSAGE_REACTION` | Emoji reaction on a message |
@@ -27,8 +28,8 @@ Chat is real-time team communication within ONEVO. It is a first-class pillar �
 ### View Channels (`/chat`)
 1. User opens the Chat pillar
 2. System loads the sidebar of channels the user is a member of, grouped:
-   - **Direct Messages** — 1:1 and group DMs
-   - **Channels** — workspace public channels and private channels user belongs to
+   - **Direct Messages** - 1:1 and group DMs
+   - **Channels** - workspace public channels and private channels user belongs to
 3. Unread channels are bolded with an unread count badge
 4. User clicks a channel to open its message thread
 
@@ -54,20 +55,20 @@ Chat is real-time team communication within ONEVO. It is a first-class pillar �
 
 ### React to a Message
 1. User hovers over a message and clicks the emoji picker
-2. User selects an emoji — system creates `MESSAGE_REACTION`
+2. User selects an emoji - system creates `MESSAGE_REACTION`
 3. Reaction appears on the message with a count; clicking again removes it
 
 ### Attach a File
 1. User clicks the attachment icon in the message input
-2. User uploads a file — system creates `FILE_ASSET` and `MESSAGE_ATTACHMENT` records
+2. User uploads a file - system creates `FILE_ASSET` and `MESSAGE_ATTACHMENT` records
 3. Attachment is displayed inline in the message thread
 
 ## Connection Points
 
 | Connects to | How |
 |---|---|
-| Workforce → Projects | A channel can be linked to a WMS project for project-specific communication |
-| People → Employees | DM participants are ONEVO employees — name and avatar from their profile |
+| Monitoring ? Projects | A channel can be linked to a WMS project for project-specific communication |
+| People ? Employees | DM participants are ONEVO employees - name and avatar from their profile |
 | Inbox | @mentions in a channel message create an Inbox notification for the mentioned user |
 
 ## Related Flows
@@ -84,14 +85,9 @@ Additional entities:
 | `TEAMS_MESSAGE_SYNC_STATE` | Tracks Teams message IDs, idempotency, and retry state |
 
 Flow:
-1. Workspace admin links a channel to a Teams channel/chat
 2. ONEVO starts Graph webhook/delta tracking
-3. Teams messages sent in the linked conversation appear in ONEVO
-4. ONEVO messages sent in the linked channel appear in Teams
 5. Sync failures show a retry state and do not duplicate messages
-6. Teams-originated messages can invoke the assistant only after the Teams sender is mapped to a ONEVO user and ONEVO permissions are resolved
 
-- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]]
 
 - [[Userflow/Work-Management/wm-overview|WMS Overview]]
 - [[Userflow/Work-Management/task-flow|Task Management]]

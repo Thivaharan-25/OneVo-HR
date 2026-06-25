@@ -18,14 +18,14 @@ Key columns: `check_interval_minutes` (default 5), `active_from_time`, `active_t
 
 ```
 ExceptionEngineEvaluationJob (every 5 min during work hours)
-  ├─ Check exception_schedules — within active hours?
-  ├─ Load all active exception_rules for tenant
-  ├─ For each rule → for each target employee:
-  │   ├─ Check monitoring toggles + overrides
-  │   ├─ Fetch data from Activity Monitoring / Workforce Presence
-  │   ├─ Evaluate threshold_json
-  │   └─ If breached: dedup check → create alert → publish event
-  └─ Done
+  +- Check exception_schedules - within active hours?
+  +- Load all active exception_rules for tenant
+  +- For each rule -> for each target employee:
+  |   +- Check monitoring toggles + overrides
+  |   +- Fetch data from Activity Monitoring / Time & Attendance
+  |   +- Evaluate threshold_json
+  |   +- If breached: dedup check -> create alert -> publish event
+  +- Done
 ```
 
 ## Hangfire Jobs
@@ -40,7 +40,7 @@ ExceptionEngineEvaluationJob (every 5 min during work hours)
 1. Engine only runs during configured work hours.
 2. Off-hours activity does NOT trigger alerts.
 3. Always check monitoring toggles before evaluating.
-4. **`is_allowed = null` is never a violation.** When evaluating the `non_allowed_app` rule, only `application_usage` rows where `is_allowed = false` are considered. Rows where `is_allowed = null` (app not yet reviewed in allowlist) are skipped — they are pending, not violations. This prevents false alerts during the allowlist discovery period.
+4. **`is_allowed = null` is never a violation.** When evaluating the `non_allowed_app` rule, only `application_usage` rows where `is_allowed = false` are considered. Rows where `is_allowed = null` (app not yet reviewed in allowlist) are skipped - they are pending, not violations. This prevents false alerts during the allowlist discovery period.
 
 ## API Endpoints
 

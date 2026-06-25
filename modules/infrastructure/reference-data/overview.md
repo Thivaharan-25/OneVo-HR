@@ -1,4 +1,4 @@
-# Reference Data
+﻿# Reference Data
 
 **Module:** Infrastructure  
 **Feature:** Reference Data
@@ -14,7 +14,7 @@ Global reference data (not tenant-scoped).
 ### `countries`
 Fields: `name`, `code` (ISO 3166-1 alpha-3), `phone_code`, `currency_code`.
 
-**No `tenant_id`** — global reference data.
+**No `tenant_id`** - global reference data.
 
 ## API Endpoints
 

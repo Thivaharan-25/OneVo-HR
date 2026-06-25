@@ -1,4 +1,4 @@
-# Data Ingestion — End-to-End Logic
+﻿# Data Ingestion - End-to-End Logic
 
 **Module:** Agent Gateway
 **Feature:** Data Ingestion
@@ -33,8 +33,8 @@ POST /api/v1/agent/ingest
                                   auto-fill global_catalog_id if global_app_catalog has matching process_name
                                   then resolve is_allowed via app_allowlists using process_name as the
                                   authoritative key; application_name is display metadata only
-                                  null match → is_allowed = null (pending, never triggers non_allowed_app rule)
-         -> "device_session" -> workforce-presence raw processing
+                                  null match -> is_allowed = null (pending, never triggers non_allowed_app rule)
+         -> "device_session" -> time-attendance raw processing
          -> "verification_photo" -> identity-verification pipeline
       -> 4. Rate limit check: 30 requests/min/device (Phase 1 in-memory sliding window; Redis only if future distributed cache is enabled)
 ```
@@ -54,7 +54,7 @@ POST /api/v1/agent/ingest
 - **This is the ONLY ingestion endpoint for agent data.** All data flows through here.
 - **Tenant isolation comes from Device JWT.** Agents do not submit trusted tenant identity in the payload.
 - **Application identity uses `process_name`.** Display names can change and are not authoritative for allowlist decisions.
-- **Detailed validation is deferred** to `ProcessRawBufferJob` — ingestion does minimal checks for throughput.
+- **Detailed validation is deferred** to `ProcessRawBufferJob` - ingestion does minimal checks for throughput.
 - **Agent retries:** Agent has built-in retry with exponential backoff (1s, 2s, 4s, 8s, max 30s).
 - **Volume:** ~240 snapshots/employee/day. 500 employees = 120,000 raw buffer rows/day.
 

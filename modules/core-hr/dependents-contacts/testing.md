@@ -1,4 +1,4 @@
-# Dependents & Contacts — Testing
+﻿# Dependents & Contacts - Testing
 
 **Module:** Core HR
 **Feature:** Dependents & Contacts

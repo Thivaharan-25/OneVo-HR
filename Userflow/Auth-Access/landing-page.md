@@ -39,7 +39,7 @@
 ### Step 3: Hero and 3D Scene Render
 
 - **UI:** Hero renders with two columns:
-  - **Left:** Eyebrow (`WORKFORCE INTELLIGENCE ----`), H1 headline ("See your / workforce. / Right now." - line 3 in brand gradient), subtitle paragraph, 2 CTA buttons (`Access Dashboard` -> opens sign-in modal, `Watch 2-min Demo` -> future), 4 live stat counters (Active Now, Idle/Away, Alerts, Avg Score)
+  - **Left:** Eyebrow (`WORKFORCE INTELLIGENCE ----`), H1 headline ("See your / monitoring. / Right now." - line 3 in brand gradient), subtitle paragraph, 2 CTA buttons (`Access Dashboard` -> opens sign-in modal, `Watch 2-min Demo` -> future), 4 live stat counters (Active Now, Idle/Away, Alerts, Avg Score)
   - **Right:** Three.js particle scene lazy-loaded after initial paint - 2,400 particles (800 on mobile or `prefers-reduced-motion`) scatter and assemble into a human figure over ~2.8s. Cyan scan line (`#00d4ff`) sweeps from feet to head every 4s. HUD overlay cards appear (Identity Verified, Productivity, Attendance, Exception Alert). Mouse parallax active (±0.3rad)
 - **API:** Live stat counters use `publicStats` from Step 1 response (no separate call)
 - **Backend:** `publicStats` returns aggregate counts - no PII, no employee names
@@ -72,7 +72,7 @@
 
 ### Step 7: Redirect to Dashboard
 
-- **UI:** On successful login: modal closes, user redirected to `/dashboard`. Dashboard loads based on backend session metadata (permissions, granted_modules, hierarchy_scope)
+- **UI:** On successful login: modal closes, user redirected to `/dashboard`. Dashboard loads based on backend session metadata for effective permissions, granted modules, and server-resolved employee visibility.
 - **API:** `GET /api/v1/dashboard` - see [[Userflow/Dashboard/dashboard-overview|Dashboard Overview]]
 - **Backend:** `DashboardService.GetEnabledZonesAsync()` - assembles enabled zones based on effective permissions
 - **Validation:** HttpOnly session cookie validated on every subsequent request via middleware
@@ -149,7 +149,6 @@
 - [[frontend/cross-cutting/authentication|Authentication]] - JWT issuance, session handling
 - [[frontend/cross-cutting/authorization|Authorization]] - effective permissions after login
 - [[modules/auth/session-management/overview|Session Management]] - session creation and silent refresh
-
 
 
 

@@ -1,8 +1,8 @@
-# Authorization (Hybrid Permission Control in Frontend)
+﻿# Authorization (Hybrid Permission Control in Frontend)
 
 ## Permission Model
 
-Permissions flow from the backend session as **effective permissions** — already resolved from the tenant's active modules, included feature keys, runtime feature flags, user's roles, individual overrides, and hierarchy policies. The frontend uses them for **UI gating only** — the API enforces authorization server-side. Frontend authorization is a UX concern: don't show things the user can't access.
+Permissions flow from the backend session as **effective permissions** - already resolved from the tenant's active modules, included feature keys, runtime feature flags, user's roles, individual overrides, and backend authorization policies. The frontend uses them for **UI gating only** - the API enforces authorization server-side. Frontend authorization is a UX concern: don't show things the user can't access.
 
 The `AuthService` in `@onevo/shared` exposes signals for all permission checks. Components never decode JWT claims directly.
 
@@ -15,16 +15,18 @@ The `AuthService` in `@onevo/shared` exposes signals for all permission checks. 
 
 Examples:
 ```
-employees:read            — view employee list (scoped to subordinates by server)
-employees:write           — create or edit employees
-leave:approve             — approve leave requests
-payroll:read              — view payroll data
-workforce:view            — view workforce intelligence
-exceptions:view           — view exception alerts
-exceptions:manage         — configure exception rules
-monitoring:configure      — change monitoring settings
-settings:read             — view tenant settings
+employees:read            - view employee list (filtered by backend employee visibility)
+employees:write           - create or edit employees
+time_off:approve             - approve Time Off requests
+payroll:read              - view payroll data
+monitoring:view            - view monitoring intelligence
+monitoring:alerts:read    - view Phase 1 monitoring alerts
+monitoring:alerts:resolve - resolve Phase 1 monitoring alerts
+monitoring:configure      - change monitoring settings
+settings:read             - view tenant settings
 ```
+
+Full Exception Engine permissions such as `exceptions:manage` are Phase 2 and must not drive Phase 1 navigation or route guards.
 
 ## Gating Levels
 
@@ -35,17 +37,17 @@ Functional guards in `app.routes.ts` combine active module, included/runtime-ena
 ```typescript
 // Route with permission guard
 {
-  path: 'workforce',
-  canActivate: [authGuard, permissionGuard('workforce:view')],
-  loadComponent: () => import('./features/workforce/live-dashboard.component')
+  path: 'monitoring',
+  canActivate: [authGuard, permissionGuard('monitoring:view')],
+  loadComponent: () => import('./features/monitoring/live-dashboard.component')
     .then(m => m.LiveDashboardComponent),
 }
 
 // Route with feature + permission guard
 {
-  path: 'worksync/projects',
+  path: 'work/projects',
   canActivate: [authGuard, featureGuard('work_management.projects'), permissionGuard('projects:read')],
-  loadComponent: () => import('./features/worksync/projects/project-list.component')
+  loadComponent: () => import('./features/work/projects/project-list.component')
     .then(m => m.ProjectListComponent),
 }
 ```
@@ -99,8 +101,8 @@ Or with new control flow and a permission signal:
 ### Level 4: Component Actions (Buttons, Links)
 
 ```html
-<!-- Only show Approve button if user has leave:approve -->
-<button *hasPermission="'leave:approve'"
+<!-- Only show Approve button if user has time_off:approve -->
+<button *hasPermission="'time_off:approve'"
         mat-raised-button color="primary"
         (click)="approve()">
   Approve
@@ -168,9 +170,9 @@ export class AuthService {
   private _permissions = signal<string[]>([]);
   private _activeModules = signal<string[]>([]);
   private _activeFeatures = signal<string[]>([]);
-  private _hierarchyScope = signal<'all' | 'subordinates'>('subordinates');
+  private _capabilities = signal<Record<string, boolean>>({});
 
-  // Permission check — returns a computed signal (reactive)
+  // Permission check - returns a computed signal (reactive)
   hasPermission(code: string): Signal<boolean> {
     return computed(() => this._permissions().includes(code));
   }
@@ -193,44 +195,44 @@ export class AuthService {
     return computed(() => this._activeFeatures().includes(featureKey));
   }
 
-  hierarchyScope = this._hierarchyScope.asReadonly();
-  isSuperAdmin = computed(() => this._hierarchyScope() === 'all');
+  hasCapability(key: string): Signal<boolean> {
+    return computed(() => this._capabilities()[key] === true);
+  }
 }
 ```
 
-## Data Scoping (Hierarchy)
+## Data Access (Management Coverage)
 
-The **API handles all hierarchy scoping server-side** — it only returns data the user can see. The frontend adapts the UI based on scope but never filters data client-side:
+The **API handles employee visibility server-side through management coverage** - it only returns data the user can see. The frontend adapts the UI based on returned capabilities but never filters data client-side:
 
 ```typescript
-// Adjust filter UI based on scope
+// Adjust filter UI based on returned capabilities
 export class EmployeeListComponent {
   private auth = inject(AuthService);
 
-  // Show "All Departments" filter only to Super Admins
-  showAllDepartments = this.auth.isSuperAdmin;
+  // Show broad filters only when the API/session capabilities allow them.
+  showAllDepartments = this.auth.hasCapability('employees.filter.allDepartments');
 }
 ```
 
 ## No Hardcoded Role Names
 
-The frontend must NEVER hardcode role names (e.g., "HR Manager", "Team Lead"). Roles are custom — tenants create them. Always check **permissions**, **active modules**, and **active feature keys**, never role names.
 
 ```typescript
-// ❌ Wrong — never check role name
+// [wrong] Wrong - never check role name
 if (auth.user()?.role === 'HR Manager') { ... }
 
-// ✅ Correct — check the permission signal
+// [ok] Correct - check the permission signal
 if (auth.hasPermission('employees:write')()) { ... }
 
-// ✅ Correct — check module access
-if (auth.hasModule('leave')()) { ... }
-if (auth.hasFeature('leave.requests')()) { ... }
+// [ok] Correct - check module access
+if (auth.hasModule('time_off')()) { ... }
+if (auth.hasFeature('time_off.requests')()) { ... }
 ```
 
 ## Related
 
-- [[frontend/cross-cutting/authentication|Authentication]] — auth flow, session management
-- [[frontend/architecture/routing|Routing]] — functional route guards
-- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — nav rail gating
-- [[frontend/design-system/patterns/table-patterns|Table Patterns]] — column-level gating
+- [[frontend/cross-cutting/authentication|Authentication]] - auth flow, session management
+- [[frontend/architecture/routing|Routing]] - functional route guards
+- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] - nav rail gating
+- [[frontend/design-system/patterns/table-patterns|Table Patterns]] - column-level gating

@@ -4,7 +4,6 @@
 >
 > NFR source: `C:\onevoNew\NFS-ASP.NET(Backend).docx`
 >
-> Audience: ONEVO backend team members and IDE/code-generation agents.
 >
 > Purpose: this document defines how the ONEVO backend must be structured and extended so new work follows the intended architecture without creating dependency, tenant-isolation, security, or maintainability flaws.
 
@@ -673,7 +672,6 @@ Rules:
 - Use environment variables for the Application Insights connection string.
 - Do not commit secrets.
 - Preserve correlation IDs in logs and telemetry.
-- Connect Serilog logs to telemetry if the team wants logs and traces in one place.
 - Track requests, dependencies, exceptions, and custom business-critical events.
 
 Required dashboards:
@@ -1019,4 +1017,3 @@ HTTP Request
   -> HTTP response
 ```
 
-If a team member or IDE agent cannot place new code into this flow cleanly, the design is incomplete and must be clarified before implementation.

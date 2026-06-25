@@ -1,4 +1,4 @@
-# Notification Templates — End-to-End Logic
+﻿# Notification Templates - End-to-End Logic
 
 **Module:** Notifications
 **Feature:** Notification Templates
@@ -12,15 +12,16 @@
 ```
 Notification templates are pre-configured per event type + channel:
   -> Each domain event maps to a template:
-     -> e.g., "leave.approved" + "email" -> template with subject + body
+     -> e.g., "time_off.approved" + "email" -> template with subject + body
   -> Templates use Liquid/Handlebars syntax for variable substitution
-  -> Variables: {{employee_name}}, {{leave_type}}, {{start_date}}, etc.
+  -> Variables: {{employee_name}}, {{time_off_type}}, {{start_date}}, etc.
 
 Notification Pipeline (when domain event fires):
-  -> 1. Event handler receives domain event (e.g., LeaveApproved)
+  -> 1. Event handler receives domain event (e.g., TimeOffApproved)
   -> 2. Resolve recipients through event context and configured resolvers
-       (employee, position-resolved manager, selected permission holder,
-       HR coverage resolver, case participant, or specific employee)
+       (employee, recipient resolved by Monitoring Policy for monitoring alerts,
+       management coverage resolver for approvals, selected permission holder,
+       case participant, or specific employee)
   -> 3. Load notification_templates WHERE event_type AND channel AND is_active
   -> 4. Render template with event data
   -> 5. Dispatch to channel (email via Resend, in_app via DB insert, SignalR push)
@@ -29,8 +30,8 @@ Notification Pipeline (when domain event fires):
 
 ### Key Rules
 
-- **Templates are per-tenant** — each tenant can customize their notification content.
-- **Multiple channels per event** — one event can trigger email + in_app + push simultaneously.
+- **Templates are per-tenant** - each tenant can customize their notification content.
+- **Multiple channels per event** - one event can trigger email + in_app + push simultaneously.
 
 ## Related
 

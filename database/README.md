@@ -4,7 +4,7 @@
 
 - **RDBMS:** PostgreSQL 16.13 baseline; PostgreSQL 18 target after hosting and migration validation
 - **ORM:** Entity Framework Core 10
-- **Total Tables:** 252 unique schema tables â€” see [[database/schema-catalog|Schema Catalog]]
+- **Total Tables:** 252 unique schema tables - see [[database/schema-catalog|Schema Catalog]]
 - **Multi-tenancy:** `tenant_id` on all tenant-scoped tables + PostgreSQL RLS
 - **Connection Pooling:** PgBouncer
 - **Partitioning:** `pg_partman` for time-series tables
@@ -15,7 +15,7 @@
 
 | Element | Convention | Example |
 |:--------|:-----------|:--------|
-| Tables | `snake_case`, plural | `employees`, `leave_requests` |
+| Tables | `snake_case`, plural | `employees`, `time_off_requests` |
 | Columns | `snake_case` | `first_name`, `tenant_id`, `is_active` |
 | Primary keys | `id` (uuid) | `id uuid PRIMARY KEY DEFAULT gen_random_uuid()` |
 | Foreign keys | `{referenced_table_singular}_id` | `employee_id`, `department_id` |
@@ -54,8 +54,8 @@ modelBuilder.Entity<Employee>(e =>
 
 ### Key Relationships
 
-- `employees` is the central hub â€” most HR tables link to it
-- `tenants` is the root â€” every tenant-scoped table references it
+- `employees` is the central hub - most HR tables link to it
+- `tenants` is the root - every tenant-scoped table references it
 - Self-referencing: `departments` (parent), `positions` (reports_to_position), `goals` (parent), `document_categories` (parent)
 - Polymorphic: `workflow_instances` uses `resource_type` + `resource_id` to link to any entity
 
@@ -79,7 +79,7 @@ modelBuilder.Entity<Employee>(e =>
 |:------|:-------|:---------|
 | `employee_bank_details` | `account_number_encrypted` | Bank account numbers |
 | `sso_providers` | `client_id_encrypted`, `client_secret_encrypted` | SSO credentials |
-| `hardware_terminals` | `api_key_encrypted` | Terminal API keys |
+| `biometric_devices` | `api_key_encrypted` | Attendance/biometric terminal API keys |
 | `integration_connections` | `credentials_encrypted` | Integration credentials |
 | `notification_channels` | `credentials_encrypted` | Channel provider credentials |
 
@@ -102,12 +102,12 @@ All encrypted via `IEncryptionService` (AES-256) in [[backend/shared-kernel|Shar
 | [[database/schemas/auth\|Auth & Security]] | 9 | 1 |
 | [[database/schemas/org-structure\|Org Structure]] | 12 | 1 |
 | [[database/schemas/core-hr\|Core HR]] | 13 | 1 |
-| [[database/schemas/leave\|Leave]] | 5 | 1 |
+| [[database/schemas/time_off\|Time Off]] | 5 | 1 |
 | [[database/schemas/calendar\|Calendar]] | 1 | 1 |
 | [[database/schemas/configuration\|Configuration]] | 6 | 1 |
 | [[database/schemas/agent-gateway\|Agent Gateway]] | 6 | 1 |
 | [[database/schemas/activity-monitoring\|Activity Monitoring]] | 9 | 1 |
-| [[database/schemas/workforce-presence\|Workforce Presence]] | 3 | 1 |
+| [[database/schemas/time-attendance\|Time & Attendance]] | 3 | 1 |
 | [[database/schemas/exception-engine\|Exception Engine]] | 5 | 1 |
 | [[database/schemas/identity-verification\|Identity Verification]] | 6 | 1 |
 | [[database/schemas/productivity-analytics\|Productivity Analytics]] | 4 | 1 |
@@ -120,7 +120,7 @@ All encrypted via `IEncryptionService` (AES-256) in [[backend/shared-kernel|Shar
 | [[database/schemas/wms-project-management\|Work Management Projects]] | 12 | 1 |
 | [[database/schemas/wms-task-management\|Work Management Tasks]] | 13 | 1 |
 | [[database/schemas/wms-planning\|Work Management Planning]] | 7 | 1 |
-| [[database/schemas/wms-chat\|Work Management Chat]] | 11 | 1/2 |
+| [[database/schemas/wms-chat\|Work Management Chat]] | 11 | 2 |
 | [[database/schemas/wms-collaboration\|Work Management Collaboration]] | 4 new + shared documents | 1 |
 | [[database/schemas/wms-analytics\|Work Management Analytics]] | 7 | 1 |
 | [[database/schemas/wms-integrations\|Work Management Integrations]] | 7 | 1 |
@@ -129,7 +129,7 @@ All encrypted via `IEncryptionService` (AES-256) in [[backend/shared-kernel|Shar
 | [[database/schemas/expense\|Expense]] | 3 | 2 |
 | [[database/schemas/reporting-engine\|Reporting Engine]] | 3 | 2 |
 
-> **Build approach:** Use the per-module schema files in `database/schemas/` as the canonical reference when writing EF Core entity classes. The `end-to-end-logic.md` files describe behavior, not schema â€” they are for flow reference only.
+> **Build approach:** Use the per-module schema files in `database/schemas/` as the canonical reference when writing EF Core entity classes. The `end-to-end-logic.md` files describe behavior, not schema - they are for flow reference only.
 
 ## Related
 

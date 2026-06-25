@@ -1,4 +1,4 @@
-# Daily Reports — End-to-End Logic
+﻿# Daily Reports - End-to-End Logic
 
 **Module:** Productivity Analytics
 **Feature:** Daily Reports
@@ -15,7 +15,7 @@ GenerateDailyReportsJob (Hangfire, daily 11:30 PM)
     -> 1. Get all active employees for tenant
     -> 2. For each employee:
        -> a. Get activity summary: IActivityMonitoringService.GetDailySummaryAsync()
-       -> b. Get presence data: IWorkforcePresenceService.GetPresenceForDateAsync()
+       -> b. Get presence data: ITimeAttendanceService.GetPresenceForDateAsync()
        -> c. Get exception count: IExceptionEngineService.GetExceptionCountAsync()
        -> d. Get WorkSync output snapshot for employee/date if WorkSync is enabled
        -> e. Compute:
@@ -32,12 +32,12 @@ GenerateDailyReportsJob (Hangfire, daily 11:30 PM)
           -> top_apps_json from activity summary
           -> device_split_json from device tracking
        -> f. UPSERT into daily_employee_report
-    -> 3. Generate workforce_snapshot for the day:
+    -> 3. Generate monitoring_snapshot for the day:
        -> Aggregate across all employees
        -> avg_active_percentage, avg_activity_score, avg_work_output_score,
           avg_productivity_score, avg_data_coverage_percentage,
           total_exceptions, department_breakdown
-       -> UPSERT into workforce_snapshot
+       -> UPSERT into monitoring_snapshot
     -> 4. Publish DailyReportReady event
 ```
 
@@ -59,7 +59,7 @@ GET /api/v1/analytics/daily/{employeeId}?date=2026-04-05
 
 - [[frontend/architecture/overview|Daily Reports Overview]]
 - [[frontend/architecture/overview|Weekly Reports]]
-- [[frontend/architecture/overview|Workforce Snapshots]]
+- [[frontend/architecture/overview|Monitoring Snapshots]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/shared-kernel|Shared Kernel]]

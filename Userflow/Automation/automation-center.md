@@ -1,17 +1,36 @@
 # Automation Center
 
-**Area:** Automation Center (`/automation`)  
-**Trigger:** Customer opens Automation Center or clicks Create Automation  
-**Required Permission(s):** `workflows:read`, `workflows:manage` to create/edit  
-**Related Permissions:** Permission selectors can reference any tenant permission key, such as `exceptions:manage`, but Automation Center visibility and edits remain governed by `workflows:read` and `workflows:manage`.
+**Area:** Automation Center
+**Phase:** Phase 2 - deferred
+**Phase 1 Customer Route:** none
+**Deferred Route:** `/automation`
+**Deferred Permission(s):** `workflows:read`, `workflows:manage`
+
+---
+
+## Phase 1 Boundary
+
+Automation Center is not a Phase 1 customer-facing screen. Do not add a top-level Automation, Flow, or Workflow Builder item to the customer app navigation.
+
+Phase 1 approvals and routing are handled by built-in module rules:
+
+- Org Structure management coverage
+- position rules
+- granted permissions
+- lightweight request records where approval is required
+- Notifications and Inbox for action delivery
+
+Do not make Time Off, overtime, attendance corrections, transfer, promotion, position access, monitoring alerts, or onboarding depend on Automation Center in Phase 1.
 
 ---
 
 ## Purpose
 
-Automation Center lets customers create workflows that route approvals, alerts, requests, and follow-ups to the right people. Automations can create private case conversations, deliver action cards through Chat or Inbox, mirror discussions to Microsoft Teams, and escalate unresolved items using dynamic resolvers instead of fixed roles.
+This document is retained as the Phase 2 design reference for Automation Center.
 
-Automation Center is a first-class product area. It is not hidden inside technical settings because automation is central to reducing manual management work.
+In Phase 2, Automation Center lets customers create workflows that route approvals, alerts, requests, and follow-ups to the right people. Automations can create private case conversations, deliver action cards through Chat or Inbox, mirror discussions to Microsoft Teams, and escalate unresolved items using dynamic resolvers instead of fixed roles.
+
+Automation Center may become a first-class product area in Phase 2. It must not be active in Phase 1 customer navigation.
 
 ---
 
@@ -26,7 +45,7 @@ Automation Center is a first-class product area. It is not hidden inside technic
 
 ---
 
-## Screen Structure
+## Screen Structure - Phase 2
 
 Header:
 
@@ -49,9 +68,10 @@ Start faster with ready-made automations, or build your own from scratch.
 
 ---
 
-## Builder Flow
+## Builder Flow - Phase 2
 
 ### Step 1: Create Automation
+
 - **UI:** Customer clicks Create Automation.
 - **Result:** Builder opens directly.
 
@@ -91,9 +111,9 @@ Escalate to configured escalation resolver
 
 ### Step 2: Select Trigger
 
-Supported triggers:
+Supported Phase 2 triggers:
 
-- Leave request submitted
+- Time Off request submitted
 - Overtime request submitted
 - Attendance correction submitted
 - Exception alert created
@@ -112,7 +132,7 @@ Conditions can check request type, alert type, severity, count, time window, wor
 
 ### Step 4: Choose Resolver
 
-Supported resolvers:
+Supported Phase 2 resolvers:
 
 - First eligible approver in employee's position reporting chain
 - Employee's reporting manager
@@ -132,12 +152,12 @@ Examples:
 
 - Send to users with permission `exceptions:manage`.
 - Send to the configured escalation resolver.
-- Assign to employee's reporting manager.
-- For default leave approval, resolve the first active reporting-chain approver with `leave:approve` when no custom workflow exists.
+- Assign to the owner resolved from management coverage.
+- For default Time Off approval, resolve one eligible owner through management coverage when no custom Phase 2 workflow exists.
 
 ### Step 5: Configure Actions
 
-Supported actions:
+Supported Phase 2 actions:
 
 - Create case conversation
 - Send to Chat
@@ -169,13 +189,13 @@ Use "Approve in order" when hierarchy-based approval is required. Example: repor
 
 ---
 
-## Case Conversations
+## Case Conversations - Phase 2
 
 A case conversation is a private, system-created conversation linked to one approval, alert, request, or workflow item. It behaves like a private thread/channel, not a normal DM.
 
 Examples:
 
-- Leave request case
+- Time Off request case
 - Low activity alert case
 - Attendance correction case
 - Identity verification case
@@ -193,14 +213,14 @@ Inside a case conversation, users can discuss the issue, view evidence, invite a
 
 ---
 
-## Delivery Router
+## Delivery Router - Phase 2
 
 The delivery router decides where the action card appears.
 
 | Tenant Capability | Delivery Behavior |
 |:------------------|:------------------|
-| WorkSync Chat enabled | Send action card to ONEVO Chat and create or reuse a case conversation |
-| WorkSync Chat not enabled | Send action card to Inbox and use the Inbox detail panel for comments and decisions |
+| Work Chat enabled | Send action card to ONEVO Chat and create or reuse a case conversation |
+| Work Chat not enabled | Send action card to Inbox and use the Inbox detail panel for comments and decisions |
 | Microsoft Teams sync enabled | Mirror the ONEVO case conversation into the linked Teams conversation |
 
 ONEVO remains the source of truth. Teams is used for discussion only. No Teams bot, Teams-native approval buttons, or text command parsing is required.
@@ -208,7 +228,7 @@ ONEVO remains the source of truth. Teams is used for discussion only. No Teams b
 Example Teams message:
 
 ```text
-Leave request from Nimal Perera
+Time Off request from Nimal Perera
 Dates: May 10-12
 Status: Waiting for approval
 
@@ -219,7 +239,7 @@ Open ONEVO to approve or reject:
 
 ---
 
-## Template Picker
+## Template Picker - Phase 2
 
 Templates appear only after the customer clicks Templates.
 
@@ -227,11 +247,11 @@ Templates appear only after the customer clicks Templates.
 
 Purpose: Creates standard approval automations for common HR requests.
 
-Includes leave request, attendance correction, overtime request, and remote work location request routing through hierarchy-aware resolvers, case conversation creation, approver notification, and escalation if unresolved after configured working days.
+Includes Time Off request, attendance correction, overtime request, and remote work location request routing through hierarchy-aware resolvers, case conversation creation, approver notification, and escalation if unresolved after configured working days.
 
 Best for most companies that want approval requests to flow automatically without designing every rule manually.
 
-### Low-Noise Workforce Alerts
+### Low-Noise Monitoring Alerts
 
 Purpose: Reduces notification noise. Most minor issues are logged or summarized instead of interrupting managers instantly.
 
@@ -239,9 +259,9 @@ Includes low-severity alert logging, daily summaries, repeated warning notificat
 
 Best for companies that want visibility without disturbing employees and managers all day.
 
-### High-Control Workforce Alerts
+### High-Control Monitoring Alerts
 
-Purpose: Creates faster escalation for companies that need stricter workforce monitoring.
+Purpose: Creates faster escalation for companies that need stricter monitoring.
 
 Includes low activity notifications, excess idle case conversations, presence without laptop activity cases, agent heartbeat gap notifications, and quick escalation to configured escalation resolver.
 
@@ -267,7 +287,7 @@ Best for office or hybrid companies using biometric attendance and device monito
 
 Purpose: Identifies excessive meeting time or passive meeting-heavy days.
 
-Includes meeting-time summaries, repeated high-meeting-time manager notifications, and high-meeting-time plus low-activity case creation.
+Includes meeting-time summaries, repeated high-meeting-time reviewer notifications, and high-meeting-time plus low-activity case creation.
 
 Best for companies concerned about meeting overload and hidden idle time.
 
@@ -281,7 +301,7 @@ Best for remote or hybrid companies using camera-based identity verification.
 
 ### Escalate Unresolved Approvals
 
-Purpose: Prevents leave, overtime, attendance corrections, and other approvals from getting stuck.
+Purpose: Prevents Time Off, overtime, attendance corrections, and other approvals from getting stuck.
 
 Includes reminders, escalation to next resolver, and second-delay escalation to configured resolver.
 
@@ -293,7 +313,7 @@ Purpose: Sends managers a digest instead of constant individual notifications.
 
 Includes pending approvals, new alerts, unresolved cases, team attendance issues, and high-priority exceptions.
 
-Best for companies that want managers to review workforce issues once or twice per day.
+Best for companies that want managers to review monitoring issues once or twice per day.
 
 ### Build From Scratch
 
@@ -301,7 +321,7 @@ Purpose: Allows the customer to create any automation manually using the builder
 
 ---
 
-## Events Triggered
+## Events Triggered - Phase 2
 
 - `AutomationDefinitionCreated`
 - `AutomationTemplateApplied`
@@ -314,7 +334,7 @@ Purpose: Allows the customer to create any automation manually using the builder
 
 ## Related Flows
 
-- [[Userflow/Leave/leave-approval|Leave Approval]]
+- [[Userflow/Time-Off/time-off-approval|Time Off Approval]]
 - [[Userflow/Notifications/inbox|Inbox]]
 - [[Userflow/Chat/chat-overview|Chat Overview]]
 - [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]]

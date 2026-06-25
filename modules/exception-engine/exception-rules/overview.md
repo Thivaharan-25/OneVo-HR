@@ -1,4 +1,4 @@
-# Exception Rules
+﻿# Exception Rules
 
 **Module:** Exception Engine  
 **Feature:** Exception Rules
@@ -9,14 +9,15 @@
 
 Configurable anomaly detection rules with JSON-based thresholds. Rule types: `low_activity`, `excess_idle`, `unusual_pattern`, `excess_meeting`, `no_presence`, `break_exceeded`, `verification_failed`, `non_allowed_app`, `presence_without_activity`, `heartbeat_gap`, `work_location_mismatch`.
 
-> **`non_allowed_app`** — fires when an employee accumulates time in an app where `application_usage.is_allowed = false` beyond the `violation_threshold_minutes` in `threshold_json`. Apps with `is_allowed = null` (pending review) are never evaluated. See [[docs/superpowers/plans/2026-04-26-app-catalog-observed-applications|App Catalog Plan]] for the full allowlist resolution flow.
+> **Phase 1 note:** `non_allowed_app`, `verification_failed`, and `work_location_mismatch` detection is handled by their respective Phase 1 alert producers (Activity Monitoring, Identity Verification, Work Location Evidence) using lightweight detection and Notifications/Inbox routing. Phase 2 may move these into configurable Exception Engine rules.
+
+> **`non_allowed_app` (Phase 2 as Exception Engine rule)** - fires when an employee accumulates time in an app where `application_usage.is_allowed = false` beyond the `violation_threshold_minutes` in `threshold_json`. Apps with `is_allowed = null` (pending review) are never evaluated. Phase 1 uses Activity Monitoring lightweight detection. See [[modules/activity-monitoring/overview|Activity Monitoring]] and [[docs/superpowers/plans/2026-04-26-app-catalog-observed-applications|App Catalog Plan]].
 
 ## Database Tables
 
-**`work_location_mismatch`** fires when a clocked-in employee remains outside the approved office or remote workplace beyond the configured grace period. It must only evaluate sessions that Workforce Presence marks as active paid time, excluding breaks and post-clock-out periods. See [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]].
+**`work_location_mismatch`** fires when an employee remains outside the selected Company's office location or approved remote work location beyond the configured grace period. It must only evaluate sessions that Time & Attendance marks as active paid time, excluding breaks and post-clock-out periods. See [[Userflow/Monitoring/work-location-compliance|Work Location Compliance]].
 
 ### `exception_rules`
-Key columns: `rule_name`, `rule_type`, `threshold_json`, `severity` (`info`, `warning`, `critical`), `applies_to` (`all`, `department`, `team`, `employee`), `applies_to_id`.
 
 Threshold JSON must be validated against known schema before evaluation. Invalid JSON = skip rule + log warning.
 

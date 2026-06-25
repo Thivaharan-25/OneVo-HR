@@ -16,8 +16,8 @@ The Template Library page (`/platform/templates`) shows all templates in a singl
 | **Role** | Role blueprints materialized into tenant-scoped Auth roles and permissions |
 | **Configuration** | Tenant settings presets (timezone, currency, work week, privacy mode, data retention defaults) |
 | **Position** | Concrete position presets with linked role templates |
-| **Leave Policy** | Leave type and policy presets |
-| **Monitoring Policy** | Monitoring feature toggle presets for Phase 1 agent/workforce policy setup |
+| **Time Off Policy** | Time Off type and policy presets |
+| **Monitoring Policy** | Monitoring feature toggle presets for Phase 1 agent/monitoring policy setup |
 | **App Allowlist** | Tenant app allowlist presets for Phase 1 app usage policy setup |
 | **Onboarding** | Onboarding checklist and task presets |
 | **Data Import** | Data import source mapping presets |
@@ -30,19 +30,17 @@ Clicking `+ New Template` opens a **Type Picker** modal. The operator selects a 
 
 | Table / System | Role |
 |---|---|
-| `role_templates` | Read + write — role blueprint definitions with versioning |
-| `role_template_permissions` | Read + write — permission codes per template version |
-| `tenant_role_template_applications` | Write — history of which role template version was applied to which tenant |
-| `configuration_templates` | Read + write - configuration, position, leave policy, monitoring policy, app allowlist, onboarding, and data import template definitions |
+| `role_templates` | Read + write - role blueprint definitions with `module_keys_json`, `permission_codes_json`, and versioning |
+| `configuration_templates` | Read + write - configuration, position, Time Off policy, monitoring policy, app allowlist, onboarding, and data import template definitions |
 | `tenant_configuration_template_applications` | Write — history of configuration template applications |
 | `roles` (Auth module) | Write through `ITenantRoleService` — materialized tenant roles |
 | `role_permissions` (Auth module) | Write through Auth interfaces — tenant role permission sets |
 | `permissions` (Auth module) | Read — permission catalog with module ownership |
 | `position_template_packs`, `position_templates`, tenant `positions` | Write on position template apply |
-| `leave_types`, `leave_policies` | Write on leave policy template apply |
+| `time_off_types`, `time_off_policies` | Write on Time Off policy template apply |
 | `monitoring_feature_toggles` | Write on monitoring policy template apply |
 | `app_allowlists` | Write on app allowlist template apply |
-| `onboarding_templates`, `onboarding_template_tasks` | Write on onboarding template apply |
+| `checklist_templates` | Write on onboarding template apply |
 | `data_import_mapping_templates`, `data_import_field_mappings` | Write on data import mapping template apply |
 | `tenant_settings` | Write on configuration template apply |
 | Audit log | Write every template create/apply/edit action |
@@ -58,13 +56,13 @@ Clicking `+ New Template` opens a **Type Picker** modal. The operator selects a 
 - Apply to tenant: preview effective permissions filtered by tenant's entitled modules; excluded permissions listed in response
 - Idempotency: if same name already exists for tenant, choose Update or Create New (version suffix)
 
-### Non-role templates (Configuration, Position, Leave Policy, Monitoring Policy, App Allowlist, Onboarding, Data Import)
+### Non-role templates (Configuration, Position, Time Off Policy, Monitoring Policy, App Allowlist, Onboarding, Data Import)
 - Create and manage configuration presets that pre-fill `tenant_settings` during provisioning
 - Create and manage position template packs that seed departments and concrete positions. Each position may link to one role template; role permissions are filtered by tenant module entitlements when materialized.
-- Create and manage leave policy templates that seed `leave_types` + `leave_policies`
+- Create and manage Time Off policy templates that seed `time_off_types` + `time_off_policies`
 - Create and manage monitoring policy templates that seed tenant `monitoring_feature_toggles`
 - Create and manage app allowlist templates that seed `app_allowlists` and assignment rows for tenant, department, or position scope
-- Create and manage onboarding templates that seed `onboarding_templates` + `onboarding_template_tasks`
+- Create and manage onboarding templates that seed `checklist_templates`
 - Create and manage data import templates that seed `data_import_mapping_templates` + `data_import_field_mappings`
 - Applying any configuration template creates a `tenant_configuration_template_applications` row; tenant customization does not mutate the global template
 
@@ -74,7 +72,7 @@ Clicking `+ New Template` opens a **Type Picker** modal. The operator selects a 
 
 ## Permission Boundary Rule (Role Templates)
 
-The template's `module_scope` controls which permissions appear in the editor. When applied to a tenant, the system intersects the template's permissions with the tenant's entitled module set. A template scoped to `[leave, monitoring]` applied to a tenant with only `leave` entitled grants only leave permissions — monitoring permissions are excluded, not silently granted.
+The API field `module_scope` is stored as `role_templates.module_keys_json`. The API field `permission_codes` is stored as `role_templates.permission_codes_json`. `module_scope` controls which permissions appear in the editor. When applied to a tenant, the system intersects the template's permissions with the tenant's entitled module set. A template scoped to `[time_off, monitoring]` applied to a tenant with only `time_off` entitled grants only Time Off permissions — monitoring permissions are excluded, not silently granted.
 
 ## Navigation
 
@@ -99,7 +97,6 @@ The template's `module_scope` controls which permissions appear in the editor. W
 - [[developer-platform/modules/module-catalog-manager/overview|Module Catalog Manager]] — permission ownership determines what appears in the picker
 - [[developer-platform/modules/tenant-console/overview|Tenant Management]] — provisioning wizard applies templates during Setup
 - [[modules/auth/overview|Auth & Security]] — materialized roles stored in Auth module
-
 
 
 

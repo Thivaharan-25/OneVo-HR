@@ -1,10 +1,10 @@
-# Dark Mode
+﻿# Dark Mode
 
 ## Strategy
 
-- **Default:** System preference (`prefers-color-scheme`) — resolved on first load
-- **User override:** Theme toggle button in Topbar (Sun / Moon / Monitor icon). Cycles: system → light → dark
-- **Persistence:** `localStorage` key `theme` — values: `"system"` | `"light"` | `"dark"`
+- **Default:** System preference (`prefers-color-scheme`) - resolved on first load
+- **User override:** Theme toggle button in Topbar (Sun / Moon / Monitor icon). Cycles: system -> light -> dark
+- **Persistence:** `localStorage` key `theme` - values: `"system"` | `"light"` | `"dark"`
 - **Attribute:** `data-theme="dark"` or `data-theme="light"` on `<html>` element
 - **Dark is the hero mode:** The design is dark-first. Light mode is fully supported.
 
@@ -15,7 +15,7 @@
 // src/components/ui/ThemeProvider.tsx
 // Reads localStorage on mount, applies data-theme to <html>,
 // tracks prefers-color-scheme when in "system" mode.
-// Exposes useTheme() → { theme: 'dark' | 'light' | 'system', setTheme }
+// Exposes useTheme() -> { theme: 'dark' | 'light' | 'system', setTheme }
 
 // src/main.tsx
 <ThemeProvider>
@@ -43,7 +43,7 @@ function ThemeToggle() {
 All colors use CSS custom properties that switch between light and dark:
 
 ```css
-/* CSS custom properties — applied via data-theme attribute on <html> */
+/* CSS custom properties - applied via data-theme attribute on <html> */
 
 [data-theme="dark"] {
   --bg-base:       #0a0a0a;
@@ -89,7 +89,7 @@ All colors use CSS custom properties that switch between light and dark:
 ## Dark Mode Rules
 
 ### Status Colors Stay Fixed
-Status colors (active/green, idle/yellow, offline/red) do NOT change between modes — they reduce saturation slightly for eye comfort:
+Status colors (active/green, idle/yellow, offline/red) do NOT change between modes - they reduce saturation slightly for eye comfort:
 
 ```css
 [data-theme="dark"] {
@@ -111,8 +111,8 @@ Status colors (active/green, idle/yellow, offline/red) do NOT change between mod
 ### Glass Surfaces in Light Mode
 
 Glass surfaces use different opacity values in light mode:
-- Dark: `rgba(10, 10, 15, 0.85)` — frosted dark glass
-- Light: `rgba(255, 255, 255, 0.7)` — frosted white glass
+- Dark: `rgba(10, 10, 15, 0.85)` - frosted dark glass
+- Light: `rgba(255, 255, 255, 0.7)` - frosted white glass
 - `backdrop-filter: blur(16px)` remains the same
 
 ### Shadows in Dark Mode
@@ -133,6 +133,6 @@ Shadows are invisible on dark backgrounds. Compensate with brighter borders:
 
 ## Related
 
-- [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — tenant color customization
-- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — full color system
-- [[frontend/design-system/foundations/elevation|Elevation]] — shadow behavior in dark mode
+- [[frontend/design-system/theming/tenant-branding|Tenant Branding]] - tenant color customization
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] - full color system
+- [[frontend/design-system/foundations/elevation|Elevation]] - shadow behavior in dark mode

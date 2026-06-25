@@ -1,7 +1,7 @@
-# Tax Configuration
+﻿# Tax Configuration
 
 **Area:** Payroll  
-**Trigger:** Admin sets up country-specific tax rules (user action — configuration)
+**Trigger:** Admin sets up country-specific tax rules (user action - configuration)
 **Required Permission(s):** `payroll:write`  
 **Related Permissions:** `settings:admin` (country-level config)
 
@@ -15,24 +15,24 @@
 ## Flow Steps
 
 ### Step 1: Navigate to Tax Config
-- **UI:** Payroll -> Tax Configuration -> select legal entity/country
-- **API:** `GET /api/v1/payroll/tax?legal_entity_id={id}`
+- **UI:** Payroll -> Tax Configuration. The selected Company from the topbar determines the legal entity and country context. Switch Company in the topbar before opening this screen if needed.
+- **API:** `GET /api/v1/payroll/tax?legal_entity_id={id}` — `legal_entity_id` resolved from the topbar-selected Company.
 
 ### Step 2: Configure Tax Brackets
-- **UI:** Define income tax brackets: range (0-50k → 10%, 50k-100k → 20%, 100k+ → 30%) → set for fiscal year
+- **UI:** Define income tax brackets: range (0-50k -> 10%, 50k-100k -> 20%, 100k+ -> 30%) -> set for fiscal year
 - **Validation:** Brackets must not overlap, must cover all ranges
 
 ### Step 3: Set Employer Contributions
-- **UI:** Social security rate (employer %), health insurance (employer %), other statutory contributions → rates applied per employee on payroll run
+- **UI:** Social security rate (employer %), health insurance (employer %), other statutory contributions -> rates applied per employee on payroll run
 - **DB:** `tax_configurations` - records per legal entity per year
 
 ### Step 4: Set Employee Deductions
-- **UI:** Income tax (auto from brackets), social security (employee %), pension (from [[Userflow/Payroll/pension-configuration|Pension Configuration]]) → tax-free allowance threshold
+- **UI:** Income tax (auto from brackets), social security (employee %), pension (from [[Userflow/Payroll/pension-configuration|Pension Configuration]]) -> tax-free allowance threshold
 - **API:** `POST /api/v1/payroll/tax`
-- **Backend:** TaxService.ConfigureAsync() → [[Userflow/Payroll/tax-configuration|Tax Configuration]]
+- **Backend:** TaxService.ConfigureAsync() -> [[Userflow/Payroll/tax-configuration|Tax Configuration]]
 
 ### Step 5: Save
-- **Result:** Effective from next payroll run → system auto-calculates taxes per employee based on gross salary
+- **Result:** Effective from next payroll run -> system auto-calculates taxes per employee based on gross salary
 
 ## Error Scenarios
 
@@ -43,7 +43,7 @@
 
 ## Events Triggered
 
-- `TaxConfigurationUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `TaxConfigurationUpdated` -> [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 

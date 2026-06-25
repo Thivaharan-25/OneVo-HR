@@ -14,12 +14,12 @@ Server policy says "verify now"
 
 Normal verification compares captured photos against the approved reference photo, not a casual avatar/profile image.
 
-## First Agent Sign-In Reference Enrollment
+## First TrayApp Reference Enrollment
 
-If identity verification is enabled but the employee has no approved `verification_reference_photos` row, the camera UI runs in **Reference Enrollment** mode during first TrayApp sign-in.
+If identity verification is enabled but the employee has no approved `verification_reference_photos` row, the camera UI runs in **Reference Enrollment** mode during the first TrayApp enrollment.
 
 ```
-Employee signs in to TrayApp
+Employee enrolls in TrayApp
   -> Backend resolves tenant + employee + policy
   -> Identity verification enabled
   -> No approved reference photo exists
@@ -36,9 +36,10 @@ The first captured photo is **enrollment**, not verification. It must not produc
 
 | Trigger | When | Policy Field |
 |:--------|:-----|:-------------|
-| Login verification | Employee logs in via tray app | `verification_on_login` |
-| Logout verification | Employee logs out | `verification_on_logout` |
-| Interval verification | Every N minutes | `verification_interval_minutes` |
+| On-demand photo | Authorized reviewer requests a live camera photo | `camera_photo_verification_enabled` |
+| Clock-in photo | Employee clocks in through app/tray source that requires photo for the employee's work context | `require_photo_clock_in` + `photo_capture_context_scope` |
+| Clock-out photo | Employee clocks out through app/tray source that requires photo for the employee's work context | `require_photo_clock_out` + `photo_capture_context_scope` |
+| Absence-detected photo | Monitoring/presence detects an absence deviation and requests identity confirmation | `absence_photo_capture_enabled` |
 
 ## MAUI Camera Implementation
 
@@ -74,7 +75,7 @@ public class CameraService
 
 ## Privacy
 
-- Photo is captured ONLY when policy requires it or when first-sign-in reference enrollment is required.
+- Photo is captured ONLY when policy requires it, an authorized reviewer requests it, or reference enrollment is required.
 - Photo is sent to server immediately after capture.
 - Local photo file is **deleted** after successful upload confirmation.
 - If upload fails, photo stays in temp storage and retries on next sync.

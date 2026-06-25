@@ -37,7 +37,7 @@ Seeded role names are convenience presets. If a seeded role is edited, its curre
 
 ## Recoverable Admin Guard
 
-The backend must reject any role, role-permission, user-role, user-status, or session-revocation change that would leave the platform with zero active recoverable admins.
+The backend must reject any role, role-permission, user-role, user-status, or session-revocation change that would time_off the platform with zero active recoverable admins.
 
 A recoverable admin is an active platform user whose effective permissions include both:
 

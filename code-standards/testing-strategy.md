@@ -1,19 +1,19 @@
-# Testing Strategy: ONEVO
+﻿# Testing Strategy: ONEVO
 
 ## Test Pyramid
 
 ```
-         ┌─────────┐
-         │  E2E    │  Playwright (Phase 2, with frontend)
-         ├─────────┤
-        │ Contract │  Pact (module API contracts)
-        ├──────────┤
-       │ Integration│  xUnit + Testcontainers (real PostgreSQL; Redis only for optional distributed-cache tests)
-       ├────────────┤
-      │    Unit     │  xUnit + Moq + FluentAssertions (80%+ coverage)
-      ├──────────────┤
-     │  Architecture │  ArchUnitNET (boundary enforcement)
-     └───────────────┘
+         +---------+
+         |  E2E    |  Playwright (Phase 2, with frontend)
+         +---------+
+        | Contract |  Pact (module API contracts)
+        +----------+
+       | Integration|  xUnit + Testcontainers (real PostgreSQL; Redis only for optional distributed-cache tests)
+       +------------+
+      |    Unit     |  xUnit + Moq + FluentAssertions (80%+ coverage)
+      +--------------+
+     |  Architecture |  ArchUnitNET (boundary enforcement)
+     +---------------+
 ```
 
 ## Test Types
@@ -153,7 +153,7 @@ public class ModuleBoundaryTests
 
 Examples:
 GetByIdAsync_WhenEmployeeExists_ReturnsSuccess
-ApproveLeaveRequest_WhenAlreadyApproved_ReturnsFailure
+ApproveTimeOffRequest_WhenAlreadyApproved_ReturnsFailure
 CreateEmployee_WithMissingFirstName_Returns422
 ```
 
@@ -183,7 +183,7 @@ dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
 | Unit tests pass | 100% | Yes |
 | Integration tests pass | 100% | Yes |
 | Architecture tests pass | 100% | Yes |
-| Code coverage | ≥ 80% | Yes (warning at 70%) |
+| Code coverage | >= 80% | Yes (warning at 70%) |
 
 ## Related
 

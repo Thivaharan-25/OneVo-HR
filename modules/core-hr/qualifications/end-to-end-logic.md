@@ -1,4 +1,4 @@
-# Qualifications — End-to-End Logic
+﻿# Qualifications - End-to-End Logic
 
 **Module:** Core HR
 **Feature:** Qualifications & Work History  
@@ -32,7 +32,6 @@ POST /api/v1/employees/{id}/work-history
   -> WorkHistoryController.Add(id, AddWorkHistoryCommand)
     -> [RequirePermission("employees:write")] or own profile
     -> WorkHistoryService.AddAsync(employeeId, command, ct)
-      -> 1. Validate: company_name, job_title, start_date required
       -> 2. INSERT into employee_work_history
       -> Return Result.Success(workHistoryDto)
 ```

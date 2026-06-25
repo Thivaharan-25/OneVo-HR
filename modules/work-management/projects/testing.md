@@ -32,19 +32,32 @@ public class ProjectServiceTests
     }
 
     [Fact]
-    public async Task LinkWorkspace_DoesNotAddWorkspaceMembersAsProjectMembers()
+    public async Task CreateProject_StoresSelectedWorkspaceId()
     {
-        SetupWorkspaceMembers(_workspaceId, _workspaceUserIds);
-        await _sut.LinkWorkspaceAsync(_projectId, _workspaceId, default);
-        _memberRepoMock.Verify(r => r.AddRangeAsync(It.IsAny<IEnumerable<ProjectMember>>(), default), Times.Never);
+        var result = await _sut.CreateAsync(_validCommandWithWorkspace(_workspaceId), default);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.WorkspaceId.Should().Be(_workspaceId);
     }
 
     [Fact]
-    public async Task AddMember_ActiveTenantEmployee_SucceedsWithoutWorkspaceMembership()
+    public async Task InviteMember_ActiveTenantEmployee_CreatesPendingInvitation()
     {
         SetupActiveEmployee(_userId, _employeeId, _tenantId);
-        var result = await _sut.AddMemberAsync(_projectId, _userId, "member", default);
+        var result = await _sut.InviteMemberAsync(_projectId, _userId, "member", default);
         result.IsSuccess.Should().BeTrue();
+        result.Value.Status.Should().Be("pending");
+    }
+
+    [Fact]
+    public async Task AcceptMemberInvitation_CreatesProjectMember()
+    {
+        SetupPendingMemberInvitation(_projectId, _userId, _employeeId);
+        var result = await _sut.AcceptMemberInvitationAsync(_projectId, _inviteId, _userId, default);
+        result.IsSuccess.Should().BeTrue();
+        _memberRepoMock.Verify(r => r.AddAsync(
+            It.Is<ProjectMember>(m => m.UserId == _userId && m.EmployeeId == _employeeId),
+            default),
+            Times.Once);
     }
 
     [Fact]
@@ -87,9 +100,10 @@ public class ProjectEndpointTests : IClassFixture<ONEVOWebFactory>
 |:---------|:-----|:---------|
 | Duplicate project identifier in tenant | Unit | IDENTIFIER_TAKEN |
 | Creator auto-added as admin | Unit/Integration | Admin member present |
-| Link workspace | Unit | `project_workspaces` row added |
-| Link workspace does not auto-add members | Unit | No bulk `project_members` insert |
-| Add active tenant employee without workspace membership | Unit | Success |
+| Create project with selected workspace | Unit | `projects.workspace_id` stored |
+| Invite active tenant employee | Unit | pending `project_member_invitations` row |
+| Accept member invitation | Unit | `project_members` row added |
+| Simple project-link invitation accepted | Unit | `project_links` row added |
 | Remove last project admin | Unit | Failure |
 | Tenant isolation | Integration | 404 for foreign project |
 

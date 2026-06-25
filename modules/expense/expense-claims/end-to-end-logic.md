@@ -1,13 +1,13 @@
 # Expense Claims - End-to-End Logic
 
 **Module:** Expense
-**Feature:** Expense Claims
+**Feature:** Expense Claims`r`n**Phase:** Phase 2 - deferred
 
 ---
 
 ## Flow Overview
 
-Expense claims follow a lifecycle: **draft -> submitted -> approved/rejected -> paid**. An employee creates a claim with line items (each referencing an expense category), optionally attaches receipts, and submits for approval. The approval workflow engine routes the claim to the appropriate approver based on amount thresholds and org hierarchy.
+Expense claims follow a lifecycle: **draft -> submitted -> approved/rejected -> paid**. An employee creates a claim with line items (each referencing an expense category), optionally attaches receipts, and submits for approval. Phase 2 approval routing may route the claim to the appropriate approver based on amount thresholds and org hierarchy. This is not a Phase 1 Workflow Engine dependency.
 
 ---
 
@@ -57,9 +57,9 @@ Cookie-backed web session (requires expense:create)
 1. Claim must be in `draft` status.
 2. Final validation: all items with `requires_receipt` categories must have `receipt_file_id`.
 3. **Service** sets `status = submitted`, records `submitted_at`.
-4. **Workflow Engine** is invoked:
+4. **Phase 2 approval routing** is invoked:
    - Determines approver based on claim total and employee's reporting line.
-   - Creates `workflow_instance` entry linking to this claim.
+   - Creates the Phase 2 approval/workflow record linking to this claim.
 5. **Event Published**: `ExpenseClaimSubmitted { ClaimId, EmployeeId, TotalAmount, SubmittedAt }`.
 6. **Notification**: Approver receives in-app and email notification.
 
@@ -72,7 +72,7 @@ Cookie-backed web session (requires expense:approve)
 ```
 
 1. Claim must be in `submitted` status.
-2. Approver must match the assigned workflow approver.
+2. Approver must match the assigned Phase 2 approver.
 3. **Approve path**:
    - Sets `status = approved`, records `approved_at`, `approved_by_id`.
    - **Event Published**: `ExpenseClaimApproved { ClaimId, ApprovedById, TotalAmount }`.
@@ -112,7 +112,7 @@ sequenceDiagram
     participant Employee
     participant Controller as ExpenseClaimsController
     participant Service as ExpenseClaimService
-    participant Workflow as WorkflowEngine
+    participant Approval as Phase2ApprovalRouting
     participant DB as PostgreSQL
     participant Events as MediatR
     participant Notify as NotificationService
@@ -127,20 +127,20 @@ sequenceDiagram
     Employee->>Controller: POST /claims/{id}/submit
     Controller->>Service: SubmitAsync(id)
     Service->>DB: UPDATE status = submitted
-    Service->>Workflow: CreateApprovalInstance(claim)
-    Workflow->>DB: INSERT workflow_instance
+    Service->>Approval: CreateApprovalRecord(claim)
+    Approval->>DB: INSERT approval/workflow record
     Service->>Events: Publish(ExpenseClaimSubmitted)
     Events->>Notify: SendApprovalNotification
     Controller-->>Employee: 200 OK
 
-    Note over Workflow: Approver reviews claim
+    Note over Approval: Approver reviews claim
 
-    Workflow->>Controller: PUT /claims/{id}/approve
+    Approval->>Controller: PUT /claims/{id}/approve
     Controller->>Service: ApproveAsync(id, approverId)
     Service->>DB: UPDATE status = approved
     Service->>Events: Publish(ExpenseClaimApproved)
     Events->>Notify: SendApprovedNotification
-    Controller-->>Workflow: 200 OK
+    Controller-->>Approval: 200 OK
 ```
 
 ---
@@ -165,7 +165,7 @@ sequenceDiagram
 1. **Re-submission after rejection**: Status goes `rejected -> draft` (reset), employee edits and re-submits.
 2. **Multi-currency**: `currency_code` is stored per claim. Reporting may need FX conversion, but the claim itself stores the original currency.
 3. **Receipt upload race condition**: Receipt file must exist in `file_records` before claim submission. Orphaned files are cleaned up by a background job.
-4. **Approver on leave**: Workflow engine supports delegation - if primary approver is on leave, claim routes to delegate.
+4. **Approver on Time Off**: Phase 2 approval routing may support delegation if the primary approver is on Time Off.
 5. **Zero-amount claims**: Rejected at validation. At least one item with amount > 0 is required.
 6. **Category deactivated after draft created**: Submit validates all categories are still active at submission time.
 
@@ -174,5 +174,5 @@ sequenceDiagram
 - [[modules/expense/expense-claims/overview|Expense Claims]] - feature overview
 - [[modules/expense/expense-categories/overview|Expense Categories]] - categories referenced by expense items
 - [[backend/messaging/event-catalog|Event Catalog]] - events produced on claim submission and approval
-- [[backend/messaging/error-handling|Error Handling]] - workflow state transition error patterns
+- [[backend/messaging/error-handling|Error Handling]] - Phase 2 approval state transition error patterns
 

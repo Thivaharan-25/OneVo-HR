@@ -1,4 +1,4 @@
-# Document Acknowledgements — End-to-End Logic
+﻿# Document Acknowledgements - End-to-End Logic
 
 **Module:** Documents
 **Feature:** Acknowledgements

@@ -1,4 +1,4 @@
-# Departments — Testing
+﻿# Departments - Testing
 
 **Module:** Org Structure
 **Feature:** Departments
@@ -52,7 +52,7 @@ public class DepartmentServiceTests
         var result = await _sut.CreateAsync(new CreateDepartmentCommand { LegalEntityId = Guid.NewGuid(), Name = "HR" }, default);
 
         result.IsSuccess.Should().BeFalse();
-        result.Error!.Message.Should().Contain("Legal entity");
+        result.Error!.Message.Should().Contain("Company");
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class DepartmentServiceTests
     [Fact]
     public async Task CreateAsync_DuplicateNameInDifferentLegalEntity_Succeeds()
     {
-        // Same name "Engineering" is allowed in a different legal entity
+        // Same name "Engineering" is allowed in a different Company
         var entityA = Guid.NewGuid();
         var entityB = Guid.NewGuid();
         _legalEntityRepoMock.Setup(r => r.ExistsAsync(entityB, default)).ReturnsAsync(true);
@@ -111,7 +111,7 @@ public class DepartmentServiceTests
             new CreateDepartmentCommand { LegalEntityId = legalEntityId, Name = "Child", ParentDepartmentId = parentId }, default);
 
         result.IsSuccess.Should().BeFalse();
-        result.Error!.Message.Should().Contain("same legal entity");
+        result.Error!.Message.Should().Contain("same Company");
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class DepartmentServiceTests
 public class DepartmentEndpointTests : IClassFixture<ONEVOWebFactory>
 {
     private readonly HttpClient _adminClient;
-    private readonly Guid _legalEntityId; // seeded by ONEVOWebFactory
+    private readonly Guid _legalEntityId; // selected Company context mapped internally to legal_entity_id
 
     public DepartmentEndpointTests(ONEVOWebFactory factory)
     {
@@ -193,58 +193,59 @@ public class DepartmentEndpointTests : IClassFixture<ONEVOWebFactory>
     public async Task Post_ValidDepartment_Returns201AndAppearsInTree()
     {
         var resp = await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = _legalEntityId, Name = "QA Department", Code = $"QA-{Guid.NewGuid():N}"[..8] });
+            new { Name = "QA Department", Code = $"QA-{Guid.NewGuid():N}"[..8] });
         resp.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var tree = await _adminClient.GetFromJsonAsync<List<DepartmentTreeDto>>(
-            $"/api/v1/org/departments?legalEntityId={_legalEntityId}&view=tree");
+            "/api/v1/org/departments?view=tree");
         tree.Should().Contain(d => d.Name == "QA Department");
     }
 
     [Fact]
-    public async Task Post_DuplicateNameInSameLegalEntity_Returns409()
+    public async Task Post_DuplicateNameInSameCompany_Returns409()
     {
         await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = _legalEntityId, Name = "Duplicate Dept" });
+            new { Name = "Duplicate Dept" });
 
         var resp = await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = _legalEntityId, Name = "Duplicate Dept" });
+            new { Name = "Duplicate Dept" });
 
         resp.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
     [Fact]
-    public async Task Post_SameNameInDifferentLegalEntity_Returns201()
+    public async Task Post_SameNameInDifferentCompany_Returns201()
     {
-        var otherEntityId = await CreateLegalEntityAsync();
+        var otherCompanyClient = await CreateClientForOtherCompanyAsync();
 
         await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = _legalEntityId, Name = "Engineering" });
-        var resp = await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = otherEntityId, Name = "Engineering" });
+            new { Name = "Engineering" });
+        var resp = await otherCompanyClient.PostAsJsonAsync("/api/v1/org/departments",
+            new { Name = "Engineering" });
 
         resp.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     [Fact]
-    public async Task Post_ParentInDifferentLegalEntity_Returns422()
+    public async Task Post_ParentInDifferentCompany_Returns422()
     {
-        var otherEntityId = await CreateLegalEntityAsync();
-        var parentResp = await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = otherEntityId, Name = "Parent" });
+        var otherCompanyClient = await CreateClientForOtherCompanyAsync();
+        var parentResp = await otherCompanyClient.PostAsJsonAsync("/api/v1/org/departments",
+            new { Name = "Parent" });
         var parentId = (await parentResp.Content.ReadFromJsonAsync<DepartmentDto>())!.Id;
 
         var resp = await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = _legalEntityId, Name = "Child", ParentDepartmentId = parentId });
+            new { Name = "Child", ParentDepartmentId = parentId });
 
         resp.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 
     [Fact]
-    public async Task Post_UnknownLegalEntity_Returns422()
+    public async Task Post_MissingCompanyContext_Returns422()
     {
-        var resp = await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = Guid.NewGuid(), Name = "Orphan Dept" });
+        var noCompanyClient = _factory.CreateAuthenticatedClient(permission: "org:manage", legalEntityId: null);
+        var resp = await noCompanyClient.PostAsJsonAsync("/api/v1/org/departments",
+            new { Name = "Orphan Dept" });
 
         resp.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
@@ -253,11 +254,11 @@ public class DepartmentEndpointTests : IClassFixture<ONEVOWebFactory>
     public async Task Post_ChildDepartment_AppearsUnderParentInTree()
     {
         var parentResp = await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = _legalEntityId, Name = "Parent Dept" });
+            new { Name = "Parent Dept" });
         var parentId = (await parentResp.Content.ReadFromJsonAsync<DepartmentDto>())!.Id;
 
         var childResp = await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = _legalEntityId, Name = "Child Dept", ParentDepartmentId = parentId });
+            new { Name = "Child Dept", ParentDepartmentId = parentId });
 
         childResp.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -269,26 +270,26 @@ public class DepartmentEndpointTests : IClassFixture<ONEVOWebFactory>
         for (int i = 0; i < 5; i++)
         {
             var resp = await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-                new { LegalEntityId = _legalEntityId, Name = $"Level-{i}-{Guid.NewGuid():N}"[..20], ParentDepartmentId = parentId });
+                new { Name = $"Level-{i}-{Guid.NewGuid():N}"[..20], ParentDepartmentId = parentId });
             parentId = (await resp.Content.ReadFromJsonAsync<DepartmentDto>())!.Id;
         }
 
         var tree = await _adminClient.GetFromJsonAsync<List<DepartmentTreeDto>>(
-            $"/api/v1/org/departments?legalEntityId={_legalEntityId}&view=tree");
+            "/api/v1/org/departments?view=tree");
         tree.Should().NotBeEmpty();
     }
 
     [Fact]
-    public async Task Get_DoesNotReturnOtherLegalEntityDepartments()
+    public async Task Get_DoesNotReturnOtherCompanyDepartments()
     {
-        var otherEntityId = await CreateLegalEntityAsync();
-        await _adminClient.PostAsJsonAsync("/api/v1/org/departments",
-            new { LegalEntityId = otherEntityId, Name = "Other Entity Dept" });
+        var otherCompanyClient = await CreateClientForOtherCompanyAsync();
+        await otherCompanyClient.PostAsJsonAsync("/api/v1/org/departments",
+            new { Name = "Other Company Dept" });
 
         var results = await _adminClient.GetFromJsonAsync<List<DepartmentDto>>(
-            $"/api/v1/org/departments?legalEntityId={_legalEntityId}&view=flat");
+            "/api/v1/org/departments?view=flat");
 
-        results.Should().NotContain(d => d.Name == "Other Entity Dept");
+        results.Should().NotContain(d => d.Name == "Other Company Dept");
     }
 
     [Fact]
@@ -305,22 +306,22 @@ public class DepartmentEndpointTests : IClassFixture<ONEVOWebFactory>
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| Create with valid data and legal entity | Unit | Success; LegalEntityId on result |
-| Create — legal entity not found | Unit | Failure |
-| Create — duplicate name in same legal entity | Unit | Failure |
-| Create — same name in different legal entity | Unit | Success (allowed) |
-| Create — duplicate code in same legal entity | Unit | Failure |
-| Create — parent in different legal entity | Unit | Failure |
-| Create — no code provided | Unit | Code generated |
-| Create — publishes DepartmentCreated event | Unit | Event published once |
-| Update — circular reference | Unit | Failure |
-| Update — code changed to existing code in legal entity | Unit | Failure |
+| Create with valid data and selected Company | Unit | Success; internal LegalEntityId on result |
+| Create - selected Company not found | Unit | Failure |
+| Create - duplicate name in same Company | Unit | Failure |
+| Create - same name in different Company | Unit | Success (allowed) |
+| Create - duplicate code in same Company | Unit | Failure |
+| Create - parent in different Company | Unit | Failure |
+| Create - no code provided | Unit | Code generated |
+| Create - publishes DepartmentCreated event | Unit | Event published once |
+| Update - circular reference | Unit | Failure |
+| Update - code changed to existing code in Company | Unit | Failure |
 | Post valid department and retrieve in tree | Integration | 201; appears in tree |
-| Post duplicate name same legal entity | Integration | 409 |
-| Post same name different legal entity | Integration | 201 |
-| Post with parent from different legal entity | Integration | 422 |
-| Post with unknown legal entity | Integration | 422 |
-| Get tree scoped to legal entity only | Integration | No cross-entity leakage |
+| Post duplicate name same Company | Integration | 409 |
+| Post same name different Company | Integration | 201 |
+| Post with parent from different Company | Integration | 422 |
+| Post without selected Company | Integration | 422 |
+| Get tree scoped to selected Company only | Integration | No cross-entity leakage |
 | 5-level deep hierarchy | Integration | Correct tree rendering |
 | Cross-tenant isolation | Integration | Cannot see other tenant departments |
 

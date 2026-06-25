@@ -1,4 +1,4 @@
-# Daily Aggregation
+﻿# Daily Aggregation
 
 **Module:** Activity Monitoring
 **Feature:** Daily Aggregation
@@ -16,8 +16,8 @@ Pre-aggregates activity snapshots into daily rollups. **This is the primary tabl
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `date` | `date` | |
 | `total_active_minutes` | `int` | |
 | `total_idle_minutes` | `int` | |
@@ -41,4 +41,4 @@ Pre-aggregates activity snapshots into daily rollups. **This is the primary tabl
 
 | Job | Schedule | Queue | Purpose |
 |:----|:---------|:------|:--------|
-| `AggregateDailySummaryJob` | Every 30 min + EOD | Default | Roll up snapshots → daily summary |
+| `AggregateDailySummaryJob` | Every 30 min + EOD | Default | Roll up snapshots -> daily summary |

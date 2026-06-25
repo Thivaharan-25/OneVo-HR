@@ -1,4 +1,4 @@
-# DEV4: Backend Monitoring Agent + Agent Gateway
+﻿# DEV4: Backend Monitoring Agent + Agent Gateway
 
 **Track:** Backend
 **Primary ownership:** Windows monitoring agent, Agent Gateway, activity monitoring, identity verification, exception engine, discrepancy engine, productivity analytics, IDE install jobs, agent version rollout
@@ -13,11 +13,11 @@ When Dev 4 asks to continue, start with the first unchecked item in **Current Un
 
 ---
 
-## Early Pickup: DEV1 Task 4 — Audit Foundation
+## Early Pickup: DEV1 Task 4 - Audit Foundation
 
 **Execute this while waiting for DEV1 Task 2 to complete.**
 
-Dev 4 cannot start DEV4 Task 1 until DEV1 Tasks 1 and 2 are both done. DEV1 Task 4 (Audit Foundation) only requires DEV1 Task 1 — the same gate that unblocks Dev 2. Dev 4 uses this window to remove Audit Foundation from Dev 1's critical chain entirely.
+Dev 4 cannot start DEV4 Task 1 until DEV1 Tasks 1 and 2 are both done. DEV1 Task 4 (Audit Foundation) only requires DEV1 Task 1 - the same gate that unblocks Dev 2. Dev 4 uses this window to remove Audit Foundation from Dev 1's critical chain entirely.
 
 Once Task 2 lands and this early pickup is done, DEV4 Task 1 starts immediately.
 
@@ -128,7 +128,7 @@ dotnet test ONEVO.sln --filter Heartbeat
 
 ---
 
-> **Parallel group** — Tasks 4 and 5 both require Tasks 1 and 3 and are independent of each other. Run them simultaneously.
+> **Parallel group** - Tasks 4 and 5 both require Tasks 1 and 3 and are independent of each other. Run them simultaneously.
 
 ## Task 4: Identity Verification + Biometric Backend
 
@@ -139,12 +139,12 @@ dotnet test ONEVO.sln --filter Heartbeat
 ### Acceptance Criteria
 
 - [ ] Verification policies exist per tenant.
-- [ ] Verification records support photo, fingerprint, login, logout, interval, and on-demand triggers.
+- [ ] Verification records support photo, fingerprint, clock-in, clock-out, absence-detected, and on-demand triggers.
 - [ ] Biometric devices, enrollments, biometric events, and biometric audit logs exist.
 - [ ] Biometric webhook uses HMAC authentication.
 - [ ] Photo verification stores photos through file storage and respects retention.
 - [ ] Verification policy checks Configuration monitoring overrides.
-- [ ] Failed verification publishes events consumed by Exception Engine and Notifications.
+- [ ] Failed verification publishes events consumed by Phase 1 lightweight alerts and Notifications. Full Exception Engine consumption is Phase 2.
 - [ ] On-demand capture results from Agent Gateway are processed and linked to originating exception alert.
 - [ ] Tests cover policy update, photo verification, failed verification event, biometric device register, biometric enrollment consent, webhook authentication, and on-demand capture processing.
 
@@ -154,8 +154,8 @@ dotnet test ONEVO.sln --filter Heartbeat
 - [[modules/identity-verification/verification-policies/overview|Verification Policies]] (modules/identity-verification/verification-policies/overview.md)
 - [[modules/identity-verification/photo-verification/overview|Photo Verification]] (modules/identity-verification/photo-verification/overview.md)
 - [[modules/identity-verification/biometric-devices/overview|Biometric Devices]] (modules/identity-verification/biometric-devices/overview.md)
-- [[Userflow/Workforce-Intelligence/identity-verification-setup|Identity Verification Setup]] (Userflow/Workforce-Intelligence/identity-verification-setup.md)
-- [[Userflow/Workforce-Intelligence/identity-verification-review|Identity Verification Review]] (Userflow/Workforce-Intelligence/identity-verification-review.md)
+- [[Userflow/Monitoring/identity-verification-setup|Identity Verification Setup]] (Userflow/Monitoring/identity-verification-setup.md)
+- [[Userflow/Monitoring/identity-verification-review|Identity Verification Review]] (Userflow/Monitoring/identity-verification-review.md)
 
 ### Verification
 
@@ -166,7 +166,7 @@ dotnet test ONEVO.sln --filter Biometric
 
 ---
 
-## Task 5: Exception Engine
+## Task 5: Phase 1 Lightweight Monitoring Alerts
 
 **Goal:** build configurable anomaly detection, alert generation, escalation chains, and remote capture actions.
 
@@ -187,7 +187,7 @@ dotnet test ONEVO.sln --filter Biometric
 
 ### References
 
-- [[modules/exception-engine/overview|Exception Engine]] (modules/exception-engine/overview.md)
+- [[modules/exception-engine/overview|Exception Engine]] (modules/exception-engine/overview.md) - Phase 2 reference only
 - [[modules/exception-engine/exception-rules/overview|Exception Rules]] (modules/exception-engine/exception-rules/overview.md)
 - [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]] (modules/exception-engine/evaluation-engine/overview.md)
 - [[modules/exception-engine/alert-generation/overview|Alert Generation]] (modules/exception-engine/alert-generation/overview.md)
@@ -215,12 +215,12 @@ dotnet test ONEVO.sln --filter ExceptionEngine
 - [ ] Severity calculation supports baseline-relative thresholds and absolute fallback thresholds.
 - [ ] Employee-facing notifications never reveal discrepancy analysis.
 - [ ] Manager/HR discrepancy APIs enforce visibility rules server-side.
-- [ ] Productivity daily, weekly, monthly, and workforce snapshot tables exist.
-- [ ] Productivity aggregation consumes Activity Monitoring, Workforce Presence, Exception Engine, and WorkSync analytics.
+- [ ] Productivity daily, weekly, monthly, and monitoring snapshot tables exist.
+- [ ] Productivity aggregation consumes Activity Monitoring, Time & Attendance, Phase 1 alert counts, and WorkSync analytics. Full Exception Engine counts are Phase 2.
 - [ ] Employee self-service analytics only returns own data.
 - [ ] CEO summary hides individual drill-down except escalated/critical exception context.
 - [ ] Export endpoints support CSV/Excel-ready data.
-- [ ] Tests cover discrepancy job, severity calculator, employee visibility denial, manager visibility, daily report generation, workforce snapshot, employee self-service, CEO summary, and export query.
+- [ ] Tests cover discrepancy job, severity calculator, employee visibility denial, manager visibility, daily report generation, monitoring snapshot, employee self-service, CEO summary, and export query.
 
 ### References
 
@@ -228,8 +228,8 @@ dotnet test ONEVO.sln --filter ExceptionEngine
 - [[modules/discrepancy-engine/statistical-baselines/overview|Discrepancy Statistical Baselines]] (modules/discrepancy-engine/statistical-baselines/overview.md)
 - [[modules/productivity-analytics/overview|Productivity Analytics]] (modules/productivity-analytics/overview.md)
 - [[modules/productivity-analytics/daily-reports/overview|Daily Reports]] (modules/productivity-analytics/daily-reports/overview.md)
-- [[modules/productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]] (modules/productivity-analytics/workforce-snapshots/overview.md)
-- [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]] (Userflow/Workforce-Intelligence/activity-snapshot-view.md)
+- [[modules/productivity-analytics/monitoring-snapshots/overview|Monitoring Snapshots]] (modules/productivity-analytics/monitoring-snapshots/overview.md)
+- [[Userflow/Monitoring/activity-snapshot-view|Activity Snapshot View]] (Userflow/Monitoring/activity-snapshot-view.md)
 - [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]] (Userflow/Analytics-Reporting/productivity-dashboard.md)
 
 ### Verification
@@ -263,7 +263,7 @@ dotnet test ONEVO.sln --filter ProductivityAnalytics
 ### References
 
 - [[modules/ide-extension/overview|IDE Extension Spec]] (modules/ide-extension/overview.md)
-- [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]] (Userflow/Workforce-Intelligence/agent-deployment.md)
+- [[Userflow/Monitoring/agent-deployment|Agent Deployment]] (Userflow/Monitoring/agent-deployment.md)
 - [[database/schemas/agent-gateway|Agent Gateway Schema]] (database/schemas/agent-gateway.md)
 
 ### Verification

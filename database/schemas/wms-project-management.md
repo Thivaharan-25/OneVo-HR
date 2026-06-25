@@ -1,7 +1,7 @@
 # Schema: Work Management - Project Management
 
 **Module:** `Work Management.Foundation` + `Work Management.Projects`
-**Phase:** 1, including optional Microsoft Teams sync additions
+**Phase:** 1 for Work foundation/projects; Microsoft Teams sync additions are Phase 2 unless explicitly reactivated
 **Owner:** DEV3
 
 ---
@@ -26,7 +26,6 @@
 
 **Scope rule:** Workspaces are tenant-local by default. Cross-company workspace/project collaboration requires an active company connection and explicit member/data-sharing scope; it is not modeled through topbar scope switching.
 
-**Creation source rule:** A workspace can be created from "My Reporting Team", an explicit Org Structure team, or manual invite. "My Reporting Team" is resolved from position hierarchy and must not create a duplicate `teams` row.
 
 ---
 
@@ -55,7 +54,6 @@
 | `employee_id` | uuid | FK -> employees; required for tenant employees |
 | `workspace_role_id` | uuid | FK -> workspace_roles |
 | `invited_by_id` | uuid | FK -> users, nullable |
-| `membership_source` | varchar(20) | `manual`, `team_sync`, `project_invite`, `system` |
 | `is_active` | boolean | false when employee is offboarded or removed |
 | `joined_at` | timestamptz | |
 | `removed_at` | timestamptz | nullable |
@@ -68,34 +66,9 @@
 
 ---
 
-## `workspace_team_links` - Phase 1
 
-Maps an explicit Org Structure team to a Work Management workspace for Phase 1 membership sync. This is separate from Microsoft Teams integration.
+## `workspace_teams_links` - Phase 2 Optional Integration
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | PK |
-| `tenant_id` | uuid | FK -> tenants |
-| `workspace_id` | uuid | FK -> workspaces |
-| `team_id` | uuid | FK -> teams |
-| `sync_enabled` | boolean | Default true |
-| `last_synced_at` | timestamptz | nullable |
-| `last_error` | text | nullable |
-| `created_by_id` | uuid | FK -> users |
-| `created_at` | timestamptz | |
-| `updated_at` | timestamptz | |
-
-**Unique:** `(tenant_id, workspace_id, team_id)`
-
-**Rule:** When `team_members` changes, `TeamWorkspaceSyncHandler` adds/removes `workspace_members` with `membership_source = team_sync`. Removed team members are deactivated, not hard-deleted.
-
-Synced members inherit scoped workspace authority from their explicit stored team roles and team role permissions. The sync must not assign tenant security roles and must not create project membership. Employees who need project access are added through `project_members` with Admin, Member, or Viewer access.
-
----
-
-## `workspace_teams_links` - Phase 1 Optional Integration
-
-Maps a Work Management workspace to a Microsoft Team/group. Used when the workspace creation checkbox creates a new Team or when an admin links an existing Team with matching members.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -104,7 +77,6 @@ Maps a Work Management workspace to a Microsoft Team/group. Used when the worksp
 | `workspace_id` | uuid | FK -> workspaces |
 | `teams_team_id` | varchar(255) | Microsoft Graph Team ID |
 | `teams_group_id` | varchar(255) | Microsoft 365 Group ID |
-| `display_name` | varchar(200) | Teams display name at link time |
 | `link_mode` | varchar(20) | `created_from_onevo`, `linked_existing` |
 | `member_match_status` | varchar(20) | `exact`, `partial`, `mismatch` |
 | `sync_status` | varchar(20) | `active`, `pending`, `failed`, `paused`, `disconnected` |
@@ -119,9 +91,8 @@ Maps a Work Management workspace to a Microsoft Team/group. Used when the worksp
 
 ---
 
-## `teams_member_sync_status` - Phase 1 Optional Integration
+## `teams_member_sync_status` - Phase 2 Optional Integration
 
-Per-member Teams readiness and membership sync state for a linked workspace.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -146,6 +117,7 @@ Per-member Teams readiness and membership sync state for a linked workspace.
 | `id` | uuid | PK |
 | `tenant_id` | uuid | FK -> tenants |
 | `owning_legal_entity_id` | uuid | FK -> legal_entities; set from active legal entity context |
+| `workspace_id` | uuid | FK -> workspaces; one owning workspace for the project in Phase 1 |
 | `name` | varchar(200) | |
 | `description` | text | nullable |
 | `status` | varchar(20) | active / archived / completed |
@@ -158,15 +130,14 @@ Per-member Teams readiness and membership sync state for a linked workspace.
 | `created_at` | timestamptz | |
 | `updated_at` | timestamptz | |
 
-**Indexes:** `(tenant_id)`, `(tenant_id, status)`
+**Indexes:** `(tenant_id)`, `(tenant_id, status)`, `(workspace_id)`
 
-**Rule:** Projects are tenant-scoped business/work containers. A project can involve multiple workspaces through `project_workspaces`; it is not owned by exactly one workspace. `owning_legal_entity_id` is inferred from the creator's active legal entity context and is not a normal free-form create field.
+**Rule:** Projects are tenant-scoped business/work containers. In Phase 1, each project belongs to exactly one workspace through `projects.workspace_id`. `owning_legal_entity_id` is inferred from the creator's active legal entity context and is not a normal free-form create field.
 
 ---
 
-## `project_workspaces` - Phase 1
+## `project_workspaces` - Phase 2 Reference
 
-Links a project to one or more team workspaces that are participating in the project.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -186,9 +157,67 @@ Links a project to one or more team workspaces that are participating in the pro
 **Unique:** `(project_id, workspace_id)`
 **Indexes:** `(workspace_id, is_active)`, `(tenant_id, project_id)`
 
-**Rule:** `project_workspaces` is context, not access. It shows which workspaces are involved, supports filtering/grouping/reporting, and provides a source pool when adding project members. It must not make every workspace member a project member or expose project data to every workspace member.
+**Rule:** This table is not active Phase 1 behavior. Phase 1 projects use `projects.workspace_id` for the owning workspace, and project access comes from accepted `project_members`. Workspace source pools, workspace participation approval, and multi-workspace project contribution reporting are Phase 2 references only.
 
-If the requester manages both the project and workspace, the row can become `active` immediately. If not, the row starts as `pending` and becomes `active` only after the target workspace/legal-entity approver accepts the participation request.
+---
+
+## `project_member_invitations` - Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `project_id` | uuid | FK -> projects |
+| `tenant_id` | uuid | FK -> tenants |
+| `invited_user_id` | uuid | FK -> users |
+| `invited_employee_id` | uuid | FK -> employees |
+| `role` | varchar(20) | admin / member / viewer |
+| `status` | varchar(20) | pending / accepted / declined / expired / cancelled |
+| `invited_by_id` | uuid | FK -> users |
+| `decided_at` | timestamptz | nullable |
+| `expires_at` | timestamptz | nullable |
+
+**Indexes:** `(project_id, status)`, `(invited_employee_id, status)`
+
+**Rule:** Project/workspace admins invite selected employee-backed users directly. The selected member accepts or declines. An accepted invitation creates the active `project_members` row.
+
+---
+
+## `project_link_invitations` - Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `source_project_id` | uuid | FK -> projects |
+| `target_project_id` | uuid | FK -> projects |
+| `tenant_id` | uuid | FK -> tenants |
+| `invited_project_admin_id` | uuid | FK -> users |
+| `status` | varchar(20) | pending / accepted / declined / expired / cancelled |
+| `invited_by_id` | uuid | FK -> users |
+| `decided_at` | timestamptz | nullable |
+| `expires_at` | timestamptz | nullable |
+
+**Indexes:** `(source_project_id, status)`, `(target_project_id, status)`
+
+**Rule:** Simple project-link invitations are sent from one project admin to another project admin. They do not create workspace source pools, employee visibility, or advanced dependency governance.
+
+---
+
+## `project_links` - Phase 1
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK |
+| `source_project_id` | uuid | FK -> projects |
+| `target_project_id` | uuid | FK -> projects |
+| `tenant_id` | uuid | FK -> tenants |
+| `link_type` | varchar(30) | informational / related |
+| `created_by_id` | uuid | FK -> users |
+| `created_at` | timestamptz | |
+| `is_active` | boolean | |
+
+**Unique:** `(source_project_id, target_project_id, link_type)` where `is_active = true`
+
+**Rule:** Created only after a project-link invitation is accepted. Advanced project-linking/dependency management is Phase 2.
 
 ---
 
@@ -201,7 +230,7 @@ If the requester manages both the project and workspace, the row can become `act
 | `user_id` | uuid | FK -> users |
 | `employee_id` | uuid | FK -> employees; required for tenant employees |
 | `role` | varchar(20) | admin / member / viewer |
-| `membership_source` | varchar(20) | `manual`, `project_invite`, `team_suggestion`, `system` |
+| `membership_source` | varchar(20) | `project_invite`, `system` |
 | `is_active` | boolean | false when employee is offboarded or removed |
 | `joined_at` | timestamptz | |
 | `removed_at` | timestamptz | nullable |
@@ -209,13 +238,9 @@ If the requester manages both the project and workspace, the row can become `act
 **Unique:** `(project_id, user_id)`
 **Indexes:** `(project_id, employee_id)`, `(employee_id, is_active)`
 
-**Rule:** Project membership is the source of truth for project visibility and access. Offboarding deactivates project membership through `EmployeeOffboarded` handling.
+**Rule:** Project membership is the source of truth for project visibility and access. Except for the creator/system bootstrap, Phase 1 project membership is created after a `project_member_invitations` row is accepted. Offboarding deactivates project membership through `EmployeeOffboarded` handling.
 
-Project membership is the correct place to add project managers, tech leads, reviewers, or observers who are not members of the synced explicit team. Use `viewer` for read-only project visibility. Project `admin` is scoped to that project and does not imply tenant-level Project Admin, HR Admin, or System Admin authority.
-
-Adding a project member does not grant access to every workspace linked to the project. If the UI needs workspace-shell navigation for a direct project invite, create only the minimum workspace shell access for the relevant linked workspace and keep project data authorization tied to `project_members`.
-
-Project visibility and dashboards must be filtered by viewer context: full project administration, legal entity, workspace, reporting-manager contribution, project member, or viewer/stakeholder.
+Project visibility and dashboards must be filtered by viewer context: project admin, accepted project member, scoped tenant/project permission, or viewer/stakeholder.
 
 ---
 

@@ -1,8 +1,8 @@
-# WorkPulse Agent — Start Here
+﻿# WorkPulse Agent - Start Here
 
 ## What Is the WorkPulse Agent?
 
-The **WorkPulse Agent** is the ONEVO activity monitoring package deployed to employee devices. It is distributed as an **MSIX package** (Windows Phase 1) and runs silently in the system tray, capturing OS-level activity data independently of which application the employee is using. This makes it the only layer capable of covering every employee type in the organisation — developers, HR managers, finance, sales, and operations.
+The **WorkPulse Agent** is the ONEVO activity monitoring package deployed to employee devices. It is distributed as an **MSIX package** (Windows Phase 1) and runs silently in the system tray, capturing OS-level activity data independently of which application the employee is using. This makes it the only layer capable of covering every employee type in the organisation - developers, HR managers, finance, sales, and operations.
 
 **Phase 1: Windows only.** Phase 2 adds macOS support. See the [macOS Phase 2](#macos-phase-2) section at the bottom of this doc.
 
@@ -21,44 +21,44 @@ The Service and TrayApp are separate processes that communicate via **Named Pipe
 ## Data Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        DESKTOP MACHINE                          │
-│                                                                 │
-│  ┌──────────────────────┐    Named Pipes    ┌────────────────┐  │
-│  │  ONEVO.Agent.Service │◄────────────────►│ MAUI Tray App  │  │
-│  │                      │   (IPC messages)  │                │  │
-│  │  ┌────────────────┐  │                   │  - Login UI    │  │
-│  │  │  Collectors    │  │                   │  - Status      │  │
-│  │  │  - Activity    │  │                   │  - Photo       │  │
-│  │  │  - App Tracker │  │                   │    Capture     │  │
-│  │  │  - Idle        │  │                   └────────────────┘  │
-│  │  │  - Meeting     │  │                                       │
-│  │  │  - Device      │  │                                       │
-│  │  └───────┬────────┘  │                                       │
-│  │          │            │                                       │
-│  │  ┌───────▼────────┐  │                                       │
-│  │  │ SQLite Buffer  │  │                                       │
-│  │  │ (offline-safe) │  │                                       │
-│  │  └───────┬────────┘  │                                       │
-│  │          │            │                                       │
-│  │  ┌───────▼────────┐  │                                       │
-│  │  │  Sync Service  │──┼──── HTTPS ────► Agent Gateway API     │
-│  │  │  + Heartbeat   │  │                 /api/v1/agent/*       │
-│  │  └────────────────┘  │                                       │
-│  └──────────────────────┘                                       │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                        DESKTOP MACHINE                          |
+|                                                                 |
+|  +----------------------+    Named Pipes    +----------------+  |
+|  |  ONEVO.Agent.Service |<---------------->| MAUI Tray App  |  |
+|  |                      |   (IPC messages)  |                |  |
+|  |  +----------------+  |                   |  - Login UI    |  |
+|  |  |  Collectors    |  |                   |  - Status      |  |
+|  |  |  - Activity    |  |                   |  - Photo       |  |
+|  |  |  - App Tracker |  |                   |    Capture     |  |
+|  |  |  - Idle        |  |                   +----------------+  |
+|  |  |  - Meeting     |  |                                       |
+|  |  |  - Device      |  |                                       |
+|  |  +-------+--------+  |                                       |
+|  |          |            |                                       |
+|  |  +-------v--------+  |                                       |
+|  |  | SQLite Buffer  |  |                                       |
+|  |  | (offline-safe) |  |                                       |
+|  |  +-------+--------+  |                                       |
+|  |          |            |                                       |
+|  |  +-------v--------+  |                                       |
+|  |  |  Sync Service  |--+---- HTTPS ----> Agent Gateway API     |
+|  |  |  + Heartbeat   |  |                 /api/v1/agent/*       |
+|  |  +----------------+  |                                       |
+|  +----------------------+                                       |
++-----------------------------------------------------------------+
 ```
 
 ### Step-by-Step Flow
 
-1. **Install** — MSIX package installs the Service + TrayApp silently (MDM/GPO or HRMS onboarding gate). Service registers with the server via `POST /api/v1/agent/register`, receives a device JWT. See [[modules/agent-gateway/agent-installer|Agent Installer]].
-2. **Employee Login** — Employee opens tray app, enters email + password. TrayApp sends `employee_login` IPC message to Service. Service calls `POST /api/v1/agent/login`, receives monitoring policy. See [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]].
-3. **Collectors Start** — Based on the received policy, the Service starts the enabled collectors (activity, app tracking, idle, meeting, device, document, communication). See [[modules/agent-gateway/data-collection|Data Collection]].
-4. **Buffer Locally** — Collected data is written to the local SQLite buffer immediately. See [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]].
-5. **Sync to Server** — Every `snapshot_interval_seconds` (default 150s), the Sync Service reads unsent rows from the buffer, batches them, and sends via `POST /api/v1/agent/ingest`. Server returns 202 Accepted.
-6. **Heartbeat** — Every 60 seconds, the Service sends a heartbeat to `POST /api/v1/agent/heartbeat` with CPU usage, memory, buffer count, and any errors.
-7. **Identity Verification** — When the policy triggers a verification (login, interval, or logout), the Service sends `capture_photo` via IPC to the TrayApp. See [[modules/identity-verification/photo-capture|Photo Capture]].
-8. **Employee Logout** — Employee clicks logout in TrayApp. Service calls `POST /api/v1/agent/logout`. Collectors stop. Service continues heartbeating.
+1. **Install** - MSIX package installs the Service + TrayApp silently (MDM/GPO or HRMS onboarding gate). Service registers with the server via `POST /api/v1/agent/register`, receives a device JWT. See [[modules/agent-gateway/agent-installer|Agent Installer]].
+2. **Employee Login** - Employee opens tray app, enters email + password. TrayApp sends `employee_login` IPC message to Service. Service calls `POST /api/v1/agent/login`, receives monitoring policy. See [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]].
+3. **Collectors Start** - Based on the received policy, the Service starts the enabled collectors (activity, app tracking, idle, meeting, device, document, communication). See [[modules/agent-gateway/data-collection|Data Collection]].
+4. **Buffer Locally** - Collected data is written to the local SQLite buffer immediately. See [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]].
+5. **Sync to Server** - Every `snapshot_interval_seconds` (default 150s), the Sync Service reads unsent rows from the buffer, batches them, and sends via `POST /api/v1/agent/ingest`. Server returns 202 Accepted.
+6. **Heartbeat** - Every 60 seconds, the Service sends a heartbeat to `POST /api/v1/agent/heartbeat` with CPU usage, memory, buffer count, and any errors.
+7. **Identity Verification** - When policy or an authorized reviewer requires a camera photo (`on_demand`, `clock_in`, `clock_out`, or `absence_detected`), the Service sends `capture_photo` via IPC to the TrayApp. See [[modules/identity-verification/photo-capture|Photo Capture]].
+8. **Employee Logout** - Employee clicks logout in TrayApp. Service calls `POST /api/v1/agent/logout`. Collectors stop. Service continues heartbeating.
 
 ---
 
@@ -80,8 +80,8 @@ Read these docs in this order to understand the full agent system:
 | 10 | [[modules/agent-gateway/mock-mode\|Mock Mode]] | Development without a backend server |
 
 Also read:
-- [[AI_CONTEXT/rules|Rules]] (Section 10) — Privacy rules, performance budgets, coding standards
-- [[AI_CONTEXT/tech-stack|Tech Stack]] (Section 4) — NuGet packages, Win32 APIs, project structure
+- [[AI_CONTEXT/rules|Rules]] (Section 10) - Privacy rules, performance budgets, coding standards
+- [[AI_CONTEXT/tech-stack|Tech Stack]] (Section 4) - NuGet packages, Win32 APIs, project structure
 
 ---
 
@@ -89,52 +89,52 @@ Also read:
 
 ```
 ONEVO.Agent/
-├── ONEVO.Agent.Service/           # Windows Service (background collector)
-│   ├── Collectors/
-│   │   ├── ActivityCollector.cs    # Keyboard/mouse event counting
-│   │   ├── AppTracker.cs          # Foreground app detection
-│   │   ├── IdleDetector.cs        # Idle period detection
-│   │   ├── MeetingDetector.cs     # Meeting app process detection
-│   │   ├── DeviceTracker.cs       # Device active/idle cycle tracking
-│   │   ├── DocumentTracker.cs     # Word/Excel/PowerPoint/Google Docs time tracking
-│   │   └── CommunicationTracker.cs # Outlook/Slack active time + send event counts
-│   ├── Buffer/
-│   │   ├── SqliteBuffer.cs        # Local SQLite storage
-│   │   └── BufferCleanup.cs       # Purge sent data
-│   ├── Sync/
-│   │   ├── DataSyncService.cs     # Batch & send to Agent Gateway
-│   │   ├── HeartbeatService.cs    # 60-second heartbeat
-│   │   └── PolicySyncService.cs   # Fetch monitoring policy
-│   ├── Security/
-│   │   ├── DeviceTokenStore.cs    # Secure Device JWT storage (DPAPI)
-│   │   └── TamperDetector.cs      # Detect service manipulation
-│   ├── IPC/
-│   │   └── NamedPipeServer.cs     # Listen for MAUI app commands
-│   └── Program.cs
-│
-├── ONEVO.Agent.TrayApp/           # MAUI tray app
-│   ├── Views/
-│   │   ├── LoginWindow.xaml
-│   │   ├── StatusPopup.xaml
-│   │   └── PhotoCaptureWindow.xaml
-│   ├── Services/
-│   │   ├── NamedPipeClient.cs
-│   │   ├── CameraService.cs
-│   │   └── TrayIconService.cs
-│   └── App.xaml.cs
-│
-├── ONEVO.Agent.Shared/            # Shared types between Service and TrayApp
-│   ├── Models/
-│   │   ├── ActivitySnapshot.cs
-│   │   ├── AppUsageRecord.cs
-│   │   ├── DeviceSession.cs
-│   │   └── AgentPolicy.cs
-│   ├── IPC/
-│   │   └── IpcMessages.cs
-│   └── Constants.cs
-│
-└── ONEVO.Agent.Installer/         # MSIX packaging
-    └── Package.appxmanifest
++-- ONEVO.Agent.Service/           # Windows Service (background collector)
+|   +-- Collectors/
+|   |   +-- ActivityCollector.cs    # Keyboard/mouse event counting
+|   |   +-- AppTracker.cs          # Foreground app detection
+|   |   +-- IdleDetector.cs        # Idle period detection
+|   |   +-- MeetingDetector.cs     # Meeting app process detection
+|   |   +-- DeviceTracker.cs       # Device active/idle cycle tracking
+|   |   +-- DocumentTracker.cs     # Word/Excel/PowerPoint/Google Docs time tracking
+|   |   +-- CommunicationTracker.cs # Outlook/Slack active time + send event counts
+|   +-- Buffer/
+|   |   +-- SqliteBuffer.cs        # Local SQLite storage
+|   |   +-- BufferCleanup.cs       # Purge sent data
+|   +-- Sync/
+|   |   +-- DataSyncService.cs     # Batch & send to Agent Gateway
+|   |   +-- HeartbeatService.cs    # 60-second heartbeat
+|   |   +-- PolicySyncService.cs   # Fetch monitoring policy
+|   +-- Security/
+|   |   +-- DeviceTokenStore.cs    # Secure Device JWT storage (DPAPI)
+|   |   +-- TamperDetector.cs      # Detect service manipulation
+|   +-- IPC/
+|   |   +-- NamedPipeServer.cs     # Listen for MAUI app commands
+|   +-- Program.cs
+|
++-- ONEVO.Agent.TrayApp/           # MAUI tray app
+|   +-- Views/
+|   |   +-- LoginWindow.xaml
+|   |   +-- StatusPopup.xaml
+|   |   +-- PhotoCaptureWindow.xaml
+|   +-- Services/
+|   |   +-- NamedPipeClient.cs
+|   |   +-- CameraService.cs
+|   |   +-- TrayIconService.cs
+|   +-- App.xaml.cs
+|
++-- ONEVO.Agent.Shared/            # Shared types between Service and TrayApp
+|   +-- Models/
+|   |   +-- ActivitySnapshot.cs
+|   |   +-- AppUsageRecord.cs
+|   |   +-- DeviceSession.cs
+|   |   +-- AgentPolicy.cs
+|   +-- IPC/
+|   |   +-- IpcMessages.cs
+|   +-- Constants.cs
+|
++-- ONEVO.Agent.Installer/         # MSIX packaging
+    +-- Package.appxmanifest
 ```
 
 Full structure also documented in [[AI_CONTEXT/tech-stack|Tech Stack]] Section 4.
@@ -147,10 +147,10 @@ Full structure also documented in [[AI_CONTEXT/tech-stack|Tech Stack]] Section 4
 |:--------|:--------|
 | `Microsoft.Extensions.Hosting.WindowsServices` | Windows Service hosting (`Host.CreateDefaultBuilder().UseWindowsService()`) |
 | `Microsoft.Data.Sqlite` | SQLite local buffer for offline resilience |
-| `Polly` | HTTP resilience — retry, circuit breaker, timeout |
+| `Polly` | HTTP resilience - retry, circuit breaker, timeout |
 | `System.Text.Json` | JSON serialization for API payloads and IPC messages |
 | `Serilog` + `Serilog.Sinks.File` | Local logging (rolling file, max 7 days) |
-| `CommunityToolkit.Maui` | MAUI helpers — tray icon, notifications |
+| `CommunityToolkit.Maui` | MAUI helpers - tray icon, notifications |
 
 ---
 
@@ -213,7 +213,7 @@ From [[AI_CONTEXT/rules|Rules]] Section 10:
 | Memory | < 50MB working set |
 | Network | < 10KB per sync (compressed JSON) |
 | SQLite buffer | Max 100MB |
-| UI thread | Never blocked — all I/O on background threads |
+| UI thread | Never blocked - all I/O on background threads |
 
 ---
 
@@ -234,37 +234,37 @@ macOS support is **Phase 2**. The Win32 APIs used in Phase 1 (`GetForegroundWind
 | Secure storage | DPAPI (`ProtectedData`) | Keychain (`SecKeychainItem`) |
 | Installer | MSIX bundle | `.pkg` installer (signed with Apple Developer ID) |
 
-**macOS permission requirements:** Accessibility permission must be granted manually by the employee via System Settings → Privacy & Security → Accessibility. This is an Apple-enforced requirement that cannot be bypassed or automated — even via MDM. MDM can install the app silently but the employee must grant this permission on first launch.
+**macOS permission requirements:** Accessibility permission must be granted manually by the employee via System Settings -> Privacy & Security -> Accessibility. This is an Apple-enforced requirement that cannot be bypassed or automated - even via MDM. MDM can install the app silently but the employee must grant this permission on first launch.
 
 **Phase 2 project structure addition:**
 ```
 ONEVO.Agent.macOS/           # macOS daemon (parallel to ONEVO.Agent.Service)
-├── Collectors/
-│   ├── ActivityCollector.cs  # CGEventTap keyboard/mouse counts
-│   ├── AppTracker.cs         # NSWorkspace frontmost app detection
-│   ├── IdleDetector.cs       # IOHIDGetParameter idle time
-│   ├── MeetingDetector.cs    # NSRunningApplication process matching
-│   ├── DocumentTracker.cs    # Process name matching (same logic as Windows)
-│   └── CommunicationTracker.cs
-├── TrayApp/                  # NSStatusBar menu bar icon (AppKit)
-└── Installer/                # .pkg packaging
++-- Collectors/
+|   +-- ActivityCollector.cs  # CGEventTap keyboard/mouse counts
+|   +-- AppTracker.cs         # NSWorkspace frontmost app detection
+|   +-- IdleDetector.cs       # IOHIDGetParameter idle time
+|   +-- MeetingDetector.cs    # NSRunningApplication process matching
+|   +-- DocumentTracker.cs    # Process name matching (same logic as Windows)
+|   +-- CommunicationTracker.cs
++-- TrayApp/                  # NSStatusBar menu bar icon (AppKit)
++-- Installer/                # .pkg packaging
 ```
 
 ---
 
 ## Related
 
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Full API contract (6 endpoints)
-- [[modules/agent-gateway/data-collection|Data Collection]] — 7 collectors with code samples
-- [[modules/agent-gateway/browser-extension|Browser Extension]] — Chrome/Edge/Firefox extension for domain tracking
-- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Detection and reporting
-- [[modules/identity-verification/photo-capture|Photo Capture]] — Camera and identity verification flow
-- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — Named Pipes IPC between Service and TrayApp
-- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] — Local SQLite buffer schema and operations
-- [[modules/agent-gateway/agent-installer|Agent Installer]] — MSIX packaging and deployment
-- [[modules/agent-gateway/mock-mode|Mock Mode]] — Development without a backend
-- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — MAUI tray app UI
-- [[AI_CONTEXT/tech-stack|Tech Stack]] — Full technology stack (Section 4: WorkPulse Agent)
-- [[AI_CONTEXT/rules|Rules]] — WorkPulse Agent rules (Section 11)
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task
-- [[modules/agent-gateway/overview|Agent Gateway Module]] — Server-side module
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] - Full API contract (6 endpoints)
+- [[modules/agent-gateway/data-collection|Data Collection]] - 7 collectors with code samples
+- [[modules/agent-gateway/browser-extension|Browser Extension]] - Chrome/Edge/Firefox extension for domain tracking
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] - Detection and reporting
+- [[modules/identity-verification/photo-capture|Photo Capture]] - Camera and identity verification flow
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] - Named Pipes IPC between Service and TrayApp
+- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] - Local SQLite buffer schema and operations
+- [[modules/agent-gateway/agent-installer|Agent Installer]] - MSIX packaging and deployment
+- [[modules/agent-gateway/mock-mode|Mock Mode]] - Development without a backend
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] - MAUI tray app UI
+- [[AI_CONTEXT/tech-stack|Tech Stack]] - Full technology stack (Section 4: WorkPulse Agent)
+- [[AI_CONTEXT/rules|Rules]] - WorkPulse Agent rules (Section 11)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] - Implementation task
+- [[modules/agent-gateway/overview|Agent Gateway Module]] - Server-side module

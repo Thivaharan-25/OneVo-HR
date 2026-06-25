@@ -1,4 +1,4 @@
-# WorkSync Foundation — Testing
+﻿# Work Foundation - Testing
 
 **Module:** WorkSync
 **Feature:** Foundation
@@ -57,7 +57,6 @@ public class WorkspaceServiceTests
     {
         SetupTeamsIntegrationEnabled();
         SetupWorkspaceMembersWithMissingTeamsLinks();
-        var command = _validCommand with { TeamsSync = new TeamsSyncOptions { CreateTeam = true } };
         var result = await _sut.CreateAsync(command, default);
         result.IsSuccess.Should().BeFalse();
         result.Error!.Code.Should().Be("TEAMS_MEMBERS_NOT_LINKED");
@@ -82,7 +81,6 @@ public class WorkspaceEndpointTests : IClassFixture<ONEVOWebFactory>
     [Fact]
     public async Task CreateWorkspace_ThenAddMember_MemberCanListWorkspace()
     {
-        var ws = await CreateWorkspaceAsync("Dev Team");
         await InviteMemberAsync(ws.Id, _otherUserId, "Member");
         var workspaces = await GetWorkspacesAsUserAsync(_otherUserId);
         workspaces.Should().Contain(w => w.Id == ws.Id);
@@ -101,7 +99,6 @@ public class WorkspaceEndpointTests : IClassFixture<ONEVOWebFactory>
     {
         SetupAllMembersLinkedToTeams();
         SetupGraphTeamCreateSuccess();
-        var ws = await CreateWorkspaceAsync("Dev Team", teamsCreate: true);
         await AssertWorkspaceTeamsLinkExists(ws.Id);
     }
 }
@@ -118,9 +115,6 @@ public class WorkspaceEndpointTests : IClassFixture<ONEVOWebFactory>
 | Member added can access workspace | Integration | 200 on workspace resources |
 | Non-member blocked | Integration | 403 |
 | Teams checkbox selected with missing linked members | Unit | TEAMS_MEMBERS_NOT_LINKED |
-| Link existing Team when workspace already linked | Unit | Conflict |
-| Create workspace with Teams checkbox | Integration | Workspace + Teams link created |
-| Existing Teams group candidate matching | Unit | Match score and member diff returned |
 
 ## Related
 

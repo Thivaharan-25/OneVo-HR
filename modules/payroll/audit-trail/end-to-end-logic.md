@@ -1,4 +1,4 @@
-# Payroll Audit Trail — End-to-End Logic
+﻿# Payroll Audit Trail - End-to-End Logic
 
 **Module:** Payroll
 **Feature:** Audit Trail

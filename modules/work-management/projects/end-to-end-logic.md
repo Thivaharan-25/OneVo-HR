@@ -13,18 +13,18 @@ POST /api/v1/projects
   -> CreateProjectHandler
     -> 1. Validate caller can create projects in the tenant/module boundary
     -> 2. Resolve owning_legal_entity_id from active legal entity context
-    -> 3. Validate name and tenant-unique identifier
+    -> 3. Resolve workspace_id from selected workspace context and verify caller has workspace/project creation authority
+    -> 4. Validate name and tenant-unique identifier
          identifier: 2-6 uppercase letters, e.g. "TASK", "BUG"
-    -> 4. Create Project entity with status = active
-    -> 5. Add creator as project_members with project-local administration access
-    -> 6. Link any selected managed workspaces through project_workspaces
-       or create pending participation requests for unmanaged workspaces
-    -> 7. Publish ProjectCreatedEvent
+    -> 5. Create Project entity with status = active and the resolved workspace_id
+    -> 6. Add creator as project_members with project-local administration access
+    -> 7. Do not create workspace participation links in Phase 1
+    -> 8. Publish ProjectCreatedEvent
     -> Return Result<ProjectDto>
   -> 201 Created
 ```
 
-Project creation does not make the project belong to exactly one workspace. A project can be linked to zero, one, or many workspaces through `project_workspaces`.
+Project creation is simple in Phase 1: one project, one workspace, active legal entity context, creator as project admin, and accepted direct project membership. Workspace participation links and workspace source pools are Phase 2 references.
 
 ## Archive Project
 
@@ -33,24 +33,31 @@ PATCH /api/v1/projects/{id}/archive
   -> [RequirePermission("projects:write") + project-local administration access]
   -> ArchiveProjectHandler
     -> 1. Verify project status != archived
-    -> 2. Check active sprint: if sprint status = active -> return 422
-         "Complete active sprint before archiving project"
-    -> 3. UPDATE projects.status = archived
-    -> 4. Publish ProjectArchivedEvent
-         -> Close open sprints, notify project members
+    -> 2. UPDATE projects.status = archived
+    -> 3. Publish ProjectArchivedEvent
+         -> Notify project members and block new Phase 1 work item creation
     -> Return Result<ProjectDto>
 ```
 
-## Manage Project Members
+## Invite And Manage Project Members
 
 ```text
-POST /api/v1/projects/{id}/members
+POST /api/v1/projects/{id}/member-invitations
   -> [RequirePermission("projects:write") + project-local administration access]
-  -> AddProjectMemberHandler
+  -> InviteProjectMemberHandler
     -> 1. Verify employee is active, non-deleted, and belongs to tenant
-    -> 2. Verify user is not already an active project member
-    -> 3. INSERT project_members with role = member by default
-    -> Return 201
+    -> 2. Verify user is not already an active project member or pending invite recipient
+    -> 3. INSERT project_member_invitations with role = member by default
+    -> 4. Notify selected member through Inbox
+    -> Return 202
+
+POST /api/v1/projects/{id}/member-invitations/{inviteId}/decision
+  -> [Authenticated selected recipient]
+  -> DecideProjectMemberInvitationHandler
+    -> 1. Verify invitation is pending and addressed to current user/employee
+    -> 2. If declined, mark invitation declined and stop
+    -> 3. If accepted, INSERT project_members with invited role
+    -> Return 204
 
 DELETE /api/v1/projects/{id}/members/{userId}
   -> [RequirePermission("projects:write") + project-local administration access]
@@ -60,47 +67,42 @@ DELETE /api/v1/projects/{id}/members/{userId}
     -> Return 204
 ```
 
-Project membership is the source of truth for project visibility. A user does not need full workspace membership to be added to a project.
+Project membership is the source of truth for project visibility. A user does not need full workspace membership to be invited to a project, but the selected member must accept before project access becomes active.
 
-## Link Project Workspaces
+## Link Projects - Phase 1 Simple Invite
+
+This flow creates an informational/simple project-link record after both project admins agree. It is not an advanced dependency or cross-workspace source-pool platform.
+
+```text
+POST /api/v1/projects/{id}/link-invitations
+  body: { target_project_id, link_type? }
+  -> [RequirePermission("projects:write") + project-local administration access]
+  -> InviteProjectLinkHandler
+    -> 1. Verify target project belongs to same tenant or allowed connected-company scope where supported
+    -> 2. Resolve target project admin recipient
+    -> 3. INSERT project_link_invitations with status = pending
+    -> 4. Notify target project admin through Inbox
+    -> Return 202
+
+POST /api/v1/projects/{id}/link-invitations/{inviteId}/decision
+  -> [Authenticated target project admin]
+  -> DecideProjectLinkInvitationHandler
+    -> 1. Verify invite is pending and addressed to the target project admin
+    -> 2. If declined, mark invitation declined and stop
+    -> 3. If accepted, INSERT project_links
+    -> Return 204
+```
+
+## Link Project Workspaces - Phase 2 Reference
+
+This flow is not active Phase 1 behavior. Phase 1 project visibility is controlled by accepted direct `project_members` rows and scoped project permissions.
 
 ```text
 POST /api/v1/projects/{id}/workspaces
-  body: { workspace_id }
-  -> [RequirePermission("projects:write") + project-local administration access]
-  -> LinkProjectWorkspaceHandler
-    -> 1. Verify workspace belongs to same tenant
-    -> 2. Verify link is not already active
-    -> 3. If caller manages the workspace, INSERT active project_workspaces
-    -> 4. If caller does not manage the workspace, INSERT pending project_workspaces
-       and send participation request to the target workspace/legal-entity approver
-    -> 5. Do not add workspace members to project_members automatically
-    -> Return 201
-
-DELETE /api/v1/projects/{id}/workspaces/{workspaceId}
-  -> [RequirePermission("projects:write") + project-local administration access]
-  -> UnlinkProjectWorkspaceHandler
-    -> 1. Deactivate project_workspaces row
-    -> 2. Preserve project_members unless explicitly removed
-    -> Return 204
+  -> Phase 2 only
 ```
 
-`project_workspaces` is context only. It supports team/workspace grouping, reporting, and member suggestions, but it does not expose the project to every member of the linked workspace.
-
-## Approve Workspace Participation
-
-```text
-POST /api/v1/projects/{id}/workspaces/{workspaceId}/approve
-  -> [RequirePermission("workspaces:manage") or configured legal-entity/workspace approval resolver]
-  -> ApproveProjectWorkspaceHandler
-    -> 1. Verify pending project_workspaces row
-    -> 2. Verify caller can approve participation for the target workspace/legal entity
-    -> 3. Set status = active, approved_by_id, approved_at
-    -> 4. Notify project authority holders
-    -> Return 204
-```
-
-Approval grants project/workspace collaboration only. It must not grant reporting authority over employees in the target workspace or legal entity.
+Workspace participation approvals, linked workspace source pools, and owner-to-owner project participation governance are Phase 2 reference behavior.
 
 ## Change Project Local Access
 
@@ -120,10 +122,11 @@ PATCH /api/v1/projects/{id}/members/{userId}/role
 | Scenario | HTTP | Error |
 |:---------|:-----|:------|
 | Identifier not unique | 409 | Project identifier already in use |
-| Archive with active sprint | 422 | Complete active sprint first |
+| Archive project | 200 | Project archived; new Phase 1 work item creation is blocked |
 | Add inactive employee | 422 | Employee is not active |
 | Remove or demote last project-local administrator | 422 | Project requires at least one active local administrator |
-| Link workspace from another tenant | 403 | Workspace is outside tenant scope |
+| Missing workspace context | 422 | Select a workspace before creating the project |
+| Workspace linking attempted | 403 | Phase 2 workspace linking is not active in Phase 1 |
 
 ## Related
 

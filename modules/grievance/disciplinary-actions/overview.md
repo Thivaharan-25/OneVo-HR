@@ -1,4 +1,7 @@
-# Disciplinary Actions
+﻿# Disciplinary Actions
+
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Grievance is deferred; not active in Phase 1.
 
 **Module:** Grievance  
 **Feature:** Disciplinary Actions
@@ -23,10 +26,10 @@ Fields: `employee_id`, `grievance_id` (nullable), `action_type` (`verbal_warning
 
 ## Related
 
-- [[modules/grievance/overview|Grievance Module]] — parent module
-- [[modules/grievance/grievance-cases/overview|Grievance Cases]] — cases that may trigger disciplinary actions
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped disciplinary records
-- [[security/auth-architecture|Auth Architecture]] — permission: `grievance:manage`
-- [[security/data-classification|Data Classification]] — sensitivity of disciplinary records
-- [[security/compliance|Compliance]] — regulatory requirements for disciplinary procedures
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task
+- [[modules/grievance/overview|Grievance Module]] - parent module
+- [[modules/grievance/grievance-cases/overview|Grievance Cases]] - cases that may trigger disciplinary actions
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - tenant-scoped disciplinary records
+- [[security/auth-architecture|Auth Architecture]] - permission: `grievance:manage`
+- [[security/data-classification|Data Classification]] - sensitivity of disciplinary records
+- [[security/compliance|Compliance]] - regulatory requirements for disciplinary procedures
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - implementation task

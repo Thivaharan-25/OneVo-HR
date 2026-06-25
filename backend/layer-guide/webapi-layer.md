@@ -1,4 +1,4 @@
-# WebApi Layer Guide
+﻿# WebApi Layer Guide
 
 One active host project. `ONEVO.Api` is the composition root for both customer APIs and Developer Console admin APIs; no business logic lives in host code.
 
@@ -18,12 +18,12 @@ public class LeaveController : ControllerBase
     public LeaveController(ISender mediator) => _mediator = mediator;
 
     [HttpPost]
-    [RequirePermission("leave:create")]
+    [RequirePermission("time_off:create")]
     public async Task<IActionResult> Create(
-        [FromBody] CreateLeaveRequestDto dto, CancellationToken ct)
+        [FromBody] CreateTimeOffRequestDto dto, CancellationToken ct)
     {
         var result = await _mediator.Send(
-            new CreateLeaveRequestCommand(dto.EmployeeId, dto.LeaveTypeId,
+            new CreateTimeOffRequestCommand(dto.EmployeeId, dto.TimeOffTypeId,
                 dto.StartDate, dto.EndDate), ct);
 
         return result.IsSuccess
@@ -50,7 +50,7 @@ app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseMiddleware<PermissionMiddleware>();
 app.UseAuthorization();
-app.UseMiddleware<ExceptionHandlerMiddleware>(); // RFC 7807 — last
+app.UseMiddleware<ExceptionHandlerMiddleware>(); // RFC 7807 - last
 app.MapControllers();
 app.MapHubs(); // SignalR
 ```
@@ -70,6 +70,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 **Base URL:** `/admin/v1/`
 **JWT issuer expected:** `onevo-platform-admin`
 **Controller location:** `ONEVO.Api/Controllers/Admin/`
-**Same DI pattern** — uses the same `AddApplication()` + `AddInfrastructure(config)` registrations as `/api/v1/*`
+**Same DI pattern** - uses the same `AddApplication()` + `AddInfrastructure(config)` registrations as `/api/v1/*`
 
 DevPlatform entities have no `TenantId`. Admin controllers are protected with `[Authorize(Policy = "PlatformAdmin")]`, backed by the `AdminBearer` platform-admin JWT scheme.

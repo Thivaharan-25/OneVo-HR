@@ -1,4 +1,4 @@
-# Meeting Detection — Testing
+﻿# Meeting Detection - Testing
 
 **Module:** Activity Monitoring
 **Feature:** Meeting Detection
@@ -22,7 +22,6 @@ public class MeetingDetectionServiceTests
         await _sut.ProcessSnapshotForMeetingsAsync(snapshot, default);
 
         _repoMock.Verify(r => r.InsertAsync(
-            It.Is<MeetingSession>(m => m.Platform == "teams"), default), Times.Once);
     }
 
     [Fact]
@@ -38,8 +37,6 @@ public class MeetingDetectionServiceTests
     [Fact]
     public async Task DetectMeeting_ExistingSession_UpdatesEndTime()
     {
-        var existingSession = new MeetingSession { Platform = "teams", MeetingEnd = null };
-        _repoMock.Setup(r => r.GetOpenSessionAsync(It.IsAny<Guid>(), "teams", default))
             .ReturnsAsync(existingSession);
         var snapshot = new ActivitySnapshot { ForegroundApp = "Microsoft Teams", CapturedAt = DateTime.UtcNow };
 
@@ -63,7 +60,7 @@ public class MeetingDetectionServiceTests
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
-- [[modules/activity-monitoring/meeting-detection/end-to-end-logic|Meeting Detection — End-to-End Logic]]
+- [[modules/activity-monitoring/meeting-detection/end-to-end-logic|Meeting Detection - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

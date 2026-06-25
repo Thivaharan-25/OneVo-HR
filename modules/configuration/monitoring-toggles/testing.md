@@ -1,4 +1,4 @@
-# Monitoring Toggles — Testing
+﻿# Monitoring Toggles - Testing
 
 **Module:** Configuration
 **Feature:** Monitoring Toggles

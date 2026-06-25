@@ -1,4 +1,4 @@
-# Employee Lifecycle — Testing
+﻿# Employee Lifecycle - Testing
 
 **Module:** Core HR
 **Feature:** Employee Lifecycle

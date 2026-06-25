@@ -1,4 +1,4 @@
-# Data Export
+﻿# Data Export
 
 **Area:** Analytics & Reporting  
 **Trigger:** User exports data to CSV or Excel (user action)
@@ -19,38 +19,38 @@
 - **UI:** Any analytics/reporting page with data displayed
 
 ### Step 2: Click Export
-- **UI:** Click "Export" button → select format: CSV, Excel (.xlsx), PDF
+- **UI:** Click "Export" button -> select format: CSV, Excel (.xlsx), PDF
 - **API:** `POST /api/v1/analytics/export`
 
 ### Step 3: Configure Export
-- **UI:** Select columns to include → apply current page filters → select date range → optionally anonymize employee names (for compliance)
+- **UI:** Select columns to include -> apply current page filters -> select date range -> optionally anonymize employee names (for compliance)
 - **Cross-company:** Only source tenants and fields included in the user's grant scope can be exported. Sensitive fields require separate data-category grants.
 
 ### Step 4: Download
-- **UI:** File generated → download starts → for large exports: "Processing — you'll be notified when ready"
-- **Backend:** Large exports processed async via Hangfire → notification when complete
+- **UI:** File generated -> download starts -> for large exports: "Processing - you'll be notified when ready"
+- **Backend:** Large exports processed async via Hangfire -> notification when complete
 
 ## Variations
 
 ### Anonymized export
-- With compliance requirement → employee names replaced with IDs → useful for external audits
+- With compliance requirement -> employee names replaced with IDs -> useful for external audits
 
 ## Error Scenarios
 
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
-| Export too large | Async processing | "Export queued — we'll notify you when ready" |
+| Export too large | Async processing | "Export queued - we'll notify you when ready" |
 | No data | Empty file | "No data to export with current filters" |
 
 ## Events Triggered
 
-- `DataExported` → audit trail, including requester tenant and every source tenant for cross-company exports
+- `DataExported` -> audit trail, including requester tenant and every source tenant for cross-company exports
 
 ## Related Flows
 
 - [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]]
 - [[Userflow/Analytics-Reporting/report-creation|Report Creation]]
-- [[Userflow/Analytics-Reporting/workforce-snapshot|Workforce Snapshot]]
+- [[Userflow/Analytics-Reporting/monitoring-snapshot|Monitoring Snapshot]]
 
 ## Module References
 

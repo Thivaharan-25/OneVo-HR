@@ -1,4 +1,4 @@
-# Device Tracking
+﻿# Device Tracking
 
 **Module:** Activity Monitoring
 **Feature:** Device Tracking
@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Tracks device interaction per employee per day — laptop active minutes vs estimated mobile minutes.
+Tracks device interaction per employee per day - laptop active minutes vs estimated mobile minutes.
 
 ## Database Tables
 
@@ -16,8 +16,8 @@ Tracks device interaction per employee per day — laptop active minutes vs esti
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `date` | `date` | |
 | `laptop_active_minutes` | `int` | |
 | `estimated_mobile_minutes` | `int` | Estimated from gap analysis |
@@ -27,8 +27,8 @@ Tracks device interaction per employee per day — laptop active minutes vs esti
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
-- [[modules/activity-monitoring/device-tracking/end-to-end-logic|Device Tracking — End-to-End Logic]]
-- [[modules/activity-monitoring/device-tracking/testing|Device Tracking — Testing]]
+- [[modules/activity-monitoring/device-tracking/end-to-end-logic|Device Tracking - End-to-End Logic]]
+- [[modules/activity-monitoring/device-tracking/testing|Device Tracking - Testing]]
 - [[frontend/architecture/overview|Raw Data Processing]]
 - [[frontend/architecture/overview|Daily Aggregation]]
 - [[security/data-classification|Data Classification]]

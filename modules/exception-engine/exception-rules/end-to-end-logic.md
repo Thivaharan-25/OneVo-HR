@@ -1,4 +1,4 @@
-# Exception Rules — End-to-End Logic
+﻿# Exception Rules - End-to-End Logic
 
 **Module:** Exception Engine
 **Feature:** Exception Rules
@@ -20,7 +20,6 @@ POST /api/v1/exceptions/rules
       -> 3. Validate applies_to + applies_to_id:
          -> 'all': applies_to_id must be null
          -> 'department': validate department exists
-         -> 'team': validate team exists
          -> 'employee': validate employee exists
       -> 4. INSERT into exception_rules
       -> Return Result.Success(ruleDto)

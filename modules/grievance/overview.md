@@ -1,7 +1,7 @@
-# Module: Grievance
+﻿# Module: Grievance
 
 **Feature Folder:** `Application/Features/Grievance`
-**Phase:** 2 — Deferred
+**Phase:** 2 - Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 2 (Week 4)
 **Tables:** 2
@@ -22,7 +22,7 @@ Manages employee grievance cases and disciplinary actions. Supports anonymous re
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
-| **Depends on** | [[modules/shared-platform/overview\|Shared Platform]] | Workflow engine | Resolution approval |
+| **Depends on** | [[modules/notifications/overview\|Notifications]] | Notification delivery | Phase 2 resolution approval notifications; Workflow Engine is Phase 2 |
 
 ---
 
@@ -56,14 +56,14 @@ API endpoints:
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `filed_by_id` | `uuid` | FK → employees (nullable if anonymous) |
-| `against_id` | `uuid` | FK → employees (nullable) |
+| `filed_by_id` | `uuid` | FK -> employees (nullable if anonymous) |
+| `against_id` | `uuid` | FK -> employees (nullable) |
 | `category` | `varchar(30)` | `harassment`, `discrimination`, `safety`, `policy_violation`, `other` |
 | `description` | `text` | |
 | `severity` | `varchar(20)` | `low`, `medium`, `high`, `critical` |
 | `status` | `varchar(20)` | `filed`, `investigating`, `resolved`, `dismissed`, `escalated` |
 | `resolution` | `text` | |
-| `resolved_by_id` | `uuid` | FK → users |
+| `resolved_by_id` | `uuid` | FK -> users |
 | `resolved_at` | `timestamptz` | |
 | `is_anonymous` | `boolean` | |
 | `created_at` | `timestamptz` | |
@@ -74,32 +74,32 @@ API endpoints:
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `employee_id` | `uuid` | FK → employees |
-| `grievance_id` | `uuid` | FK → grievance_cases (nullable) |
+| `employee_id` | `uuid` | FK -> employees |
+| `grievance_id` | `uuid` | FK -> grievance_cases (nullable) |
 | `action_type` | `varchar(30)` | `verbal_warning`, `written_warning`, `suspension`, `termination` |
 | `description` | `text` | |
 | `effective_date` | `date` | |
-| `issued_by_id` | `uuid` | FK → users |
+| `issued_by_id` | `uuid` | FK -> users |
 | `acknowledged_at` | `timestamptz` | Employee acknowledgement |
 | `created_at` | `timestamptz` | |
 
 ---
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module - MediatR)
 
-> These events are published and consumed within this module only. They never leave the module.
+> These events are published and consumed within this module only. They never cross the module boundary.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module - MediatR INotification)
 
 ### Publishes
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `GrievanceFiled` | Employee files a grievance | [[modules/notifications/overview\|Notifications]] and Automation Center delivery router notify the configured grievance resolver |
+| `GrievanceFiled` | Employee files a grievance | [[modules/notifications/overview\|Notifications]]; Phase 2 Automation Center delivery router may notify the configured grievance resolver |
 | `DisciplinaryActionIssued` | Disciplinary action issued against employee | [[modules/notifications/overview\|Notifications]] (notify employee and manager) |
 | `GrievanceResolved` | Grievance case resolved or closed | [[modules/notifications/overview\|Notifications]] (notify filer) |
 
@@ -107,7 +107,7 @@ API endpoints:
 
 | Event | Source Module | Action Taken |
 |:------|:-------------|:-------------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
 ---
 
@@ -124,16 +124,16 @@ API endpoints:
 
 ## Features
 
-- [[modules/grievance/grievance-cases/overview|Grievance Cases]] — Grievance filing, investigation tracking, anonymous reporting
-- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] — Disciplinary actions linked optionally to grievance cases
+- [[modules/grievance/grievance-cases/overview|Grievance Cases]] - Grievance filing, investigation tracking, anonymous reporting
+- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] - Disciplinary actions linked optionally to grievance cases
 
 ---
 
 ## Related
 
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — All cases and actions are tenant-scoped
-- [[security/compliance|Compliance]] — Case resolution and disciplinary history form a legal audit trail
-- [[security/data-classification|Data Classification]] — Anonymous filings must not expose `filed_by_id`
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - All cases and actions are tenant-scoped
+- [[security/compliance|Compliance]] - Case resolution and disciplinary history form a legal audit trail
+- [[security/data-classification|Data Classification]] - Anonymous filings must not expose `filed_by_id`
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]]

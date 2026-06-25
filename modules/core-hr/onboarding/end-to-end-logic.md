@@ -1,4 +1,4 @@
-# Onboarding — End-to-End Logic
+﻿# Onboarding - End-to-End Logic
 
 **Module:** Core HR
 **Feature:** Onboarding
@@ -15,13 +15,13 @@ POST /api/v1/employees/{id}/onboarding
     -> [RequirePermission("employees:write")]
     -> OnboardingService.StartAsync(employeeId, ct)
       -> 1. Load employee via IEmployeeService
-      -> 2. Find matching onboarding_template:
-         -> Match by department_id first, fallback to global template
-      -> 3. Create onboarding_tasks from template:
+      -> 2. Find matching checklist_template where template_type = 'onboarding':
+         -> Match by department_id first, fallback to global onboarding template
+      -> 3. Create employee_checklist_tasks from template:
          -> For each task in template.tasks_json:
-            -> INSERT into onboarding_tasks
+            -> INSERT into employee_checklist_tasks with lifecycle_type = 'onboarding'
             -> Assign to appropriate person (HR, IT, manager)
-            -> Set due_date based on hire_date + offset_days
+            -> Set due_date from template due rule and hire_date
       -> 4. Publish EmployeeOnboardingStarted event
          -> Consumers: notifications (notify assignees)
       -> Return Result.Success(onboardingDto)
@@ -48,7 +48,7 @@ PUT /api/v1/onboarding/tasks/{taskId}/complete
 | Error | Handling |
 |:------|:---------|
 | No template for department | Use global template |
-| No global template | Return 400 "No onboarding template configured" |
+| No global onboarding template | Return 400 "No onboarding checklist template configured" |
 | Task already completed | Return 400 |
 | Not assigned to caller | Return 403 |
 

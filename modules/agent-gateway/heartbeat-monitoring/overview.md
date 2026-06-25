@@ -1,4 +1,4 @@
-# Heartbeat Monitoring
+﻿# Heartbeat Monitoring
 
 **Module:** Agent Gateway
 **Feature:** Heartbeat Monitoring
@@ -16,8 +16,8 @@ Agents send heartbeats every 60 seconds. If no heartbeat for 5+ minutes, fires `
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `agent_id` | `uuid` | FK → registered_agents |
-| `tenant_id` | `uuid` | FK → tenants |
+| `agent_id` | `uuid` | FK -> registered_agents |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `reported_at` | `timestamptz` | |
 | `cpu_usage` | `decimal(5,2)` | Agent process CPU% |
 | `memory_mb` | `int` | Agent process memory |
@@ -28,7 +28,7 @@ Agents send heartbeats every 60 seconds. If no heartbeat for 5+ minutes, fires `
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/exception-engine/overview\|Exception Engine]] (flag offline agent) |
+| `AgentHeartbeatLost` | No heartbeat for 5+ minutes | [[modules/notifications/overview\|Notifications]] (Phase 1 lightweight alert, recipient resolved by Monitoring Policy); Phase 2: [[modules/exception-engine/overview\|Exception Engine]] |
 
 ## Hangfire Jobs
 

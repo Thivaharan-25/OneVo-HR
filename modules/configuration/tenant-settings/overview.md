@@ -1,4 +1,4 @@
-# Tenant Settings
+﻿# Tenant Settings
 
 **Module:** Configuration  
 **Feature:** Tenant Settings
@@ -16,7 +16,7 @@ Core tenant configuration: timezone, date format, currency, work week days, work
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants, UNIQUE |
+| `tenant_id` | `uuid` | FK -> tenants, UNIQUE |
 | `timezone` | `varchar(50)` | Default timezone |
 | `date_format` | `varchar(20)` | |
 | `currency_code` | `varchar(3)` | |

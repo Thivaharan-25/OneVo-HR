@@ -1,4 +1,4 @@
-# Tax Configuration — Testing
+﻿# Tax Configuration - Testing
 
 **Module:** Payroll
 **Feature:** Tax Configuration

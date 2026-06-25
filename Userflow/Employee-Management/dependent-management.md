@@ -1,7 +1,7 @@
-# Dependent Management
+﻿# Dependent Management
 
 **Area:** Employee Management  
-**Trigger:** Employee adds or edits dependents (user action — self-service)
+**Trigger:** Employee adds or edits dependents (user action - self-service)
 **Required Permission(s):** `employees:read-own` (own dependents) or `employees:write` (admin)  
 **Related Permissions:** `payroll:read` (view dependent-related benefits)
 
@@ -15,17 +15,17 @@
 ## Flow Steps
 
 ### Step 1: Navigate to Dependents
-- **UI:** Employee Profile → Dependents & Contacts tab
+- **UI:** Employee Profile -> Dependents & Contacts tab
 - **API:** `GET /api/v1/employees/{id}/dependents`
 
 ### Step 2: Add Dependent
-- **UI:** Click "Add Dependent" → enter: name, relationship (spouse, child, parent), date of birth, gender, contact number → toggle "Emergency Contact" → save
+- **UI:** Click "Add Dependent" -> enter: name, relationship (spouse, child, parent), date of birth, gender, contact number -> toggle "Emergency Contact" -> save
 - **API:** `POST /api/v1/employees/{id}/dependents`
-- **Backend:** DependentService.AddAsync() → [[modules/core-hr/dependents-contacts/overview|Dependents Contacts]]
-- **DB:** `employee_dependents` — record created
+- **Backend:** DependentService.AddAsync() -> [[modules/core-hr/dependents-contacts/overview|Dependents Contacts]]
+- **DB:** `employee_dependents` - record created
 
 ### Step 3: Manage Emergency Contacts
-- **UI:** Mark any dependent or non-dependent as emergency contact → set priority order (primary, secondary)
+- **UI:** Mark any dependent or non-dependent as emergency contact -> set priority order (primary, secondary)
 - **DB:** `employee_emergency_contacts`
 
 ## Error Scenarios
@@ -37,7 +37,7 @@
 
 ## Events Triggered
 
-- `DependentAdded` → [[backend/messaging/event-catalog|Event Catalog]]
+- `DependentAdded` -> [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 

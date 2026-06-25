@@ -1,4 +1,4 @@
-# Positions — Testing
+﻿# Positions - Testing
 
 **Module:** Org Structure  
 **Feature:** Positions  
@@ -14,7 +14,6 @@ public class PositionServiceTests
     private readonly Mock<IPositionRepository> _repoMock = new();
     private readonly Mock<ILegalEntityRepository> _legalEntityRepoMock = new();
     private readonly Mock<IDepartmentRepository> _deptRepoMock = new();
-    private readonly Mock<IJobTitleRepository> _jobTitleRepoMock = new();
     private readonly Mock<IEventPublisher> _eventPublisherMock = new();
     private readonly PositionService _sut;
 
@@ -24,7 +23,6 @@ public class PositionServiceTests
             _repoMock.Object,
             _legalEntityRepoMock.Object,
             _deptRepoMock.Object,
-            _jobTitleRepoMock.Object,
             _eventPublisherMock.Object);
     }
 
@@ -43,7 +41,6 @@ public class PositionServiceTests
     public async Task CreateAsync_DepartmentNotInLegalEntity_ReturnsFailure()
 
     [Fact]
-    public async Task CreateAsync_JobTitleNotFound_ReturnsFailure()
 
     [Fact]
     public async Task CreateAsync_DuplicateNameInLegalEntity_ReturnsFailure()
@@ -137,7 +134,6 @@ public class PositionEndpointTests : IClassFixture<OnevoWebFactory>
         {
             legalEntityId = _legalEntityId,
             departmentId = _deptId,
-            jobTitleId = _jobTitleId,
             name = "Senior Engineer",
             positionType = "unique",
             capacity = 30
@@ -240,10 +236,10 @@ public class PositionEndpointTests : IClassFixture<OnevoWebFactory>
 | Create unique position with reporting line | Integration | 201; history row written |
 | Create pooled position, no reports-to | Integration | 201 |
 | Create with reports-to pointing to pooled position | Integration | 422 |
-| Create duplicate name in same legal entity | Integration | 409 |
-| Create duplicate name in different legal entity | Integration | 201 (allowed) |
+| Create duplicate name in same Company | Integration | 409 |
+| Create duplicate name in different Company | Integration | 201 (allowed) |
 | Cycle: A reports to B reports to A | Unit | Failure |
-| Multi-hop cycle: A→B→C→A | Unit | Failure |
+| Multi-hop cycle: A->B->C->A | Unit | Failure |
 | Root position (no reports-to) | Unit | Success |
 | Capacity set to 0 | Unit | Failure (validation) |
 | Capacity reduction below occupancy | Integration | 422 |
@@ -254,7 +250,7 @@ public class PositionEndpointTests : IClassFixture<OnevoWebFactory>
 | Cross-tenant position access | Integration | 404 / 0 results |
 | Bulk create all valid | Integration | 200; all succeeded |
 | Bulk create partial failure | Integration | 200; mixed result |
-| legal_entity_id change on update | Integration | 422 |
+| Company/legal_entity_id change on update | Integration | 422 |
 
 ---
 

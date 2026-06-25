@@ -89,7 +89,6 @@ Plan and role rules:
 - Operators do not create a new plan for every tenant. Plans are reusable catalog records; tenant-specific price, discount, billing cycle, selected optional add-ons, selected resource-only add-ons, shared resource limits, and module pricing overrides are stored on tenant commercial records.
 - Operators can create reusable role templates and assign them to many tenants.
 - Operators can also create tenant-specific roles during provisioning without saving them as reusable templates.
-- Roles do not require job levels. Job levels must not auto-assign permissions; they can only suggest assignments that an authorized admin confirms. Hierarchy affects scoped access, workflow routing, approvals, and escalation logic.
 - `available` and `quoted` modules do not grant tenant-facing access. `purchased`, `trial`, and `subscription_included` can grant access while valid.
 
 > Implementation gap: the current backend may still support direct `adminPassword` on tenant creation. That is temporary only and must be replaced before production. Operators must not choose or copy the tenant owner's final password; the owner sets it through the invite link.

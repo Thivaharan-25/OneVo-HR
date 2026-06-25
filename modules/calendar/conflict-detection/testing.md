@@ -1,4 +1,4 @@
-# Conflict Detection — Testing
+﻿# Conflict Detection - Testing
 
 **Module:** Calendar
 **Feature:** Conflict Detection
@@ -36,9 +36,9 @@ public class CalendarConflictServiceTests
     }
 
     [Fact]
-    public async Task GetConflictsForDateRangeAsync_ExcludesLeaveAndHoliday()
+    public async Task GetConflictsForDateRangeAsync_ExcludesTimeOffAndHoliday()
     {
-        SetupLeaveAndHolidayEvents();
+        SetupTimeOffAndHolidayEvents();
         var result = await _sut.GetConflictsForDateRangeAsync(_employeeId, _startDate, _endDate, default);
 
         result.Value!.HasConflicts.Should().BeFalse();
@@ -52,7 +52,7 @@ public class CalendarConflictServiceTests
 |:---------|:-----|:---------|
 | GetConflictsForDateRangeAsync WithOverlappingReview ReturnsHighSeverity | Unit | ReturnsHighSeverity |
 | GetConflictsForDateRangeAsync NoOverlap ReturnsNoConflicts | Unit | ReturnsNoConflicts |
-| GetConflictsForDateRangeAsync ExcludesLeaveAndHoliday | Unit | ExcludesLeaveAndHoliday |
+| GetConflictsForDateRangeAsync ExcludesTimeOffAndHoliday | Unit | ExcludesTimeOffAndHoliday |
 
 ## Related
 

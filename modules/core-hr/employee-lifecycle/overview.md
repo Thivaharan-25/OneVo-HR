@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Audit trail for promotions, within-company transfers, salary changes, suspensions, terminations, and resignations. Cross-company transfer does not move the source employee record between tenants; it records source-side lifecycle history and creates or activates a separate target-tenant employee record after approval.
+Audit trail for promotions, transfers, salary changes, suspensions, terminations, and resignations. Phase 1 transfer/promotion approvals are lightweight module-owned approvals routed through Org Structure management coverage, not Workflow Engine flows.
 
 ## Database Tables
 
@@ -17,11 +17,11 @@ Audit trail for promotions, within-company transfers, salary changes, suspension
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `event_type` | `varchar(30)` | `hired`, `promoted`, `transferred`, `salary_change`, `suspended`, `terminated`, `resigned` |
 | `event_date` | `date` | |
 | `details_json` | `jsonb` | Event-specific data |
-| `performed_by_id` | `uuid` | FK â†’ users |
+| `performed_by_id` | `uuid` | FK -> users |
 | `created_at` | `timestamptz` | |
 
 
@@ -31,17 +31,23 @@ Effective-dated assignment history for department and position. Current profile 
 
 ### `employee_transfers`
 
-Transfer workflow/request records. Approved transfers apply on their effective date, update current employee assignment fields, close the previous assignment history row, create a new assignment history row, and publish `EmployeeTransferred`.
+Transfer request records. Approved transfers apply on their effective date, close/create `position_assignments`, update current employee assignment snapshots, create assignment history, and publish `EmployeeTransferred`.
+
+### Assignment Model
+
+- Primary Employment Assignment: one active row; controls primary legal entity, Time Off policy, attendance policy, work schedule, holiday calendar, and payroll/statutory context.
+- Additional Authority Assignment: optional rows; may grant role/access/approval authority only.
+- No two active employment assignments inside the same legal entity.
 ## Domain Events
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `EmployeeCreated` | New employee added | [[modules/notifications/overview\|Notifications]], [[modules/leave/overview\|Leave]] |
+| `EmployeeCreated` | New employee added | [[modules/notifications/overview\|Notifications]], [[modules/time-off/overview\|Time Off]] |
 | `EmployeePromoted` | Promotion event | [[modules/notifications/overview\|Notifications]], [[modules/payroll/overview\|Payroll]] |
 | `EmployeeTransferred` | Employee assignment change inside one tenant | [[modules/notifications/overview\|Notifications]] |
-| `CrossCompanyTransferRequested` | Transfer case starts between connected tenants | [[modules/shared-platform/workflow-engine/overview\|Workflow Engine]], [[modules/notifications/overview\|Notifications]] |
-| `CrossCompanyTransferAccepted` | Target tenant accepts and creates/activates its own employee record | [[modules/shared-platform/workflow-engine/overview\|Workflow Engine]], [[modules/notifications/overview\|Notifications]] |
-| `EmployeeTerminated` | Termination/resignation | [[modules/leave/overview\|Leave]], [[modules/payroll/overview\|Payroll]], [[modules/agent-gateway/overview\|Agent Gateway]] |
+| `EmployeeTransferApprovalRequested` | Transfer changes sensitive position-derived access or actor lacks authority | [[modules/notifications/overview\|Notifications]] |
+| `EmployeePromotionApprovalRequested` | Promotion changes sensitive position-derived access or actor lacks authority | [[modules/notifications/overview\|Notifications]] |
+| `EmployeeTerminated` | Termination/resignation | [[modules/time-off/overview\|Time Off]], [[modules/payroll/overview\|Payroll]], [[modules/agent-gateway/overview\|Agent Gateway]] |
 
 ## API Endpoints
 

@@ -1,4 +1,4 @@
-# Tenant Branding — Testing
+﻿# Tenant Branding - Testing
 
 **Module:** Shared Platform
 **Feature:** Tenant Branding

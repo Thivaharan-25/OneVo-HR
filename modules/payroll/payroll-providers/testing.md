@@ -1,4 +1,4 @@
-# Payroll Providers — Testing
+﻿# Payroll Providers - Testing
 
 **Module:** Payroll
 **Feature:** Payroll Providers

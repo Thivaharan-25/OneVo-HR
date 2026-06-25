@@ -1,4 +1,4 @@
-# Policy Distribution
+﻿# Policy Distribution
 
 **Module:** Agent Gateway
 **Feature:** Policy Distribution
@@ -16,8 +16,8 @@ Distributes monitoring policies to desktop agents. Policy is computed by merging
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `agent_id` | `uuid` | FK → registered_agents |
-| `tenant_id` | `uuid` | FK → tenants |
+| `agent_id` | `uuid` | FK -> registered_agents |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `policy_json` | `jsonb` | See policy schema |
 | `last_synced_at` | `timestamptz` | When agent last fetched |
 | `created_at` | `timestamptz` | |
@@ -40,8 +40,8 @@ var effectivePolicy = tenantPolicy.MergeWith(employeeOverride); // Override wins
 ## Related
 
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
-- [[modules/agent-gateway/policy-distribution/end-to-end-logic|Policy Distribution — End-to-End Logic]]
-- [[modules/agent-gateway/policy-distribution/testing|Policy Distribution — Testing]]
+- [[modules/agent-gateway/policy-distribution/end-to-end-logic|Policy Distribution - End-to-End Logic]]
+- [[modules/agent-gateway/policy-distribution/testing|Policy Distribution - Testing]]
 - [[frontend/architecture/overview|Heartbeat Monitoring]]
 - [[frontend/architecture/overview|Data Ingestion]]
 - [[security/auth-architecture|Auth Architecture]]

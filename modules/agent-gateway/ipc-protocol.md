@@ -1,4 +1,4 @@
-# IPC Protocol — Named Pipes
+﻿# IPC Protocol - Named Pipes
 
 ## Overview
 
@@ -6,7 +6,7 @@ The Windows Service (`ONEVO.Agent.Service`) and the MAUI Tray App (`ONEVO.Agent.
 
 - **Pipe name:** `onevo-agent-ipc`
 - **Transport:** JSON-encoded messages over a named pipe stream
-- **Direction:** Bidirectional — both sides can send messages
+- **Direction:** Bidirectional - both sides can send messages
 - **Architecture:** The Service hosts the `NamedPipeServerStream`. The TrayApp connects as a `NamedPipeClientStream`.
 
 ---
@@ -48,7 +48,7 @@ IpcMessage message = type switch
     _ => throw new InvalidOperationException($"Unknown IPC message type: {type}")
 };
 
-// JSON options — camelCase, enums as strings
+// JSON options - camelCase, enums as strings
 public static class IpcJsonOptions
 {
     public static readonly JsonSerializerOptions Default = new()
@@ -80,11 +80,11 @@ Sent when employee enters credentials in the login window.
 
 **What the Service does after receiving this:**
 1. Authenticates the employee against ONEVO (`POST /api/v1/auth/login`)
-2. Calls `POST /api/v1/agent/login` with the Device JWT to create a server-side `agent_sessions` record (`device_id → employee_id`)
+2. Calls `POST /api/v1/agent/login` with the Device JWT to create a server-side `agent_sessions` record (`device_id -> employee_id`)
 3. Stores the employee context locally (for ingest payload construction)
 4. Sends `status_update` back to TrayApp with the result (success or error message)
 
-This server-side session record is what the ingest endpoint uses to validate `employee_id` in payloads. See [[modules/agent-gateway/data-collection|Data Collection — Employee-Device Binding]].
+This server-side session record is what the ingest endpoint uses to validate `employee_id` in payloads. See [[modules/agent-gateway/data-collection|Data Collection - Employee-Device Binding]].
 
 ```csharp
 public record EmployeeLoginMessage : IpcMessage
@@ -176,7 +176,7 @@ public record GetStatusMessage : IpcMessage
 
 ### `capture_photo`
 
-Sent when the policy triggers identity verification (on login, on interval, or on logout).
+Sent when identity verification requires a camera photo for on-demand reviewer request, clock-in, clock-out, or absence-detected verification.
 
 ```json
 {
@@ -184,7 +184,7 @@ Sent when the policy triggers identity verification (on login, on interval, or o
   "messageId": "uuid",
   "timestamp": "2026-04-05T10:15:00Z",
   "requestId": "uuid",
-  "reason": "scheduled_verification"
+  "reason": "clock_in"
 }
 ```
 
@@ -193,7 +193,7 @@ public record CapturePhotoMessage : IpcMessage
 {
     public override string Type => "capture_photo";
     public required string RequestId { get; init; }
-    public required string Reason { get; init; } // "login_verification", "scheduled_verification", "logout_verification"
+    public required string Reason { get; init; } // "on_demand", "clock_in", "clock_out", "absence_detected"
 }
 ```
 
@@ -253,10 +253,13 @@ Sent when the Service receives a new policy from the server (on login or periodi
     "activity_monitoring": true,
     "application_tracking": true,
     "screenshot_capture": false,
+    "auto_screenshot_capture": false,
     "meeting_detection": true,
     "device_tracking": true,
     "identity_verification": true,
-    "verification_interval_minutes": 60,
+    "photo_clock_in_required": true,
+    "photo_clock_out_required": true,
+    "absence_photo_capture": false,
     "idle_threshold_seconds": 300,
     "snapshot_interval_seconds": 150
   }
@@ -302,7 +305,7 @@ public record VerificationResultMessage : IpcMessage
 
 ---
 
-## NamedPipeServer — Service Side
+## NamedPipeServer - Service Side
 
 ```csharp
 // ONEVO.Agent.Service/IPC/NamedPipeServer.cs
@@ -390,7 +393,7 @@ public class NamedPipeServer : BackgroundService
         };
     }
 
-    // Send a message to TrayApp (e.g., capture_photo) — call from other services
+    // Send a message to TrayApp (e.g., capture_photo) - call from other services
     public async Task SendToTrayAppAsync(IpcMessage message, CancellationToken ct)
     {
         // Implementation: write to the active pipe connection's writer
@@ -401,7 +404,7 @@ public class NamedPipeServer : BackgroundService
 
 ---
 
-## NamedPipeClient — TrayApp Side
+## NamedPipeClient - TrayApp Side
 
 ```csharp
 // ONEVO.Agent.TrayApp/Services/NamedPipeClient.cs
@@ -515,14 +518,14 @@ public class NamedPipeClient : IAsyncDisposable
 |:---------|:---------|
 | TrayApp closes | Service detects `ReadLine` returns null, re-enters `WaitForConnectionAsync` |
 | Service stops | TrayApp detects disconnect, retries every 2 seconds with `ConnectAsync` |
-| TrayApp crashes | Same as TrayApp closes — pipe read returns null |
+| TrayApp crashes | Same as TrayApp closes - pipe read returns null |
 | Service crashes | TrayApp gets `IOException`, enters reconnect loop |
 
 ### Reconnection Strategy
 
 - TrayApp reconnects automatically with a 2-second delay between attempts
 - Service always re-listens after a client disconnects
-- No message queuing during disconnection — messages sent while disconnected are lost
+- No message queuing during disconnection - messages sent while disconnected are lost
 - The TrayApp should request a fresh `get_status` after reconnecting to resync state
 
 ### Pipe Security
@@ -535,10 +538,10 @@ public class NamedPipeClient : IAsyncDisposable
 
 ## Related
 
-- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview and data flow
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Server API endpoints that the Service calls
-- [[modules/identity-verification/photo-capture|Photo Capture]] — Photo capture flow triggered via IPC
-- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — TrayApp UI that sends/receives IPC messages
-- [[modules/agent-gateway/data-collection|Data Collection]] — Collectors that run in the Service
-- [[AI_CONTEXT/rules|Rules]] — Section 10: Desktop Agent Rules (IPC message samples)
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task
+- [[modules/agent-gateway/agent-overview|Agent Overview]] - Architecture overview and data flow
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] - Server API endpoints that the Service calls
+- [[modules/identity-verification/photo-capture|Photo Capture]] - Photo capture flow triggered via IPC
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] - TrayApp UI that sends/receives IPC messages
+- [[modules/agent-gateway/data-collection|Data Collection]] - Collectors that run in the Service
+- [[AI_CONTEXT/rules|Rules]] - Section 10: Desktop Agent Rules (IPC message samples)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] - Implementation task

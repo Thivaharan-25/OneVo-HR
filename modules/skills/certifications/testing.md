@@ -1,4 +1,4 @@
-# Certifications — Testing
+﻿# Certifications - Testing
 
 **Module:** Skills
 **Feature:** Certifications
@@ -65,5 +65,5 @@ public class CertificationServiceTests
 
 ## Related
 
-- [[modules/skills/certifications/overview|Certifications]] — feature overview
-- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions
+- [[modules/skills/certifications/overview|Certifications]] - feature overview
+- [[code-standards/testing-strategy|Testing Standards]] - project-wide testing conventions

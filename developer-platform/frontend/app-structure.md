@@ -1,4 +1,4 @@
-﻿# App Structure
+# App Structure
 
 ## Canonical Navigation
 

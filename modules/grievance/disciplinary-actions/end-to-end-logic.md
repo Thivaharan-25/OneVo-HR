@@ -1,4 +1,7 @@
-# Disciplinary Actions — End-to-End Logic
+﻿# Disciplinary Actions - End-to-End Logic
+
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Grievance is deferred; not active in Phase 1.
 
 **Module:** Grievance
 **Feature:** Disciplinary Actions
@@ -21,7 +24,7 @@ POST /api/v1/disciplinary
          -> issued_by_id = current user
       -> 4. Notify employee
       -> 5. If action_type = 'termination':
-         -> Trigger offboarding workflow via core-hr
+         -> Trigger Phase 2 offboarding workflow via Core HR, or use Phase 1 Core HR offboarding checklist if separately activated
       -> Return Result.Success(actionDto)
 ```
 
@@ -40,7 +43,7 @@ GET /api/v1/disciplinary/{employeeId}
 
 ## Related
 
-- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] — feature overview
-- [[modules/grievance/grievance-cases/overview|Grievance Cases]] — grievance case that may precede the action
-- [[backend/messaging/event-catalog|Event Catalog]] — events emitted on action issuance and acknowledgement
-- [[backend/messaging/error-handling|Error Handling]] — NotFoundException, BusinessRuleException patterns
+- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] - feature overview
+- [[modules/grievance/grievance-cases/overview|Grievance Cases]] - grievance case that may precede the action
+- [[backend/messaging/event-catalog|Event Catalog]] - events emitted on action issuance and acknowledgement
+- [[backend/messaging/error-handling|Error Handling]] - NotFoundException, BusinessRuleException patterns

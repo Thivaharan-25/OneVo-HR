@@ -1,4 +1,4 @@
-# SSO Authentication — End-to-End Logic
+﻿# SSO Authentication - End-to-End Logic
 
 **Module:** Shared Platform
 **Feature:** SSO Provider Management

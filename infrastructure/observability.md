@@ -1,4 +1,4 @@
-# Observability: ONEVO
+﻿# Observability: ONEVO
 
 ## Distributed Tracing (OpenTelemetry)
 
@@ -24,7 +24,7 @@ Every request generates a trace with spans for:
 Propagated from frontend through entire backend:
 
 ```
-Frontend → X-Correlation-Id header → TenantMiddleware → Serilog LogContext → EF Core → External calls
+Frontend -> X-Correlation-Id header -> TenantMiddleware -> Serilog LogContext -> EF Core -> External calls
 ```
 
 All logs, traces, and error responses include the correlation ID for end-to-end debugging.

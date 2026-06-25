@@ -8,7 +8,7 @@
 
 ## Purpose
 
-Collect lightweight network and device evidence from the desktop agent so Workforce Presence and Exception Engine can verify whether a clocked-in employee appears to be working from an approved office or approved remote workplace.
+Collect lightweight network and device evidence from the desktop agent so Time & Attendance and Exception Engine can verify whether an employee in paid working time appears to be working from the selected Company's office location or the employee's approved remote work location.
 
 This feature deliberately avoids continuous GPS-style tracking. Network evidence is captured only while the monitoring lifecycle is active and is paused during breaks.
 
@@ -21,7 +21,7 @@ This feature deliberately avoids continuous GPS-style tracking. Network evidence
 | Public IP | Backend request metadata | Medium | Can change with ISP/VPN |
 | Local IP | Agent | Low | Useful only with other signals |
 | Wi-Fi SSID | Agent | Low | Display signal; names can be duplicated |
-| Wi-Fi BSSID / access point MAC | Agent | High | Strongest Wi-Fi workplace signal |
+| Wi-Fi BSSID / access point MAC | Agent | High | Strongest Wi-Fi network signal |
 | Gateway MAC | Agent | High | Strong network fingerprint when available |
 | VPN detected | Agent/backend | Medium | Helps explain IP changes |
 | Coarse OS location | Agent, permission-based | Optional | Captured only if tenant policy and OS permission allow |
@@ -71,23 +71,23 @@ MAC-style identifiers should be hashed before long-term storage unless the tenan
 
 | Confidence | Meaning |
 |:-----------|:--------|
-| `high` | BSSID or gateway MAC matches approved profile |
+| `high` | BSSID/gateway evidence or location evidence matches the expected Company office or approved remote profile |
 | `medium` | Public IP/VPN range and SSID match |
 | `low` | Only coarse IP or coarse location matches |
-| `mismatch` | Evidence does not match any approved profile |
+| `mismatch` | Evidence does not match the expected Company office or approved remote profile |
 | `unknown` | Insufficient evidence; do not alert unless policy explicitly requires strict mode |
 
 ---
 
 ## Server Evaluation
 
-Agent Gateway stores raw evidence and publishes `WorkLocationEvidenceReceived`. Workforce Presence determines whether the employee is inside an active paid work window. Exception Engine evaluates the mismatch rule only when Workforce Presence says the session is eligible for monitoring.
+Agent Gateway stores raw evidence and publishes `WorkLocationEvidenceReceived`. Time & Attendance determines whether the employee is inside an active paid work window. Phase 1 lightweight alert detection evaluates the mismatch only when Time & Attendance says the session is eligible for monitoring. Full Exception Engine rules are Phase 2.
 
 ```text
 Agent heartbeat
 -> Agent Gateway records work_location_evidence
--> Workforce Presence checks clock/break/session state
--> Exception Engine evaluates WORK_LOCATION_MISMATCH
+-> Time & Attendance checks clock/break/session state
+-> Phase 1 lightweight alert detection evaluates WORK_LOCATION_MISMATCH
 -> Agent Gateway sends capture_photo if challenge is required
 ```
 
@@ -105,11 +105,11 @@ Agent heartbeat
 
 ## Related
 
-- [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]]
+- [[Userflow/Monitoring/work-location-compliance|Work Location Compliance]]
 - [[modules/agent-gateway/work-location-evidence/overview|Work Location Evidence - Overview]]
 - [[modules/agent-gateway/work-location-evidence/end-to-end-logic|Work Location Evidence - End-to-End Logic]]
 - [[modules/agent-gateway/work-location-evidence/testing|Work Location Evidence - Testing]]
 - [[modules/agent-gateway/data-collection|Data Collection Architecture]]
 - [[modules/agent-gateway/tray-app-ui|Tray App UI]]
-- [[modules/workforce-presence/presence-sessions/overview|Presence Sessions]]
+- [[modules/time-attendance/presence-sessions/overview|Presence Sessions]]
 - [[modules/identity-verification/photo-verification/overview|Photo Verification]]

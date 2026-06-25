@@ -38,7 +38,7 @@ Key columns: `employee_id`, `date`, `total_hours`, `active_hours`, `idle_hours`,
 - [[modules/productivity-analytics/overview|Productivity Analytics Module]]
 - [[frontend/architecture/overview|Weekly Reports]]
 - [[frontend/architecture/overview|Monthly Reports]]
-- [[frontend/architecture/overview|Workforce Snapshots]]
+- [[frontend/architecture/overview|Monitoring Snapshots]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 - [[security/auth-architecture|Auth Architecture]]
 - [[backend/messaging/event-catalog|Event Catalog]]

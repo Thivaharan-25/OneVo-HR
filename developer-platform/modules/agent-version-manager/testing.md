@@ -1,4 +1,4 @@
-# Agent Version Manager — Testing
+﻿# Agent Version Manager - Testing
 
 > Phase 2 only. In Phase 1, verify these routes are hidden and unavailable rather than testing version/ring operations.
 
@@ -14,7 +14,7 @@
 
 ## Version Publishing
 
-### TC-AV-001: Publish version — happy path
+### TC-AV-001: Publish version - happy path
 **Action:** `POST /admin/v1/agent-versions`
 ```json
 {
@@ -37,14 +37,14 @@
 
 ### TC-AV-003: Semver format enforced
 **Action:** `POST /admin/v1/agent-versions` with `version: "1.5"` (not semver)
-**Expected:** HTTP 422 — version must be in `major.minor.patch` format
+**Expected:** HTTP 422 - version must be in `major.minor.patch` format
 
 ---
 
 ## Channel Management
 
-### TC-AV-004: Recall sets recalled_at — version excluded from deployment queries
-**Setup:** Version `1.4.0` in stable channel. Tenant T assigned to GA ring → would normally get `1.4.0`.
+### TC-AV-004: Recall sets recalled_at - version excluded from deployment queries
+**Setup:** Version `1.4.0` in stable channel. Tenant T assigned to GA ring -> would normally get `1.4.0`.
 **Action:** `PATCH /admin/v1/agent-versions/{id}/channel` `{"channel": "recalled"}`
 **Expected:**
 - `agent_version_releases.release_channel = "recalled"`
@@ -54,7 +54,7 @@
 
 ### TC-AV-005: Recalled version cannot be set back to stable without new publish
 **Action:** `PATCH /admin/v1/agent-versions/{recalled_version_id}/channel` `{"channel": "stable"}`
-**Expected:** HTTP 422 — recalled versions cannot be un-recalled; publish a new version instead
+**Expected:** HTTP 422 - recalled versions cannot be un-recalled; publish a new version instead
 
 ---
 
@@ -66,7 +66,7 @@
 **Expected:**
 - Previous Beta assignment removed
 - New GA assignment created
-- `UNIQUE(tenant_id, ring_id)` satisfied — only 1 ring per tenant at any time
+- `UNIQUE(tenant_id, ring_id)` satisfied - only 1 ring per tenant at any time
 
 ### TC-AV-007: Ring assignment is audit-logged
 **Action:** `PUT /admin/v1/tenants/{id}/agent-ring` `{"ring_id": "<Internal ring id>"}`

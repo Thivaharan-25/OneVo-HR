@@ -1,4 +1,4 @@
-﻿# Data Import Wizard
+# Data Import Wizard
 
 **Area:** People -> Import  
 **Trigger:** HR admin starts a Phase 1 CSV/Excel bulk employee import  
@@ -9,11 +9,11 @@
 
 ## Preconditions
 
-- Tenant is provisioned and active → [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
-- Legal entities exist → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
-- Departments exist within each legal entity → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
-- Positions exist within each department → [[Userflow/Org-Structure/position-setup|Position Setup]]
-- Required permissions are assigned → [[Userflow/Auth-Access/permission-assignment|Permission Assignment]]
+- Tenant is provisioned and active -> [[Userflow/Platform-Setup/tenant-provisioning|Tenant Provisioning]]
+- Legal entities exist -> [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- Departments exist within each legal entity -> [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Positions exist within each department -> [[Userflow/Org-Structure/position-setup|Position Setup]]
+- Required permissions are assigned -> [[Userflow/Auth-Access/permission-assignment|Permission Assignment]]
 
 > Org structure must exist before running a CSV employee import. The wizard resolves employees into existing legal entities, departments, and positions — it does not create org structure from CSV values.
 > PeopleHR migration is Phase 2 and is not available in the Phase 1 import wizard.
@@ -73,7 +73,7 @@ Start Date
 Employment Type
 ```
 
-Customer-facing CSV templates use business names, not technical codes. If a name is ambiguous inside the selected legal entity, the wizard shows a review screen for the admin to select the correct record.
+Customer-facing CSV templates use business names, not technical codes. If a name is ambiguous inside the selected Company, the wizard shows a review screen for the admin to select the correct record.
 
 ### Step 5: Validate Rows
 
@@ -87,7 +87,7 @@ Customer-facing CSV templates use business names, not technical codes. If a name
 - **API:** `POST /api/v1/migration/bulk-import`.
 - **Backend:** Creates `migration_runs` with `Pending` status and enqueues the background import job.
 - **UI:** Progress screen begins polling `GET /api/v1/migration/runs/{id}/progress`.
-- **Customer copy:** Label dry-run as "Preview import" and commit as "Import now". CSV/Excel confirmation shows generated position-template access only to users with `roles:manage` or `access:approve`; other users see only whether access approval is required.
+- **Customer copy:** Label dry-run as "Preview import" and commit as "Import now". CSV/Excel confirmation shows generated position-template access only to users with `roles:manage`; approval actions require `position:approve`. Other users see only whether access approval is required.
 
 ### Step 7: Reconcile Imported Records
 
@@ -102,7 +102,7 @@ Customer-facing CSV templates use business names, not technical codes. If a name
 
 PeopleHR is not part of Phase 1. It is deferred to [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]] for Phase 2.
 
-Phase 2 PeopleHR scope may include employees, org structure, position reporting hierarchy, salary, leave, absence, timesheets, documents, training, benefits, appraisals, work patterns, and custom screens depending on API key access.
+Phase 2 PeopleHR scope may include employees, org structure, position reporting hierarchy, salary, Time Off, absence, timesheets, documents, training, benefits, appraisals, work patterns, and custom screens depending on API key access.
 
 ### Customer Simplicity Rule
 
@@ -123,8 +123,8 @@ The wizard must not expose technical import internals to customers. Phase 1 cust
 | Required field unmapped | Validation blocks confirmation | "Map required field: Employee email" |
 | Duplicate employee detected | Row is marked warning or failed by policy | Duplicate row with suggested action |
 | Unknown legal entity | Row blocked for multi-company tenant | "Legal entity not found" |
-| Department not in legal entity | Row blocked | "Department does not belong to selected legal entity" |
-| Position not in legal entity | Row blocked | "Position does not belong to selected legal entity" |
+| Department not in legal entity | Row blocked | "Department does not belong to the selected Company" |
+| Position not in legal entity | Row blocked | "Position does not belong to the selected Company" |
 | Position capacity exceeded | Row blocked | "Position has reached its capacity" |
 | PeopleHR unavailable | Phase 2 source connection fails | "PeopleHR is temporarily unavailable" |
 | PeopleHR API scope missing | Phase 2 preflight marks selected area unavailable | "API key cannot access Salary. Continue without it or update the key." |
@@ -145,10 +145,10 @@ The wizard must not expose technical import internals to customers. Phase 1 cust
 | Module | Impact |
 |:-------|:-------|
 | Core HR | Creates employee records and profile data. |
-| Org Structure | Resolves legal entities, departments, positions, and position access templates. |
-| Leave | Imports leave balances, leave requests, absence, sickness, maternity, and paternity where mapped. |
+| Org Structure | Resolves legal entities, departments, positions, and position-based access grants. |
+| Time Off | Imports Time Off balances, Time Off requests, absence, sickness, maternity, and paternity where mapped. |
 | Payroll | Imports salary, payroll identifiers, compensation history, and benefits where mapped. |
-| Workforce Presence / Time | Imports work patterns, timesheets, lateness, and attendance-like records where mapped. |
+| Time & Attendance / Time | Imports work patterns, timesheets, lateness, and attendance-like records where mapped. |
 | Documents | Imports document metadata and files with retryable download failures. |
 | Skills | Phase 1 maps existing tenant skills to employee skill requests where possible. Training, CPD, qualifications, certifications, and courses are staged or archived until Phase 2 canonical tables are enabled. |
 | Performance | Imports appraisals/reviews where mapped or archives source forms raw. |

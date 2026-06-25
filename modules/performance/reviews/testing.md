@@ -1,4 +1,4 @@
-# Reviews — Testing
+﻿# Reviews - Testing
 
 **Module:** Performance
 **Feature:** Reviews

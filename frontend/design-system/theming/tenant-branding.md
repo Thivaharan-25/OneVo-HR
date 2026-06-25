@@ -1,4 +1,4 @@
-# Tenant Branding
+﻿# Tenant Branding
 
 ## What's Customizable
 
@@ -44,46 +44,57 @@ interface TenantBranding {
 
 Applied once on app load, before first paint:
 
-```tsx
-// components/providers/branding-provider.tsx
-export function BrandingProvider({ branding, children }: Props) {
-  useEffect(() => {
-    const root = document.documentElement;
-    if (branding.primaryColor) {
-      root.style.setProperty('--primary', branding.primaryColor);
-      root.style.setProperty('--ring', branding.primaryColor);
-      // Auto-calculate foreground for contrast
-      root.style.setProperty('--primary-foreground', getContrastColor(branding.primaryColor));
-    }
-    if (branding.accentColor) {
-      root.style.setProperty('--accent', branding.accentColor);
-    }
-  }, [branding]);
+```typescript
+// shared/services/branding.service.ts
+@Injectable({ providedIn: 'root' })
+export class BrandingService {
+  private readonly branding = signal<TenantBranding | null>(null);
 
-  return <BrandingContext.Provider value={branding}>{children}</BrandingContext.Provider>;
+  readonly companyName = computed(() => this.branding()?.companyName ?? 'ONEVO');
+  readonly logoUrl = computed(() => this.branding()?.logoUrl ?? '');
+
+  constructor() {
+    effect(() => {
+      const b = this.branding();
+      if (!b) return;
+      const root = document.documentElement;
+      if (b.primaryColor) {
+        root.style.setProperty('--primary', b.primaryColor);
+        root.style.setProperty('--ring', b.primaryColor);
+        root.style.setProperty('--primary-foreground', getContrastColor(b.primaryColor));
+      }
+      if (b.accentColor) {
+        root.style.setProperty('--accent', b.accentColor);
+      }
+    });
+  }
+
+  apply(branding: TenantBranding): void {
+    this.branding.set(branding);
+  }
 }
 ```
 
 ### Logo Rendering
 
-```tsx
-function TenantLogo() {
-  const branding = useBranding();
-  const { theme } = useTheme();
+```typescript
+// shared/components/tenant-logo/tenant-logo.component.ts
+@Component({
+  selector: 'app-tenant-logo',
+  standalone: true,
+  template: `
+    <img [src]="logoSrc()" [alt]="branding.companyName()"
+         class="h-8 w-auto object-contain" loading="eager" />
+  `,
+})
+export class TenantLogoComponent {
+  protected readonly branding = inject(BrandingService);
+  private readonly theme = inject(ThemeService);
 
-  const logoSrc = theme === 'dark' && branding.logoDarkUrl
-    ? branding.logoDarkUrl
-    : branding.logoUrl;
-
-  return (
-    <Image
-      src={logoSrc}
-      alt={branding.companyName}
-      width={120}
-      height={32}
-      className="object-contain"
-      priority  // Logo should load immediately
-    />
+  protected readonly logoSrc = computed(() =>
+    this.theme.current() === 'dark' && this.branding.logoDarkUrl()
+      ? this.branding.logoDarkUrl()
+      : this.branding.logoUrl()
   );
 }
 ```
@@ -100,10 +111,10 @@ function getContrastColor(hslColor: string): string {
 }
 ```
 
-Additionally, the branding settings UI shows a live preview with contrast ratio check (WCAG AA ≥ 4.5:1).
+Additionally, the branding settings UI shows a live preview with contrast ratio check (WCAG AA >= 4.5:1).
 
 ## Related
 
-- [[frontend/design-system/theming/dark-mode|Dark Mode]] — theme system
-- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — base color tokens
-- [[frontend/cross-cutting/authentication|Authentication]] — login page branding
+- [[frontend/design-system/theming/dark-mode|Dark Mode]] - theme system
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] - base color tokens
+- [[frontend/cross-cutting/authentication|Authentication]] - login page branding

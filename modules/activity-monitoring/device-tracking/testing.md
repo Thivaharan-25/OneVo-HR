@@ -1,4 +1,4 @@
-# Device Tracking — Testing
+﻿# Device Tracking - Testing
 
 **Module:** Activity Monitoring
 **Feature:** Device Tracking
@@ -45,7 +45,7 @@ public class DeviceTrackingServiceTests
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
-- [[modules/activity-monitoring/device-tracking/end-to-end-logic|Device Tracking — End-to-End Logic]]
+- [[modules/activity-monitoring/device-tracking/end-to-end-logic|Device Tracking - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

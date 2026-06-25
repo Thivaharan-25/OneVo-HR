@@ -16,7 +16,6 @@ Manages employee qualifications (degrees, certifications, licenses) and previous
 Fields: `qualification_type` (`degree`, `certification`, `license`), `title`, `institution`, `year_obtained`, `expiry_date`, `document_file_id`.
 
 ### `employee_work_history`
-Fields: `company_name`, `job_title`, `start_date`, `end_date`, `reason_for_leaving`.
 
 ## Related
 

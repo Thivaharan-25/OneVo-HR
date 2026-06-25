@@ -1,5 +1,7 @@
 # Chat AI - Testing
 
+**Phase:** Phase 2. Not part of Phase 1 implementation scope.
+
 **Module:** WorkSync
 **Feature:** Chat AI / ONEVO Semantic Kernel Assistant
 **Location:** `tests/ONEVO.Tests.Unit/Features/WorkSync/ChatAI/`
@@ -204,13 +206,10 @@ public class AiActionJobEndpointTests : IClassFixture<ONEVOWebFactory>
 | Undo with `tag_execution_id` | Unit | Both job and tag execution undone |
 | Finalize already-finalized | Unit | Idempotent, no double creation |
 | Hangfire finalize | Integration | Entity created, status = finalized |
-| Teams imported message from unmapped sender | Unit | Assistant tools skipped |
-| Teams imported message from mapped sender | Integration | Message imported once, assistant can run when enabled |
 
 ## Related
 
 - [[modules/work-management/chat-ai/overview|Chat AI Overview]]
 - [[modules/work-management/chat-ai/end-to-end-logic|Chat AI Logic]]
 - [[modules/shared-platform/chatbot-api-integration|Semantic Kernel Assistant Integration]]
-- [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]

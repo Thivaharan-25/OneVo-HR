@@ -6,7 +6,7 @@
 
 ---
 
-## GET `/api/v1/agent/fleet` (authorized monitoring or hierarchy-scoped reviewer only, cursor paginated)
+## GET `/api/v1/agent/fleet` (authorized monitoring user or reviewer allowed by management coverage, cursor paginated)
 
 ```ts
 interface AgentFleetItemDto {
@@ -137,5 +137,6 @@ interface AgentInstallStatusDto {
 - Device credential (`type: "agent"` JWT claim) is completely separate from user JWT - never reuse
 - `sha256_hash` must be verified by the extension client before running the downloaded installer
 - Agent fleet API is scoped to the requesting user's tenant; cross-tenant fleet view is admin-only via `/admin/v1/*`
+- Backend applies monitoring permission checks plus the employee visibility predicate before returning employee-linked agents.
 - Agent version release and ring management DTOs live in `admin-api.md` (served by `ONEVO.Api` `/admin/v1/*`)
 

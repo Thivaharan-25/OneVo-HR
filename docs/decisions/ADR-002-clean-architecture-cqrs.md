@@ -43,6 +43,5 @@ Domain events are optional. They are not required by Clean Architecture or CQRS 
 ## Alternatives Considered
 
 - Keep the modular monolith with separate module projects - rejected as too complex for the current delivery target.
-- Microservices - rejected because there is no current product need or team bandwidth.
-- Separate `ONEVO.Admin.Api` host - rejected. Developer-console endpoints live under `/admin/v1/*` inside `ONEVO.Api`.
+- Separate admin API host - rejected. Developer-console endpoints live under `/admin/v1/*` inside `ONEVO.Api`.
 

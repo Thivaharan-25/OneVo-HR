@@ -1,7 +1,7 @@
 # Employee CSV Import
 
-**Area:** People → Import  
-**Trigger:** Authorized employee-import user uploads a CSV file to bulk-create employees (user action — configuration)  
+**Area:** People -> Import  
+**Trigger:** Authorized employee-import user uploads a CSV file to bulk-create employees (user action - configuration)  
 **Required Permission(s):** `employees:write`  
 **Related Permissions:** `org:manage` (to create missing departments or positions during review)
 
@@ -9,13 +9,13 @@
 
 ## Preconditions
 
-- Legal entities exist → [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
-- Departments exist within each legal entity → [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
-- Positions exist within each department → [[Userflow/Org-Structure/position-setup|Position Setup]]
+- Legal entities exist -> [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- Departments exist within each legal entity -> [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
+- Positions exist within each department -> [[Userflow/Org-Structure/position-setup|Position Setup]]
 - CSV prepared using the correct template (see headers below)
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
-> Org structure must be set up before running a CSV import. The import resolves employees into existing legal entities, departments, and positions — it does not create org structure from CSV values.
+> Org structure must be set up before running a CSV import. The import resolves employees into existing legal entities, departments, and positions - it does not create org structure from CSV values.
 
 ---
 
@@ -50,15 +50,15 @@ Start Date
 Employment Type
 ```
 
-For single-company tenants the `Legal Entity` column is omitted — the wizard infers the only active legal entity. If a `Legal Entity` column is present in the file, its value must match the tenant's legal entity name exactly or the row is rejected.
+For single-company tenants the `Legal Entity` column is omitted - the wizard infers the only active legal entity. If a `Legal Entity` column is present in the file, its value must match the tenant's legal entity name exactly or the row is rejected.
 
 ---
 
 ## Flow Steps
 
 ### Step 1: Upload CSV
-- **UI:** People → Import → select CSV → drag-drop or browse to upload file
-- **API:** `POST /api/v1/migration/upload-url` → returns pre-signed upload URL; client PUTs file directly
+- **UI:** People -> Import -> select CSV -> drag-drop or browse to upload file
+- **API:** `POST /api/v1/migration/upload-url` -> returns pre-signed upload URL; client PUTs file directly
 - **Backend:** File is staged in object storage; a `migration_runs` record is created with status `Pending`
 - **Validation:** File must be `.csv` or `.xlsx`; rejected immediately if unsupported format
 
@@ -66,10 +66,10 @@ For single-company tenants the `Legal Entity` column is omitted — the wizard i
 - **UI:** Field mapping table shows source column names alongside sample row values and suggested canonical fields
 - **Behaviour:** The eight standard headers (see above) are auto-matched; admin confirms or corrects any unrecognised column names
 - **API:** `POST /api/v1/migration/analyse`
-- **Rule:** All eight required columns must be mapped before the wizard proceeds. Extra columns in the CSV are retained as raw archive data — they are not silently discarded
+- **Rule:** All eight required columns must be mapped before the wizard proceeds. Extra columns in the CSV are retained as raw archive data - they are not silently discarded
 
 ### Step 3: Resolve Org Structure
-- **UI:** For each row the wizard resolves `Legal Entity → Department → Position` using the business names from the CSV
+- **UI:** For each row the wizard resolves `Legal Entity -> Department -> Position` using the business names from the CSV
 - **Resolution order:**
   1. Match Legal Entity by name within tenant (single-company: inferred)
   2. Match Department by name within the resolved legal entity
@@ -79,14 +79,14 @@ For single-company tenants the `Legal Entity` column is omitted — the wizard i
 - **Unresolved rows:** Rows with unresolved required org references cannot proceed until fixed, skipped, or the missing structure is created outside the wizard
 
 ### Step 4: Show Access Impact
-- **UI:** After org resolution, the wizard shows the roles and permissions linked to each resolved position across all rows — grouped by position for review
+- **UI:** After org resolution, the wizard shows the roles and permissions linked to each resolved position across all rows - grouped by position for review
 - **Behaviour:** Admin reviews the access that will be granted to imported employees by position assignment
-- **Rule:** This is a confirmation preview only. Position access templates generate per-employee grants or approval requests using the same model as individual onboarding. Users without `roles:manage` or `access:approve` do not see role lists, permission details, or scope controls.
+- **Rule:** This is a confirmation preview only. Position access templates generate per-employee grants or approval requests using the same model as individual onboarding. Users without `roles:manage` do not see role template details; users without `position:approve` cannot approve generated access.
 
 ### Step 5: Validate Rows
 - **UI:** Validation summary groups rows into: valid, warnings, hard errors, and skipped
 - **Admin actions:** Fix the source file and re-upload, skip individual bad rows, or cancel the run
-- **Hard errors** block the row — cannot be imported without correction:
+- **Hard errors** block the row - cannot be imported without correction:
 
 | Hard Error | Description |
 |:-----------|:------------|
@@ -103,9 +103,9 @@ For single-company tenants the `Legal Entity` column is omitted — the wizard i
 
 | Warning | Description |
 |:--------|:------------|
-| Reporting position is vacant | The position's `reports_to` position has no current occupant — reporting manager will be unresolved until that position is staffed |
+| Reporting position is vacant | The position's `reports_to` position has no current occupant - reporting manager will be unresolved until that position is staffed |
 | Position near capacity | Position is at 80 %+ of capacity after this import batch |
-| No reporting manager | The assigned position is a root position — employee will have no reporting manager |
+| No reporting manager | The assigned position is a root position - employee will have no reporting manager |
 
 ### Step 6: Confirm and Import
 - **UI:** Summary counts: valid rows, warning rows (acknowledged), skipped rows, hard-error rows (excluded). Click "Import [N] employees" to proceed.
@@ -116,15 +116,15 @@ For single-company tenants the `Legal Entity` column is omitted — the wizard i
   2. Employee / employment record created
   3. Position assignment created
   4. User account created
-  5. Policy assignments applied (leave, attendance, monitoring per legal entity)
+  5. Policy assignments applied (Time Off, attendance, monitoring per legal entity)
   6. Approved or non-approval-required position-template grants applied; approval-required sensitive grants created as pending requests when needed
   7. Onboarding tasks generated
 
 ### Step 7: Send Invitations
-- **UI:** Done screen shows imported, skipped, and failed counts plus a 10–15 employee spot-check sample. "Send invitations" button is shown.
+- **UI:** Done screen shows imported, skipped, and failed counts plus a 10-15 employee spot-check sample. "Send invitations" button is shown.
 - **Behaviour:** Email invitations are not sent automatically on import. The admin reviews the spot-check sample, then confirms invite sending. Invitations go to all successfully imported employees.
 - **API:** `POST /api/v1/migration/runs/{id}/send-invites`
-- **Employee experience:** Same as individual onboarding — employee receives email, accepts via SSO or password setup depending on tenant settings and allowed login methods
+- **Employee experience:** Same as individual onboarding - employee receives email, accepts via SSO or password setup depending on tenant settings and allowed login methods
 
 ---
 
@@ -150,31 +150,31 @@ For single-company tenants the `Legal Entity` column is omitted — the wizard i
 | Scenario | Step | What happens | User sees |
 |:---------|:-----|:-------------|:----------|
 | Unsupported file format | 1 | Upload rejected | "Upload a CSV or Excel file" |
-| Pre-signed upload URL expired | 1 | Upload fails | "Upload link expired — try again" |
+| Pre-signed upload URL expired | 1 | Upload fails | "Upload link expired - try again" |
 | Required column not mapped | 2 | Wizard blocked | "Map required field: [column name]" |
 | Name ambiguous within legal entity | 3 | Row goes to review | Admin selects correct record from matched list |
-| All rows are hard errors | 5 | Import blocked | "No valid rows to import — fix errors and re-upload" |
-| Background job fails mid-run | 6 | Run status → `Failed` | Failure summary with retry option |
-| Invitations partially fail | 7 | Per-employee failure noted | "3 of 47 invitations failed to send — retry from audit report" |
+| All rows are hard errors | 5 | Import blocked | "No valid rows to import - fix errors and re-upload" |
+| Background job fails mid-run | 6 | Run status -> `Failed` | Failure summary with retry option |
+| Invitations partially fail | 7 | Per-employee failure noted | "3 of 47 invitations failed to send - retry from audit report" |
 
 ---
 
 ## Events Triggered
 
-- `MigrationRunCreated` → [[backend/messaging/event-catalog|Event Catalog]]
-- `MigrationRunCompleted` → [[backend/messaging/event-catalog|Event Catalog]]
-- `EmployeesImported` → [[backend/messaging/event-catalog|Event Catalog]]
-- Notification: completion / failure → importing admin → [[backend/notification-system|Notification System]]
+- `MigrationRunCreated` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `MigrationRunCompleted` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `EmployeesImported` -> [[backend/messaging/event-catalog|Event Catalog]]
+- Notification: completion / failure -> importing admin -> [[backend/notification-system|Notification System]]
 
 ---
 
 ## Related Flows
 
-- [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]] — must exist before import
-- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]] — must exist before import
-- [[Userflow/Org-Structure/position-setup|Position Setup]] — must exist before import
-- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] — single-employee alternative
-- [[Userflow/Data-Import/data-import-wizard|Data Import Wizard]] — underlying Phase 1 CSV/Excel wizard mechanism; PeopleHR is Phase 2
+- [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]] - must exist before import
+- [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]] - must exist before import
+- [[Userflow/Org-Structure/position-setup|Position Setup]] - must exist before import
+- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]] - single-employee alternative
+- [[Userflow/Data-Import/data-import-wizard|Data Import Wizard]] - underlying Phase 1 CSV/Excel wizard mechanism; PeopleHR is Phase 2
 
 ---
 

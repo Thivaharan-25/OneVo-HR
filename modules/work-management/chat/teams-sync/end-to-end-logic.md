@@ -1,7 +1,5 @@
-# Teams Chat Sync - End-to-End Logic
 
 **Module:** WorkSync
-**Feature:** Teams Chat Sync
 
 ---
 
@@ -9,13 +7,11 @@
 
 Defines how WorkSync Chat mirrors user messages, assistant messages, and case-conversation discussion with Microsoft Teams after a workspace/channel or workflow case conversation has been linked to a Teams Team/channel or Teams chat.
 
-For Automation Center case conversations, Teams is discussion-only. ONEVO sends a summary and secure ONEVO link for official actions. Teams replies can sync back into the ONEVO case conversation, but Teams-native approval buttons, bots, and text command parsing must not change workflow state.
 
 For Agentic Chat, Microsoft Teams is an input/output channel. Inbound Teams messages are normalized into ONEVO messages first, then the Semantic Kernel assistant may process them only after the Teams sender maps to a ONEVO user and ONEVO permissions are resolved.
 
 ---
 
-## Send ONEVO Message To Teams
 
 ```
 POST /api/v1/channels/{id}/messages
@@ -27,15 +23,12 @@ POST /api/v1/channels/{id}/messages
     -> 4. TeamsOutboundMessageSyncHandler:
          a. Load channel_teams_links for channel_id
          b. Verify link status = active
-         c. Verify sender has linked Teams account
-         d. Transform markdown/assistant card summary to Teams-supported format
          e. Send Graph message
          f. Store external_message_id in teams_message_sync_state
          g. Update messages.sync_status = "synced"
     -> 5. SignalR pushes ONEVO message with sync badge
 ```
 
-## Pull Teams Message Into ONEVO
 
 ```
 Graph change notification
@@ -56,22 +49,17 @@ Graph change notification
          f. If sender is mapped and assistant is enabled, invoke Semantic Kernel assistant
 ```
 
-## Mirror Case Conversation To Teams
 
 ```text
 Workflow delivery router creates or updates case conversation
-  -> If Teams sync enabled for the tenant and conversation can be linked:
-       1. Create or reuse linked Teams conversation per tenant policy
        2. Send summary message with request/alert details
        3. Include secure ONEVO link for approve/reject/resolve actions
-       4. Sync Teams replies back as case conversation messages
        5. Keep workflow state changes in ONEVO only
 ```
 
-Example Teams message:
 
 ```text
-Leave request from Nimal Perera
+Time Off request from Nimal Perera
 Dates: May 10-12
 Status: Waiting for approval
 
@@ -86,10 +74,8 @@ Open ONEVO to approve or reject:
 ONEVO edit:
   -> Update local message
   -> If external_source is null and channel linked:
-       PATCH Teams message via Graph
        Update sync_status
 
-Teams edit:
   -> Graph delta detects modified message
   -> Update ONEVO message content
   -> Set is_edited = true, edited_at = Graph modifiedDateTime
@@ -100,10 +86,7 @@ Teams edit:
 ```
 ONEVO delete:
   -> Soft delete local message
-  -> If outbound-synced and policy allows Teams delete:
-       DELETE/PATCH Teams message through Graph if supported
 
-Teams delete:
   -> Graph delta/webhook detects delete
   -> Soft delete local message
   -> Preserve last known content for compliance/legal hold
@@ -113,11 +96,8 @@ Teams delete:
 
 ```
 ONEVO attachment outbound:
-  -> Verify file access and Teams file policy
   -> Upload/share through Graph
-  -> Create Teams message with attachment reference
 
-Teams attachment inbound:
   -> Import metadata and permitted file copy/link
   -> Create message_attachments row
   -> Do not import blocked file types
@@ -125,27 +105,20 @@ Teams attachment inbound:
 
 ## Idempotency
 
-Every synced Teams message must have exactly one ONEVO message:
 
 ```
 UNIQUE(tenant_id, external_source, external_message_id)
 ```
 
-Outbound sync must also record the local `message_id` before retrying so a Graph timeout does not create duplicate Teams messages without detection.
 
 ## Error Scenarios
 
 | Scenario | Handling |
 |:---------|:---------|
-| Channel not linked to Teams | Save ONEVO message only |
-| Sender has no Teams account | Save ONEVO message and mark sync_status = `not_linked` |
 | Graph send fails | Mark sync_status = `failed`, queue retry |
 | Inbound sender not mapped | Import as external participant or skip per tenant policy |
 | Attachment too large | Import message, mark attachment sync failed |
 | Message already imported | No-op idempotent success |
-| Teams user attempts approval by reply text | Import as discussion only; workflow state remains unchanged |
-| Teams sender is not mapped to ONEVO user | Import discussion only if tenant policy allows; assistant tools are skipped |
-| Assistant reply outbound is disabled | Save assistant message in ONEVO only; do not post to Teams |
 
 ---
 
@@ -153,5 +126,4 @@ Outbound sync must also record the local `message_id` before retrying so a Graph
 
 - [[modules/work-management/chat/overview|Chat Overview]]
 - [[modules/work-management/chat/end-to-end-logic|Chat Logic]]
-- [[modules/work-management/chat/teams-sync/testing|Teams Chat Sync Testing]]
 - [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]]

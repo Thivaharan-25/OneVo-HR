@@ -1,4 +1,4 @@
-# Exception Rules — Testing
+﻿# Exception Rules - Testing
 
 **Module:** Exception Engine
 **Feature:** Exception Rules

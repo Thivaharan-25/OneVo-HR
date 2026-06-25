@@ -1,4 +1,4 @@
-# Allowances — End-to-End Logic
+﻿# Allowances - End-to-End Logic
 
 **Module:** Payroll
 **Feature:** Allowances

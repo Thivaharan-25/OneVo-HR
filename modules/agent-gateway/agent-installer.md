@@ -1,8 +1,8 @@
-# WorkPulse Agent — MSIX Packaging & Deployment
+﻿# WorkPulse Agent - MSIX Packaging & Deployment
 
 ## Overview
 
-The WorkPulse Agent is packaged as an **MSIX bundle** containing both the Windows Service and the MAUI Tray App. MSIX provides clean install/uninstall, built-in auto-update, MDM silent deployment, and a signed package identity — making it the enterprise-native distribution method. No Node.js, no installer wizards, no manual configuration required.
+The WorkPulse Agent is packaged as an **MSIX bundle** containing both the Windows Service and the MAUI Tray App. MSIX provides clean install/uninstall, built-in auto-update, MDM silent deployment, and a signed package identity - making it the enterprise-native distribution method. No Node.js, no installer wizards, no manual configuration required.
 
 **Phase 1: Windows MSIX only.** macOS `.pkg` packaging is Phase 2. See [[modules/agent-gateway/agent-overview|Agent Overview]] for the macOS Phase 2 architecture.
 
@@ -14,20 +14,20 @@ The WorkPulse Agent is packaged as an **MSIX bundle** containing both the Window
 
 ```
 ONEVO.Agent.msixbundle
-├── ONEVO.Agent.Service.exe        # Windows Service binary
-├── ONEVO.Agent.TrayApp.exe        # MAUI tray app binary
-├── ONEVO.Agent.Shared.dll         # Shared types library
-├── appsettings.json               # Default configuration
-├── Assets/
-│   ├── tray-icon-default.ico
-│   ├── tray-icon-connected.ico
-│   ├── tray-icon-error.ico
-│   └── logo.png
-├── Package.appxmanifest            # Package identity, capabilities
-└── [.NET runtime files]            # Self-contained or framework-dependent
++-- ONEVO.Agent.Service.exe        # Windows Service binary
++-- ONEVO.Agent.TrayApp.exe        # MAUI tray app binary
++-- ONEVO.Agent.Shared.dll         # Shared types library
++-- appsettings.json               # Default configuration
++-- Assets/
+|   +-- tray-icon-default.ico
+|   +-- tray-icon-connected.ico
+|   +-- tray-icon-error.ico
+|   +-- logo.png
++-- Package.appxmanifest            # Package identity, capabilities
++-- [.NET runtime files]            # Self-contained or framework-dependent
 ```
 
-### Package.appxmanifest — Key Settings
+### Package.appxmanifest - Key Settings
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -50,7 +50,7 @@ ONEVO.Agent.msixbundle
   </Capabilities>
 
   <Applications>
-    <!-- Tray App — user-facing, starts on login -->
+    <!-- Tray App - user-facing, starts on login -->
     <Application Id="TrayApp"
                  Executable="ONEVO.Agent.TrayApp.exe"
                  EntryPoint="Windows.FullTrustApplication">
@@ -60,7 +60,7 @@ ONEVO.Agent.msixbundle
       </desktop:Extension>
     </Application>
 
-    <!-- Windows Service — background, runs always -->
+    <!-- Windows Service - background, runs always -->
     <Application Id="Service"
                  Executable="ONEVO.Agent.Service.exe"
                  EntryPoint="Windows.FullTrustApplication">
@@ -94,7 +94,7 @@ For enterprise deployment via Microsoft Intune, SCCM, or Group Policy:
 
 1. Upload the `.msixbundle` to the MDM console
 2. Assign to device groups
-3. The package installs silently — no user interaction required
+3. The package installs silently - no user interaction required
 4. The Windows Service starts automatically
 5. The Tray App starts on next user login (via startup task)
 
@@ -130,27 +130,27 @@ Install completes
   -> Server returns internal device credential + policy
   -> Service stores device credential via DPAPI / Windows Credential Manager
   -> Service begins heartbeat loop
-  -> Collectors start only when policy, consent, and Workforce Presence lifecycle allow collection
+  -> Collectors start only when policy, consent, and Time & Attendance lifecycle allow collection
 ```
 
 The older tenant-key flow below is legacy/admin-only and must not be used as the default ADE implementation task.
 
 ```
 Install completes
-  → Windows Service starts automatically
-  → Service generates device_id (UUID v7)
-  → Service reads tenant API key from appsettings.json or registry
-  → Service calls POST /api/v1/agent/register
-  → Server returns device JWT + agent_id
-  → Service stores device JWT via DPAPI (see [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] agent_config table)
-  → Service begins heartbeat loop (every 60s)
-  → User logs in to Windows
-  → Tray App starts (startup task)
-  → Tray App connects to Service via Named Pipe (see [[modules/agent-gateway/ipc-protocol|Ipc Protocol]])
-  → Tray App shows login prompt
-  → Employee enters email + password
-  → Service calls POST /api/v1/agent/login
-  → Collectors start based on received policy
+  -> Windows Service starts automatically
+  -> Service generates device_id (UUID v7)
+  -> Service reads tenant API key from appsettings.json or registry
+  -> Service calls POST /api/v1/agent/register
+  -> Server returns device JWT + agent_id
+  -> Service stores device JWT via DPAPI (see [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] agent_config table)
+  -> Service begins heartbeat loop (every 60s)
+  -> User logs in to Windows
+  -> Tray App starts (startup task)
+  -> Tray App connects to Service via Named Pipe (see [[modules/agent-gateway/ipc-protocol|Ipc Protocol]])
+  -> Tray App shows login prompt
+  -> Employee enters email + password
+  -> Service calls POST /api/v1/agent/login
+  -> Collectors start based on received policy
 ```
 
 ### Tenant API Key Provisioning
@@ -159,9 +159,9 @@ Legacy/admin-only. Do not use this as the Phase 1 employee install flow. Default
 
 The tenant API key must be provided during installation. Options:
 
-1. **Baked into appsettings.json** — pre-configured package per tenant
-2. **Registry key** — set by MDM/GPO before install: `HKLM\SOFTWARE\ONEVO\Agent\TenantApiKey`
-3. **Command-line parameter** — via provisioning script after install
+1. **Baked into appsettings.json** - pre-configured package per tenant
+2. **Registry key** - set by MDM/GPO before install: `HKLM\SOFTWARE\ONEVO\Agent\TenantApiKey`
+3. **Command-line parameter** - via provisioning script after install
 
 ```csharp
 // Reading tenant API key (priority order)
@@ -237,12 +237,12 @@ public class AutoUpdateService
 
         if (response.UpdateRequired)
         {
-            // Critical update — apply immediately
+            // Critical update - apply immediately
             await ApplyUpdateAsync(tempPath, ct);
         }
         else
         {
-            // Non-critical — schedule for next idle period
+            // Non-critical - schedule for next idle period
             _pendingUpdatePath = tempPath;
         }
     }
@@ -283,12 +283,12 @@ public class AutoUpdateService
 # Uninstall via PowerShell
 Get-AppxPackage "ONEVO.Agent" | Remove-AppxPackage
 
-# Or via Windows Settings → Apps → ONEVO Desktop Agent → Uninstall
+# Or via Windows Settings -> Apps -> ONEVO Desktop Agent -> Uninstall
 ```
 
 ### What Happens on Uninstall
 
-1. MSIX triggers pre-uninstall — Service receives shutdown signal
+1. MSIX triggers pre-uninstall - Service receives shutdown signal
 2. Service marks a clean shutdown (see [[modules/agent-gateway/tamper-resistance|Tamper Resistance]])
 3. Service flushes remaining buffer to server (best-effort)
 4. Service sends a final heartbeat with `"uninstalling": true`
@@ -299,7 +299,7 @@ Get-AppxPackage "ONEVO.Agent" | Remove-AppxPackage
 
 ---
 
-## macOS Phase 2 — `.pkg` Packaging
+## macOS Phase 2 - `.pkg` Packaging
 
 macOS distribution uses a signed `.pkg` installer (requires Apple Developer ID certificate).
 
@@ -344,13 +344,13 @@ macOS distribution uses a signed `.pkg` installer (requires Apple Developer ID c
 
 ```
 ~/Library/Application Support/WorkPulse/
-├── agent.db          # SQLite buffer (encrypted)
-├── config.json       # Agent configuration
-└── logs/
-    └── agent.log     # Rolling log (7 days)
++-- agent.db          # SQLite buffer (encrypted)
++-- config.json       # Agent configuration
++-- logs/
+    +-- agent.log     # Rolling log (7 days)
 ```
 
-> **Accessibility permission:** macOS requires the employee to manually grant Accessibility permission (System Settings → Privacy & Security → Accessibility → WorkPulse Agent → toggle on). This is enforced by Apple and cannot be automated by any MDM or installer. Plan for this in the employee onboarding flow.
+> **Accessibility permission:** macOS requires the employee to manually grant Accessibility permission (System Settings -> Privacy & Security -> Accessibility -> WorkPulse Agent -> toggle on). This is enforced by Apple and cannot be automated by any MDM or installer. Plan for this in the employee onboarding flow.
 
 ### Data After Uninstall
 
@@ -378,11 +378,11 @@ signtool sign /fd SHA256 /a /f certificate.pfx /p password ONEVO.Agent.msixbundl
 
 ## Related
 
-- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview and first-run flow
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Registration endpoint and heartbeat (update_available)
-- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Service recovery configuration and clean shutdown
-- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] — Local data that is cleaned up on uninstall
-- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — Service-TrayApp communication
-- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — TrayApp that starts on login
-- [[AI_CONTEXT/rules|Rules]] — Desktop Agent rules (Section 10)
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task
+- [[modules/agent-gateway/agent-overview|Agent Overview]] - Architecture overview and first-run flow
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] - Registration endpoint and heartbeat (update_available)
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] - Service recovery configuration and clean shutdown
+- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] - Local data that is cleaned up on uninstall
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] - Service-TrayApp communication
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] - TrayApp that starts on login
+- [[AI_CONTEXT/rules|Rules]] - Desktop Agent rules (Section 10)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] - Implementation task

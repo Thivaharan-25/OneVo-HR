@@ -1,4 +1,4 @@
-# Biometric Devices — Testing
+﻿# Biometric Devices - Testing
 
 **Module:** Identity Verification
 **Feature:** Biometric Devices
@@ -52,7 +52,7 @@ public class BiometricDeviceServiceTests
 ## Related
 
 - [[modules/identity-verification/overview|Identity Verification Module]]
-- [[modules/identity-verification/biometric-devices/end-to-end-logic|Biometric Devices — End-to-End Logic]]
+- [[modules/identity-verification/biometric-devices/end-to-end-logic|Biometric Devices - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

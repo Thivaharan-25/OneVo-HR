@@ -17,7 +17,7 @@ Install WorkPulse Agent
 -> Device is enrolled
 -> Internal device credential is stored locally
 -> Policy is fetched
--> Monitoring starts only when Workforce Presence lifecycle allows it
+-> Monitoring starts only when Time & Attendance lifecycle allows it
 ```
 
 Employees never enter an API key, tenant key, tenant ID, or server URL. The device credential is issued by the backend after authenticated enrollment and is stored by the agent using DPAPI / Windows Credential Manager. The user does not see or handle the credential.
@@ -67,7 +67,7 @@ Tracks the currently logged-in employee on an enrolled device.
 4. Device credential contains `device_id`, `tenant_id`, and `type: "agent"` claims. It contains no HR permissions and is not a user JWT.
 5. Agent does not have HR permissions. It can only call Agent Gateway endpoints with the device credential.
 6. Data ingestion is rejected unless the payload employee matches the active `agent_sessions` record for the device.
-7. Monitoring starts only after login/enrollment, policy fetch, consent gate, and Workforce Presence lifecycle permit collection.
+7. Monitoring starts only after login/enrollment, policy fetch, consent gate, and Time & Attendance lifecycle permit collection.
 
 ## Domain Events
 

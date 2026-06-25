@@ -1,11 +1,11 @@
-# Color Tokens
+﻿# Color Tokens
 
 ## CSS Custom Properties
 
 All colors defined as CSS custom properties for light/dark mode support.
 
 ```css
-/* CSS custom properties — applied via data-theme attribute on <html> */
+/* CSS custom properties - applied via data-theme attribute on <html> */
 
 [data-theme="dark"] {
   --bg-base:       #0a0a0a;
@@ -77,7 +77,7 @@ All colors defined as CSS custom properties for light/dark mode support.
 
 ## Brand & Shell Tokens
 
-These tokens are used directly in the shell navigation components (rail, panel, topbar). They are NOT part of the semantic `[data-theme]` system — they are hardcoded constants because the shell has a fixed visual identity that does not vary by theme.
+These tokens are used directly in the shell navigation components (rail, panel, topbar). They are NOT part of the semantic `[data-theme]` system - they are hardcoded constants because the shell has a fixed visual identity that does not vary by theme.
 
 ### Accent (OneVo Purple)
 
@@ -101,7 +101,7 @@ bg-[rgba(91,79,232,0.20)] /* active panel item bg, dark */
 | Token | Value | Usage |
 |:------|:------|:------|
 | `--neutral-800` | `#1E2140` | Panel title, topbar entity name (light) |
-| `--neutral-700` | `#353A5E` | — |
+| `--neutral-700` | `#353A5E` | - |
 | `--neutral-600` | `#4C5278` | Panel head button hover (light) |
 | `--neutral-500` | `#6B7194` | Panel item default text (light) |
 | `--neutral-400` | `#9499B0` | Panel head button default, topbar icons (light) |
@@ -114,9 +114,9 @@ bg-[rgba(91,79,232,0.20)] /* active panel item bg, dark */
 
 | Name | Value | Usage |
 |:-----|:------|:------|
-| Rail background | `#17181F` | Icon rail — same in light AND dark mode |
-| Panel background (light) | `#FAF9F6` | Expansion panel in light mode — warm off-white |
-| Panel background (dark) | `#000000` | Expansion panel in dark mode — pure black |
+| Rail background | `#17181F` | Icon rail - same in light AND dark mode |
+| Panel background (light) | `#FAF9F6` | Expansion panel in light mode - warm off-white |
+| Panel background (dark) | `#000000` | Expansion panel in dark mode - pure black |
 | Panel border (light) | `#E8E8EC` | Expansion panel border in light mode |
 | Panel head border (light) | `#EEEDE9` | Separator between panel head and body |
 | Panel hover (light) | `#EEECEA` | Panel item and head button hover background |
@@ -134,7 +134,7 @@ bg-[rgba(91,79,232,0.20)] /* active panel item bg, dark */
 
 ## Related
 
-- [[frontend/design-system/components/component-catalog|Component Catalog]] — component library
-- [[frontend/design-system/foundations/typography|Typography]] — type scale
-- [[frontend/design-system/theming/tenant-branding|Tenant Branding]] — tenant color customization
-- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — page layouts
+- [[frontend/design-system/components/component-catalog|Component Catalog]] - component library
+- [[frontend/design-system/foundations/typography|Typography]] - type scale
+- [[frontend/design-system/theming/tenant-branding|Tenant Branding]] - tenant color customization
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] - page layouts

@@ -1,4 +1,4 @@
-# Retention Policies
+﻿# Retention Policies
 
 **Module:** Configuration  
 **Feature:** Retention Policies
@@ -16,7 +16,7 @@ Configurable data retention per data type (screenshots, verification photos, act
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `data_type` | `varchar(50)` | `screenshots`, `verification_photos`, `activity_snapshots`, `audit_logs` |
 | `retention_days` | `int` | |
 | `created_at` | `timestamptz` | |

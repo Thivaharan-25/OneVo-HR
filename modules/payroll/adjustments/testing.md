@@ -1,4 +1,4 @@
-# Adjustments — Testing
+﻿# Adjustments - Testing
 
 **Module:** Payroll
 **Feature:** Adjustments

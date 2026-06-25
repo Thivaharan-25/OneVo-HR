@@ -1,4 +1,4 @@
-# Tenant Management — Testing
+﻿# Tenant Management - Testing
 
 **Module:** Infrastructure
 **Feature:** Tenant Management

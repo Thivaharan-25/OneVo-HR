@@ -1,4 +1,4 @@
-# Tenant Settings — End-to-End Logic
+﻿# Tenant Settings - End-to-End Logic
 
 **Module:** Configuration
 **Feature:** Tenant Settings
@@ -31,7 +31,7 @@ PUT /api/v1/settings
     -> Validation: timezone valid, date_format valid, work_week_days non-empty
     -> ConfigurationService.UpdateTenantSettingsAsync(command, ct)
       -> 1. Load existing settings
-      -> 2. Apply changes (partial update — only provided fields)
+      -> 2. Apply changes (partial update - only provided fields)
       -> 3. UPDATE tenant_settings
       -> 4. Invalidate settings cache (Phase 1 in-memory, tenant-scoped)
       -> 5. Log to audit_logs

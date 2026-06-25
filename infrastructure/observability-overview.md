@@ -1,4 +1,4 @@
-# Operations Documentation: ONEVO
+﻿# Operations Documentation: ONEVO
 
 ## Key Documents
 
@@ -19,10 +19,10 @@
 
 ## Observability Stack
 
-- **Logging:** Serilog → OpenTelemetry → Grafana Loki
-- **Metrics:** Prometheus → Grafana
-- **Tracing:** OpenTelemetry → Grafana Tempo
-- **Alerting:** Grafana alerting rules → PagerDuty/Slack
+- **Logging:** Serilog -> OpenTelemetry -> Grafana Loki
+- **Metrics:** Prometheus -> Grafana
+- **Tracing:** OpenTelemetry -> Grafana Tempo
+- **Alerting:** Grafana alerting rules -> PagerDuty/Slack
 
 ## Golden Signals
 

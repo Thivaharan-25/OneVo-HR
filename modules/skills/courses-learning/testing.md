@@ -1,4 +1,4 @@
-# Courses & Learning — Testing
+﻿# Courses & Learning - Testing
 
 **Module:** Skills
 **Feature:** Courses & Learning
@@ -51,5 +51,5 @@ public class CourseServiceTests
 
 ## Related
 
-- [[modules/skills/courses-learning/overview|Courses Learning]] — feature overview
-- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions
+- [[modules/skills/courses-learning/overview|Courses Learning]] - feature overview
+- [[code-standards/testing-strategy|Testing Standards]] - project-wide testing conventions

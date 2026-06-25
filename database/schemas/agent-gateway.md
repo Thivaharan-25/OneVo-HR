@@ -1,4 +1,4 @@
-# Agent Gateway — Schema
+﻿# Agent Gateway - Schema
 
 **Module:** [[modules/agent-gateway/overview|Agent Gateway]]
 **Phase:** Phase 1
@@ -11,10 +11,10 @@
 | Column         | Type          | Notes                                                                                                                                   |
 | :------------- | :------------ | :-------------------------------------------------------------------------------------------------------------------------------------- |
 | `id`           | `uuid`        | PK                                                                                                                                      |
-| `agent_id`     | `uuid`        | FK → registered_agents                                                                                                                  |
-| `tenant_id`    | `uuid`        | FK → tenants                                                                                                                            |
-| `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `capture_remote_workplace`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
-| `requested_by` | `uuid`        | FK → users (authorized user who initiated)                                                                                              |
+| `agent_id`     | `uuid`        | FK -> registered_agents                                                                                                                  |
+| `tenant_id`    | `uuid`        | FK -> tenants                                                                                                                            |
+| `command_type` | `varchar(50)` | `capture_screenshot`, `capture_photo`, `capture_remote_work_location`, `start_monitoring`, `stop_monitoring`, `pause_monitoring`, `resume_monitoring`, `refresh_policy` |
+| `requested_by` | `uuid`        | FK -> users (authorized user who initiated)                                                                                              |
 | `payload_json` | `jsonb`       | Command-specific parameters                                                                                                             |
 | `status`       | `varchar(20)` | `pending`, `delivered`, `completed`, `failed`, `expired`                                                                                |
 | `created_at`   | `timestamptz` | When command was created                                                                                                                |
@@ -23,7 +23,7 @@
 | `result_json`  | `jsonb`       | Result data (e.g., screenshot URL, error message)                                                                                       |
 | `expires_at`   | `timestamptz` | Auto-expire if not delivered (default: 5 min)                                                                                           |
 
-**Foreign Keys:** `agent_id` → [[#`registered_agents`|registered_agents]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `requested_by` → [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `agent_id` -> [[#`registered_agents`|registered_agents]], `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `requested_by` -> [[database/schemas/infrastructure#`users`|users]]
 
 ---
 
@@ -32,15 +32,15 @@
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `agent_id` | `uuid` | FK → registered_agents |
-| `tenant_id` | `uuid` | FK → tenants |
+| `agent_id` | `uuid` | FK -> registered_agents |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `reported_at` | `timestamptz` |  |
 | `cpu_usage` | `decimal(5,2)` | Agent process CPU% |
 | `memory_mb` | `int` | Agent process memory |
 | `errors_json` | `jsonb` | Recent errors array |
 | `tamper_detected` | `boolean` | Service stopped/modified |
 
-**Foreign Keys:** `agent_id` → [[#`registered_agents`|registered_agents]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+**Foreign Keys:** `agent_id` -> [[#`registered_agents`|registered_agents]], `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
 
 ---
 
@@ -66,7 +66,8 @@ Network and optional coarse location evidence captured only while monitoring is 
 | `coarse_location_json` | `jsonb` | Nullable; only when policy and OS permission allow |
 | `match_status` | `varchar(20)` | `matched`, `mismatch`, `unknown`, `not_evaluated` |
 | `confidence` | `varchar(20)` | `high`, `medium`, `low`, `unknown` |
-| `matched_work_location_id` | `uuid` | Nullable FK -> work_locations |
+| `matched_location_source` | `varchar(30)` | Nullable; `company_office`, `remote_profile`, or `none` |
+| `matched_location_source_id` | `uuid` | Nullable; `legal_entities.id` for `company_office`, `employee_remote_work_profiles.id` for `remote_profile` |
 | `created_at` | `timestamptz` |  |
 
 **Indexes:** `(tenant_id, employee_id, captured_at)`, `(tenant_id, presence_session_id)`, `(tenant_id, match_status, captured_at)`
@@ -78,14 +79,14 @@ Network and optional coarse location evidence captured only while monitoring is 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `agent_id` | `uuid` | FK → registered_agents |
-| `tenant_id` | `uuid` | FK → tenants |
+| `agent_id` | `uuid` | FK -> registered_agents |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `policy_json` | `jsonb` | See policy schema below |
 | `last_synced_at` | `timestamptz` | When agent last fetched this policy |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
-**Foreign Keys:** `agent_id` → [[#`registered_agents`|registered_agents]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+**Foreign Keys:** `agent_id` -> [[#`registered_agents`|registered_agents]], `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
 
 ---
 
@@ -94,8 +95,8 @@ Network and optional coarse location evidence captured only while monitoring is 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees (nullable — set at employee login) |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees (nullable - set at employee login) |
 | `device_id` | `uuid` | Unique device identifier (generated at install) |
 | `device_name` | `varchar(100)` | Computer hostname |
 | `os_version` | `varchar(50)` | e.g., "Windows 11 23H2" |
@@ -106,7 +107,7 @@ Network and optional coarse location evidence captured only while monitoring is 
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` -> [[database/schemas/core-hr#`employees`|employees]]
 
 ---
 
@@ -117,25 +118,25 @@ Tracks which employee is currently logged in on each device. Used by the ingest 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `device_id` | `uuid` | FK → registered_agents.device_id |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees — the currently logged-in employee |
+| `device_id` | `uuid` | FK -> registered_agents.device_id |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees - the currently logged-in employee |
 | `is_active` | `boolean` | Only one active session per device at a time |
 | `created_at` | `timestamptz` | When employee logged in via tray app |
-| `ended_at` | `timestamptz` | Nullable — set on logout or next login |
+| `ended_at` | `timestamptz` | Nullable - set on logout or next login |
 
-UNIQUE partial index: `(device_id) WHERE is_active = true` — enforces one active session per device.
+UNIQUE partial index: `(device_id) WHERE is_active = true` - enforces one active session per device.
 
-**Flow:** Employee login via tray app → Service calls `POST /api/v1/agent/login` → previous session deactivated, new row inserted. Ingest endpoint looks up `agent_sessions` by `device_id` from Device JWT to resolve and validate the `employee_id` in the payload. `tenant_id` is resolved from the Device JWT and is never trusted from the ingest payload.
+**Flow:** Employee login via tray app -> Service calls `POST /api/v1/agent/login` -> previous session deactivated, new row inserted. Ingest endpoint looks up `agent_sessions` by `device_id` from Device JWT to resolve and validate the `employee_id` in the payload. `tenant_id` is resolved from the Device JWT and is never trusted from the ingest payload.
 
-**Foreign Keys:** `device_id` → [[#`registered_agents`|registered_agents]], `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `device_id` -> [[#`registered_agents`|registered_agents]], `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` -> [[database/schemas/core-hr#`employees`|employees]]
 
 ---
 
 ## Related
 
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
-- [[modules/agent-gateway/data-collection|Data Collection]] — employee-device binding flow
+- [[modules/agent-gateway/data-collection|Data Collection]] - employee-device binding flow
 - [[modules/agent-gateway/work-location-evidence|Work Location Evidence]]
 - [[database/schema-catalog|Schema Catalog]]
 - [[database/migration-patterns|Migration Patterns]]

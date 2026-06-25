@@ -1,38 +1,38 @@
-# Navigation Patterns
+﻿# Navigation Patterns
 
 ## Navigation Hierarchy
 
 ```
-┌─ Topbar ─────────────────────────────────────────────────────────────────┐
-│  [☰]  [⚙Config|▶Ops]  Breadcrumbs  ···  [⌘K Search]  [Entity▾]  [🌙][🔔][Av] │
-├──────┬──────────────────┬────────────────────────────────────────────────┤
-│ Rail │ Expansion Panel  │  Page Content                                  │
-│ 64px │ 220px            │                                                │
-│      │                  │                                                │
-│  ⌂   │  People          │                                                │
-│  👥  │  ├ Employees     │                                                │
-│  📊  │  ├ Leave         │                                                │
-│  🏢  │                  │                                                │
-│  📅  │                  │                                                │
-│  📥  │                  │                                                │
-│  ⚙   │                  │                                                │
-│  🔧  │                  │                                                │
-│      │                  │                                                │
-│ [Av] │                  │                                                │
-│ [🌙] │                  │                                                │
-└──────┴──────────────────┴────────────────────────────────────────────────┘
++- Topbar -----------------------------------------------------------------+
+|  [[menu]]  Breadcrumbs  ,,,  [CmdK Search]  [Entityv]  [theme][bell][Av] |
++------+------------------+------------------------------------------------+
+| Rail | Expansion Panel  |  Page Content                                  |
+| 64px | 220px            |                                                |
+|      |                  |                                                |
+|  [home]   |  People          |                                                |
+|  People  |  + Employees     |                                                |
+|  Reports |  + Time Off      |                                                |
+|  Org     |                  |                                                |
+|  Calendar|                  |                                                |
+|  Inbox   |                  |                                                |
+|  [settings]   |                  |                                                |
+|  Tools   |                  |                                                |
+|      |                  |                                                |
+| [Av] |                  |                                                |
+| [theme] |                  |                                                |
++------+------------------+------------------------------------------------+
 ```
 
 ---
 
-## Sidebar — Pillar-Based Two-Level
+## Sidebar - Pillar-Based Two-Level
 
 ### Architecture
 
 The sidebar is split into two surfaces:
 
-1. **Icon Rail** — always visible (64px wide), shows one icon per pillar. Clicking an icon either navigates directly (for single-destination pillars) or opens the Expansion Panel for that pillar.
-2. **Expansion Panel** — slides in at 220px, shows the active pillar's sub-items. Pinnable on ≥1280px; flies out on hover when rail-only.
+1. **Icon Rail** - always visible (64px wide), shows one icon per pillar. Clicking an icon either navigates directly (for single-destination pillars) or opens the Expansion Panel for that pillar.
+2. **Expansion Panel** - slides in at 220px, shows the active pillar's sub-items. Pinnable on >=1280px; flies out on hover when rail-only.
 
 ### Icon Rail
 
@@ -42,7 +42,7 @@ The sidebar is split into two surfaces:
 | Surface | `bg-[var(--bg-surface)]` |
 | Border | `border-r border-[var(--border)]` |
 | Position | Flush left edge (`left-0`) |
-| Active indicator | 4px neutral dot (`bg-[var(--fg-1)]`) below icon — visible only when active |
+| Active indicator | 4px neutral dot (`bg-[var(--fg-1)]`) below icon - visible only when active |
 | Icon size | 16px (`size={16}`) |
 | Active icon color | `text-[var(--fg-1)]` |
 | Inactive icon color | `text-[var(--fg-3)]` |
@@ -59,7 +59,7 @@ The sidebar is split into two surfaces:
 | Sub-item font | Outfit 13px, `text-[var(--fg-3)]` |
 | Active item | `bg-[var(--accent-subtle)] border border-[var(--accent-border)] text-[var(--fg-1)]` |
 | Animation | `translateX` 200ms ease (unchanged) |
-| Pinnable | Yes, on ≥1280px (Zustand + localStorage) |
+| Pinnable | Yes, on >=1280px (Zustand + localStorage) |
 | Collapse trigger | Pin toggle button at panel top-right |
 
 ---
@@ -83,7 +83,7 @@ interface Pillar {
   id: string;
   icon: LucideIcon;
   label: string;
-  // If `href` is set and `items` is absent → direct navigation (no panel)
+  // If `href` is set and `items` is absent -> direct navigation (no panel)
   href?: string;
   items?: PillarItem[];
   permission?: string;
@@ -93,96 +93,66 @@ interface Pillar {
 // Permission model: hasPermission() checks both role permissions AND
 // employee-level overrides. Never hardcode role names.
 const pillars: Pillar[] = [
+  { id: 'home', icon: LayoutDashboard, label: 'Home', href: '/' },
   {
-    id: 'home',
-    icon: LayoutDashboard,
-    label: 'Home',
-    href: '/',
-    // No permission gate — visible to all authenticated users
-  },
-
-  {
-    id: 'people',
-    icon: Users,
-    label: 'People',
-    permission: 'people:read',
+    id: 'people', icon: Users, label: 'People', permission: 'employees:read',
     items: [
       { label: 'Employees', href: '/people/employees', permission: 'employees:read' },
-      { label: 'Leave',      href: '/people/leave',     permission: 'leave:read' },
+      { label: 'Onboarding', href: '/people/onboarding', permission: 'employees:write' },
+      { label: 'Offboarding', href: '/people/offboarding', permission: 'employees:write' },
+      { label: 'Checklist Templates', href: '/people/checklist-templates', permission: 'employees:write' },
     ],
   },
-
   {
-    id: 'workforce',
-    icon: Activity,
-    label: 'Workforce',
-    permission: 'workforce:view',
+    id: 'time-off', icon: CalendarRange, label: 'Time Off', permission: 'time_off:read',
     items: [
-      {
-        label: 'Live Dashboard',
-        href: '/workforce/live',
-        permission: 'workforce:dashboard',
-        // Activity, Work Insights, and Online Status are tabs within /workforce/live
-      },
+      { label: 'My Time Off', href: '/time-off', permission: 'time_off:read-own' },
+      { label: 'Team Time Off', href: '/time-off/team', permission: 'time_off:approve' },
+      { label: 'Types', href: '/time-off/types', permission: 'time_off:manage' },
+      { label: 'Policies', href: '/time-off/policies', permission: 'time_off:manage' },
+      { label: 'Entitlements', href: '/time-off/entitlements', permission: 'time_off:manage' },
     ],
   },
-
   {
-    id: 'organization',
-    icon: Network,
-    label: 'Organization',
-    permission: 'org:read',
+    id: 'time-attendance', icon: Activity, label: 'Time & Attendance', permission: 'attendance:read',
     items: [
-      { label: 'Org Chart',    href: '/org/chart',       permission: 'org:read' },
-      { label: 'Departments',  href: '/org/departments', permission: 'departments:read' },
-      { label: 'Teams',        href: '/org/teams',       permission: 'teams:read' },
+      { label: 'Attendance', href: '/time-attendance/attendance', permission: 'attendance:read-own' },
+      { label: 'Schedules', href: '/time-attendance/schedules', permission: 'attendance:read' },
+      { label: 'Clock-in Policy', href: '/time-attendance/clock-in-policy', permission: 'attendance:write' },
+      { label: 'Overtime Rules', href: '/time-attendance/overtime-rules', permission: 'attendance:write' },
     ],
   },
-
   {
-    id: 'calendar',
-    icon: CalendarRange,
-    label: 'Calendar',
-    href: '/calendar',
-    permission: 'calendar:read',
-  },
-
-  {
-    id: 'inbox',
-    icon: Inbox,
-    label: 'Inbox',
-    href: '/inbox',
-    permission: 'inbox:read',
-    badge: () => useUnresolvedInboxCount(),   // actionable items only
-  },
-
-  {
-    id: 'admin',
-    icon: UserCog,
-    label: 'Admin',
-    permission: 'admin:access',
+    id: 'work', icon: BriefcaseBusiness, label: 'Work', permission: 'projects:read',
     items: [
-      { label: 'Users & Roles', href: '/admin/users',      permission: 'users:manage' },
-      { label: 'Audit Log',     href: '/admin/audit',      permission: 'settings:system' },
-      { label: 'Agents',        href: '/admin/agents',     permission: 'agent:manage' },
-      { label: 'Devices',       href: '/admin/devices',    permission: 'devices:manage' },
-      { label: 'Compliance',    href: '/admin/compliance', permission: 'compliance:manage' },
+      { label: 'Projects', href: '/work/projects', permission: 'projects:read' },
+      { label: 'Work Items', href: '/work/items', permission: 'tasks:read' },
+      { label: 'Documents', href: '/work/documents', permission: 'documents:read' },
+      { label: 'Project Members', href: '/work/members', permission: 'projects:read' },
+      { label: 'Worklogs', href: '/work/worklogs', permission: 'time:read' },
     ],
   },
-
+  { id: 'calendar', icon: CalendarRange, label: 'Calendar', href: '/calendar', permission: 'calendar:read' },
+  { id: 'inbox', icon: Inbox, label: 'Inbox', href: '/inbox', permission: 'inbox:read', badge: () => useUnresolvedInboxCount() },
   {
-    id: 'settings',
-    icon: Settings,
-    label: 'Settings',
-    permission: 'settings:read',
+    id: 'monitoring', icon: Activity, label: 'Monitoring', permission: 'monitoring:view',
     items: [
-      { label: 'General',       href: '/settings/general',      permission: 'settings:read' },
-      { label: 'Monitoring',    href: '/settings/monitoring',   permission: 'monitoring:configure' },
-      { label: 'Notifications', href: '/settings/notifications',permission: 'notifications:configure' },
-      { label: 'Integrations',  href: '/settings/integrations', permission: 'integrations:manage' },
-      { label: 'Branding',      href: '/settings/branding',     permission: 'branding:manage' },
-      { label: 'Billing',       href: '/settings/billing',      permission: 'billing:read' },
-      { label: 'Alert Rules',   href: '/settings/alert-rules',  permission: 'alerts:manage' },
+      { label: 'Live Status', href: '/monitoring', permission: 'monitoring:view' },
+      { label: 'Alerts', href: '/monitoring/alerts', permission: 'monitoring:alerts:read' },
+      { label: 'Device Health', href: '/monitoring/devices', permission: 'agent:view-health' },
+    ],
+  },
+  {
+    id: 'settings', icon: Settings, label: 'Settings', permission: 'settings:read',
+    items: [
+      { label: 'General', href: '/settings/general', permission: 'settings:read' },
+      { label: 'Branding', href: '/settings/branding', permission: 'settings:branding' },
+      { label: 'Users', href: '/settings/users', permission: 'users:manage' },
+      { label: 'Roles & Permissions', href: '/settings/roles', permission: 'roles:manage' },
+      { label: 'Notifications', href: '/settings/notifications', permission: 'notifications:configure' },
+      { label: 'Billing', href: '/settings/billing', permission: 'billing:read' },
+      { label: 'Devices', href: '/settings/devices', permission: 'settings:device' },
+      { label: 'Audit Log', href: '/settings/audit', permission: 'audit:read' },
     ],
   },
 ];
@@ -267,7 +237,7 @@ When the expansion panel is closed (rail-only mode), hovering a pillar that has 
 ```tsx
 function RailItem({ pillar, isActive, onClick }: RailItemProps) {
   if (!pillar.items) {
-    // Direct nav — simple tooltip
+    // Direct nav - simple tooltip
     return (
       <Tooltip>
         <TooltipTrigger asChild>
@@ -281,7 +251,7 @@ function RailItem({ pillar, isActive, onClick }: RailItemProps) {
     );
   }
 
-  // Has sub-items — HoverCard flyout when panel is closed
+  // Has sub-items - HoverCard flyout when panel is closed
   return (
     <HoverCard openDelay={150} closeDelay={100}>
       <HoverCardTrigger asChild>
@@ -314,7 +284,7 @@ Navigation is responsive from Phase 1 and must preserve the same route, badge, a
 |:---------|:-----------------|:---------|
 | Mobile `<640px` | Hamburger + `MobileNavDrawer` | Drawer contains entity context, search entry, all visible pillars, sub-items, badges, and profile/settings access. It closes after navigation. |
 | Tablet `640-1023px` | Hamburger + drawer | Same route map as desktop. Drawer may use two-level accordion groups for pillar items. |
-| Desktop `>=1024px` | Rail + expansion panel | Rail visible; expansion panel pinnable. At 1024–1279px the panel may default to collapsed/flyout mode; at ≥1280px it can be pinned open. |
+| Desktop `>=1024px` | Rail + expansion panel | Rail visible; expansion panel pinnable. At 1024-1279px the panel may default to collapsed/flyout mode; at >=1280px it can be pinned open. |
 
 State rules:
 
@@ -328,28 +298,27 @@ State rules:
 
 Height: **48px**, glass surface (`bg-white/5 backdrop-blur border-b border-white/10`).
 
-Full element order (left → right):
+Full element order (left -> right):
 
 ```
-[≡ Hamburger]  [⚙ Config | ▶ Ops]  [Breadcrumbs]  ···spacer···  [⌘K Search]  [Entity ▾]  [🌙 Theme]  [🔔 Bell]  [Avatar]
+[menu Hamburger]  [Breadcrumbs]  ,,,spacer,,,  [CmdK Search]  [Entity v]  [Theme]  [Bell]  [Avatar]
 ```
 
 | Element | Position | Visibility | Behaviour |
 |:--------|:---------|:-----------|:----------|
-| Hamburger `≡` | Left | Mobile/tablet only (`< 1024px`) | Opens responsive navigation drawer |
-| App switcher `[⚙ Config \| ▶ Ops]` | Left (after hamburger) | Only when user has **both** `config:access` + `ops:access` | Segmented pill — see [[frontend/design-system/patterns/app-entity-switcher\|App + Entity Switcher]] |
-| Breadcrumbs | Left (after app switcher) | Always | Outfit 400, 13px, zinc-500 — auto-generated from route |
-| Quick Search pill | Center/right | Always | Opens Quick Search modal (`⌘K` / `Ctrl+K`) |
-| Entity chip `[Entity ▾]` | Right (before theme toggle) | Only when tenant has **more than one** legal entity and user has access to **more than one** | Compact dropdown — see [[frontend/design-system/patterns/app-entity-switcher\|App + Entity Switcher]] |
-| Theme Toggle | Right (before bell) | Always | Sun/Moon/Monitor — cycles system→light→dark |
+| Hamburger `menu` | Left | Mobile/tablet only (`< 1024px`) | Opens responsive navigation drawer |
+| Breadcrumbs | Left (after hamburger) | Always | Outfit 400, 13px, zinc-500 - auto-generated from route |
+| Quick Search pill | Center/right | Always | Opens Quick Search modal (`CmdK` / `Ctrl+K`) |
+| Entity chip `[Entity v]` | Right (before theme toggle) | Only when tenant has **more than one** legal entity and user has access to **more than one** | Compact dropdown - see [[frontend/design-system/patterns/app-entity-switcher\|Entity Context Pattern]] |
+| Theme Toggle | Right (before bell) | Always | Sun/Moon/Monitor - cycles system->light->dark |
 | Notification Bell | Right | Always | FYI-only informational alerts |
 | User Avatar | Right | Always | Profile, preferences, logout |
 
-For full app switcher and entity chip behaviour, states, and responsive rules see [[frontend/design-system/patterns/app-entity-switcher|App + Entity Switcher Pattern]].
+For legal-entity context behaviour, states, and responsive rules see [[frontend/design-system/patterns/app-entity-switcher|Entity Context Pattern]]. There is no customer-facing app switcher in Phase 1.
 
 ---
 
-## Quick Search (⌘K)
+## Quick Search (CmdK)
 
 Renamed from "Command Palette." A glass modal overlay, keyboard-navigable, with violet highlight on selection.
 
@@ -363,11 +332,11 @@ function QuickSearch() {
           <CommandItem onSelect={() => router.push('/people/employees')}>
             <Users className="h-4 w-4 mr-2" /> Employees
           </CommandItem>
-          <CommandItem onSelect={() => router.push('/people/leave')}>
-            <CalendarDays className="h-4 w-4 mr-2" /> Leave Requests
+          <CommandItem onSelect={() => router.push('/time-off')}>
+            <CalendarDays className="h-4 w-4 mr-2" /> Time Off Requests
           </CommandItem>
-          <CommandItem onSelect={() => router.push('/workforce/live')}>
-            <Activity className="h-4 w-4 mr-2" /> Live Dashboard
+          <CommandItem onSelect={() => router.push('/monitoring')}>
+            <Activity className="h-4 w-4 mr-2" /> Live Status
           </CommandItem>
         </CommandGroup>
         <CommandGroup heading="Recent Employees">
@@ -385,7 +354,7 @@ function QuickSearch() {
             <Plus className="h-4 w-4 mr-2" /> Create Employee
           </CommandItem>
           <CommandItem onSelect={openSubmitLeave}>
-            <Plus className="h-4 w-4 mr-2" /> Submit Leave Request
+            <Plus className="h-4 w-4 mr-2" /> Submit Time Off Request
           </CommandItem>
         </CommandGroup>
       </CommandList>
@@ -400,7 +369,7 @@ function QuickSearch() {
 
 ## Notification Bell
 
-FYI-only. Does not surface actionable items — those belong in Inbox.
+FYI-only. Does not surface actionable items - those belong in Inbox.
 
 ```tsx
 function NotificationBell() {
@@ -437,9 +406,9 @@ Auto-generated from the current route. Dynamic segments (`[id]`) resolve to enti
 ```tsx
 // Examples:
 // People > Employees > John Doe
-// People > Leave > Calendar
-// Workforce > Live Dashboard
-// Settings > Alert Rules
+// Time Off > Team Time Off
+// Monitoring > Live Status
+// Settings > Notifications
 ```
 
 Rules:
@@ -452,10 +421,10 @@ Rules:
 
 ## Tab Navigation
 
-Used **sparingly** — only for truly separate concerns within a single page, not for primary navigation.
+Used **sparingly** - only for truly separate concerns within a single page, not for primary navigation.
 
 ```tsx
-// Example: Workforce Live Dashboard — tabs are separate concerns within one page
+// Example: Monitoring Live Status - tabs are separate concerns within one page
 <Tabs defaultValue="activity">
   <TabsList>
     <TabsTrigger value="activity">Activity</TabsTrigger>
@@ -468,7 +437,7 @@ Used **sparingly** — only for truly separate concerns within a single page, no
 </Tabs>
 ```
 
-Tabs sync to URL hash for deep-linking: `/workforce/live#insights`
+Tabs sync to URL hash for deep-linking: `/monitoring#insights`
 
 Do not use tabs to replicate pillar-level navigation. If a distinction warrants its own nav item, it belongs in the pillar config, not as a tab.
 
@@ -476,7 +445,7 @@ Do not use tabs to replicate pillar-level navigation. If a distinction warrants 
 
 ## Related
 
-- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — page structure
-- [[frontend/design-system/foundations/iconography|Iconography]] — nav icons
-- [[frontend/architecture/routing|Routing]] — route guards
-- [[frontend/cross-cutting/authorization|Authorization]] — permission gating
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] - page structure
+- [[frontend/design-system/foundations/iconography|Iconography]] - nav icons
+- [[frontend/architecture/routing|Routing]] - route guards
+- [[frontend/cross-cutting/authorization|Authorization]] - permission gating

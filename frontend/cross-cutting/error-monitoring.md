@@ -1,155 +1,39 @@
-# Error Monitoring
+﻿# Error Monitoring
 
-## Stack
+> **Provider not yet confirmed.** No product decision has been made on which error tracking service to use. The requirements below are provider-agnostic. Once a provider is chosen, add SDK setup, CLI commands, and source-map upload instructions here.
 
-| Tool | Purpose |
-|:-----|:--------|
-| **Sentry** | Error tracking, performance monitoring, session replay |
+## Required Capabilities
 
-## Integration
+Whichever provider is chosen must support:
 
-### Sentry Init
+- **PII scrubbing** — strip email, IP, username from error reports before transmission
+- **Sensitive field redaction** — redact `password`, `salary`, `ssn`, `token` from request payloads
+- **User context tagging** — attach `user.id` (no PII), `tenant_id`, `user_role`, `plan` to error events
+- **Error boundary integration** — capture Angular component-level render errors with section tags
+- **API error capture** — capture HTTP errors with `status_code`, `endpoint`, `correlation_id`, `problem_detail`
+- **Noisy error filtering** — ignore `ResizeObserver loop`, `AbortError`, `Network request failed`, `Load failed`, `ChunkLoadError`
+- **Source map upload** — CI pipeline uploads source maps to the provider so error reports show original TypeScript source; source maps are NOT served to the client (security)
 
-```tsx
-// lib/sentry.ts
-import * as Sentry from '@sentry/react';
+## Sampling Targets
 
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
-  environment: import.meta.env.VITE_ENV, // 'development' | 'staging' | 'production'
-  release: import.meta.env.VITE_APP_VERSION,
-
-  tracesSampleRate: 0.1,       // 10% of transactions
-  replaysSessionSampleRate: 0, // No session replays by default
-  replaysOnErrorSampleRate: 1, // 100% replay on error
-
-  // Scrub PII from error reports
-  beforeSend(event) {
-    // Remove user PII
-    if (event.user) {
-      delete event.user.email;
-      delete event.user.ip_address;
-      delete event.user.username;
-    }
-
-    // Remove sensitive request data
-    if (event.request?.data) {
-      const sensitiveKeys = ['password', 'salary', 'ssn', 'token'];
-      for (const key of sensitiveKeys) {
-        if (key in event.request.data) {
-          event.request.data[key] = '[REDACTED]';
-        }
-      }
-    }
-
-    return event;
-  },
-
-  // Ignore noisy errors
-  ignoreErrors: [
-    'ResizeObserver loop',
-    'AbortError',
-    'Network request failed',
-    'Load failed',
-    'ChunkLoadError', // Handled by our chunk recovery logic
-  ],
-});
-```
-
-### User Context
-
-```tsx
-// Set on login (ID only, no PII)
-Sentry.setUser({
-  id: user.id,
-  // NO email, name, or other PII
-});
-
-Sentry.setTag('tenant_id', user.tenantId);
-Sentry.setTag('user_role', user.role);
-Sentry.setTag('plan', user.tenantPlan);
-```
-
-### Error Boundary Integration
-
-React error boundaries catch render errors. Wrap sections with a Sentry-aware boundary:
-
-```tsx
-// components/shared/section-error-boundary.tsx
-import * as Sentry from '@sentry/react';
-import { Component, type ReactNode } from 'react';
-
-interface Props { section: string; children: ReactNode; }
-interface State { hasError: boolean; error?: Error; }
-
-export class SectionErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false };
-
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error) {
-    Sentry.captureException(error, { tags: { section: this.props.section } });
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <PageError error={this.state.error} reset={() => this.setState({ hasError: false })} />;
-    }
-    return this.props.children;
-  }
-}
-
-// Usage in pages:
-// <SectionErrorBoundary section="hr">
-//   <EmployeeList />
-// </SectionErrorBoundary>
-```
-
-### API Error Capture
-
-```tsx
-// Capture API errors with context
-function captureApiError(error: ApiError, context?: Record<string, any>) {
-  Sentry.captureException(error, {
-    tags: {
-      error_type: 'api',
-      status_code: error.problem.status,
-      endpoint: error.endpoint,
-    },
-    extra: {
-      problem_detail: error.problem.detail,
-      correlation_id: error.correlationId,
-      ...context,
-    },
-  });
-}
-```
+| Signal | Target Rate |
+|:-------|:------------|
+| Error traces | 10% of transactions |
+| Session replay (normal) | 0% |
+| Session replay (on error) | 100% |
 
 ## Alert Rules
 
 | Condition | Severity | Action |
 |:----------|:---------|:-------|
 | Error rate > 5% of requests in 5 min | Critical | PagerDuty alert |
-| New error type (first occurrence) | Warning | Slack notification |
-| Error count > 100 in 1 hour | High | Slack notification |
-| Unhandled promise rejection | Medium | Sentry issue created |
-| API 5xx error spike | Critical | PagerDuty + Slack |
-
-## Source Maps
-
-- Upload source maps to Sentry during CI build
-- Source maps are NOT served to the client (security)
-- Allows Sentry to show original TypeScript source in error reports
-
-```bash
-# In CI pipeline — upload Vite build output
-npx @sentry/cli sourcemaps upload --release=$APP_VERSION ./dist/assets
-```
+| New error type (first occurrence) | Warning | Notification |
+| Error count > 100 in 1 hour | High | Notification |
+| Unhandled promise rejection | Medium | Issue created in error tracker |
+| API 5xx error spike | Critical | PagerDuty alert |
 
 ## Related
 
-- [[backend/messaging/error-handling|Error Handling]] — error boundary architecture
-- [[frontend/cross-cutting/analytics|Analytics]] — product analytics
-- [[frontend/cross-cutting/security|Security]] — PII scrubbing
+- [[backend/messaging/error-handling|Error Handling]] - error boundary architecture
+- [[frontend/cross-cutting/analytics|Analytics]] - product analytics
+- [[frontend/cross-cutting/security|Security]] - PII scrubbing

@@ -1,7 +1,7 @@
-# Document Acknowledgement
+﻿# Document Acknowledgement
 
 **Area:** Documents  
-**Trigger:** Employee receives policy document requiring acknowledgement (reaction — triggered by document publish)
+**Trigger:** Employee receives policy document requiring acknowledgement (reaction - triggered by document publish)
 **Required Permission(s):** Any employee (for assigned documents)  
 **Related Permissions:** `documents:manage` (track acknowledgement status)
 
@@ -9,7 +9,7 @@
 
 ## Preconditions
 
-- Policy document uploaded with acknowledgement required → [[Userflow/Documents/document-upload|Document Upload]]
+- Policy document uploaded with acknowledgement required -> [[Userflow/Documents/document-upload|Document Upload]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
@@ -19,24 +19,24 @@
 - **API:** `GET /api/v1/documents/acknowledgements/pending`
 
 ### Step 2: Read Document
-- **UI:** Click notification → document opens → must scroll through / spend minimum time before acknowledge button activates
+- **UI:** Click notification -> document opens -> must scroll through / spend minimum time before acknowledge button activates
 
 ### Step 3: Acknowledge
-- **UI:** Click "I have read and understood this document" → checkbox confirmation → submit
+- **UI:** Click "I have read and understood this document" -> checkbox confirmation -> submit
 - **API:** `POST /api/v1/documents/{id}/acknowledge`
-- **Backend:** AcknowledgementService.AcknowledgeAsync() → [[modules/documents/acknowledgements/overview|Acknowledgements]]
-- **DB:** `document_acknowledgements` — employee_id, timestamp, IP address
+- **Backend:** AcknowledgementService.AcknowledgeAsync() -> [[modules/documents/acknowledgements/overview|Acknowledgements]]
+- **DB:** `document_acknowledgements` - employee_id, timestamp, IP address
 
 ### Step 4: Admin Tracking
-- **UI:** Admin views Documents → Acknowledgements → see completion rate per document → list of pending employees → send reminder to overdue employees
+- **UI:** Admin views Documents -> Acknowledgements -> see completion rate per document -> list of pending employees -> send reminder to overdue employees
 
 ## Variations
 
 ### Overdue acknowledgements
-- System sends automatic reminders at configured intervals → escalates to manager if still pending
+- System sends automatic reminders at configured intervals -> escalates to manager if still pending
 
 ### Updated document
-- When new version uploaded → all previous acknowledgements reset → employees re-notified
+- When new version uploaded -> all previous acknowledgements reset -> employees re-notified
 
 ## Error Scenarios
 
@@ -47,8 +47,8 @@
 
 ## Events Triggered
 
-- `DocumentAcknowledged` → [[backend/messaging/event-catalog|Event Catalog]]
-- `AcknowledgementOverdue` → [[backend/messaging/event-catalog|Event Catalog]] (automated)
+- `DocumentAcknowledged` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `AcknowledgementOverdue` -> [[backend/messaging/event-catalog|Event Catalog]] (automated)
 
 ## Related Flows
 

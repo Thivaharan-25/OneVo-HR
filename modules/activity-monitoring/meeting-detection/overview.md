@@ -1,4 +1,4 @@
-# Meeting Detection
+﻿# Meeting Detection
 
 **Module:** Activity Monitoring
 **Feature:** Meeting Detection
@@ -16,11 +16,10 @@ Detects meeting sessions from desktop agent data. Phase 1 uses basic process nam
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `meeting_start` | `timestamptz` | |
 | `meeting_end` | `timestamptz` | |
-| `platform` | `varchar(20)` | `teams`, `zoom`, `meet`, `other` |
 | `duration_minutes` | `int` | Computed |
 | `had_camera_on` | `boolean` | Detected via process inspection |
 | `had_mic_activity` | `boolean` | Detected via audio device usage |
@@ -29,13 +28,13 @@ Detects meeting sessions from desktop agent data. Phase 1 uses basic process nam
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/activity/meetings/{employeeId}` | `workforce:view` | Meeting sessions |
+| GET | `/api/v1/activity/meetings/{employeeId}` | `monitoring:view` | Meeting sessions |
 
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
-- [[modules/activity-monitoring/meeting-detection/end-to-end-logic|Meeting Detection — End-to-End Logic]]
-- [[modules/activity-monitoring/meeting-detection/testing|Meeting Detection — Testing]]
+- [[modules/activity-monitoring/meeting-detection/end-to-end-logic|Meeting Detection - End-to-End Logic]]
+- [[modules/activity-monitoring/meeting-detection/testing|Meeting Detection - Testing]]
 - [[frontend/architecture/overview|Raw Data Processing]]
 - [[frontend/architecture/overview|Daily Aggregation]]
 - [[security/data-classification|Data Classification]]

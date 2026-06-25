@@ -2,16 +2,16 @@
 
 **Backend owner:** DEV1 Tasks 7-9, DEV4 Task 8  
 **Consumers:** DEV5 Tasks 5-7  
-**Canonical source:** `ONEVO.Api` admin surface (`/admin/v1/*`). Phase 1 has one backend deployment; `ONEVO.Admin.Api` must not be deployed.
+**Canonical source:** `ONEVO.Api` admin surface (`/admin/v1/*`). Phase 1 has one backend deployment; no separate admin backend service is deployed.
 
-**Provisioning API count:** Phase 1 tenant provisioning requires 23 admin endpoints: plan catalog, module catalog, country defaults, tenant validation, tenant list/create/detail/edit/status, subscription, modules, permission catalog, role template list/create/edit/apply, tenant role list/create/permission update, settings, invite admin, provisioning summary, and activation confirm. Tenant-facing role management after activation is separate under `/api/v1/roles`.
+**Provisioning API count:** Phase 1 tenant provisioning requires 23 admin endpoints: plan catalog, module catalog, country defaults, tenant validation, tenant list/create/detail/edit/status, subscription, modules, permission catalog, role template list/create/edit/apply, tenant role list/create/permission update, settings, invite admin, provisioning summary, and first-invoice generation. Tenant-facing role management after activation is separate under `/api/v1/roles`.
 
 **Catalog cost-management APIs:** reusable plan prices are calculated from selected package/module price brackets and company-size ranges. Reusable package/module price brackets are managed through catalog admin endpoints. Tenant provisioning can override calculated prices per tenant, but base catalog prices need their own APIs.
 
 **Backend API data rule:** every DTO below is the backend JSON contract between `ONEVO.Api` and the Developer Console. Field names are API response/request fields, not just UI labels. Frontend state may add view-only fields, but it must not rename or invent backend contract fields without updating this file.
 
 ```ts
-type TenantLifecycleStatus = "provisioning" | "trial" | "active" | "suspended" | "cancelled"
+type TenantLifecycleStatus = "provisioning" | "trial" | "trial_expired" | "pending_payment" | "active" | "suspended" | "cancelled"
 ```
 
 ---
@@ -146,7 +146,7 @@ interface UpdateSubscriptionPlanDto {
 interface ModuleCatalogItemDto {
   module_key: string
   name: string
-  pillar: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
+  pillar: "hr" | "monitoring" | "worksync" | "shared" | string
   phase: "phase_1" | "phase_2" | "future" | string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
   pricing_references: ModulePriceReferenceDto[]
@@ -187,7 +187,7 @@ Creates a reusable module catalog record. This is for ONEVO product/catalog mana
 interface CreateModuleCatalogItemDto {
   module_key: string
   name: string
-  pillar: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
+  pillar: "hr" | "monitoring" | "worksync" | "shared" | string
   phase: "phase_1" | "phase_2" | "future" | string
   pricing_unit: "per_employee" | "per_device" | "flat" | "custom"
   pricing_references?: ModulePriceReferenceDto[]
@@ -206,7 +206,7 @@ Updates reusable module metadata and reference values. Existing tenant entitleme
 ```ts
 interface UpdateModuleCatalogItemDto {
   name?: string
-  pillar?: "hr" | "workforce_intelligence" | "worksync" | "shared" | string
+  pillar?: "hr" | "monitoring" | "worksync" | "shared" | string
   phase?: "phase_1" | "phase_2" | "future" | string
   pricing_unit?: "per_employee" | "per_device" | "flat" | "custom"
   pricing_references?: ModulePriceReferenceDto[]
@@ -221,19 +221,20 @@ interface UpdateModuleCatalogItemDto {
 
 ## GET `/admin/v1/payment-gateways`
 
-Lists safe gateway metadata for Stripe and PayHere. Secrets are never returned.
+Lists safe gateway metadata for Stripe, Paddle, and PayHere. Secrets are never returned. Country routing is returned as country codes resolved from `payment_gateway_country_routes`.
 
 ```ts
 interface PaymentGatewayConfigDto {
   id: string
-  tenant_id: string | null
-  provider: "stripe" | "payhere"
-  mode: "test" | "live"
+  provider: "stripe" | "paddle" | "payhere"
+  environment: "sandbox" | "production"
   display_name: string
+  logo_url?: string | null
   public_key?: string | null
   merchant_id?: string | null
   webhook_url: string
-  is_default: boolean
+  country_codes: string[]
+  has_active_credentials: boolean
   is_active: boolean
   created_at: string
   updated_at: string | null
@@ -246,20 +247,22 @@ interface PaymentGatewayConfigListResponseDto {
 
 ## POST `/admin/v1/payment-gateways`
 
-Creates a Stripe or PayHere gateway config. Secret fields are encrypted and are never returned.
+Creates gateway metadata, stores encrypted credentials as a new `payment_gateway_credentials` row, and creates country routes. Secret fields are accepted only in the request body and are never returned.
 
 ```ts
 interface CreatePaymentGatewayConfigDto {
-  tenant_id?: string | null
-  provider: "stripe" | "payhere"
-  mode: "test" | "live"
+  provider: "stripe" | "paddle" | "payhere"
+  environment: "sandbox" | "production"
   display_name: string
-  public_key?: string | null          // Stripe publishable key when applicable
-  merchant_id?: string | null         // PayHere merchant ID when applicable
-  secret: string                      // Stripe secret key or PayHere merchant secret
-  webhook_secret?: string | null      // Stripe webhook secret or PayHere notify/hash secret when separate
+  logo_url?: string | null
+  public_key?: string | null
+  merchant_id?: string | null
   webhook_url: string
-  is_default?: boolean
+  country_codes: string[]
+  credentials: {
+    secret: string
+    webhook_secret?: string | null
+  }
   is_active?: boolean
 }
 
@@ -268,22 +271,36 @@ interface CreatePaymentGatewayConfigDto {
 
 ## PATCH `/admin/v1/payment-gateways/{id}`
 
-Updates safe metadata and optionally rotates gateway secrets.
+Updates safe metadata, country routes, and optionally creates a new active credential version. Existing credential rows are deactivated; they are not overwritten.
 
 ```ts
 interface UpdatePaymentGatewayConfigDto {
   display_name?: string
+  logo_url?: string | null
   public_key?: string | null
   merchant_id?: string | null
-  secret?: string
-  webhook_secret?: string | null
   webhook_url?: string
-  is_default?: boolean
+  country_codes?: string[]
+  credentials?: {
+    secret: string
+    webhook_secret?: string | null
+  }
   is_active?: boolean
   reason: string
 }
 
 // response: PaymentGatewayConfigDto
+```
+
+## GET `/admin/v1/payment-gateways/resolve?country={countryCode}`
+
+Resolves the active gateway for a country and environment from `payment_gateway_country_routes`.
+
+```ts
+interface PaymentGatewayResolveResponseDto {
+  country_code: string
+  gateway_config: PaymentGatewayConfigDto | null
+}
 ```
 
 ## GET `/admin/v1/reference/countries/{countryCode}/defaults`
@@ -370,7 +387,7 @@ interface CreateTenantDraftResponseDto {
 }
 ```
 
-Persistence rule: company name, slug, primary contact email, country, industry, registration/profile name, registration number, company size, timezone, and currency are stored as tenant profile/provisioning data. Tenant draft creation does not create deprecated registration-profile records. Activation/setup seeding creates the primary legal entity.
+Persistence rule: company name, slug, primary contact email, country, industry, registration/profile name, registration number, company size, timezone, and currency are stored as tenant profile/provisioning data. Tenant draft creation does not create deprecated registration-profile records. First-payment activation/setup seeding creates the primary legal entity.
 
 **Invite rule:** `POST /admin/v1/tenants` must not send the tenant owner invitation. The dedicated `POST /admin/v1/tenants/{id}/invite-admin` endpoint is the explicit send action.
 
@@ -426,7 +443,7 @@ interface UpdateTenantDraftDto {
 
 ```ts
 interface TenantStatusUpdateDto {
-  action: "suspend" | "unsuspend" | "activate"
+  action: "suspend" | "unsuspend" | "cancel"
   reason?: string
 }
 
@@ -575,7 +592,6 @@ interface UpdateRoleTemplateDto {
 
 Applying or editing a role template must validate the permission list against `GET /admin/v1/tenants/{id}/permissions/catalog`.
 
-Operators use global templates for reusable patterns and tenant-specific roles for one-customer needs. Role creation does not require job levels. Job levels must not auto-assign permissions; they can only suggest assignments that an authorized admin confirms. Hierarchy affects scoped access and workflow routing later.
 
 ## POST `/admin/v1/tenants/{id}/role-templates/{templateId}/apply`
 
@@ -658,8 +674,8 @@ interface TenantInitialSettingsDto {
   privacy_mode: boolean
   monitoring_transparency_mode?: "transparent" | "private" | "disclosed"
   desktop_agent_transparency_mode?: "visible" | "silent" | "policy_controlled"
-  leave_policy_defaults?: {
-    annual_leave_accrual_method?: "monthly" | "annual" | "manual"
+  time_off_policy_defaults?: {
+    annual_time_off_accrual_method?: "monthly" | "annual" | "manual"
     carry_over_cap_days?: number | null
   }
   module_settings?: Record<string, unknown>
@@ -780,14 +796,14 @@ interface ProvisioningSectionStatus {
 
 ## PATCH `/admin/v1/tenants/{id}/provision/confirm`
 
-Activation is allowed only after tenant profile, subscription/commercial terms, module selection, role templates, required settings/templates, and required setup services are complete. Owner invitation is an explicit action and must not be sent implicitly by activation.
+First-invoice generation is allowed only after tenant profile, subscription/commercial terms, module selection, role templates, required settings/templates, and required setup services are complete. Owner invitation is an explicit action and must not be sent implicitly. This action sets the tenant to `pending_payment` and keeps module entitlements non-active/payment-limited until first payment succeeds.
 
 ```ts
 interface ProvisionConfirmRequestDto {
   confirm: true
 }
 
-// success response: 204 No Content
+// success response: { tenant_id: string; status: "pending_payment"; first_invoice_id: string; invoice_url: string }
 // incomplete response: 422 with ProvisioningSummaryDto
 ```
 
@@ -825,7 +841,6 @@ interface CreateTenantAppRoleDto {
 // response: TenantAppRoleDto
 ```
 
-Description is optional here too. Role creation does not require job levels.
 
 ## PUT `/api/v1/roles/{id}`
 
@@ -1018,6 +1033,6 @@ interface AgentRingDto {
 - All `/admin/v1/*` endpoints reject tenant JWTs (`iss` mismatch -> 401)
 - `platform_role` claim is required on every admin endpoint; `viewer` role cannot mutate
 - Impersonation token is non-renewable (15 min) and writes an audit log regardless of outcome
-- Provisioning tenants (`status: "provisioning"`) are visible here but excluded from `/api/v1/*`
+- Provisioning and pending-payment tenants (`status: "provisioning"` or `"pending_payment"`) are visible here but excluded from `/api/v1/*`
 
 

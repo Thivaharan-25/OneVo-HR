@@ -1,4 +1,4 @@
-# Tenant Runtime Override Flows
+﻿# Tenant Runtime Override Flows
 
 ## Purpose
 
@@ -69,7 +69,7 @@ Override ON is allowed only when the tenant has the parent module entitlement an
 The Flags tab shows every flag defined on the platform, with columns:
 - Flag key
 - Global default value
-- This tenant's override (or "— (inherits default)" if no override is set)
+- This tenant's override (or "- (inherits default)" if no override is set)
 - Override toggle
 
 ### Toggling a Single Override
@@ -84,7 +84,7 @@ The Flags tab shows every flag defined on the platform, with columns:
 ### Clearing an Override (Revert to Global Default)
 
 1. On the flag row with an active override, click **Clear Override** (appears as a small x next to the toggle)
-2. The row reverts to showing "— (inherits default)"
+2. The row reverts to showing "- (inherits default)"
 3. **API call:** `DELETE /admin/v1/tenants/{id}/feature-flags/{flag}`. Deleting the override removes the `feature_flag_overrides` row.
 
 ### Bulk Override (All Flags for a Tenant)
@@ -93,4 +93,4 @@ For initial tenant setup or a wholesale flag reset:
 
 **API call:** `PUT /admin/v1/tenants/{id}/feature-flags` with body `{ "overrides": { "<flag_key>": true | false, ... }, "reason": "..." }`
 
-This replaces all existing overrides for the tenant with the provided set. Flags omitted from the payload revert to global default. This API is not exposed in the UI as a single action — it is called by the tenant card Manage/Configure module setup flow when bulk flag alignment is required.
+This replaces all existing overrides for the tenant with the provided set. Flags omitted from the payload revert to global default. This API is not exposed in the UI as a single action - it is called by the tenant card Manage/Configure module setup flow when bulk flag alignment is required.

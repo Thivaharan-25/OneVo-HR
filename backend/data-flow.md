@@ -1,4 +1,4 @@
-# Data Flow: ONEVO Platform
+﻿# Data Flow: ONEVO Platform
 
 **Last Updated:** 2026-05-08
 
@@ -18,16 +18,16 @@ Cross-feature reads compose multiple reader interfaces. Cross-feature writes sho
 
 ```text
 Browser
-  -> GET /api/v1/leave/requests?employeeId=...
+  -> GET /api/v1/time-off/requests?employeeId=...
   -> ONEVO.Api
   -> TenantResolutionMiddleware sets current tenant/user
-  -> PermissionMiddleware checks [RequirePermission("leave:read")]
-  -> LeaveController maps route/query params to GetLeaveRequestsQuery
+  -> PermissionMiddleware checks [RequirePermission("time_off:read")]
+  -> LeaveController maps route/query params to GetTimeOffRequestsQuery
   -> MediatR pipeline
-  -> GetLeaveRequestsQueryHandler
-       injects: ILeaveRequestReader
+  -> GetTimeOffRequestsQueryHandler
+       injects: ITimeOffRequestReader
        calls: _leaveRequests.ListForEmployeeAsync(employeeId, ct)
-       receives: List<LeaveRequestDto>
+       receives: List<TimeOffRequestDto>
   -> Controller returns HTTP 200 + JSON
 ```
 
@@ -37,14 +37,14 @@ The reader implementation lives in Infrastructure and applies tenant isolation, 
 
 ```text
 Browser
-  -> POST /api/v1/leave/requests/{id}/approve
+  -> POST /api/v1/time-off/requests/{id}/approve
   -> ONEVO.Api
   -> TenantResolutionMiddleware
-  -> PermissionMiddleware checks [RequirePermission("leave:approve")]
-  -> LeaveController maps body/route to ApproveLeaveRequestCommand
-  -> ValidationBehavior validates ApproveLeaveRequestValidator
-  -> ApproveLeaveRequestHandler
-       injects: ILeaveRequestRepository, IUnitOfWork
+  -> PermissionMiddleware checks [RequirePermission("time_off:approve")]
+  -> LeaveController maps body/route to ApproveTimeOffRequestCommand
+  -> ValidationBehavior validates ApproveTimeOffRequestValidator
+  -> ApproveTimeOffRequestHandler
+       injects: ITimeOffRequestRepository, IUnitOfWork
        loads aggregate: _leaveRequests.GetByIdAsync(id, ct)
        calls domain method: request.Approve(approverId)
        commits: _uow.SaveChangesAsync(ct)
@@ -59,20 +59,20 @@ Controller -> Command/Query -> Validator -> Handler -> Repository/Domain -> Unit
 
 ## Flow 3: Cross-Feature Read
 
-Example: an Employee Leave Summary card needs CoreHR employee data and Leave entitlement/request data.
+Example: an Employee Time Off Summary card needs CoreHR employee data and Time Off entitlement/request data.
 
 ```text
-GetEmployeeLeaveSummaryQueryHandler
+GetEmployeeTimeOffSummaryQueryHandler
   injects:
     IEmployeeReader
-    ILeaveEntitlementReader
-    ILeaveRequestReader
+    ITimeOffEntitlementReader
+    ITimeOffRequestReader
 
   employee = _employees.GetSummaryAsync(employeeId, ct)
   entitlement = _leaveEntitlements.GetForEmployeeYearAsync(employeeId, year, ct)
   pendingCount = _leaveRequests.CountPendingForEmployeeAsync(employeeId, ct)
 
-  combines those results into EmployeeLeaveSummaryDto
+  combines those results into EmployeeTimeOffSummaryDto
 ```
 
 The handler composes reader interfaces from the owning features. It does not query another feature's `DbSet` directly.

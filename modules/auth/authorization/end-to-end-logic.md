@@ -25,7 +25,7 @@ Any protected API endpoint
             - current tenant_subscriptions.selected_feature_keys must include it
             - if a runtime feature flag exists for the feature_key, it must evaluate enabled for this tenant
       -> 5. Check effective permission code for the user
-      -> 6. Apply hierarchy/access-policy scope for employee-data reads/writes
+      -> 6. For employee-data reads/writes, apply management coverage predicate
       -> 7. Continue to controller/action
 ```
 
@@ -97,14 +97,22 @@ POST /api/v1/users/{id}/permission-overrides
     -> 8. Audit log: permission_override.set
 ```
 
-## Hierarchy Scoping
+## Employee Visibility And Approval Routing
 
-Employee-data endpoints must apply assignment scope after permission checks. The frontend never sends employee ID lists.
+Employee-data endpoints must apply management coverage after permission checks. The frontend never sends employee ID lists. Phase 1 approval routing uses the same management coverage source.
 
 ```text
-IHierarchyScope.Resolve(userId, permissionCode, tenantId)
-  -> returns scope predicate based on user_roles.scope_type/scope_id:
-     Own | DirectReports | Department | Team | Organization
+EmployeeVisibilityResolver.Resolve(userId, permissionCode, tenantId)
+  -> load active positions occupied by the user
+  -> load active management_coverage_records for those owner positions
+  -> return employee visibility predicate for covered Position, Department, and Company targets
+
+ApprovalOwnerResolver.Resolve(requestEmployeeId, requiredPermission, tenantId)
+  -> load request employee's active Company, active position, and department
+  -> try Position coverage owners in order: Primary owner, Backup owner 1, Backup owner 2...
+  -> if none valid, try Department coverage owners in the same order
+  -> if none valid, try Company-wide coverage owners in the same order
+  -> if none valid, create routing issue
 ```
 
 ## Cache Invalidation
@@ -120,7 +128,7 @@ Any change to these records invalidates affected permission/session snapshots:
 | Tenant module entitlement changed | All tenant users |
 | Tenant selected feature keys changed | All tenant users |
 | Feature flag affecting a tenant changed | Users in affected tenant or feature-flag cache |
-| Employee reporting line changed | Affected hierarchy scopes |
+| Management coverage changed | Affected employee-visibility predicates and app-context capabilities |
 
 ## Error Scenarios
 

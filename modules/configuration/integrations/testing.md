@@ -1,4 +1,4 @@
-# Integrations — Testing
+﻿# Integrations - Testing
 
 **Module:** Configuration
 **Feature:** Integrations
@@ -18,7 +18,7 @@ public class IntegrationServiceTests
     [Fact]
     public async Task CreateAsync_ValidIntegration_EncryptsCredentials()
     {
-        var command = new CreateIntegrationCommand { IntegrationType = "stripe" };
+        var command = new CreateIntegrationCommand { IntegrationType = "peoplehr" };
 
         var result = await _sut.CreateAsync(command, default);
 
@@ -32,7 +32,7 @@ public class IntegrationServiceTests
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| Create integration | Unit | Credentials encrypted |
+| Create generic/legacy integration | Unit | Credentials encrypted |
 | Unknown type | Unit | 422 error |
 | Duplicate type | Unit | 409 Conflict |
 

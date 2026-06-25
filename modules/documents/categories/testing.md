@@ -1,4 +1,4 @@
-# Categories — Testing
+﻿# Categories - Testing
 
 **Module:** Documents
 **Feature:** Categories

@@ -1,4 +1,4 @@
-# Document Categories — End-to-End Logic
+﻿# Document Categories - End-to-End Logic
 
 **Module:** Documents
 **Feature:** Categories

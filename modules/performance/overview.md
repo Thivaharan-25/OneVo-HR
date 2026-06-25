@@ -1,8 +1,8 @@
-# Module: Performance
+﻿# Module: Performance
 
 **Feature Folder:** `Application/Features/Performance`
-**Phase:** 2 — Deferred
-**Pillar:** 1 — HR Management
+**Phase:** 2 - Deferred
+**Pillar:** 1 - HR Management
 **Owner:** Dev 2 (Week 3)
 **Tables:** 7
 **Task File:** Performance task file (deferred to Phase 2)
@@ -24,7 +24,7 @@ Manages performance review cycles, multi-rater reviews, peer feedback, goals (OK
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
 | **Depends on** | [[modules/org-structure/overview\|Org Structure]] | `IOrgStructureService` | Department hierarchy for cascade goals |
-| **Depends on** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IProductivityAnalyticsService` | Optional productivity scores for reviews — composite of agent activity data + WMS task metrics (`wms_productivity_snapshots`) when tenant has WMS integration |
+| **Depends on** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IProductivityAnalyticsService` | Optional productivity scores for reviews - composite of agent activity data + WMS task metrics (`wms_productivity_snapshots`) when tenant has WMS integration |
 
 ---
 
@@ -71,13 +71,13 @@ API endpoints:
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `name` | `varchar(100)` | e.g., "Q1 2026 Review" |
 | `cycle_type` | `varchar(20)` | `quarterly`, `annual`, `probation` |
 | `start_date` | `date` | |
 | `end_date` | `date` | |
 | `status` | `varchar(20)` | `draft`, `active`, `completed` |
-| `include_productivity_data` | `boolean` | **NEW** — pull scores from Productivity Analytics |
+| `include_productivity_data` | `boolean` | **NEW** - pull scores from Productivity Analytics |
 | `created_at` | `timestamptz` | |
 
 ### `reviews`
@@ -86,12 +86,12 @@ API endpoints:
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `cycle_id` | `uuid` | FK → review_cycles |
-| `employee_id` | `uuid` | FK → employees |
-| `reviewer_id` | `uuid` | FK → employees |
+| `cycle_id` | `uuid` | FK -> review_cycles |
+| `employee_id` | `uuid` | FK -> employees |
+| `reviewer_id` | `uuid` | FK -> employees |
 | `review_type` | `varchar(20)` | `self`, `manager`, `peer`, `360` |
-| `overall_rating` | `decimal(3,1)` | 1.0–5.0 |
-| `productivity_score` | `decimal(5,2)` | **NEW** — from Productivity Analytics (nullable) |
+| `overall_rating` | `decimal(3,1)` | 1.0-5.0 |
+| `productivity_score` | `decimal(5,2)` | **NEW** - from Productivity Analytics (nullable) |
 | `productivity_score_basis` | `varchar(30)` | Nullable; `composite`, `activity_only`, `worksync_only`, `insufficient_data` |
 | `productivity_data_coverage_percentage` | `decimal(5,2)` | Nullable; evidence completeness at score generation time |
 | `comments` | `text` | |
@@ -105,12 +105,11 @@ OKR-style goals with parent-child hierarchy.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
-| `parent_goal_id` | `uuid` | Self-referencing — cascading goals |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `parent_goal_id` | `uuid` | Self-referencing - cascading goals |
 | `title` | `varchar(200)` | |
 | `description` | `text` | |
-| `goal_type` | `varchar(20)` | `individual`, `team`, `company` |
 | `target_value` | `decimal(10,2)` | |
 | `current_value` | `decimal(10,2)` | |
 | `unit` | `varchar(20)` | `percentage`, `count`, `currency` |
@@ -124,9 +123,9 @@ OKR-style goals with parent-child hierarchy.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `from_employee_id` | `uuid` | FK → employees |
-| `to_employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `from_employee_id` | `uuid` | FK -> employees |
+| `to_employee_id` | `uuid` | FK -> employees |
 | `category` | `varchar(30)` | `teamwork`, `innovation`, `leadership`, `other` |
 | `message` | `text` | |
 | `points` | `int` | Reward points |
@@ -139,8 +138,8 @@ OKR-style goals with parent-child hierarchy.
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
 | `position_id` | `uuid` | FK -> positions |
-| `current_holder_id` | `uuid` | FK → employees |
-| `successor_id` | `uuid` | FK → employees |
+| `current_holder_id` | `uuid` | FK -> employees |
+| `successor_id` | `uuid` | FK -> employees |
 | `readiness` | `varchar(20)` | `ready_now`, `1_year`, `2_years`, `not_ready` |
 | `development_plan_json` | `jsonb` | |
 | `created_at` | `timestamptz` | |
@@ -151,10 +150,10 @@ OKR-style goals with parent-child hierarchy.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `requester_id` | `uuid` | FK → employees |
-| `respondent_id` | `uuid` | FK → employees |
-| `subject_id` | `uuid` | FK → employees (who is being reviewed) |
-| `cycle_id` | `uuid` | FK → review_cycles (nullable — ad hoc) |
+| `requester_id` | `uuid` | FK -> employees |
+| `respondent_id` | `uuid` | FK -> employees |
+| `subject_id` | `uuid` | FK -> employees (who is being reviewed) |
+| `cycle_id` | `uuid` | FK -> review_cycles (nullable - ad hoc) |
 | `status` | `varchar(20)` | `pending`, `completed`, `declined` |
 | `feedback_text` | `text` | |
 | `created_at` | `timestamptz` | |
@@ -165,8 +164,8 @@ OKR-style goals with parent-child hierarchy.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `employee_id` | `uuid` | FK → employees |
-| `initiated_by_id` | `uuid` | FK → users |
+| `employee_id` | `uuid` | FK -> employees |
+| `initiated_by_id` | `uuid` | FK -> users |
 | `reason` | `text` | |
 | `objectives_json` | `jsonb` | Measurable objectives |
 | `start_date` | `date` | |
@@ -177,15 +176,15 @@ OKR-style goals with parent-child hierarchy.
 
 ---
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module - MediatR)
 
-> These events are published and consumed within this module only. They never leave the module.
+> These events are published and consumed within this module only. They never cross the module boundary.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module - MediatR INotification)
 
 ### Publishes
 
@@ -206,9 +205,8 @@ OKR-style goals with parent-child hierarchy.
 
 ## Key Business Rules
 
-1. **Productivity score integration is optional** — controlled by `include_productivity_data` on review cycles. When enabled, `IProductivityAnalyticsService.GetProductivityScoreAsync()` is called during review creation. Store the returned `productivity_score_basis` and `productivity_data_coverage_percentage`. Composite scores combine agent-based activity data with WorkSync output metrics from `wms_productivity_snapshots`; if no WorkSync data exists, the score is `activity_only` and must be labelled as activity-derived evidence.
-2. **Goals are hierarchical** — parent_goal_id forms cascading OKRs (company → team → individual).
-3. **`tenant_id`** is used consistently on all tables — no column mapping workarounds needed.
+1. **Productivity score integration is optional** - controlled by `include_productivity_data` on review cycles. When enabled, `IProductivityAnalyticsService.GetProductivityScoreAsync()` is called during review creation. Store the returned `productivity_score_basis` and `productivity_data_coverage_percentage`. Composite scores combine agent-based activity data with WorkSync output metrics from `wms_productivity_snapshots`; if no WorkSync data exists, the score is `activity_only` and must be labelled as activity-derived evidence.
+3. **`tenant_id`** is used consistently on all tables - no column mapping workarounds needed.
 
 ---
 
@@ -228,20 +226,20 @@ OKR-style goals with parent-child hierarchy.
 
 ## Features
 
-- [[modules/performance/review-cycles/overview|Review Cycles]] — Review cycle management (quarterly, annual, probation) with productivity data toggle — frontend: [[modules/performance/review-cycles/frontend|Frontend]]
-- [[modules/performance/reviews/overview|Reviews]] — Multi-rater reviews (self, manager, peer, 360) with optional productivity score
-- [[modules/performance/goals-okr/overview|Goals Okr]] — OKR-style goals with hierarchical parent-child cascade
-- [[modules/performance/feedback/overview|Feedback]] — Ad-hoc and cycle-linked peer feedback requests
-- [[modules/performance/recognitions/overview|Recognitions]] — Peer recognition with category and reward points
-- [[modules/performance/improvement-plans/overview|Improvement Plans]] — Performance improvement plans with measurable objectives
-- [[Userflow/Performance/succession-planning|Succession Planning]] — Succession plans with readiness levels per position
+- [[modules/performance/review-cycles/overview|Review Cycles]] - Review cycle management (quarterly, annual, probation) with productivity data toggle - frontend: [[modules/performance/review-cycles/frontend|Frontend]]
+- [[modules/performance/reviews/overview|Reviews]] - Multi-rater reviews (self, manager, peer, 360) with optional productivity score
+- [[modules/performance/goals-okr/overview|Goals Okr]] - OKR-style goals with hierarchical parent-child cascade
+- [[modules/performance/feedback/overview|Feedback]] - Ad-hoc and cycle-linked peer feedback requests
+- [[modules/performance/recognitions/overview|Recognitions]] - Peer recognition with category and reward points
+- [[modules/performance/improvement-plans/overview|Improvement Plans]] - Performance improvement plans with measurable objectives
+- [[Userflow/Performance/succession-planning|Succession Planning]] - Succession plans with readiness levels per position
 
 ---
 
 ## Related
 
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — All performance data is tenant-scoped
-- [[backend/messaging/event-catalog|Event Catalog]] — Review cycle status drives calendar events
-- Performance task file (deferred to Phase 2) — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - All performance data is tenant-scoped
+- [[backend/messaging/event-catalog|Event Catalog]] - Review cycle status drives calendar events
+- Performance task file (deferred to Phase 2) - Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/productivity-analytics/overview|Productivity Analytics]], [[skills]]

@@ -1,160 +1,238 @@
 # Rendering Strategy
 
-> This app is a **Vite SPA — all rendering is Client-Side Rendering (CSR)**. There are no Server Components, no SSR, no `'use client'` directives, no streaming. All data fetching happens in the browser via TanStack Query. Loading states use React Suspense boundaries and TanStack Query `isLoading` flags.
+> This app is an **Angular 21 CSR SPA - all rendering is Client-Side Rendering**. There are no Server Components, no SSR, no streaming. All data fetching happens in the browser via Angular `HttpClient` with `toSignal()` / `resource()` for signal-integrated async data. Loading states use Angular `@defer` blocks, `@if` control flow, and signal-based flags.
 
 ## Why CSR
 
-- The app is behind authentication — SEO is not a concern
-- Vite SPA is simpler to host (static files + CDN), with no server runtime required
-- TanStack Query handles all the complexity of caching, background refetch, and stale-while-revalidate
+- The app is behind authentication - SEO is not a concern
+- Angular CLI builds static files deployable to any CDN, with no server runtime required
+- Angular signals and `resource()` handle reactive state, caching, and loading/error states natively
 
 ## Loading State Strategy
 
 | Level | Mechanism | When to Use |
 |:------|:----------|:------------|
-| Route transition | React Suspense around lazy-loaded page components | Heavy pages loaded with `React.lazy()` |
-| Section | `<Suspense fallback={<Skeleton />}>` inside page | Independent data sections |
-| Component | TanStack Query `isLoading` | Inline skeleton within a component |
-| Action | Mutation `isPending` | Button spinner / disabled state |
+| Route transition | Angular Router `loadComponent` / `loadChildren` with route-level loading indicator | Heavy feature modules loaded on demand |
+| Section | `@defer` with `@placeholder` and `@loading` blocks | Independent data sections within a page |
+| Component | Signal-based `loading()` flag from service or `resource()` | Inline skeleton within a component |
+| Action | `submitting` signal on form/button | Button spinner / disabled state |
 
 ## Page Rendering Pattern
 
-All pages follow the same pattern — a thin page component that imports feature components:
+All pages follow the same pattern - a standalone component that composes feature components:
 
-```tsx
-// src/pages/dashboard/people/employees/EmployeesPage.tsx
-import { Suspense } from 'react';
-import { PageHeader } from '@/components/shared/page-header';
-import { EmployeeList } from '@/components/hr/employee-list';
-import { TableSkeleton } from '@/components/shared/table-skeleton';
-import { PermissionGate } from '@/components/shared/permission-gate';
+```typescript
+// pages/people/employees/employees-page.component.ts
+@Component({
+  selector: 'app-employees-page',
+  standalone: true,
+  imports: [PageHeaderComponent, EmployeeListComponent, HasPermissionDirective],
+  template: `
+    <app-page-header title="Employees">
+      <button mat-flat-button *hasPermission="'employees:write'" routerLink="add">
+        Add Employee
+      </button>
+    </app-page-header>
 
-export function EmployeesPage() {
-  return (
-    <>
-      <PageHeader
-        title="Employees"
-        actions={[
-          <PermissionGate key="add" permission="employees:write">
-            <AddEmployeeButton />
-          </PermissionGate>
-        ]}
-      />
-      <Suspense fallback={<TableSkeleton rows={10} columns={6} />}>
-        <EmployeeList />
-      </Suspense>
-    </>
-  );
-}
+    @defer {
+      <app-employee-list />
+    } @placeholder {
+      <app-table-skeleton [rows]="10" [columns]="6" />
+    }
+  `,
+})
+export class EmployeesPageComponent {}
 ```
 
 ## Dashboard Home Pattern
 
-Multiple independent data sections each have their own Suspense boundary — they load in parallel, not sequentially:
+Multiple independent data sections each use their own `@defer` block - they load in parallel, not sequentially:
 
-```tsx
-// src/pages/dashboard/HomePage.tsx
-export function HomePage() {
-  return (
-    <>
-      <PageHeader title="Overview" />
-      <div className="grid grid-cols-4 gap-4">
-        <Suspense fallback={<StatCardSkeleton />}>
-          <EmployeeCountCard />
-        </Suspense>
-        <Suspense fallback={<StatCardSkeleton />}>
-          <ActiveWorkforceCard />
-        </Suspense>
-        <Suspense fallback={<StatCardSkeleton />}>
-          <PendingLeaveCard />
-        </Suspense>
-        <Suspense fallback={<StatCardSkeleton />}>
-          <OpenExceptionsCard />
-        </Suspense>
-      </div>
-      <Suspense fallback={<ChartSkeleton height={300} />}>
-        <WorkforceTrendChart />
-      </Suspense>
-    </>
-  );
-}
+```typescript
+// pages/dashboard/home-page.component.ts
+@Component({
+  selector: 'app-home-page',
+  standalone: true,
+  imports: [
+    PageHeaderComponent, EmployeeCountCardComponent,
+    ActiveMonitoringCardComponent, PendingLeaveCardComponent,
+    OpenExceptionsCardComponent, MonitoringTrendChartComponent,
+    StatCardSkeletonComponent, ChartSkeletonComponent,
+  ],
+  template: `
+    <app-page-header title="Overview" />
+    <div class="grid grid-cols-4 gap-4">
+      @defer {
+        <app-employee-count-card />
+      } @placeholder { <app-stat-card-skeleton /> }
+
+      @defer {
+        <app-active-monitoring-card />
+      } @placeholder { <app-stat-card-skeleton /> }
+
+      @defer {
+        <app-pending-leave-card />
+      } @placeholder { <app-stat-card-skeleton /> }
+
+      @defer {
+        <app-open-exceptions-card />
+      } @placeholder { <app-stat-card-skeleton /> }
+    </div>
+
+    @defer {
+      <app-monitoring-trend-chart />
+    } @placeholder { <app-chart-skeleton [height]="300" /> }
+  `,
+})
+export class HomePageComponent {}
 ```
 
 ## Lazy Loading Heavy Pages
 
-Routes with heavy components (charts, kanban boards, org charts) are lazy-loaded to reduce initial bundle:
+Routes with heavy components (charts, kanban boards, org charts) are lazy-loaded via Angular Router:
 
-```tsx
-// src/router.tsx
-import { lazy, Suspense } from 'react';
-import { PageSkeleton } from '@/components/shared/page-skeleton';
-
-const ProjectBoardPage   = lazy(() => import('@/pages/dashboard/workforce/projects/ProjectBoardPage'));
-const ProjectRoadmapPage = lazy(() => import('@/pages/dashboard/workforce/projects/ProjectRoadmapPage'));
-const OrgPage            = lazy(() => import('@/pages/dashboard/org/OrgPage'));
-const WorkforceAnalyticsPage = lazy(() => import('@/pages/dashboard/workforce/WorkforceAnalyticsPage'));
-const ChatPage           = lazy(() => import('@/pages/dashboard/workforce/ChatPage'));
-
-// Wrap lazy routes in Suspense in the route config:
-{
-  path: '/workforce/projects/:id/board',
-  element: (
-    <Suspense fallback={<PageSkeleton />}>
-      <ProjectBoardPage />
-    </Suspense>
-  ),
-}
+```typescript
+// app.routes.ts
+export const routes: Routes = [
+  {
+    path: 'work/projects/:id/items',
+    loadComponent: () =>
+      import('./pages/work/projects/project-board-page.component')
+        .then(m => m.ProjectBoardPageComponent),
+  },
+  {
+    path: 'org',
+    loadComponent: () =>
+      import('./pages/org/org-page.component')
+        .then(m => m.OrgPageComponent),
+  },
+  {
+    path: 'monitoring/analytics',
+    loadComponent: () =>
+      import('./pages/monitoring/monitoring-analytics-page.component')
+        .then(m => m.MonitoringAnalyticsPageComponent),
+  },
+];
 ```
 
 ## Lazy Loading Heavy Components
 
-Within a page, heavy components that aren't needed immediately:
+Within a page, heavy components that aren't needed immediately use `@defer`:
 
-```tsx
-import { lazy, Suspense } from 'react';
-
-const OrgChart       = lazy(() => import('@/components/org/org-chart'));
-const ActivityHeatmap = lazy(() => import('@/components/workforce/activity-heatmap'));
-const KanbanBoard    = lazy(() => import('@/components/wms/kanban-board'));
-
-// Usage with skeleton fallback:
-<Suspense fallback={<ChartSkeleton height={600} />}>
-  <OrgChart data={orgData} />
-</Suspense>
+```typescript
+@Component({
+  selector: 'app-monitoring-detail',
+  standalone: true,
+  imports: [ActivityHeatmapComponent, OrgChartComponent, KanbanBoardComponent],
+  template: `
+    @defer (on viewport) {
+      <app-activity-heatmap [data]="activityData()" />
+    } @placeholder {
+      <app-chart-skeleton [height]="400" />
+    }
+  `,
+})
+export class MonitoringDetailComponent {
+  activityData = input.required<ActivityData[]>();
+}
 ```
 
-**Apply `React.lazy()` to:** org charts, kanban boards, roadmap timelines, activity heatmaps, rich text editors, drag-and-drop widgets, and any component that pulls in a library >50KB (Recharts, react-dnd, etc.).
-
-> **Do NOT use `next/dynamic()`** — that is a Next.js API. In Vite use `React.lazy()` + `<Suspense>`.
+**Apply `@defer` or `loadComponent` to:** org charts, work item boards, Phase 2 roadmap timelines, activity heatmaps, rich text editors, drag-and-drop widgets, and any component that pulls in a library >50KB (ng2-charts, Angular CDK drag-drop, etc.).
 
 ## Error Handling
 
-```tsx
-// Wrap feature sections in error boundaries — NOT full-page boundaries for every route
-import { SectionErrorBoundary } from '@/components/shared/section-error-boundary';
-
-<SectionErrorBoundary section="employees">
-  <Suspense fallback={<TableSkeleton rows={10} />}>
-    <EmployeeList />
-  </Suspense>
-</SectionErrorBoundary>
+```typescript
+// Wrap feature sections in error-handling components - NOT full-page boundaries for every route
+@Component({
+  selector: 'app-employees-section',
+  standalone: true,
+  imports: [EmployeeListComponent, SectionErrorComponent],
+  template: `
+    @if (error()) {
+      <app-section-error section="employees" (retry)="reload()" />
+    } @else {
+      <app-employee-list />
+    }
+  `,
+})
+export class EmployeesSectionComponent {
+  private employeeService = inject(EmployeeService);
+  error = this.employeeService.error;
+  reload() { this.employeeService.refresh(); }
+}
 ```
 
-## App Route Memory
+## Customer App Route State
 
-When the user switches between the Config and Ops apps, the browser navigates to the other subdomain. To restore the user's last position, `AppRouteMemoryService` (shared lib) listens to Angular Router `NavigationEnd` events and writes the current route path to `localStorage`:
+Phase 1 uses one merged `customer-app`, so there is no cross-app route memory or customer-facing app switcher. Normal Angular Router state remains inside `customer-app`.
 
 ```
-Key: onevo_last_route_{userId}_{config|ops}
-Written: on every NavigationEnd
-Read: when [[frontend/design-system/patterns/app-entity-switcher|AppSwitcherComponent]] initiates a cross-app navigation
-Cleared: on logout
+Entity context: EntityContextService.activeEntityId()
+Route state: Angular Router query params for filters, tabs, and pagination
+Cleared: on logout where persisted by feature code
 ```
 
-This is the only state that survives cross-subdomain navigation outside of the session cookie. All other state (filters, pagination, form drafts) is considered ephemeral and is not persisted across app switches.
+Legal-entity context is handled by [[frontend/design-system/patterns/app-entity-switcher|Entity Context Pattern]]. Filters, pagination, and form drafts should stay feature-owned and should not introduce app-switcher state.
+
+## Library-Level Splitting
+
+Heavy libraries should only load with the components that need them:
+
+| Library | Size | Loaded With |
+|:--------|:-----|:------------|
+| ng2-charts / Chart.js | ~200KB | Chart components only |
+| date-fns | ~70KB | Calendar/date picker pages only |
+| @microsoft/signalr | ~50KB | Monitoring live + exceptions pages |
+| Angular Reactive Forms + Zod | ~40KB | Form-heavy pages only |
+
+## Bundle Composition Target
+
+| Chunk | Max Size (gzipped) | Contents |
+|:------|:-------------------|:---------|
+| Framework | <=80KB | Angular core, Router runtime |
+| Shared UI | <=40KB | Angular Material primitives, shared components |
+| Per-route | <=60KB | Route-specific components + services |
+| Charts | <=80KB | ng2-charts / Chart.js (loaded on demand) |
+| Real-time | <=20KB | SignalR client (loaded on demand) |
+
+## Feature-Gated Modules
+
+Some modules and module features are gated by tenant subscription. Module sections use active module keys; feature screens use active feature keys that already include commercial inclusion and runtime flag evaluation.
+
+```typescript
+// app.routes.ts - feature-gated route
+{
+  path: 'work/projects',
+  canActivate: [hasPermissionGuard('projects:read')],
+  loadComponent: () =>
+    import('./pages/work/projects/projects-page.component')
+      .then(m => m.ProjectsPageComponent),
+  data: { requiredFeature: 'work_management.projects' },
+}
+```
+
+Components also check at render time:
+
+```typescript
+@Component({
+  selector: 'app-monitoring-section',
+  standalone: true,
+  imports: [LiveDashboardComponent, UpgradeBannerComponent],
+  template: `
+    @if (authService.hasFeature('monitoring')) {
+      <app-live-dashboard />
+    } @else {
+      <app-upgrade-banner module="Monitoring" />
+    }
+  `,
+})
+export class MonitoringSectionComponent {
+  protected authService = inject(AuthService);
+}
+```
 
 ## Related
 
-- [[frontend/architecture/app-structure|App Structure]] — route tree and page file structure
-- [[frontend/architecture/overview|Overview]] — architecture principles
-- [[frontend/architecture/module-boundaries|Module Boundaries]] — code splitting strategy
+- [[frontend/architecture/app-structure|App Structure]] - route tree and page file structure
+- [[frontend/architecture/overview|Overview]] - architecture principles
+- [[frontend/architecture/module-boundaries|Module Boundaries]] - code splitting strategy

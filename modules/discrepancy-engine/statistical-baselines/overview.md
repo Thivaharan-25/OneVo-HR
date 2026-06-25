@@ -1,4 +1,4 @@
-# Statistical Baselines
+﻿# Statistical Baselines
 
 **Module:** Discrepancy Engine
 **Feature:** Statistical Baselines
@@ -31,8 +31,8 @@ Results are upserted into `employee_discrepancy_baselines`.
 
 | Condition | Method | Severity Brackets |
 |:----------|:-------|:------------------|
-| Baseline has ≥ 5 samples + stddev > 0 | `baseline_relative` (z-score) | z < 1.0 → none, 1.0–1.5 → low, 1.5–2.5 → high, ≥ 2.5 → critical |
-| Baseline unavailable or < 5 samples | `absolute` (fallback) | < 30 min → none, 30–60 → low, 60–180 → high, ≥ 180 → critical |
+| Baseline has >= 5 samples + stddev > 0 | `baseline_relative` (z-score) | z < 1.0 -> none, 1.0-1.5 -> low, 1.5-2.5 -> high, >= 2.5 -> critical |
+| Baseline unavailable or < 5 samples | `absolute` (fallback) | < 30 min -> none, 30-60 -> low, 60-180 -> high, >= 180 -> critical |
 
 ## Hangfire Job
 
@@ -43,11 +43,11 @@ Results are upserted into `employee_discrepancy_baselines`.
 ## Key Rules
 
 1. **Minimum 5 samples required** before baseline is used. New employees always use absolute thresholds.
-2. **Zero stddev is treated as unusable** — prevents division-by-zero and handles employees with perfectly consistent patterns.
-3. **Results are per-tenant, per-employee** — one baseline row per employee per day.
+2. **Zero stddev is treated as unusable** - prevents division-by-zero and handles employees with perfectly consistent patterns.
+3. **Results are per-tenant, per-employee** - one baseline row per employee per day.
 4. **Baseline data is stored on `discrepancy_events`** as `z_score`, `baseline_avg_minutes`, `baseline_stddev_minutes`, and `severity_method` for auditability.
 
 ## Related
 
-- [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] — `employee_discrepancy_baselines` table
+- [[database/schemas/discrepancy-engine|Discrepancy Engine Schema]] - `employee_discrepancy_baselines` table
 - [[modules/discrepancy-engine/overview|Discrepancy Engine Overview]]

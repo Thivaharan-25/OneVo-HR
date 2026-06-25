@@ -1,4 +1,4 @@
-# Screenshots — Testing
+﻿# Screenshots - Testing
 
 **Module:** Activity Monitoring
 **Feature:** Screenshots
@@ -64,7 +64,7 @@ public class ScreenshotServiceTests
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
-- [[modules/activity-monitoring/screenshots/end-to-end-logic|Screenshots — End-to-End Logic]]
+- [[modules/activity-monitoring/screenshots/end-to-end-logic|Screenshots - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

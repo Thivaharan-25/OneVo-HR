@@ -81,9 +81,9 @@
       "lastName": "Doe",
       "email": "jane@acme.com"
     },
-    "permissions": ["employees:read", "leave:create"],
-    "active_modules": ["core_hr", "leave"],
-    "active_features": ["core_hr.employee_profiles", "leave.requests"]
+    "permissions": ["employees:read", "time_off:create"],
+    "active_modules": ["core_hr", "time_off"],
+    "active_features": ["core_hr.employee_profiles", "time_off.requests"]
   }
   ```
 - **Backend:** `AuthSessionService.CreateSessionAsync()` -> [[frontend/cross-cutting/authentication|Authentication]]
@@ -104,7 +104,6 @@
 
 ### Step 7: Redirect to Dashboard
 - **UI:** User redirected to `/dashboard`. Dashboard loads based on permissions:
-  - Widgets visible based on permission checks (e.g., "Team Leave" widget requires `leave:read` with team/reporting access policy)
   - Navigation sidebar built from permitted modules
   - Quick actions based on write permissions
   - Pending approvals count (if user has any `*:approve` permissions)

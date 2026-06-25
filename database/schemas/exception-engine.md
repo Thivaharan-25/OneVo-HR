@@ -1,8 +1,10 @@
-# Exception Engine — Schema
+﻿# Exception Engine - Schema
 
 **Module:** [[modules/exception-engine/overview|Exception Engine]]
-**Phase:** Phase 1
+**Phase:** Phase 2
 **Tables:** 5
+
+> Phase 1 note: full Exception Engine tables are deferred. Phase 1 lightweight alerts/notifications should use the Notifications/monitoring alert path and route to the recipient resolved by Monitoring Policy, not configurable exception rules or workflow escalation chains.
 
 ---
 
@@ -11,32 +13,30 @@
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `alert_id` | `uuid` | FK → exception_alerts |
-| `acknowledged_by_id` | `uuid` | FK → users |
+| `alert_id` | `uuid` | FK -> exception_alerts |
+| `acknowledged_by_id` | `uuid` | FK -> users |
 | `action` | `varchar(20)` | `acknowledged`, `dismissed`, `escalated`, `noted` |
 | `comment` | `text` | Optional note |
 | `acted_at` | `timestamptz` |  |
 
-**Foreign Keys:** `alert_id` → [[#`exception_alerts`|exception_alerts]], `acknowledged_by_id` → [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `alert_id` -> [[#`exception_alerts`|exception_alerts]], `acknowledged_by_id` -> [[database/schemas/infrastructure#`users`|users]]
 
 ---
 
 ## `escalation_chains`
 
-> **Scope:** Alert routing for system-detected anomalies (GPS mismatch, excessive idle, unusual activity). Triggered by `exception_alerts`. See [[database/schemas/shared-platform#`escalation_rules`|escalation_rules]] for workflow SLA timeouts (leave pending >N hours etc.) — those are a separate system.
+> **Scope:** Alert routing for system-detected anomalies (GPS mismatch, excessive idle, unusual activity). Triggered by `exception_alerts`. See [[database/schemas/shared-platform#`escalation_rules`|escalation_rules]] for workflow SLA timeouts (Time Off pending >N hours etc.) - those are a separate system.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `severity` | `varchar(20)` | Which severity triggers this chain |
-| `step_order` | `int` | 1, 2, 3… |
-| `resolver_type` | `varchar(50)` | `reporting_chain_first_eligible`, `reporting_manager`, `team_lead`, `department_owner`, `permission`, `legal_entity`, `department`, `team`, `position`, `position_branch`, `specific_employee`, `configured_escalation_resolver`, `previous_approver`, `case_participants` |
-| `resolver_config` | `jsonb` | Resolver-specific configuration such as permission key, legal entity/department/team/position/position branch id, optional job level id, or selected employee id |
+| `step_order` | `int` | 1, 2, 3... |
 | `delay_minutes` | `int` | Wait N minutes before escalating to next step |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
 
 **Routing rule:** Do not use fixed role names such as HR or CEO for exception routing. Resolve recipients dynamically through `resolver_type` + `resolver_config` so tenant-specific org structures and permissions control routing.
 
@@ -47,9 +47,9 @@
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
-| `rule_id` | `uuid` | FK → exception_rules |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `rule_id` | `uuid` | FK -> exception_rules |
 | `triggered_at` | `timestamptz` | When the rule fired |
 | `severity` | `varchar(20)` | Copied from rule at trigger time |
 | `summary` | `varchar(500)` | Human-readable description |
@@ -57,7 +57,7 @@
 | `status` | `varchar(20)` | `new`, `acknowledged`, `dismissed`, `escalated` |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]], `rule_id` → [[#`exception_rules`|exception_rules]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` -> [[database/schemas/core-hr#`employees`|employees]], `rule_id` -> [[#`exception_rules`|exception_rules]]
 
 ---
 
@@ -66,19 +66,17 @@
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `rule_name` | `varchar(100)` | Human-readable name |
 | `rule_type` | `varchar(30)` | `low_activity`, `excess_idle`, `unusual_pattern`, `excess_meeting`, `no_presence`, `break_exceeded`, `verification_failed`, `non_allowed_app`, `presence_without_activity`, `heartbeat_gap`, `work_location_mismatch` |
 | `threshold_json` | `jsonb` | Rule-specific thresholds (see below) |
 | `severity` | `varchar(20)` | `info`, `warning`, `critical` |
 | `is_active` | `boolean` |  |
-| `applies_to` | `varchar(20)` | `all`, `department`, `team`, `employee` |
-| `applies_to_id` | `uuid` | Nullable — department/team/employee ID |
-| `created_by_id` | `uuid` | FK → users |
+| `created_by_id` | `uuid` | FK -> users |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `created_by_id` → [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `created_by_id` -> [[database/schemas/infrastructure#`users`|users]]
 
 ---
 
@@ -87,16 +85,16 @@
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants, UNIQUE |
+| `tenant_id` | `uuid` | FK -> tenants, UNIQUE |
 | `check_interval_minutes` | `int` | Default 5 |
 | `active_from_time` | `time` | e.g., 08:00 |
 | `active_to_time` | `time` | e.g., 18:00 |
-| `active_days_json` | `jsonb` | e.g., `[1,2,3,4,5]` (Mon–Fri) |
+| `active_days_json` | `jsonb` | e.g., `[1,2,3,4,5]` (Mon-Fri) |
 | `timezone` | `varchar(50)` | e.g., "Asia/Colombo" |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]]
 
 ---
 

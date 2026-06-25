@@ -1,145 +1,223 @@
 # Position Setup
 
 **Area:** Org Structure  
-**Trigger:** Admin creates or modifies the position structure (user action - configuration)  
+**Trigger:** Admin creates or edits a position  
 **Required Permission(s):** `org:manage`  
-**Related Permissions:** `employees:read` (to browse existing positions for reports-to selection), `roles:manage` or `access:approve` (to configure position access templates)
+**Related Permissions:** `roles:manage` to edit position access; `position:approve` to approve generated position access
 
 ---
 
-## Preconditions
+## Phase 1 Source of Truth
 
-- Legal entity exists -> [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
-- Department exists within the target legal entity -> [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
-- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+Positions are the source of org structure, reporting lines, occupancy, optional default access, and management coverage. Management coverage is the single source for employee visibility and Phase 1 approval routing.
+
+Position setup is Company-context first. The selected Company in the topbar is the operating boundary for the form. Internally, that Company maps to `legal_entity_id`; admins do not select legal entity inside the Create/Edit Position modal.
+
+The Create/Edit Position modal has two layers:
+
+1. **Core Position Structure** - always visible.
+2. **Grant system access from this position** - optional block, hidden until the admin enables it.
+
+No Phase 1 position flow depends on the Workflow Engine. Sensitive access uses a lightweight approval record and notifications to the single eligible owner resolved from management coverage.
 
 ---
 
-## Flow Steps
-
-### Step 1: Navigate to Positions
-- **UI:** Sidebar -> Organization -> Positions -> list view grouped by legal entity and department
-- **API:** `GET /api/v1/org/positions?legalEntityId={id}` - returns all positions for the selected legal entity
-
-### Step 2: Select Legal Entity Context
-- **UI:** Legal entity switcher in the Org Structure top bar, similar to a workspace selector.
-- If the user can access one legal entity, that entity is auto-selected and the switcher is hidden or read-only.
-- If the user can access multiple legal entities, the user selects the working legal entity before opening Positions.
-- Positions list, department pickers, reports-to pickers, create forms, edit forms, and reporting tree all use the active legal entity context.
-
-### Step 3: Create Position
-- **UI:** Click "Add Position" -> side panel or modal within the active legal entity context. The form does not show Legal Entity as an editable field.
+## Core Position Structure
 
 | Field | Required | Notes |
 |:------|:---------|:------|
-| Position Name | Yes | Unique within the legal entity |
-| Department | Yes | Dropdown filtered to departments belonging to the selected legal entity |
-| Position Type | Yes | `unique` or `pooled` |
-| Capacity / Max Occupancy | Yes | Integer >= 1; represents the headcount ceiling for this position. `unique` positions must have max occupancy 1 |
-| Reports To | No | Position picker filtered to same legal entity; leave blank for root positions |
-| Position Access Templates | No | Optional role/scope templates used to generate access grants when an employee is placed into the position. Visible only to users with `roles:manage` or `access:approve` |
+| Position name | Yes | Unique within the selected Company |
+| Position code | Optional | Stable import/integration code |
+| Company context | Yes | Comes from the topbar-selected Company; maps internally to `legal_entity_id` |
+| Department | Yes | Must belong to the selected Company |
+| Reports to | Conditional | Required unless this is a root position; same-Company `unique` position |
+| Type | Yes | `unique` capacity 1 or `pooled` capacity > 1 |
+| Capacity / max occupancy | Yes | `unique` requires 1; `pooled` must be >= 1 |
+| Status | Yes | Active or inactive |
+| Description / notes | Optional | Internal admin note |
 
-- **API:** `POST /api/v1/org/positions`
-- **DB:** `positions` - new record with `legal_entity_id` from the active context, `department_id`, `position_type`, `reports_to_position_id` (nullable), `max_occupancy`
-- **Backend guard:** the selected legal entity context is still validated server-side; the department and reports-to position must belong to that legal entity.
-
-### Step 4: Configure Position Access Templates
-- **UI visibility:** This section is hidden from users who do not have `roles:manage` or `access:approve`.
-- **Purpose:** A position access template defines the default access generated when an employee is onboarded, assigned, transferred, or promoted into the position. The position itself is not the active permission grant.
-- **Fields per template:** Role, scope type, scope target, sensitivity, `requires_approval`, effective start rule, optional effective end rule.
-- **HR coverage rule:** For HR positions, the scope is the employee coverage area, not necessarily the position's own department. Example: an HR employee may sit in the HR department while the template grants `Department = EngineeringDepartmentId`.
-- **Approval rule:** If `requires_approval = true`, the grant can be activated immediately only when the actor performing the employee movement has `roles:manage` or `access:approve`. Otherwise the backend creates an access approval request.
-- **Target department rule:** Approval routing uses the target position's department, not the actor's department.
-- **Pooled position rule:** When editing access on a pooled position, the UI must force the authorized user to choose:
-  - Apply to the position template, affecting all current and future occupants.
-  - Apply only to the current employee during assignment, creating an employee-specific grant or override.
-
-Example templates:
-
-| Position | Template role | Scope | Approval |
-|:---------|:--------------|:------|:---------|
-| Software Engineer | Employee | `Own` | Not required |
-| Engineering Team Lead | Team Manager | `DirectReports` | Not required unless configured sensitive |
-| HR Manager - Engineering | HR Manager | `Department = EngineeringDepartmentId` | Required |
-
-### Step 5: Save
-- **UI:** Click "Create Position" -> position appears in the list under the selected department
-- **API:** Returns `PositionDto` with current occupancy count (0 for new positions), capacity, and access template summary visible only to access-authorized users
+Company context is not decorative. Positions belong to one Company, departments belong to one Company, and reporting lines do not cross Companies. Internally this boundary is stored as `legal_entity_id`.
 
 ---
 
-## Variations
+## Optional Access Block
 
-### Root Position (No Reporting Manager)
-- Leave Reports To blank
-- System accepts the position; no warning is shown for intentional root positions (CEO, Country Head, etc.)
-- If a root position is unexpected (e.g., a non-executive role), the org chart flags it visually but does not block creation
+The access block appears only after the admin clicks **Grant system access from this position**.
 
-### Reporting Manager Position Is Vacant
-- Admin selects a reports-to position that has 0 current occupants
-- System accepts and shows: "Reporting manager will be unresolved until this position is staffed"
-- Does not block creation or assignment
+| Field | Required | Notes |
+|:------|:---------|:------|
+| Role granted | Yes | Dropdown of tenant roles; include a + button to create a new role without leaving the position screen |
+| Can manage employees in | Yes | Selected positions, selected departments, or entire company |
+| Department selector | Conditional | Multi-select shown only for Selected departments; limited to the selected Company |
+| Position selector | Conditional | Multi-select shown only for Selected positions; limited to the selected Company |
+| Requires approval before access is applied | Optional | Checkbox only. Unchecked applies access automatically; checked creates an approval request before access becomes active |
 
-### Template-Based Bulk Creation
-- **UI:** Select a department -> click "Suggest Positions"
-- System generates a suggested set of positions based on the department name (e.g., Engineering -> Engineering Manager x 1, Tech Lead x 5, Senior Engineer x 30, Software Engineer x 60)
-- Admin edits capacity and reports-to for each suggestion in a table view; unneeded rows can be removed
-- Click "Create All" -> system creates each position individually; each inherits the legal entity and department context
-- **API:** `POST /api/v1/org/positions/bulk` - accepts an array of position commands; returns per-item results
+Admin-facing management coverage options are only:
 
-### Multi-Company: Apply Template Across Legal Entities
-- **UI:** After reviewing the suggested position set, admin sees "Apply to other companies" toggle
-- Select one or more additional legal entities -> system creates separate, independent position records per legal entity
-- Each legal entity's positions use that entity's departments (resolved by department name match within the target entity)
-- If a matching department does not exist in a target legal entity, that entity is skipped with a warning; it does not block creation for other entities
+- Selected departments
+- Selected positions
+- Entire company
 
-### Edit Existing Position
-- **UI:** Click a position -> edit panel; all org fields editable except Legal Entity (immutable after creation)
-- Capacity reductions below current occupancy are blocked: "Reduce capacity: 3 employees currently assigned"
-- Reports-to changes are validated to remain within the same legal entity
-- Position access template edits require `roles:manage` or `access:approve`
-- For pooled positions, template edits warn that all current and future occupants can be affected
-- **API:** `PUT /api/v1/org/positions/{id}`
+If **Entire company** is selected, no selector is shown and the UI displays: "This position can manage employees across the selected company."
+
+Do not expose these terms in the tenant-admin UI: scope, coverage area, reporting tree, direct reports, fallback priority, secondary approver, priority number. Use: **Can manage employees in**, **Primary owner**, **Backup owner 1**, **Backup owner 2**, **System access from reporting structure**, **Make primary**.
+
+> Primary owner / Backup owner labels are display labels for ordered management coverage owners. They are not hardcoded routing slots. Backend routing must support any number of active coverage owners. For monitoring alerts, recipient selection is availability-based through Monitoring Policy. For approval routing, owners are ordered by `owner_order` and permission checks; if the first owner is unavailable and the workflow/policy requires availability-aware routing, continue to the next eligible owner.
+
+If **Requires approval** is checked, access generated from this position remains pending until the management coverage resolver assigns one eligible owner. There is no workflow picker and no approval-flow selector in Phase 1.
+
+---
+
+## Reports-To Generated Coverage
+
+When Position A reports to Position B, Position B automatically gets locked position-level management coverage over Position A. This appears in Position B's **Can manage employees in** list with a lock/system indicator and cannot be removed manually.
+
+If an admin tries to remove locked generated coverage, block it and show:
+
+```text
+This access comes from the reporting structure. Change the position's Reports to value to remove it.
+```
+
+Example: Backend Engineer reports to Backend Lead. Backend Lead automatically gets **Can manage employees in: Backend Engineer**. If Frontend Engineer also reports to Backend Lead, Backend Lead also gets **Frontend Engineer**.
+
+Generated reporting-structure coverage is access/routing data. The org chart still renders only the Reports to relationship.
+
+---
+
+## Manual Coverage And Owner Order
+
+Manual coverage can be added through **Grant system access from this position**. Supported levels are only:
+
+1. Position coverage.
+2. Department coverage.
+3. Company-wide coverage.
+
+There is no employee-specific coverage.
+
+For each covered target, owners are ordered as Primary owner, Backup owner 1, Backup owner 2, and so on. The first position that covers a target becomes Primary owner. Later positions become backups. The UI must not expose numeric order or fallback checkboxes.
+
+When adding coverage to a target that already has an owner, show an inline note under the selected chip/list row:
+
+```text
+Backend Engineer is already managed by Backend Lead as Primary owner. HR Manager will be added as Backup owner 1.
+```
+
+Show one action link: **Make primary**.
+
+If clicked, confirm:
+
+```text
+Make HR Manager the Primary owner for Backend Engineer? Backend Lead will move to Backup owner 1.
+```
+
+On confirm, reorder the owners for that target and shift existing owners down. Keep locked reporting-structure coverage present.
+
+---
+
+## Position List
+
+The position list should use concise operational columns:
+
+| Column | Notes |
+|:---|:---|
+| Position | Name and code |
+| Department | Department inside the selected Company |
+| Company | Company boundary |
+| Type | Unique or pooled |
+| Occupancy | Current occupants / capacity |
+| Reports to | Reporting position |
+| Role granted | Configured role from the optional access block |
+| Manages employees in | Compact chips such as Backend Engineer, Engineering, Entire company; generated reporting-structure coverage has a lock/system indicator |
+| Access status | Active, pending approval, or inactive |
+| Status | Active/inactive |
+| Actions | View/edit, assign, deactivate where permitted |
+
+---
+
+## Org Chart
+
+The org chart uses the Reports to relationship only. Do not render department or company-wide management coverage as org chart children. Coverage is access/routing, not org structure.
+
+Cards may show:
+
+- Position name
+- Assigned employee or vacancy
+- Occupancy
+- Department
+- Quick vacancy/access badges
+
+Editing opens the position detail/modal. Do not edit permissions directly on chart cards.
+
+---
+
+## Multi-Position Assignment Model
+
+An employee may hold multiple active position assignments, but exactly one is the **Primary Employment Assignment**.
+
+The primary assignment is the only source for:
+
+- Primary Company
+- Time Off policy
+- Attendance / clock-in policy
+- Work schedule
+- Holiday calendar
+- Payroll / statutory employment context
+
+Additional assignments are **Additional Authority Assignments**. They may grant role/access/approval authority, including cross-Company authority, but they must not create a second Time Off policy, schedule, attendance policy, payroll context, or primary Company.
+
+Hard rules:
+
+- One employee cannot hold two active employment assignments inside the same Company.
+- If a second seat is needed inside the same Company, use transfer or promotion.
+- Cross-legal-entity authority assignments are allowed.
+- Cross-legal-entity reporting lines are not allowed.
+
+---
+
+## Save Behavior
+
+1. Resolve the selected Company from the topbar and map it to `legal_entity_id`.
+2. Validate the actor has `org:manage` in that Company.
+3. Validate department and reporting position belong to that Company.
+4. Validate occupancy and reporting-cycle rules.
+5. Create/update `positions`.
+6. Create/update locked generated management coverage when Reports to changes.
+7. If access is enabled, persist the position's role grant rule and manual management coverage.
+8. If approval is required, generated access stays pending until approved through the management coverage resolver.
+9. Notify the single eligible owner through Notifications; Phase 1 does not invoke Workflow Engine.
 
 ---
 
 ## Error Scenarios
 
-| Scenario | What happens | User sees |
-|:---------|:-------------|:----------|
-| Duplicate position name in legal entity | Validation fails | "A position with this name already exists in [Legal Entity]" |
-| Department not in selected legal entity | Validation fails | "Department does not belong to the selected legal entity" |
-| Reports-to in a different legal entity | Validation fails | "Reporting position must be in the same legal entity" |
-| Circular reporting chain | Validation fails | "Cannot set reporting line - would create a circular reporting chain" |
-| Capacity set below current occupancy | Blocked | "Cannot reduce capacity below current headcount of [N]" |
-| Legal entity not found or inactive | 422 | "Legal entity not found or is inactive" |
-| User lacks access authority | Access template controls hidden or API blocked | "You do not have permission to configure position access" |
+| Scenario | User sees |
+|:---|:---|
+| Duplicate position name in Company | "A position with this name already exists in this Company." |
+| Department belongs to another Company | "Department does not belong to the selected Company." |
+| Reports-to position belongs to another Company | "Reporting position must be in the same Company." |
+| Circular reporting chain | "This reporting line would create a cycle." |
+| Capacity below current occupancy | "Cannot reduce capacity below current occupancy." |
+| Remove locked reporting-structure coverage | "This access comes from the reporting structure. Change the position's Reports to value to remove it." |
+| Approval required | Access remains pending and approvers are notified |
 
 ---
 
 ## Events Triggered
 
-- `PositionCreated` -> [[backend/messaging/event-catalog|Event Catalog]]
-- `PositionUpdated` -> [[backend/messaging/event-catalog|Event Catalog]]
-- `PositionAccessTemplateCreated` -> emitted only when an access-authorized user creates a template
-- `PositionAccessTemplateUpdated` -> emitted only when an access-authorized user changes a template
+- `PositionCreated`
+- `PositionUpdated`
+- `ManagementCoverageGenerated`
+- `ManagementCoverageReordered`
+- `PositionAccessGrantRuleCreated`
+- `PositionAccessGrantRuleUpdated`
+- `AccessGrantRequested` when access requires approval
 
 ---
 
 ## Related Flows
 
-- [[Userflow/Org-Structure/legal-entity-setup|Legal Entity Setup]]
+- [[Userflow/Org-Structure/legal-entity-setup|Company Setup]]
 - [[Userflow/Org-Structure/department-hierarchy|Department Hierarchy]]
-- [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
 - [[Userflow/Employee-Management/employee-transfer|Employee Transfer]]
 - [[Userflow/Employee-Management/employee-promotion|Employee Promotion]]
-- [[Userflow/Auth-Access/access-policy|Access Policy Reference]]
-
----
-
-## Module References
-
-- [[modules/org-structure/overview|Org Structure]]
-- [[modules/org-structure/legal-entities/overview|Legal Entities]]
-- [[modules/org-structure/departments/overview|Departments]]
-- [[current-focus/DEV3-org-structure|DEV3: Org Structure]]
+- [[Userflow/Auth-Access/access-policy|Management Coverage Reference]]

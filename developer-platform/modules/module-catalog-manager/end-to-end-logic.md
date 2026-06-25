@@ -17,10 +17,10 @@
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Module Key | "Module Key (Slug)" | Text input | Yes | Lowercase, underscores only, unique, max 80 chars | Permanent - cannot change after any tenant is entitled. e.g. `leave`, `core_hr`, `activity_monitoring` |
+| Module Key | "Module Key (Slug)" | Text input | Yes | Lowercase, underscores only, unique, max 80 chars | Permanent - cannot change after any tenant is entitled. e.g. `time_off`, `core_hr`, `activity_monitoring` |
 | Display Name | "Display Name" | Text input | Yes | 2-100 chars | Shown to operators in catalog lists and tenant provisioning. |
 | Description | "Description" | Textarea | No | Max 500 chars | Shown in module detail and tenant-facing module summaries. |
-| Pillar | "Pillar" | Dropdown | Yes | | `HR Management`, `Workforce Intelligence`, `WorkSync`, `Shared` - maps to `hr_management \| workforce_intelligence \| worksync \| shared` |
+| Pillar | "Pillar" | Dropdown | Yes | | `HR Management`, `Monitoring`, `WorkSync`, `Shared` - maps to `hr_management \| monitoring \| worksync \| shared` |
 | Pricing Unit | "Pricing Unit" | Dropdown | Yes | | `Per Employee`, `Per Device`, `Per User`, `Per Seat`, `Flat Rate`, `Per Event` |
 | Sellable | "Sellable" | Toggle | Yes | Default: On | Off = always-included module (Foundation). Non-sellable modules are auto-included in every plan and cannot be individually priced. |
 | Phase | "Phase" | Dropdown | Yes | | `Phase 1` or `Phase 2`. Phase 2 modules are saved with `is_active = false` and are hidden from all plan builders and tenant provisioning until promoted. |
@@ -37,26 +37,26 @@
 
 ```json
 {
-  "module_key": "leave",
-  "name": "Leave Management",
-  "description": "Employee leave requests, approvals, balances, and accrual policies.",
+  "module_key": "time_off",
+  "name": "Time Off Management",
+  "description": "Employee Time Off requests, approvals, balances, and accrual policies.",
   "pillar": "hr_management",
   "pricing_unit": "per_employee",
   "is_sellable": true,
   "phase": 1,
   "has_ai_capability": false,
   "requires_storage": false,
-  "setup_service_keys": ["leave_default_types_seed"],
+  "setup_service_keys": ["time_off_default_types_seed"],
   "features": [
-    { "feature_key": "leave.requests", "name": "Leave Requests", "is_default_included": true },
-    { "feature_key": "leave.approvals", "name": "Leave Approvals", "is_default_included": true },
-    { "feature_key": "leave.advanced_accruals", "name": "Advanced Accrual Rules", "is_default_included": false }
+    { "feature_key": "time_off.requests", "name": "Time Off Requests", "is_default_included": true },
+    { "feature_key": "time_off.approvals", "name": "Time Off Approvals", "is_default_included": true },
+    { "feature_key": "time_off.advanced_accruals", "name": "Advanced Accrual Rules", "is_default_included": false }
   ],
   "permissions": [
-    { "permission_code": "leave:read", "is_default_permission": true },
-    { "permission_code": "leave:apply", "is_default_permission": true },
-    { "permission_code": "leave:approve", "is_default_permission": false },
-    { "permission_code": "leave:manage", "is_default_permission": false }
+    { "permission_code": "time_off:read", "is_default_permission": true },
+    { "permission_code": "time_off:create", "is_default_permission": true },
+    { "permission_code": "time_off:approve", "is_default_permission": false },
+    { "permission_code": "time_off:manage", "is_default_permission": false }
   ],
   "price_brackets": [
     { "from_units": 1, "to_units": 50, "unit_price": 2.50 },
@@ -85,7 +85,6 @@ Foundation modules are always included and not separately sellable. They do not 
 | `notifications` | `notifications.email_delivery` | Email Delivery | Yes | Operational flag candidate only, not sellable |
 | `notifications` | `notifications.in_app_delivery` | In-App Delivery | Yes | Operational flag candidate only, not sellable |
 | `org` | `org.structure_management` | Organisation Structure Management | Yes | Foundation capability |
-| `workflow_engine` | `workflow_engine.automation_execution` | Automation Execution | Yes | Operational flag candidate only, not sellable |
 
 #### HR Core Module Group
 
@@ -98,19 +97,19 @@ Foundation modules are always included and not separately sellable. They do not 
 | `core_hr` | `core_hr.dependents_contacts` | Dependents and Emergency Contacts | Yes | No |
 | `core_hr` | `core_hr.qualifications` | Qualifications | Yes | No |
 | `core_hr` | `core_hr.compensation` | Compensation | Yes | No |
-| `leave` | `leave.requests` | Leave Requests | Yes | No |
-| `leave` | `leave.approvals` | Leave Approvals | Yes | No |
-| `leave` | `leave.balances` | Leave Balances | Yes | No |
-| `leave` | `leave.accrual_rules` | Accrual Rules | Yes | Yes |
-| `leave` | `leave.leave_types` | Leave Types | Yes | No |
-| `leave` | `leave.calendar_integration` | Calendar Integration | Yes | No |
+| `time_off` | `time_off.requests` | Time Off Requests | Yes | No |
+| `time_off` | `time_off.approvals` | Time Off Approvals | Yes | No |
+| `time_off` | `time_off.balances` | Time Off Balances | Yes | No |
+| `time_off` | `time_off.accrual_rules` | Accrual Rules | Yes | Yes |
+| `time_off` | `time_off.types` | Time Off Types | Yes | No |
+| `time_off` | `time_off.calendar_integration` | Calendar Integration | Yes | No |
 | `calendar` | `calendar.company_calendar` | Company Calendar | Yes | No |
 | `calendar` | `calendar.holidays` | Holidays | Yes | No |
-| `calendar` | `calendar.work_schedules` | Work Schedules | Yes | No |
-| `calendar` | `calendar.leave_visibility` | Leave Visibility | Yes | No |
+| `time_attendance` | `time_attendance.work_schedules` | Work Schedules | Yes | No |
+| `calendar` | `calendar.time_off_visibility` | Time Off Visibility | Yes | No |
 | `calendar` | `calendar.event_sync` | Event Sync | Yes | No |
 
-#### Workforce Intelligence Module Group
+#### Monitoring Module Group
 
 | Module Key | Feature Key | Display Name | Default Included | Runtime Flag Candidate |
 |---|---|---|---|---|
@@ -122,27 +121,21 @@ Foundation modules are always included and not separately sellable. They do not 
 | `monitoring` | `monitoring.app_allowlist` | App Allowlist | Yes | Yes |
 | `monitoring` | `monitoring.productivity_classification` | Productivity Classification | Yes | Yes |
 | `monitoring` | `monitoring.raw_data_processing` | Raw Data Processing | Yes | No |
-| `workforce` | `workforce.presence_sessions` | Presence Sessions | Yes | No |
-| `workforce` | `workforce.shift_schedules` | Shift Schedules | Yes | No |
-| `workforce` | `workforce.break_tracking` | Break Tracking | Yes | No |
-| `workforce` | `workforce.overtime` | Overtime | Yes | Yes |
-| `workforce` | `workforce.attendance_corrections` | Attendance Corrections | Yes | Yes |
-| `workforce` | `workforce.device_sessions` | Device Sessions | Yes | No |
-| `workforce` | `workforce.biometric_devices` | Biometric Devices | No | Yes |
+| `monitoring` | `monitoring.presence_sessions` | Presence Sessions | Yes | No |
+| `monitoring` | `monitoring.shift_schedules` | Shift Schedules | Yes | No |
+| `monitoring` | `monitoring.break_tracking` | Break Tracking | Yes | No |
+| `monitoring` | `monitoring.overtime` | Overtime | Yes | Yes |
+| `monitoring` | `monitoring.attendance_corrections` | Attendance Corrections | Yes | Yes |
+| `monitoring` | `monitoring.device_sessions` | Device Sessions | Yes | No |
+| `monitoring` | `monitoring.biometric_devices` | Biometric Devices | No | Yes |
 | `verification` | `verification.identity_checks` | Identity Checks | Yes | No |
 | `verification` | `verification.face_match` | Face Match | No | Yes |
 | `verification` | `verification.verification_policies` | Verification Policies | Yes | No |
 | `verification` | `verification.manual_review` | Manual Review | Yes | Yes |
 | `verification` | `verification.photo_challenge` | Photo Challenge | No | Yes |
-| `exceptions` | `exceptions.rules` | Exception Rules | Yes | No |
-| `exceptions` | `exceptions.alerts` | Exception Alerts | Yes | No |
-| `exceptions` | `exceptions.escalation_chains` | Escalation Chains | Yes | No |
-| `exceptions` | `exceptions.baseline_relative_rules` | Baseline-Relative Rules | Yes | Yes |
-| `exceptions` | `exceptions.remote_screenshot_request` | Remote Screenshot Request | No | Yes |
-| `exceptions` | `exceptions.remote_photo_request` | Remote Photo Request | No | Yes |
 | `analytics` | `analytics.daily_reports` | Daily Reports | Yes | No |
 | `analytics` | `analytics.monthly_reports` | Monthly Reports | Yes | No |
-| `analytics` | `analytics.workforce_snapshots` | Workforce Snapshots | Yes | No |
+| `analytics` | `analytics.monitoring_snapshots` | Monitoring Snapshots | Yes | No |
 | `analytics` | `analytics.productivity_dashboard` | Productivity Dashboard | Yes | Yes |
 | `analytics` | `analytics.data_export` | Data Export | No | Yes |
 | `analytics` | `analytics.scheduled_reports` | Scheduled Reports | No | Yes |
@@ -161,22 +154,9 @@ Foundation modules are always included and not separately sellable. They do not 
 | `work_management` | `work_management.resource_planning` | Resource Planning | No | Yes |
 | `work_management` | `work_management.work_analytics` | Work Analytics | No | Yes |
 | `work_management` | `work_management.github_integration` | GitHub Integration | No | Yes |
-| `work_management` | `work_management.automation_rules` | Automation Rules | No | Yes |
-| `chat` | `chat.channels` | Channels | Yes | No |
-| `chat` | `chat.threads` | Threads | Yes | No |
-| `chat` | `chat.direct_messages` | Direct Messages | Yes | No |
-| `chat` | `chat.workspace_messages` | Workspace Messages | Yes | No |
-| `chat` | `chat.message_search` | Message Search | No | Yes |
-| `chat` | `chat.teams_sync` | Microsoft Teams Sync | No | Yes |
-| `chat_ai` | `chat_ai.agentic_chat` | Agentic Chat | Yes | Yes |
-| `chat_ai` | `chat_ai.streaming_responses` | Streaming Responses | No | Yes |
-| `chat_ai` | `chat_ai.ai_task_suggestions` | AI Task Suggestions | No | Yes |
-| `chat_ai` | `chat_ai.ai_summaries` | AI Summaries | No | Yes |
-| `chat_ai` | `chat_ai.ai_insights` | AI Insights | No | Yes |
 | `integrations` | `integrations.microsoft_teams` | Microsoft Teams | No | Yes |
 | `integrations` | `integrations.github` | GitHub | No | Yes |
 | `integrations` | `integrations.google_workspace` | Google Workspace | No | No |
-| `integrations` | `integrations.slack` | Slack | No | No |
 | `integrations` | `integrations.webhooks` | Webhooks | No | Yes |
 | `integrations` | `integrations.api_access` | API Access | No | Yes |
 
@@ -260,7 +240,7 @@ Every integration available to tenants is gated by one or more module entitlemen
 
 When a tenant is entitled to a module, the integrations linked to that module become available in the tenant's Integrations section. When the module is disabled, those integrations are disconnected.
 
-**Rule:** A tenant sees an integration only if ALL of its `required_module_keys` are in `active or purchased/subscription-included state in `tenant_module_entitlements`.
+**Rule:** A tenant sees an integration only if at least one module linked to it via `module_integration_links` is in active/entitled state in `tenant_module_entitlements`. Integration visibility is controlled exclusively by `module_integration_links`, not by fields on `integration_catalog`.
 
 ### Integration Catalog Screen
 
@@ -272,25 +252,26 @@ The integration catalog is fully **operator-managed**. Operators create entries 
 
 > **Important - what belongs here vs elsewhere:**
 >
-> | Type | Example | Managed In |
-> |---|---|---|
-> | Customer OAuth - tenant's users log in with their own account | GitHub, Microsoft Teams, Google Calendar, Slack | Integration Catalog (here) - `category = 'customer_oauth'` |
-> | Platform-Managed - ONEVO configures; tenants don't act | Biometric terminal webhook, MDM agent distribution | Integration Catalog (here) - `category = 'platform_managed'` |
-> | ONEVO's own platform service keys - used for all tenants | Resend (email), Cloudflare, Azure Blob Storage | System Config -> Platform Service Keys - NOT here |
-> | Payment gateways - ONEVO charges tenants using these | Stripe, Paddle, PayHere | System Config -> Payment Gateways - NOT here |
+> | Type | Example | Managed In | Connected Token Storage |
+> |---|---|---|---|
+> | Tenant-scope integrations (`connection_scope = 'tenant'`) | GitHub, Zoom, Microsoft Teams | Integration Catalog (here); tokens stored in `tenant_integration_credentials` | `tenant_integration_credentials` |
+> | Employee-scope integrations (`connection_scope = 'employee'`) | Google Calendar, Outlook Calendar | Integration Catalog (here); tokens stored in `external_calendar_connections` | `external_calendar_connections` |
+> | ONEVO's own OAuth app credentials | GitHub app, Microsoft app, Google app, Zoom app | System Config -> OAuth Apps (`platform_oauth_apps`, `platform_oauth_app_credentials`) - NOT here | N/A - these are ONEVO's developer credentials |
+> | ONEVO's own platform service keys | Resend (email), Cloudflare DNS/WAF, Cloudflare R2 object storage | System Config -> Platform Service Keys (`platform_service_keys`) - NOT here | N/A |
+> | Payment gateways | Stripe, Paddle, PayHere | System Config -> Payment Gateways (`payment_gateway_configs`) - NOT here | N/A |
+> | Biometric terminals | Face, fingerprint, RFID/card, PIN devices | Time & Attendance / Identity Verification -> Biometric Devices (`biometric_devices`) - NOT here | N/A |
 >
-> Resend and payment gateways are **never** in the integration catalog. The integration catalog is only for integrations that are part of a tenant's feature set.
+> The Integration Catalog stores metadata only for connectable software integrations. It does not store provider secrets, tenant tokens, or employee tokens. Resend, Cloudflare, Stripe, Paddle, PayHere, and biometric terminals are **never** in the Integration Catalog. Slack is Phase 2.
 
 | Column | Description |
 |---|---|
 | Logo | Uploaded image - shown in tenant's Integrations tab |
 | Integration Name | Operator-set display name |
-| Integration Key | Unique slug - operator-set, e.g. `github`, `ms_teams` |
-| Category | **Customer OAuth** (tenant's users connect their own account) / **Platform-Managed** (ONEVO configures it - no customer action) |
-| Required Modules | Module entitlement condition - shown as badges |
-| Auth Type | OAuth2 / Webhook / API Key / SAML / Platform-Managed |
-| OAuth App | Which platform OAuth app registration handles the OAuth flow - links to System Config -> OAuth Apps |
-| Active Connections | Count of tenants with this integration currently connected |
+| Integration Key | Unique slug - operator-set, e.g. `github`, `zoom` |
+| Connection Scope | **Tenant** (tenant-wide connected token in `tenant_integration_credentials`) / **Employee** (per-employee connected token in `external_calendar_connections`) |
+| ONEVO App Provider | Which platform OAuth app registration handles the consent flow - links to System Config -> OAuth Apps |
+| Linked Modules | Module entitlement condition (read from `module_integration_links`) - shown as badges |
+| Active Connections | Count of tenants/employees with this integration currently connected |
 | Is Active | Global on/off - inactive = hidden from all tenants |
 | Actions | Edit, View Connected Tenants, Deactivate |
 
@@ -302,16 +283,15 @@ The integration catalog is fully **operator-managed**. Operators create entries 
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Integration Key | "Integration Key (Slug)" | Text input | Yes | Lowercase, hyphens only, unique, max 50 chars | Permanent - cannot change after tenants connect. e.g. `github`, `ms_teams`, `google_cal` |
+| Integration Key | "Integration Key (Slug)" | Text input | Yes | Lowercase, underscores only, unique, max 50 chars | Permanent - cannot change after tenants connect. e.g. `github`, `zoom`, `google_calendar` |
 | Logo | "Integration Logo" | File upload | No | PNG, SVG, or JPEG. Max 500KB. Recommended: 256x256px transparent PNG or SVG | Uploaded to platform file storage. Displayed in tenant's Integrations tab, module detail view, and the integration catalog list. Upload sends a multipart `POST /admin/v1/uploads/integration-logo` first; returns a `logo_url`. That URL is then submitted with the create form. Alternatively paste an external URL if not uploading. |
-| Display Name | "Display Name" | Text input | Yes | 2-80 chars | Shown to operators and tenants. e.g. "GitHub", "Microsoft Teams" |
+| Display Name | "Display Name" | Text input | Yes | 2-80 chars | Shown to operators and tenants. e.g. "GitHub", "Zoom", "Google Calendar" |
 | Description | "Description" | Textarea | No | Max 300 chars | Shown in tenant's Integrations section as a short explanation of what this integration does |
-| Category | "Category" | Radio | Yes | | **Customer OAuth** - the tenant's own users log in with their own third-party account to connect (GitHub org, Microsoft workspace, Google account, Slack workspace). **Platform-Managed** - ONEVO configures the connection; no customer action required (biometric terminal webhook, MDM distribution). This determines whether tenants see a "Connect" button or not. |
-| Auth Type | "Authentication Type" | Dropdown | Yes | | OAuth2, API Key (customer enters their own key), Webhook (inbound only - customer configures their system to send), SAML, Platform-Managed (no customer action) |
-| OAuth App | "OAuth App Registration" | Dropdown | Yes if Auth Type = OAuth2 | | Select from OAuth apps configured in System Config -> OAuth Apps. This is ONEVO's registered developer app with the provider. The customer authorises ONEVO's app during the OAuth flow. |
-| Required Modules Condition | "Module Requirement Condition" | Radio: Any of / All of | Yes | | Any of = at least one of the listed modules must be entitled. All of = every listed module must be entitled. |
-| Required Module Keys | "Required Modules" | Multi-select from module catalog | Yes | At least one | Tenant must satisfy this condition to see the integration |
+| Connection Scope | "Connection Scope" | Radio | Yes | | **Tenant** - tenant-wide connected integration; connected token stored in `tenant_integration_credentials`. Examples: GitHub, Zoom, Microsoft Teams. **Employee** - employee/user-level connected integration; connected token stored in `external_calendar_connections`. Examples: Google Calendar, Outlook Calendar. |
+| ONEVO App Provider | "ONEVO App Provider" | Dropdown | Yes | | Select from OAuth apps configured in System Config -> OAuth Apps. This is ONEVO's registered developer app with the provider. The tenant/employee authorises ONEVO's app during the consent flow. e.g. `github`, `zoom`, `microsoft`, `google` |
 | Is Active | "Active" | Toggle | Yes | Default: On | Inactive = integration hidden from all tenants globally regardless of entitlements |
+
+**Note:** Integration-to-module gating is not set here. After creating the integration entry, link it to one or more modules via the module detail -> Integrations tab (which writes to `module_integration_links`). A tenant sees this integration only if they are entitled to a module that links to it.
 
 **API:** `POST /admin/v1/integrations/catalog`
 
@@ -330,14 +310,11 @@ Response: `{ "logo_url": "https://storage.onevo.io/integration-logos/ms_teams_ab
 
 ```json
 {
-  "integration_key": "ms_teams",
+  "integration_key": "microsoft_teams",
   "display_name": "Microsoft Teams",
-  "description": "Connect your Microsoft Teams workspace for notifications and chat.",
-  "category": "customer_oauth",
-  "auth_type": "oauth2",
-  "oauth_app_provider": "microsoft",
-  "required_module_condition": "any",
-  "required_module_keys": ["chat", "chat_ai", "integrations"],
+  "description": "Connect Microsoft Teams for workspace/member sync. Chat and message sync are Phase 2.",
+  "connection_scope": "tenant",
+  "onevo_app_provider": "microsoft",
   "is_active": true,
   "logo_url": "https://storage.onevo.io/integration-logos/ms_teams_abc123.png"
 }
@@ -359,9 +336,9 @@ In the Module Catalog Manager, every module has an **Integrations** tab on its d
 |---|---|
 | Integration Name | Name from `integration_catalog` |
 | Integration Key | Slug, e.g. `github` |
-| Category | Customer OAuth / Platform-Managed |
-| Auth Type | OAuth2, Webhook, API Key, SAML |
-| Active Connections | How many tenants with this module have connected this integration |
+| Connection Scope | Tenant / Employee |
+| ONEVO App Provider | Which platform OAuth app handles the consent flow |
+| Active Connections | How many tenants/employees with this module have connected this integration |
 | Actions | Unlink (removes the integration from this module), View Connected Tenants |
 
 **How to link an integration to a module:**
@@ -371,21 +348,19 @@ In the Module Catalog Manager, every module has an **Integrations** tab on its d
 3. Click **Link Integration**
 4. Dropdown shows all active entries in `integration_catalog` that are not already linked to this module
 5. Select the integration (e.g., "GitHub")
-6. Set condition: **Required** (module must be entitled for this integration to be available) or **Optional** (integration is available when module is entitled but not required to use the module)
-7. Click Save
+6. Click Save
 
 **API:** `POST /admin/v1/modules/catalog/{moduleKey}/integrations`
 
 ```json
 {
-  "integration_key": "github",
-  "link_type": "required"
+  "integration_key": "github"
 }
 ```
 
-**State written:** `module_integration_links` row: `(module_key, integration_key, link_type)`. The `integration_catalog.required_module_keys` is updated to include this module key.
+**State written:** `module_integration_links` row: `(module_key, integration_key, linked_by_id, linked_at)`.
 
-**What this controls:** When a tenant is entitled to the "Work Management" module, every integration linked to it with `link_type = 'required'` becomes available in that tenant's Integrations section in the main ONEVO app. The tenant's users can then connect those integrations themselves (for Customer OAuth types) or the operator configures them (for Platform-Managed types).
+**What this controls:** When a tenant is entitled to the module, linked integrations become visible/connectable in that tenant's Integrations section in the main ONEVO app. Tenant-scope integrations (`connection_scope = 'tenant'`) store tokens in `tenant_integration_credentials`; employee-scope integrations (`connection_scope = 'employee'`) store per-user tokens in `external_calendar_connections`.
 
 **Unlinking an integration:**
 
@@ -405,28 +380,28 @@ Tenants entitled to both Work Management and [other module linking GitHub] are u
 
 **Trigger:** Click "Edit" on an integration row.
 
-All fields editable except `integration_key` (permanent after first tenant connection) and `category` (structural).
+All fields editable except `integration_key` (permanent after first tenant connection) and `connection_scope` (structural - determines where connected tokens are stored).
 
-Changing `required_module_keys` has immediate effect:
-- Tenants who now qualify -> integration becomes visible in their app on next load
-- Tenants who no longer qualify -> `tenant_integration_credentials.status = 'disconnected'`; Warning alert raised: `integration.access_revoked`
+Changing `is_active` has immediate effect:
+- Deactivating -> all connected tenants/employees have this integration disconnected; Warning alert raised: `integration.access_revoked`
+- Reactivating -> integration becomes visible again for tenants entitled to a linked module
 
 **API:** `PATCH /admin/v1/integrations/catalog/{integrationKey}`
 
-Requires `reason` field (min 10 chars) when changing `required_module_keys` or `is_active` - because these changes affect live tenants.
+Requires `reason` field (min 10 chars) when changing `is_active` - because this change affects live tenants. Module-level gating is managed via `module_integration_links`, not on this entry.
 
 ### Module Disable Warning - Integration Impact
 
 When an operator disables a module for a tenant (via Tenant Detail -> Runtime Overrides or Tenant Management -> Subscriptions), the system checks:
 
-1. Which integrations have `required_module_keys` containing this module key
+1. Which integrations are linked to this module via `module_integration_links`
 2. Whether the tenant has any of those integrations connected (`tenant_integration_credentials.status = 'connected'`)
 3. If yes: shows a confirmation warning before the disable action:
 
 ```
-WARNING: Disabling "Agentic Chat" for TechNova Solutions will also disconnect:
-  - Microsoft Teams (connected - james@technova.com, connected May 12 2024)
-  - Slack (connected - james@technova.com, connected Jun 1 2024)
+WARNING: Disabling "GitHub Integration" for TechNova Solutions will also disconnect:
+  - GitHub repository sync (connected - james@technova.com, connected May 12 2024)
+  - Microsoft Teams workspace sync (connected - james@technova.com, connected Jun 1 2024)
 
 Are you sure? This cannot be undone without re-entitling the module.
 ```

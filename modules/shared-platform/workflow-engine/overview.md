@@ -1,15 +1,36 @@
 # Workflow Engine And Automation Center
 
-**Module:** Shared Platform  
-**Feature:** Workflow Engine and Automation Center  
+**Module:** Shared Platform
+**Feature:** Workflow Engine and Automation Center
+**Phase:** Phase 2 - deferred
+**Phase 1 Customer Route:** none
+
+---
+
+## Phase 1 Boundary
+
+Workflow Engine and Automation Center are not active Phase 1 dependencies. Do not require workflow builder setup, automation templates, custom workflow definitions, or Automation Center screens for Phase 1 delivery.
+
+Phase 1 approvals and routing are module-owned and use:
+
+- Org Structure management coverage
+- owner order from Primary owner and Backup owners
+- granted action permissions
+- active Company/legal entity context
+- lightweight request records
+- Notifications and Inbox
+
+This applies to Time Off, overtime, attendance corrections, transfer, promotion, position-derived access, onboarding/offboarding checklist work, and monitoring alerts.
+
+No Phase 1 behavior should hard-code job titles such as CEO or HR. Approval depends on the target employee, Org Structure management coverage, owner order, required permission, self-approval rules, and active Company/legal entity context.
 
 ---
 
 ## Purpose
 
-Resource-type agnostic automation and approval engine. The same engine handles leave, overtime, attendance corrections, document approvals, expense claims, skill validations, identity verification reviews, exception alerts, requests, escalations, and follow-ups.
+This document is retained as the Phase 2 design reference for a resource-type agnostic automation and approval engine. In Phase 2, the same engine may handle Time Off, overtime, attendance corrections, document approvals, expense claims, skill validations, identity verification reviews, exception alerts, requests, escalations, and follow-ups.
 
-Automation Center is the customer-facing screen for creating and editing workflow automations. It is a first-class route, not a technical settings page. The screen normally opens into the automation builder or existing automations; templates appear only when the customer clicks Templates.
+Automation Center is Phase 2 only. It may become the customer-facing screen for creating and editing workflow automations, but it must not appear as a Phase 1 top-level customer route.
 
 ## Core Principle: Dynamic Resolvers
 
@@ -17,7 +38,7 @@ ONEVO must not route actions to fixed role names such as HR or CEO. Customers ca
 
 A resolver finds the right person dynamically based on the employee, department, team, permission, or selected rule owner.
 
-Supported resolver types:
+Supported resolver types for Phase 2:
 
 - First eligible approver in employee's position reporting chain
 - Employee's reporting manager
@@ -42,12 +63,12 @@ Examples:
 
 - Send to users with permission `exceptions:manage`.
 - Assign to employee's reporting manager.
-- For leave with no custom workflow, assign to the first active manager above the employee who has `leave:approve`.
-- Escalate to the configured escalation resolver only after the hierarchy resolver cannot produce a valid candidate or a custom workflow explicitly chooses that route.
+- For a custom Phase 2 workflow, route to users in a selected department, team, or position branch.
+- Escalate to the configured escalation resolver only when the custom workflow explicitly chooses that route.
 
 ## Builder Model
 
-The builder uses a simple step-by-step shape:
+The Phase 2 builder uses a simple step-by-step shape:
 
 | Section | Meaning |
 |:--------|:--------|
@@ -58,11 +79,11 @@ The builder uses a simple step-by-step shape:
 | Wait / Delay | Optional timing rule |
 | If still unresolved | Escalation action and resolver |
 
-Supported triggers include leave request submitted, overtime request submitted, attendance correction submitted, exception alert created, identity verification failed, agent heartbeat lost, low activity detected, excess idle detected, presence/activity mismatch detected, approval unresolved, case unresolved, and message posted in a case conversation.
+Supported triggers may include Time Off request submitted, overtime request submitted, attendance correction submitted, exception alert created, identity verification failed, agent heartbeat lost, low activity detected, excess idle detected, presence/activity mismatch detected, approval unresolved, case unresolved, and message posted in a case conversation.
 
-Supported actions include create case conversation, send to Chat, send to Inbox, mirror to Teams if connected, notify assignee, notify employee, assign to resolver, request more information, escalate, create workflow task, add participant to case conversation, send daily summary, and mark for manager review.
+Supported actions may include create case conversation, send to Chat, send to Inbox, mirror to Teams if connected, notify assignee, notify employee, assign to resolver, request more information, escalate, create workflow task, add participant to case conversation, send daily summary, and mark for manager review.
 
-Connected-company-aware actions include request cross-company approval, create cross-company case conversation, share workflow evidence with a connected tenant, create target-tenant onboarding task, and revoke shared evidence after case closure. These actions require an active company connection and scoped cross-company permission.
+Connected-company-aware actions may include request cross-company approval, create cross-company case conversation, share workflow evidence with a connected tenant, create target-tenant onboarding task, and revoke shared evidence after case closure. These actions require an active company connection and scoped cross-company permission.
 
 ## Cross-Company Workflow Context
 
@@ -80,33 +101,35 @@ When a resolver returns more than one approver, the approval step must specify a
 
 ## Unavailable Approvers
 
-ONEVO should not require a separate manager-absence configuration module for Phase 1 approvals. When the primary approver is unavailable, the workflow handles it through the same approval engine:
+ONEVO should not require a separate manager-absence configuration module for Phase 1 approvals. Phase 1 handles approver fallback through module-owned routing and Notifications.
+
+In Phase 2, the workflow engine may handle unavailable approvers through the same approval engine:
 
 - The assigned approver may use a workflow `delegate` action for that specific request.
 - If the approver takes no action before `sla_deadline_at`, the workflow runs the configured unresolved/escalation path.
-- The escalation resolver should usually target department owner, users with a selected permission, a specific employee, HR coverage resolver, or configured escalation resolver.
+- The escalation resolver should usually target department owner, users with a selected permission, a specific employee, management coverage resolver, or configured escalation resolver.
 - Every delegated or escalated action is recorded in `approval_actions` and remains auditable.
-
-This keeps normal leave, overtime, attendance correction, and expense approvals simple while still preventing a request from being blocked by one absent reporting manager.
 
 ## Default Approval Fallback
 
-Custom workflow definitions are optional for common leave approval. When a module requires approval and no customer-defined workflow exists, the module must choose an explicit default resolver. For leave, the default resolver is the first eligible approver in the employee's position reporting chain.
+Custom workflow definitions are not required for Phase 1. When a module requires approval in Phase 1, the module must choose an explicit built-in resolver.
 
-Default hierarchy resolution:
+For Time Off, the Phase 1 built-in resolver uses management coverage:
 
-1. Resolve the request employee's current position.
-2. Walk `reports_to_position_id` upward until the root.
-3. For each reporting position, resolve the current active occupant.
-4. Return the first candidate who is an active employee, has an active user account, has the required action permission such as `leave:approve`, and is allowed by self-approval policy.
-5. Skip vacant positions, inactive employees, missing user accounts, and candidates without the required permission.
-6. If no valid candidate is found, mark the step blocked and notify the automation owner or authorized admin. Optional fallback routing may use department owner, selected permission, specific employee, HR coverage assignment, or configured escalation resolver.
+1. Resolve the request employee's current Company, position, and department.
+2. Try position coverage owners in owner order.
+3. If no valid owner exists, try department coverage owners in owner order.
+4. If no valid owner exists, try company-wide coverage owners in owner order.
+5. Return the first candidate who is an active employee, has an active user account, has the required action permission such as `time_off:approve`, and is allowed by self-approval policy.
+6. If no valid candidate is found, create a routing issue. Do not require Workflow Engine.
 
-Do not expose per-permission scope policy setup as a required role-creation step. Permission grants define the action capability; resolver context, hierarchy, workspace membership, project membership, and legal-entity context define where that action can operate.
+Do not expose per-permission employee-coverage setup as a required role-creation step. Permission grants define the action capability; management coverage, workspace membership, project membership, and legal-entity context define where that action can operate.
 
 ## Case Conversations
 
-Approval requests and alerts should not be handled inside normal one-to-one private chat. ONEVO creates a case conversation: a private, system-created conversation linked to one approval, alert, request, or workflow item.
+Case conversations are Phase 2. Approval requests and alerts should not require case conversations in Phase 1.
+
+In Phase 2, ONEVO may create a case conversation: a private, system-created conversation linked to one approval, alert, request, or workflow item.
 
 A case conversation can start with:
 
@@ -118,30 +141,34 @@ Participants can discuss evidence, invite another employee, approve or reject, a
 
 ## Delivery Router
 
-The workflow engine publishes an action card and asks the delivery router where it should appear.
+The delivery router is Phase 2 workflow infrastructure. Phase 1 module-owned actions can still deliver to Notifications and Inbox directly.
+
+In Phase 2, the workflow engine publishes an action card and asks the delivery router where it should appear.
 
 | Capability | Delivery |
 |:-----------|:---------|
-| WorkSync Chat enabled | Send action card to ONEVO Chat and create or reuse a case conversation |
-| WorkSync Chat not enabled | Send action card to Inbox and use the Inbox detail panel for comments and decisions |
+| Work Chat enabled | Send action card to ONEVO Chat and create or reuse a case conversation |
+| Work Chat not enabled | Send action card to Inbox and use the Inbox detail panel for comments and decisions |
 | Microsoft Teams sync enabled | Mirror the case conversation into the linked Teams conversation |
 
 Teams is for discussion only. ONEVO remains the source of truth for permissions, workflow state, decisions, and audit trail. Official actions happen in ONEVO through a secure link.
 
 ## Database Tables
 
-The approved migration direction is additive and keeps legacy workflow rows readable. New workflow definitions must use resolver fields and child assignment rows instead of fixed role targeting.
+The approved Phase 2 migration direction is additive and keeps legacy workflow rows readable. New workflow definitions must use resolver fields and child assignment rows instead of fixed role targeting.
 
 Approved migration decisions:
 
 - Resolver configuration lives on `workflow_steps` as `resolver_type` plus `resolver_config`.
 - Multiple approvers live in `workflow_step_assignments`.
-- Case conversation metadata lives in Shared Platform `case_conversations` and links to WorkSync Chat `channels`.
+- Case conversation metadata lives in Shared Platform `case_conversations` and links to Work Chat `channels`.
 - Delivery routing state lives in `workflow_delivery_routes`.
 - Cross-company context lives as nullable provenance fields on `workflow_instances`.
 - Legacy `approver_type`, `approver_role_id`, and `assigned_to_id` stay during expand-contract migration but are not used for new definitions.
 
-## API Endpoints
+## Deferred API Endpoints
+
+The following API surface is Phase 2 only and must not be exposed in the Phase 1 customer app:
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
@@ -156,7 +183,7 @@ Approved migration decisions:
 | POST | `/api/v1/workflows/{instanceId}/request-info` | Authenticated + assigned participant + required module permission | Request more information |
 | POST | `/api/v1/cases/{caseId}/resolve` | Authenticated + case participant with resolve rights | Resolve a case conversation |
 
-`workflows:manage` controls workflow configuration. Runtime approve/reject actions use the resource module permission configured on the workflow step, such as `leave:approve` or `expense:approve`, plus current assignment, case participation, and tenant/resource checks. `Authenticated` by itself only means the caller is logged in.
+`workflows:manage` controls workflow configuration. Runtime approve/reject actions use the resource module permission configured on the workflow step, such as `time_off:approve` or `expense:approve`, plus current assignment, case participation, and tenant/resource checks. `Authenticated` by itself only means the caller is logged in.
 
 ## Related
 
@@ -164,7 +191,5 @@ Approved migration decisions:
 - [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]]
 - [[modules/work-management/chat/overview|Chat & Messaging]]
 - [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync]]
-- [[modules/shared-platform/compliance-governance/overview|Compliance Governance]]
-- [[modules/shared-platform/company-connections/overview|Company Connections]]
 - [[frontend/architecture/sidebar-nav|Sidebar Navigation]]
 - [[frontend/cross-cutting/authorization|Authorization]]

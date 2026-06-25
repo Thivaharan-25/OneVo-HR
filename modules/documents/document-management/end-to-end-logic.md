@@ -1,4 +1,4 @@
-# Document Management — End-to-End Logic
+﻿# Document Management - End-to-End Logic
 
 **Module:** Documents
 **Feature:** Document Management

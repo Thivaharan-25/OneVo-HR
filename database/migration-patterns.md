@@ -1,4 +1,4 @@
-# Migration Patterns: ONEVO
+﻿# Migration Patterns: ONEVO
 
 ## EF Core Migrations
 
@@ -13,7 +13,7 @@ dotnet ef migrations add <MigrationName> \
 
 # Examples:
 dotnet ef migrations add AddEmployeeDependents
-dotnet ef migrations add AddLeaveModule
+dotnet ef migrations add AddTimeOffModule
 dotnet ef migrations add AlterAttendanceAddCorrections
 ```
 
@@ -32,7 +32,7 @@ dotnet ef migrations script --idempotent --output migration.sql
 `{Action}{Entity/Module}{Detail}`
 
 - `AddEmployeeTable`
-- `AddLeaveModule`
+- `AddTimeOffModule`
 - `CreatePositionsAndPositionAssignments`
 - `CreateEmployeeHierarchyClosure`
 - `CreateIndexOnAttendanceDate`
@@ -55,26 +55,26 @@ Use the **expand-contract** pattern for all schema changes:
 
 | Operation | Strategy |
 |:----------|:---------|
-| Rename column | Deploy 1: Add new column → Deploy 2: Migrate data + use new column → Deploy 3: Drop old column |
-| Drop column | Deploy 1: Stop reading column → Deploy 2: Drop column |
-| Change column type | Deploy 1: Add new column → Deploy 2: Migrate data → Deploy 3: Drop old |
-| Add NOT NULL constraint | Deploy 1: Add column nullable → Deploy 2: Backfill data → Deploy 3: Add constraint |
-| Drop table | Deploy 1: Stop all references → Deploy 2: Drop table |
+| Rename column | Deploy 1: Add new column -> Deploy 2: Migrate data + use new column -> Deploy 3: Drop old column |
+| Drop column | Deploy 1: Stop reading column -> Deploy 2: Drop column |
+| Change column type | Deploy 1: Add new column -> Deploy 2: Migrate data -> Deploy 3: Drop old |
+| Add NOT NULL constraint | Deploy 1: Add column nullable -> Deploy 2: Backfill data -> Deploy 3: Add constraint |
+| Drop table | Deploy 1: Stop all references -> Deploy 2: Drop table |
 
 ### Example: Expand-Contract
 
 ```csharp
-// Deploy 1: EXPAND — add new column (nullable)
+// Deploy 1: EXPAND - add new column (nullable)
 migrationBuilder.AddColumn<string>(
     name: "work_email",
     table: "employees",
     type: "varchar(255)",
     nullable: true);
 
-// Deploy 2: MIGRATE — backfill data + update code to use new column
+// Deploy 2: MIGRATE - backfill data + update code to use new column
 // (done via Hangfire background job for large tables)
 
-// Deploy 3: CONTRACT — drop old column (after all code uses new one)
+// Deploy 3: CONTRACT - drop old column (after all code uses new one)
 migrationBuilder.DropColumn(
     name: "email",
     table: "employees");
@@ -90,7 +90,7 @@ public class SeedDefaultData : IDataSeeder
 {
     public async Task SeedAsync(AppDbContext context)
     {
-        // Countries (reference data — no tenant_id)
+        // Countries (reference data - no tenant_id)
         if (!await context.Countries.AnyAsync())
         {
             context.Countries.AddRange(
@@ -99,7 +99,7 @@ public class SeedDefaultData : IDataSeeder
             );
         }
         
-        // Permissions (reference data — no tenant_id)
+        // Permissions (reference data - no tenant_id)
         if (!await context.Permissions.AnyAsync())
         {
             var permissions = PermissionSeedData.GetAllPermissions(); // 80+ permissions
@@ -143,16 +143,16 @@ migrationBuilder.Sql(@"
 - [[infrastructure/multi-tenancy|Multi Tenancy]]
 - [[modules/auth/overview|Auth]]
 - [[modules/core-hr/overview|Core Hr]]
-- [[modules/leave/overview|Leave]]
+- [[modules/time-off/overview|Time Off]]
 - [[modules/payroll/overview|Payroll]]
 - [[modules/performance/overview|Performance]]
-- [[modules/workforce-presence/overview|Workforce Presence]]
+- [[modules/time-attendance/overview|Time & Attendance]]
 - [[modules/expense/overview|Expense]]
 - [[modules/grievance/overview|Grievance]]
 - [[modules/documents/overview|Documents]]
 - [[modules/notifications/overview|Notifications]]
 - [[modules/org-structure/overview|Org Structure]]
-- [[modules/workforce-presence/overview|Workforce Presence]]
+- [[modules/time-attendance/overview|Time & Attendance]]
 - [[modules/activity-monitoring/overview|Activity Monitoring]]
 - [[modules/identity-verification/overview|Identity Verification]]
 - [[modules/exception-engine/overview|Exception Engine]]

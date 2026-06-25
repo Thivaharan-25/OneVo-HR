@@ -44,11 +44,11 @@ All tests require:
 
 ### TC-005: Subscription saves and syncs entitlements
 **Precondition:** Tenant from TC-001 exists in provisioning state
-**Action:** `PATCH /admin/v1/tenants/{id}/subscription` with `plan_id`, `selected_module_keys: ["core_hr","leave"]`, `payment_gateway_config_id: "{gatewayId}"`
+**Action:** `PATCH /admin/v1/tenants/{id}/subscription` with `plan_id`, `selected_module_keys: ["core_hr","time_off"]`, `payment_gateway_config_id: "{gatewayId}"`
 **Expected:**
 - HTTP 200, `step_3_complete: true`
 - `tenant_subscriptions` row created with `is_current = true`
-- `tenant_module_entitlements` rows created for `core_hr` and `leave` with `status = 'provisioning'`
+- `tenant_module_entitlements` rows created for `core_hr` and `time_off` with `status = 'provisioning'`
 - Both `calculated_price` and `override_price` stored separately (override_price = null when no override given)
 
 ### TC-006: Plan selection does NOT accept `plan_id` on `POST /admin/v1/tenants` (Step 1)
@@ -64,7 +64,7 @@ All tests require:
 **Expected:** HTTP 422, error: "No active payment gateway route is configured for this tenant country."
 
 ### TC-009: AI token limit required when AI modules selected
-**Input:** `selected_module_keys: ["chat_ai"]`, `ai_monthly_token_limit: null`
+**Input:** `selected_module_keys: ["activity_monitoring"]`, `ai_monthly_token_limit: null`
 **Action:** `PATCH /admin/v1/tenants/{id}/subscription`
 **Expected:** HTTP 422, error: "AI token limit is required when AI-capable modules are included."
 

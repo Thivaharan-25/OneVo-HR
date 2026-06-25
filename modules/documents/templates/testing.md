@@ -1,4 +1,4 @@
-# Templates — Testing
+﻿# Templates - Testing
 
 **Module:** Documents
 **Feature:** Templates

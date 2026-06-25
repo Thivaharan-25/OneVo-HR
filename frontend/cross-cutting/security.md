@@ -1,14 +1,14 @@
-# Frontend Security
+﻿# Frontend Security
 
 ## Threat Model
 
 | Threat | Risk in ONEVO | Mitigation |
 |:-------|:-------------|:-----------|
-| XSS | High — HR data, salary info | CSP, Angular auto-escaping, `DomSanitizer` for rich content |
-| CSRF | Medium — cookie-authenticated writes | SameSite cookies + `X-CSRF-Token` header on mutations |
-| Session theft | High — access to HR data | HttpOnly Secure cookies, rotation, short idle timeout |
+| XSS | High - HR data, salary info | CSP, Angular auto-escaping, `DomSanitizer` for rich content |
+| CSRF | Medium - cookie-authenticated writes | SameSite cookies + `X-CSRF-Token` header on mutations |
+| Session theft | High - access to HR data | HttpOnly Secure cookies, rotation, short idle timeout |
 | Clickjacking | Medium | `X-Frame-Options`, CSP `frame-ancestors` |
-| Data exposure in client | High — sensitive employee data | Never cache sensitive data to localStorage; clear on logout |
+| Data exposure in client | High - sensitive employee data | Never cache sensitive data to localStorage; clear on logout |
 | Open redirect | Low | Whitelist redirect targets after login |
 | Dependency supply chain | Medium | Lock files, `npm audit`, Dependabot/Snyk |
 
@@ -19,9 +19,9 @@
 | `auth.interceptor.ts` | Adds `withCredentials: true`; never attaches JWT in Authorization header for customer web |
 | `csrf.interceptor.ts` | Reads CSRF nonce cookie and adds `X-CSRF-Token` header to non-GET/HEAD requests |
 | `idle-timeout.service.ts` | Listens to user activity and calls `AuthService.logout()` after configurable inactivity |
-| `sanitizer.service.ts` | Angular `DomSanitizer` wrapper — all user-generated HTML must pass through it before rendering |
-| `auth.guard.ts` | Functional guard — redirects unauthenticated users to `/login` |
-| `permission.guard.ts` | Functional guard — redirects users lacking permission to `/403` |
+| `sanitizer.service.ts` | Angular `DomSanitizer` wrapper - all user-generated HTML must pass through it before rendering |
+| `auth.guard.ts` | Functional guard - redirects unauthenticated users to `/login` |
+| `permission.guard.ts` | Functional guard - redirects users lacking permission to `/403` |
 
 Do not add a browser `token-manager.ts` for customer web auth. Browser JavaScript must not receive or store tenant JWTs.
 
@@ -38,7 +38,7 @@ Security headers are set in the Angular dev proxy config and production edge/CDN
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.blob.core.windows.net; font-src 'self'; connect-src 'self' https://api.onevo.com wss://*.signalr.net; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.r2.cloudflarestorage.com https://pub-*.r2.dev; font-src 'self'; connect-src 'self' https://api.onevo.com wss://*.signalr.net; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
   }
 }
 ```
@@ -52,10 +52,10 @@ CSP, `X-Frame-Options`, and security headers are set at the Azure CDN / nginx ed
 Angular auto-escapes all template interpolations by default. Never bypass the sanitizer for untrusted content.
 
 ```html
-<!-- ✅ Safe — Angular escapes automatically -->
+<!-- [ok] Safe - Angular escapes automatically -->
 <p>{{ employee.name }}</p>
 
-<!-- ❌ Unsafe — bypasses Angular sanitizer -->
+<!-- [wrong] Unsafe - bypasses Angular sanitizer -->
 <div [innerHTML]="userInput"></div>
 ```
 
@@ -112,15 +112,15 @@ function getCsrfTokenFromCookie(): string {
 ## Sensitive Data Handling
 
 ```typescript
-// ❌ Never store sensitive data in localStorage / sessionStorage
+// [wrong] Never store sensitive data in localStorage / sessionStorage
 localStorage.setItem('employees', JSON.stringify(employeeData));
 
-// ✅ Keep server data in resource() / HttpClient memory only
+// [ok] Keep server data in resource() / HttpClient memory only
 // Data is released when the component is destroyed
 // AuthService.clear() + SignalRService.disconnect() on logout
 ```
 
-## Logout — Clean State
+## Logout - Clean State
 
 ```typescript
 // shared/src/lib/auth/auth.service.ts
@@ -176,7 +176,7 @@ export class IdleTimeoutService implements OnDestroy {
 
 ## Related
 
-- [[frontend/cross-cutting/authentication|Authentication]] — session handling
-- [[frontend/cross-cutting/authorization|Authorization]] — RBAC enforcement
-- [[frontend/data-layer/api-integration|API Integration]] — HttpClient interceptors
-- [[frontend/architecture/routing|Routing]] — functional route guards
+- [[frontend/cross-cutting/authentication|Authentication]] - session handling
+- [[frontend/cross-cutting/authorization|Authorization]] - RBAC enforcement
+- [[frontend/data-layer/api-integration|API Integration]] - HttpClient interceptors
+- [[frontend/architecture/routing|Routing]] - functional route guards

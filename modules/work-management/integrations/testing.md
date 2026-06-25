@@ -1,4 +1,7 @@
-# Integration & API — Testing
+﻿# Integration & API - Testing
+
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Not active in current Phase 1 Work implementation; retained as future design reference.
 
 **Module:** WorkSync
 **Feature:** Integration & API
@@ -113,8 +116,8 @@ public class WebhookEndpointTests : IClassFixture<ONEVOWebFactory>
 | Parse [TASK-123] from commit | Unit | task_ids populated |
 | Parse #456 from commit | Unit | task_ids populated |
 | No task ID in commit | Unit | Empty array |
-| Branch pattern match → execute action | Unit | Action executed |
-| Branch pattern mismatch → skip | Unit | Action not executed |
+| Branch pattern match -> execute action | Unit | Action executed |
+| Branch pattern mismatch -> skip | Unit | Action not executed |
 | Duplicate event (idempotency) | Unit | Action not re-executed |
 | Valid webhook creates event | Integration | code_activity_events row created |
 | Invalid HMAC returns 401 | Integration | 401 returned |

@@ -1,4 +1,4 @@
-# Discrepancy Engine — Schema
+﻿# Discrepancy Engine - Schema
 
 **Module:** [[modules/discrepancy-engine/overview|Discrepancy Engine]]
 **Phase:** Phase 1
@@ -10,21 +10,21 @@
 
 ## `discrepancy_events`
 
-Daily discrepancy detection results — comparing HR active time (from agent) vs Work Management-reported task time vs calendar-explained time. Written by `DiscrepancyEngineJob` (daily 10:30 PM). Read by position-resolved managers, configured exception/discrepancy reviewers, selected permission holders, and Productivity Analytics where permission and context allow it.
+Daily discrepancy detection results - comparing HR active time (from agent) vs Work Management-reported task time vs calendar-explained time. Written by `DiscrepancyEngineJob` (daily 10:30 PM). Read by configured exception/discrepancy reviewers, recipients resolved by Monitoring Policy, selected permission holders, and Productivity Analytics where permission and context allow it.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `date` | `date` | |
 | `hr_active_minutes` | `int` | Ground truth from `activity_daily_summary` |
 | `work_management_logged_minutes` | `int` | What employee logged in Work Management task time |
 | `calendar_minutes` | `int` | Explained time from `calendar_events` (meetings, OOO) |
 | `unaccounted_minutes` | `int` | Computed: `hr_active - work_management_logged - calendar`. Negative = under-reporter |
-| `severity` | `varchar(20)` | `none`, `low`, `high`, `critical` — based on tenant threshold config |
+| `severity` | `varchar(20)` | `none`, `low`, `high`, `critical` - based on tenant threshold config |
 | `threshold_minutes` | `int` | Tenant-configured acceptable gap (default 60 min) |
-| `notified_manager` | `boolean` | Whether manager was alerted |
+| `notified_owner` | `boolean` | Whether the assigned reviewer or coverage owner was alerted |
 | `notified_at` | `timestamptz` | Nullable |
 | `created_at` | `timestamptz` | |
 | `z_score` | `decimal(8,2)` | Nullable. How many stddevs above baseline. Set when baseline data is available. |
@@ -32,36 +32,36 @@ Daily discrepancy detection results — comparing HR active time (from agent) vs
 | `baseline_stddev_minutes` | `decimal(8,2)` | Nullable. Employee's 30-day stddev at time of computation. |
 | `severity_method` | `varchar(20)` | `absolute` (new employee, < 5 samples) or `baseline_relative` |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` -> [[database/schemas/core-hr#`employees`|employees]]
 
 **Index:** `(tenant_id, employee_id, date)`, `(tenant_id, severity, date)`
 
-**Visibility:** Discrepancy data is visible only to authorized resolver outputs such as the position-resolved reporting manager, configured reviewer, selected permission holder, HR coverage resolver, or approved escalation participant. Employee never sees their own discrepancy record — only their personal activity timeline. Enforced at query level (`RequirePermission("exceptions:manage")` plus resolver/context checks), not just UI level.
+**Visibility:** Discrepancy data is visible only to authorized recipients resolved by Monitoring Policy, selected permission holders with valid management coverage, or approved escalation participants. Employee never sees their own discrepancy record - only their personal activity timeline. Enforced at query level (`RequirePermission("exceptions:manage")` plus resolver/context checks), not just UI level.
 
 **Severity thresholds (default, tenant-configurable):**
-- `none` — unaccounted gap < 30 min
-- `low` — 30–60 min gap (automated reminder to employee to log time)
-- `high` — 60–180 min gap (configured discrepancy reviewer notified privately)
-- `critical` — 180+ min gap (escalated through the configured resolver/escalation chain)
+- `none` - unaccounted gap < 30 min
+- `low` - 30-60 min gap (automated reminder to employee to log time)
+- `high` - 60-180 min gap (configured discrepancy reviewer notified privately)
+- `critical` - 180+ min gap (Phase 1: recipient resolved by Monitoring Policy notified immediately; Phase 2: Workflow/Automation escalation)
 
 ---
 
 ## `work_management_daily_time_logs`
 
-Work Management-submitted task time per employee per day. Populated from internal Work Management `time_logs` projections. Consumed by `DiscrepancyEngineJob` as the `work_management_logged_minutes` input stream. Upserted — re-submission for same employee + date overwrites.
+Work Management-submitted task time per employee per day. Populated from internal Work Management `time_logs` projections. Consumed by `DiscrepancyEngineJob` as the `work_management_logged_minutes` input stream. Upserted - re-submission for same employee + date overwrites.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `date` | `date` | |
 | `total_logged_minutes` | `int` | Aggregated from all task log entries for this day |
-| `active_task_at` | `timestamptz` | Most recent active task timestamp (nullable — real-time context) |
+| `active_task_at` | `timestamptz` | Most recent active task timestamp (nullable - real-time context) |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` -> [[database/schemas/core-hr#`employees`|employees]]
 
 **Index:** `(tenant_id, employee_id, date)` UNIQUE
 
@@ -71,22 +71,22 @@ Work Management-submitted task time per employee per day. Populated from interna
 
 ## `employee_discrepancy_baselines`
 
-Rolling per-employee statistical baseline for discrepancy severity calculation. Computed daily by `ComputeDiscrepancyBaselinesJob`. Requires minimum 5 samples before being used — new employees fall back to absolute thresholds automatically.
+Rolling per-employee statistical baseline for discrepancy severity calculation. Computed daily by `ComputeDiscrepancyBaselinesJob`. Requires minimum 5 samples before being used - new employees fall back to absolute thresholds automatically.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `computed_at` | `date` | The date this baseline was computed for |
 | `window_days` | `int` | Rolling window (default 30) |
 | `avg_unaccounted_minutes` | `decimal(8,2)` | Rolling average of unaccounted gap |
 | `stddev_unaccounted_minutes` | `decimal(8,2)` | Rolling stddev of unaccounted gap |
-| `sample_count` | `int` | Days with data in the window (< 5 → not used) |
+| `sample_count` | `int` | Days with data in the window (< 5 -> not used) |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-**Foreign Keys:** `tenant_id` → [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` → [[database/schemas/core-hr#`employees`|employees]]
+**Foreign Keys:** `tenant_id` -> [[database/schemas/infrastructure#`tenants`|tenants]], `employee_id` -> [[database/schemas/core-hr#`employees`|employees]]
 
 **Index:** `(tenant_id, employee_id, computed_at)` UNIQUE
 
@@ -97,7 +97,7 @@ Rolling per-employee statistical baseline for discrepancy severity calculation. 
 ## Related
 
 - [[modules/discrepancy-engine/overview|Discrepancy Engine Module]]
-- [[database/schemas/activity-monitoring|Activity Monitoring Schema]] — source of `activity_daily_summary` (input to discrepancy calculation)
-- [[database/schemas/core-hr|Core HR Schema]] — `employees` table
+- [[database/schemas/activity-monitoring|Activity Monitoring Schema]] - source of `activity_daily_summary` (input to discrepancy calculation)
+- [[database/schemas/core-hr|Core HR Schema]] - `employees` table
 - [[database/schema-catalog|Schema Catalog]]
 - [[database/migration-patterns|Migration Patterns]]

@@ -1,4 +1,4 @@
-# Routing Architecture
+﻿# Routing Architecture
 
 > This app uses **Angular Router** with typed routes defined in `app.routes.ts`. There is no file-based routing, no middleware.ts, no parallel routes, and no intercepting routes. All route guards are functional (`CanActivateFn`).
 
@@ -6,10 +6,10 @@
 
 | Group | Shell Component | Auth Required |
 |:------|:----------------|:--------------|
-| Auth | `AuthLayoutComponent` — centered card, no nav | No |
-| App | App-specific shell — nav rail + topbar + `<router-outlet>` | Yes |
+| Auth | `AuthLayoutComponent` - centered card, no nav | No |
+| App | App-specific shell - nav rail + topbar + `<router-outlet>` | Yes |
 
-All three apps (`setup-control-app`, `operations-lifecycle-app`, and `dev-console`) follow the same routing pattern. Guards and permission checks are shared from `@onevo/shared`; Developer Platform routes use platform-admin auth and `/admin/v1/*`.
+Both apps (`customer-app` and `dev-console`) follow the same routing pattern. Guards and permission checks are shared from `@onevo/shared`; Developer Platform routes use platform-admin auth and `/admin/v1/*`.
 
 ## Functional Guards
 
@@ -51,15 +51,15 @@ export const permissionGuard = (permission: string): CanActivateFn =>
 
 All routes defined in a single file per app. Heavy routes use `loadComponent` for lazy loading.
 
-### Operations / Lifecycle App
+### Customer App
 
 ```typescript
-// projects/operations-lifecycle-app/src/app/app.routes.ts
+// projects/customer-app/src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard, permissionGuard } from '@onevo/shared';
 
 export const routes: Routes = [
-  // Auth — public
+  // Auth - public
   {
     path: '',
     loadComponent: () =>
@@ -72,19 +72,19 @@ export const routes: Routes = [
     ],
   },
 
-  // Authenticated — operations shell
+  // Authenticated - operations shell
   {
     path: '',
     loadComponent: () =>
-      import('./shell/operations-shell.component').then(m => m.OperationsShellComponent),
+      import('./shell/customer-shell.component').then(m => m.CustomerShellComponent),
     canActivate: [authGuard],
     children: [
       { path: '',       redirectTo: 'home', pathMatch: 'full' },
       { path: 'home',   loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent) },
       {
-        path: 'leave',
-        canActivate: [permissionGuard('leave:create')],
-        loadComponent: () => import('./features/leave/leave-overview.component').then(m => m.LeaveOverviewComponent),
+        path: 'time_off',
+        canActivate: [permissionGuard('time_off:create')],
+        loadComponent: () => import('./features/time_off/time_off-overview.component').then(m => m.LeaveOverviewComponent),
       },
       {
         path: 'attendance',
@@ -104,18 +104,18 @@ export const routes: Routes = [
 ];
 ```
 
-### Setup / Control App (key routes)
+### Customer Setup Routes (excerpt)
 
 ```typescript
-// projects/setup-control-app/src/app/app.routes.ts (excerpt)
+// projects/customer-app/src/app/app.routes.ts (setup route excerpt)
 export const routes: Routes = [
-  // Auth — same pattern as operations-lifecycle-app
+  // Auth follows the same customer-app pattern
   { path: '', loadComponent: () => import('./features/auth/auth-layout.component') /* ... */ },
 
-  // Authenticated — setup shell
+  // Authenticated - setup shell
   {
     path: '',
-    loadComponent: () => import('./shell/setup-control-shell.component').then(m => m.SetupControlShellComponent),
+    loadComponent: () => import('./shell/customer-shell.component').then(m => m.CustomerShellComponent),
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'setup', pathMatch: 'full' },
@@ -141,11 +141,11 @@ Applied in `app.routes.ts` via `canActivate: [permissionGuard('resource:action')
 
 ### Layer 2: `*hasPermission` Structural Directive (template-level)
 
-Fine-grained UI hiding within pages — does NOT replace route guards:
+Fine-grained UI hiding within pages - does NOT replace route guards:
 
 ```html
-<!-- Only show "Approve" button if user has leave:approve -->
-<button *hasPermission="'leave:approve'" mat-button (click)="approve()">
+<!-- Only show "Approve" button if user has time_off:approve -->
+<button *hasPermission="'time_off:approve'" mat-button (click)="approve()">
   Approve
 </button>
 
@@ -160,14 +160,14 @@ Fine-grained UI hiding within pages — does NOT replace route guards:
 
 ### Layer 3: Feature / Tenant Module Gates
 
-WorkSync routes only render when the tenant has the module enabled:
+Work routes only render when the tenant has the module enabled:
 
 ```typescript
-// In app.routes.ts — canActivate with combined guard
+// In app.routes.ts - canActivate with combined guard
 {
-  path: 'worksync/projects',
+  path: 'work/projects',
   canActivate: [authGuard, permissionGuard('projects:read'), featureGuard('wms:projects')],
-  loadComponent: () => import('./features/worksync/projects/project-list.component')
+  loadComponent: () => import('./features/work/projects/project-list.component')
     .then(m => m.ProjectListComponent),
 },
 ```
@@ -227,7 +227,7 @@ closeCreate() {
 
 ## Breadcrumb Generation
 
-Derived from `ActivatedRoute` data — attach `title` / `breadcrumb` data to route definitions:
+Derived from `ActivatedRoute` data - attach `title` / `breadcrumb` data to route definitions:
 
 ```typescript
 // In route config
@@ -289,6 +289,6 @@ Or use Angular Router's built-in `routerLinkActive` directive in templates:
 
 ## Related
 
-- [[frontend/architecture/app-structure|App Structure]] — full feature file tree
-- [[frontend/cross-cutting/authorization|Authorization]] — permission system details
-- [[frontend/data-layer/state-management|State Management]] — Angular Signals
+- [[frontend/architecture/app-structure|App Structure]] - full feature file tree
+- [[frontend/cross-cutting/authorization|Authorization]] - permission system details
+- [[frontend/data-layer/state-management|State Management]] - Angular Signals

@@ -1,4 +1,4 @@
-# Report Templates — End-to-End Logic
+﻿# Report Templates - End-to-End Logic
 
 **Module:** Reporting Engine
 **Feature:** Report Templates
@@ -16,9 +16,9 @@ Report templates define column structure and default filters:
 
 System templates (is_system = true) are pre-seeded:
   -> "Employee Directory" (headcount)
-  -> "Leave Utilization Summary"
+  -> "Time Off Utilization Summary"
   -> "Daily Productivity Report"
-  -> "Weekly Workforce Summary"
+  -> "Weekly Monitoring Summary"
   -> "Exception Alert Summary"
 
 Custom templates can be created by admins.
@@ -26,8 +26,8 @@ Custom templates can be created by admins.
 
 ### Key Rules
 
-- **System templates cannot be deleted** — only customized via tenant-specific overrides.
-- **Templates are reusable** — one template can be used by multiple report definitions.
+- **System templates cannot be deleted** - only customized via tenant-specific overrides.
+- **Templates are reusable** - one template can be used by multiple report definitions.
 
 ## Related
 

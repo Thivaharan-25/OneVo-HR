@@ -1,4 +1,4 @@
-# Time Management — Testing
+﻿# Time Management - Testing
 
 **Module:** WorkSync
 **Feature:** Time Management

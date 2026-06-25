@@ -17,7 +17,7 @@
 
 - Tenant creation collects company registration/profile data, country, timezone, and currency as tenant profile data.
 - Tenant creation does not write deprecated registration-profile rows.
-- Activation seeds one primary legal entity from the tenant profile so Setup / Control has a starting point.
+- First-payment activation seeds one primary legal entity from the tenant profile so Setup / Control has a starting point.
 - Additional operating companies that belong to the same customer account are added as legal entities inside the same tenant.
 - Separate tenants are used only for separate customer accounts that must remain isolated.
 - The same email can be invited to multiple tenants. Accepting one invitation grants access only to that tenant and does not merge tenant data.
@@ -40,7 +40,7 @@
 - **API:** `PATCH /admin/v1/tenants/{tenantId}/subscription`
 - **Backend:** Stores tenant commercial boundaries: allowed plan ids, optional recommended plan id, resolved payment gateway config, one-time setup charges, negotiated overrides/discounts, and commercial limits. It does not finalize billing cycle or first invoice quantity.
 - **Validation:** allowed plans exist and are active, recommended plan is in the allowed set, AI modules have token limit, Work Management storage-backed modules have storage limit, and the tenant country has exactly one active payment gateway route for the current environment.
-- **DB:** `tenant_subscriptions`, gateway invoice/payment references where applicable.
+- **DB:** `tenant_subscriptions`, `payment_gateway_config_id`, `subscription_invoices.external_invoice_id`, and payment-method gateway references where applicable.
 
 Tenant owner choice rule:
 
@@ -52,10 +52,10 @@ Tenant owner choice rule:
 
 ### Step 3: Module Entitlements
 
-- **UI:** Confirm active modules, sales states, module-level pricing overrides, and setup-service needs for the allowed/selected modules.
+- **UI:** Confirm selected modules, sales states, module-level pricing overrides, and setup-service needs for the allowed/selected modules.
 - **API:** `PUT /admin/v1/tenants/{tenantId}/modules`
 - **Backend:** Writes tenant module entitlement records and module pricing/sales state.
-- **Validation:** `available` and `quoted` do not grant tenant-facing access; only valid active commercial states expose permissions.
+- **Validation:** `available` and `quoted` do not grant tenant-facing access. Paid provisioning entitlements remain non-active/payment-limited until first payment succeeds.
 
 ### Step 4: Roles, Permissions, Templates, And Setup Services
 
@@ -63,7 +63,7 @@ Tenant owner choice rule:
   - Role Templates
   - Configuration Templates
   - Org Structure Templates
-  - Leave Policy Templates
+  - Time Off Policy Templates
   - Onboarding Templates
   - App Allowlist Templates
   - Monitoring Policy Templates
@@ -86,11 +86,17 @@ Setup service rule:
 - **Validation:** email unique within the tenant. Same email can be invited to other tenants separately.
 - **DB:** `users`, `user_roles`, `invitation_tokens`.
 
-### Step 6: Activate Tenant
+### Step 6: Upgrade / Generate First Invoice
 
 - **API:** `PATCH /admin/v1/tenants/{tenantId}/provision/confirm`
-- **Backend:** Sets `tenants.status = active`.
-- **Validation:** activation fails until tenant profile, commercial terms, module entitlements, valid owner/admin role, required settings/templates, and required setup services are complete. Owner invite state is tracked separately and is never sent implicitly.
+- **Backend:** Creates the required subscription/payment snapshot and first invoice. The tenant is set to `tenants.status = pending_payment`; module entitlements remain non-active/payment-limited.
+- **Validation:** upgrade/first-invoice generation fails until tenant profile, commercial terms, module entitlements, valid owner/admin role, required settings/templates, and required setup services are complete. Owner invite state is tracked separately and is never sent implicitly.
+
+### Step 7: First Payment Success
+
+- **Trigger:** Payment gateway confirms the first invoice is paid.
+- **Backend:** Sets `tenants.status = active`, activates eligible `tenant_module_entitlements`, sets the subscription status to `active`, links payment/invoice records to the activation event, and writes `tenant.activated`.
+- **Invite behavior:** Welcome/admin invite can be sent if configured and not already sent.
 
 ## Module Entitlement And Permission Rules
 
@@ -98,7 +104,6 @@ Setup service rule:
 - Feature availability is resolved from `tenant_subscriptions.selected_feature_keys` plus runtime feature flags.
 - Permission catalogs include only universal permissions and permissions from enabled/entitled modules and selected feature keys.
 - Each permission belongs to exactly one module. Reassigning a permission to another module requires an explicit Module Catalog ownership change.
-- Roles do not require job levels. Job levels and hierarchy affect scoped access, workflow approver resolution, escalation, and organisation-aware policies.
 
 ## Related
 

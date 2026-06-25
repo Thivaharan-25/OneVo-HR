@@ -1,9 +1,9 @@
-# DEV7: Frontend WorkSync Web UI
+﻿# DEV7: Frontend Work UI
 
 **Track:** Frontend
-**Primary ownership:** WorkSync web UI, projects, tasks, boards, docs, time
-**Current Unfinished Task:** Task 1 - WorkSync shell and projects
-**Blocked By:** DEV5 app foundation; DEV3 WorkSync APIs for live data
+**Primary ownership:** Work web UI: projects, work items, worklogs, simple docs/pages, membership/settings. Boards, Planner, Chat, and Analytics are Phase 2.
+**Current Unfinished Task:** Task 1 - Work shell and projects
+**Blocked By:** DEV5 app foundation; DEV3 Work APIs for live data
 
 ---
 
@@ -13,9 +13,9 @@ When Dev 7 asks to continue, start with the first unchecked item in **Current Un
 
 ---
 
-## Task 1: WorkSync Shell + Projects
+## Task 1: Work Shell + Projects
 
-**Goal:** build the workspace and project experience for WorkSync.
+**Goal:** build the Phase 1 Work project experience.
 
 **Requires:** DEV5 Tasks 1-4 complete  
 **Live integration:** DEV3 Task 1 (use MSW until ready) - Contract: `current-focus/contracts/worksync-core.md`
@@ -23,9 +23,9 @@ When Dev 7 asks to continue, start with the first unchecked item in **Current Un
 ### Acceptance Criteria
 
 - [ ] Workspace switcher shows current workspace and available workspaces.
-- [ ] WorkSync navigation supports Projects, My Work, Planner, Docs, Time, and Analytics.
+- [ ] Work navigation supports Projects, Work Items, Docs/Pages where retained, Worklogs, Members, and Settings. Planner, My Space, Chat, and Analytics are Phase 2.
 - [ ] Project list supports search, filters, status, owner, and cursor paging.
-- [ ] Project detail shows overview, members, tasks, board, roadmap, and activity tabs.
+- [ ] Project detail shows overview, members, work items, docs/pages where retained, worklogs, settings, and activity. Board and roadmap tabs are Phase 2.
 - [ ] Project create/edit forms validate required fields.
 - [ ] Tests cover workspace switch, project list, create validation, and detail tabs.
 
@@ -44,11 +44,11 @@ npm run build
 
 ---
 
-> **Parallel group** — Tasks 2, 3, and 4 all require DEV5 Tasks 1–4 and DEV7 Task 1, but are independent of each other. Run all three simultaneously.
+> **Parallel group** - Tasks 2, 3, and 4 all require DEV5 Tasks 1-4 and DEV7 Task 1, but are independent of each other. Run all three simultaneously.
 
-## Task 2: Tasks + Boards + Planning UI
+## Task 2: Work Items UI (Phase 1) / Boards + Planning UI (Phase 2)
 
-**Goal:** build task, kanban, backlog, sprint, and roadmap screens.
+**Goal:** build Phase 1 work-item screens. Kanban, backlog, sprint, and roadmap screens are Phase 2 references.
 
 **Requires:** DEV5 Tasks 1-4 and DEV7 Task 1 complete  
 **Live integration:** DEV3 Task 2 (use MSW until ready) - Contract: `current-focus/contracts/worksync-core.md`
@@ -57,10 +57,10 @@ npm run build
 
 - [ ] My Work page groups assigned tasks by due date, status, and priority.
 - [ ] Task detail supports description, assignees, status, comments, checklists, docs, and code activity.
-- [ ] Board view supports columns, task cards, drag/drop shell, and quick status update.
-- [ ] Backlog and sprint planning screens support moving tasks into sprints.
-- [ ] Roadmap timeline shows roadmap items and milestones.
-- [ ] Tests cover task detail, status update, board render, and sprint assignment.
+- [ ] Phase 2 only: board view with columns, cards, drag/drop shell, and quick status update.
+- [ ] Phase 2 only: backlog and sprint planning screens.
+- [ ] Phase 2 only: roadmap timeline.
+- [ ] Tests cover work-item detail and status update. Board render and sprint assignment are Phase 2.
 
 ### References
 
@@ -78,21 +78,21 @@ npm run build
 
 ---
 
-## Task 3: Chat + Time + Analytics UI
+## Task 3: Worklogs UI + Phase 2 Chat/Analytics UI
 
-**Goal:** build WorkSync chat, time tracking, timesheets, and analytics views.
+**Goal:** build Phase 1 worklog UI. Chat, timesheets, and analytics views are Phase 2 unless explicitly reactivated.
 
 **Requires:** DEV5 Tasks 1-4 and DEV7 Task 1 complete  
 **Live integration:** DEV3 Tasks 2-3 (use MSW until ready) - Contract: `current-focus/contracts/signalr-events.md`
 
 ### Acceptance Criteria
 
-- [ ] Chat screen lists channels and messages.
-- [ ] Chat composer supports send, attachments shell, and realtime updates.
+- [ ] Phase 2 only: chat screen lists channels and messages.
+- [ ] Phase 2 only: chat composer supports send, attachments shell, and realtime updates.
 - [ ] Time log screen supports daily/weekly logs and task-linked entries.
-- [ ] Timesheet screen supports current period summary and submit action.
-- [ ] Analytics page shows productivity, capacity, task throughput, and sprint burndown cards.
-- [ ] Tests cover chat message send, realtime append, time log validation, and analytics loading state.
+- [ ] Phase 2 only: timesheet screen supports current period summary and submit action.
+- [ ] Phase 2 only: analytics page shows productivity, capacity, throughput, and sprint burndown cards.
+- [ ] Tests cover worklog validation. Chat message send, realtime append, and analytics loading state are Phase 2.
 
 ### References
 
@@ -110,9 +110,9 @@ npm run build
 
 ---
 
-## Task 4: Docs + Git Integration UI
+## Task 4: Simple Docs/Pages UI + Git Integration UI (Phase 2)
 
-**Goal:** build document/wiki and code activity surfaces used by web and IDE users.
+**Goal:** build simple document/page surfaces where retained. Code activity surfaces used by web and IDE users are Phase 2.
 
 **Requires:** DEV5 Tasks 1-4 and DEV7 Task 1 complete  
 **Live integration:** DEV3 Task 5 (use MSW until ready)

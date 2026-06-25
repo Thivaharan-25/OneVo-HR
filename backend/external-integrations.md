@@ -1,4 +1,4 @@
-# External Integrations: ONEVO
+﻿# External Integrations: ONEVO
 
 ## Integration Strategy
 
@@ -17,25 +17,6 @@ services.AddHttpClient<IBiometricClient>("BiometricApi")
 
 ## Phase 1 Integrations
 
-### 0. PeopleHR (Onboarding Migration)
-
-| Property | Value |
-|:---------|:------|
-| **Module** | DataImport |
-| **Auth** | API Key, stored encrypted, optional IP restrictions configured in PeopleHR |
-| **Purpose** | Initial tenant migration from PeopleHR into ONEVO canonical HR modules |
-| **Tables** | `migration_runs`, `peoplehr_migration_runs`, `peoplehr_raw_records`, `peoplehr_mapping_profiles`, `peoplehr_mapping_results`, `peoplehr_external_id_links`, `peoplehr_validation_errors`, `peoplehr_reconciliation_items` |
-
-**Key Flows:**
-- API permission preflight before fetch.
-- Raw PeopleHR payload staging before transformation.
-- Source-to-canonical mapping across employees, org structure, salary, leave/absence, timesheets, documents, training, benefits, appraisals, work patterns, and custom fields.
-- Dry-run reconciliation before commit.
-- Raw archive for unsupported fields so no source data is silently lost.
-- Final audit report with imported, skipped, failed, needs-review, and raw-archived counts.
-
-See [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]].
-
 ### 1. Payment Gateways (Billing & Subscriptions)
 
 ONEVO supports **Stripe**, **Paddle**, and **PayHere** for payment collection.
@@ -51,13 +32,13 @@ Payment provider integrations are used for subscription invoices and configured 
 | **Module** | SharedPlatform |
 | **Auth** | API Key (server-side) + Webhooks (signature verification) |
 | **Purpose** | Subscription management, payment processing, invoicing |
-| **Tables** | `subscription_plans`, `tenant_subscriptions`, `payment_gateway_configs`, `subscription_invoices`, `payment_methods` |
+| **Tables** | `subscription_plans`, `tenant_subscriptions`, `payment_gateway_configs`, `payment_gateway_credentials`, `payment_gateway_country_routes`, `subscription_invoices`, `payment_methods` |
 
 **Key Flows:**
 - Subscription checkout/payment confirmation
 - Mid-cycle upgrade/downgrade
 - Webhook events: `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`
-- Dunning: 4 retries + grace period
+- Dunning: 4 retries + grace period for tenants that were already active; this does not apply to first-invoice activation
 
 #### Paddle
 
@@ -66,7 +47,7 @@ Payment provider integrations are used for subscription invoices and configured 
 | **Module** | SharedPlatform |
 | **Auth** | API Key (server-side) + Webhooks (signature verification) |
 | **Purpose** | Merchant-of-record subscription billing, tax handling, hosted invoice PDFs |
-| **Tables** | `payment_gateway_configs`, `tenant_subscriptions`, `subscription_invoices`, `payment_methods` |
+| **Tables** | `payment_gateway_configs`, `payment_gateway_credentials`, `payment_gateway_country_routes`, `tenant_subscriptions`, `subscription_invoices`, `payment_methods` |
 
 **Key Flows:**
 - Operator-selected gateway for tenants where Paddle is the commercial/payment route
@@ -81,23 +62,23 @@ Payment provider integrations are used for subscription invoices and configured 
 | **Module** | SharedPlatform |
 | **Auth** | Merchant ID + Merchant Secret (server-side, encrypted) + Webhooks/notify URL signature verification |
 | **Purpose** | Sri Lanka/local payment collection and recurring subscription payments where supported |
-| **Tables** | `payment_gateway_configs`, `tenant_subscriptions`, `subscription_invoices`, `payment_methods` |
+| **Tables** | `payment_gateway_configs`, `payment_gateway_credentials`, `payment_gateway_country_routes`, `tenant_subscriptions`, `subscription_invoices`, `payment_methods` |
 
 **Key Flows:**
 - Tenant subscription checkout through PayHere when selected by operator
 - Subscription collection through PayHere recurring/payment flow where supported
 - Webhook/notify callbacks update invoice and subscription state
-- Gateway references stored in `gateway_customer_ref`, `gateway_subscription_ref`, and invoice/payment provider refs
+- Gateway references stored on business records as explicit gateway metadata references (`payment_gateway_config_id`) plus external gateway IDs such as `gateway_customer_ref`, `gateway_subscription_ref`, and `external_invoice_id`
 
 #### Gateway Configuration
 
-Payment gateway credentials must not be hardcoded. Store gateway configuration in encrypted form and expose only safe metadata to admin APIs.
+Payment gateway credentials must not be hardcoded. Store non-secret gateway metadata in `payment_gateway_configs`, encrypted secret versions in `payment_gateway_credentials`, and country/environment routing in `payment_gateway_country_routes`. Admin APIs expose only safe metadata.
 
 Required config concepts:
 
 - `provider`: `stripe`, `paddle`, or `payhere`
 - `mode`: `test` or `live`
-- encrypted credentials: Stripe secret/webhook secret; Paddle API/webhook secret; PayHere merchant secret
+- encrypted credential versions: Stripe secret/webhook secret; Paddle API/webhook secret; PayHere merchant secret
 - public identifiers: Stripe publishable key, Paddle seller/account identifier, or PayHere merchant ID
 - webhook/notify URL and active state
 - environment-specific separation between staging and production
@@ -108,13 +89,14 @@ Required config concepts:
 |:---------|:------|
 | **Module** | Notifications |
 | **Auth** | API Key |
-| **Purpose** | Password reset, welcome emails, leave approval notifications |
-| **Tables** | `notification_templates`, `notification_channels` |
+| **Purpose** | Password reset, welcome emails, Time Off approval notifications |
+| **Tables** | `notification_templates`, `notification_channels`, `email_delivery_logs` |
 
 **Key Flows:**
 - Template-based emails using `notification_templates`
 - Per-tenant sender configuration via `notification_channels`
-- Delivery tracking (future: `email_delivery_logs`)
+- Delivery tracking through `email_delivery_logs` for sent, delivered, bounced, failed, and complained states.
+- Resend webhook events update `email_delivery_logs` idempotently using provider event/message identifiers.
 
 ### 3. Google Calendar + Outlook Calendar (User Calendar Sync)
 
@@ -135,13 +117,13 @@ See [[Userflow/Calendar/calendar-integrations|Calendar Integrations Flow]].
 
 ## Additional / Optional Integrations
 
-### 4. Biometric Terminals (Presence Capture)
+### 4. Attendance/Biometric Terminals (Presence Capture)
 
 | Property | Value |
 |:---------|:------|
-| **Module** | IdentityVerification (device management) → WorkforcePresence (event consumption) |
+| **Module** | IdentityVerification (device management) -> TimeAttendance (event consumption) |
 | **Auth** | HMAC-SHA256 signed webhooks |
-| **Purpose** | Clock-in/out events from physical terminals |
+| **Purpose** | Clock-in/out events from physical attendance terminals that may support biometric, card, PIN, or combined punch methods |
 | **Tables** | `biometric_devices`, `biometric_enrollments`, `biometric_events` (in [[modules/identity-verification/overview\|Identity Verification]]) |
 
 **Webhook Verification:**
@@ -155,13 +137,13 @@ public bool VerifyWebhookSignature(string payload, string signature, string apiK
 }
 ```
 
-### 5. Slack (Notifications)
+### 5. Slack (Notifications) - Phase 2
 
 | Property | Value |
 |:---------|:------|
 | **Module** | Notifications |
 | **Auth** | App integration (Bot token) |
-| **Purpose** | Real-time notifications for leave approvals, reviews, etc. |
+| **Purpose** | Real-time notifications for Time Off approvals, reviews, etc. |
 
 ### 6. Microsoft Teams (Chat + Workspace Sync)
 
@@ -169,22 +151,37 @@ public bool VerifyWebhookSignature(string payload, string signature, string apiK
 |:---------|:------|
 | **Module** | Integrations + Work Management Chat + Work Management Foundation |
 | **Auth** | Microsoft OAuth 2.0 / Microsoft Graph delegated + tenant-admin approved scopes |
-| **Purpose** | Phase 1 optional link between ONEVO users/channels/workspaces and Microsoft Teams for two-way chat sync; broader Graph features can expand later |
-| **Tables** | `external_account_connections`, `microsoft_graph_tokens`, `teams_webhook_subscriptions`, `teams_delta_sync_state`, `workspace_teams_links`, `channel_teams_links`, `teams_message_sync_state` |
+| **Purpose** | Phase 2 optional link between ONEVO users/workspaces and Microsoft Teams for workspace/member sync; channel/message chat sync is also Phase 2 |
+| **Tables** | `external_account_connections`, `microsoft_graph_tokens`, `teams_webhook_subscriptions`, `teams_delta_sync_state`, `workspace_teams_links`, `teams_member_sync_status` |
 
 **Key Flows:**
 - User links Microsoft Teams account to ONEVO account.
-- Workspace creation offers a checkbox to create a Microsoft Team/group.
-- Workspace admin can search and link an existing Team with matching members.
-- ONEVO sends linked-channel messages to Teams.
-- Teams webhooks/delta sync import Teams messages into ONEVO chat.
 - Sync failures are retained and retried without creating duplicate messages.
 
 See [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]].
 
+### 7. PeopleHR (Migration / Data Import) - Phase 2
+
+| Property | Value |
+|:---------|:------|
+| **Module** | DataImport |
+| **Auth** | API Key, stored encrypted, optional IP restrictions configured in PeopleHR |
+| **Purpose** | Initial tenant migration from PeopleHR into ONEVO canonical HR modules |
+| **Tables** | `migration_runs`, `peoplehr_migration_runs`, `peoplehr_raw_records`, `peoplehr_mapping_profiles`, `peoplehr_mapping_results`, `peoplehr_external_id_links`, `peoplehr_validation_errors`, `peoplehr_reconciliation_items` |
+
+**Key Flows:**
+- API permission preflight before fetch.
+- Raw PeopleHR payload staging before transformation.
+- Source-to-canonical mapping across employees, org structure, salary, time_off/absence, timesheets, documents, training, benefits, appraisals, work patterns, and custom fields.
+- Dry-run reconciliation before commit.
+- Raw archive for unsupported fields so no source data is silently lost.
+- Final audit report with imported, skipped, failed, needs-review, and raw-archived counts.
+
+See [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]].
+
 ## Phase 4 Integrations (with Payroll)
 
-### 7. ADP / Oracle (Payroll Sync)
+### 8. ADP / Oracle (Payroll Sync)
 
 | Property | Value |
 |:---------|:------|
@@ -193,7 +190,7 @@ See [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]
 | **Purpose** | Sync payroll runs to external payroll providers |
 | **Tables** | `payroll_providers`, `payroll_connections` |
 
-### 8. LMS Providers (Learning Content)
+### 9. LMS Providers (Learning Content) - Phase 2
 
 | Property | Value |
 |:---------|:------|
@@ -204,8 +201,8 @@ See [[modules/integrations/microsoft-teams/overview|Microsoft Teams Integration]
 
 ## Related
 
-- [[backend/module-catalog|Module Catalog]] — which modules own each integration
-- [[backend/notification-system|Notification System]] — Resend email pipeline
-- [[AI_CONTEXT/tech-stack|Tech Stack]] — integration technology choices
-- [[backend/domain-events|Domain Events]] — retry and circuit breaker patterns for external calls
+- [[backend/module-catalog|Module Catalog]] - which modules own each integration
+- [[backend/notification-system|Notification System]] - Resend email pipeline
+- [[AI_CONTEXT/tech-stack|Tech Stack]] - integration technology choices
+- [[backend/domain-events|Domain Events]] - retry and circuit breaker patterns for external calls
 - [[AI_CONTEXT/known-issues|Known Issues]] - integration gotchas; Work Management is internal

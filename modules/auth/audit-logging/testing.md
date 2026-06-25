@@ -1,4 +1,4 @@
-# Audit Logging — Testing
+﻿# Audit Logging - Testing
 
 **Module:** Auth
 **Feature:** Audit Logging

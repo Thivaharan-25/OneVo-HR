@@ -1,15 +1,15 @@
 # Discrepancy Review
 
-**Area:** Workforce Intelligence -> Discrepancies  
+**Area:** Monitoring -> Discrepancies  
 **Trigger:** Daily discrepancy job detects a meaningful mismatch  
 **Required Permission(s):** `exceptions:manage`  
-**Related Permissions:** `workforce:view`, `analytics:view`
+**Related Permissions:** `monitoring:view`, `analytics:view`
 
 ---
 
 ## Preconditions
 
-- Activity monitoring is enabled -> [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- Activity monitoring is enabled -> [[Userflow/Monitoring/monitoring-configuration|Monitoring Configuration]]
 - WorkSync time tracking is enabled when the tenant uses WorkSync -> [[Userflow/Work-Management/time-tracking-flow|Time Tracking]]
 - Calendar and schedule data are available -> [[Userflow/Calendar/calendar-event-creation|Calendar Event Creation]]
 - Required permissions are assigned -> [[Userflow/Auth-Access/permission-assignment|Permission Assignment]]
@@ -32,15 +32,13 @@
 
 ### Step 4: Notification Is Routed
 - **Low:** Employee receives a neutral unlogged-time reminder without seeing discrepancy analysis
-- **High:** Automation Center resolves the configured reviewer, such as employee's reporting manager, team lead, department owner, users with selected permission, or a specific employee
-- **Critical:** Automation Center resolves the configured escalation resolver and routes the action card through Chat or Inbox
-- **Rule:** Discrepancy routing must not target fixed role names. It uses resolver configuration and permissions.
+- **Critical:** Phase 1 routes the notification to the recipient resolved by Monitoring Policy via Notifications/Inbox. Phase 2 may use Automation Center for advanced routing.
+- **Rule:** Discrepancy routing must not target fixed role names. It uses resolver configuration, management coverage, and permissions.
 - **Event:** `DiscrepancyCriticalDetected` for critical records
 
 ### Step 5: Reviewer Opens Discrepancy List
-- **UI:** Workforce -> Discrepancies
+- **UI:** Monitoring -> Discrepancies
 - **API:** `GET /api/v1/discrepancies?date={date}&severity={severity}`
-- **UI Filters:** employee, team, department, date, severity, source module, status
 
 ### Step 6: Reviewer Opens Detail View
 - **UI:** Detail page shows:
@@ -57,9 +55,10 @@
   - Mark reviewed
   - Dismiss as expected/false positive
   - Add internal note
-  - Request manager follow-up
+  - Request follow-up from the configured reviewer or coverage owner
   - Open related activity or time-log screens
-  - Escalate to Exception Engine if the issue requires a formal alert workflow
+  - Mark review outcome and keep audit trail
+  - Phase 2 only: route to Exception Engine / Automation Center if formal configurable alert workflow is enabled
 
 ### Step 8: System Records Audit Trail
 - **Backend:** Stores reviewer, timestamp, resolution, and notes
@@ -73,11 +72,11 @@
 
 ### No Agent Data
 - No discrepancy is created for that employee/date
-- Reviewer can still inspect agent deployment or activity gaps through Workforce Intelligence
+- Reviewer can still inspect agent deployment or activity gaps through Monitoring
 
-### Employee Has Approved Leave or Calendar Events
+### Employee Has Approved Time Off or Calendar Events
 - Calendar-explained time reduces the unaccounted gap
-- Detail view shows the event or leave record that explains the time
+- Detail view shows the event or Time Off record that explains the time
 
 ## Error Scenarios
 
@@ -101,15 +100,15 @@
 |:-------|:-------|
 | Activity Monitoring | Provides daily active-time summary |
 | WorkSync Time | Provides task/time logs through daily projection |
-| Calendar | Explains meetings, leave, holidays, and scheduled events |
+| Calendar | Explains meetings, Time Off, holidays, and scheduled events |
 | Notifications | Routes low/high/critical notifications |
 | Productivity Analytics | Uses discrepancy rate as an analytics signal |
-| Exception Engine | May receive escalated cases for formal alert handling |
+| Exception Engine | Phase 2 only; may receive escalated cases for formal configurable alert handling |
 | Audit Logs | Records review and resolution actions |
 
 ## Related Flows
 
-- [[Userflow/Workforce-Intelligence/activity-snapshot-view|Activity Snapshot View]]
+- [[Userflow/Monitoring/activity-snapshot-view|Activity Snapshot View]]
 - [[Userflow/Work-Management/time-tracking-flow|Time Tracking]]
 - [[Userflow/Exception-Engine/alert-review|Alert Review]]
 - [[Userflow/Analytics-Reporting/productivity-dashboard|Productivity Dashboard]]

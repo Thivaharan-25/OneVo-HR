@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Generates alerts when rule thresholds are breached. One alert per rule per employee per evaluation window (dedup). Data snapshot captured as evidence. Alert delivery and escalation can be handled by Automation Center, including case conversation creation and resolver-based assignment.
+Generates alerts when rule thresholds are breached. One alert per rule per employee per evaluation window (dedup). Data snapshot captured as evidence. Phase 2 Automation Center can handle alert delivery/escalation, case conversation creation, and resolver-based assignment. Phase 1 alert delivery must use lightweight monitoring/attendance notification rules.
 
 ## Database Tables
 
@@ -23,22 +23,21 @@ Audit trail: `alert_id`, `acknowledged_by_id`, `action` (`acknowledged`, `dismis
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview\|Notifications]] |
-| `ExceptionAlertCreated` | Rule threshold breached | [[modules/shared-platform/workflow-engine/overview\|Workflow Engine and Automation Center]] |
+| `ExceptionAlertCreated` | Rule threshold breached | [[modules/notifications/overview\|Notifications]]. Phase 2 Workflow/Automation Engine may also consume this event for advanced routing/escalation. |
 | `AlertAcknowledged` | Manager acknowledges/dismisses | Audit trail |
 
 ## SignalR Integration
 
-New alerts pushed to frontend via `exception-alerts` channel.
+New alerts are pushed to frontend via `exception-alerts` channel in Phase 2. Phase 1 monitoring alerts use Notifications.
 
 ## API Endpoints
 
 | Method | Route | Permission | Description |
 |:-------|:------|:-----------|:------------|
-| GET | `/api/v1/exceptions/alerts` | `exceptions:view` | List active alerts |
-| GET | `/api/v1/exceptions/alerts/{id}` | `exceptions:view` | Alert detail with evidence |
-| PUT | `/api/v1/exceptions/alerts/{id}/acknowledge` | `exceptions:acknowledge` | Acknowledge |
-| PUT | `/api/v1/exceptions/alerts/{id}/dismiss` | `exceptions:acknowledge` | Dismiss |
+| GET | `/api/v1/exceptions/alerts` | `exceptions:view` | Phase 2: list active alerts |
+| GET | `/api/v1/exceptions/alerts/{id}` | `exceptions:view` | Phase 2: alert detail with evidence |
+| PUT | `/api/v1/exceptions/alerts/{id}/acknowledge` | `exceptions:acknowledge` | Phase 2: acknowledge |
+| PUT | `/api/v1/exceptions/alerts/{id}/dismiss` | `exceptions:acknowledge` | Phase 2: dismiss |
 
 ## Related
 

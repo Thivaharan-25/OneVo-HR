@@ -1,4 +1,4 @@
-# Payroll Run Execution
+﻿# Payroll Run Execution
 
 **Area:** Payroll  
 **Trigger:** Scheduled payroll date reached or authorized payroll user manually triggers run (scheduled or user action)
@@ -9,62 +9,62 @@
 
 ## Preconditions
 
-- Payroll provider configured → [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
-- Tax rules set → [[Userflow/Payroll/tax-configuration|Tax Configuration]]
-- Employee compensation records exist → [[Userflow/Employee-Management/compensation-setup|Compensation Setup]]
-- Leave and attendance data up to date → [[Userflow/Leave/leave-approval|Leave Approval]], [[Userflow/Workforce-Presence/presence-session-view|Presence Session View]]
+- Payroll provider configured -> [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
+- Tax rules set -> [[Userflow/Payroll/tax-configuration|Tax Configuration]]
+- Employee compensation records exist -> [[Userflow/Employee-Management/compensation-setup|Compensation Setup]]
+- Time Off and attendance data up to date -> [[Userflow/Time-Off/time-off-approval|Time Off Approval]], [[Userflow/Time-Attendance/presence-session-view|Presence Session View]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Create Payroll Run
-- **UI:** Payroll -> Runs -> "Create Run" -> select pay period (e.g., March 2026) -> select legal entity -> click "Calculate"
+- **UI:** Payroll -> Runs -> "Create Run" -> select pay period (e.g., March 2026) -> click "Calculate." The selected Company from the topbar determines the legal entity context. Switch Company in the topbar before opening this screen if needed. The backend resolves `legal_entity_id` from the topbar-selected Company.
 - **API:** `POST /api/v1/payroll/runs`
-- **Backend:** PayrollRunService.InitiateAsync() → [[modules/payroll/payroll-execution/overview|Payroll Execution]]
+- **Backend:** PayrollRunService.InitiateAsync() -> [[modules/payroll/payroll-execution/overview|Payroll Execution]]
 
 ### Step 2: System Calculates (Automated via Hangfire)
-- **Backend:** For each employee in selected legal entity:
-  1. **Gross Salary** = base salary (prorated if mid-month join/leave)
-  2. **+ Allowances** = housing + transport + meal + other → [[modules/payroll/allowances/overview|Allowances]]
-  3. **+ Overtime** = approved overtime hours × overtime rate → [[Userflow/Workforce-Presence/overtime-management|Overtime Management]]
-  4. **+ Expense Reimbursements** = approved expense claims → [[Userflow/Expense/expense-approval|Expense Approval]]
-  5. **- Unpaid Leave** = unpaid leave days × daily rate → [[Userflow/Leave/leave-approval|Leave Approval]]
-  6. **- Tax** = income tax from brackets → [[Userflow/Payroll/tax-configuration|Tax Configuration]]
-  7. **- Pension (employee)** = contribution % → [[Userflow/Payroll/pension-configuration|Pension Configuration]]
+- **Backend:** For each employee in the selected Company (resolved to `legal_entity_id` internally):
+  1. **Gross Salary** = base salary (prorated if mid-month join/time_off)
+  2. **+ Allowances** = housing + transport + meal + other -> [[modules/payroll/allowances/overview|Allowances]]
+  3. **+ Overtime** = approved overtime hours x overtime rate -> [[Userflow/Time-Attendance/overtime-management|Overtime Management]]
+  4. **+ Expense Reimbursements** = approved expense claims -> [[Userflow/Expense/expense-approval|Expense Approval]]
+  5. **- Unpaid Time Off** = unpaid Time Off hours x payroll hourly rate or policy-defined unpaid Time Off rate -> [[Userflow/Time-Off/time-off-approval|Time Off Approval]]
+  6. **- Tax** = income tax from brackets -> [[Userflow/Payroll/tax-configuration|Tax Configuration]]
+  7. **- Pension (employee)** = contribution % -> [[Userflow/Payroll/pension-configuration|Pension Configuration]]
   8. **- Other deductions** = loans, advances, disciplinary
   9. **= Net Pay**
   10. **Employer costs** = employer pension + employer social security
-- **DB:** `payroll_runs`, `payroll_line_items` — per employee breakdown
+- **DB:** `payroll_runs`, `payroll_line_items` - per employee breakdown
 
 ### Step 3: Review Summary
-- **UI:** Payroll run summary dashboard: total gross, total deductions, total net, employee count → flag any anomalies (salary changes, new hires, terminations this period) → drill down per employee to see line-item detail
+- **UI:** Payroll run summary dashboard: total gross, total deductions, total net, employee count -> flag any anomalies (salary changes, new hires, terminations this period) -> drill down per employee to see line-item detail
 - **API:** `GET /api/v1/payroll/runs/{id}`
 
 ### Step 4: Submit for Approval
-- **UI:** Click "Submit for Approval" → run locked for editing → approver notified
+- **UI:** Click "Submit for Approval" -> run locked for editing -> approver notified
 - **API:** `POST /api/v1/payroll/runs/{id}/submit`
-- **DB:** `payroll_runs.status` → "Pending Approval"
+- **DB:** `payroll_runs.status` -> "Pending Approval"
 
 ### Step 5: Approve
-- **UI:** Approver (with `payroll:approve`) reviews → clicks "Approve" → run finalized
+- **UI:** Approver (with `payroll:approve`) reviews -> clicks "Approve" -> run finalized
 - **API:** `POST /api/v1/payroll/runs/{id}/approve`
-- **DB:** Status → "Approved"
+- **DB:** Status -> "Approved"
 
 ### Step 6: Post-Approval Processing
 - **Backend:**
-  1. Payslips generated (PDF) per employee → [[modules/documents/document-management/overview|Document Management]]
-  2. Employees notified → [[backend/notification-system|Notification System]]
-  3. Provider sync triggered (if external provider) → [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
+  1. Payslips generated (PDF) per employee -> [[modules/documents/document-management/overview|Document Management]]
+  2. Employees notified -> [[backend/notification-system|Notification System]]
+  3. Provider sync triggered (if external provider) -> [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]]
   4. Accounting entries created
   5. Bank file generated for payment processing
 
 ## Variations
 
 ### When run has errors
-- Red flags on problematic employees (missing bank details, no tax config) → must resolve before approval
+- Red flags on problematic employees (missing bank details, no tax config) -> must resolve before approval
 
 ### Supplementary run
-- For corrections or off-cycle payments → creates additional run for same period
+- For corrections or off-cycle payments -> creates additional run for same period
 
 ## Error Scenarios
 
@@ -73,23 +73,23 @@
 | Missing bank details | Employee flagged | "3 employees missing bank details" |
 | No tax config for country | Blocked | "Tax configuration required for [Country]" |
 | Duplicate run for period | Warning | "A run already exists for March 2026" |
-| Approval rejected | Run reopened | "Run rejected — review comments and resubmit" |
+| Approval rejected | Run reopened | "Run rejected - review comments and resubmit" |
 
 ## Events Triggered
 
-- `PayrollRunCreated` → [[backend/messaging/event-catalog|Event Catalog]]
-- `PayrollRunApproved` → [[backend/messaging/event-catalog|Event Catalog]]
-- `PayslipGenerated` → [[backend/messaging/event-catalog|Event Catalog]]
-- Notifications to employees → [[backend/notification-system|Notification System]]
+- `PayrollRunCreated` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `PayrollRunApproved` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `PayslipGenerated` -> [[backend/messaging/event-catalog|Event Catalog]]
+- Notifications to employees -> [[backend/notification-system|Notification System]]
 
 ## Related Flows
 
-- [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]] — provider configuration
-- [[Userflow/Payroll/tax-configuration|Tax Configuration]] — tax rules
-- [[Userflow/Payroll/allowance-setup|Allowance Setup]] — allowance types
-- [[Userflow/Payroll/pension-configuration|Pension Configuration]] — pension deductions
-- [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]] — post-run corrections
-- [[Userflow/Payroll/payslip-view|Payslip View]] — employee views result
+- [[Userflow/Payroll/payroll-provider-setup|Payroll Provider Setup]] - provider configuration
+- [[Userflow/Payroll/tax-configuration|Tax Configuration]] - tax rules
+- [[Userflow/Payroll/allowance-setup|Allowance Setup]] - allowance types
+- [[Userflow/Payroll/pension-configuration|Pension Configuration]] - pension deductions
+- [[Userflow/Payroll/payroll-adjustment|Payroll Adjustment]] - post-run corrections
+- [[Userflow/Payroll/payslip-view|Payslip View]] - employee views result
 
 ## Module References
 

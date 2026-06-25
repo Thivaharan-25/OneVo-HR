@@ -1,4 +1,4 @@
-# Environment Parity: ONEVO
+﻿# Environment Parity: ONEVO
 
 ## Docker Compose (Local Development)
 
@@ -39,11 +39,11 @@ volumes:
 | JWT signing | Development RSA keys | Staging keys | Production keys (rotated) |
 | Email | Console logger (no actual send) | Resend (sandbox) | Resend (production) |
 | Stripe | Test mode | Test mode | Live mode |
-| File storage | Local disk (./uploads) | Railway volume | S3-compatible |
+| File storage | Local disk (./uploads) | Local disk or temporary R2 dev bucket | Cloudflare R2 object storage |
 | RLS | Enabled | Enabled | Enabled |
 | Rate limiting | Disabled | Relaxed | Full enforcement |
-| Observability | Console + Seq | OpenTelemetry → Grafana | OpenTelemetry → Grafana |
-| HTTPS | HTTP (localhost) | HTTPS (Railway) | HTTPS (Cloudflare → Railway) |
+| Observability | Console + Seq | OpenTelemetry -> Grafana | OpenTelemetry -> Grafana |
+| HTTPS | HTTP (localhost) | HTTPS (Railway) | HTTPS (Cloudflare -> Railway) |
 
 ## Local Setup
 
@@ -66,10 +66,10 @@ dotnet run --project src/ONEVO.Api
 
 ## Related
 
-- [[infrastructure/ci-cd-pipeline|Ci Cd Pipeline]] — build and deploy pipeline
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — RLS setup in Docker
-- [[database/migration-patterns|Migration Patterns]] — running migrations locally
-- [[AI_CONTEXT/tech-stack|Tech Stack]] — all infrastructure components
+- [[infrastructure/ci-cd-pipeline|Ci Cd Pipeline]] - build and deploy pipeline
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - RLS setup in Docker
+- [[database/migration-patterns|Migration Patterns]] - running migrations locally
+- [[AI_CONTEXT/tech-stack|Tech Stack]] - all infrastructure components
 
 ## Seed Data (Development)
 
@@ -81,7 +81,7 @@ Using Bogus library for realistic fake data:
 // - 5 users (admin, hr_admin, manager, employee x2)
 // - 3 departments (Engineering, HR, Marketing)
 // - 10 employees with full profiles
-// - Sample leave types, policies, entitlements
+// - Sample Time Off types, policies, entitlements
 // - Sample shifts and schedules
 ```
 
