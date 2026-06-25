@@ -1,4 +1,4 @@
-# Goals / OKR — End-to-End Logic
+﻿# Goals / OKR - End-to-End Logic
 
 **Module:** Performance
 **Feature:** Goals & OKR
@@ -14,10 +14,8 @@ POST /api/v1/performance/goals
   -> GoalController.Create(CreateGoalCommand)
     -> [RequirePermission("performance:write")]
     -> GoalService.CreateGoalAsync(command, ct)
-      -> 1. Validate: title, goal_type (individual/team/company)
       -> 2. If parent_goal_id provided:
          -> Validate parent exists (cascading OKR)
-         -> Validate parent is company or team level (not individual)
       -> 3. INSERT into goals
          -> status = 'not_started', current_value = 0
       -> Return Result.Success(goalDto)
@@ -40,7 +38,6 @@ PUT /api/v1/performance/goals/{id}
 
 ### Key Rules
 
-- **Goals are hierarchical** — `parent_goal_id` forms cascading OKRs (company -> team -> individual).
 - **Weight** determines contribution to overall performance score.
 
 ## Related

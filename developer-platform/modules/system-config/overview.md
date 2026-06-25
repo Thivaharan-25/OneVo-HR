@@ -11,9 +11,9 @@ Tenant-specific overrides are edited from Tenant Detail -> Settings so operators
 | Category | Description | Stored In |
 |---|---|---|
 | AI Provider Configs | LLM API keys (any provider) with live model fetch | `ai_provider_configs` |
-| Payment Gateway Configs | Stripe/Paddle/PayHere credentials with account verification and country routing | `payment_gateway_configs`, `payment_gateway_country_routes` |
-| Platform OAuth Apps | ONEVO's OAuth app registrations for customer integrations (GitHub, Microsoft, Google, Slack) | `platform_oauth_apps` |
-| Platform Service Keys | ONEVO's own service API keys (Resend email, Cloudflare, Azure Blob) | `platform_service_keys` |
+| Payment Gateway Configs | Stripe/Paddle/PayHere gateway metadata, credential versions, and country routing | `payment_gateway_configs`, `payment_gateway_credentials`, `payment_gateway_country_routes` |
+| Platform OAuth Apps | ONEVO's OAuth app registrations and credential versions for customer integrations (GitHub, Zoom, Microsoft, Google; Slack is Phase 2) | `platform_oauth_apps`, `platform_oauth_app_credentials` |
+| Platform Service Keys | ONEVO's own service API keys (Resend email, Cloudflare DNS/WAF, Cloudflare R2) | `platform_service_keys` |
 | Global Settings | Platform-wide setting defaults (session TTL, invite expiry, dunning schedule) | `system_settings` |
 | Global Policies | Platform-wide auth/security policy defaults such as MFA, login method defaults, and failed-login lockout | `system_settings`, `tenant_auth_policies` |
 | Runtime Flag Definitions | Global runtime flag definitions, defaults, rollout percentages, module linkage, and feature-key linkage | `feature_flags` |
@@ -25,8 +25,12 @@ Tenant-specific overrides are edited from Tenant Detail -> Settings so operators
 |---|---|
 | `ai_provider_configs` | Read + write - global AI credentials encrypted at rest |
 | `tenant_ai_provider_overrides` | Read + write - per-tenant AI key overrides |
-| `platform_oauth_apps` | Read + write - ONEVO's OAuth developer app registrations |
-| `platform_service_keys` | Read + write - Resend, Cloudflare, Azure Blob keys |
+| `payment_gateway_configs` | Read + write - payment gateway metadata only |
+| `payment_gateway_credentials` | Write/rotate - encrypted payment gateway credential versions |
+| `payment_gateway_country_routes` | Read + write - country/environment gateway routing |
+| `platform_oauth_apps` | Read + write - ONEVO's OAuth developer app metadata |
+| `platform_oauth_app_credentials` | Write/rotate - ONEVO OAuth app secret versions |
+| `platform_service_keys` | Read + write - Resend, Cloudflare DNS/WAF, Cloudflare R2 keys |
 | `system_settings` | Read + write - key-value global defaults |
 | `feature_flags` | Read + write - global runtime flag definitions |
 | `tenant_settings` | Read + write - tenant-specific setting overrides |
@@ -42,18 +46,18 @@ Tenant-specific overrides are edited from Tenant Detail -> Settings so operators
 
 **Payment gateway routing:** During payment gateway setup, the operator selects one or more applicable countries by country name. The backend stores country codes internally in `payment_gateway_country_routes`. One gateway config can serve many countries, but each country can have only one active gateway route per environment. During tenant provisioning Step 3, the payment gateway is resolved from the tenant's country route; tenant owners do not choose the gateway.
 
-**Platform OAuth Apps vs tenant integration tokens:** `platform_oauth_apps` holds ONEVO's developer credentials (client_id, client_secret) used to initiate OAuth flows. The customer's resulting access tokens are stored separately in `tenant_integration_credentials` - these are different things in different tables.
+**Platform OAuth Apps vs tenant/employee integration tokens:** `platform_oauth_apps` holds ONEVO's OAuth app metadata such as `client_id`, while `platform_oauth_app_credentials` stores ONEVO's encrypted OAuth app secrets. Tenant-scope connected integration tokens (`connection_scope = 'tenant'`) are stored separately in `tenant_integration_credentials`. Employee-scope tokens (`connection_scope = 'employee'`) such as Google/Outlook Calendar live in `external_calendar_connections` with the user's calendar sync state.
 
 ## Capabilities
 
 ### AI Provider Configuration
-- Configure global AI provider key + model per ONEVO purpose (Agentic Chat, AI Insights, Report Generation)
+- Configure global AI provider key + model per ONEVO purpose (AI Insights and Report Generation in Phase 1; Agentic Chat in Phase 2)
 - Fetch available models live from provider before saving - no hardcoded model names
 - Test connection using stored key and base URL
 - Support per-tenant AI key overrides edited from Tenant Detail -> Settings; remove overrides to fall back to global
 
 ### Payment Gateway
-- Configure global Stripe/Paddle/PayHere credentials with account verification before save
+- Configure global Stripe/Paddle/PayHere gateway metadata and credential versions with account verification before save
 - Assign one or more countries to the gateway config by country name
 - Block a country assignment if that country already has another active gateway route in the same environment
 
@@ -63,7 +67,7 @@ Tenant-specific overrides are edited from Tenant Detail -> Settings so operators
 - Test OAuth app credentials with provider
 
 ### Platform Service Keys
-- Store and rotate Resend, Cloudflare, Azure Blob, and other internal service keys
+- Store and rotate Resend, Cloudflare DNS/WAF, Cloudflare R2, and other internal service keys
 - Test service connection
 
 ### Global Settings
@@ -88,7 +92,7 @@ Tenant-specific overrides are edited from Tenant Detail -> Settings so operators
 
 ## Key Rules
 
-- API keys, client secrets, and merchant secrets are AES-256 encrypted before storage and never returned by any GET response
+- API keys, client secrets, and merchant secrets are AES-256 encrypted in dedicated credential tables before storage and never returned by any GET response
 - `api_base_url` for AI providers is always required - no hardcoded fallback URLs
 - Gateway account verification must succeed before Save button becomes active
 - All writes audit-logged with previous and new values (credentials show only `key_rotated: true`, not the key itself)
@@ -98,4 +102,3 @@ Tenant-specific overrides are edited from Tenant Detail -> Settings so operators
 - [[developer-platform/modules/subscription-manager/overview|Subscription Plans]] - for paid plan catalog management
 - [[developer-platform/modules/module-catalog-manager/overview|Module Catalog Manager]] - for integration catalog and module-integration links
 - [[developer-platform/modules/system-config/end-to-end-logic|System Config End-to-End Logic]]
-

@@ -1,4 +1,4 @@
-# Report Definitions — End-to-End Logic
+﻿# Report Definitions - End-to-End Logic
 
 **Module:** Reporting Engine
 **Feature:** Report Definitions
@@ -14,8 +14,8 @@ POST /api/v1/reports/definitions
   -> ReportDefinitionController.Create(CreateDefinitionCommand)
     -> [RequirePermission("reports:create")]
     -> ReportDefinitionService.CreateAsync(command, ct)
-      -> 1. Validate report_type: headcount, turnover, leave_utilization,
-         productivity_daily, productivity_weekly, workforce_summary, exception_summary
+      -> 1. Validate report_type: headcount, turnover, time_off_utilization,
+         productivity_daily, productivity_weekly, monitoring_summary, exception_summary
       -> 2. Validate parameters_json (date range, filters)
       -> 3. If schedule_cron provided:
          -> Validate cron expression

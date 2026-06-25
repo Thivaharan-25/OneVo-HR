@@ -102,7 +102,7 @@ The canonical access and rendering contract is `developer-platform/access-contro
 | Platform Super Admin | All platform permissions |
 | Tenant Operations Manager | Tenant lifecycle, demo/trial operations, tenant role materialization, and tenant read/manage actions |
 | Billing Manager | Subscription plans, invoices, payment gateways, add-ons, billing reports, and commercial read/manage actions |
-| Support Manager | Customer support tickets, support assignment, replies, internal notes, and knowledgebase promotion |
+| Support Manager | Customer support tickets, support assignment, replies, internal notes, and closure |
 | Security Auditor | Security, audit, compliance, and retention read-only permissions |
 | Module Catalog Manager | Product module catalog, integration catalog, role templates, and configuration templates |
 | Operations Engineer | Platform health, services, feature flags, and system configuration review |
@@ -116,14 +116,14 @@ The canonical access and rendering contract is `developer-platform/access-contro
 | `platform.roles.manage` | Change platform role permission sets |
 | `platform.tenants.manage` | Create/edit tenants and direct trial actions |
 | `platform.tenants.suspend` | Suspend or unsuspend tenants |
-| `platform.requests.manage` | Approve/reject activation and trial-extension requests |
+| `platform.requests.manage` | Approve/reject demo access and trial-extension requests |
 | `platform.subscriptions.manage` | Change plans, add-ons, prices, billing rules, or resource allocations |
 | `platform.demo_profiles.manage` | Change demo access, demo limits, and upgrade options |
 | `platform.tenants.impersonate` | Issue short-lived impersonation token |
 
 ### Recoverable Admin Guard
 
-The backend must reject any account, role, permission, or session change that would leave zero active recoverable admins.
+The backend must reject any account, role, permission, or session change that would time_off zero active recoverable admins.
 
 A recoverable admin is an active platform account whose effective permissions include both:
 

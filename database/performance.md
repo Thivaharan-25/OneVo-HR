@@ -31,9 +31,9 @@ CREATE UNIQUE INDEX uq_employees_tenant_empno ON employees (tenant_id, employee_
 CREATE INDEX idx_attendance_tenant_emp_date ON attendance_records (tenant_id, employee_id, date);
 CREATE INDEX idx_attendance_tenant_date ON attendance_records (tenant_id, date);
 
--- Leave requests (frequent status queries)
-CREATE INDEX idx_leave_requests_emp_status ON leave_requests (employee_id, status);
-CREATE INDEX idx_leave_requests_dates ON leave_requests (start_date, end_date);
+-- Time Off requests (frequent status queries)
+CREATE INDEX idx_time_off_requests_emp_status ON time_off_requests (employee_id, status);
+CREATE INDEX idx_time_off_requests_dates ON time_off_requests (start_date, end_date);
 
 -- Audit logs (time-series, partitioned)
 CREATE INDEX idx_audit_logs_tenant_time ON audit_logs (tenant_id, created_at);
@@ -49,7 +49,7 @@ CREATE INDEX idx_workflow_instances_status ON workflow_instances (tenant_id, sta
 ### EF Core Eager Loading
 
 ```csharp
-// BAD: N+1 â€” loads department for each employee separately
+// BAD: N+1 - loads department for each employee separately
 var employees = await _context.Employees.ToListAsync();
 foreach (var emp in employees)
     Console.WriteLine(emp.Department.Name); // N additional queries!
@@ -57,7 +57,6 @@ foreach (var emp in employees)
 // GOOD: Eager load with Include
 var employees = await _context.Employees
     .Include(e => e.Department)
-    .Include(e => e.JobFamily)
     .ThenInclude(jf => jf.Levels)
     .Where(e => e.TenantId == tenantId)
     .ToListAsync(ct);
@@ -70,7 +69,6 @@ var employees = await _context.Employees
         Id = e.Id,
         FullName = e.FirstName + " " + e.LastName,
         DepartmentName = e.Department.Name,
-        JobTitle = e.JobTitle.Name
     })
     .ToListAsync(ct);
 ```
@@ -101,9 +99,9 @@ Redis is optional/future distributed cache infrastructure for multi-instance dep
 ### Cache Key Convention
 
 ```
-onevo:{tenantId}:{entity}:{id}        â†’ Single entity
-onevo:{tenantId}:{entity}:list:{hash}  â†’ List queries
-onevo:global:{entity}:{id}             â†’ Non-tenant data (countries, permissions)
+onevo:{tenantId}:{entity}:{id}        -> Single entity
+onevo:{tenantId}:{entity}:list:{hash}  -> List queries
+onevo:global:{entity}:{id}             -> Non-tenant data (countries, permissions)
 ```
 
 ### Cache Invalidation
@@ -144,7 +142,7 @@ SELECT create_parent(
     p_interval := '1 month'
 );
 
--- Workforce Intelligence: activity_raw_buffer â€” partitioned DAILY, purged after 48h
+-- Monitoring: activity_raw_buffer - partitioned DAILY, purged after 48h
 SELECT create_parent(
     p_parent_table := 'public.activity_raw_buffer',
     p_control := 'received_at',
@@ -152,7 +150,7 @@ SELECT create_parent(
     p_interval := '1 day'
 );
 
--- Workforce Intelligence: activity_snapshots â€” partitioned MONTHLY, 90-day retention
+-- Monitoring: activity_snapshots - partitioned MONTHLY, 90-day retention
 SELECT create_parent(
     p_parent_table := 'public.activity_snapshots',
     p_control := 'captured_at',
@@ -161,7 +159,7 @@ SELECT create_parent(
 );
 ```
 
-### Workforce Intelligence Indexes
+### Monitoring Indexes
 
 ```sql
 -- Activity snapshots (high-volume, always query with tenant_id + date range)
@@ -191,7 +189,7 @@ CREATE INDEX idx_agents_tenant_status ON registered_agents (tenant_id, status);
 
 -- Productivity reports
 CREATE UNIQUE INDEX uq_daily_report_tenant_emp_date ON daily_employee_report (tenant_id, employee_id, date);
-CREATE UNIQUE INDEX uq_workforce_snapshot_tenant_date ON workforce_snapshot (tenant_id, date);
+CREATE UNIQUE INDEX uq_monitoring_snapshot_tenant_date ON monitoring_snapshot (tenant_id, date);
 ```
 
 ## Connection Pooling (PgBouncer)
@@ -211,8 +209,8 @@ server_idle_timeout = 300      ; Close idle server connections after 5 min
 2. **Always** project to DTOs (`.Select()`) instead of loading full entities for list endpoints
 3. **Never** load more than 100 records in a single query (use pagination)
 4. **Use** `EXPLAIN ANALYZE` to verify query plans for new queries
-5. **Avoid** `LIKE '%search%'` â€” use PostgreSQL FTS with GIN indexes
-6. **Monitor** slow queries via `pg_stat_statements` extension â€” see [[frontend/performance/monitoring|Monitoring]]
+5. **Avoid** `LIKE '%search%'` - use PostgreSQL FTS with GIN indexes
+6. **Monitor** slow queries via `pg_stat_statements` extension - see [[frontend/performance/monitoring|Monitoring]]
 
 ## Related
 

@@ -1,4 +1,4 @@
-# SSO Authentication — Testing
+﻿# SSO Authentication - Testing
 
 **Module:** Shared Platform
 **Feature:** SSO Authentication

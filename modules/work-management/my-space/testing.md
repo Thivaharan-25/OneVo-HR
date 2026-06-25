@@ -1,4 +1,4 @@
-# My Space & Reminders — Testing
+﻿# My Space & Reminders - Testing
 
 **Module:** WorkSync
 **Feature:** My Space & Reminders
@@ -59,8 +59,8 @@ public class ReminderServiceTests
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
 | Duplicate reminder for same task | Unit | DUPLICATE_REMINDER |
-| Complete reminder → task updated | Unit | Task status = done |
-| Task completed → reminder done | Unit | Reminder is_completed = true |
+| Complete reminder -> task updated | Unit | Task status = done |
+| Task completed -> reminder done | Unit | Reminder is_completed = true |
 | Complete already-completed | Unit | ALREADY_COMPLETED |
 | Personal board project_id = null | Unit | project_id null, user_id set |
 

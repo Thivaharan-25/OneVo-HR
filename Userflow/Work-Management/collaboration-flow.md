@@ -1,6 +1,6 @@
-# WorkSync Collaboration
+# Work Collaboration
 
-**Area:** WorkSync -> Documents and Wiki  
+**Area:** Work -> Documents and Wiki  
 **Trigger:** User creates, edits, approves, or links workspace knowledge  
 **Required Permission(s):** `documents:read`, `documents:write`, `wiki:read`, `wiki:write`  
 **Related Permissions:** `documents:approve`, `documents:admin`
@@ -10,7 +10,7 @@
 ## Flow Steps
 
 ### Step 1: Open Workspace Documents or Wiki
-- **UI:** WorkSync -> Workspace -> Documents or Wiki
+- **UI:** Work -> Project or Workspace -> Documents or Wiki
 - **API:** `GET /api/v1/workspaces/{wsId}/documents`, `GET /api/v1/workspaces/{wsId}/wiki`
 - **Backend:** Returns only documents/wiki pages visible to the workspace/project scope
 
@@ -36,7 +36,7 @@
 ### Step 6: Link Document to Task
 - **UI:** Task detail -> Add document
 - **API:** `POST /api/v1/tasks/{taskId}/documents`
-- **Result:** Task shows linked workspace document
+- **Result:** Task shows the linked document visible in the project/workspace scope
 
 ## Error Scenarios
 

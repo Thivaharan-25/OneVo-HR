@@ -1,4 +1,4 @@
-# Heartbeat Monitoring — Testing
+﻿# Heartbeat Monitoring - Testing
 
 **Module:** Agent Gateway
 **Feature:** Heartbeat Monitoring
@@ -69,7 +69,7 @@ public class AgentHeartbeatServiceTests
 ## Related
 
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
-- [[modules/agent-gateway/heartbeat-monitoring/end-to-end-logic|Heartbeat Monitoring — End-to-End Logic]]
+- [[modules/agent-gateway/heartbeat-monitoring/end-to-end-logic|Heartbeat Monitoring - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

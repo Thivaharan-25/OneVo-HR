@@ -1,4 +1,4 @@
-# Grievance Cases — Testing
+﻿# Grievance Cases - Testing
 
 **Module:** Grievance
 **Feature:** Grievance Cases
@@ -51,5 +51,5 @@ public class GrievanceServiceTests
 
 ## Related
 
-- [[modules/grievance/grievance-cases/overview|Grievance Cases]] — feature overview
-- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions
+- [[modules/grievance/grievance-cases/overview|Grievance Cases]] - feature overview
+- [[code-standards/testing-strategy|Testing Standards]] - project-wide testing conventions

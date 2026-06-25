@@ -1,4 +1,4 @@
-# Payroll Execution — Testing
+﻿# Payroll Execution - Testing
 
 **Module:** Payroll
 **Feature:** Payroll Execution

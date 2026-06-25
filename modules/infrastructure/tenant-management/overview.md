@@ -12,11 +12,13 @@ Operator-only tenant lifecycle management through Developer Platform. `industry_
 ## Database Tables
 
 ### `tenants`
-Key columns: `name`, `slug` (UNIQUE), `primary_contact_email`, `country_code`, `industry_profile` (`office_it`, `manufacturing`, `retail`, `healthcare`, `custom`), `registration_profile_name`, `registration_number`, `company_size_range`, `timezone`, `currency_code`, `status` (`provisioning`, `trial`, `active`, `suspended`, `cancelled`), `subscription_plan_id`, `settings_json`.
+Key columns: `name`, `slug` (UNIQUE), `primary_contact_email`, `country_code`, `industry_profile` (`office_it`, `manufacturing`, `retail`, `healthcare`, `custom`), `registration_profile_name`, `registration_number`, `company_size_range`, `timezone`, `currency_code`, `status` (`provisioning`, `trial`, `trial_expired`, `pending_payment`, `active`, `suspended`, `cancelled`), `subscription_plan_id`, `settings_json`.
+
+Status meanings: `provisioning` = operator draft, `trial` = demo/trial tenant with active trial period, `trial_expired` = trial period ended without upgrade, `pending_payment` = first invoice generated and unpaid, `active` = tenant fully operational after successful first payment, `suspended` = temporarily disabled, `cancelled` = permanently deactivated.
 
 ## Key Business Rules
 
-1. Tenant creation flow: Operator creates customer profile draft -> assigns commercial plan/payment terms in Step 2 -> uses the tenant card Manage/Configure action to confirm entitled modules, apply roles/templates/settings, configure required module setup services, optionally invite owner, and activate.
+1. Tenant creation flow: Operator creates customer profile draft -> assigns commercial plan/payment terms in Step 2 -> uses the tenant card Manage/Configure action to select entitled modules, apply roles/templates/settings, configure required module setup services, optionally invite owner, and generate the first invoice. Tenants move to `pending_payment`; they become `active` only after first payment succeeds.
 2. Tenant profile creation collects company/profile details, country, timezone, currency, and registration/profile data, but it does not create deprecated registration-profile records. Activation/setup seeding creates one primary legal entity. Additional operating companies under the same customer account are added as legal entities inside the tenant.
 
 ## API Endpoints
@@ -38,4 +40,3 @@ Key columns: `name`, `slug` (UNIQUE), `primary_contact_email`, `country_code`, `
 - [[modules/auth/audit-logging/overview|Audit Logging]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV1-infrastructure-setup|DEV1: Infrastructure]]
-

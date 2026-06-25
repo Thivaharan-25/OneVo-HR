@@ -1,4 +1,4 @@
-# SignalR Real-Time — Testing
+﻿# SignalR Real-Time - Testing
 
 **Module:** Notifications
 **Feature:** SignalR Real-Time

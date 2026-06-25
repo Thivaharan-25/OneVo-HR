@@ -13,7 +13,6 @@ Customer Support lets Super Admins and support agents manage tenant support tick
 - Reply to customers.
 - Add internal notes.
 - Change ticket category.
-- Add useful issue/resolution details to the knowledgebase.
 - Close tickets as resolved.
 
 ## Permissions
@@ -21,7 +20,7 @@ Customer Support lets Super Admins and support agents manage tenant support tick
 | Action | Permission |
 |---|---|
 | View tickets | `platform.support.read` |
-| Assign, reply, categorize, note, promote, close | `platform.support.manage` |
+| Assign, reply, categorize, note, close | `platform.support.manage` |
 
 ## Rules
 
@@ -30,3 +29,10 @@ Customer Support lets Super Admins and support agents manage tenant support tick
 - Attachments must be scanned and permission-checked before download.
 - Ticket closure must preserve the full timeline for audit/support history.
 
+## Storage Model
+
+- `support_tickets` stores the ticket header, issue description, status, assignment, and activity timestamps.
+- `support_ticket_messages` stores customer-visible tenant and platform replies.
+- `support_ticket_internal_notes` stores platform-only notes and is never returned by tenant-facing APIs.
+- `support_ticket_events` stores the activity timeline for assignment, replies, category changes, status changes, attachments, and closure.
+- `entity_assets` stores support attachments with `owner_type = support_ticket` or `support_ticket_message` and `asset_purpose = attachment`.

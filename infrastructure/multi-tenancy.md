@@ -1,4 +1,4 @@
-# Multi-Tenancy Architecture: ONEVO
+﻿# Multi-Tenancy Architecture: ONEVO
 
 ## Overview
 
@@ -9,10 +9,10 @@ Cross-company behavior is supported only through explicit [[modules/shared-platf
 ONEVO uses a **shared database, shared schema** multi-tenancy model with **4 layers of data isolation**:
 
 ```
-Layer 1: Auth Session         → tenant_id in backend-held auth state
-Layer 2: BaseRepository     → automatic WHERE tenant_id = @current filter
-Layer 3: PostgreSQL RLS     → database-level row filtering (safety net)
-Layer 4: ArchUnitNET Tests  → compile-time verification of boundary rules
+Layer 1: Auth Session         -> tenant_id in backend-held auth state
+Layer 2: BaseRepository     -> automatic WHERE tenant_id = @current filter
+Layer 3: PostgreSQL RLS     -> database-level row filtering (safety net)
+Layer 4: ArchUnitNET Tests  -> compile-time verification of boundary rules
 ```
 
 ## Layer 1: Auth Session
@@ -25,7 +25,7 @@ Every authenticated request carries a JWT with `tenant_id`:
   "tenant_id": "tenant-uuid",
   "email": "user@company.com",
   "roles": ["HR_Admin"],
-  "permissions": ["employees:read", "employees:write", "leave:approve"],
+  "permissions": ["employees:read", "employees:write", "time_off:approve"],
   "iat": 1679616000,
   "exp": 1679616900
 }
@@ -92,15 +92,15 @@ public class TenantRlsInterceptor : DbConnectionInterceptor
 }
 ```
 
-> **Safety note — string interpolation in RLS interceptor:**
-> The interpolation above is safe **only** because `TenantId` is a `Guid`. A `Guid` can only contain hex digits and hyphens — it is structurally incapable of containing SQL injection characters (quotes, semicolons, etc.). PostgreSQL will reject any malformed UUID before it reaches the `SET LOCAL` command.
+> **Safety note - string interpolation in RLS interceptor:**
+> The interpolation above is safe **only** because `TenantId` is a `Guid`. A `Guid` can only contain hex digits and hyphens - it is structurally incapable of containing SQL injection characters (quotes, semicolons, etc.). PostgreSQL will reject any malformed UUID before it reaches the `SET LOCAL` command.
 >
 > **Do NOT copy this pattern for any non-`Guid` value.** If you ever need to set a `SET LOCAL` variable from a string (e.g., a tenant name, a user-supplied label), use a parameterized command:
 > ```csharp
 > cmd.CommandText = "SELECT set_config('app.current_tenant_id', $1, true)";
 > cmd.Parameters.Add(new NpgsqlParameter { Value = tenantId.ToString() });
 > ```
-> The RLS policy itself is a defence-in-depth safety net — the application-level `BaseRepository<T>` filter is the primary enforcement layer.
+> The RLS policy itself is a defence-in-depth safety net - the application-level `BaseRepository<T>` filter is the primary enforcement layer.
 
 ## Layer 4: ArchUnitNET Compile-Time Tests
 
@@ -131,15 +131,16 @@ public void No_Repository_Should_Bypass_BaseRepository()
 
 ## Tenant Provisioning Flow
 
-`tenants.status` has five lifecycle values: `provisioning`, `trial`, `active`, `suspended`, and `cancelled`. `provisioning` is the admin-only draft state; wizard step completion and activation blockers live in `tenant_provisioning_states` and `tenant_provisioning_validation_results`.
+`tenants.status` has seven lifecycle values: `provisioning`, `trial`, `trial_expired`, `pending_payment`, `active`, `suspended`, and `cancelled`. `provisioning` is the admin-only draft state; `trial` and `trial_expired` are demo states governed by Demo Profiles; `pending_payment` means the first invoice exists and payment is not complete. Wizard step completion and activation blockers live in `tenant_provisioning_states` and `tenant_provisioning_validation_results`.
 
-Each tenant can run in single-company or multi-company mode. A company that must share HR, workforce, reporting, policies, and employee lifecycle data with the same customer account is modeled as a `legal_entities` row inside the tenant. Separate tenants are used only for separate customer accounts that must remain isolated; company connections are for controlled cross-tenant collaboration, not for normal multi-company HR setup.
+Each tenant can run in single-company or multi-company mode. A company that must share HR, monitoring, reporting, policies, and employee lifecycle data with the same customer account is modeled as a `legal_entities` row inside the tenant. Separate tenants are used only for separate customer accounts that must remain isolated; company connections are for controlled cross-tenant collaboration, not for normal multi-company HR setup.
 
 ```
-1. Operator provisions via Developer Console (`POST /admin/v1/tenants`) → Create tenant record (status: provisioning)
-2. Seed        → Create default roles, permissions, settings, primary legal entity, and starter department
-3. Activate    → Set status to active, send welcome email
-4. Configure   → Admin sets up org structure, imports employees
+1. Operator provisions via Developer Console (`POST /admin/v1/tenants`) -> Create tenant record (status: provisioning)
+2. Seed        -> Create default roles, permissions, settings, primary legal entity, and starter department
+3. Upgrade     -> Generate first invoice and set status to pending_payment
+4. Payment     -> Gateway webhook moves pending_payment to active after first payment succeeds
+5. Configure   -> Admin sets up org structure, imports employees
 ```
 
 ```csharp
@@ -157,22 +158,26 @@ public async Task<Result<TenantDto>> ProvisionTenantAsync(CreateTenantCommand cm
     // 3. Create admin user
     var adminUser = await _userService.CreateAdminUserAsync(tenant.Id, cmd.AdminEmail, ct);
     
-    // 4. Activate
-    tenant.Status = "active";
+    // 4. First invoice is generated; first payment success activates the tenant.
+    tenant.Status = "pending_payment";
     await _unitOfWork.SaveChangesAsync(ct);
     
     return Result<TenantDto>.Success(tenant.ToDto());
 }
 ```
 
+## Billing Grace Period
+
+Grace period applies only after a tenant has already been `active`. It is a billing/dunning state for renewal or later payment failure; it must not bypass first-invoice payment or move an initial `pending_payment` tenant to `active`.
+
 ## Tenant Offboarding (GDPR)
 
 ```
-1. Initiate    → Admin requests account deletion
-2. Grace       → 30-day grace period (data preserved but tenant deactivated)
-3. Export      → Generate GDPR compliance export (all tenant data)
-4. Purge       → Permanent deletion of all tenant data
-5. Confirm     → Send confirmation email, audit log entry
+1. Initiate    -> Admin requests account deletion
+2. Grace       -> 30-day grace period (data preserved but tenant deactivated)
+3. Export      -> Generate GDPR compliance export (all tenant data)
+4. Purge       -> Permanent deletion of all tenant data
+5. Confirm     -> Send confirmation email, audit log entry
 ```
 
 ## Connection String Strategy
@@ -185,20 +190,18 @@ public async Task<Result<TenantDto>> ProvisionTenantAsync(CreateTenantCommand cm
 
 ## Performance Considerations
 
-- **Index on `tenant_id`** on every tenant-scoped table (composite indexes with other frequently queried columns) — see [[database/performance|Performance]]
+- **Index on `tenant_id`** on every tenant-scoped table (composite indexes with other frequently queried columns) - see [[database/performance|Performance]]
 - **Partition large tables** by tenant_id (for very large tenants) or by time (for audit_logs, biometric_events)
-- **Phase 1 in-memory caching** keyed by `tenant:{tenantId}:{entity}:{id}` — never cache cross-tenant data (see [[database/performance|Performance]])
+- **Phase 1 in-memory caching** keyed by `tenant:{tenantId}:{entity}:{id}` - never cache cross-tenant data (see [[database/performance|Performance]])
 - **Rate limiting** per tenant via in-memory token bucket in Phase 1; Redis token bucket only if future distributed cache is enabled
 
 ## Related
 
-- [[backend/shared-kernel|Shared Kernel]] — BaseRepository, ITenantContext implementation
-- [[security/auth-architecture|Auth Architecture]] — backend-held auth/session state carrying tenant_id
-- [[backend/module-boundaries|Module Boundaries]] — ArchUnitNET tests for tenant isolation enforcement
-- [[security/compliance|Compliance]] — GDPR tenant offboarding and data export
-- [[modules/shared-platform/company-connections/overview|Company Connections]] — Explicit tenant-to-tenant links for approved cross-company flows
-
-
+- [[backend/shared-kernel|Shared Kernel]] - BaseRepository, ITenantContext implementation
+- [[security/auth-architecture|Auth Architecture]] - backend-held auth/session state carrying tenant_id
+- [[backend/module-boundaries|Module Boundaries]] - ArchUnitNET tests for tenant isolation enforcement
+- [[security/compliance|Compliance]] - GDPR tenant offboarding and data export
+- [[modules/shared-platform/company-connections/overview|Company Connections]] - Explicit tenant-to-tenant links for approved cross-company flows
 
 
 

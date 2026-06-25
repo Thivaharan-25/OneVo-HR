@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Cross-cutting platform services: SSO provider management, subscription/billing through Stripe, Paddle, and PayHere, module catalog, setup services, reusable configuration templates, feature flags, and the generic workflow/automation engine used by leave, overtime, attendance corrections, expense claims, document approvals, exception alerts, requests, escalations, and follow-ups.
+Cross-cutting platform services: SSO provider management, subscription/billing through Stripe, Paddle, and PayHere, module catalog, setup services, reusable configuration templates, and feature flags. Workflow Engine and Automation Center knowledge is retained in this module as Phase 2 design only; Phase 1 modules use their own built-in approval, routing, and notification rules.
 
 ---
 
@@ -19,7 +19,7 @@ Cross-cutting platform services: SSO provider management, subscription/billing t
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `ITenantContext` | Multi-tenancy |
-| **Consumed by** | [[modules/leave/overview\|Leave]], [[modules/core-hr/overview\|Core Hr]], [[modules/expense/overview\|Expense]], [[modules/exception-engine/overview\|Exception Engine]], [[modules/work-management/chat/overview\|Chat]] | Workflow engine | Resolver-based approval, alert, case, and escalation routing |
+| **Consumed by** | Phase 2 modules only | Workflow Engine and Automation Center | Deferred resolver-based approval, alert, case, escalation, and automation routing. Not a Phase 1 dependency. |
 | **Consumed by** | All modules | Feature flags | Feature toggle checks |
 
 ---
@@ -99,7 +99,7 @@ Plan definitions. **NOT tenant-scoped** - global catalog.
 | `name` | `varchar(100)` | |
 | `code` | `varchar(20)` | `starter`, `professional`, `enterprise` |
 | `tier` | `varchar(20)` | Ordering tier |
-| `feature_limits` | `jsonb` | e.g., `{"max_employees": 50, "modules": ["core_hr","leave"]}` |
+| `feature_limits` | `jsonb` | e.g., `{"max_employees": 50, "modules": ["core_hr","time_off"]}` |
 | `monthly_price` | `decimal(10,2)` | |
 | `annual_price` | `decimal(10,2)` | |
 | `currency` | `varchar(3)` | ISO 4217 |
@@ -132,10 +132,30 @@ Active subscription per tenant.
 | `status` | `varchar(20)` | `pending_payment`, `active`, `past_due`, `cancelled` |
 | `current_period_start` | `date` | |
 | `current_period_end` | `date` | |
-| `payment_provider_ref` | `varchar(100)` | Legacy gateway subscription ID; prefer explicit gateway refs in the shared schema |
-| `created_by_id` | `uuid` | FK -> users |
+| `payment_gateway_config_id` | `uuid` | FK -> payment_gateway_configs; resolved from country/environment route |
+| `created_by_user_id` | `uuid` | Nullable FK -> users; tenant self-service actor |
+| `created_by_platform_user_id` | `uuid` | Nullable FK -> platform_users; platform-operator actor |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
+
+**Actor rule:** exactly one of `created_by_user_id` or `created_by_platform_user_id` must be set. Subscription changes are audited in `tenant_subscription_events`.
+
+#### `tenant_subscription_events`
+
+Commercial subscription change history for tenant self-service and platform-operator changes.
+
+| Column | Type | Notes |
+|:-------|:-----|:------|
+| `id` | `uuid` | PK |
+| `tenant_subscription_id` | `uuid` | FK -> tenant_subscriptions |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `event_type` | `varchar(80)` | `created`, `plan_changed`, `addons_changed`, `billing_cycle_changed`, `cancel_requested`, `platform_adjusted` |
+| `actor_user_id` | `uuid` | Nullable FK -> users |
+| `actor_platform_user_id` | `uuid` | Nullable FK -> platform_users |
+| `old_values_json` | `jsonb` | Nullable previous commercial snapshot |
+| `new_values_json` | `jsonb` | New commercial snapshot |
+| `reason` | `text` | Nullable tenant reason or required platform operator reason depending on event type |
+| `created_at` | `timestamptz` | |
 
 #### `subscription_invoices`
 
@@ -146,11 +166,12 @@ Invoice records generated or synced from Stripe, Paddle, or PayHere. Not in HTML
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `subscription_id` | `uuid` | FK -> tenant_subscriptions |
+| `payment_gateway_config_id` | `uuid` | FK -> payment_gateway_configs |
 | `invoice_number` | `varchar(50)` | |
 | `amount` | `decimal(10,2)` | |
 | `currency` | `varchar(3)` | |
 | `status` | `varchar(20)` | `draft`, `open`, `paid`, `void` |
-| `payment_provider_ref` | `varchar(100)` | Stripe/Paddle/PayHere invoice or payment reference |
+| `external_invoice_id` | `varchar(100)` | Stripe/Paddle/PayHere invoice reference |
 | `issued_at` | `timestamptz` | |
 | `paid_at` | `timestamptz` | Nullable |
 
@@ -189,7 +210,7 @@ Global feature flag definitions. Tenant-specific exceptions are stored in `featu
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
-Tenant-facing product feature flags must set both `module_key` and `feature_key`, and the feature must belong to that module in `module_features`. Only platform operational flags that are not sold as tenant features may leave both fields null.
+Tenant-facing product feature flags must set both `module_key` and `feature_key`, and the feature must belong to that module in `module_features`. Only platform operational flags that are not sold as tenant features may keep both fields null.
 
 #### `feature_flag_overrides`
 
@@ -248,7 +269,7 @@ Templates per channel + locale for rendering notifications.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `template_code` | `varchar(50)` | e.g., `leave_requested`, `payroll_completed` |
+| `template_code` | `varchar(50)` | e.g., `time_off_requested`, `payroll_completed` |
 | `channel` | `varchar(20)` | `email`, `push`, `in_app` |
 | `subject_template` | `text` | For email subject line |
 | `body_template` | `text` | Handlebars/Liquid template |
@@ -267,8 +288,8 @@ Channel provider configuration per tenant.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `channel_type` | `varchar(30)` | `email`, `push`, `slack` |
-| `provider` | `varchar(50)` | `resend`, `fcm`, `slack_webhook` |
+| `channel_type` | `varchar(30)` | `email`, `push`, `slack` (Phase 2) |
+| `provider` | `varchar(50)` | `resend`, `fcm`, `slack_webhook` (Phase 2) |
 | `credentials_encrypted` | `jsonb` | Encrypted API keys/tokens |
 | `is_active` | `boolean` | |
 | `configured_by_id` | `uuid` | FK -> users |
@@ -283,7 +304,7 @@ SLA-based escalation triggers. Checked by Hangfire recurring job (hourly).
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `resource_type` | `varchar(50)` | e.g., `leave_request`, `expense_claim` |
+| `resource_type` | `varchar(50)` | e.g., `time_off_request`, `expense_claim` |
 | `trigger_condition` | `varchar(100)` | e.g., `status = 'pending'` |
 | `sla_hours` | `integer` | Hours before escalation fires |
 | `action_type` | `varchar(30)` | `remind`, `escalate`, `auto_approve` |
@@ -295,19 +316,20 @@ SLA-based escalation triggers. Checked by Hangfire recurring job (hourly).
 
 ### Sub-System 6: Workflow Engine And Automation Center
 
-The workflow engine is **resource-type agnostic**. It works via `resource_type` + `resource_id` polymorphic references and is configured through Automation Center. Same engine handles approvals, alerts, requests, escalations, follow-ups, and case conversations.
+> **Phase:** Phase 2 - deferred. This section is retained as future-state design and must not be treated as an active Phase 1 customer-facing dependency.
+
+The workflow engine is **resource-type agnostic**. It works via `resource_type` + `resource_id` polymorphic references and is configured through Automation Center. In Phase 2, the same engine may handle approvals, alerts, requests, escalations, follow-ups, and case conversations.
 
 > **Automation Center schema note:** The additive migration direction is approved in [[docs/superpowers/plans/2026-05-07-automation-center-database-plan|Automation Center Database Plan]]. New implementation must use dynamic resolvers instead of fixed role names. Legacy fields remain readable during migration but must not be used for new workflow definitions.
 
 **How it works:**
-1. Module creates a workflow instance: `resource_type = "LeaveRequest"`, `resource_id = {leaveRequestId}`
-2. Engine resolves assignees or approvers using tenant-scoped resolvers, such as first eligible approver in position reporting chain, reporting manager, team lead, department owner, selected permission, selected legal entity/department/team/position/position branch, specific employee, previous approver, case participants, or configured escalation resolver. Job level can be used only when job hierarchy is configured and linked for the tenant.
+1. Module creates a workflow instance: `resource_type = "TimeOffRequest"`, `resource_id = {timeOffRequestId}`
 3. Approver takes action -> engine advances to next step or reaches a final outcome
 4. Module receives `WorkflowApproved`, `WorkflowRejected`, or `WorkflowCancelled` and updates the resource state
 
 #### `automation_definitions`
 
-Customer-created Automation Center definitions.
+Phase 2 customer-created Automation Center definitions.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -325,7 +347,7 @@ Customer-created Automation Center definitions.
 
 #### `automation_definition_versions`
 
-Immutable version snapshots for Automation Center definitions.
+Phase 2 immutable version snapshots for Automation Center definitions.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -372,7 +394,7 @@ Execution record for an automation definition version.
 
 #### `workflow_definitions`
 
-Workflow templates (e.g., "Leave Approval", "Expense Approval").
+Workflow templates (e.g., "Time Off Approval", "Expense Approval").
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -380,7 +402,7 @@ Workflow templates (e.g., "Leave Approval", "Expense Approval").
 | `tenant_id` | `uuid` | FK -> tenants |
 | `name` | `varchar(100)` | |
 | `code` | `varchar(50)` | Unique identifier |
-| `resource_type` | `varchar(50)` | e.g., `LeaveRequest`, `ExpenseClaim` |
+| `resource_type` | `varchar(50)` | e.g., `TimeOffRequest`, `ExpenseClaim` (Phase 2) |
 | `description` | `text` | |
 | `is_active` | `boolean` | |
 | `version` | `integer` | Versioning for definition changes |
@@ -401,10 +423,8 @@ Steps within a workflow definition.
 | `approver_type` | `varchar(30)` | Legacy compatibility field; do not use for new definitions |
 | `approver_role_id` | `uuid` | Legacy compatibility field; do not use for new definitions |
 | `resolver_type` | `varchar(50)` | Dynamic resolver type, e.g. `reporting_manager`, `selected_permission`, `case_participants` |
-| `resolver_config` | `jsonb` | Resolver parameters such as permission code, legal entity/department/team/position/position branch, optional job level when configured, employee id, connected tenant scope |
 | `approval_mode` | `varchar(30)` | `only_one_required`, `all_required`, `sequential` |
 | `action_config` | `jsonb` | Action-card, request-info, escalation, or task creation settings |
-| `delivery_config` | `jsonb` | Chat, Inbox, Teams mirror, notification routing preferences |
 | `conditions` | `jsonb` | Step conditions (e.g., skip if amount < threshold) |
 | `sla_hours` | `integer` | Hours before timeout action |
 | `on_timeout_action` | `varchar(30)` | `escalate`, `auto_approve`, `auto_reject` |
@@ -418,7 +438,7 @@ Active workflow instance for a specific resource.
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
 | `workflow_definition_id` | `uuid` | FK -> workflow_definitions |
-| `resource_type` | `varchar(50)` | Polymorphic - e.g., `LeaveRequest` |
+| `resource_type` | `varchar(50)` | Polymorphic - e.g., `TimeOffRequest` |
 | `resource_id` | `uuid` | Polymorphic - FK to resource |
 | `initiated_by_id` | `uuid` | FK -> employees |
 | `current_step_order` | `integer` | Which step is active |
@@ -488,7 +508,7 @@ Shared Platform metadata linking workflow/case state to WorkSync Chat private ch
 
 #### `workflow_delivery_routes`
 
-Delivery routing state for workflow action cards.
+Phase 2 delivery routing state for workflow action cards.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -496,7 +516,6 @@ Delivery routing state for workflow action cards.
 | `tenant_id` | `uuid` | FK -> tenants |
 | `workflow_instance_id` | `uuid` | FK -> workflow_instances |
 | `workflow_step_instance_id` | `uuid` | FK -> workflow_step_instances |
-| `target_type` | `varchar(30)` | `employee`, `user`, `channel`, `inbox`, `teams` |
 | `target_id` | `uuid` | Target id where available |
 | `delivery_surface` | `varchar(30)` | `chat`, `inbox`, `teams_mirror`, `email`, `push`, `signalr` |
 | `status` | `varchar(20)` | `pending`, `sent`, `failed`, `cancelled` |
@@ -573,23 +592,7 @@ GDPR subject access requests and data exports.
 
 ### Sub-System 8: Hardware & Devices
 
-#### `hardware_terminals`
-
-Physical terminals (biometric scanners, kiosks) connected via webhooks.
-
-| Column | Type | Notes |
-|:-------|:-----|:------|
-| `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK -> tenants |
-| `office_location_id` | `uuid` | FK -> office_locations |
-| `terminal_code` | `varchar(50)` | Unique device code |
-| `terminal_type` | `varchar(30)` | `biometric`, `rfid`, `kiosk` |
-| `webhook_url` | `varchar(500)` | Callback URL for events |
-| `api_key_encrypted` | `bytea` | Encrypted terminal API key |
-| `status` | `varchar(20)` | `active`, `offline`, `maintenance` |
-| `last_heartbeat_at` | `timestamptz` | |
-| `created_at` | `timestamptz` | |
-| `updated_at` | `timestamptz` | |
+Shared Platform does not define a separate hardware-terminal table. Physical attendance/biometric terminals are stored in [[database/schemas/identity-verification#`biometric_devices`|biometric_devices]], the canonical table for direct terminals, vendor middleware, local gateways, polling integrations, and manual imports. Shared Platform may expose navigation, integration catalog metadata, or operational dashboards for those devices, but it must not duplicate terminal rows.
 
 ### Sub-System 9: Real-Time & Integrations
 
@@ -609,7 +612,7 @@ Active SignalR connections for real-time push (in-app notifications, live update
 | `last_ping_at` | `timestamptz` | |
 | `is_active` | `boolean` | |
 
-> **Note:** Renamed from `presence_sessions` to avoid collision with workforce_presence `presence_sessions` (table 127).
+> **Note:** Renamed from `presence_sessions` to avoid collision with time_attendance `presence_sessions` (table 127).
 
 #### `system_settings`
 
@@ -683,7 +686,7 @@ Per-endpoint rate limit configuration. Not in HTML ERD - to be added.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants (nullable - null for global rules) |
-| `endpoint_pattern` | `varchar(200)` | e.g., `/api/v1/leave/*` |
+| `endpoint_pattern` | `varchar(200)` | e.g., `/api/v1/time-off/*` |
 | `max_requests` | `integer` | Per window |
 | `window_seconds` | `integer` | Sliding window size |
 | `is_active` | `boolean` | |
@@ -709,7 +712,7 @@ Hangfire job metadata for visibility/management. Not in HTML ERD - to be added.
 
 ## Domain Events (intra-module - MediatR)
 
-> These events are published and consumed within this module only. They never leave the module.
+> These events are published and consumed within this module only. They never cross the module boundary.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
@@ -760,12 +763,11 @@ Hangfire job metadata for visibility/management. Not in HTML ERD - to be added.
 - [[modules/shared-platform/sso-authentication/overview|Sso Authentication]] - SSO provider configuration (Google, Microsoft, SAML, OIDC) with auto-provisioning
 - [[modules/shared-platform/subscriptions-billing/overview|Subscriptions Billing]] - Stripe/Paddle/PayHere-backed subscription plans, invoices, payment methods, payment exceptions, AI token limits, and Work Management storage limits
 - Setup Services - Global/free, paid, and module-specific implementation services selected during tenant provisioning
-- Configuration Templates - Reusable configuration, role, org, job-family, leave, onboarding, app allowlist, monitoring policy, and data import mapping templates
 - [[frontend/cross-cutting/feature-flags|Feature Flags]] - Per-tenant feature flag definitions with targeting conditions
 - [[frontend/design-system/theming/tenant-branding|Tenant Branding]] - Default `{tenantSlug}.onevo.com` URL, logo, and brand colors per tenant
-- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] - Automation Center engine for approvals, alerts, requests, case conversations, delivery routing, and escalation
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine]] - Phase 2 Automation Center engine for approvals, alerts, requests, case conversations, delivery routing, and escalation
 - [[modules/shared-platform/compliance-governance/overview|Compliance Governance]] - Legal holds, retention policies, GDPR subject access exports
-- [[modules/shared-platform/hardware-terminals/overview|Hardware Terminals]] - Physical biometric/RFID/kiosk terminal management
+- [[modules/shared-platform/hardware-terminals/overview|Hardware Terminals]] - Physical attendance/biometric/RFID/kiosk terminal management
 - [[modules/shared-platform/real-time-integrations/overview|Real Time Integrations]] - SignalR connections, API keys, webhooks, rate limits
 - [[modules/shared-platform/notification-infrastructure/overview|Notification Infrastructure]] - Notification templates and channel provider configuration
 - Overview Dashboard - Frontend: [[modules/shared-platform/overview-dashboard/frontend|Frontend]]

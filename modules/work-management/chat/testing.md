@@ -1,4 +1,7 @@
-# Chat & Messaging — Testing
+﻿# Chat & Messaging - Testing
+
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Not active in current Phase 1 Work implementation; retained as future design reference.
 
 **Module:** WorkSync
 **Feature:** Chat & Messaging
@@ -85,7 +88,6 @@ public class ChatEndpointTests : IClassFixture<ONEVOWebFactory>
     public async Task SendMessage_LinkedTeamsChannel_QueuesTeamsSync()
     {
         SetupLinkedTeamsChannel(_channelId);
-        await SendMessageAsync(_channelId, "Hello Teams");
         await AssertTeamsSyncQueued(_channelId);
     }
 }
@@ -95,19 +97,15 @@ public class ChatEndpointTests : IClassFixture<ONEVOWebFactory>
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| DM channel already exists — returns existing | Unit + Integration | Idempotent, same channel |
+| DM channel already exists - returns existing | Unit + Integration | Idempotent, same channel |
 | Send to channel without membership | Unit | NOT_CHANNEL_MEMBER |
 | Reply to a thread reply (nested) | Unit | CANNOT_NEST_THREADS |
 | Soft delete retains content | Unit | Content preserved, is_deleted = true |
 | Unread count based on last_read_at | Unit | Count > 0 when messages after last read |
 | SignalR fired on message | Integration | WorkSync chat hub publishes canonical `chat:message` payload |
-| Linked Teams channel queues outbound sync | Integration | Teams sync job queued |
-| Inbound Teams duplicate ignored | Unit + Integration | No duplicate ONEVO message |
 | Assistant message created | Integration | Assistant message stored and `chat:message` plus `ai:*` events published |
-| Inbound Teams message from mapped sender | Integration | ONEVO message imported and assistant invoked only when enabled |
 
 ## Related
 
 - [[modules/work-management/chat/overview|Chat Overview]]
 - [[modules/work-management/chat/end-to-end-logic|Chat Logic]]
-- [[modules/work-management/chat/teams-sync/testing|Teams Chat Sync Testing]]

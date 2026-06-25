@@ -7,12 +7,10 @@
 
 ## Purpose
 
-OKR-style goals with parent-child hierarchy (company → team → individual).
 
 ## Database Tables
 
 ### `goals`
-Key columns: `employee_id`, `parent_goal_id` (self-referencing), `title`, `goal_type` (`individual`, `team`, `company`), `target_value`, `current_value`, `unit`, `due_date`, `status`, `weight`.
 
 ## API Endpoints
 

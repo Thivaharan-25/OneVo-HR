@@ -1,4 +1,4 @@
-# Tenant Management — End-to-End Logic
+﻿# Tenant Management - End-to-End Logic
 
 **Module:** Infrastructure
 **Feature:** Tenant Management
@@ -56,7 +56,6 @@ account are added as legal entities inside the tenant. Separate tenants are used
 for separate customer accounts that must remain isolated.
 
 Roles are independent tenant-scoped permission containers. They do not require
-job levels. Job levels can suggest role assignments for admin confirmation, but
 they must not auto-assign permissions. Hierarchy is used later for scoped
 access, approval routing, escalation, and organisation-aware access.
 

@@ -1,8 +1,8 @@
-# Module: IDE Extension
+﻿# Module: IDE Extension
 
 **Namespace:** `ONEVO.Modules.IDEExtension`
 **Phase:** 2
-**Pillar:** Cross-Pillar (WorkSync + HR + Workforce Intelligence)
+**Pillar:** Cross-Pillar (WorkSync + HR + Monitoring)
 **Owner:** Dev 7 (core + tag engine) + Dev 8 (context engine + agent entitlement)
 **Tables:** 5 (`ide_extension_installs`, `ide_sessions`, `ide_tag_executions`, `ide_context_links`, `ide_chat_threads`)
 **Client:** VS Code Extension (TypeScript).
@@ -13,10 +13,10 @@
 
 The IDE Extension turns every developer's editor into a full OneVo terminal. It provides:
 
-1. **Embedded Chat Sidebar** — full WorkSync chat (channels + DMs) inside VS Code, with the same real-time experience as the web frontend
-2. **Tag Engine** — `@entity:action params` syntax lets users trigger any OneVo action they have permission for, without leaving the editor. Tasks, sprints, time logs, chat messages, leave requests, document links, code reviews — all accessible via tags.
-3. **Context Engine** — automatic linking of Git branches and files to WorkSync tasks. Time tracking integrates with the active branch context.
-4. **Entitlement-Gated Agent Provisioning** — if the user's tenant has a monitoring entitlement, the extension offers to provision the desktop monitoring agent. Never silent, never without server-side entitlement validation.
+1. **Embedded Chat Sidebar** - full WorkSync chat (channels + DMs) inside VS Code, with the same real-time experience as the web frontend
+2. **Tag Engine** - `@entity:action params` syntax lets users trigger any OneVo action they have permission for, without leaving the editor. Tasks, sprints, time logs, chat messages, Time Off requests, document links, code reviews - all accessible via tags.
+3. **Context Engine** - automatic linking of Git branches and files to WorkSync tasks. Time tracking integrates with the active branch context.
+4. **Entitlement-Gated Agent Provisioning** - if the user's tenant has a monitoring entitlement, the extension offers to provision the desktop monitoring agent. Never silent, never without server-side entitlement validation.
 
 The extension is a **client** of the same backend APIs used by the web frontend. It has no separate database, no separate auth, and no separate permission model. Every action goes through the backend.
 
@@ -25,32 +25,32 @@ The extension is a **client** of the same backend APIs used by the web frontend.
 ## Dependencies
 
 **Depends on:**
-- `Infrastructure` — `tenants`, `users` (auth context)
-- `Auth` — JWT authentication, refresh token rotation
-- `WorkSync.Foundation` — `workspaces`, `workspace_members`
-- `WorkSync.Chat` — `channels`, `messages` (chat sidebar)
-- `WorkSync.Tasks` — `tasks`, `task_assignments` (tasks panel)
-- `WorkSync.ChatAI` — `ai_action_jobs` (tag-triggered creates share the same undo state machine)
-- `WorkSync.Integrations` — `repositories`, `task_repository_links` (branch→task context)
-- `AgentGateway` — `agent_install_entitlements`, `agent_install_jobs`, `registered_agents`
-- `Notifications` — notification feed in IDE sidebar
+- `Infrastructure` - `tenants`, `users` (auth context)
+- `Auth` - JWT authentication, refresh token rotation
+- `WorkSync.Foundation` - `workspaces`, `workspace_members`
+- `WorkSync.Chat` - `channels`, `messages` (chat sidebar)
+- `WorkSync.Tasks` - `tasks`, `task_assignments` (tasks panel)
+- `WorkSync.ChatAI` - `ai_action_jobs` (tag-triggered creates share the same undo state machine)
+- `WorkSync.Integrations` - `repositories`, `task_repository_links` (branch->task context)
+- `AgentGateway` - `agent_install_entitlements`, `agent_install_jobs`, `registered_agents`
+- `Notifications` - notification feed in IDE sidebar
 
 **Consumed by:**
-- `WorkSync.ChatAI` — `ide_tag_executions.tag_execution_id` FK in `ai_action_jobs`
-- `ActivityMonitoring` — `ide_sessions` provides IDE coding-context for activity attribution (future Phase 2)
+- `WorkSync.ChatAI` - `ide_tag_executions.tag_execution_id` FK in `ai_action_jobs`
+- `ActivityMonitoring` - `ide_sessions` provides IDE coding-context for activity attribution (future Phase 2)
 
 ---
 
 ## Database Tables
 
-### `ide_extension_installs` — Phase 2
+### `ide_extension_installs` - Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
-| `user_id` | uuid | FK → users |
-| `tenant_id` | uuid | FK → tenants |
-| `workspace_id` | uuid | FK → workspaces, nullable |
+| `user_id` | uuid | FK -> users |
+| `tenant_id` | uuid | FK -> tenants |
+| `workspace_id` | uuid | FK -> workspaces, nullable |
 | `editor_type` | varchar(20) | vscode / jetbrains |
 | `editor_version` | varchar(50) | |
 | `extension_version` | varchar(20) | |
@@ -61,38 +61,38 @@ The extension is a **client** of the same backend APIs used by the web frontend.
 
 ---
 
-### `ide_sessions` — Phase 2
+### `ide_sessions` - Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
-| `install_id` | uuid | FK → ide_extension_installs |
-| `user_id` | uuid | FK → users |
-| `tenant_id` | uuid | FK → tenants |
-| `workspace_id` | uuid | FK → workspaces, nullable |
-| `active_project_id` | uuid | FK → projects, nullable — updated on branch switch |
+| `install_id` | uuid | FK -> ide_extension_installs |
+| `user_id` | uuid | FK -> users |
+| `tenant_id` | uuid | FK -> tenants |
+| `workspace_id` | uuid | FK -> workspaces, nullable |
+| `active_project_id` | uuid | FK -> projects, nullable - updated on branch switch |
 | `started_at` | timestamptz | |
 | `ended_at` | timestamptz | nullable |
 
 ---
 
-### `ide_tag_executions` — Phase 2
+### `ide_tag_executions` - Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
-| `user_id` | uuid | FK → users |
-| `tenant_id` | uuid | FK → tenants |
-| `session_id` | uuid | FK → ide_sessions, nullable |
+| `user_id` | uuid | FK -> users |
+| `tenant_id` | uuid | FK -> tenants |
+| `session_id` | uuid | FK -> ide_sessions, nullable |
 | `raw_tag_input` | text | The exact string the user typed |
-| `parsed_entity` | varchar(50) | task / sprint / time / chat / leave / doc / board / okr / review / notify |
+| `parsed_entity` | varchar(50) | task / sprint / time / chat / time_off / doc / board / okr / review / notify |
 | `parsed_action` | varchar(50) | new / status / assign / log / send / request / view / move / link |
 | `resolved_params` | jsonb | Parsed parameters after autocomplete resolution |
 | `permission_check_result` | varchar(20) | allowed / denied |
 | `execution_status` | varchar(20) | pending / success / failed / undone |
-| `created_entity_type` | varchar(50) | nullable — task / time_log / message / etc |
+| `created_entity_type` | varchar(50) | nullable - task / time_log / message / etc |
 | `created_entity_id` | uuid | nullable |
-| `undo_expires_at` | timestamptz | nullable — set for reversible actions |
+| `undo_expires_at` | timestamptz | nullable - set for reversible actions |
 | `undone_at` | timestamptz | nullable |
 | `executed_at` | timestamptz | |
 
@@ -100,35 +100,35 @@ The extension is a **client** of the same backend APIs used by the web frontend.
 
 ---
 
-### `ide_context_links` — Phase 2
+### `ide_context_links` - Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
-| `user_id` | uuid | FK → users |
-| `tenant_id` | uuid | FK → tenants |
+| `user_id` | uuid | FK -> users |
+| `tenant_id` | uuid | FK -> tenants |
 | `repository_url` | varchar(500) | Full clone URL |
 | `branch_name` | varchar(255) | |
-| `file_path` | varchar(1000) | nullable — for file-level links |
+| `file_path` | varchar(1000) | nullable - for file-level links |
 | `entity_type` | varchar(30) | task / project / sprint / document |
 | `entity_id` | uuid | |
 | `link_type` | varchar(30) | branch / commit / file / pr |
 | `created_at` | timestamptz | |
-| `created_by` | uuid | FK → users |
+| `created_by` | uuid | FK -> users |
 
 **Index:** `(repository_url, branch_name)`, `(tenant_id, entity_type, entity_id)`
 
 ---
 
-### `ide_chat_threads` — Phase 2
+### `ide_chat_threads` - Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
-| `channel_id` | uuid | FK → channels |
-| `user_id` | uuid | FK → users |
-| `ide_session_id` | uuid | FK → ide_sessions, nullable |
-| `context_task_id` | uuid | FK → tasks, nullable |
+| `channel_id` | uuid | FK -> channels |
+| `user_id` | uuid | FK -> users |
+| `ide_session_id` | uuid | FK -> ide_sessions, nullable |
+| `context_task_id` | uuid | FK -> tasks, nullable |
 | `context_file_path` | varchar(1000) | nullable |
 | `last_message_at` | timestamptz | |
 
@@ -167,7 +167,7 @@ public interface IIDEExtensionService
 | `time` | `log`, `start`, `stop`, `view` | `@time:log 2h #TASK-456 "Auth refactor"` |
 | `chat` | `send`, `pin`, `remind`, `thread` | `@chat:send #dev-backend "PR ready"` |
 | `doc` | `view`, `create`, `link`, `approve` | `@doc:link #TASK-456 to:"API Guidelines"` |
-| `leave` | `request`, `view`, `cancel` | `@leave:request 2026-05-05 2026-05-07 "Conference"` |
+| `time_off` | `request`, `view`, `cancel` | `@time-off:request 2026-05-05 2026-05-07 "Conference"` |
 | `board` | `move`, `view` | `@board:move #TASK-456 column:"In Review"` |
 | `okr` | `checkin`, `view` | `@okr:checkin #KR-12 value:75` |
 | `review` | `request`, `approve`, `reject` | `@review:request #TASK-456 @reviewer:john` |
@@ -181,13 +181,13 @@ The tag engine calls the **same backend API endpoints** as the web frontend. It 
 If the user does not have permission:
 - Backend returns 403
 - Tag engine logs `permission_check_result = denied` in `ide_tag_executions`
-- Extension shows red inline error: "You don't have `{permission}` — contact your workspace admin"
+- Extension shows red inline error: "You don't have `{permission}` - contact your workspace admin"
 
 ### Undo Window
 
 Actions that create entities have an `undo_expires_at` (default 30 seconds for tag-triggered, 10 seconds for AI auto-create). During the window:
 - Extension shows a countdown toast with [Undo] button
-- SignalR pushes real-time state (pending → finalized/undone)
+- SignalR pushes real-time state (pending -> finalized/undone)
 - Clicking Undo calls `DELETE /api/v1/ide/tags/executions/{id}`
 - Backend calls the appropriate reverse operation (soft-delete task, delete time_log, etc.)
 
@@ -233,9 +233,9 @@ These are automatically resolved from current editor context if not provided exp
 **Connection:** `wss://{tenantSlug}.onevo.com/hubs/ide?access_token={jwt}`
 
 IDE extension connects with a JWT and session_id. Hub groups:
-- `user:{userId}` — personal notifications
-- `workspace:{workspaceId}` — workspace-level events
-- `channel:{channelId}` — subscribed when user opens a channel in chat panel
+- `user:{userId}` - personal notifications
+- `workspace:{workspaceId}` - workspace-level events
+- `channel:{channelId}` - subscribed when user opens a channel in chat panel
 
 ### Events pushed to extension
 
@@ -256,34 +256,34 @@ IDE extension connects with a JWT and session_id. Hub groups:
 
 ```
 src/
-├── extension.ts               # Activate/deactivate, register commands, contribute viewContainers
-├── auth/
-│   ├── AuthService.ts         # PKCE OAuth flow, token storage (VS Code SecretStorage)
-│   └── TokenRefresher.ts      # Background refresh 60s before expiry
-├── signalr/
-│   └── IDEHubClient.ts        # SignalR JS client, reconnect logic, group subscriptions
-├── panels/
-│   ├── ChatPanel.ts           # TreeDataProvider for channel list + WebviewPanel for message feed
-│   ├── TasksPanel.ts          # TreeDataProvider for assigned tasks (grouped by sprint/status)
-│   └── NotificationsPanel.ts  # TreeDataProvider for notification feed
-├── tag-engine/
-│   ├── TagParser.ts           # Lexer + parser for @entity:action syntax
-│   ├── TagExecutor.ts         # Calls POST /api/v1/ide/tags/execute, handles undo
-│   ├── AutoCompleteProvider.ts # VS Code CompletionItemProvider — entity/action/param hints
-│   └── CommentScanner.ts      # Opt-in: detect @onevo: tags in code comments on file save
-├── context/
-│   ├── BranchDetector.ts      # Reads git HEAD ref, calls GET /api/v1/ide/context/branch
-│   ├── FileContextDetector.ts # Active editor path → GET /api/v1/ide/context/file
-│   └── TimeTracker.ts         # Status bar timer, start/stop calls, branch-linked tracking
-├── webviews/
-│   ├── TaskDetailWebview.ts   # Full task detail in WebviewPanel
-│   └── ChatWebview.ts         # Rich chat message renderer (markdown, reactions, files)
-├── agent-install/
-│   └── AgentInstaller.ts      # Entitlement check, download, hash verify, execute installer
-├── api/
-│   └── OneVoApiClient.ts      # Typed HTTP client wrapping all backend endpoints
-└── config/
-    └── WorkspaceConfig.ts     # Reads .onevo config file (scan_comments, workspace_id override)
++-- extension.ts               # Activate/deactivate, register commands, contribute viewContainers
++-- auth/
+|   +-- AuthService.ts         # PKCE OAuth flow, token storage (VS Code SecretStorage)
+|   +-- TokenRefresher.ts      # Background refresh 60s before expiry
++-- signalr/
+|   +-- IDEHubClient.ts        # SignalR JS client, reconnect logic, group subscriptions
++-- panels/
+|   +-- ChatPanel.ts           # TreeDataProvider for channel list + WebviewPanel for message feed
+|   +-- TasksPanel.ts          # TreeDataProvider for assigned tasks (grouped by sprint/status)
+|   +-- NotificationsPanel.ts  # TreeDataProvider for notification feed
++-- tag-engine/
+|   +-- TagParser.ts           # Lexer + parser for @entity:action syntax
+|   +-- TagExecutor.ts         # Calls POST /api/v1/ide/tags/execute, handles undo
+|   +-- AutoCompleteProvider.ts # VS Code CompletionItemProvider - entity/action/param hints
+|   +-- CommentScanner.ts      # Opt-in: detect @onevo: tags in code comments on file save
++-- context/
+|   +-- BranchDetector.ts      # Reads git HEAD ref, calls GET /api/v1/ide/context/branch
+|   +-- FileContextDetector.ts # Active editor path -> GET /api/v1/ide/context/file
+|   +-- TimeTracker.ts         # Status bar timer, start/stop calls, branch-linked tracking
++-- webviews/
+|   +-- TaskDetailWebview.ts   # Full task detail in WebviewPanel
+|   +-- ChatWebview.ts         # Rich chat message renderer (markdown, reactions, files)
++-- agent-install/
+|   +-- AgentInstaller.ts      # Entitlement check, download, hash verify, execute installer
++-- api/
+|   +-- OneVoApiClient.ts      # Typed HTTP client wrapping all backend endpoints
++-- config/
+    +-- WorkspaceConfig.ts     # Reads .onevo config file (scan_comments, workspace_id override)
 ```
 
 ---
@@ -313,19 +313,19 @@ Optional file at repo root. Controls extension behavior per repository:
 
 1. **Permission is always checked server-side.** The extension client never decides if a tag action is allowed. Backend returns 403 if unauthorized.
 2. **Agent install requires explicit user consent.** The extension NEVER installs the monitoring agent silently. It always shows a prompt and requires the user to click "Set Up". The entitlement is validated server-side on every install request.
-3. **Undo window is server-enforced.** The undo window timestamp is set by the backend. The client shows the countdown as a UI convenience only — the backend rejects undo calls after `undo_expires_at`.
+3. **Undo window is server-enforced.** The undo window timestamp is set by the backend. The client shows the countdown as a UI convenience only - the backend rejects undo calls after `undo_expires_at`.
 4. **Tag executions are audit-logged even when denied.** Every `@entity:action` attempt creates an `ide_tag_executions` row regardless of the permission check result.
-5. **Context resolution is best-effort.** If `GET /api/v1/ide/context/branch` finds no linked task, the extension operates without context — no error shown to user.
+5. **Context resolution is best-effort.** If `GET /api/v1/ide/context/branch` finds no linked task, the extension operates without context - no error shown to user.
 
 ---
 
 ## Related
 
-- [[current-focus/DEV7-chat-ai-reminders|DEV7 Task Pack]] — chat sidebar, tag engine
-- [[current-focus/DEV8-documents-github-ide|DEV8 Task Pack]] — context engine, agent entitlement
+- [[current-focus/DEV7-chat-ai-reminders|DEV7 Task Pack]] - chat sidebar, tag engine
+- [[current-focus/DEV8-documents-github-ide|DEV8 Task Pack]] - context engine, agent entitlement
 - [[database/schemas/ide-extension|IDE Extension Schema]]
-- [[modules/agent-gateway/overview|Agent Gateway]] — registered_agents, install jobs
-- [[modules/work-management/chat|WMS Chat]] — channels, messages
+- [[modules/agent-gateway/overview|Agent Gateway]] - registered_agents, install jobs
+- [[modules/work-management/chat|WMS Chat]] - channels, messages
 - [[Userflow/IDE-Extension/ide-install-flow|IDE Extension Install + Auth Flow]]
 - [[Userflow/IDE-Extension/tag-engine-flow|IDE Tag Engine Flow]]
 - [[Userflow/IDE-Extension/context-detection-flow|IDE Context Detection Flow]]

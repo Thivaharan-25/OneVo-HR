@@ -1,4 +1,4 @@
-# Security Implementation: ONEVO
+﻿# Security Implementation: ONEVO
 
 **Last Updated:** 2026-04-27
 
@@ -7,7 +7,7 @@
 ## Password Hashing
 
 **Library:** `BCrypt.Net-Next`
-**WorkFactor:** 12 (non-negotiable — never lower in production)
+**WorkFactor:** 12 (non-negotiable - never lower in production)
 **Interface:** `IPasswordHasher` in `ONEVO.Application/Common/ServiceInterfaces/`
 **Implementation:** `ONEVO.Infrastructure/Identity/PasswordHasher.cs`
 
@@ -37,9 +37,9 @@ tokenValidationParameters = new TokenValidationParameters
 {
     ValidateIssuer = true,
     ValidateAudience = true,
-    ValidateLifetime = true,          // ← must be true
+    ValidateLifetime = true,          // <- must be true
     ValidateIssuerSigningKey = true,
-    ClockSkew = TimeSpan.Zero,        // ← no grace window
+    ClockSkew = TimeSpan.Zero,        // <- no grace window
     IssuerSigningKey = new SymmetricSecurityKey(
         Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")!))
 };
@@ -80,10 +80,10 @@ public interface IEncryptionService
 **Fields that must be encrypted:**
 - `Employee`: NIC number, passport number, bank account number
 - `SalaryHistory`: salary amount
-- `VerificationRequest`: biometric hash
+- `VerificationRequest`: biometric template hash/reference metadata
 - `SmtpConfig`: SMTP password
 
-Applied via EF Core **value converters** in `IEntityTypeConfiguration<T>` — encryption is transparent to handlers.
+Applied via EF Core **value converters** in `IEntityTypeConfiguration<T>` - encryption is transparent to handlers.
 
 **Encryption key:** Azure Key Vault in production (`ENCRYPTION_KEY` env var in dev).
 
@@ -109,15 +109,15 @@ modelBuilder.Entity<T>().HasQueryFilter(
 
 ```csharp
 // Controller endpoint
-[RequirePermission("leave:approve")]
+[RequirePermission("time_off:approve")]
 public async Task<IActionResult> ApproveLeave(...)
 
 // Middleware reads backend-held session/auth claims
 // Permission format: "{resource}:{action}"
-// Examples: "leave:approve", "employees:write", "payroll:run"
+// Examples: "time_off:approve", "employees:write", "payroll:run"
 ```
 
-Missing permission → `ForbiddenException` → `ExceptionHandlerMiddleware` → HTTP 403 RFC 7807.
+Missing permission -> `ForbiddenException` -> `ExceptionHandlerMiddleware` -> HTTP 403 RFC 7807.
 
 ---
 
@@ -130,8 +130,8 @@ Missing permission → `ForbiddenException` → `ExceptionHandlerMiddleware` →
   "type": "https://tools.ietf.org/html/rfc7807",
   "title": "Validation Error",
   "status": 422,
-  "detail": "Leave request dates are invalid.",
-  "instance": "/api/v1/leave/requests",
+  "detail": "Time Off request dates are invalid.",
+  "instance": "/api/v1/time-off/requests",
   "errors": { "StartDate": ["Must be in the future"] }
 }
 ```

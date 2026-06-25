@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Bidirectional SignalR command channel that enables the server to push commands to desktop agents in real-time. Primary use cases: on-demand screenshot/photo capture triggered by managers, and monitoring lifecycle control triggered by workforce-presence events.
+Bidirectional SignalR command channel that enables the server to push commands to desktop agents in real-time. Primary use cases: on-demand screenshot/photo capture triggered by authorized users, auto-deviation screenshot capture triggered by monitoring, and monitoring lifecycle control triggered by time-attendance events.
 
 ## Architecture
 
@@ -59,8 +59,8 @@ public class AgentCommandHub : Hub
 
 | Type | Trigger | Employee Notification | Result |
 |:-----|:--------|:---------------------|:-------|
-| `capture_screenshot` | Manager clicks "Request Screenshot" on alert | "Your manager has requested a screen capture" (3s delay) | Screenshot uploaded to storage, URL in result_json |
-| `capture_photo` | Manager clicks "Request Photo" on alert | "Your manager has requested identity verification" (opens camera window) | Photo uploaded, URL in result_json |
+| `capture_screenshot` | Authorized user clicks "Request Screenshot" or monitoring raises auto-deviation capture | "A screen capture is required by your monitoring policy" (3s delay) | Screenshot uploaded to storage, URL in result_json |
+| `capture_photo` | Authorized user clicks "Request Photo", or identity verification requires clock-in/clock-out/absence-detected photo | "Identity verification is required" (opens camera window) | Photo uploaded, URL in result_json. Identity Verification records `delivered_at` on command delivery, `submitted_at` on completion. |
 | `start_monitoring` | `PresenceSessionStarted` event (clock-in) | None (expected system behavior) | Collectors begin |
 | `stop_monitoring` | `PresenceSessionEnded` event (clock-out) | None | Collectors stop, buffer flushed |
 | `pause_monitoring` | `BreakStarted` event | "Monitoring paused for break" | Collectors pause, NO data captured |
@@ -73,12 +73,12 @@ public class AgentCommandHub : Hub
 - **Agent-facing hub** uses Device JWT authentication
 - **Command audit:** Every command is logged in `agent_commands` table with `requested_by` (who initiated)
 - **Expiry:** Commands expire after 5 minutes if not delivered. Manager must re-request.
-- **Rate limit:** Max 10 capture commands per agent per hour (prevent harassment)
+- **Rate limit:** Max 10 on-demand capture commands per agent per hour (prevent harassment). Auto-deviation capture is separately deduplicated by source event/rule.
 
 ## Domain Event Handlers
 
 ```csharp
-// Listen to workforce-presence events and translate to agent commands
+// Listen to time-attendance events and translate to agent commands
 public class PresenceToAgentCommandHandler :
     INotificationHandler<PresenceSessionStarted>,
     INotificationHandler<PresenceSessionEnded>,
@@ -98,7 +98,7 @@ public class PresenceToAgentCommandHandler :
     // ... similar for other events
 }
 
-// Listen to exception-engine capture requests
+// Listen to monitoring/verification capture requests (Phase 1: direct module events; Phase 2: Exception Engine)
 public class RemoteCaptureCommandHandler : INotificationHandler<RemoteCaptureRequested>
 {
     public async Task Handle(RemoteCaptureRequested notification, CancellationToken ct)

@@ -1,4 +1,4 @@
-# SignalR Real-Time — End-to-End Logic
+﻿# SignalR Real-Time - End-to-End Logic
 
 **Module:** Notifications
 **Feature:** SignalR Real-Time Push
@@ -10,7 +10,7 @@
 ### Flow
 
 ```
-Domain event published (e.g., ExceptionAlertCreated)
+Domain event published (e.g., MonitoringAlertCreated)
   -> NotificationEventHandler
     -> 1. Resolve target users/roles
     -> 2. For each target user:
@@ -20,8 +20,8 @@ Domain event published (e.g., ExceptionAlertCreated)
 
 SignalR Channels:
   -> notifications-{userId}: Per-user notifications
-  -> exception-alerts: Exception alerts (authorized resolver outputs only)
-  -> workforce-live: Live workforce status updates
+  -> notifications-{userId}: Phase 1 monitoring/attendance alerts (authorized resolver outputs only)
+  -> monitoring-live: Live monitoring status updates
   -> agent-status: Agent online/offline status
 ```
 

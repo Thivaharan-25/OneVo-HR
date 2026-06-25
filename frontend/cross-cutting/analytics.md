@@ -1,4 +1,4 @@
-# Product Analytics & Event Tracking
+﻿# Product Analytics & Event Tracking
 
 ## Strategy
 
@@ -25,9 +25,9 @@ Track user behavior to understand feature adoption, identify UX friction, and in
 |:------|:-----------|:-----------|
 | `employee.created` | Employee created | `{ department, role }` |
 | `employee.viewed` | Employee detail page opened | `{ source: 'list' \| 'search' }` |
-| `leave.requested` | Leave request submitted | `{ leaveType, duration }` |
-| `leave.approved` | Leave approved | `{ responseTimeMs }` |
-| `leave.rejected` | Leave rejected | `{ responseTimeMs }` |
+| `time_off.requested` | Time off request submitted | `{ timeOffType, duration }` |
+| `time_off.approved` | Time off approved | `{ responseTimeMs }` |
+| `time_off.rejected` | Time off rejected | `{ responseTimeMs }` |
 | `alert.viewed` | Exception alert opened | `{ severity, ruleType }` |
 | `alert.acknowledged` | Alert acknowledged | `{ timeToAckMs }` |
 | `report.exported` | Report exported | `{ reportType, format }` |
@@ -112,14 +112,14 @@ function PageTracker() {
 
 | Funnel | Steps | Goal |
 |:-------|:------|:-----|
-| Employee Onboarding | Create form opened → Step 1 → Step 2 → Step 3 → Submit | Completion rate |
-| Leave Request | Request form → Submit → Manager views → Decision | Time to decision |
-| Exception Resolution | Alert created → Viewed → Acknowledged → Resolved | Time to resolution |
-| Search to Action | Search → Result clicked → Action taken | Search effectiveness |
+| Employee Onboarding | Create form opened -> Step 1 -> Step 2 -> Step 3 -> Submit | Completion rate |
+| Time Off Request | Request form -> Submit -> Manager views -> Decision | Time to decision |
+| Exception Resolution | Alert created -> Viewed -> Acknowledged -> Resolved | Time to resolution |
+| Search to Action | Search -> Result clicked -> Action taken | Search effectiveness |
 
 ## Related
 
-- [[frontend/cross-cutting/feature-flags|Feature Flags]] — A/B testing integration
-- [[frontend/cross-cutting/error-monitoring|Error Monitoring]] — error tracking
-- [[frontend/performance/monitoring|Performance Monitoring]] — Web Vitals
-- [[frontend/cross-cutting/security|Security]] — privacy considerations
+- [[frontend/cross-cutting/feature-flags|Feature Flags]] - A/B testing integration
+- [[frontend/cross-cutting/error-monitoring|Error Monitoring]] - error tracking
+- [[frontend/performance/monitoring|Performance Monitoring]] - Web Vitals
+- [[frontend/cross-cutting/security|Security]] - privacy considerations

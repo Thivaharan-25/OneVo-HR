@@ -1,4 +1,4 @@
-# Role Template Management Userflow
+﻿# Role Template Management Userflow
 
 ## Actor
 
@@ -6,10 +6,10 @@ Platform operator with role-template permissions.
 
 ## Global Template Journey
 
-1. Operator navigates to **Platform Management → Templates** (`/platform/templates`).
+1. Operator navigates to **Platform Management -> Templates** (`/platform/templates`).
 2. Selects the **Role** filter chip to view existing role templates. Console loads available role templates.
-3. To create: click **"+ New Template"** → Type Picker modal → select **Role** → creation form loads with permission picker grouped by module.
-4. To edit: click an existing template card → click **Edit** (or **Clone** for system templates).
+3. To create: click **"+ New Template"** -> Type Picker modal -> select **Role** -> creation form loads with permission picker grouped by module.
+4. To edit: click an existing template card -> click **Edit** (or **Clone** for system templates).
 5. Operator creates or edits the template.
 6. Backend validates permission ownership.
 7. Template is versioned and audit-logged.

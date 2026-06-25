@@ -1,8 +1,8 @@
-# Iconography
+﻿# Iconography
 
 ## Icon Library
 
-**Material Symbols** (Google) — the icon set used alongside Angular Material. Variable font-based, single HTTP request for the full library, MIT licensed.
+**Material Symbols** (Google) - the icon set used alongside Angular Material. Variable font-based, single HTTP request for the full library, MIT licensed.
 
 Add to `index.html`:
 
@@ -31,7 +31,7 @@ Use Tailwind size classes on the `<mat-icon>` element, or Angular Material's bui
 | Size | Tailwind class | Pixels | Usage |
 |:-----|:--------------|:-------|:------|
 | `xs` | `text-[12px]` | 12px | Inline with caption text, badge icons |
-| `sm` | `text-[16px]` | 16px | **Default** — buttons, menu items, table actions, form labels |
+| `sm` | `text-[16px]` | 16px | **Default** - buttons, menu items, table actions, form labels |
 | `md` | `text-[20px]` | 20px | Stat card icons, page feature icons |
 | `lg` | `text-[24px]` | 24px | Page header icons, empty state illustrations |
 | `xl` | `text-[32px]` | 32px | Feature cards, onboarding steps |
@@ -41,7 +41,7 @@ Use Tailwind size classes on the `<mat-icon>` element, or Angular Material's bui
 
 ## Icon Map by Domain
 
-### Navigation — Rail Pillar Icons
+### Navigation - Rail Pillar Icons
 
 Exact Material Symbol names for the rail pillars, in display order:
 
@@ -50,11 +50,11 @@ Exact Material Symbol names for the rail pillars, in display order:
 | Home | `home` | No |
 | Inbox | `inbox` | No |
 | People | `group` | Yes |
-| Workforce | `dashboard` | Yes |
-| Org | `account_tree` | Yes |
+| Time Off | `event_available` | Yes |
+| Time & Attendance | `schedule` | Yes |
+| Work | `work` | Yes |
 | Calendar | `calendar_month` | Yes |
-| Chat | `chat` | No |
-| Admin | `shield` | Yes |
+| Monitoring | `monitoring` | Yes |
 | Settings | `settings` | Yes |
 
 Rail icon size: **16px**, `font-variation-settings: 'FILL' 0, 'wght' 300`.
@@ -100,7 +100,7 @@ Rail icon size: **16px**, `font-variation-settings: 'FILL' 0, 'wght' 300`.
   Add Employee
 </button>
 
-<!-- Icon-only button — must have aria-label -->
+<!-- Icon-only button - must have aria-label -->
 <button mat-icon-button aria-label="Edit employee" (click)="edit()">
   <mat-icon>edit</mat-icon>
 </button>
@@ -114,7 +114,7 @@ Rail icon size: **16px**, `font-variation-settings: 'FILL' 0, 'wght' 300`.
 ### Nav Rail Item
 
 ```html
-<!-- Rail icon — size and stroke controlled via CSS custom properties -->
+<!-- Rail icon - size and stroke controlled via CSS custom properties -->
 <button class="rail-item" [class.active]="isActive()" (click)="navigate()">
   <mat-icon class="rail-icon">group</mat-icon>
   <span class="rail-label">People</span>
@@ -148,8 +148,8 @@ Rail icon size: **16px**, `font-variation-settings: 'FILL' 0, 'wght' 300`.
 ```html
 <div class="flex flex-col items-center py-12">
   <mat-icon class="text-[48px] text-gray-300 mb-4">calendar_month</mat-icon>
-  <p class="text-sm font-medium">No leave requests</p>
-  <p class="text-xs text-gray-500 mt-1">Leave requests will appear here once submitted</p>
+  <p class="text-sm font-medium">No Time Off requests</p>
+  <p class="text-xs text-gray-500 mt-1">Time off requests will appear here once submitted</p>
 </div>
 ```
 
@@ -160,16 +160,16 @@ Rail icon size: **16px**, `font-variation-settings: 'FILL' 0, 'wght' 300`.
 - Status icons that convey meaning should have `aria-label`
 
 ```html
-<!-- Decorative — label already says "Approved" -->
+<!-- Decorative - label already says "Approved" -->
 <mat-icon aria-hidden="true">check_circle</mat-icon>
 <span>Approved</span>
 
-<!-- Meaningful — no text label -->
+<!-- Meaningful - no text label -->
 <mat-icon aria-label="Warning" role="img">warning</mat-icon>
 ```
 
 ## Related
 
-- [[frontend/design-system/components/component-catalog|Component Catalog]] — button icon placement
-- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — rail icon spec
-- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — status icon colours
+- [[frontend/design-system/components/component-catalog|Component Catalog]] - button icon placement
+- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] - rail icon spec
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] - status icon colours

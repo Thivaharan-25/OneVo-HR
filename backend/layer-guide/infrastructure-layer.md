@@ -1,4 +1,4 @@
-# Infrastructure Layer Guide
+﻿# Infrastructure Layer Guide
 
 Implements all interfaces defined in Application. Never referenced directly by Application.
 
@@ -13,13 +13,13 @@ Implements all interfaces defined in Application. Never referenced directly by A
 | `Identity/BCryptPasswordHasher.cs` | `IPasswordHasher` | BCrypt WorkFactor=12 |
 | `Identity/CurrentUserService.cs` | `ICurrentUser` | Reads from HttpContext JWT |
 | `Identity/SystemDateTimeProvider.cs` | `IDateTimeProvider` | Wraps DateTimeOffset.UtcNow |
-| `Caching/InMemoryCacheService.cs` | `ICacheService` | Current — Microsoft.Extensions.Caching.Memory |
-| `Caching/RedisCacheService.cs` | `ICacheService` | Future — distributed/multi-instance only |
-| `Security/NoOpEncryptionService.cs` | `IEncryptionService` | Stub — AES-256 pending |
+| `Caching/InMemoryCacheService.cs` | `ICacheService` | Current - Microsoft.Extensions.Caching.Memory |
+| `Caching/RedisCacheService.cs` | `ICacheService` | Future - distributed/multi-instance only |
+| `Security/NoOpEncryptionService.cs` | `IEncryptionService` | Stub - AES-256 pending |
 | `ExternalServices/Email/ResendSmtpEmailService.cs` | `IEmailService` | Resend SMTP |
-| `ExternalServices/Storage/R2StorageService.cs` | `IStorageService` | Future — Cloudflare R2 |
-| `BackgroundJobs/BackgroundJobService.cs` | `IBackgroundJobService` | Future — Hangfire; not yet implemented |
-| `RealTime/SignalRNotificationDispatcher.cs` | `INotificationDispatcher` | Future — SignalR; not yet implemented |
+| `ExternalServices/Storage/R2StorageService.cs` | `IStorageService` | Future - Cloudflare R2 |
+| `BackgroundJobs/BackgroundJobService.cs` | `IBackgroundJobService` | Future - Hangfire; not yet implemented |
+| `RealTime/SignalRNotificationDispatcher.cs` | `INotificationDispatcher` | Future - SignalR; not yet implemented |
 | `Security/PermissionResolver.cs` | `IPermissionResolver` | Resolves user permissions |
 | `Security/PermissionVersionService.cs` | `IPermissionVersionService` | Tracks permission version |
 | `Security/TenantPermissionCatalogService.cs` | `ITenantPermissionCatalogService` | Tenant permission catalog |
@@ -31,10 +31,10 @@ Implements all interfaces defined in Application. Never referenced directly by A
 ## EF interceptors (run inside SaveChangesAsync)
 
 ```
-AuditableEntityInterceptor    → sets CreatedAt, UpdatedAt, CreatedById automatically
-SoftDeleteInterceptor         → converts Delete operations to IsDeleted=true
-TenantRlsInterceptor          → sets app.current_tenant_id RLS variable on every connection open
-DomainEventDispatchInterceptor → collects entity.DomainEvents, calls IPublisher.Publish after save
+AuditableEntityInterceptor    -> sets CreatedAt, UpdatedAt, CreatedById automatically
+SoftDeleteInterceptor         -> converts Delete operations to IsDeleted=true
+TenantRlsInterceptor          -> sets app.current_tenant_id RLS variable on every connection open
+DomainEventDispatchInterceptor -> collects entity.DomainEvents, calls IPublisher.Publish after save
 ```
 
 ## DependencyInjection.cs
@@ -67,7 +67,7 @@ public static IServiceCollection AddInfrastructure(
     services.AddScoped<IPermissionResolver, PermissionResolver>();
     services.AddScoped<IPermissionVersionService, PermissionVersionService>();
     services.AddScoped<ITenantPermissionCatalogService, TenantPermissionCatalogService>();
-    services.AddScoped<IEncryptionService, NoOpEncryptionService>(); // stub — AES pending
+    services.AddScoped<IEncryptionService, NoOpEncryptionService>(); // stub - AES pending
 
     // Email
     services.AddScoped<IEmailService, ResendSmtpEmailService>();
@@ -78,7 +78,7 @@ public static IServiceCollection AddInfrastructure(
     services.AddScoped<IDefaultRoleSeeder, DefaultRoleSeeder>();
     services.AddScoped<ITenantOwnerInvitationService, TenantOwnerInvitationService>();
 
-    // In-memory caching (current — Microsoft.Extensions.Caching.Memory):
+    // In-memory caching (current - Microsoft.Extensions.Caching.Memory):
     services.AddScoped<ICacheService, InMemoryCacheService>();
 
     // Pending (not yet implemented):

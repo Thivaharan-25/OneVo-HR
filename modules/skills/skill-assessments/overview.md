@@ -7,7 +7,7 @@
 
 ## Phase Rule
 
-This feature is Phase 2 for quiz-based skill assessments. Basic manager validation of employee skill requests is Phase 1 and belongs to [[modules/skills/employee-skills/overview|Employee Skills]].
+This feature is Phase 2 for quiz-based skill assessments. Basic eligible-validator validation of employee skill requests is Phase 1 and belongs to [[modules/skills/employee-skills/overview|Employee Skills]].
 
 ## Purpose
 
@@ -32,13 +32,12 @@ Employee responses: `employee_id`, `question_id`, `selected_option_id`, `text_an
 
 ## Related
 
-- [[skills|Skills Module]] â€” parent module
-- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] â€” skills that assessments evaluate
-- [[modules/skills/employee-skills/overview|Employee Skills]] â€” skill records updated on assessment completion
-- [[modules/skills/development-plans/overview|Development Plans]] â€” plans that include assessment milestones
-- [[infrastructure/multi-tenancy|Multi Tenancy]] â€” tenant-scoped assessment questions and responses
-- [[backend/messaging/event-catalog|Event Catalog]] â€” AssessmentSubmitted events
-- [[backend/messaging/error-handling|Error Handling]] â€” invalid response types and scoring errors
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] â€” implementation task
-
+- [[skills|Skills Module]] - parent module
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] - skills that assessments evaluate
+- [[modules/skills/employee-skills/overview|Employee Skills]] - skill records updated on assessment completion
+- [[modules/skills/development-plans/overview|Development Plans]] - plans that include assessment milestones
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - tenant-scoped assessment questions and responses
+- [[backend/messaging/event-catalog|Event Catalog]] - AssessmentSubmitted events
+- [[backend/messaging/error-handling|Error Handling]] - invalid response types and scoring errors
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - implementation task
 

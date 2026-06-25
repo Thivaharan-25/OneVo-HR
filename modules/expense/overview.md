@@ -13,7 +13,7 @@
 
 ## Purpose
 
-Manages expense categories, claims, and individual line items. Uses the [[modules/shared-platform/overview|Shared Platform]] workflow engine for approval routing.
+Manages expense categories, claims, and individual line items. Expense approval workflow routing is Phase 2; Phase 1 task/document approvals use direct reviewer routing and Notifications where enabled.
 
 ---
 
@@ -23,7 +23,7 @@ Manages expense categories, claims, and individual line items. Uses the [[module
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee context |
 | **Depends on** | [[modules/infrastructure/overview\|Infrastructure]] | `IFileService` | Receipt uploads |
-| **Depends on** | [[modules/shared-platform/overview\|Shared Platform]] | Workflow engine | Approval routing |
+| **Depends on** | [[modules/notifications/overview\|Notifications]] | Notification delivery | Phase 2 approval notifications; no Phase 1 dependency |
 
 ---
 
@@ -94,7 +94,7 @@ API endpoints:
 
 ## Domain Events (intra-module - MediatR)
 
-> These events are published and consumed within this module only. They never leave the module.
+> These events are published and consumed within this module only. They never cross the module boundary.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
@@ -132,14 +132,14 @@ API endpoints:
 ## Features
 
 - [[modules/expense/expense-categories/overview|Expense Categories]] - Category definitions with per-claim limits and receipt requirements
-- [[modules/expense/expense-claims/overview|Expense Claims]] - Claims with line items, approval workflow via [[modules/shared-platform/overview|Shared Platform]]
+- [[modules/expense/expense-claims/overview|Expense Claims]] - Phase 2 claims with line items and approval routing reference
 
 ---
 
 ## Related
 
 - [[infrastructure/multi-tenancy|Multi Tenancy]] - All expense data is tenant-scoped
-- [[backend/messaging/error-handling|Error Handling]] - Workflow engine handles approval routing
+- [[backend/messaging/error-handling|Error Handling]] - Phase 2 approval routing error patterns
 - [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/core-hr/overview|Core Hr]], [[modules/shared-platform/overview|Shared Platform]]

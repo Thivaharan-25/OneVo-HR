@@ -1,4 +1,4 @@
-# Topbar Architecture
+﻿# Topbar Architecture
 
 ## Layout
 
@@ -8,30 +8,35 @@
 
 The topbar must preserve tenant context, legal entity context where relevant, search, notifications, and profile access across all Phase 1 breakpoints.
 
-## Left - Tenant / Legal Entity Context
+## Left - Tenant / Company Context
 
 ### What It Shows
 
-The tenant the user is signed into and, when relevant, the active legal entity inside that tenant.
+The tenant the user is signed into and, when relevant, the active Company context inside that tenant. Internally, Company maps to a `legal_entities` record.
 
 ### Rules
 
 - Tenant remains the subscription, branding, authentication, and audit boundary.
-- Legal entity is the company/employer context for departments, positions, onboarding, employee import, transfers, policy assignment, and scoped reporting.
-- Single-company tenants can hide the legal entity selector and default all legal-entity-scoped forms to the only legal entity.
-- Multi-company tenants can show a legal entity selector in Setup / Control and permission-scoped operational views.
-- Cross-legal-entity views must be permission-scoped and audit logged.
+- Company is the employer context for departments, positions, onboarding, employee import, transfers, policy assignment, and scoped reporting.
+- Single-company tenants can hide the Company selector and default all Company-scoped forms to the only Company.
+- Multi-company tenants can show a Company selector in setup and permission-scoped operational route groups inside customer-app.
+- Cross-company views must be permission-scoped and audit logged.
+- The dropdown is a Company context switcher. Users switch Company context there.
+- **Add company** is launched from this dropdown.
+- Settings > General is Company-scoped. Switching Company reloads the General page for the selected Company.
+- Do not create a separate entity-settings destination. Company settings are edited from Settings > General after selecting a Company.
+- If selected Company = `All`, Company-scoped forms such as Settings > General are hidden or rendered as a read-only empty state. `All` is a viewing context, not an editing context.
 
 ### Dropdown Example
 
 ```text
 Acme Group / Acme Sri Lanka Pvt Ltd
 -----------------------------------
-✓ Acme Sri Lanka Pvt Ltd
+[done] Acme Sri Lanka Pvt Ltd
   Acme UK Ltd
-  All legal entities
-  Legal entity settings
+  All companies
 -----------------------------------
+  Add company
   Request add-on / license increase
 ```
 
@@ -41,16 +46,18 @@ Acme Group / Acme Sri Lanka Pvt Ltd
 |---|---|
 | Any authenticated user | Sees current tenant/legal entity label |
 | `org:read` | Can see legal entity context where relevant |
-| `org:manage` | Can open Legal Entity Settings in Setup / Control Application |
+| `org:manage` | Can switch Company context, add Company, and edit Company-scoped General settings for the selected Company |
 | `settings:billing` | Can open add-on / license request entry |
 
 ### Component
 
-`TenantLegalEntityContextMenu` lives in the topbar layout component.
+`TenantCompanyContextMenu` lives in the topbar layout component.
+
+Company creation is not an Org sub-sidebar item. In multi-company mode, admins use the topbar tenant/company dropdown and click **Add company**. In single-company mode, the default Company is created during tenant setup and the selector may be hidden.
 
 ### Data Source
 
-Tenant context comes from authenticated session metadata. Legal entity entries come from `legal_entities` filtered by the user's permissions and scopes.
+Tenant context comes from authenticated session metadata. Company entries come from `legal_entities` filtered by the user's permissions and scopes.
 
 ## Center - Search
 

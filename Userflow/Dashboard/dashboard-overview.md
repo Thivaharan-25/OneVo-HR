@@ -1,8 +1,8 @@
-# Dashboard Overview
+﻿# Dashboard Overview
 
 **Area:** Dashboard  
 **Trigger:** User successfully signs in and is redirected to `/dashboard` (every authenticated session)  
-**Required Permission(s):** Any of `employees:read`, `workforce:view`, `leave:read` (users with none are redirected to a "no access" page)  
+**Required Permission(s):** Any of `employees:read`, `monitoring:view`, `time_off:read` (users with none are redirected to a "no access" page)  
 **Related Permissions:** All - each dashboard zone has its own permission gate; the set of visible zones changes per user
 
 ---
@@ -11,7 +11,7 @@
 
 - User has a valid cookie-backed ONEVO web session
 - User's account is active
-- User has at least one read permission (`employees:read`, `workforce:view`, or `leave:read`)
+- User has at least one read permission (`employees:read`, `monitoring:view`, or `time_off:read`)
 
 ---
 
@@ -25,9 +25,9 @@
   2. `GET /api/v1/users/me/dashboard-prefs` - returns saved zone order + added widgets
   3. `GET /api/v1/dashboard/exceptions/active` - Zone 1 data (if WI module enabled)
 - **Backend:**
-  - `DashboardService.GetEnabledZonesAsync()` - checks `permissions[]`, `granted_modules[]`, and `hierarchy_scope` from backend-held session state; returns only zone IDs the user may see
+  - `DashboardService.GetEnabledZonesAsync()` - checks effective permissions, granted modules, and backend-resolved employee visibility; returns only zone IDs the user may see
   - `UserDashboardPrefsRepository.GetAsync()` - fetches saved prefs; returns defaults if none saved
-  - `ExceptionService.GetActiveCountAsync()` - returns exception count scoped by `hierarchy_scope`
+  - `ExceptionService.GetActiveCountAsync()` - returns exception count scoped by the backend employee-visibility predicate
 - **Validation:** HttpOnly session cookie validated on every request via middleware. Zone list is server-authoritative - frontend never renders a zone the server did not return
 - **DB:** `user_dashboard_prefs`, `exceptions` (for Zone 1)
 
@@ -41,57 +41,55 @@
 
 ### Step 3: Exception Alert Strip Renders (Zone 1 - conditional)
 
-- **UI:** Rendered only if `enabledZones.includes('exception-alert')`. Pinned above all other zones. Red-tinted strip with `border-left: 3px solid var(--status-critical)`. Content: "N active exceptions · [name] idle Xmin · [name] low activity". Two actions: `Review Now` (-> `/workforce/exceptions`) and `Dismiss` (hides strip until next 30s refresh cycle). If exception count is 0, strip is hidden
+- **UI:** Rendered only if `enabledZones.includes('exception-alert')`. Pinned above all other zones. Red-tinted strip with `border-left: 3px solid var(--status-critical)`. Content: "N active exceptions , [name] idle Xmin , [name] low activity". Two actions: `Review Now` (-> `/monitoring/exceptions`) and `Dismiss` (hides strip until next 30s refresh cycle). If exception count is 0, strip is hidden
 - **API:** `GET /api/v1/dashboard/exceptions/active` (already called in Step 1; refreshes every 30s)
   ```json
-  { "count": 3, "preview": "Ahmed idle 52min · Sara low activity" }
+  { "count": 3, "preview": "Ahmed idle 52min , Sara low activity" }
   ```
-- **Backend:** `ExceptionService.GetActiveCountAsync()` - scoped to `hierarchy_scope`; requires `workforce:view` + `workforce_intelligence` module
-- **Validation:** Condition: `granted_modules.includes("workforce_intelligence") && openExceptions > 0`
+- **Backend:** `ExceptionService.GetActiveCountAsync()` - scoped by the backend employee-visibility predicate; requires `monitoring:view` + `monitoring` module
+- **Validation:** Condition: `granted_modules.includes("monitoring") && openExceptions > 0`
 - **DB:** `exceptions`
 
 ### Step 4: KPI Cards Render (Zone 2 - conditional)
 
 - **UI:** 4-column responsive grid (collapses to 2-col on narrow viewports). Each card: 2px top color bar, large number (26px, weight 900), small delta badge (updown vs yesterday). Cards visible only if user has the specific permission for that card:
-  - Active Now: `workforce:view` + WI module -> green bar
-  - On Leave Today: `leave:read` -> info blue bar
-  - Open Exceptions: `workforce:view` + WI module -> red bar
-  - Avg Productivity: `workforce:view` + WI module -> cyan bar
-  Absent cards leave no empty slot - grid reflows
-- **API:** `GET /api/v1/dashboard/kpis?scope={hierarchy_scope}`
+  - Active Now: `monitoring:view` + WI module -> green bar
+  - On Time Off Today: `time_off:read` -> info blue bar
+  - Open Exceptions: `monitoring:view` + WI module -> red bar
+  - Avg Productivity: `monitoring:view` + WI module -> cyan bar
+  Absent cards time_off no empty slot - grid reflows
+- **API:** `GET /api/v1/dashboard/kpis`
   ```json
   {
     "cards": [
-      { "id": "active-now", "label": "My Team Active", "value": 23, "delta": 2, "trend": "up", "color": "active" },
-      { "id": "on-leave", "label": "On Leave Today", "value": 4, "delta": -1, "trend": "down", "color": "info" }
+      { "id": "on-time_off", "label": "On Time Off Today", "value": 4, "delta": -1, "trend": "down", "color": "info" }
     ]
   }
   ```
-- **Backend:** `DashboardService.GetKpisAsync()` - `hierarchy_scope: "subordinates"` relabels "Active Now" -> "My Team Active" and scopes count to subordinate tree. Returns only cards the user has permission for
 - **Validation:** Server returns only permitted cards; frontend renders what it receives
-- **DB:** `employees`, `leave_requests`, `exceptions`, `productivity_snapshots`
+- **DB:** `employees`, `time_off_requests`, `exceptions`, `productivity_snapshots`
 
 ### Step 5: Pending Actions Render (Zone 3 - conditional)
 
-- **UI:** Panel with action rows, each showing icon, label, count badge, and `View ->` link. Shown if user has any approval permission. If user has no approval permissions: self-service mode - shows own leave balance, own payslip status, own expense claims status. Zone never disappears entirely for any authenticated user
+- **UI:** Panel with action rows, each showing icon, label, count badge, and `View ->` link. Shown if user has any approval permission. If user has no approval permissions: self-service mode - shows own time off balance, own payslip status, own expense claims status. Zone never disappears entirely for any authenticated user
 - **API:** `GET /api/v1/dashboard/pending-actions`
   ```json
   {
     "selfServiceMode": false,
     "rows": [
-      { "type": "leave_request", "label": "Leave Requests", "count": 5, "href": "/inbox?type=leave" },
+      { "type": "time_off_request", "label": "Time Off Requests", "count": 5, "href": "/inbox?type=time_off" },
       { "type": "expense_claim", "label": "Expense Claims", "count": 2, "href": "/inbox?type=expense" }
     ]
   }
   ```
-- **Backend:** `DashboardService.GetPendingActionsAsync()` - checks for any `*:approve` permission. If none: returns self-service items. Rows are filtered by individual permission (`leave:approve`, `expense:approve`, `employees:write`, `payroll:approve`)
+- **Backend:** `DashboardService.GetPendingActionsAsync()` - checks for any `*:approve` permission. If none: returns self-service items. Rows are filtered by individual permission (`time_off:approve`, `expense:approve`, `employees:write`, `payroll:approve`)
 - **Validation:** Self-service mode activated server-side - never requires a separate frontend permission check
-- **DB:** `leave_requests`, `expense_claims`, `employees` (for onboarding), `payroll_runs`
+- **DB:** `time_off_requests`, `expense_claims`, `employees` (for onboarding), `payroll_runs`
 
-### Step 6: Workforce Live Renders (Zone 4 - conditional)
+### Step 6: Monitoring Live Renders (Zone 4 - conditional)
 
-- **UI:** Rendered only if `enabledZones.includes('workforce-live')`. Live presence bar showing Active / Idle / Alert / Offline counts as colored segments. Top 5 employee rows with status dot and productivity score. "Full view ->" link to `/workforce`. Data updates every 30s (polling). If Zone 4 is absent: Zone 3 (Pending Actions) expands to full width via CSS class change (`grid-template-columns: 1fr`)
-- **API:** `GET /api/v1/dashboard/workforce-live` - polling `refreshInterval: 30_000`
+- **UI:** Rendered only if `enabledZones.includes('monitoring-live')`. Live presence bar showing Active / Idle / Alert / Offline counts as colored segments. Top 5 employee rows with status dot and productivity score. "Full view ->" link to `/monitoring`. Data updates every 30s (polling). If Zone 4 is absent: Zone 3 (Pending Actions) expands to full width via CSS class change (`grid-template-columns: 1fr`)
+- **API:** `GET /api/v1/dashboard/monitoring-live` - polling `refreshInterval: 30_000`
   ```json
   {
     "presence": { "active": 89, "idle": 12, "alert": 3, "offline": 5 },
@@ -101,13 +99,13 @@
     "totalTracked": 109
   }
   ```
-- **Backend:** `WorkforceService.GetLivePresenceAsync()` - requires `workforce:view` + `workforce_intelligence` module. `IHierarchyScope` scopes to subordinates if `hierarchy_scope != "all"`
+- **Backend:** `MonitoringPresenceService.GetLivePresenceAsync()` - requires `monitoring:view` + `monitoring` module. Backend applies the employee-visibility predicate resolved from Org Structure management coverage.
 - **Validation:** Zone only rendered if server returned it in `enabledZones`
 - **DB:** `activity_snapshots`, `presence_records`
 
 ### Step 7: Trends & Charts Render (Zone 5 - conditional)
 
-- **UI:** Tab switcher - `Productivity · Attendance · Leave`. Each tab visible only if permission allows. Default active tab: Productivity (if WI module present) or headcount/leave distribution (people-operations fallback). Chart: Recharts area chart, violet gradient fill. Text summary above chart ("Productivity averaged 87% this week, up 3%"). Shared date range selector
+- **UI:** Tab switcher - `Productivity , Attendance , Time Off`. Each tab visible only if permission allows. Default active tab: Productivity (if WI module present) or headcount/time off distribution (people-operations fallback). Chart: Recharts area chart, violet gradient fill. Text summary above chart ("Productivity averaged 87% this week, up 3%"). Shared date range selector
 - **API:** `GET /api/v1/dashboard/trends?type=productivity&days=14`
   ```json
   {
@@ -116,14 +114,14 @@
     "unit": "%"
   }
   ```
-- **Backend:** `AnalyticsService.GetTrendAsync(type, days, user)` - returns only the type the user has permission for. `workforce:view` for productivity/attendance; `leave:read` for leave
+- **Backend:** `AnalyticsService.GetTrendAsync(type, days, user)` - returns only the type the user has permission for. `monitoring:view` for productivity/attendance; `time_off:read` for time_off
 - **Validation:** Backend returns 403 if `type` requested is outside user's permissions
-- **DB:** `productivity_snapshots`, `attendance_records`, `leave_requests`
+- **DB:** `productivity_snapshots`, `attendance_records`, `time_off_requests`
 
-### Step 8: Workforce Events Render (Zone 6 - conditional)
+### Step 8: Monitoring Events Render (Zone 6 - conditional)
 
-- **UI:** List of upcoming workforce events - NOT personal calendar meetings. Event types: new hires starting this week, payroll cutoff deadlines, performance review cycles closing, bulk leave periods, contract renewals due within 7 days. Each event: icon, title, date chip, optional link. "Calendar ->" link navigates to `/calendar`
-- **API:** `GET /api/v1/dashboard/workforce-events`
+- **UI:** List of upcoming monitoring events - NOT personal calendar meetings. Event types: new hires starting this week, payroll cutoff deadlines, performance review cycles closing, bulk time off periods, contract renewals due within 7 days. Each event: icon, title, date chip, optional link. "Calendar ->" link navigates to `/calendar`
+- **API:** `GET /api/v1/dashboard/monitoring-events`
   ```json
   {
     "events": [
@@ -132,52 +130,47 @@
     ]
   }
   ```
-- **Backend:** `CalendarService.GetWorkforceEventsAsync(tenantId, days: 14)` - pulls from employee data, payroll schedule, performance cycles, leave records
-- **Validation:** Requires `employees:read` OR `leave:read`
-- **DB:** `employees`, `payroll_runs`, `performance_cycles`, `leave_requests`
+- **Backend:** `CalendarService.GetWorkforceEventsAsync(tenantId, days: 14)` - pulls from employee data, payroll schedule, performance cycles, Time Off records
+- **Validation:** Requires `employees:read` OR `time_off:read`
+- **DB:** `employees`, `payroll_runs`, `performance_cycles`, `time_off_requests`
 
 ### Step 9: Optional Widgets Render (if added via customization)
 
 - **UI:** Any widgets the user added from the Widget Library render after the default zones in their saved position. Each is permission-gated - if permission was revoked since widget was added, widget is silently omitted (no error)
 - **API:** Each widget has its own endpoint (e.g., `GET /api/v1/dashboard/widgets/top-performers`)
-- **Backend:** Widget endpoints follow same pattern - `[RequirePermission("...")]`, `IHierarchyScope` applied
+- **Backend:** Widget endpoints follow same pattern - `[RequirePermission("...")]`, backend employee-visibility predicate applied where the widget reads employee data
 - **Validation:** Widget IDs in `addedWidgets` that are no longer permitted are dropped silently
 - **DB:** Varies per widget
 
 ---
 
-## Scope Behaviour by `hierarchy_scope`
+## Employee Visibility Behaviour
 
-| `hierarchy_scope` | KPI numbers | Workforce Live | Pending Actions |
-|:-----------------|:------------|:---------------|:----------------|
-| `self` | Own data only (leave balance, own score) | Not shown | Own leave/expense requests only (self-service mode) |
-| `subordinates` | Team totals (relabelled "My Team...") | Team's live presence | Team's approvals queued |
-| `all` | Org-wide | Org-wide | All pending org approvals |
+| Resolved visibility | KPI numbers | Monitoring Live | Pending Actions |
+|:--------------------|:------------|:----------------|:----------------|
+| No management coverage | Own data only where the feature supports self-service | Not shown | Own Time Off/expense requests only |
+| Selected departments / selected positions | Employees inside the resolved boundaries | Employees inside the resolved boundaries | Pending actions inside the resolved boundaries |
+| Entire company | Company-wide within the active Company context | Company-wide within the active Company context | Company-wide pending approvals |
 
 ---
 
 ## Variations
 
-### Authorized Leave/People Operations User (no WI module)
+### Authorized Time Off/People Operations User (no WI module)
 - Zone 1 (Exception Alert Strip): absent
-- KPI cards: On Leave Today only (no Active Now, no Exceptions, no Avg Productivity)
-- Zone 4 (Workforce Live): absent - Zone 3 expands to full width
-- Zone 5 (Charts): leave distribution chart (people-operations fallback)
-- Zone 6 (Workforce Events): present
+- KPI cards: On Time Off Today only (no Active Now, no Exceptions, no Avg Productivity)
+- Zone 4 (Monitoring Live): absent - Zone 3 expands to full width
+- Zone 5 (Charts): time_off distribution chart (people-operations fallback)
+- Zone 6 (Monitoring Events): present
 
-### Team Lead (WI module + `hierarchy_scope: subordinates`)
-- Zone 1: present (team exceptions only)
-- KPI cards: relabelled - "My Team Active", "My Team On Leave"
-- Zone 4: team's live presence only
-- Zone 5: team productivity trend
 
-### Employee (`hierarchy_scope: self`, no approval permissions)
+### Employee (no management coverage, no approval permissions)
 - Zone 1: absent
-- KPI cards: absent (no `workforce:view` or `leave:read` at org level)
-- Zone 3: self-service mode - own leave balance, payslip status
+- KPI cards: absent (no `monitoring:view` or `time_off:read` at org level)
+- Zone 3: self-service mode - own time off balance, payslip status
 - Zones 4, 5, 6: absent
 
-### Super Admin (`hierarchy_scope: all`, all modules)
+### Super Admin (Entire company visibility, all modules)
 - All 6 zones rendered
 - All KPI cards at org-wide scope
 - All chart tabs available
@@ -209,7 +202,7 @@
 - [[Userflow/Auth-Access/login-flow|Login Flow]] - full JWT issuance that enables this page
 - [[Userflow/Dashboard/dashboard-customization|Dashboard Customization]] - user reorders and adds widgets
 - [[Userflow/Exception-Engine/alert-review|Alert Review]] - Zone 1 "Review Now" navigates here
-- [[Userflow/Workforce-Intelligence/live-dashboard|Live Dashboard]] - Zone 4 "Full view ->" navigates here
+- [[Userflow/Monitoring/live-dashboard|Live Dashboard]] - Zone 4 "Full view ->" navigates here
 - [[Userflow/Calendar/calendar-event-creation|Calendar]] - Zone 6 "Calendar ->" navigates here
 - [[Userflow/Notifications/inbox|Inbox]] - Zone 3 action rows link to Inbox filtered views
 
@@ -217,13 +210,13 @@
 
 ## Module References
 
-- [[frontend/cross-cutting/authorization|Authorization]] - `hasPermission()`, `useAuth()`, `IHierarchyScope`
+- [[frontend/cross-cutting/authorization|Authorization]] - `hasPermission()`, `useAuth()`, backend employee-visibility predicates
 - [[modules/shared-platform/overview|Shared Platform]] - `DashboardService`, `UserDashboardPrefsRepository`, `GetEnabledZonesAsync()`, `GetKpisAsync()` (dashboard prefs live here; no separate Dashboard module exists)
 - [[modules/exception-engine/overview|Exception Engine]] - Zone 1 exception count data
-- [[modules/workforce-presence/overview|Workforce Presence]] - Zone 4 live presence data (`presence_records`)
+- [[modules/time-attendance/overview|Time & Attendance]] - Zone 4 live presence data (`presence_records`)
 - [[modules/activity-monitoring/overview|Activity Monitoring]] - Zone 4 live activity data (`activity_snapshots`)
 - [[modules/productivity-analytics/overview|Productivity Analytics]] - Zone 5 trend data (`AnalyticsService.GetTrendAsync()`)
-- [[modules/calendar/overview|Calendar]] - Zone 6 workforce events
+- [[modules/calendar/overview|Calendar]] - Zone 6 monitoring events
 - [[modules/notifications/overview|Notifications]] - SignalR push for Zone 1 real-time updates
 
 

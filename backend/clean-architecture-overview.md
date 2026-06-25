@@ -1,6 +1,6 @@
-# Clean Architecture Overview: ONEVO
+﻿# Clean Architecture Overview: ONEVO
 
-**Canonical folder structure source:** `ONEVO-backend-folder-structure.md` — when this file and the folder structure file conflict, the folder structure file wins.
+**Canonical folder structure source:** `ONEVO-backend-folder-structure.md` - when this file and the folder structure file conflict, the folder structure file wins.
 
 **Last Updated:** 2026-05-13
 

@@ -47,26 +47,23 @@
     "lastName": "Doe",
     "roleId": "uuid",
     "departmentId": "uuid",
-    "jobFamilyLevelId": "uuid"
   }
   ```
 - **Backend:** `UserInvitationService.InviteAsync()` -> [[frontend/cross-cutting/authentication|Authentication]]
   1. Check if email already exists in tenant -> reject if so
   2. Create user record with status `invited` and a secure invitation token (SHA-256 hashed, stored in DB)
-  3. If department/job family provided: create employee profile stub
-  4. If job family level provided: load the suggested role for admin confirmation; do not override the manually selected role automatically
+  4. If position access is enabled, load the deterministic **Role granted** and **Can manage employees in** values for admin confirmation
   5. Assign the confirmed selected role to user via `user_roles`
   6. Send invitation email with link: `https://{tenantSlug}.onevo.com/accept-invite?token={token}`
   7. Invitation token expires in 72 hours
-- **Validation:** Email must be unique within tenant. Role must exist. If job family level specified, it must be valid
 - **DB:** `users` (status: `invited`), `user_roles`, `invitation_tokens`, `employees` (if department provided)
 
 ### Step 4: User Receives Invitation Email
 - **UI:** Email contains: company name and logo (from [[frontend/design-system/theming/tenant-branding|Tenant Branding]]), inviter's name, role being assigned, "Accept Invitation" button/link, expiry notice (72 hours)
 - **API:** N/A (email delivery via [[backend/notification-system|Notification System]])
 - **Backend:** `NotificationService.SendEmailAsync()` - uses tenant-branded email template
-- **Validation:** Email delivery tracked. If bounce detected, admin notified
-- **DB:** `notification_logs`
+- **Validation:** Email delivery tracked in `email_delivery_logs`. If bounce/complaint is received from Resend webhook, admin is notified and the invitation remains retryable.
+- **DB:** `email_delivery_logs`
 
 ### Step 5: User Opens Invitation
 - **UI:** Clicking the link opens the accept-invite page. The page shows tenant name, invited email, name, role, expiry, and available acceptance methods.

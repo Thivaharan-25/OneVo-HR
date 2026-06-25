@@ -1,4 +1,4 @@
-# Weekly Reports — End-to-End Logic
+﻿# Weekly Reports - End-to-End Logic
 
 **Module:** Productivity Analytics
 **Feature:** Weekly Reports
@@ -28,7 +28,7 @@ GenerateWeeklyReportsJob (Hangfire, Monday 1:00 AM)
 
 ### Key Rules
 
-- **Weekly reports aggregate from daily reports** — never from raw data.
+- **Weekly reports aggregate from daily reports** - never from raw data.
 - **Trend comparison** shows week-over-week changes in activity rate, hours, productive app time, score basis, data coverage, and productivity score where comparable.
 - **Do not compare mixed bases.** Weekly rankings and trends must not directly compare `activity_only` scores with `composite` scores.
 

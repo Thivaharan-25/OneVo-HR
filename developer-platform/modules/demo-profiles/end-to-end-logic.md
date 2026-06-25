@@ -29,7 +29,7 @@
 
 ## Demo Tenant Creation
 
-1. Super Admin creates a tenant and selects a Demo Profile, or a demo signup/provisioning flow creates a demo tenant from an active profile.
+1. Super Admin creates a tenant and selects a Demo Profile, or an approved demo request flow creates a demo tenant from an active profile.
 2. Tenant status becomes `trial`.
 3. Trial start/end dates are calculated from the profile.
 4. Tenant receives shared demo storage and AI token limits.
@@ -43,4 +43,3 @@
 3. Expired tenants move to `trial_expired`.
 4. Demo access is blocked except upgrade/support flows where policy allows.
 5. Tenant notification and audit log are written.
-

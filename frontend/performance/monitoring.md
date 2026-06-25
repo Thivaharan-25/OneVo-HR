@@ -1,10 +1,10 @@
-# Performance Monitoring
+﻿# Performance Monitoring
 
 ## Runtime Monitoring
 
 ### Web Vitals Collection
 
-Uses the `web-vitals` npm package — not any Next.js or React-specific API.
+Uses the `web-vitals` npm package - not any Next.js or React-specific API.
 
 ```typescript
 // shared/src/lib/performance/web-vitals.service.ts
@@ -69,7 +69,7 @@ export const timingInterceptor: HttpInterceptorFn = (req, next) => {
       const duration = performance.now() - start;
       if (duration > 3000) {
         console.warn('Slow API call', { url: req.url, durationMs: Math.round(duration) });
-        // Send to analytics / Sentry
+        // Send to analytics / error tracking provider
       }
     }),
   );
@@ -103,7 +103,7 @@ export class LiveDashboardComponent implements AfterViewInit {
 | p75 LCP | Web Vitals | >2.5s |
 | p75 INP | Web Vitals | >200ms |
 | p95 API latency | Timing interceptor | >3s |
-| JS error rate | Sentry Angular SDK | >1% of sessions |
+| JS error rate | Error monitoring provider - not yet selected | >1% of sessions |
 | Bundle size (initial) | Angular CLI CI | >240KB gzipped |
 | Lighthouse score | Lighthouse CI | <85 |
 
@@ -131,18 +131,18 @@ assertions:
 ### Angular DevTools
 
 - Install the [Angular DevTools](https://angular.dev/tools/devtools) browser extension
-- **Component Tree tab** — inspect component hierarchy, input/output signals, change detection state
-- **Profiler tab** — record change detection cycles, identify components with excessive re-renders
-- **Signals tab** — inspect reactive signal values and their dependencies
+- **Component Tree tab** - inspect component hierarchy, input/output signals, change detection state
+- **Profiler tab** - record change detection cycles, identify components with excessive re-renders
+- **Signals tab** - inspect reactive signal values and their dependencies
 
 ### Angular CLI Bundle Analysis
 
 ```bash
 # Generate bundle stats JSON
-ng build operations-lifecycle-app --stats-json
+ng build customer-app --stats-json
 
 # View with webpack-bundle-analyzer (works with Angular CLI esbuild output via esbuild-bundle-analyzer)
-npx esbuild-bundle-analyzer dist/operations-lifecycle-app/stats.json
+npx esbuild-bundle-analyzer dist/customer-app/stats.json
 ```
 
 This opens an interactive treemap showing chunk composition and why packages are included.
@@ -166,7 +166,7 @@ bootstrapApplication(AppComponent, {
 
 ## Related
 
-- [[frontend/performance/budget|Budget]] — performance targets and bundle budgets
-- [[frontend/architecture/rendering-strategy|Rendering Strategy]] — lazy loading and `@defer`
-- [[frontend/cross-cutting/error-monitoring|Error Monitoring]] — Sentry Angular SDK
-- [[frontend/cross-cutting/analytics|Analytics]] — product analytics
+- [[frontend/performance/budget|Budget]] - performance targets and bundle budgets
+- [[frontend/architecture/rendering-strategy|Rendering Strategy]] - lazy loading and `@defer`
+- [[frontend/cross-cutting/error-monitoring|Error Monitoring]] - error tracking provider (not yet confirmed)
+- [[frontend/cross-cutting/analytics|Analytics]] - product analytics

@@ -19,7 +19,7 @@ AND user permission
 |:--------|:-------|:--------|:--------|
 | Module entitlement | `tenant_module_entitlements` | Tenant has access to a product module | `work_management` |
 | Commercial feature inclusion | `tenant_subscriptions.selected_feature_keys` | Tenant bought this feature inside a module/package | `work_management.projects` |
-| Runtime feature flag | `feature_flags` + tenant overrides | Beta rollout, emergency disable, privacy/AI controls | `chat_ai.streaming_responses` |
+| Runtime feature flag | `feature_flags` + tenant overrides | Beta rollout, emergency disable, privacy/AI controls | `monitoring.website_usage` |
 
 Feature flags are not the commercial source of truth. They cannot grant features outside the tenant's plan/custom contract.
 
@@ -49,14 +49,14 @@ Use module keys for broad navigation sections and feature keys for screens/actio
 
 ```html
 @if (auth.hasModule('work_management')()) {
-  <a routerLink="/worksync">WorkSync</a>
+  <a routerLink="/work">Work</a>
 }
 
 @if (auth.hasFeature('work_management.projects')() && auth.hasPermission('projects:read')()) {
-  <a routerLink="/worksync/projects">Projects</a>
+  <a routerLink="/work/projects">Projects</a>
 }
 
-@if (auth.hasFeature('chat_ai.streaming_responses')() && auth.hasPermission('chat:use_ai')()) {
+@if (auth.hasFeature('monitoring.website_usage')() && auth.hasPermission('monitoring:read')()) {
   <app-streaming-chat />
 }
 ```

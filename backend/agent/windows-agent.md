@@ -1,4 +1,4 @@
-# ONEVO Windows Agent
+﻿# ONEVO Windows Agent
 
 **Last Updated:** 2026-04-27
 **Platform:** Windows 10/11
@@ -14,7 +14,7 @@
 
 ## Tray app
 
-`ONEVO.Agent.Windows/Tray/SystemTrayIcon.cs` — uses `System.Windows.Forms.NotifyIcon`
+`ONEVO.Agent.Windows/Tray/SystemTrayIcon.cs` - uses `System.Windows.Forms.NotifyIcon`
 
 Context menu items:
 - Status (Connected / Offline)
@@ -24,7 +24,7 @@ Context menu items:
 
 ## Offline queue
 
-`SQLiteOfflineQueue.cs` — SQLite database at `%APPDATA%\ONEVO\Agent\queue.db`
+`SQLiteOfflineQueue.cs` - SQLite database at `%APPDATA%\ONEVO\Agent\queue.db`
 
 - Stores `ActivitySnapshot` records when network is unavailable
 - Replays on reconnect in chronological order
@@ -34,10 +34,10 @@ Context menu items:
 
 `AgentUpdater.cs` polls `AgentGateway` on startup and every 4 hours:
 1. Calls `GET /api/v1/agent/version-check` with current version
-2. If new version available in assigned deployment ring → downloads installer
+2. If new version available in assigned deployment ring -> downloads installer
 3. Applies update on next Windows restart (MSI silent install)
 
-Deployment rings: `Canary → Beta → Stable` — managed via DevPlatform admin console.
+Deployment rings: `Canary -> Beta -> Stable` - managed via DevPlatform admin console.
 
 ## Machine token storage
 

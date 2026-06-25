@@ -1,7 +1,10 @@
-# Grievance Investigation
+﻿# Grievance Investigation
 
-**Area:** Grievance  
-**Trigger:** Configured grievance resolver reviews filed grievance (reaction — triggered by grievance filing)
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Grievance is deferred; not active in Phase 1.
+
+**Area:** Grievance (Phase 2)  
+**Trigger:** Configured grievance resolver reviews filed grievance (reaction - triggered by grievance filing)
 **Required Permission(s):** `grievance:manage`  
 **Related Permissions:** `employees:read` (view involved parties)
 
@@ -9,22 +12,22 @@
 
 ## Preconditions
 
-- Grievance case filed → [[Userflow/Grievance/grievance-filing|Grievance Filing]]
+- Grievance case filed -> [[Userflow/Grievance/grievance-filing|Grievance Filing]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Review Case
-- **UI:** Grievance → Open Cases → select case → read description and evidence
+- **UI:** Grievance -> Open Cases -> select case -> read description and evidence
 - **API:** `GET /api/v1/grievance/cases/{id}`
 
 ### Step 2: Assign Investigator
-- **UI:** Assign investigator using permitted employees, users with selected permission, configured grievance owner, or external investigator record → set target resolution date
+- **UI:** Assign investigator using permitted employees, users with selected permission, configured grievance owner, or external investigator record -> set target resolution date
 - **API:** `PUT /api/v1/grievance/cases/{id}/assign`
-- **DB:** `grievance_cases` — status: "Under Investigation", `investigator_id` set
+- **DB:** `grievance_cases` - status: "Under Investigation", `investigator_id` set
 
 ### Step 3: Investigation
-- **UI:** Investigator adds notes from interviews → uploads additional evidence → records findings → timeline visible to authorized parties only
+- **UI:** Investigator adds notes from interviews -> uploads additional evidence -> records findings -> timeline visible to authorized parties only
 - **API:** `POST /api/v1/grievance/cases/{id}/notes`
 
 ### Step 4: Recommend Action
@@ -32,14 +35,14 @@
 - Configured resolver or case owner reviews recommendation
 
 ### Step 5: Resolve Case
-- **UI:** Enter resolution summary → select outcome → close case → employee notified of resolution (appropriate detail level based on confidentiality)
+- **UI:** Enter resolution summary -> select outcome -> close case -> employee notified of resolution (appropriate detail level based on confidentiality)
 - **API:** `PUT /api/v1/grievance/cases/{id}/resolve`
 - **DB:** Status: "Resolved"
 
 ## Variations
 
 ### Escalation to disciplinary
-- If outcome = disciplinary → [[Userflow/Grievance/disciplinary-action|Disciplinary Action]] triggered
+- If outcome = disciplinary -> [[Userflow/Grievance/disciplinary-action|Disciplinary Action]] triggered
 
 ## Error Scenarios
 
@@ -50,9 +53,9 @@
 
 ## Events Triggered
 
-- `GrievanceInvestigationStarted` → [[backend/messaging/event-catalog|Event Catalog]]
-- `GrievanceResolved` → [[backend/messaging/event-catalog|Event Catalog]]
-- Notifications to parties → [[backend/notification-system|Notification System]]
+- `GrievanceInvestigationStarted` -> [[backend/messaging/event-catalog|Event Catalog]]
+- `GrievanceResolved` -> [[backend/messaging/event-catalog|Event Catalog]]
+- Notifications to parties -> [[backend/notification-system|Notification System]]
 
 ## Related Flows
 

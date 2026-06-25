@@ -1,7 +1,7 @@
-# Module: Reporting Engine
+﻿# Module: Reporting Engine
 
 **Feature Folder:** `Application/Features/ReportingEngine`
-**Phase:** 2 — Deferred
+**Phase:** 2 - Deferred
 **Pillar:** Shared Foundation
 **Owner:** Dev 1 (Week 4)
 **Tables:** 3
@@ -13,7 +13,7 @@
 
 ## Purpose
 
-Scheduled and on-demand report generation serving **both pillars** — HR reports (headcount, turnover, leave utilization) and workforce intelligence reports (productivity, exceptions, presence). Supports CSV/Excel export. Reports are tenant-local by default; cross-company report mode can aggregate connected tenants only through permissioned read-only projections.
+Scheduled and on-demand report generation serving **both pillars** - HR reports (headcount, turnover, time_off utilization) and monitoring intelligence reports (productivity, exceptions, presence). Supports CSV/Excel export. Reports are tenant-local by default; cross-company report mode can aggregate connected tenants only through permissioned read-only projections.
 
 ---
 
@@ -21,10 +21,10 @@ Scheduled and on-demand report generation serving **both pillars** — HR report
 
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
-| **Depends on** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IProductivityAnalyticsService` | Workforce reports |
+| **Depends on** | [[modules/productivity-analytics/overview\|Productivity Analytics]] | `IProductivityAnalyticsService` | Monitoring reports |
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | HR reports |
-| **Depends on** | [[modules/leave/overview\|Leave]] | `ILeaveService` | Leave utilization reports |
-| **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Attendance reports |
+| **Depends on** | [[modules/time-off/overview\|Time Off]] | `ITimeOffService` | Time Off utilization reports |
+| **Depends on** | [[modules/time-attendance/overview\|Time & Attendance]] | `ITimeAttendanceService` | Attendance reports |
 
 ---
 
@@ -59,9 +59,9 @@ API endpoints:
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
 | `name` | `varchar(100)` | |
-| `report_type` | `varchar(30)` | `headcount`, `turnover`, `leave_utilization`, `productivity_daily`, `productivity_weekly`, `workforce_summary`, `exception_summary` |
+| `report_type` | `varchar(30)` | `headcount`, `turnover`, `time_off_utilization`, `productivity_daily`, `productivity_weekly`, `monitoring_summary`, `exception_summary` |
 | `parameters_json` | `jsonb` | Filters, date ranges |
-| `schedule_cron` | `varchar(50)` | Cron expression (nullable — on-demand) |
+| `schedule_cron` | `varchar(50)` | Cron expression (nullable - on-demand) |
 | `output_format` | `varchar(10)` | `csv`, `xlsx` |
 | `recipients_json` | `jsonb` | Email recipients |
 | `is_active` | `boolean` | |
@@ -74,9 +74,9 @@ API endpoints:
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | |
-| `definition_id` | `uuid` | FK → report_definitions |
+| `definition_id` | `uuid` | FK -> report_definitions |
 | `status` | `varchar(20)` | `queued`, `running`, `completed`, `failed` |
-| `file_record_id` | `uuid` | FK → file_records (generated report) |
+| `file_record_id` | `uuid` | FK -> file_records (generated report) |
 | `row_count` | `int` | |
 | `started_at` | `timestamptz` | |
 | `completed_at` | `timestamptz` | |
@@ -96,27 +96,27 @@ API endpoints:
 
 ---
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module - MediatR)
 
-> These events are published and consumed within this module only. They never leave the module.
+> These events are published and consumed within this module only. They never cross the module boundary.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module - MediatR INotification)
 
 ### Publishes
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
 ### Consumes
 
 | Event | Source Module | Action Taken |
 |:------|:-------------|:-------------|
-| _(none — reads directly via query service interfaces)_ | — | — |
+| _(none - reads directly via query service interfaces)_ | - | - |
 
 ---
 
@@ -138,18 +138,18 @@ Sensitive fields such as payroll, identity verification, activity screenshots, d
 
 ## Features
 
-- [[modules/reporting-engine/report-definitions/overview|Report Definitions]] — Scheduled and on-demand report definitions with cron expressions
-- [[modules/reporting-engine/report-execution/overview|Report Execution]] — Execution tracking with file record output (CSV/Excel)
-- [[modules/reporting-engine/report-templates/overview|Report Templates]] — System and custom column/filter templates per report type
+- [[modules/reporting-engine/report-definitions/overview|Report Definitions]] - Scheduled and on-demand report definitions with cron expressions
+- [[modules/reporting-engine/report-execution/overview|Report Execution]] - Execution tracking with file record output (CSV/Excel)
+- [[modules/reporting-engine/report-templates/overview|Report Templates]] - System and custom column/filter templates per report type
 
 ---
 
 ## Related
 
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — All definitions and executions are tenant-scoped
-- [[modules/shared-platform/company-connections/overview|Company Connections]] — Permission-scoped cross-company projections
-- [[security/data-classification|Data Classification]] — Report files stored in blob storage via `file_records`
-- [[security/compliance|Compliance]] — Audit and exception reports support both HR and workforce intelligence pillars
-- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - All definitions and executions are tenant-scoped
+- [[modules/shared-platform/company-connections/overview|Company Connections]] - Permission-scoped cross-company projections
+- [[security/data-classification|Data Classification]] - Report files stored in blob storage via `file_records`
+- [[security/compliance|Compliance]] - Audit and exception reports support both HR and monitoring intelligence pillars
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]] - Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/productivity-analytics/overview|Productivity Analytics]], [[modules/core-hr/overview|Core Hr]]

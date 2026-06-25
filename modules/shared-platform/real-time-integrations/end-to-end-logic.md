@@ -1,4 +1,4 @@
-# Real-Time Integrations — End-to-End Logic
+﻿# Real-Time Integrations - End-to-End Logic
 
 **Module:** Shared Platform
 **Feature:** Real-Time Integrations (API Keys, Webhooks, Rate Limits)

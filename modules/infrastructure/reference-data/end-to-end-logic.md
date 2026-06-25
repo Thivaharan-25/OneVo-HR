@@ -1,4 +1,4 @@
-# Reference Data — End-to-End Logic
+﻿# Reference Data - End-to-End Logic
 
 **Module:** Infrastructure
 **Feature:** Reference Data (Countries)
@@ -14,16 +14,16 @@ GET /api/v1/countries
   -> CountryController.List()
     -> [Authenticated]
     -> ReferenceDataService.GetCountriesAsync(ct)
-      -> 1. Query countries table (global — no tenant filter)
-      -> 2. Cache in Phase 1 `IMemoryCache` (no expiry — static data)
+      -> 1. Query countries table (global - no tenant filter)
+      -> 2. Cache in Phase 1 `IMemoryCache` (no expiry - static data)
       -> Return Result.Success(countryDtos)
 ```
 
 ### Key Rules
 
-- **Countries table is NOT tenant-scoped** — global reference data.
+- **Countries table is NOT tenant-scoped** - global reference data.
 - **Seeded at application startup** from ISO 3166-1 data.
-- **Used by:** leave policies (country-specific), employee profiles (nationality), payroll (tax config).
+- **Used by:** Time Off policies (country-specific), employee profiles (nationality), payroll (tax config).
 
 ## Related
 

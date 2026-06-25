@@ -1,13 +1,13 @@
-# CI/CD Pipeline: ONEVO
+﻿# CI/CD Pipeline: ONEVO
 
 ## Pipeline Overview
 
 ```
-Push to PR → Build → Unit Tests → Architecture Tests → Integration Tests → Code Coverage Check
-                                                                                    ↓
-                                                              Merge to main → Build Docker Image → Deploy to Staging
-                                                                                    ↓
-                                                              Manual approval → Deploy to Production (Blue/Green)
+Push to PR -> Build -> Unit Tests -> Architecture Tests -> Integration Tests -> Code Coverage Check
+                                                                                    v
+                                                              Merge to main -> Build Docker Image -> Deploy to Staging
+                                                                                    v
+                                                              Manual approval -> Deploy to Production (Blue/Green)
 ```
 
 ## GitHub Actions Workflow
@@ -92,7 +92,7 @@ jobs:
 ```
 1. Deploy new version to "green" environment (5% traffic)
 2. Monitor error rates, latency for 15 minutes
-3. If healthy: ramp to 25% → 50% → 100%
+3. If healthy: ramp to 25% -> 50% -> 100%
 4. If unhealthy: route 100% back to "blue" (instant rollback)
 ```
 
@@ -109,7 +109,7 @@ jobs:
 All schema changes follow expand-contract pattern (see [[database/migration-patterns|Migration Patterns]]):
 
 ```
-Deploy 1: Add new columns/tables (expand) → app ignores them
+Deploy 1: Add new columns/tables (expand) -> app ignores them
 Deploy 2: App starts using new schema + backfills data
 Deploy 3: Remove old columns/tables (contract)
 ```

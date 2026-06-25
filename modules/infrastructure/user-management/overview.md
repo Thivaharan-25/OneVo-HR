@@ -1,4 +1,4 @@
-# User Management
+﻿# User Management
 
 **Module:** Infrastructure  
 **Feature:** User Management
@@ -16,7 +16,7 @@ Key columns: `tenant_id`, `email` (UNIQUE per tenant), `password_hash` (bcrypt),
 
 ## Key Business Rules
 
-1. Users ≠ Employees. `users` = login identity, `employees` = HR identity in Core HR.
+1. Users != Employees. `users` = login identity, `employees` = HR identity in Core HR.
 
 ## API Endpoints
 

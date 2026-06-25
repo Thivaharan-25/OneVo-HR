@@ -1,4 +1,4 @@
-# Planning — Testing
+﻿# Planning - Testing
 
 **Module:** WorkSync
 **Feature:** Planning

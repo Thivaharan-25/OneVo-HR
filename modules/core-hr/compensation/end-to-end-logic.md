@@ -1,4 +1,4 @@
-# Compensation — End-to-End Logic
+﻿# Compensation - End-to-End Logic
 
 **Module:** Core HR
 **Feature:** Compensation (Salary History)  

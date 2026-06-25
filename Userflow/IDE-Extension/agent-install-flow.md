@@ -2,7 +2,7 @@
 
 **Module:** IDE Extension + Agent Gateway
 **Pillar:** Cross-Pillar
-**Phase:** Phase 1
+**Phase:** Phase 2 - deferred
 **Owner:** Dev 8 (IDE context + agent entitlement)
 
 ---

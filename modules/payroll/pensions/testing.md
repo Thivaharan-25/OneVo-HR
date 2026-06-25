@@ -1,4 +1,4 @@
-# Pensions — Testing
+﻿# Pensions - Testing
 
 **Module:** Payroll
 **Feature:** Pensions

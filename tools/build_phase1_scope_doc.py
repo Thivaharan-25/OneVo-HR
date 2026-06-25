@@ -1,4 +1,4 @@
-from docx import Document
+﻿from docx import Document
 from docx.enum.section import WD_SECTION
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -22,7 +22,7 @@ MODULES = [
         "scope": [
             "Tenant records for each customer organisation, including subscription/status context and branding links.",
             "User identity records used by authentication and sessions.",
-            "Country reference data for legal entities, leave policies, public holidays, and nationality.",
+            "Country reference data for legal entities, Time Off policies, public holidays, and nationality.",
             "Central file registry for uploaded files, verification photos, documents, screenshots, receipts, and certificates.",
         ],
     },
@@ -41,7 +41,7 @@ MODULES = [
             "Custom tenant roles as permission templates, not hard-coded role logic.",
             "Per-user permission grants/revocations that override assigned roles.",
             "Feature/module access grants to roles or individual employees.",
-            "Hierarchy-scoped data access through reporting-line filters.",
+            "Employee-data access through management coverage predicates and own-record self-service rules.",
             "Audit log capture for write operations, login events, exports, and security-sensitive actions.",
             "GDPR consent records before monitoring or biometric processing is enabled.",
         ],
@@ -50,16 +50,11 @@ MODULES = [
         "name": "Org Structure",
         "phase": "Phase 1",
         "tables": [
-            "departments", "job_families", "job_levels", "job_titles",
-            "company_registration_profiles", "office_locations", "team_members", "teams",
         ],
-        "purpose": "Company hierarchy, legal entities, departments, jobs, teams, and offices.",
         "scope": [
             "Multiple legal entities per tenant with country and registration context.",
             "Parent-child department hierarchy with department heads.",
-            "Job families, levels, titles, and salary band context.",
-            "Teams separate from department hierarchy for operational grouping.",
-            "Office locations used by presence, public holidays, verification, and policy scoping.",
+            "Selected Company/legal entity context used by departments, positions, schedules, Time Off, verification, and policy scoping.",
         ],
     },
     {
@@ -86,22 +81,20 @@ MODULES = [
         "purpose": "Skill taxonomy, employee skill profiles, job requirements, and validation requests.",
         "scope": [
             "Tenant skill categories and skill definitions.",
-            "Job-family skill requirements.",
-            "Employee-declared and manager/validator-confirmed skills.",
+            "Employee-declared and eligible-validator-confirmed skills.",
             "Validation request workflow for employee skill claims.",
         ],
     },
     {
-        "name": "Leave",
+        "name": "Time Off",
         "phase": "Phase 1",
-        "tables": ["leave_balances_audit", "leave_entitlements", "leave_policies", "leave_requests", "leave_types"],
-        "purpose": "Configurable leave policies, entitlements, requests, approvals, cancellations, and balance audit.",
+        "tables": ["time_off_balance_audit", "time_off_entitlements", "time_off_policies", "time_off_requests", "time_off_types"],
+        "purpose": "Configurable Time Off policies, hour-based entitlements, requests, approvals, cancellations, and balance audit.",
         "scope": [
-            "Leave types per tenant.",
-            "Leave policies scoped by country and job level.",
-            "Employee leave entitlement assignment.",
+            "Time Off types per tenant.",
+            "Employee Time Off entitlement assignment stored internally in hours.",
             "Request submission, approval/rejection, cancellation, supporting document linkage.",
-            "Leave balance audit history.",
+            "Time Off balance audit history in hours.",
         ],
     },
     {
@@ -110,9 +103,8 @@ MODULES = [
         "tables": ["calendar_events"],
         "purpose": "Shared calendar events and conflict detection support.",
         "scope": [
-            "Company/team/employee calendar events.",
-            "Leave-driven calendar entries.",
-            "Conflict checks used by leave and scheduling workflows.",
+            "Time Off-driven calendar entries.",
+            "Conflict checks used by Time Off and scheduling workflows.",
         ],
     },
     {
@@ -177,7 +169,7 @@ MODULES = [
         ],
     },
     {
-        "name": "Workforce Presence",
+        "name": "Time & Attendance",
         "phase": "Phase 1",
         "tables": [
             "attendance_records", "break_records", "device_sessions", "employee_schedules",
@@ -229,12 +221,10 @@ MODULES = [
         "phase": "Phase 1",
         "tables": [
             "daily_employee_report", "monthly_employee_report", "weekly_employee_report",
-            "wms_productivity_snapshots", "workforce_snapshot",
+            "wms_productivity_snapshots", "productivity_snapshots",
         ],
-        "purpose": "Employee/team productivity rollups, trend reporting, and WMS productivity snapshots.",
         "scope": [
             "Daily, weekly, and monthly employee productivity summaries.",
-            "Workforce snapshots for team/company views.",
             "WMS productivity snapshots from bridge data.",
             "Analytics export support where permissions allow it.",
         ],
@@ -272,7 +262,7 @@ MODULES = [
         "tables": ["No own tables; uses notification_templates and notification_channels in Shared Platform"],
         "purpose": "In-app, email, webhook, and real-time notification delivery across platform events.",
         "scope": [
-            "Notification dispatch for leave, exceptions, verification failures, agent events, workflow actions, and system notices.",
+            "Notification dispatch for Time Off, lightweight monitoring/attendance alerts, verification failures, agent events, direct approval actions, and system notices.",
             "Template/channel configuration stored under Shared Platform.",
             "SignalR live updates where real-time UI is required.",
         ],
@@ -286,10 +276,9 @@ MODULES = [
         ],
         "purpose": "Internal OneVo operator console for tenant operations, flags, audit, system config, and agent version rollout.",
         "scope": [
-            "Separate console.onevo.io Next.js app for OneVo internal team only.",
             "Email/password plus mandatory MFA for approved platform accounts; optional Google OAuth setup may be enabled for invited managers.",
             "Separate admin JWT issuer: onevo-platform-admin.",
-            "Separate backend host/namespace through ONEVO.Admin.Api and /admin/v1/* endpoints.",
+            "Admin endpoints under /admin/v1/* inside the single ONEVO.Api backend host.",
             "Tenant console, provisioning, subscriptions, impersonation, and tenant troubleshooting.",
             "Feature flag manager for global flags and tenant overrides.",
             "Agent version manager with release catalog and deployment rings.",
@@ -304,13 +293,13 @@ MODULES = [
 PERMISSIONS = [
     # Auto-grants (module-level, not assignable via roles)
     "activity:read:self", "attendance:read-own", "attendance:write-own",
-    "calendar:read", "employees:read-own", "leave:read-own", "workforce:dashboard",
+    "calendar:read", "employees:read-own", "time_off:read-own", "monitoring:dashboard",
     # Employees (scope via access_policy on role_permissions)
     "employees:read", "employees:write", "employees:delete", "employees:import", "employees:export",
     # Org structure
     "org:read", "org:manage",
-    # Leave
-    "leave:read", "leave:create", "leave:approve", "leave:manage",
+    # Time Off
+    "time_off:read", "time_off:create", "time_off:approve", "time_off:manage",
     # Attendance
     "attendance:read", "attendance:write", "attendance:approve",
     # Payroll
@@ -347,8 +336,8 @@ PERMISSIONS = [
     "exceptions:manage",
     # Verification
     "verification:view", "verification:review", "verification:configure",
-    # Workforce Intelligence
-    "workforce:view", "workforce:manage",
+    # Monitoring and productivity analytics
+    "monitoring:view", "monitoring:manage",
     # Agent Gateway
     "agent:command", "agent:manage", "agent:register", "agent:view-health",
     # Documents (Phase 2)
@@ -431,7 +420,6 @@ SIMPLE_WORKFLOWS = [
     {
         "title": "Role, Permission, and Individual Override Setup",
         "user": [
-            "Create a custom role such as HR Manager, Team Lead, Payroll Officer, or Viewer.",
             "Select the exact permissions for that role.",
             "Assign the role to one or more employees.",
             "Grant or revoke an individual permission for a specific employee.",
@@ -444,35 +432,29 @@ SIMPLE_WORKFLOWS = [
             "Store employee-specific grants/revokes in user_permission_overrides.",
             "Resolve module entitlements and selected feature keys from tenant commercial state.",
             "Calculate effective permissions as role permissions plus grants minus revokes.",
-            "Apply hierarchy scope when returning employee or workforce data.",
+            "Apply management coverage predicates when returning employee or monitoring data.",
         ],
         "edge": [
             ["Permission revoked at employee level", "Employee-level revoke wins over role permission."],
             ["Feature not granted", "Permission is ineffective even if role contains it."],
-            ["Manager tries to access outside hierarchy", "Backend returns no data or forbidden response."],
+            ["User tries to access outside allowed management coverage", "Backend returns no data or forbidden response."],
         ],
     },
     {
         "title": "Organisation Structure Setup",
         "user": [
             "Create legal entities for the company.",
-            "Create office locations under legal entities.",
             "Create departments and subdepartments.",
             "Assign department heads.",
-            "Create job families, job levels, and job titles.",
-            "Create teams and assign team leads/members.",
         ],
         "system": [
             "Store legal entities and link them to countries.",
             "Store departments using parent-child relationships.",
-            "Store job family/level/title records.",
-            "Store teams and team_members.",
-            "Store office locations.",
-            "Use this structure for employee profile, leave policy, reporting scope, team assignment, and workflow approvals.",
+            "Store the selected Company's single office-location fields directly on legal_entities where onsite verification is enabled.",
         ],
         "edge": [
             ["Department has children", "Keep hierarchy intact; do not delete without reassignment."],
-            ["Employee outside manager scope", "Do not allow assignment unless user has required scope or bypass."],
+            ["Employee outside management coverage", "Do not allow assignment unless user has the required permission and valid management coverage."],
             ["Company registration profile missing", "Block employee/legal setup that depends on it."],
         ],
     },
@@ -481,7 +463,6 @@ SIMPLE_WORKFLOWS = [
         "user": [
             "Create the employee profile after hiring decision.",
             "Enter personal details, work email, employee number, phone, DOB, gender, and nationality.",
-            "Assign department, job title, manager, company registration profile, office, employment type, work mode, hire date, and probation date.",
             "Upload employee photo/avatar if available.",
             "Add addresses, emergency contacts, dependents, bank details, and work history.",
         ],
@@ -491,7 +472,7 @@ SIMPLE_WORKFLOWS = [
             "Store related records in addresses, emergency contacts, dependents, bank details, and work history tables.",
             "Encrypt bank account number before storage.",
             "Create lifecycle event for hire.",
-            "Make employee available to onboarding, leave, workforce presence, skills, and monitoring modules.",
+            "Make employee available to onboarding, Time Off, Time & Attendance, skills, and monitoring modules.",
         ],
         "edge": [
             ["Duplicate employee number", "Reject because employee number must be unique per tenant."],
@@ -540,20 +521,17 @@ SIMPLE_WORKFLOWS = [
         "user": [
             "Open employee profile.",
             "Choose promote action.",
-            "Select new job title and effective date.",
             "Enter reason for promotion.",
             "Submit for approval or apply based on permission/workflow.",
         ],
         "system": [
             "Validate employee exists and is active.",
-            "Update job_title_id when promotion is effective.",
             "Create employee_lifecycle_events record with event_type promoted.",
             "Notify employee, manager, and HR where configured.",
             "Expose promotion in employee lifecycle timeline.",
         ],
         "edge": [
             ["Backdated promotion", "Allow if HR correction policy permits; created_at still records actual insertion time."],
-            ["Invalid job title", "Reject request."],
         ],
     },
     {
@@ -561,21 +539,18 @@ SIMPLE_WORKFLOWS = [
         "user": [
             "Open employee profile.",
             "Choose transfer action.",
-            "Select new department, team, manager, office, or company registration profile as needed.",
             "Set effective date and reason.",
             "Submit transfer.",
         ],
         "system": [
             "Validate employee exists and is active.",
-            "Validate target department/team/manager/company registration profile are accessible and valid.",
-            "Update employee department/team/manager/location fields.",
             "Create employee_lifecycle_events record with event_type transferred.",
-            "Notify old and new position-resolved managers where configured.",
-            "Downstream modules can update shift, leave policy, monitoring office context, and reporting scope.",
+            "Notify relevant old/new coverage owners where configured.",
+            "Downstream modules can update shift, Time Off policy, monitoring office context, and reporting context.",
         ],
         "edge": [
-            ["Target manager outside allowed scope", "Reject unless authorized."],
-            ["Transfer affects leave/shift", "Downstream modules recalculate or require admin review."],
+            ["Target owner outside management coverage", "Reject unless authorized."],
+            ["Transfer affects Time Off/shift", "Downstream modules recalculate or require admin review."],
             ["Same department selected", "Reject or treat as no-op depending on UI rule."],
         ],
     },
@@ -622,58 +597,54 @@ SIMPLE_WORKFLOWS = [
         ],
     },
     {
-        "title": "Leave Type and Leave Policy Setup",
+        "title": "Time Off Type and Time Off Policy Setup",
         "user": [
-            "Create leave types such as annual, sick, maternity, unpaid, or custom types.",
-            "Create leave policies by country, company registration profile, job level, or tenant rule.",
+            "Create Time Off types such as annual, sick, maternity, unpaid, or custom types.",
             "Set entitlement amount, accrual rule, carry-forward rule, approval rule, and document requirement.",
             "Assign entitlements to employees.",
         ],
         "system": [
-            "Store leave_types.",
-            "Store leave_policies with country/job-level links where applicable.",
-            "Create leave_entitlements for employees.",
-            "Track changes in leave_balances_audit.",
-            "Use policies when leave requests are submitted.",
+            "Store time_off_types.",
+            "Create time_off_entitlements for employees.",
+            "Track balance changes in time_off_balance_audit using hours.",
+            "Use policies when Time Off requests are submitted.",
         ],
         "edge": [
             ["Policy missing", "Block entitlement assignment or require manual entitlement."],
-            ["Country/job level mismatch", "Use matching policy or fallback based on configured rules."],
             ["Carry-forward exceeded", "Cap balance according to policy."],
         ],
     },
     {
-        "title": "Leave Request and Approval",
+        "title": "Time Off Request and Approval",
         "user": [
-            "Employee selects leave type and date range.",
+            "Employee selects Time Off type and date range.",
             "Employee adds reason and supporting document if required.",
             "Employee submits request.",
-            "Manager or approver reviews request.",
+            "The one eligible owner resolved from management coverage or configured reviewer permission reviews request.",
             "Approver approves or rejects.",
-            "Employee checks updated leave balance and calendar.",
+            "Employee checks updated Time Off balance and calendar.",
         ],
         "system": [
-            "Validate employee and leave type.",
+            "Validate employee and Time Off type.",
             "Check available entitlement/balance.",
             "Check date conflicts and calendar context.",
-            "Create leave_requests record.",
-            "Notify approver.",
+            "Create time_off_requests record.",
+            "Notify the assigned owner.",
             "On approval, update entitlement/balance and audit trail.",
-            "Create calendar event for approved leave.",
+            "Create calendar event for approved Time Off.",
             "Notify employee.",
-            "Pass absence context to workforce presence and payroll/final settlement where applicable.",
+            "Pass absence context to Time & Attendance and payroll/final settlement where applicable.",
         ],
         "edge": [
-            ["Insufficient balance", "Reject or require unpaid leave path."],
+            ["Insufficient balance", "Reject or require unpaid Time Off path."],
             ["Document required but missing", "Block submission."],
-            ["Approver unavailable", "Use workflow escalation rules."],
+            ["No eligible owner", "Create a routing issue instead of invoking Workflow Engine in Phase 1."],
             ["Request cancelled", "Reverse/adjust balance and calendar entry."],
         ],
     },
     {
         "title": "Calendar Event Creation",
         "user": [
-            "Create company, department, team, or individual calendar event.",
             "Set title, date/time, audience, location, and description.",
             "Add participants where needed.",
             "Save event.",
@@ -684,12 +655,12 @@ SIMPLE_WORKFLOWS = [
             "Create calendar_events record.",
             "Run conflict checks where applicable.",
             "Notify participants where configured.",
-            "Expose event to leave, attendance, and dashboard views.",
+            "Expose event to Time Off, attendance, and dashboard views.",
         ],
         "edge": [
             ["Participant outside scope", "Reject unless bypass/access exists."],
             ["Time conflict", "Warn or block based on event type."],
-            ["Leave-driven event", "Created automatically from approved leave."],
+            ["Time Off-driven event", "Created automatically from approved Time Off."],
         ],
     },
     {
@@ -765,10 +736,10 @@ SIMPLE_WORKFLOWS = [
     {
         "title": "Screenshot / On-Demand Capture",
         "user": [
-            "Manager opens an exception alert.",
-            "Manager requests screenshot or photo capture where permission allows.",
+            "Authorized reviewer opens an alert.",
+            "Authorized reviewer requests screenshot or photo capture where permission allows.",
             "Employee receives notification before capture.",
-            "Manager views result in alert detail after capture completes.",
+            "Authorized reviewer views result in alert detail after capture completes.",
         ],
         "system": [
             "Check agent:command permission.",
@@ -779,10 +750,10 @@ SIMPLE_WORKFLOWS = [
             "Agent captures screenshot/photo and uploads file.",
             "Agent reports command completion.",
             "Identity Verification or Activity Monitoring stores metadata and links file_record.",
-            "Notify manager result is available.",
+            "Notify authorized reviewer that the result is available.",
         ],
         "edge": [
-            ["Agent offline", "Command expires and manager must retry."],
+            ["Agent offline", "Command expires and authorized reviewer must retry."],
             ["Capture rate limit exceeded", "Block request."],
             ["Employee notification required", "Capture must not proceed silently in Phase 1 flow."],
         ],
@@ -791,7 +762,7 @@ SIMPLE_WORKFLOWS = [
         "title": "AWS Rekognition Image Processing Plan",
         "user": [
             "Admin enables image processing policy where allowed.",
-            "Manager/HR reviews verification result or exception-linked capture result.",
+            "Authorized reviewer or HR reviews verification result or alert-linked capture result.",
         ],
         "system": [
             "Receive image/photo from monitoring agent.",
@@ -814,7 +785,7 @@ SIMPLE_WORKFLOWS = [
         "user": [
             "Admin configures verification policy.",
             "Employee completes photo verification at login, logout, interval, or on-demand request.",
-            "Manager/HR reviews failed verification alerts.",
+            "Authorized reviewer or HR reviews failed verification alerts.",
             "Admin registers biometric devices where used.",
             "Admin enrolls employee fingerprint with consent where biometric hardware is used.",
         ],
@@ -834,13 +805,13 @@ SIMPLE_WORKFLOWS = [
         ],
     },
     {
-        "title": "Workforce Presence and Attendance",
+        "title": "Time & Attendance",
         "user": [
             "Employee clocks in/out or logs into active work session through agent/biometric flow.",
             "Employee starts and ends breaks.",
-            "Manager views live presence dashboard.",
-            "Manager or HR reviews attendance records.",
-            "Manager/HR corrects attendance or approves overtime where permitted.",
+            "Authorized owner views live presence dashboard.",
+            "Authorized owner or HR reviews attendance records.",
+            "Authorized owner or HR corrects attendance or approves overtime where permitted.",
         ],
         "system": [
             "Create presence_sessions and device_sessions.",
@@ -862,16 +833,16 @@ SIMPLE_WORKFLOWS = [
         "title": "Application Allowlist Violation",
         "user": [
             "Admin configures allowed/non-allowed applications.",
-            "Manager views application usage and violation alerts.",
-            "Manager/HR acknowledges or resolves alert.",
+            "Authorized owner views application usage and violation alerts.",
+            "Authorized owner or HR acknowledges or resolves alert.",
         ],
         "system": [
             "During raw activity processing, compare app usage against resolved allowlist.",
             "Set is_allowed on application_usage.",
             "If non-allowed usage exceeds violation threshold, create/publish violation event.",
-            "Exception Engine creates alert.",
-            "Notifications alert manager or configured recipients.",
-            "Manager acknowledgement is stored.",
+            "Phase 1 lightweight alert detection creates alert notification.",
+            "Notifications alert the eligible management coverage owner or configured reviewer.",
+            "Owner/reviewer acknowledgement is stored.",
         ],
         "edge": [
             ["Unknown app", "Surface in observed/app catalog for classification."],
@@ -883,10 +854,10 @@ SIMPLE_WORKFLOWS = [
         "title": "Exception Rule and Alert Handling",
         "user": [
             "Admin creates exception rules and escalation chains.",
-            "Manager views exception dashboard.",
-            "Manager opens alert detail.",
-            "Manager acknowledges, dismisses, escalates, or resolves alert with notes.",
-            "Manager may request on-demand capture if allowed.",
+            "Authorized reviewer views alert dashboard.",
+            "Authorized reviewer opens alert detail.",
+            "Authorized reviewer acknowledges, dismisses, escalates, or resolves alert with notes.",
+            "Authorized reviewer may request on-demand capture if allowed.",
         ],
         "system": [
             "Store exception_rules and escalation_chains.",
@@ -906,16 +877,14 @@ SIMPLE_WORKFLOWS = [
     {
         "title": "Productivity Analytics",
         "user": [
-            "Manager views daily, weekly, or monthly employee/team reports.",
-            "Manager compares active time, idle time, meeting time, application usage, and trends.",
+            "Authorized analytics user compares active time, idle time, meeting time, application usage, and trends.",
             "Authorized user exports analytics when analytics:export is granted.",
         ],
         "system": [
             "Aggregate activity_daily_summary into daily_employee_report.",
             "Generate weekly and monthly employee reports.",
-            "Generate workforce_snapshot for team/company overview.",
             "Include WMS productivity snapshots where WMS integration is enabled.",
-            "Apply tenant, permission, and hierarchy scope to analytics queries.",
+            "Apply tenant, permission, and management coverage predicates to analytics queries.",
         ],
         "edge": [
             ["No activity data", "Show empty/insufficient data state."],
@@ -926,9 +895,9 @@ SIMPLE_WORKFLOWS = [
     {
         "title": "Discrepancy Detection with WMS",
         "user": [
-            "Manager or HR reviews discrepancy events.",
-            "Manager compares WMS time logs with OneVo presence/activity data.",
-            "Manager resolves or follows up on discrepancies.",
+            "Authorized reviewer or HR reviews discrepancy events.",
+            "Authorized reviewer compares WMS time logs with OneVo presence/activity data.",
+            "Authorized reviewer resolves or follows up on discrepancies.",
         ],
         "system": [
             "Receive/store WMS daily time logs.",
@@ -951,7 +920,7 @@ SIMPLE_WORKFLOWS = [
         ],
         "system": [
             "Use notification_templates and notification_channels from Shared Platform.",
-            "Receive events from leave, onboarding, offboarding, exceptions, verification, workflows, and agent health.",
+            "Receive events from Time Off, onboarding, offboarding, alerts, verification, workflows, and agent health.",
             "Render message from template.",
             "Deliver through configured channels.",
             "Track delivery status where webhook/email delivery records exist.",
@@ -1079,7 +1048,6 @@ def clean_md(text):
     text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
     text = text.replace("Integration Events (cross-module - RabbitMQ)", "Cross-capability Events")
     text = text.replace("Integration Events (cross-module \u2014 RabbitMQ)", "Cross-capability Events")
-    text = text.replace("Integration Events (cross-module â€” RabbitMQ)", "Cross-capability Events")
     return text
 
 
@@ -1173,9 +1141,9 @@ def add_markdown_file(doc, path, base_level=2):
 def detail_files():
     dirs = [
         "modules/infrastructure", "modules/auth", "modules/org-structure", "modules/core-hr",
-        "modules/skills", "modules/leave", "modules/calendar", "modules/configuration",
+        "modules/skills", "modules/time-off", "modules/calendar", "modules/configuration",
         "modules/agent-gateway", "modules/activity-monitoring", "modules/discrepancy-engine",
-        "modules/workforce-presence", "modules/exception-engine", "modules/identity-verification",
+        "modules/time-attendance", "modules/exception-engine", "modules/identity-verification",
         "modules/productivity-analytics", "modules/shared-platform", "modules/notifications",
         "developer-platform",
     ]
@@ -1255,11 +1223,11 @@ def build():
     ], widths=[1.8, 5.5])
 
     h(doc, "Executive Summary", 1)
-    p(doc, "OneVo-HR is a multi-tenant, white-label SaaS platform that combines HR management with workforce intelligence. Phase 1 delivers the operational foundation, HR lifecycle capabilities, leave, organisation structure, skills core, workforce presence, desktop monitoring, identity verification, exception handling, productivity analytics, configuration, notifications, WMS integration support, and the internal Developer Platform used by OneVo operators.")
+    p(doc, "OneVo-HR is a multi-tenant, white-label SaaS platform that combines HR management with monitoring and productivity analytics. Phase 1 delivers the operational foundation, HR lifecycle capabilities, Time Off, organisation structure, skills core, Time & Attendance, desktop monitoring, identity verification, exception handling, productivity analytics, configuration, notifications, WMS integration support, and the internal Developer Platform used by OneVo operators.")
     p(doc, "The system uses a .NET 10 / C# 14 Clean Architecture backend with clear layer boundaries, CQRS-style use cases, a Vite + React 19 frontend, PostgreSQL persistence, and a Windows monitoring agent. The Developer Platform is separate from the customer frontend and uses the /admin/v1/* namespace inside the single ONEVO.Api host with a separate JWT issuer.")
 
     add_table(doc, ["Area", "Phase 1 scope"], [
-        ["Customer product", "HR management plus workforce intelligence modules delivered through the main OneVo web application."],
+        ["Customer product", "HR management plus monitoring and productivity analytics modules delivered through the main OneVo web application."],
         ["Monitoring agent", "Windows service plus tray app, device JWT, offline buffer, heartbeat, policy sync, activity ingestion, and command channel."],
         ["Developer platform", "Internal console.onevo.io operator app for tenants, flags, audit, config, app catalog, and agent version rollout."],
         ["Database scale", "133 Phase 1 tables across product modules, plus 5 Phase 1 Developer Platform tables."],
@@ -1283,7 +1251,7 @@ def build():
         ["Real-time", "SignalR for live dashboards, alert updates, and agent command delivery."],
         ["Background jobs", "Hangfire for raw buffer processing, aggregation, retention, command expiry, and health checks."],
         ["Desktop agent", "Windows service + MAUI tray app + shared library, packaged for Windows Phase 1."],
-        ["File storage", "S3-compatible blob storage in production; local disk for development."],
+        ["File storage", "Cloudflare R2 object storage in production; local disk for development."],
         ["WMS integration", "External Work Management System consumed via bridge contracts; WMS is not built by OneVo-HR Phase 1."],
     ], widths=[1.8, 5.5])
 
@@ -1291,11 +1259,11 @@ def build():
 
     h(doc, "Product Configuration Matrix", 1)
     add_table(doc, ["Tier", "Included scope"], [
-        ["HR Management", "Core foundation, HR pillar, shared platform, notifications, leave, org structure, skills core."],
+        ["HR Management", "Core foundation, HR pillar, shared platform, notifications, Time Off, org structure, skills core."],
         ["Work Management", "Core foundation and WMS bridge people sync only."],
-        ["HR + Workforce Intel", "HR Management plus monitoring agent, activity monitoring, presence, verification, exceptions, analytics."],
+        ["HR + Monitoring", "HR Management plus monitoring agent, activity monitoring, Time & Attendance, verification, exceptions, analytics."],
         ["HR + Work Management", "HR Management plus all WMS bridge contracts."],
-        ["Full Suite", "HR, Workforce Intelligence, WMS integration, and all shared platform capabilities."],
+        ["Full Suite", "HR, monitoring and productivity analytics, WMS integration, and all shared platform capabilities."],
     ], widths=[2.0, 5.3])
 
     h(doc, "Backend Architecture and Delivery Model", 1)
@@ -1314,14 +1282,14 @@ def build():
         ["Validation", "Command validators and explicit Result-style outcomes for business failures."],
         ["Background work", "Hangfire jobs for ingestion processing, rollups, cleanup, retention, command expiry, and health checks."],
         ["Real-time updates", "SignalR connections for live dashboards, agent command delivery, alert updates, and presence status."],
-        ["Storage", "PostgreSQL metadata plus S3-compatible blob storage for files/images."],
+        ["Storage", "PostgreSQL metadata plus Cloudflare R2 object storage for files/images."],
     ], widths=[2.0, 5.3])
 
     h(doc, "Frontend Scope", 1)
     bullets(doc, [
         "Main customer application uses Next.js App Router.",
         "Sidebar navigation is permission-gated; unavailable items are hidden rather than disabled.",
-        "Workforce Intelligence UI requires both permissions and monitoring configuration.",
+        "Monitoring and productivity analytics UI requires both permissions and monitoring configuration.",
         "Frontend permission checks are UX gates only; backend still enforces authorization and data scope.",
         "Role-scoped UX distinguishes employee, manager, HR admin, and org owner experiences.",
         "The Developer Platform frontend is a separate Next.js application and does not share customer-app sessions.",
@@ -1337,22 +1305,21 @@ def build():
         ], widths=[1.3, 6.0])
         bullets(doc, m["scope"])
 
-    h(doc, "Tenant Access, RBAC, and Hierarchy Scoping", 1)
-    p(doc, "OneVo does not rely on hard-coded tenant roles for access. Roles are configurable templates, and the actual authorization result is the effective permission set after commercial module entitlement, selected feature keys, runtime flags, role permissions, individual grants, individual revocations, and hierarchy filters are applied.")
+    h(doc, "Tenant Access, RBAC, and Management Coverage", 1)
+    p(doc, "OneVo does not rely on hard-coded tenant roles for access. Roles are configurable templates, and the actual authorization result is the effective permission set after commercial module entitlement, selected feature keys, runtime flags, role permissions, individual grants, and individual revocations are applied. Employee-data visibility is resolved through management coverage predicates and own-record self-service rules.")
     number(doc, [
-        "A Super Admin creates tenant-specific custom roles.",
+        "An authorized role admin creates tenant-specific custom roles.",
         "Permissions are assigned to roles as templates.",
         "Users receive one or more roles.",
         "The system adds any employee-level grant overrides.",
         "The system removes any employee-level revoke overrides.",
         "The system applies feature_access_grants only as role-level or employee-level visibility filtering inside already-included modules/features.",
-        "The system applies hierarchy scope to data queries, such as own record only, subordinate records, department/subdepartment records, or all records for Super Admin.",
+        "The system applies own-record self-service rules and management coverage predicates to employee-data queries. Tenant-wide admin capability is allowed only where the permission, module entitlement, and active company context allow it.",
     ])
     add_table(doc, ["Scope type", "Meaning"], [
-        ["Own only", "Employee sees only their own profile, leave, activity, or related records."],
-        ["Team/subordinate scope", "Manager sees direct and indirect reports through reporting-line hierarchy."],
-        ["Department scope", "Department head sees employees in their department and subdepartments."],
-        ["All tenant scope", "Tenant Super Admin/Org Owner sees all tenant records subject to permissions, commercial entitlements, runtime flags, and hierarchy policy."],
+        ["Own only", "Employee sees only their own profile, Time Off, activity, or related self-service records."],
+        ["Management coverage", "User sees employees covered by active Position, Department, or Company-wide management coverage plus the required permission."],
+        ["Tenant-wide admin capability", "Authorized tenant user sees tenant records only where the permission, commercial entitlements, runtime flags, and active company context allow it."],
         ["Platform scope", "Developer Platform operators are not tenant users; they use platform-admin identity and admin endpoints."],
     ], widths=[2.0, 5.3])
 
@@ -1383,12 +1350,12 @@ def build():
         ["Agent", "POST /api/v1/agent/commands/{id}/complete", "Device JWT", "Report command completion."],
         ["Manager Capture", "POST /api/v1/agents/{agentId}/capture-screenshot", "agent:command", "Request remote screenshot."],
         ["Manager Capture", "POST /api/v1/agents/{agentId}/capture-photo", "agent:command", "Request remote photo."],
-        ["Activity", "GET /api/v1/activity/snapshots/{employeeId}", "workforce:view", "Activity snapshots for date range."],
-        ["Activity", "GET /api/v1/activity/summary/{employeeId}", "workforce:view", "Daily summary."],
-        ["Activity", "GET /api/v1/activity/apps/{employeeId}", "workforce:view", "Application usage breakdown."],
-        ["Activity", "GET /api/v1/activity/meetings/{employeeId}", "workforce:view", "Meeting sessions."],
-        ["Activity", "GET /api/v1/activity/screenshots/{employeeId}", "workforce:view", "Screenshot metadata."],
-        ["Activity", "GET /api/v1/activity/screenshots/{id}/view", "workforce:view", "Redirect to screenshot blob URL."],
+        ["Activity", "GET /api/v1/activity/snapshots/{employeeId}", "monitoring:view", "Activity snapshots for date range."],
+        ["Activity", "GET /api/v1/activity/summary/{employeeId}", "monitoring:view", "Daily summary."],
+        ["Activity", "GET /api/v1/activity/apps/{employeeId}", "monitoring:view", "Application usage breakdown."],
+        ["Activity", "GET /api/v1/activity/meetings/{employeeId}", "monitoring:view", "Meeting sessions."],
+        ["Activity", "GET /api/v1/activity/screenshots/{employeeId}", "monitoring:view", "Screenshot metadata."],
+        ["Activity", "GET /api/v1/activity/screenshots/{id}/view", "monitoring:view", "Redirect to screenshot blob URL."],
         ["Activity", "GET /api/v1/activity/categories", "monitoring:view-settings", "Read app categories."],
         ["Activity", "POST /api/v1/activity/categories", "monitoring:configure", "Create/update category."],
         ["Activity", "DELETE /api/v1/activity/categories/{id}", "monitoring:configure", "Delete category."],
@@ -1417,7 +1384,6 @@ def build():
         ["Activity", "Keyboard and mouse event counts only; no keystroke content."],
         ["App tracking", "Foreground application detection through Windows APIs."],
         ["Idle detection", "Idle/active time detection through OS input timing."],
-        ["Meeting detection", "Basic process-name matching for Teams, Zoom, Meet, or other meeting apps."],
         ["Device tracking", "Active/idle device cycles and device session context."],
         ["Document tracking", "Word, Excel, PowerPoint, and Google Docs time tracking where enabled."],
         ["Communication tracking", "Outlook/Slack active time and send-event counts where enabled."],
@@ -1440,7 +1406,7 @@ def build():
     h(doc, "Agent Privacy and Control Rules", 2)
     bullets(doc, [
         "Device JWTs are separate from user JWTs and contain device/tenant context, not HR permissions.",
-        "The agent cannot read HR data, employee profiles, payroll, leave, or other business records.",
+        "The agent cannot read HR data, employee profiles, payroll, Time Off, or other business records.",
         "Monitoring policy is computed from tenant toggles and employee overrides; the server validates again on ingest.",
         "Data collected during breaks is not processed into activity analytics.",
         "Window titles are hashed before storage.",
@@ -1457,7 +1423,7 @@ def build():
         ["3. Event", "Agent Gateway reports command completion or image submission; Identity Verification creates/updates verification_records."],
         ["4. Rekognition request", "Backend image-processing worker submits the stored object reference to AWS Rekognition for face comparison, face detection, or image moderation/classification as configured."],
         ["5. Result mapping", "AWS response is normalized into match confidence, labels, or failure reasons and linked back to verification_records or exception alert context."],
-        ["6. Alerting", "Low confidence, failed verification, or policy violations publish events to Exception Engine and Notifications."],
+        ["6. Alerting", "Low confidence, failed verification, or policy violations create lightweight alerts and Notifications. Full Exception Engine routing is Phase 2."],
         ["7. Retention", "Original images and derived metadata follow tenant retention policies and legal hold rules."],
     ], widths=[1.6, 5.7])
     h(doc, "AWS Rekognition Controls", 2)
@@ -1507,7 +1473,7 @@ def build():
     h(doc, "Security, Data Classification, and Retention", 1)
     add_table(doc, ["Data class", "Examples", "Control"], [
         ["Critical PII", "Bank account numbers, SSO client secrets, hardware terminal API keys, integration credentials.", "AES-256 encryption at rest for encrypted columns plus log scrubbing."],
-        ["Restricted workforce data", "Screenshots, verification photos, application window title hash.", "Blob storage for image files, metadata only in database, access controlled by permission and tenant scope."],
+        ["Restricted monitoring data", "Screenshots, verification photos, application window title hash.", "Blob storage for image files, metadata only in database, access controlled by permission and tenant scope."],
         ["Confidential activity data", "Activity snapshots and raw agent buffer.", "Retention limits, partitioning, no content logging, tenant scoping."],
         ["Sensitive PII", "Emails, employee names, addresses, emergency contacts, dependents, session IPs.", "RLS/access control, targeted log scrubbing, audit trail where appropriate."],
     ], widths=[1.8, 2.5, 3.0])
@@ -1546,18 +1512,17 @@ def build():
             "HR creates employee profile in Core HR.",
             "Auth creates/invites the user account.",
             "Role and permission templates are assigned.",
-            "Leave entitlements are assigned from policy.",
-            "Shift/schedule is assigned by Workforce Presence.",
+            "Time Off entitlements are assigned from policy.",
+            "Shift/schedule is assigned by Time & Attendance.",
             "Onboarding tasks are generated from the department template.",
-            "Monitoring agent is installed and registered if workforce intelligence is enabled.",
+            "Monitoring agent is installed and registered if monitoring is enabled.",
             "Employee completes required WorkPulse notice/consent before monitoring or photo/biometric collection.",
             "Monitoring policy activates and welcome notification is sent.",
         ]),
-        ("Leave Request and Approval", [
-            "Employee submits leave request.",
-            "Leave checks entitlement balance.",
+        ("Time Off Request and Approval", [
+            "Employee submits Time Off request.",
+            "Time Off checks entitlement balance.",
             "Calendar checks conflict.",
-            "Workforce Presence checks team/shift coverage context.",
             "Approver receives notification.",
             "Approver approves/rejects.",
             "Calendar and attendance/presence context are updated.",
@@ -1566,26 +1531,26 @@ def build():
         ("Monitoring Alert Escalation", [
             "Agent sends activity/presence data.",
             "Activity Monitoring processes raw buffer and daily summaries.",
-            "Exception Engine evaluates configured rules.",
-            "Alert is created and sent to manager dashboard.",
+            "Phase 1 lightweight alert detection evaluates fixed monitoring checks. Full Exception Engine configured rules are Phase 2.",
+            "Alert is created and sent to the eligible owner/reviewer dashboard.",
             "If unacknowledged, escalation chain advances.",
-            "Manager/HR acknowledges or resolves with notes.",
+            "Authorized owner/reviewer or HR acknowledges or resolves with notes.",
         ]),
         ("On-Demand Capture", [
-            "Manager opens exception alert and requests photo or screenshot.",
-            "Exception Engine publishes remote capture request.",
+            "Authorized reviewer opens alert and requests photo or screenshot.",
+            "Phase 1 lightweight alert handling publishes remote capture request. Full Exception Engine is Phase 2.",
             "Agent Gateway dispatches command over SignalR.",
             "Agent notifies employee before capture.",
             "Agent uploads image and reports command completion.",
             "Identity Verification records capture metadata and links alert/requester.",
-            "Result becomes available to manager in alert detail.",
+            "Result becomes available to the authorized reviewer in alert detail.",
         ]),
         ("Employee Offboarding", [
             "HR initiates offboarding workflow.",
             "Core HR creates checklist and lifecycle record.",
             "Auth sessions are revoked after completion.",
             "Agent registration is revoked/deactivated.",
-            "Leave balance closure is calculated.",
+            "Time Off balance closure is calculated.",
             "Employee status is set to terminated.",
             "Retention schedule is applied according to tenant policy.",
         ]),
@@ -1662,7 +1627,7 @@ def build():
         "If knowledge_risk_level is critical, the system triggers additional handover workflow.",
         "The service creates a lifecycle event with event_type terminated or resigned.",
         "EmployeeOffboardingStarted is published.",
-        "Consumers notify HR/manager, forfeit or close leave balances, prepare final settlement, and revoke agent access where applicable.",
+        "Consumers notify HR/assigned owner, forfeit or close Time Off balances, prepare final settlement, and revoke agent access where applicable.",
         "The service calculates penalties_json, including outstanding loans or notice period tracking where provided.",
         "If HR/Admin approves a knowledge-transfer bypass, the service requires a bypass reason.",
         "The service resolves the bypass penalty amount from manual input, tenant default policy, or zero for audit-only bypass.",
@@ -1681,7 +1646,7 @@ def build():
         ["Critical knowledge risk", "Triggers additional handover workflow expectation."],
         ["Notice-period tracking", "Stored in penalties_json with expected end date."],
         ["Agent installed", "Agent Gateway revokes active agent registration/access."],
-        ["Leave/payroll dependencies", "Leave closure and final settlement are downstream consumers; payroll itself remains Phase 2."],
+        ["Time Off/payroll dependencies", "Time Off closure and final settlement are downstream consumers; payroll itself remains Phase 2."],
     ], widths=[2.7, 4.6])
     h(doc, "Knowledge Transfer, Bypass, and Penalty Handling", 2)
     p(doc, "Knowledge transfer is treated as a manager-owned handover step inside offboarding. For high and critical risk employees, it is mandatory before offboarding completion unless an authorized HR/Admin user approves a bypass. Any bypass and related penalty are recorded in offboarding_records.penalties_json for audit and final-settlement review.")
@@ -1745,7 +1710,6 @@ def build():
         ["Grievance", "Phase 2."],
         ["Expense", "Phase 2."],
         ["Reporting Engine", "Phase 2 table group, though Phase 1 analytics/reporting views exist in Productivity Analytics."],
-        ["WMS development", "External system built by separate team; OneVo-HR provides bridge contracts and frontend consumption."],
         ["macOS agent", "Phase 2; Windows only in Phase 1."],
         ["Screen recording", "Phase 2/future; not Phase 1."],
         ["Silent capture", "Phase 2/future and subject to legal review; Phase 1 documented flow requires employee notification."],

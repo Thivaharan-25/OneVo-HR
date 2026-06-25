@@ -1,89 +1,97 @@
 # Employee Promotion
 
 **Area:** Employee Management  
-**Trigger:** Authorized employee-management user initiates promotion (user action)  
-**Required Permission(s):** `employees:write`  
-**Related Permissions:** `payroll:write` (salary revision), `roles:manage` or `access:approve` (view/change generated access)
+**Trigger:** Authorized user promotes an employee  
+**Required Permission(s):** `employees:write` to start a promotion; `position:approve` with valid coverage to approve/apply a position-changing promotion
 
 ---
 
-## Preconditions
+## Phase 1 Source of Truth
 
-- Employee is active -> [[Userflow/Employee-Management/profile-management|Profile Management]]
-- Target position exists -> [[Userflow/Org-Structure/position-setup|Position Setup]]
-- Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
+Promotion is a compact modal or compact flow. It is not a five-step wizard and it does not use Workflow Engine in Phase 1.
 
-## Flow Steps
+If a target position grants access, the UI shows deterministic **Role granted** and **Can manage employees in** values from the target position.
 
-### Step 1: Initiate Promotion
-- **UI:** Employee Profile -> Actions -> "Promote" -> form opens
+---
 
-### Step 2: Set New Level / Position
-- **UI:** Select new job family level (for example, Mid -> Senior) -> new title auto-filled from level -> override title if needed.
-- If the promotion changes position, select the target position and resolve its target department.
-- **Backend:** Position access templates are evaluated only when the promotion places the employee into a new position or changes the active position assignment. Position access templates do not become active grants until confirmed or approved.
+## Modal Fields
 
-### Step 3: Salary Revision
-- **UI:** Current salary shown -> enter new salary -> system shows salary band for new level -> enter effective date
-- **Validation:** Warning if salary outside new level's band
+| Field | Required | Notes |
+|:---|:---|:---|
+| Target position / level | Yes | Target position drives reporting and position-derived access |
+| Effective date | Yes | Today or future |
+| Reason | Yes | Audit and approver context |
+| Compensation impact | Conditional | Only if compensation is in scope for the tenant/actor |
 
-### Step 4: Access Review / Approval
-- **If actor has `roles:manage` or `access:approve`:** Show generated position access grants. Actor can confirm, reject, replace, or narrow them within authority.
-- **If actor lacks `roles:manage` and `access:approve`:** Do not show role lists, permission details, scope controls, or access-template details. The UI may show only: "Access changes require approval."
-- **Key:** Permissions do not change automatically because of the promotion label. Position-template access only becomes active after confirmation or approval.
-- **Approval routing:** If a generated position access template requires approval and the actor lacks access authority, route the access approval by the target position's department:
-  1. users with `roles:manage` or `access:approve` whose scope covers the target department;
-  2. tenant-wide `roles:manage` or `access:approve`;
-  3. Tenant Admin.
-- If multiple approvers match, notify all; first approval wins.
-- For pooled target positions, an authorized actor changing access must choose whether the change applies to the position template for all occupants or only to this employee as an override.
+---
 
-### Step 5: Submit
-- **API:** `POST /api/v1/employees/{id}/promote`
-- **Backend:** EmployeeLifecycleService.PromoteAsync() -> [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
-- **DB:** `employees` - title/level updated, `employee_compensation` - new salary record, confirmed or approved access grants stored in `user_roles`; pending access stored in `access_grant_requests`
+## Access Impact
 
-### Step 6: Effective Date Processing
-- On effective date: confirmed or approved changes become active; pending sensitive access remains inactive until approved. Employee visibility changes only from active `user_roles`, employee overrides, and memberships.
+If target position changes, load:
 
-## Variations
+- Role granted
+- Can manage employees in
+- Requires approval
 
-### When user also has `roles:manage`
-- Can assign a confirmed role instead of the job family suggestion
-- Can add additional confirmed permissions within entitlement boundaries
-- No access approval request is needed, but all role/scope decisions are audited.
+If the promotion does not change position-based access, do not regenerate access.
 
-### Promotion without position change
-- Compensation may change. Position changes are handled through the target position assignment.
-- Position-template access is not regenerated unless the active position changes or an authorized user explicitly changes access.
+If direct apply is allowed and approval is not required, the actor can apply directly. If the actor lacks valid authority or the position requires approval, submit an approval request and resolve one owner through management coverage.
+
+Bypass depends on permissions and authority grants, not hard-coded role names.
+
+Approval routing:
+
+1. Position coverage owners in order: Primary owner, Backup owner 1, Backup owner 2, etc.
+2. Department coverage owners in the same order.
+3. Company-wide coverage owners in the same order.
+4. Routing issue.
+
+If no valid owner exists, create a routing issue with: "No eligible owner could approve this request. Check position coverage and permissions."
+
+---
+
+## Backend Flow
+
+1. Validate employee is active.
+2. Validate target position, capacity, and legal-entity boundary.
+3. Resolve access impact from the target position.
+4. Create/schedule promotion and assignment changes.
+5. Apply access directly only when allowed.
+6. Otherwise create `access_grant_requests`.
+7. On effective date, update primary assignment if the promotion changes the employment position.
+
+---
+
+## Multi-Position Rule
+
+Promotion inside the same legal entity changes the employee's Primary Employment Assignment. Do not create a parallel second employment assignment in the same legal entity.
+
+Additional Authority Assignments can grant extra authority but do not change time_off, schedule, attendance, payroll, holiday calendar, or primary legal entity.
+
+---
 
 ## Error Scenarios
 
-| Scenario | What happens | User sees |
-|:---------|:-------------|:----------|
-| Same level | Validation fails | "Select a different level for promotion" |
-| Lower level | Warning | "This is a demotion - proceed?" |
-| No salary change | Warning | "Consider adjusting salary for new level" |
-| Access approval pending | Promotion proceeds; sensitive grant inactive | "Access changes are pending approval" |
+| Scenario | User sees |
+|:---|:---|
+| Same target position | "Employee already holds this position." |
+| Position capacity exceeded | "This position has reached its capacity." |
+| Actor lacks authority | "Promotion can be submitted for approval." |
+| Access approval required | "Access changes are pending approval." |
+
+---
 
 ## Events Triggered
 
-- `EmployeePromoted` -> [[backend/messaging/event-catalog|Event Catalog]]
-- `RoleChanged` -> emitted only when a role change was explicitly confirmed or approved
-- `AccessGrantRequested` -> emitted when generated sensitive access needs approval
-- `CompensationUpdated` -> [[backend/messaging/event-catalog|Event Catalog]]
-- Notification to employee -> [[backend/notification-system|Notification System]]
+- `EmployeePromotionRequested`
+- `EmployeePromoted`
+- `AccessGrantRequested`
+- Notification to the single owner resolved from management coverage
 
-## Related Flows
+---
 
-- [[Userflow/Org-Structure/position-setup|Position Setup]] - defines reporting, capacity, and position access templates
-- [[Userflow/Employee-Management/compensation-setup|Compensation Setup]] - salary details
-- [[Userflow/Auth-Access/permission-assignment|Permission Assignment]] - permissions change only from confirmed or approved assignments
-- [[Userflow/Auth-Access/access-policy|Access Policy Reference]]
-- [[Userflow/Employee-Management/employee-transfer|Employee Transfer]] - may accompany promotion
+## Related
 
-## Module References
-
-- [[modules/core-hr/employee-lifecycle/overview|Employee Lifecycle]]
-- [[modules/core-hr/compensation/overview|Compensation]]
-- [[frontend/cross-cutting/authorization|Authorization]]
+- [[Userflow/Org-Structure/position-setup|Position Setup]]
+- [[Userflow/Employee-Management/employee-transfer|Employee Transfer]]
+- [[Userflow/Auth-Access/access-policy|Management Coverage Reference]]

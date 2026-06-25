@@ -1,4 +1,4 @@
-# Audit Logging — End-to-End Logic
+﻿# Audit Logging - End-to-End Logic
 
 **Module:** Auth
 **Feature:** Audit Logging
@@ -10,7 +10,7 @@
 ### Flow
 
 ```
-Domain event occurs (e.g., employee.created, leave.approved)
+Domain event occurs (e.g., employee.created, time_off.approved)
   -> AuditLogService.LogAsync(AuditLogCommand)
     -> 1. Build audit log entry:
        -> tenant_id from ITenantContext
@@ -41,7 +41,7 @@ GET /api/v1/audit-logs?action=employee.created&from=2026-04-01&to=2026-04-05
 
 ### Key Rules
 
-- **Audit logs are append-only** — never UPDATE or DELETE (compliance requirement).
+- **Audit logs are append-only** - never UPDATE or DELETE (compliance requirement).
 - **Partitioned by month** via pg_partman for query performance.
 - **Always include correlation_id** for request tracing across services.
 

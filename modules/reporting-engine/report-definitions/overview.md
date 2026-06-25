@@ -12,7 +12,7 @@ Scheduled and on-demand report definitions with cron scheduling and output forma
 ## Database Tables
 
 ### `report_definitions`
-Key columns: `name`, `report_type` (`headcount`, `turnover`, `leave_utilization`, `productivity_daily`, `productivity_weekly`, `workforce_summary`, `exception_summary`), `parameters_json`, `schedule_cron` (nullable for on-demand), `output_format` (`csv`, `xlsx`), `recipients_json`.
+Key columns: `name`, `report_type` (`headcount`, `turnover`, `time_off_utilization`, `productivity_daily`, `productivity_weekly`, `monitoring_summary`, `exception_summary`), `parameters_json`, `schedule_cron` (nullable for on-demand), `output_format` (`csv`, `xlsx`), `recipients_json`.
 
 ## API Endpoints
 

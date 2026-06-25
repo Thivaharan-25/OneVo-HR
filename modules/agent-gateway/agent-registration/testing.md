@@ -1,4 +1,4 @@
-# Agent Registration — Testing
+﻿# Agent Registration - Testing
 
 **Module:** Agent Gateway
 **Feature:** Agent Registration

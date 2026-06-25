@@ -1,4 +1,4 @@
-# Search Architecture: ONEVO
+﻿# Search Architecture: ONEVO
 
 ## Phase 1: PostgreSQL Full-Text Search
 
@@ -53,12 +53,12 @@ public async Task<List<Employee>> SearchAsync(string query, CancellationToken ct
 When search needs exceed PostgreSQL FTS capabilities (typo tolerance, faceted search, real-time indexing):
 
 - Meilisearch instance alongside PostgreSQL
-- Sync via domain events: entity created/updated → index in Meilisearch
+- Sync via domain events: entity created/updated -> index in Meilisearch
 - Tenant-isolated indexes: `onevo_{tenantId}_employees`
 - Fallback to PostgreSQL FTS if Meilisearch is unavailable
 
 ## Related
 
-- [[database/performance|Performance]] — indexing strategy and GIN indexes
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-isolated search indexes
-- [[AI_CONTEXT/tech-stack|Tech Stack]] — search technology choices
+- [[database/performance|Performance]] - indexing strategy and GIN indexes
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - tenant-isolated search indexes
+- [[AI_CONTEXT/tech-stack|Tech Stack]] - search technology choices

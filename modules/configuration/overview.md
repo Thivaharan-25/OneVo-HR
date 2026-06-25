@@ -1,16 +1,16 @@
-# Module: Configuration
+﻿# Module: Configuration
 
 **Feature Folder:** `Application/Features/Configuration`
-**Phase:** 1 — Build
+**Phase:** 1 - Build
 **Pillar:** Shared Foundation
 **Owner:** Dev 4
-**Tables:** 11
+**Tables:** 12
 
 ---
 
 ## Purpose
 
-Tenant-level settings, external integration connections, and **monitoring configuration**. This module is the source of truth for "what monitoring features are enabled for which employees" and resolves the final employee/device policy from tenant defaults, workforce-scope overrides, employee overrides, consent state, privacy mode, and the app allowlist.
+Tenant-level settings, external integration connections, and **monitoring configuration**. This module is the source of truth for "what monitoring features are enabled for which employees" and resolves the final employee/device policy from tenant defaults, monitoring-scope overrides, employee overrides, consent state, privacy mode, and the app allowlist.
 
 ---
 
@@ -40,7 +40,6 @@ public interface IConfigurationService
     Task<Result> RemoveMonitoringPolicyOverrideAsync(string scopeType, Guid scopeId, CancellationToken ct);
     Task<Result<EmployeeMonitoringOverrideDto>> GetEmployeeOverrideAsync(Guid employeeId, CancellationToken ct);
     Task<Result> SetEmployeeOverrideAsync(SetOverrideCommand command, CancellationToken ct);
-    Task<Result> SetBulkOverrideAsync(SetBulkOverrideCommand command, CancellationToken ct); // By department/team/job family
     Task<Result<ResolvedMonitoringPolicyDto>> GetResolvedMonitoringPolicyAsync(Guid employeeId, CancellationToken ct);
     
     // App Allowlist
@@ -82,7 +81,7 @@ API endpoints:
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants, UNIQUE |
+| `tenant_id` | `uuid` | FK -> tenants, UNIQUE |
 | `timezone` | `varchar(50)` | Default timezone |
 | `date_format` | `varchar(20)` | |
 | `currency_code` | `varchar(3)` | |
@@ -101,17 +100,18 @@ API endpoints:
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants, UNIQUE |
+| `tenant_id` | `uuid` | FK -> tenants, UNIQUE |
 | `activity_monitoring` | `boolean` | Keyboard/mouse event counting |
 | `application_tracking` | `boolean` | App usage tracking |
 | `document_tracking` | `boolean` | Document tool time tracking |
 | `communication_tracking` | `boolean` | Communication tool active time and send counts |
-| `screenshot_capture` | `boolean` | Screenshot command eligibility; never scheduled in Phase 1 |
+| `screenshot_capture` | `boolean` | Allows authorized on-demand screenshot capture |
+| `auto_screenshot_capture` | `boolean` | Allows automatic screenshot capture when monitoring detects a deviation |
 | `meeting_detection` | `boolean` | Meeting time tracking |
 | `device_tracking` | `boolean` | Device usage tracking |
 | `work_location_verification` | `boolean` | Network-based work-location compliance |
 | `identity_verification` | `boolean` | Photo verification |
-| `biometric` | `boolean` | Fingerprint terminals |
+| `biometric` | `boolean` | Biometric/attendance terminals |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
@@ -119,27 +119,27 @@ API endpoints:
 
 | Profile | activity | app_tracking | screenshot | meeting | device | identity | biometric |
 |:--------|:---------|:-------------|:-----------|:--------|:-------|:---------|:----------|
-| office_it | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ |
-| manufacturing | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| retail | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| healthcare | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| custom | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| office_it | [ok] | [ok] | [wrong] | [ok] | [ok] | [ok] | [wrong] |
+| manufacturing | [wrong] | [wrong] | [wrong] | [wrong] | [wrong] | [wrong] | [ok] |
+| retail | [wrong] | [wrong] | [wrong] | [wrong] | [wrong] | [wrong] | [ok] |
+| healthcare | [wrong] | [wrong] | [wrong] | [wrong] | [wrong] | [wrong] | [ok] |
+| custom | [wrong] | [wrong] | [wrong] | [wrong] | [wrong] | [wrong] | [wrong] |
 
 ### `monitoring_policy_overrides`
 
-Scope-level monitoring feature overrides. These are used when a tenant wants different monitoring behavior for a role, department, team, or job family without setting every employee one by one.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `scope_type` | `varchar(30)` | `role`, `department`, `team`, `position` |
+| `scope_type` | `varchar(30)` | `role`, `position`, `department` |
 | `scope_id` | `uuid` | FK to the corresponding scope table |
 | `activity_monitoring` | `boolean` | Nullable - null means inherit from tenant |
 | `application_tracking` | `boolean` | Nullable |
 | `document_tracking` | `boolean` | Nullable |
 | `communication_tracking` | `boolean` | Nullable |
-| `screenshot_capture` | `boolean` | Nullable; enables command eligibility only, not scheduled capture |
+| `screenshot_capture` | `boolean` | Nullable; allows authorized on-demand screenshot capture |
+| `auto_screenshot_capture` | `boolean` | Nullable; allows automatic screenshot capture when monitoring detects a deviation |
 | `meeting_detection` | `boolean` | Nullable |
 | `device_tracking` | `boolean` | Nullable |
 | `work_location_verification` | `boolean` | Nullable |
@@ -152,7 +152,6 @@ Scope-level monitoring feature overrides. These are used when a tenant wants dif
 
 **Indexes:** `(tenant_id, scope_type, scope_id)` UNIQUE, `(tenant_id, scope_type)`
 
-**Scope precedence:** Employee override wins over every scope override. When more than one scope applies to the employee, resolve in this order: role -> position -> department -> team, with the later/more operational scope overriding earlier defaults when it explicitly sets a value. Null always means "continue inheriting."
 
 ### `employee_monitoring_overrides`
 
@@ -161,20 +160,21 @@ Per-employee feature overrides. **Employee override wins over tenant toggle and 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
-| `activity_monitoring` | `boolean` | Nullable — null means inherit from tenant |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
+| `activity_monitoring` | `boolean` | Nullable - null means inherit from tenant |
 | `application_tracking` | `boolean` | Nullable |
 | `document_tracking` | `boolean` | Nullable |
 | `communication_tracking` | `boolean` | Nullable |
-| `screenshot_capture` | `boolean` | Nullable |
+| `screenshot_capture` | `boolean` | Nullable; allows authorized on-demand screenshot capture |
+| `auto_screenshot_capture` | `boolean` | Nullable; allows automatic screenshot capture when monitoring detects a deviation |
 | `meeting_detection` | `boolean` | Nullable |
 | `device_tracking` | `boolean` | Nullable |
 | `work_location_verification` | `boolean` | Nullable |
 | `identity_verification` | `boolean` | Nullable |
 | `biometric` | `boolean` | Nullable |
 | `override_reason` | `varchar(255)` | Why this employee is different |
-| `set_by_id` | `uuid` | FK → users |
+| `set_by_id` | `uuid` | FK -> users |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
@@ -183,10 +183,10 @@ Per-employee feature overrides. **Employee override wins over tenant toggle and 
 Resolution order:
 
 1. Start with `monitoring_feature_toggles` tenant defaults.
-2. Apply `monitoring_policy_overrides` for matching workforce scopes (`role`, `position`, `department`, `team`). Only non-null fields override inherited values.
+2. Apply `monitoring_policy_overrides` for matching employee, role, position, or department targets. Only non-null fields override inherited values.
 3. Apply `employee_monitoring_overrides`. Only non-null fields override inherited values.
 4. Apply consent and legal gates. If a required notice/consent is missing, the affected desktop collector is disabled regardless of admin settings.
-5. Apply lifecycle gates from Workforce Presence. The agent collects only while monitoring is active, never during breaks or after clock-out.
+5. Apply lifecycle gates from Time & Attendance. The agent collects only while monitoring is active, never during breaks or after clock-out.
 6. Attach resolved app allowlist from `app_allowlists` using tenant -> role -> employee resolution.
 7. Attach privacy/transparency mode from `tenant_settings` so the TrayApp knows what to show the employee.
 
@@ -200,52 +200,54 @@ effectivePolicy.ActivityMonitoring =
 
 **Employee visibility:** Employees see the final resolved policy for their own device according to `privacy_mode`. In `full_transparency`, the TrayApp/web self-service can show the exact enabled collector list. In `partial`, it can show monitoring is active and required verification prompts without detailed operational rules. The desktop agent itself is always visible in the tray; there is no hidden agent mode.
 
-### `integration_connections`
+### `integration_connections` - Phase 2
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `integration_type` | `varchar(50)` | `stripe`, `payhere`, `resend`, `google_calendar`, `slack`, `lms` |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `integration_type` | `varchar(50)` | Phase 2 generic or legacy tenant integrations only, e.g. `peoplehr`, `slack`, `lms` |
 | `config_json` | `jsonb` | |
 | `credentials_encrypted` | `bytea` | Encrypted |
 | `status` | `varchar(20)` | `active`, `inactive`, `error` |
 | `last_sync_at` | `timestamptz` | |
+
+This generic connection table is Phase 2 only. Stripe, PayHere, Resend, Google Calendar, and Outlook Calendar do not store credentials here and do not wait for this table in Phase 1. They use their dedicated payment, notification, platform service key, or calendar OAuth tables.
 
 ### `retention_policies`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `data_type` | `varchar(50)` | `screenshots`, `verification_photos`, `activity_snapshots`, `audit_logs` |
 | `retention_days` | `int` | |
 | `created_at` | `timestamptz` | |
 
 ### `app_allowlists`
 
-**Three-tier app allowlist configuration** following the hybrid permission model: tenant default → role override → employee override. Controls which applications are considered "allowed" during work time. Non-allowed app usage triggers exception alerts.
+**Three-tier app allowlist configuration** following the hybrid permission model: tenant default -> role override -> employee override. Controls which applications are considered "allowed" during work time. Non-allowed app usage triggers exception alerts.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `scope_type` | `varchar(20)` | `tenant`, `role`, `employee` |
 | `scope_id` | `uuid` | Null for tenant, role_id for role, employee_id for employee |
 | `application_name` | `varchar(100)` | e.g., "Microsoft Teams", "Visual Studio Code" |
 | `category` | `varchar(50)` | `communication`, `development`, `browser`, `design`, `productivity`, `other` |
 | `is_allowed` | `boolean` | True = allowed during work, False = not allowed |
-| `set_by_id` | `uuid` | FK → users (who configured this) |
+| `set_by_id` | `uuid` | FK -> users (who configured this) |
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
 **Indexes:** `(tenant_id, scope_type, scope_id, application_name)` UNIQUE, `(tenant_id, scope_type)`
 
 **Three-tier resolution (most specific wins):**
-1. Check `employee` scope for this employee → if found, use it
-2. Check `role` scope for this employee's role → if found, use it
-3. Check `tenant` scope → default
-4. If app not in any list → treated as **not allowed** (allowlist model) OR **allowed** (blocklist model) depending on `allowlist_mode` in tenant settings
+1. Check `employee` scope for this employee -> if found, use it
+2. Check `role` scope for this employee's role -> if found, use it
+3. Check `tenant` scope -> default
+4. If app not in any list -> treated as **not allowed** (allowlist model) OR **allowed** (blocklist model) depending on `allowlist_mode` in tenant settings
 
 ```csharp
 // Resolve effective app allowlist for an employee
@@ -272,31 +274,31 @@ Tracks changes to app allowlists for compliance.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `allowlist_id` | `uuid` | FK → app_allowlists |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `allowlist_id` | `uuid` | FK -> app_allowlists |
 | `action` | `varchar(20)` | `created`, `updated`, `deleted` |
-| `changed_by_id` | `uuid` | FK → users |
+| `changed_by_id` | `uuid` | FK -> users |
 | `old_value_json` | `jsonb` | Previous state |
 | `new_value_json` | `jsonb` | New state |
 | `changed_at` | `timestamptz` | |
 
 ---
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module - MediatR)
 
-> These events are published and consumed within this module only. They never leave the module.
+> These events are published and consumed within this module only. They never cross the module boundary.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module - MediatR INotification)
 
 ### Publishes
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
 ### Consumes
 
@@ -308,26 +310,25 @@ Tracks changes to app allowlists for compliance.
 
 ## Key Business Rules
 
-1. **Industry profile sets defaults at signup** — admin can change any toggle at any time.
-2. **Employee overrides allow per-person monitoring config** — a manufacturing company can turn on activity monitoring for just their 5 IT staff while keeping it off for 500 factory workers.
-3. **Bulk overrides** — admin can set overrides by department, team, or job family. Individual overrides take precedence over bulk.
+1. **Industry profile sets defaults during operator provisioning** - admin can change any toggle at any time.
+2. **Employee overrides allow per-person monitoring config** - a manufacturing company can turn on activity monitoring for just their 5 IT staff while keeping it off for 500 factory workers.
 4. **Privacy mode** affects what employees can see about their own monitoring data (see [[AI_CONTEXT/known-issues|Known Issues]]).
 5. **Always check monitoring toggles + overrides before processing any monitoring data.** Server must double-validate even though the agent checks on login.
-6. **App allowlist follows the hybrid permission model** — tenant sets default allowed apps, roles can add/remove apps, individual employees can have further overrides. Most specific scope wins per app name.
-7. **Allowlist changes trigger `RefreshPolicy` command** to affected agents — when an admin updates an app allowlist, the agent-gateway sends a `RefreshPolicy` command via SignalR so the agent re-fetches its policy (including the updated allowlist).
+6. **App allowlist follows the hybrid permission model** - tenant sets default allowed apps, roles can add/remove apps, individual employees can have further overrides. Most specific scope wins per app name.
+7. **Allowlist changes trigger `RefreshPolicy` command** to affected agents - when an admin updates an app allowlist, the agent-gateway sends a `RefreshPolicy` command via SignalR so the agent re-fetches its policy (including the updated allowlist).
 8. **Allowlist mode** is configurable per tenant: `allowlist` (only listed apps allowed, everything else flagged) or `blocklist` (only listed apps blocked, everything else allowed). Default is `allowlist`.
 
 ---
 
 ### Definitive Monitoring Policy Hierarchy
 
-The effective policy for an employee is not read from any single row. It is resolved by the Configuration module and then consumed by Agent Gateway, Activity Monitoring, Identity Verification, Workforce Presence, and Exception Engine.
+The effective policy for an employee is not read from any single row. It is resolved by the Configuration module and then consumed by Agent Gateway, Activity Monitoring, Identity Verification, Time & Attendance, and Exception Engine.
 
 1. Tenant default from `monitoring_feature_toggles`.
-2. Workforce-scope overrides from `monitoring_policy_overrides` for the employee's role, job family, department, and team.
+2. Employee-scope overrides from `monitoring_policy_overrides` for the employee's role, position, or department.
 3. Employee override from `employee_monitoring_overrides`.
 4. Consent and disclosure gate. Missing required notice/consent disables the affected desktop collection category even if admin policy is enabled.
-5. Workforce Presence lifecycle gate. Collection is active only while the employee is clocked in and not on break.
+5. Time & Attendance lifecycle gate. Collection is active only while the employee is clocked in and not on break.
 6. App allowlist from `app_allowlists`, resolved tenant -> role -> employee.
 7. Privacy/transparency mode from `tenant_settings`, used for what the employee sees in TrayApp and self-service.
 
@@ -341,16 +342,17 @@ Most specific non-null value wins. Null always means inherit. Any change to tena
 | PUT | `/api/v1/settings` | `settings:admin` | Update settings |
 | GET | `/api/v1/settings/monitoring` | `monitoring:view-settings` | Get monitoring toggles |
 | PUT | `/api/v1/settings/monitoring` | `monitoring:configure` | Update toggles |
-| GET | `/api/v1/settings/monitoring/policy/{scopeType}/{scopeId}` | `monitoring:view-settings` | Get role/department/team/job-family monitoring override |
-| PUT | `/api/v1/settings/monitoring/policy/{scopeType}/{scopeId}` | `monitoring:configure` | Set role/department/team/job-family monitoring override |
+| GET | `/api/v1/settings/monitoring/policy/{scopeType}/{scopeId}` | `monitoring:view-settings` | Get scope monitoring override |
+| PUT | `/api/v1/settings/monitoring/policy/{scopeType}/{scopeId}` | `monitoring:configure` | Set scope monitoring override |
 | DELETE | `/api/v1/settings/monitoring/policy/{scopeType}/{scopeId}` | `monitoring:configure` | Remove scope monitoring override |
 | GET | `/api/v1/settings/monitoring/overrides` | `monitoring:view-settings` | List employee overrides |
 | POST | `/api/v1/settings/monitoring/overrides` | `monitoring:configure` | Set employee override |
-| POST | `/api/v1/settings/monitoring/overrides/bulk` | `monitoring:configure` | Bulk set by dept/team |
 | DELETE | `/api/v1/settings/monitoring/overrides/{employeeId}` | `monitoring:configure` | Remove override (inherit tenant) |
 | GET | `/api/v1/settings/monitoring/resolved/{employeeId}` | `monitoring:view-settings` | Get final resolved policy for an employee |
 | GET | `/api/v1/settings/integrations` | `settings:admin` | List integrations |
 | POST | `/api/v1/settings/integrations` | `settings:admin` | Add integration |
+| PUT | `/api/v1/settings/integrations/{id}` | `settings:admin` | Update integration config or rotate credentials |
+| POST | `/api/v1/settings/integrations/{id}/test` | `settings:admin` | Test connection and required scopes |
 | GET | `/api/v1/settings/retention` | `settings:admin` | Retention policies |
 | PUT | `/api/v1/settings/retention` | `settings:admin` | Update retention |
 | GET | `/api/v1/settings/app-allowlist` | `monitoring:view-settings` | Get tenant-level app allowlist |
@@ -365,27 +367,27 @@ Most specific non-null value wins. Null always means inherit. Any change to tena
 
 ## Features
 
-- [[Userflow/Configuration/employee-override|Employee Override]] — Per-employee monitoring override flow
-- [[Userflow/Configuration/integration-connection|Integration Connection]] — External provider connection and health flow
-- [[Userflow/Configuration/retention-policy-setup|Retention Policy Setup]] — Per-data-type retention configuration flow
-- [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] — Tenant/role/employee app allowlist flow
+- [[Userflow/Configuration/employee-override|Employee Override]] - Per-employee monitoring override flow
+- [[Userflow/Configuration/integration-connection|Integration Connection]] - External provider connection and health flow
+- [[Userflow/Configuration/retention-policy-setup|Retention Policy Setup]] - Per-data-type retention configuration flow
+- [[Userflow/Configuration/app-allowlist-setup|App Allowlist Setup]] - Tenant/role/employee app allowlist flow
 
-- [[Userflow/Configuration/tenant-settings|Tenant Settings]] — Timezone, currency, work hours, privacy mode — frontend: [[modules/configuration/tenant-settings/frontend|Frontend]]
-- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]] — Global per-feature ON/OFF with industry profile defaults
-- [[modules/configuration/employee-overrides/overview|Employee Overrides]] — Per-employee monitoring overrides (null = inherit from tenant)
-- [[modules/configuration/integrations/overview|Integrations]] — External integration connections (Stripe, Resend, Google Calendar, Slack, LMS)
-- [[modules/configuration/retention-policies/overview|Retention Policies]] — Per-data-type retention settings
-- [[modules/configuration/app-allowlist/overview|App Allowlist]] — Three-tier app allowlist (tenant → role → employee) following hybrid permission model
+- [[Userflow/Configuration/tenant-settings|Tenant Settings]] - Timezone, currency, work hours, privacy mode - frontend: [[modules/configuration/tenant-settings/frontend|Frontend]]
+- [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]] - Global per-feature ON/OFF with industry profile defaults
+- [[modules/configuration/monitoring-policy-overrides/overview|Monitoring Policy Overrides]] - Role, position, and department monitoring policy overrides
+- [[modules/configuration/employee-overrides/overview|Employee Overrides]] - Per-employee monitoring overrides (null = inherit from tenant)
+- [[modules/configuration/integrations/overview|Integrations]] - Phase 2 generic or legacy tenant integration connections; dedicated payment, email, and calendar providers use their own Phase 1 tables
+- [[modules/configuration/retention-policies/overview|Retention Policies]] - Per-data-type retention settings
+- [[modules/configuration/app-allowlist/overview|App Allowlist]] - Three-tier app allowlist (tenant -> role -> employee) following hybrid permission model
 
 ---
 
-- [[modules/configuration/monitoring-policy-overrides/overview|Monitoring Policy Overrides]] - Role, department, team, and job-family monitoring policy overrides
 
 ## Related
 
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — One settings row per tenant; overrides scoped to tenant + employee
-- [[security/compliance|Compliance]] — Privacy mode controls employee self-visibility; retention policies for GDPR
-- [[security/data-classification|Data Classification]] — Integration credentials encrypted at rest
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - One settings row per tenant; overrides scoped to tenant + employee
+- [[security/compliance|Compliance]] - Privacy mode controls employee self-visibility; retention policies for GDPR
+- [[security/data-classification|Data Classification]] - Integration credentials encrypted at rest
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] - Implementation task file
 
 See also: [[backend/module-catalog|Module Catalog]], [[modules/agent-gateway/overview|Agent Gateway]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/identity-verification/overview|Identity Verification]]

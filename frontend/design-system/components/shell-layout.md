@@ -1,32 +1,32 @@
-# Shell Layout
+﻿# Shell Layout
 
-The OneVo shell uses a **floating-cards** layout. Every chrome element — topbar, rail, panel, content area — is a separate rounded card floating on a tinted base with consistent gaps. Nothing is flush to the viewport edge.
+The OneVo shell uses a **floating-cards** layout. Every chrome element - topbar, rail, panel, content area - is a separate rounded card floating on a tinted base with consistent gaps. Nothing is flush to the viewport edge.
 
 ## Visual Structure
 
 ```
-┌─ body: bg #EDEEF2 / #0A0A0D dark ── padding: 8px ── gap: 6px ─────────────────────┐
-│                                                                                     │
-│  ┌─────────────────────────────────────────── topbar (40px h, radius 10px) ──────┐ │
-│  │  [Acme Malaysia v]  /  Workforce  /  Presence     [Search ⌘K]   🔔  ☀  [A]  │ │
-│  └─────────────────────────────────────────────────────────────────────────────── ┘ │
-│                                                                                     │
-│  ┌─ rail ─┐  ┌─── panel ────────┐  ┌─── content ──────────────────────────────┐   │
-│  │ 52px   │  │ 210px            │  │ flex: 1                                  │   │
-│  │ r:12px │  │ r:12px           │  │ r:10px                                   │   │
-│  │#17181F │  │ #FAF9F6 (light)  │  │ white (light) / #111118 (dark)           │   │
-│  │ always │  │ #000000 (dark)   │  │                                          │   │
-│  │  dark  │  │ slides in/out    │  │ padding: 24px                            │   │
-│  └────────┘  └──────────────────┘  └──────────────────────────────────────────┘   │
-│              <- gap: 6px between every card                                          │
-└─────────────────────────────────────────────────────────────────────────────────────┘
++- body: bg #EDEEF2 / #0A0A0D dark -- padding: 8px -- gap: 6px ---------------------+
+|                                                                                     |
+|  +------------------------------------------- topbar (40px h, radius 10px) ------+ |
+|  |  [Acme Malaysia v]  /  Time & Attendance  /  Presence     [Search CmdK]   [bell]  [theme]  [A]  | |
+|  +------------------------------------------------------------------------------- + |
+|                                                                                     |
+|  +- rail -+  +--- panel --------+  +--- content ------------------------------+   |
+|  | 52px   |  | 210px            |  | flex: 1                                  |   |
+|  | r:12px |  | r:12px           |  | r:10px                                   |   |
+|  |#17181F |  | #FAF9F6 (light)  |  | white (light) / #111118 (dark)           |   |
+|  | always |  | #000000 (dark)   |  |                                          |   |
+|  |  dark  |  | slides in/out    |  | padding: 24px                            |   |
+|  +--------+  +------------------+  +------------------------------------------+   |
+|              <- gap: 6px between every card                                          |
++-------------------------------------------------------------------------------------+
 ```
 
 ## Body
 
 ```css
 body {
-  background: #EDEEF2;   /* light — neutral-100 */
+  background: #EDEEF2;   /* light - neutral-100 */
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -53,7 +53,7 @@ The flex row that holds the rail, optional panel, and content area:
   flex: 1;
   display: flex;
   gap: 6px;
-  min-height: 0;   /* REQUIRED — prevents flex child from overflowing */
+  min-height: 0;   /* REQUIRED - prevents flex child from overflowing */
 }
 ```
 
@@ -64,7 +64,7 @@ Tailwind: `flex-1 flex gap-1.5 min-h-0`
 ```css
 .content {
   flex: 1;
-  min-width: 0;          /* REQUIRED — prevents flex child overflow */
+  min-width: 0;          /* REQUIRED - prevents flex child overflow */
   background: #FFFFFF;
   border-radius: 10px;
   padding: 24px;
@@ -91,7 +91,7 @@ Tailwind: `flex-1 min-w-0 bg-white dark:bg-[#111118] rounded-[10px] p-6 overflow
 
 ```tsx
 <h1 className="text-[18px] font-semibold text-[#1A1D28] dark:text-[#E8E9F0] tracking-[-0.02em]">
-  Calendar · Schedules
+  Calendar , Schedules
 </h1>
 <p className="text-[12px] text-[#9499B0]">Subtitle text</p>
 ```
@@ -100,8 +100,8 @@ Tailwind: `flex-1 min-w-0 bg-white dark:bg-[#111118] rounded-[10px] p-6 overflow
 
 ```
 src/app/
-├── app.tsx                      # Root providers + router outlet
-└── shell-layout.tsx             # Shell: topbar -> bottom-row -> rail + panel + main
++-- app.tsx                      # Root providers + router outlet
++-- shell-layout.tsx             # Shell: topbar -> bottom-row -> rail + panel + main
 ```
 
 ```tsx
@@ -180,8 +180,8 @@ An AI building a traditional sidebar layout will produce the wrong result. The `
 
 ## Related
 
-- [[frontend/design-system/components/nav-rail|Nav Rail]] — icon rail (52px, dark, floating)
-- [[frontend/design-system/components/expansion-panel|Expansion Panel]] — slide-out sub-nav panel
-- [[frontend/architecture/topbar|Topbar]] — topbar component spec
-- [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] — pillar structure, routes, permissions
-- [[Userflow/Dashboard/shell-navigation|Shell Navigation]] — how users interact with the shell
+- [[frontend/design-system/components/nav-rail|Nav Rail]] - icon rail (52px, dark, floating)
+- [[frontend/design-system/components/expansion-panel|Expansion Panel]] - slide-out sub-nav panel
+- [[frontend/architecture/topbar|Topbar]] - topbar component spec
+- [[frontend/architecture/sidebar-nav|Sidebar Nav Map]] - pillar structure, routes, permissions
+- [[Userflow/Dashboard/shell-navigation|Shell Navigation]] - how users interact with the shell

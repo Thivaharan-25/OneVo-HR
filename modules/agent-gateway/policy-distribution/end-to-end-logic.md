@@ -1,4 +1,4 @@
-# Policy Distribution — End-to-End Logic
+﻿# Policy Distribution - End-to-End Logic
 
 **Module:** Agent Gateway
 **Feature:** Policy Distribution
@@ -45,15 +45,15 @@ effectivePolicy.ScreenshotCapture = employeeOverride?.ScreenshotCapture ?? tenan
 
 ### Edge Cases
 
-- **Policy changes are pull-based** — agent polls `/policy` every 5 minutes. Changes are NOT pushed.
+- **Policy changes are pull-based** - agent polls `/policy` every 5 minutes. Changes are NOT pushed.
 - **Employee logs out:** Policy reverts to tenant-only defaults (no employee overrides).
 
 ## Related
 
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
 - [[frontend/architecture/overview|Policy Distribution Overview]]
-- [[modules/agent-gateway/heartbeat-monitoring/end-to-end-logic|Heartbeat Monitoring — End-to-End Logic]]
-- [[modules/agent-gateway/agent-registration/end-to-end-logic|Agent Registration — End-to-End Logic]]
+- [[modules/agent-gateway/heartbeat-monitoring/end-to-end-logic|Heartbeat Monitoring - End-to-End Logic]]
+- [[modules/agent-gateway/agent-registration/end-to-end-logic|Agent Registration - End-to-End Logic]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[security/auth-architecture|Auth Architecture]]

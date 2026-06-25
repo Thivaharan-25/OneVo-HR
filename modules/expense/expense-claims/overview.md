@@ -1,5 +1,8 @@
 # Expense Claims
 
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Expense is deferred; not active in Phase 1.
+
 **Module:** Expense  
 **Feature:** Expense Claims
 
@@ -7,7 +10,7 @@
 
 ## Purpose
 
-Manages expense claim submission, approval workflow, and individual line items.
+Phase 2 design for expense claim submission, approval routing, and individual line items.
 
 ## Database Tables
 

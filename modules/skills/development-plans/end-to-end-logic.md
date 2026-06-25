@@ -1,4 +1,4 @@
-# Development Plans — End-to-End Logic
+﻿# Development Plans - End-to-End Logic
 
 **Module:** Skills
 **Feature:** Individual Development Plans
@@ -43,8 +43,8 @@ PUT /api/v1/development-plans/{planId}/items/{itemId}
 
 ## Related
 
-- [[modules/skills/development-plans/overview|Development Plans]] — feature overview
-- [[modules/skills/courses-learning/overview|Courses Learning]] — courses linked to milestones
-- [[modules/skills/employee-skills/overview|Employee Skills]] — skill targets resolved from plan items
-- [[backend/messaging/event-catalog|Event Catalog]] — DevelopmentPlanMilestoneCompleted events
-- [[backend/messaging/error-handling|Error Handling]] — orphaned milestone and link validation errors
+- [[modules/skills/development-plans/overview|Development Plans]] - feature overview
+- [[modules/skills/courses-learning/overview|Courses Learning]] - courses linked to milestones
+- [[modules/skills/employee-skills/overview|Employee Skills]] - skill targets resolved from plan items
+- [[backend/messaging/event-catalog|Event Catalog]] - DevelopmentPlanMilestoneCompleted events
+- [[backend/messaging/error-handling|Error Handling]] - orphaned milestone and link validation errors

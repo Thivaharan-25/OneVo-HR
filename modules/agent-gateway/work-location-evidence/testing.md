@@ -19,16 +19,16 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 |:-----|:---------|
 | Tenant toggle off | `work_location_verification = false` in agent policy |
 | Employee override disables verification | Agent does not collect location evidence |
-| Office employee with workplace assigned | Policy includes `mode = office` and workplace identifiers |
-| Remote employee without profile | Policy requires remote workplace capture |
-| Hybrid employee | Policy allows office or approved remote profile |
-| Field/no-enforcement employee | Evidence is not evaluated |
+| Onsite employee with Company office location configured | Policy includes `mode = onsite` and Company office-location reference |
+| Remote employee without profile | Policy requires approved remote work location capture |
+| Hybrid employee | Policy allows Company office location or approved remote work location profile |
+| Field employee | Evidence is not strictly evaluated against office/remote location |
 
 ### Matching Logic
 
 | Case | Expected |
 |:-----|:---------|
-| BSSID hash matches office | `matched`, `high` confidence |
+| Evidence matches Company office location | `matched`, `high` confidence |
 | Gateway hash matches remote profile | `matched`, `high` confidence |
 | Public IP range matches but no BSSID | `matched`, `medium` confidence |
 | Only coarse location matches | `matched`, `low` confidence |
@@ -49,11 +49,12 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 
 ## Integration Tests
 
-### Office Clock-In
+### Onsite Laptop-Active Verification
 
-1. Seed legal entity workplace with approved BSSID.
-2. Assign employee `office` mode.
-3. Submit heartbeat with matching BSSID.
+1. Seed selected Company with office latitude, longitude, and allowed radius.
+2. Assign employee `onsite` mode.
+3. Ensure attendance exists from biometric/device punch.
+4. Submit laptop-active heartbeat with matching location evidence.
 4. Assert `agent_work_location_evidence.match_status = matched`.
 5. Assert no exception alert is created.
 
@@ -61,7 +62,7 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 
 1. Assign employee `remote` mode with no active remote profile.
 2. Submit clock-in.
-3. Assert agent receives remote capture requirement.
+3. Assert agent receives approved remote work location capture requirement.
 4. Submit photo verification success and network evidence.
 5. Assert `employee_remote_work_profiles.status = active`.
 6. Assert profile is locked from direct employee edit.
@@ -70,7 +71,7 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 
 1. Seed active remote profile.
 2. Employee submits change request.
-3. Configured approver approves.
+3. Management coverage owner with the required permission approves.
 4. Next clock-in submits new profile evidence and successful photo.
 5. Assert old profile archived and new profile active.
 
@@ -82,7 +83,7 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 4. Assert `work_location_mismatch` alert exists.
 5. Assert `capture_photo` command is queued.
 6. Assert configured reviewer notification is created.
-7. Assert hierarchy reviewer is notified only when above employee and permissioned.
+7. Assert configured reviewer or coverage owner is notified only when permissioned for the employee.
 
 ---
 
@@ -90,14 +91,14 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 
 | Scenario | Expected |
 |:---------|:---------|
-| Office employee works from approved office network | No alert |
-| Office employee clocks in from unapproved network | Grace starts, then alert + photo challenge |
+| Onsite employee becomes laptop-active within Company office radius | No alert |
+| Onsite employee becomes laptop-active outside Company office radius | Grace starts, then alert + photo challenge |
 | Remote employee first clock-in | Remote profile capture + photo verification |
 | Remote employee works from approved profile | No alert |
 | Remote employee moves to another network during work | Alert after grace and photo challenge |
 | Employee starts break before mismatch | No collection and no alert |
 | Employee clocks out before grace expires | No alert |
-| Configured approver approves remote location change | Next remote clock-in replaces profile |
+| Authorized approver approves remote location change | Next remote clock-in replaces profile |
 
 ---
 
@@ -106,7 +107,7 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 | Case | Expected |
 |:-----|:---------|
 | Unauthorized user requests detailed evidence | Forbidden |
-| Reviewer outside hierarchy opens alert | Forbidden unless explicit scope exception exists |
+| Reviewer outside allowed coverage opens alert | Forbidden unless a valid permission override exists |
 | Raw MAC address submitted | Stored as hash or rejected by validation |
 | Photo evidence requested without identity verification policy | Command rejected |
 | Retention job runs | Old evidence deleted according to retention policy |
@@ -126,5 +127,5 @@ Tests must prove that work-location evidence is collected, stored, evaluated, an
 
 - [[modules/agent-gateway/work-location-evidence/overview|Work Location Evidence]]
 - [[modules/agent-gateway/work-location-evidence/end-to-end-logic|Work Location Evidence - End-to-End Logic]]
-- [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]]
+- [[Userflow/Monitoring/work-location-compliance|Work Location Compliance]]
 

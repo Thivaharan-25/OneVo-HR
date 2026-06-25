@@ -1,4 +1,4 @@
-# Calendar Events — Testing
+﻿# Calendar Events - Testing
 
 **Module:** Calendar
 **Feature:** Calendar Events
@@ -27,7 +27,6 @@ public class CalendarServiceTests
     [Fact]
     public async Task CreateAsync_ValidEvent_ReturnsCreated()
     {
-        var command = new CreateEventCommand { Title = "Team Meeting", StartDate = DateTime.Today };
         var result = await _sut.CreateAsync(command, default);
 
         result.IsSuccess.Should().BeTrue();

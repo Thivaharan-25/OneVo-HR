@@ -1,4 +1,4 @@
-# Audit Console — End-to-End Logic
+﻿# Audit Console - End-to-End Logic
 
 ## Purpose
 
@@ -11,7 +11,7 @@ The Audit Console is the cross-tenant, read-only view of all audit log events ac
 
 ## Screen Layout
 
-Single main view — no sub-tabs. Full-width audit log table with a comprehensive filter bar at the top and export controls in the header.
+Single main view - no sub-tabs. Full-width audit log table with a comprehensive filter bar at the top and export controls in the header.
 
 ---
 
@@ -21,7 +21,7 @@ Single main view — no sub-tabs. Full-width audit log table with a comprehensiv
 |---|---|
 | Title | "Audit Console" |
 | Subtitle | "Cross-tenant read-only audit log. All queries are logged." |
-| Export button | "Export" dropdown — CSV / JSON |
+| Export button | "Export" dropdown - CSV / JSON |
 | Auto-refresh toggle | Toggle to auto-refresh every 30 seconds |
 | Time range | Quick selects: Last 1 Hour / Last 24 Hours / Last 7 Days / Last 30 Days / Custom Range (date-time pickers) |
 
@@ -29,7 +29,7 @@ Single main view — no sub-tabs. Full-width audit log table with a comprehensiv
 
 ## Filter Bar
 
-All filters are applied simultaneously. The filter bar is always visible at the top — it does not collapse.
+All filters are applied simultaneously. The filter bar is always visible at the top - it does not collapse.
 
 | Filter | Label | Type | Options / Behavior |
 |---|---|---|---|
@@ -38,12 +38,12 @@ All filters are applied simultaneously. The filter bar is always visible at the 
 | Date To | "To" | DateTime picker | ISO datetime; defaults to now |
 | Tenant | "Tenant" | Autocomplete | Search by company name or tenant code. Select "Platform-level" for platform admin and system events not scoped to a tenant. |
 | Actor Type | "Actor Type" | Dropdown | All / Tenant User / Platform Admin / System |
-| Actor | "Actor" | Text input | Filter by actor name or email — partial match |
+| Actor | "Actor" | Text input | Filter by actor name or email - partial match |
 | Action Category | "Action" | Dropdown | All / Auth / Users / Billing / Settings / Devices / Integrations / Security / Modules / Roles / Data / Templates |
 | Resource Type | "Resource" | Dropdown | All / Tenant / User / Role / Invoice / Device / Integration / Feature Flag / Module / Template / Gateway / AI Config / Alert / Session |
 | Result | "Result" | Dropdown | All / Success / Failed |
 | IP Address | "IP" | Text input | Exact or prefix match on source IP |
-| Reset Filters button | — | Button | Clears all filters to defaults |
+| Reset Filters button | - | Button | Clears all filters to defaults |
 
 **Active filter count badge:** Shows how many non-default filters are active (e.g., "4 filters active").
 
@@ -61,13 +61,13 @@ All filters are applied simultaneously. The filter bar is always visible at the 
 
 | Column | Label | Description | Width | Sortable |
 |---|---|---|---|---|
-| Timestamp | "Time" | Full datetime: `2026-05-17 10:24:33 AM` — on hover shows milliseconds and timezone | 175px | Yes, default |
+| Timestamp | "Time" | Full datetime: `2026-05-17 10:24:33 AM` - on hover shows milliseconds and timezone | 175px | Yes, default |
 | Actor | "Actor" | Name + email, with type badge below: Tenant User (blue) / Platform Admin (purple) / System (gray). Linked to actor detail where applicable. | 200px | No |
 | Action | "Action" | Human-readable action description, e.g. "Tenant suspended", "Invoice marked paid", "Feature flag updated". Below it in smaller text: the machine-readable `action_code`, e.g. `tenant.suspended` | Flexible | No |
 | Resource | "Resource" | Entity type + name, e.g. "Tenant: TechNova Solutions", "Invoice: INV-TEN-000001-202505-001". Linked to the resource detail page where it still exists. | 200px | No |
 | Tenant | "Tenant" | Company name (linked to tenant detail) or "Platform" for non-tenant events | 160px | Yes |
 | IP Address | "IP" | Source IP address. "System" for automated jobs. | 130px | No |
-| Result | "Result" | Success (green ✓) / Failed (red ✗) badge | 80px | Yes |
+| Result | "Result" | Success (green [done]) / Failed (red [blocked]) badge | 80px | Yes |
 
 ### Row Expand
 
@@ -186,12 +186,12 @@ Every audit entry has a machine-readable `action_code`. This is the full catalog
 
 ---
 
-## Export — Full Specification
+## Export - Full Specification
 
 ### Export Triggers
 
-- Click "Export" dropdown in the page header → select format
-- Current filters are applied to the export — what you see is what you export
+- Click "Export" dropdown in the page header -> select format
+- Current filters are applied to the export - what you see is what you export
 - No row limit on exports (unlike the UI display limit of 1,000 rows per request)
 
 ### Export Formats
@@ -230,9 +230,9 @@ Array of objects with the same fields as CSV plus `previous_state` and `new_stat
 
 | Export Size | Behaviour |
 |---|---|
-| < 10,000 rows | Synchronous — file download starts immediately |
-| 10,000 – 100,000 rows | Async — job queued; operator receives a download link via email (Resend) when ready. Download link expires in 24 hours. |
-| > 100,000 rows | Blocked in UI — operator must narrow filters. Error: "Export too large — apply more specific filters to reduce below 100,000 rows." |
+| < 10,000 rows | Synchronous - file download starts immediately |
+| 10,000 - 100,000 rows | Async - job queued; operator receives a download link via email (Resend) when ready. Download link expires in 24 hours. |
+| > 100,000 rows | Blocked in UI - operator must narrow filters. Error: "Export too large - apply more specific filters to reduce below 100,000 rows." |
 
 **API:** `POST /admin/v1/audit-logs/export`
 
@@ -286,7 +286,7 @@ Content-Disposition: attachment; filename="audit-export-2026-05-17.csv"
 
 ---
 
-## APIs — Full Catalog
+## APIs - Full Catalog
 
 | Method | Route | Purpose | Permission |
 |---|---|---|---|
@@ -300,7 +300,7 @@ Content-Disposition: attachment; filename="audit-export-2026-05-17.csv"
 
 | Param | Type | Notes |
 |---|---|---|
-| `from` | ISO datetime | Required — no unbounded queries |
+| `from` | ISO datetime | Required - no unbounded queries |
 | `to` | ISO datetime | Required |
 | `tenant_id` | UUID | Optional |
 | `actor_type` | string | `tenant_user`, `platform_admin`, `system` |

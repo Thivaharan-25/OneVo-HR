@@ -1,4 +1,4 @@
-# Platform API Key Manager — End-to-End Logic
+﻿# Platform API Key Manager - End-to-End Logic
 
 > **Phase 2 only.** This module does not exist in Phase 1. Phase 1 navigation must not include any API key manager links or routes. The endpoint `/admin/v1/api-keys` returns HTTP 404 in Phase 1 deployments.
 
@@ -10,10 +10,10 @@ Platform API Key Manager enables programmatic access to the Admin API for CI/CD 
 
 | Table / System | Role |
 |---|---|
-| `platform_api_keys` | Read + write — key metadata and SHA256 hash; raw key never stored |
+| `platform_api_keys` | Read + write - key metadata and SHA256 hash; raw key never stored |
 | Audit log | Write every key create and revoke action |
 
-## Issue Key — Full Flow
+## Issue Key - Full Flow
 
 1. Platform Super Admin opens API Keys (`/platform/api-keys`)
 2. Clicks `+ Issue New Key`
@@ -30,7 +30,7 @@ Platform API Key Manager enables programmatic access to the Admin API for CI/CD 
 5. Backend:
    - Generates a cryptographically random raw key (e.g., `pk_live_...`)
    - Computes `SHA256(raw_key)` and stores only the hash in `platform_api_keys.key_hash`
-   - Raw key is NEVER stored — discarded from memory immediately after returning it
+   - Raw key is NEVER stored - discarded from memory immediately after returning it
 6. Response: raw key shown **once** in a one-time-display dialog. Operator copies it. Dialog cannot be re-opened.
 7. Audit log: `action = 'api_key.created'`, actor, name, scopes (not the raw key)
 
@@ -45,7 +45,7 @@ Platform API Key Manager enables programmatic access to the Admin API for CI/CD 
 }
 ```
 
-**Response (201 Created — raw key shown ONCE only):**
+**Response (201 Created - raw key shown ONCE only):**
 ```json
 {
   "key_id": "uuid",
@@ -57,13 +57,13 @@ Platform API Key Manager enables programmatic access to the Admin API for CI/CD 
 }
 ```
 
-Subsequent `GET /admin/v1/api-keys/{id}` returns metadata only — no `raw_key`.
+Subsequent `GET /admin/v1/api-keys/{id}` returns metadata only - no `raw_key`.
 
 ## Revoke Key
 
 **Trigger:** "Revoke" action on any active key row.
 
-No confirmation dialog — revocation is instant and the key is unusable immediately.
+No confirmation dialog - revocation is instant and the key is unusable immediately.
 
 **API:** `DELETE /admin/v1/api-keys/{id}`
 
@@ -84,7 +84,7 @@ The backend:
 3. If found: uses the key's `scopes` as the effective permission set for authorization checks
 4. If not found or expired/revoked: HTTP 401
 
-**Scopes are enforced at every endpoint** — a key with only `platform.health.read` cannot call any endpoint requiring `platform.runtime_flags.manage` or `platform.tenants.feature_overrides.manage`.
+**Scopes are enforced at every endpoint** - a key with only `platform.health.read` cannot call any endpoint requiring `platform.runtime_flags.manage` or `platform.tenants.feature_overrides.manage`.
 
 ## Key List Screen
 

@@ -1,4 +1,4 @@
-# Report Execution — End-to-End Logic
+﻿# Report Execution - End-to-End Logic
 
 **Module:** Reporting Engine
 **Feature:** Report Execution
@@ -18,9 +18,9 @@ POST /api/v1/reports/execute/{definitionId}
       -> 2. INSERT into report_executions (status = 'running')
       -> 3. Based on report_type, fetch data:
          -> headcount: IEmployeeService.GetAllAsync()
-         -> leave_utilization: ILeaveService data
+         -> time_off_utilization: ITimeOffService data
          -> productivity_daily: IProductivityAnalyticsService.GetDailyReportAsync()
-         -> workforce_summary: IProductivityAnalyticsService.GetWorkforceSnapshotAsync()
+         -> monitoring_summary: IProductivityAnalyticsService.GetMonitoringSnapshotAsync()
       -> 4. Apply template columns/filters from report_templates
       -> 5. Generate output file (CSV or XLSX via ClosedXML)
       -> 6. Upload file via IFileService

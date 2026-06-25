@@ -1,4 +1,4 @@
-# Feature Flags — Testing
+﻿# Feature Flags - Testing
 
 **Module:** Shared Platform
 **Feature:** Feature Flags

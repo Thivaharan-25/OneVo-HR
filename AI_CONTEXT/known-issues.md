@@ -1,4 +1,4 @@
-﻿# Known Issues & Gotchas: ONEVO
+# Known Issues & Gotchas: ONEVO
 
 **Last Updated:** 2026-04-06
 
@@ -28,15 +28,15 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 - **Snake Case in DB, PascalCase in C#:** Database uses `snake_case`. C# uses `PascalCase`. EF Core's `.UseSnakeCaseNamingConvention()` handles this automatically. Don't manually specify column names unless there's a mismatch.
 
-- **Encrypted Fields:** These columns use `bytea` type and must be encrypted/decrypted at the application level (see [[security/data-classification|Data Classification]]): `account_number_encrypted` (employee_bank_details), `client_id_encrypted` / `client_secret_encrypted` (sso_providers), `api_key_encrypted` (biometric_devices, hardware_terminals), `credentials_encrypted` (integration_connections, notification_channels). Use `IEncryptionService` with AES-256.
+- **Encrypted Fields:** These columns use `bytea` type and must be encrypted/decrypted at the application level (see [[security/data-classification|Data Classification]]): `account_number_encrypted` (employee_bank_details), `client_id_encrypted` / `client_secret_encrypted` (sso_providers), `api_key_encrypted` (biometric_devices), `credentials_encrypted` (integration_connections, notification_channels). Use `IEncryptionService` with AES-256.
 
 - **JSONB Columns:** Several tables use JSONB for flexible data. Map these to typed C# classes using EF Core's JSONB support. See [[security/data-classification|Data Classification]] for the full JSONB inventory.
 
-- **Self-Referencing Tables:** `departments` (parent_department_id), `positions` (reports_to_position_id), `goals` (parent_goal_id), `document_categories` (parent_category_id), `leave_policies` (superseded_by_id), `refresh_tokens` (replaced_by_id). Current position reporting hierarchy is resolved through `positions`, `position_reporting_history`, and `position_assignments`; employee records must not store employee-level reporting hierarchy.
+- **Self-Referencing Tables:** `departments` (parent_department_id), `positions` (reports_to_position_id), `goals` (parent_goal_id), `document_categories` (parent_category_id), `refresh_tokens` (replaced_by_id). Current position reporting hierarchy is resolved through `positions`, `position_reporting_history`, and `position_assignments`; employee records must not store employee-level reporting hierarchy.
 
-### Workforce Intelligence
+### Monitoring
 
-- **Attendance -> Workforce Presence Rename:** The old `Attendance` module no longer exists. It is now `Workforce Presence` (`ONEVO.Modules.WorkforcePresence`). All attendance-related tables remain but under this new namespace. References to "Attendance" in code should use "WorkforcePresence". See [[modules/workforce-presence/overview|Workforce Presence]].
+- **Attendance -> Time & Attendance Rename:** The old `Attendance` module no longer exists. It is now `Time & Attendance` (`ONEVO.Modules.TimeAttendance`). All attendance-related tables remain but under this new namespace. References to "Attendance" in code should use "TimeAttendance". See [[modules/time-attendance/overview|Time & Attendance]].
 
 - **Activity Data Volume:** `activity_snapshots` generates ~240 rows/employee/day (one every 2-3 min for 8 hours). For 500 employees = 120,000 rows/day. Use pg_partman monthly partitions. Always query with `tenant_id` + date range. See [[modules/activity-monitoring/overview|Activity Monitoring]].
 
@@ -50,29 +50,28 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 - **Identity Verification Photos:** Verification photos are temporary - retained for configurable period (default 30 days) then auto-deleted by retention job. They are NOT the same as employee profile photos. See [[modules/identity-verification/overview|Identity Verification]].
 
-- **Exception Engine Timing:** The exception engine only evaluates rules during configured work hours (`exception_schedules`). Off-hours activity data is still collected but does NOT trigger alerts. Always check the schedule first. See [[modules/exception-engine/overview|Exception Engine]].
+- **Phase 1 lightweight alerts:** Phase 1 does not evaluate configurable Exception Engine rules or schedules. Monitoring or attendance issues create lightweight alerts and Notifications routed through management coverage or authorized reviewer permissions. Full Exception Engine schedules, rules, and escalation chains are Phase 2. See [[modules/exception-engine/overview|Exception Engine]].
 
-- **Presence Session vs Device Session:** `presence_sessions` is ONE row per employee per day (unified from all sources). `device_sessions` can have MULTIPLE rows per day (one per laptop active/idle cycle). Don't confuse them - presence is the summary, device sessions are the raw source. See [[modules/workforce-presence/overview|Workforce Presence]].
+- **Presence Session vs Device Session:** `presence_sessions` is ONE row per employee per day (unified from all sources). `device_sessions` can have MULTIPLE rows per day (one per laptop active/idle cycle). Don't confuse them - presence is the summary, device sessions are the raw source. See [[modules/time-attendance/overview|Time & Attendance]].
 
 - **Activity data can be empty:** If monitoring is disabled for a tenant or employee, activity endpoints return empty arrays, not errors. UI must handle "No monitoring data available" gracefully (frontend).
 
-- **Screenshots are sensitive (frontend):** Only show to users with `workforce:view` permission. Never cache screenshots in browser storage.
+- **Screenshots are sensitive (frontend):** Only show to users with `monitoring:view` permission. Never cache screenshots in browser storage.
 
-- **Exception alerts are real-time:** Use SignalR, don't poll. Show toast notification + badge count. See [[modules/exception-engine/overview|Exception Engine]].
+- **Phase 1 alert notifications:** Use the Notifications channel for monitoring/attendance alerts. Badge counts and toast notifications are allowed, but the full `exception-alerts` channel contract belongs to Phase 2 Exception Engine work. See [[modules/exception-engine/overview|Exception Engine]].
 
 ### Payroll
 
 - **Payroll Pessimistic Locking:** Payroll runs use `SELECT FOR UPDATE` to prevent concurrent modifications. Never run payroll in parallel for the same tenant. Use Hangfire's distributed lock. See [[modules/payroll/overview|Payroll]].
 
-- **Payroll Reads from Workforce Presence:** Payroll now reads actual worked hours from `IWorkforcePresenceService` (not just clock-in/out). This replaces the old Attendance dependency. See [[modules/payroll/overview|Payroll]].
+- **Payroll Reads from Time & Attendance:** Payroll now reads actual worked hours from `ITimeAttendanceService` (not just clock-in/out). This replaces the old Attendance dependency. See [[modules/payroll/overview|Payroll]].
 
 ### Workflow Engine
 
-- **Workflow Engine is Generic:** The `workflow_definitions` / `workflow_instances` / `approval_actions` system is resource-type agnostic. It works via `resource_type` + `resource_id` polymorphic references. Same engine handles leave, overtime, document, expense approvals.
+- **Phase 2 only:** Workflow/Automation Engine tables and generic resource workflows are deferred. Phase 1 approvals use module-owned lightweight request records, Org Structure management coverage, tenant roles/permissions, `access_grant_requests` where relevant, and Notifications.
 
-### Leave
+### Time Off
 
-- **Leave Policy Versioning:** `leave_policies` has a `superseded_by_id` column forming a chain. When querying the active policy, always get the one where `superseded_by_id IS NULL` for the given leave type + country + job level combination. See [[modules/leave/overview|Leave]].
 
 ### Frontend / API Integration
 
@@ -89,19 +88,17 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 - **SignalR requires auth:** Customer web SignalR handshakes use the cookie-backed session. IDE and agent SignalR flows may use token query parameters only where their own contracts say so.
 
-- **Channel permissions** - `workforce-live` and `exception-alerts` channels require `workforce:view` permission. Server will reject unauthorized subscriptions.
+- **Channel permissions** - `monitoring-live` requires `monitoring:view`; Phase 1 monitoring alerts route through `notifications-{userId}` with `monitoring:alerts:read`; `exception-alerts` is Phase 2.
 
 - **Reconnection storms** - if server restarts, all clients reconnect simultaneously. Use jitter in reconnection delay.
 
-- **Activity heatmap performance** - hourly intensity data can be up to 24 points per employee per day. For team views with 50+ employees, use server-side aggregation, not client-side computation.
 
-- **Employee list with live status** - the live workforce dashboard shows status for all employees. Use SignalR push updates, not polling individual employee endpoints.
+- **Employee list with live status** - the live monitoring dashboard shows status for all employees. Use SignalR push updates, not polling individual employee endpoints.
 
 ### Desktop Agent - Win32 API Hooks
 
 - **`SetWindowsHookEx` for keyboard/mouse** - use `WH_KEYBOARD_LL` and `WH_MOUSE_LL` (low-level hooks). These work system-wide but require a message pump. The Windows Service must run a message loop on a dedicated thread.
 - **Hook thread must be STA** - Win32 hooks require a Single-Threaded Apartment thread with `Application.Run()` or equivalent message loop.
-- **Antivirus false positives** - keyboard hooks trigger some AV heuristics. MSIX signing with a trusted certificate mitigates this. Include exclusion documentation for IT teams.
 
 ### Desktop Agent - MAUI Tray App
 
@@ -129,7 +126,6 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 
 ### Desktop Agent - Idle Detection
 
-- **`GetLastInputInfo` quirk** - returns time since last keyboard/mouse input system-wide, NOT per-application. A user typing in Notepad counts as "active" even if they should be in Teams.
 - **Screensaver/lock screen** - when the screen locks, `GetLastInputInfo` stops updating. Treat screen lock as idle.
 - **Remote desktop** - RDP sessions have their own input state. Agent detects this via session change notifications (`WTSRegisterSessionNotification`).
 
@@ -162,9 +158,9 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 - **Don't use:** Synchronous database calls - always `async/await` with `CancellationToken`
 - **Don't use:** `string` for IDs - always `Guid` (mapped to `uuid` in PostgreSQL)
 - **Don't use:** `DateTime` - use `DateTimeOffset` for timestamps, `DateOnly` for dates, `TimeOnly` for times
-- **Don't use:** "Attendance" as module name - it's now "WorkforcePresence" (see [[modules/workforce-presence/overview|Workforce Presence]])
+- **Don't use:** "Attendance" as module name - it's now "TimeAttendance" (see [[modules/time-attendance/overview|Time & Attendance]])
 - **Don't use:** Offset-based pagination - backend uses cursor-based pagination only
-- **Don't use:** `useEffect` + `useState` for API calls in frontend - use TanStack Query
+- **Don't use:** React hooks (`useEffect`, `useState`) or TanStack Query in frontend - use Angular signals (`signal()`, `computed()`, `effect()`) and Angular HttpClient with `toSignal()` / `resource()`
 
 ---
 
@@ -185,7 +181,7 @@ Things that work differently than you'd expect. AI agents: pay attention to thes
 - [[backend/shared-kernel|Shared Kernel]]
 - [[modules/agent-gateway/overview|Agent Gateway]]
 - [[security/auth-architecture|Auth Architecture]]
-- [[modules/workforce-presence/overview|Workforce Presence]]
+- [[modules/time-attendance/overview|Time & Attendance]]
 - [[modules/activity-monitoring/overview|Activity Monitoring]]
 - [[modules/exception-engine/overview|Exception Engine]]
 - [[modules/identity-verification/overview|Identity Verification]]

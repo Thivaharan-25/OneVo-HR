@@ -1,4 +1,4 @@
-# Form Patterns
+﻿# Form Patterns
 
 ## Stack
 
@@ -163,9 +163,9 @@ export function useMultiStepForm<T extends z.ZodObject<any>>({
 ### Step Indicator
 ```
 Step 1          Step 2          Step 3          Step 4
-[●]─────────────[●]─────────────[○]─────────────[○]
+[o]-------------[o]-------------[o]-------------[o]
 Personal Info   Employment      Compensation    Review & Submit
-                                ← current
+                                <- current
 ```
 
 ## Inline Editing Pattern
@@ -287,7 +287,7 @@ function useUnsavedChangesWarning(isDirty: boolean) {
 
 ## Related
 
-- [[frontend/design-system/components/component-catalog|Composed Components]] — form components
-- [[frontend/design-system/patterns/table-patterns|Table Patterns]] — filter + table integration
-- [[frontend/data-layer/api-integration|Api Integration]] — validation error types
-- [[frontend/coding-standards|Coding Standards]] — form conventions
+- [[frontend/design-system/components/component-catalog|Composed Components]] - form components
+- [[frontend/design-system/patterns/table-patterns|Table Patterns]] - filter + table integration
+- [[frontend/data-layer/api-integration|Api Integration]] - validation error types
+- [[frontend/coding-standards|Coding Standards]] - form conventions

@@ -9,7 +9,7 @@
 
 Phase 1 SSO provider management for Google only, plus refresh token tracking with rotation.
 
-Microsoft Teams is handled as an integration account link for team/chat sync, not as a Phase 1 SSO login provider.
+Microsoft Teams workspace/member sync and Teams chat sync are Phase 2 unless explicitly reactivated. Microsoft Teams is not a Phase 1 SSO login provider.
 
 ## Database Tables
 

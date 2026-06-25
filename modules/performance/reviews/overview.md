@@ -1,4 +1,4 @@
-# Reviews
+﻿# Reviews
 
 **Module:** Performance  
 **Feature:** Reviews
@@ -12,7 +12,7 @@ Multi-rater performance reviews (self, manager, peer, 360) with optional product
 ## Database Tables
 
 ### `reviews`
-Key columns: `cycle_id`, `employee_id`, `reviewer_id`, `review_type` (`self`, `manager`, `peer`, `360`), `overall_rating` (1.0–5.0), `productivity_score` (NEW, nullable), `comments`, `status`.
+Key columns: `cycle_id`, `employee_id`, `reviewer_id`, `review_type` (`self`, `manager`, `peer`, `360`), `overall_rating` (1.0-5.0), `productivity_score` (NEW, nullable), `comments`, `status`.
 
 ## API Endpoints
 

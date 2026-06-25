@@ -1,8 +1,8 @@
-# Spacing System
+﻿# Spacing System
 
 ## Base Scale
 
-All spacing derives from a **4px base unit** via Tailwind's default scale. ONEVO favors compact, information-dense layouts — default to smaller spacing, open up only for breathing room between major sections.
+All spacing derives from a **4px base unit** via Tailwind's default scale. ONEVO favors compact, information-dense layouts - default to smaller spacing, open up only for breathing room between major sections.
 
 | Token | Value | Tailwind | Usage |
 |:------|:------|:---------|:------|
@@ -36,7 +36,7 @@ All spacing derives from a **4px base unit** via Tailwind's default scale. ONEVO
 | Topbar height | 56px | `h-14` |
 | Sidebar rail width | 64px | `w-16` |
 | Sidebar panel width | 220px | `w-[220px]` |
-| Sidebar total (rail + panel) | 284px | — |
+| Sidebar total (rail + panel) | 284px | - |
 | Breadcrumb to content | 16px | `mb-4` |
 
 ## Component Internal Spacing
@@ -117,6 +117,6 @@ Content padding reduces on smaller screens:
 
 ## Related
 
-- [[frontend/design-system/foundations/typography|Typography]] — type scale
-- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — page layouts
-- [[frontend/design-system/components/component-catalog|Composed Components]] — component spacing
+- [[frontend/design-system/foundations/typography|Typography]] - type scale
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] - page layouts
+- [[frontend/design-system/components/component-catalog|Composed Components]] - component spacing

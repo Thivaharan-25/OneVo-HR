@@ -1,7 +1,7 @@
-# DEV5: Frontend App Foundation + Developer Platform Console
+﻿# DEV5: Frontend App Foundation + Developer Platform Console
 
 **Track:** Frontend
-**Primary ownership:** Angular monorepo foundation (setup-control-app + operations-lifecycle-app + dev-console + shared library), auth UI, shared Angular architecture
+**Primary ownership:** Angular monorepo foundation (customer-app + dev-console + shared library), auth UI, shared Angular architecture
 **Current Unfinished Task:** Task 1 - Angular app foundation
 **Blocked By:** none for scaffold; DEV1 auth contracts for live auth
 
@@ -19,10 +19,10 @@ When Dev 5 asks to continue, start with the first unchecked item in **Current Un
 
 ### Acceptance Criteria
 
-- [ ] Angular workspace with `setup-control-app`, `operations-lifecycle-app`, `dev-console`, and `shared` library builds locally.
-- [ ] Angular Router route trees exist in each app for auth, dashboard, feature areas, and error pages.
+- [ ] Angular workspace with `customer-app`, `dev-console`, and `shared` library builds locally.
+- [ ] Angular Router route trees exist in customer app and dev-console for auth, dashboard, feature areas, and error pages.
 - [ ] `app.config.ts` in each app includes `provideRouter`, `provideHttpClient` with interceptors, `provideAnimationsAsync`, and `APP_INITIALIZER` for session init.
-- [ ] App shell (nav rail, topbar, `<router-outlet>`) exists in all three apps via `@onevo/shared` shell components.
+- [ ] App shell (nav rail, topbar, `<router-outlet>`) exists in customer app and dev-console via `@onevo/shared` shell components.
 - [ ] Shared layout supports loading, empty, error, and forbidden states.
 - [ ] Baseline tests render app shell and protected route behavior.
 
@@ -37,8 +37,7 @@ When Dev 5 asks to continue, start with the first unchecked item in **Current Un
 
 ```bash
 ng build shared
-ng build setup-control-app
-ng build operations-lifecycle-app
+ng build customer-app
 ng build dev-console
 ng lint
 ng test shared
@@ -77,7 +76,7 @@ npm run build
 
 ---
 
-> **Parallel group** — Tasks 3 and 4 both require Tasks 1 and 2 and are independent of each other. Run them simultaneously.
+> **Parallel group** - Tasks 3 and 4 both require Tasks 1 and 2 and are independent of each other. Run them simultaneously.
 
 ## Task 3: Main App Auth Screens
 
@@ -158,7 +157,7 @@ npm run build
 
 ### Acceptance Criteria
 
-- [ ] Standalone Angular console app exists separately from the main customer Angular apps.
+- [ ] Standalone Angular console app exists separately from the main customer Angular app.
 - [ ] Directory structure follows [[developer-platform/frontend/app-structure|Developer Platform App Structure]] (developer-platform/frontend/app-structure.md).
 - [ ] Login page starts Google OAuth flow.
 - [ ] OAuth callback exchanges Google identity for platform-admin session through `/admin/v1/auth/google-callback`.
@@ -176,7 +175,7 @@ npm run build
 - [[developer-platform/frontend/overview|Developer Platform Frontend Overview]] (developer-platform/frontend/overview.md)
 - [[developer-platform/frontend/app-structure|Developer Platform App Structure]] (developer-platform/frontend/app-structure.md)
 - [[developer-platform/auth|Developer Platform Auth]] (developer-platform/auth.md)
-- [[developer-platform/system-design|Developer Platform System Design]] (developer-platform/system-design.md)
+- [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md)
 - [[developer-platform/backend/api-contracts|Admin API Contracts]] (developer-platform/backend/api-contracts.md)
 - [[developer-platform/userflow/overview|Developer Platform Userflows]] (developer-platform/userflow/overview.md)
 
@@ -190,7 +189,7 @@ npm run build
 
 ---
 
-> **Parallel group** — Tasks 6 and 7 both require Task 5 and are independent of each other. Run them simultaneously.
+> **Parallel group** - Tasks 6 and 7 both require Task 5 and are independent of each other. Run them simultaneously.
 
 ## Task 6: Developer Platform Tenant Management UI
 
@@ -212,7 +211,8 @@ npm run build
 - [ ] Provisioning wizard is draft-safe after Step 1 and can resume from a `provisioning` tenant.
 - [ ] Step 3 module selection writes the same module entitlements and selected feature keys consumed by main app and IDE extension.
 - [ ] Step 4 role template setup uses the tenant's module-filtered permission catalog and applies/materializes selected templates.
-- [ ] Step 7 activation flips tenant from provisioning to active and updates the tenant list badge.
+- [ ] Review/confirm generates the first invoice, sets paid tenants to `pending_payment`, keeps module entitlements non-active/payment-limited, and updates the tenant list badge.
+- [ ] First payment success flips tenant from `pending_payment` to `active`, activates eligible module entitlements, and updates the tenant list badge.
 - [ ] Tests cover tenant list filters, tenant detail tabs, suspend role gate, subscription override validation, impersonation role gate, provisioning draft resume, and activation.
 
 ### References

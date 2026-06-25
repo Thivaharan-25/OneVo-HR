@@ -1,15 +1,15 @@
-# 2026-05-21: Angular 21 Frontend Architecture Decision
+﻿# 2026-05-21: Angular 21 Frontend Architecture Decision
 
 ## Summary
 
-Replaced the previously documented Vite + React 19 SPA with **Angular 21**. The original customer-app split recorded here has since been superseded by the current **three-app Angular workspace monorepo**: Setup / Control Application, Operations / Lifecycle Application, and internal Developer Platform.
+Historical note: this older entry recorded a three-app Angular workspace. It has since been superseded by the current **customer-app + dev-console Angular workspace** decision.
 
 ## What Changed
 
 ### Architecture Decision
 - **Three Angular apps** instead of one unified SPA:
-  - `setup-control-app` for tenant/company setup, legal entities, departments, positions, roles/permissions, policies, imports, and add-on requests
-  - `operations-lifecycle-app` for daily employee, manager, HR, workforce, and WorkSync operations
+  - Legacy config app for tenant/company setup, legal entities, departments, positions, roles/permissions, policies, imports, and add-on requests
+  - Legacy operations app for daily employee, manager, HR, monitoring, and WorkSync operations
   - `dev-console` for ONEVO internal Developer Platform workflows
   - `shared` Angular library built once and imported by all apps
 
@@ -29,22 +29,22 @@ Replaced the previously documented Vite + React 19 SPA with **Angular 21**. The 
 | React component pattern | Standalone components, `inject()`, `@if`/`@for` |
 
 ### Why Separate Apps
-1. **Different work modes** — setup/configuration work is separated from daily operational work
-2. **Security** — internal Developer Platform code is not in customer app bundles
-3. **Bundle performance** — setup, operations, and platform routes build as separate outputs
-4. **Angular monorepo** — shared library eliminates duplication (auth, API services, design system)
-5. **Interconnection** — customer apps share the same backend, BFF cookie session, and SignalR hubs; automation/real-time is backend-driven and unaffected by app count
+1. **Different work modes** - setup/configuration work is separated from daily operational work
+2. **Security** - internal Developer Platform code is not in customer app bundles
+3. **Bundle performance** - setup, operations, and platform routes build as separate outputs
+4. **Angular monorepo** - shared library eliminates duplication (auth, API services, design system)
+5. **Interconnection** - customer apps share the same backend, BFF cookie session, and SignalR hubs; automation/real-time is backend-driven and unaffected by app count
 
 ### Cross-App Users
 Context-switcher in the topbar lets authorized users switch between Setup / Control and Operations / Lifecycle. Customer apps use the same BFF cookie session; Developer Platform uses separate platform-admin auth.
 
 ## Files Updated
 
-**Core context (authoritative — AI reads these first):**
-- `AI_CONTEXT/tech-stack.md` — Section 3 Frontend fully rewritten
-- `AI_CONTEXT/project-context.md` — Section 10 Frontend fully rewritten
-- `AI_CONTEXT/rules.md` — Section 10 Frontend rules fully rewritten
-- `CLAUDE.md` — Frontend sections updated
+**Core context (authoritative - AI reads these first):**
+- `AI_CONTEXT/tech-stack.md` - Section 3 Frontend fully rewritten
+- `AI_CONTEXT/project-context.md` - Section 10 Frontend fully rewritten
+- `AI_CONTEXT/rules.md` - Section 10 Frontend rules fully rewritten
+- `CLAUDE.md` - Frontend sections updated
 
 **Frontend directory (full rewrite):**
 - `frontend/README.md`
@@ -63,6 +63,6 @@ Context-switcher in the topbar lets authorized users switch between Setup / Cont
 - `developer-platform/frontend/overview.md`
 
 ## Unchanged
-- Desktop agent (WorkPulse Agent): Windows Service + .NET MAUI tray app — confirmed correct as documented
+- Desktop agent (WorkPulse Agent): Windows Service + .NET MAUI tray app - confirmed correct as documented
 - Developer Platform console: remains a separate Angular app at `console.onevo.io` (was Next.js, now Angular)
-- Backend (.NET 10), database (PostgreSQL), SignalR hub channels — unchanged
+- Backend (.NET 10), database (PostgreSQL), SignalR hub channels - unchanged

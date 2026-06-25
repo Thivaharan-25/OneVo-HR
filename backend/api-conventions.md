@@ -1,4 +1,4 @@
-# API Documentation: ONEVO
+﻿# API Documentation: ONEVO
 
 ## API Design Standards
 
@@ -23,7 +23,7 @@ Non-browser clients may use Bearer tokens only where explicitly documented, such
 
 #### Internal Module Authentication
 
-HR Management, Workforce Intelligence, and Work Management all live in the same backend and PostgreSQL database. The Angular frontend apps, IDE extension, and desktop agent call first-party ONEVO endpoints only.
+HR Management, Monitoring, and Work Management all live in the same backend and PostgreSQL database. The Angular frontend apps, IDE extension, and desktop agent call first-party ONEVO endpoints only.
 
 - Customer web clients use HttpOnly cookie sessions backed by server-side auth state for the normal user audience (`onevo-api`).
 - IDE clients use the normal user JWT audience (`onevo-api`) through IDE-specific secure storage.
@@ -33,19 +33,19 @@ HR Management, Workforce Intelligence, and Work Management all live in the same 
 
 ### Authorization (Hybrid Permission Control)
 
-Every endpoint must specify required permission. Permissions are checked against the user's **effective permissions** after tenant module entitlement, commercial feature inclusion, runtime feature flags, roles, individual overrides, and optional role/employee feature visibility grants are resolved. Data is automatically scoped to the user's **org hierarchy**.
+Every endpoint must specify required permission. Permissions are checked against the user's **effective permissions** after tenant module entitlement, commercial feature inclusion, runtime feature flags, roles, individual overrides, and optional role/employee feature visibility grants are resolved. Employee-data endpoints must apply the backend employee-visibility predicate resolved from Org Structure `management_coverage_records`.
 
 ```csharp
 [HttpGet]
 [RequirePermission("employees:read")]
 public async Task<IResult> GetEmployees([AsParameters] PagedRequest request, CancellationToken ct)
 {
-    // IHierarchyScope is injected — queries are auto-scoped to subordinates
-    // Super Admin bypasses hierarchy scoping
+    // Employee visibility predicate is injected/applied server-side.
+    // The frontend never sends employee ID lists.
 }
 ```
 
-**Never hardcode role names.** Roles are custom — always check permissions, module entitlement, and active feature keys:
+**Never hardcode role names.** Roles are custom - always check permissions, module entitlement, and active feature keys:
 
 ```csharp
 // WRONG
@@ -105,7 +105,7 @@ For feature-specific behavior, also validate the tenant's active module and acti
 | Code | Usage |
 |:-----|:------|
 | 200 | Success (GET, PUT, PATCH) |
-| 201 | Created (POST) — include `Location` header |
+| 201 | Created (POST) - include `Location` header |
 | 204 | No Content (DELETE) |
 | 400 | Bad Request (malformed JSON, invalid parameters) |
 | 401 | Unauthorized (missing or invalid JWT) |
@@ -131,7 +131,7 @@ GET /api/v1/audit-logs?cursor=eyJ0...&pageSize=50
 
 ```
 GET /api/v1/employees?departmentId=uuid&status=active&sortBy=hireDate&sortDirection=desc
-GET /api/v1/leave-requests?status=pending&startDateFrom=2026-04-01&startDateTo=2026-04-30
+GET /api/v1/time-off/requests?status=pending&startDateFrom=2026-04-01&startDateTo=2026-04-30
 ```
 
 ### Standard Headers
@@ -187,14 +187,7 @@ POST   /api/v1/users/{id}/roles           # Assign role to user
 
 ```
 CRUD   /api/v1/org/legal-entities
-CRUD   /api/v1/office-locations
 CRUD   /api/v1/departments                # Supports hierarchical queries
-CRUD   /api/v1/job-families
-CRUD   /api/v1/job-family-levels
-CRUD   /api/v1/job-titles
-CRUD   /api/v1/teams
-POST   /api/v1/teams/{id}/members         # Add team member
-DELETE /api/v1/teams/{id}/members/{empId}  # Remove team member
 ```
 
 ### Core HR
@@ -214,36 +207,36 @@ POST   /api/v1/employees/{id}/onboarding   # Create onboarding steps
 POST   /api/v1/employees/{id}/offboarding  # Initiate offboarding
 ```
 
-### Workforce Presence
+### Time & Attendance
 
 ```
 CRUD   /api/v1/shifts
 CRUD   /api/v1/work-schedules
 CRUD   /api/v1/schedule-templates
 POST   /api/v1/employees/{id}/shift-assignment
-GET    /api/v1/workforce/presence?date=2026-04-05&departmentId=uuid
-POST   /api/v1/workforce/clock-in          # Policy-gated clock-in
-POST   /api/v1/workforce/clock-out         # Policy-gated clock-out
-POST   /api/v1/workforce/breaks/start      # Start break and pause monitoring
-POST   /api/v1/workforce/breaks/end        # End break and resume monitoring
-POST   /api/v1/workforce/biometric/webhook # Biometric device webhook
-CRUD   /api/v1/workforce/overtime-requests
-CRUD   /api/v1/workforce/attendance-corrections
+GET    /api/v1/time-attendance/presence?date=2026-04-05&departmentId=uuid
+POST   /api/v1/time-attendance/clock-in          # Policy-gated clock-in
+POST   /api/v1/time-attendance/clock-out         # Policy-gated clock-out
+POST   /api/v1/time-attendance/breaks/start      # Start break and pause monitoring
+POST   /api/v1/time-attendance/breaks/end        # End break and resume monitoring
+POST   /api/v1/time-attendance/biometric/webhook # Attendance/biometric terminal webhook
+CRUD   /api/v1/time-attendance/overtime-requests
+CRUD   /api/v1/time-attendance/attendance-corrections
 CRUD   /api/v1/holidays
 ```
 
-Clock-in source validation is server-side. Office employees normally clock in through biometric terminals only. Remote employees may clock in through approved web/tray flows with identity and work-location evidence. Hybrid employees use biometric onsite and web/tray remotely. Onsite web/tray clock-in is allowed only during a time-limited biometric outage override for the affected legal entity/location/device. IDE extension and Work Management time logging must never create Workforce Presence clock-in/out records.
+Clock-in source validation is server-side. Legal-entity policy decides which attendance sources are allowed: physical attendance/biometric terminals, approved web/tray clock-in, or both. Remote employees may clock in through approved web/tray flows with identity and work-location evidence. Hybrid and onsite employees may use web/tray clock-in when their legal entity enables `agent_clock_in_enabled`; otherwise they use configured physical terminal methods unless a time-limited outage override is active for the affected legal entity/location/device. IDE extension and Work Management time logging must never create Time & Attendance clock-in/out records.
 
-### Leave
+### Time Off
 
 ```
-CRUD   /api/v1/leave-types
-CRUD   /api/v1/leave-policies
-GET    /api/v1/employees/{id}/leave-entitlements
-POST   /api/v1/leave-requests
-GET    /api/v1/leave-requests?status=pending
-POST   /api/v1/leave-requests/{id}/approve
-POST   /api/v1/leave-requests/{id}/reject
+CRUD   /api/v1/time-off/types
+CRUD   /api/v1/time-off/policies
+GET    /api/v1/employees/{id}/time-off-entitlements
+POST   /api/v1/time-off/requests
+GET    /api/v1/time-off/requests?status=pending
+POST   /api/v1/time-off/requests/{id}/approve
+POST   /api/v1/time-off/requests/{id}/reject
 ```
 
 ### Performance
@@ -315,10 +308,10 @@ Work Management is an internal ONEVO pillar. In the customer web app it uses the
 
 ## Related
 
-- [[security/auth-architecture|Auth Architecture]] — JWT authentication and RBAC authorization
-- [[code-standards/backend-standards|Backend Standards]] — Minimal API endpoint conventions
-- [[backend/module-catalog|Module Catalog]] — module-specific API endpoints
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant scoping for all API requests
+- [[security/auth-architecture|Auth Architecture]] - JWT authentication and RBAC authorization
+- [[code-standards/backend-standards|Backend Standards]] - Minimal API endpoint conventions
+- [[backend/module-catalog|Module Catalog]] - module-specific API endpoints
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - tenant scoping for all API requests
 - [[backend/external-integrations|External Integrations]] - third-party integrations only
 
 

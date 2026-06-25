@@ -1,4 +1,4 @@
-# WorkSync Foundation - End-to-End Logic
+# Work Foundation - End-to-End Logic
 
 **Module:** WorkSync
 **Feature:** Foundation
@@ -16,15 +16,12 @@ POST /api/v1/workspaces
     -> 1. Verify tenant has WorkSync enabled
     -> 2. Resolve active legal entity context
     -> 3. Resolve member source:
-         a. my_reporting_team -> query employee_hierarchy_closure
-         b. explicit_team -> validate caller can use stored Org Structure team
-         c. manual_invite -> filter selected employees through allowed member pool
+         a. manual_invite -> filter selected employees/members through active Company context and member-management authority
     -> 4. Create Workspace entity
     -> 5. Seed 3 system WorkspaceRole rows in same transaction:
          Admin, Member, Viewer
     -> 6. Add creator as local workspace administration member
-    -> 7. Add resolved members with selected workspace roles
-    -> 8. If source is my_reporting_team, do not create teams/team_members
+    -> 7. Send invitations to selected members with selected workspace roles
     -> 9. SaveChanges
     -> 10. Publish WorkspaceCreatedEvent
     -> Return Result<WorkspaceDto>
@@ -40,40 +37,38 @@ POST /api/v1/workspaces/{id}/members
     -> 1. Verify workspace exists and belongs to tenant
     -> 2. Verify caller has local workspace member-management authority
     -> 3. Resolve caller's allowed member pool:
-         a. position-derived hierarchy for scoped managers
-         b. legal-entity/organization scope for broader authorized users
-         c. explicit bypass grants
-    -> 4. If target is outside allowed pool, create participation request instead of direct add
+         a. active Company context
+         b. workspace/project member-management authority
+         c. explicit project/workspace grants where supported
+    -> 4. If target is outside authority, reject with scoped 403
     -> 5. Verify user exists in tenant and has an active employee record
-    -> 6. Check user is not already a member
+    -> 6. Check user is not already a member or pending invite recipient
     -> 7. Resolve workspace_role_id from role name
-    -> 8. Create WorkspaceMember row
-    -> 9. Publish WorkspaceMemberAddedEvent
+    -> 8. Create workspace member invitation
+    -> 9. Notify selected member through Inbox
     -> Return Result<WorkspaceMemberDto>
 ```
 
 Workspace membership controls access to workspace-scoped resources. It does not automatically grant project access. Project visibility is controlled by `project_members`.
 
-Hierarchy authority is not global. A reporting manager can add reports to a workspace they control, but cannot use reporting hierarchy alone to manage those reports inside another workspace.
+Reporting-manager relationship does not grant workspace member-management authority. Workspace membership and local workspace/project authority control Work access.
 
-## Request Outside Workspace Member
+## Accept Workspace Member Invitation
 
 ```text
-POST /api/v1/workspaces/{id}/member-requests
-  -> [RequirePermission("workspaces:manage") + local workspace member-management authority]
-  -> RequestWorkspaceMemberHandler
-    -> 1. Verify target employee is outside caller's direct add pool
-    -> 2. Resolve approval target through configured resolver:
-         target employee's reporting chain, target workspace owner,
-         legal-entity approver, selected permission, or specific employee
-    -> 3. Create participation request
-    -> 4. Send Inbox/Chat action card
-    -> Return 202 Accepted
+POST /api/v1/workspaces/{id}/member-invitations/{inviteId}/decision
+  -> [Authenticated selected recipient]
+  -> DecideWorkspaceMemberInvitationHandler
+    -> 1. Verify invitation is pending and addressed to the current user/employee
+    -> 2. If declined, mark invitation declined and stop
+    -> 3. If accepted, create WorkspaceMember row with the invited local role
+    -> 4. Publish WorkspaceMemberAddedEvent
+    -> Return 204
 ```
 
-Approval adds the employee as a workspace member only. It does not grant reporting authority or project access unless a project membership is separately created.
+Accepted workspace membership does not grant reporting authority or project access unless a project membership is separately created.
 
-## Microsoft Teams Workspace Sync
+## Microsoft Teams Workspace Sync (Phase 2)
 
 ```text
 POST /api/v1/workspaces
@@ -82,24 +77,17 @@ POST /api/v1/workspaces
     -> 1. Create workspace, roles, and members first
     -> 2. If create_team = true:
          a. Verify Microsoft Teams integration is enabled
-         b. Verify required members have linked Teams accounts
-         c. Create Microsoft Team/group through Graph
          d. Insert workspace_teams_links
-         e. Link default ONEVO channel to Teams general channel
     -> 3. If existing_team_id is provided:
-         a. Verify selected Team candidate and member match confirmation
          b. Insert workspace_teams_links
          c. Link selected channels if requested
-    -> 4. If Teams operation fails after workspace commit:
          a. Keep workspace
-         b. Mark Teams link status = failed
          c. Show retry action to workspace admin
 ```
 
-## Microsoft Teams Eligibility
+## Microsoft Teams Eligibility (Phase 2)
 
 ```text
-GET /api/v1/workspaces/{id}/teams/eligibility
   -> [RequirePermission("workspaces:manage")]
   -> WorkspaceTeamsEligibilityHandler
     -> 1. Load workspace members
@@ -107,22 +95,14 @@ GET /api/v1/workspaces/{id}/teams/eligibility
     -> 3. Return all_members_linked, missing_members, can_create_team, can_link_existing_team
 ```
 
-## Link Existing Microsoft Team
 
 ```text
-GET /api/v1/workspaces/{id}/teams/candidates
-  -> Find Teams groups visible to caller
-  -> Compare Teams members to workspace members
   -> Return match score and member differences
 
-POST /api/v1/workspaces/{id}/teams/link
   -> [RequirePermission("workspaces:manage")]
   -> LinkExistingTeamHandler
-    -> 1. Verify workspace has no active Teams link
-    -> 2. Verify selected Team belongs to the tenant
     -> 3. Confirm member differences
     -> 4. Create workspace_teams_links
-    -> 5. Optionally map ONEVO channels to Teams channels
 ```
 
 ## Workspace Context Resolution
@@ -137,7 +117,6 @@ Workspace-scoped WorkSync API request:
   -> Handler executes with tenant + workspace context
 ```
 
-Project-scoped requests do not require one active workspace context. They resolve access from `project_members`. They use `project_workspaces` only when an action needs team/workspace context, such as grouping tasks or selecting suggested members.
 
 ## Remove Member
 
@@ -164,8 +143,6 @@ DELETE /api/v1/workspaces/{id}/members/{userId}
 | Remove last local workspace administrator | 422 | Workspace must have at least one local administrator |
 | Unknown workspace_id in header | 403 | Not a member of this workspace |
 | Teams checkbox selected but tenant integration disabled | 422 | Microsoft Teams integration is not enabled |
-| Some workspace members have no Teams link | 422 | Missing Teams account links |
-| Workspace already has active Teams link | 409 | Workspace already linked to Teams |
 
 ## Related
 

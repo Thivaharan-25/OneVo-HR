@@ -1,4 +1,4 @@
-﻿# Company Connections - End-to-End Logic
+# Company Connections - End-to-End Logic
 
 **Module:** Shared Platform  
 **Feature:** Company Connections
@@ -88,12 +88,14 @@ POST /api/v1/company-connections/{id}/access-grants
 
 ## Cross-Company Employee Transfer
 
+Cross-company employee transfer is Phase 2 because it depends on connected-tenant workflow/case handling. Phase 1 same-tenant transfer and promotion must use Employee Management lightweight requests and `position:approve`, not Workflow Engine.
+
 ```text
 POST /api/v1/employees/{id}/cross-company-transfer
   -> Validate employee belongs to source tenant
   -> Validate target tenant is actively connected
   -> Validate caller has cross-company:employees:transfer
-  -> Start Workflow Engine transfer case
+  -> Phase 2 only: start Workflow Engine transfer case
   -> Route source approval and target acceptance
   -> Share only approved transfer evidence with target tenant
   -> On approval:

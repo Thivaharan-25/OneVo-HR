@@ -1,4 +1,4 @@
-# Raw Data Processing — End-to-End Logic
+﻿# Raw Data Processing - End-to-End Logic
 
 **Module:** Activity Monitoring
 **Feature:** Raw Data Processing
@@ -26,7 +26,7 @@ Agent Gateway POST /api/v1/agent/ingest (202 Accepted)
             -> Hash window_title with SHA-256 (never store raw)
             -> Lookup application_categories for is_productive flag
          -> "meeting_app_detected" -> INSERT into meeting_sessions
-         -> "device_session" -> INSERT into device_sessions (workforce_presence)
+         -> "device_session" -> INSERT into device_sessions (time_attendance)
       -> 6. Publish ActivitySnapshotReceived event
       -> 7. Mark raw rows as processed (or rely on partition drop)
 ```
@@ -43,17 +43,17 @@ Agent Gateway POST /api/v1/agent/ingest (202 Accepted)
 
 ### Edge Cases
 
-- **Agent sends duplicate batch:** `activity_raw_buffer` has no dedup — duplicates are dropped during snapshot insert via `(tenant_id, employee_id, captured_at)` unique constraint check.
+- **Agent sends duplicate batch:** `activity_raw_buffer` has no dedup - duplicates are dropped during snapshot insert via `(tenant_id, employee_id, captured_at)` unique constraint check.
 - **Employee logs out mid-batch:** Partial data is still processed; device_session gets `session_end` set on next reconciliation.
-- **Raw buffer partition drop:** `PurgeRawBufferJob` drops daily partitions older than 48h — processing must complete within this window.
+- **Raw buffer partition drop:** `PurgeRawBufferJob` drops daily partitions older than 48h - processing must complete within this window.
 
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
 - [[frontend/architecture/overview|Raw Data Processing Overview]]
-- [[modules/activity-monitoring/application-tracking/end-to-end-logic|Application Tracking — End-to-End Logic]]
-- [[modules/activity-monitoring/meeting-detection/end-to-end-logic|Meeting Detection — End-to-End Logic]]
-- [[modules/activity-monitoring/screenshots/end-to-end-logic|Screenshots — End-to-End Logic]]
+- [[modules/activity-monitoring/application-tracking/end-to-end-logic|Application Tracking - End-to-End Logic]]
+- [[modules/activity-monitoring/meeting-detection/end-to-end-logic|Meeting Detection - End-to-End Logic]]
+- [[modules/activity-monitoring/screenshots/end-to-end-logic|Screenshots - End-to-End Logic]]
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]

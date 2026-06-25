@@ -17,7 +17,6 @@ Current gaps:
 - Legacy `escalation_rules` and `escalation_chains` may still contain role-targeting fields such as `escalate_to_role_id` and `notify_role`; new routing must use resolver fields instead.
 - There is no first-class automation definition/template model for the builder.
 - There is no explicit case conversation metadata linking a private conversation to a workflow item, approval, alert, request, or escalation.
-- Delivery routing is not modeled as Chat-first, Inbox fallback, Teams discussion mirror.
 
 ## Proposed Schema Direction
 
@@ -128,8 +127,6 @@ Add:
 
 Purpose:
 
-- Record whether an action card was sent to Chat, Inbox, Teams mirror, email, or push.
-- Preserve source-of-truth behavior: Teams discussion can sync back, but official actions stay in ONEVO.
 
 ### 7. Update Cross-Module References
 

@@ -1,4 +1,4 @@
-﻿# Contract: WorkSync Core (Workspaces + Projects + Tasks)
+# Contract: WorkSync Core (Workspaces + Projects + Tasks)
 
 **Backend owner:** DEV3 Tasks 1-2  
 **Consumers:** DEV7 Tasks 1-2, DEV8 Tasks 2-4  
@@ -61,7 +61,7 @@ Tasks assigned to the authenticated user; used by DEV8 Tasks panel.
 
 ## Notes
 
-- `availability_status` and `availability_warning` are set server-side by the Leave + Calendar check at assignment time
+- `availability_status` and `availability_warning` are set server-side by the Time Off + Calendar check at assignment time
 - `availability_status: null` means no check has run yet (pre-existing assignments before the feature)
 - Workspace membership requires an active employee record in Phase 1
 - Tenant-scoped; workspace APIs enforce membership before returning project data

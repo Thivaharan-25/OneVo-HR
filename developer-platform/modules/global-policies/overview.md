@@ -63,6 +63,6 @@ These values seed the `tenant_auth_policies` row created during tenant provision
 ## Related
 
 - [[developer-platform/modules/global-policies/end-to-end-logic|Global Policies End-to-End Logic]]
-- [[developer-platform/modules/configuration-template-manager/overview|Configuration Template Manager]] — monitoring policy, configuration presets, leave policy, and all other provisioning templates
+- [[developer-platform/modules/configuration-template-manager/overview|Configuration Template Manager]] — monitoring policy, configuration presets, Time Off policy, and all other provisioning templates
 - [[developer-platform/modules/system-config/overview|System Config]] — session TTL, invite expiry, dunning, and platform infrastructure credentials
 - [[developer-platform/modules/tenant-console/overview|Tenant Management]] — Tenant Management → Policies tab shows this tenant's auth policy values that differ from global defaults; platform operators can set per-tenant overrides from there

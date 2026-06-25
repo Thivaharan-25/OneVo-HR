@@ -1,4 +1,4 @@
-# Mock Mode — Development Without a Backend
+﻿# Mock Mode - Development Without a Backend
 
 ## Purpose
 
@@ -46,7 +46,7 @@ var builder = Host.CreateDefaultBuilder(args)
         if (useMock)
         {
             services.AddSingleton<IAgentGatewayClient, MockGatewayClient>();
-            Log.Information("Using MockGatewayClient — no backend required");
+            Log.Information("Using MockGatewayClient - no backend required");
         }
         else
         {
@@ -55,7 +55,7 @@ var builder = Host.CreateDefaultBuilder(args)
                 client.BaseAddress = new Uri(
                     context.Configuration["AgentGateway:BaseUrl"]!);
             })
-            .AddPolicyHandler(/* Polly policies — see [[AI_CONTEXT/rules|Rules]] Section 10 */);
+            .AddPolicyHandler(/* Polly policies - see [[AI_CONTEXT/rules|Rules]] Section 10 */);
         }
 
         // All other services remain the same
@@ -215,8 +215,8 @@ public class MockGatewayClient : IAgentGatewayClient
             VerificationOnLogout = false,
             VerificationIntervalMinutes = 60,
             IdleThresholdSeconds = 300,
-            SnapshotIntervalSeconds = 30,    // Shorter for dev — see faster sync cycles
-            HeartbeatIntervalSeconds = 15     // Shorter for dev — see faster heartbeats
+            SnapshotIntervalSeconds = 30,    // Shorter for dev - see faster sync cycles
+            HeartbeatIntervalSeconds = 15     // Shorter for dev - see faster heartbeats
         };
     }
 }
@@ -235,7 +235,7 @@ dotnet run
 
 Console output:
 ```
-[INF] Using MockGatewayClient — no backend required
+[INF] Using MockGatewayClient - no backend required
 [INF] [MOCK] Register: device=DESKTOP-DEV, os=Windows 11
 [INF] Registered successfully. Agent ID: abc123
 [INF] Waiting for TrayApp connection on pipe onevo-agent-ipc
@@ -318,7 +318,7 @@ public override Task<Result<HeartbeatResponse>> HeartbeatAsync(HeartbeatRequest 
 
 ### Simulating Identity Verification
 
-The mock policy has `VerificationOnLogin = true`, so the photo capture flow triggers automatically on login. The mock does not validate the photo — it accepts any file path from the `photo_captured` IPC message.
+The mock policy can require a clock-in, clock-out, on-demand, or absence-detected photo capture. The mock does not validate the photo - it accepts any file path from the `photo_captured` IPC message.
 
 ---
 
@@ -341,17 +341,17 @@ When the ONEVO backend server is available:
 }
 ```
 
-The SQLite buffer, collectors, and IPC all work identically — only the HTTP client implementation changes.
+The SQLite buffer, collectors, and IPC all work identically - only the HTTP client implementation changes.
 
 ---
 
 ## Related
 
-- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview and development setup
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Real API endpoints that the mock simulates
-- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] — Buffer works the same in mock mode
-- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — IPC works the same in mock mode
-- [[modules/agent-gateway/data-collection|Data Collection]] — Collectors work the same in mock mode
-- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] — TrayApp works the same in mock mode
-- [[AI_CONTEXT/rules|Rules]] — Polly resilience policies (Section 10)
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task
+- [[modules/agent-gateway/agent-overview|Agent Overview]] - Architecture overview and development setup
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] - Real API endpoints that the mock simulates
+- [[modules/agent-gateway/sqlite-buffer|Sqlite Buffer]] - Buffer works the same in mock mode
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] - IPC works the same in mock mode
+- [[modules/agent-gateway/data-collection|Data Collection]] - Collectors work the same in mock mode
+- [[modules/agent-gateway/tray-app-ui|Tray App Ui]] - TrayApp works the same in mock mode
+- [[AI_CONTEXT/rules|Rules]] - Polly resilience policies (Section 10)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] - Implementation task

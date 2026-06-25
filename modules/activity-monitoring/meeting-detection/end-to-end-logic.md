@@ -1,4 +1,4 @@
-# Meeting Detection — End-to-End Logic
+﻿# Meeting Detection - End-to-End Logic
 
 **Module:** Activity Monitoring
 **Feature:** Meeting Detection
@@ -12,7 +12,7 @@
 ```
 GET /api/v1/activity/meetings/{employeeId}?date=2026-04-05
   -> ActivityController.GetMeetings(employeeId, date)
-    -> [RequirePermission("workforce:view")]
+    -> [RequirePermission("monitoring:view")]
     -> ActivityMonitoringService.GetMeetingsAsync(employeeId, date, ct)
       -> 1. Query meeting_sessions WHERE employee_id AND date range
       -> 2. Map to List<MeetingSessionDto>
@@ -41,7 +41,7 @@ ProcessRawBufferJob
 
 | Error | Handling |
 |:------|:---------|
-| Unknown meeting app | Not detected — only known platforms tracked in Phase 1 |
+| Unknown meeting app | Not detected - only known platforms tracked in Phase 1 |
 | Overlapping meetings on different platforms | Both recorded separately |
 | Agent gap (laptop sleep) | Session stays open; closed by CloseOpenSessions job at EOD |
 
@@ -54,8 +54,8 @@ ProcessRawBufferJob
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
 - [[frontend/architecture/overview|Meeting Detection Overview]]
-- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
-- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation — End-to-End Logic]]
+- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing - End-to-End Logic]]
+- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation - End-to-End Logic]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]

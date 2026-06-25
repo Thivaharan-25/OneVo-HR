@@ -1,4 +1,4 @@
-# Disciplinary Actions — Testing
+﻿# Disciplinary Actions - Testing
 
 **Module:** Grievance
 **Feature:** Disciplinary Actions
@@ -51,5 +51,5 @@ public class DisciplinaryServiceTests
 
 ## Related
 
-- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] — feature overview
-- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions
+- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] - feature overview
+- [[code-standards/testing-strategy|Testing Standards]] - project-wide testing conventions

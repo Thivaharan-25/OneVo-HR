@@ -1,4 +1,4 @@
-# Policy Distribution — Testing
+﻿# Policy Distribution - Testing
 
 **Module:** Agent Gateway
 **Feature:** Policy Distribution
@@ -57,7 +57,7 @@ public class AgentPolicyServiceTests
 ## Related
 
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
-- [[modules/agent-gateway/policy-distribution/end-to-end-logic|Policy Distribution — End-to-End Logic]]
+- [[modules/agent-gateway/policy-distribution/end-to-end-logic|Policy Distribution - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]]

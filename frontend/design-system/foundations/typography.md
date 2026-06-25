@@ -1,10 +1,10 @@
-# Typography
+﻿# Typography
 
 ## Font
 
-- **Display/Headings:** Outfit (variable, 400–800 weight) — rounded, friendly, professional. Strong character for dashboards.
-- **Body/UI Text:** Geist (400–500 weight) — clean, readable, modern. Pairs with Outfit for contrast.
-- **Monospace:** JetBrains Mono — code snippets, IDs, timestamps
+- **Display/Headings:** Outfit (variable, 400-800 weight) - rounded, friendly, professional. Strong character for dashboards.
+- **Body/UI Text:** Geist (400-500 weight) - clean, readable, modern. Pairs with Outfit for contrast.
+- **Monospace:** JetBrains Mono - code snippets, IDs, timestamps
 
 ### Font Loading
 
@@ -82,7 +82,7 @@
 
 ## Shell Navigation Type Sizes
 
-The shell navigation (rail, panel, topbar) uses sizes outside the standard scale. These are fixed values — use Tailwind arbitrary values (`text-[Npx]`).
+The shell navigation (rail, panel, topbar) uses sizes outside the standard scale. These are fixed values - use Tailwind arbitrary values (`text-[Npx]`).
 
 | Location | Size | Weight | Font | Tailwind |
 |:---------|:-----|:-------|:-----|:---------|
@@ -99,10 +99,10 @@ The shell navigation (rail, panel, topbar) uses sizes outside the standard scale
 | Content subtitle | **12px** | 400 | body | `text-xs` |
 | Rail avatar initial | **10px** | 700 | body | `text-[10px] font-bold` |
 
-> The project fonts are **Outfit** (display) and **Geist** (body/UI). The HTML design reference used Inter — when implementing, map Inter → Geist for all shell UI text. Sizes and weights remain identical.
+> The project fonts are **Outfit** (display) and **Geist** (body/UI). The HTML design reference used Inter - when implementing, map Inter -> Geist for all shell UI text. Sizes and weights remain identical.
 
 ## Related
 
-- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — color system
-- [[frontend/design-system/components/component-catalog|Component Catalog]] — component library
-- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — page layouts
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] - color system
+- [[frontend/design-system/components/component-catalog|Component Catalog]] - component library
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] - page layouts

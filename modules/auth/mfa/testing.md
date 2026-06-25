@@ -1,4 +1,4 @@
-# MFA — Testing
+﻿# MFA - Testing
 
 **Module:** Auth
 **Feature:** Multi-Factor Authentication

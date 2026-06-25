@@ -1,4 +1,4 @@
-# Document Access Control — End-to-End Logic
+﻿# Document Access Control - End-to-End Logic
 
 **Module:** Documents
 **Feature:** Access Control & Audit Logging

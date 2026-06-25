@@ -1,4 +1,4 @@
-# Development Plans — Testing
+﻿# Development Plans - Testing
 
 **Module:** Skills
 **Feature:** Development Plans
@@ -51,5 +51,5 @@ public class DevelopmentPlanServiceTests
 
 ## Related
 
-- [[modules/skills/development-plans/overview|Development Plans]] — feature overview
-- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions
+- [[modules/skills/development-plans/overview|Development Plans]] - feature overview
+- [[code-standards/testing-strategy|Testing Standards]] - project-wide testing conventions

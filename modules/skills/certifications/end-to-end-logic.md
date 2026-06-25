@@ -1,4 +1,4 @@
-# Certifications — End-to-End Logic
+﻿# Certifications - End-to-End Logic
 
 **Module:** Skills
 **Feature:** Certifications
@@ -43,8 +43,8 @@ CertificationExpiryJob (Hangfire, daily)
 
 ## Related
 
-- [[modules/skills/certifications/overview|Certifications]] — feature overview
-- [[modules/skills/courses-learning/overview|Courses Learning]] — course completion that triggers certification issuance
-- [[modules/skills/employee-skills/overview|Employee Skills]] — skill validation linked to certification status
-- [[backend/messaging/event-catalog|Event Catalog]] — CertificationExpiringSoon, CertificationExpired events
-- [[backend/messaging/error-handling|Error Handling]] — Hangfire job retry and failure patterns
+- [[modules/skills/certifications/overview|Certifications]] - feature overview
+- [[modules/skills/courses-learning/overview|Courses Learning]] - course completion that triggers certification issuance
+- [[modules/skills/employee-skills/overview|Employee Skills]] - skill validation linked to certification status
+- [[backend/messaging/event-catalog|Event Catalog]] - CertificationExpiringSoon, CertificationExpired events
+- [[backend/messaging/error-handling|Error Handling]] - Hangfire job retry and failure patterns

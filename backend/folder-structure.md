@@ -1,4 +1,4 @@
-# ONEVO Backend Folder Structure
+﻿# ONEVO Backend Folder Structure
 
 **Last Updated:** 2026-05-13
 
@@ -110,9 +110,9 @@ ONEVO.sln
 |   |   |   |   `-- EmailTemplateRenderer.cs
 |   |   |   |
 |   |   |   |-- Storage/
-|   |   |   |   `-- R2StorageService.cs                     # future — not yet implemented
+|   |   |   |   `-- R2StorageService.cs                     # future - not yet implemented
 |   |   |   |
-|   |   |   |-- Payments/                               # future — not yet implemented
+|   |   |   |-- Payments/                               # future - not yet implemented
 |   |   |   |   |-- StripePaymentService.cs             # future
 |   |   |   |   `-- PayHerePaymentService.cs            # future
 |   |   |   |
@@ -121,13 +121,13 @@ ONEVO.sln
 |   |   |   |   `-- MicrosoftCalendarService.cs
 |   |   |   |
 |   |   |   |-- Messaging/
-|   |   |   |   |-- SlackService.cs
+|   |   |   |   |-- SlackService.cs          # Phase 2
 |   |   |   |   `-- MicrosoftTeamsService.cs
 |   |   |   |
 |   |   |   |-- Biometric/
 |   |   |   |   `-- BiometricTerminalClient.cs
 |   |   |   |
-|   |   |   `-- Payroll/                                # future — not yet implemented
+|   |   |   `-- Payroll/                                # future - not yet implemented
 |   |   |       |-- AdpPayrollClient.cs                 # future
 |   |   |       `-- OraclePayrollClient.cs              # future
 |   |   |
@@ -142,8 +142,8 @@ ONEVO.sln
 |   |   |   |-- HttpContextTenantContext.cs
 |   |   |   `-- SystemDateTimeProvider.cs
 |   |   |-- Caching/
-|   |   |   |-- InMemoryCacheService.cs           # current — Microsoft.Extensions.Caching.Memory
-|   |   |   `-- RedisCacheService.cs              # future — only if scaling to multi-instance/microservices
+|   |   |   |-- InMemoryCacheService.cs           # current - Microsoft.Extensions.Caching.Memory
+|   |   |   `-- RedisCacheService.cs              # future - only if scaling to multi-instance/microservices
 |   |   |-- BackgroundJobs/
 |   |   |-- Security/
 |   |   |   |-- PermissionResolver.cs

@@ -1,10 +1,10 @@
-# API Integration
+﻿# API Integration
 
 ## Angular HttpClient Services
 
-API calls use Angular's `HttpClient` wrapped in typed services under `shared/src/lib/api/endpoints/`. Components never call `HttpClient` directly — they inject the service.
+API calls use Angular's `HttpClient` wrapped in typed services under `shared/src/lib/api/endpoints/`. Components never call `HttpClient` directly - they inject the service.
 
-Customer web API calls use a BFF-style HttpOnly cookie session. The browser frontend does not attach tenant JWTs directly to `/api/v1/*` requests — the cookie carries the session.
+Customer web API calls use a BFF-style HttpOnly cookie session. The browser frontend does not attach tenant JWTs directly to `/api/v1/*` requests - the cookie carries the session.
 
 ```typescript
 // shared/src/lib/api/endpoints/employees.service.ts
@@ -41,7 +41,7 @@ Interceptors are registered in `app.config.ts` via `withInterceptors([...])`. Al
 ```typescript
 // shared/src/lib/api/interceptors/auth.interceptor.ts
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // Cookie-based session — no Authorization header for customer web.
+  // Cookie-based session - no Authorization header for customer web.
   // withCredentials ensures cookies are sent cross-origin to the API.
   return next(req.clone({ withCredentials: true }));
 };
@@ -122,7 +122,7 @@ Non-browser clients (IDE extension, WorkPulse Agent, platform-admin server) use 
 ## Environment Configuration
 
 ```typescript
-// projects/operations-lifecycle-app/src/environments/environment.ts
+// projects/customer-app/src/environments/environment.ts
 export const environment = {
   production: false,
   apiBaseUrl: 'http://localhost:5000',
@@ -131,7 +131,7 @@ export const environment = {
 ```
 
 ```typescript
-// projects/operations-lifecycle-app/src/app/app.config.ts
+// projects/customer-app/src/app/app.config.ts
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -213,7 +213,7 @@ export function toHttpParams(obj: Record<string, unknown>): HttpParams {
 
 ## Related
 
-- [[backend/api-conventions|API Conventions]] — backend API contract
-- [[frontend/architecture/app-structure|App Structure]] — workspace structure
-- [[frontend/data-layer/state-management|State Management]] — Angular Signals + resource()
-- [[frontend/coding-standards|Coding Standards]] — Angular conventions
+- [[backend/api-conventions|API Conventions]] - backend API contract
+- [[frontend/architecture/app-structure|App Structure]] - workspace structure
+- [[frontend/data-layer/state-management|State Management]] - Angular Signals + resource()
+- [[frontend/coding-standards|Coding Standards]] - Angular conventions

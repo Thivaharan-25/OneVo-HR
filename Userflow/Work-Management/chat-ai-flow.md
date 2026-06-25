@@ -1,7 +1,9 @@
-# Chat AI Flow
+# Chat AI Flow (Phase 2)
 
-**Area:** WorkSync -> Chat  
-**Trigger:** User sends a ONEVO chat, IDE chat, or Microsoft Teams-synced message that contains a question or actionable intent
+**Phase:** Phase 2. Not part of Phase 1 implementation scope.
+
+**Area:** Work -> Chat (Phase 2)  
+**Trigger:** Deferred Phase 2 only. Phase 1 Work must not expose Chat AI, IDE chat assistance, or Teams-synced assistant actions.
 **Required Permission(s):** `chat:read`, `chat:write`  
 **Related Permissions:** Feature flag `premium_ai`
 
@@ -53,7 +55,6 @@
 | Low confidence intent | No action job created | No automation prompt |
 | Undo window expired | Undo request rejected | "This action has already been applied" |
 | Entity creation fails | Job moves to failed | Failure notification with retry if supported |
-| Teams sender unmapped | Assistant tools are skipped | Imported discussion only |
 
 ## Events Triggered
 
@@ -66,7 +67,6 @@
 - [[Userflow/Chat/chat-overview|Chat Overview]]
 - [[Userflow/Work-Management/my-space-flow|My Space]]
 - [[Userflow/IDE-Extension/tag-engine-flow|Tag Engine Flow]]
-- [[Userflow/Work-Management/workspace-teams-sync|Workspace Teams Sync]]
 
 ## Module References
 

@@ -23,7 +23,7 @@
 - Company-size pricing bracket `51-200`
 - Shared base storage allocation
 - Shared base AI token allowance
-- `core_hr` and `leave` as base modules
+- `core_hr` and `time_off` as base modules
 - `monitoring` as optional module add-on
 - Extra Storage Pack as resource-only add-on
 - Extra AI Token Pack as resource-only add-on
@@ -75,9 +75,9 @@
 
 ### TC-S-007: Tenant cannot be entitled twice to same module
 
-**Setup:** Plan includes `leave` as a base module.
+**Setup:** Plan includes `time_off` as a base module.
 
-**Action:** Tenant upgrade request also selects `leave` as an optional add-on.
+**Action:** Tenant upgrade request also selects `time_off` as an optional add-on.
 
 **Expected:** HTTP 422, `code: "duplicate_module_entitlement"`
 
@@ -91,11 +91,11 @@
 
 ### TC-S-009: Base-included optional add-ons hidden during demo upgrade
 
-**Setup:** Demo Profile allows `leave`, but selected plan already includes `leave` as base.
+**Setup:** Demo Profile allows `time_off`, but selected plan already includes `time_off` as base.
 
 **Action:** `GET /api/v1/demo/upgrade/options`
 
-**Expected:** `leave` is not returned as selectable optional add-on.
+**Expected:** `time_off` is not returned as selectable optional add-on.
 
 ---
 

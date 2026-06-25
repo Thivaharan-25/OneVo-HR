@@ -1,4 +1,4 @@
-# Payroll Adjustments — End-to-End Logic
+﻿# Payroll Adjustments - End-to-End Logic
 
 **Module:** Payroll
 **Feature:** Payroll Adjustments
@@ -23,7 +23,7 @@ POST /api/v1/payroll/adjustments
 
 ### Key Rules
 
-- **Adjustments can only be added to draft/processing runs** — completed runs are immutable.
+- **Adjustments can only be added to draft/processing runs** - completed runs are immutable.
 - **Bonuses and reimbursements increase net_pay**, deductions and penalties decrease it.
 
 ## Related

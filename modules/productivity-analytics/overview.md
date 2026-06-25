@@ -1,8 +1,8 @@
-# Module: Productivity Analytics
+﻿# Module: Productivity Analytics
 
 **Feature Folder:** `Application/Features/ProductivityAnalytics`
-**Phase:** 1 — Build
-**Pillar:** 2 — Workforce Intelligence
+**Phase:** 1 - Build
+**Pillar:** 2 - Monitoring
 **Owner:** Dev 1 (Week 4)
 **Tables:** 5
 **Task File:** [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]]
@@ -11,7 +11,7 @@
 
 ## Purpose
 
-Aggregates data from [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/core-hr/overview|Core Hr]], and optional WorkSync output signals into daily/weekly/monthly reports and workforce-wide snapshots. Serves both the dashboard API and CSV/Excel export. This is the **reporting layer** for Pillar 2.
+Aggregates data from [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/time-attendance/overview|Time & Attendance]], [[modules/core-hr/overview|Core Hr]], and optional WorkSync output signals into daily/weekly/monthly reports and monitoring-wide snapshots. Serves both the dashboard API and CSV/Excel export. This is the **reporting layer** for Pillar 2.
 
 Productivity Analytics separates monitoring evidence from output evidence:
 
@@ -25,9 +25,8 @@ Productivity Analytics separates monitoring evidence from output evidence:
 `active_percentage` is an activity rate, not a productivity score. UI copy must not call it "productivity" unless it is part of the composite score.
 
 **Three dashboard views:**
-1. **Manager Dashboard** — full team visibility, drill-down per employee, exception alerts, app usage context, score basis, and WorkSync output signals
-2. **Executive Dashboard** — high-level workforce summary, exception-only escalation, no individual drill-down unless flagged
-3. **Employee Self-Service** — own data only (hours, activity rate, work-classified app time, score basis, trends). Cannot see other employees.
+2. **Executive Dashboard** - high-level monitoring summary, exception-only escalation, no individual drill-down unless flagged
+3. **Employee Self-Service** - own data only (hours, activity rate, work-classified app time, score basis, trends). Cannot see other employees.
 
 ---
 
@@ -36,12 +35,12 @@ Productivity Analytics separates monitoring evidence from output evidence:
 | Direction | Module | Interface | Purpose |
 |:----------|:-------|:----------|:--------|
 | **Depends on** | [[modules/activity-monitoring/overview\|Activity Monitoring]] | `IActivityMonitoringService` | Daily summaries for aggregation |
-| **Depends on** | [[modules/workforce-presence/overview\|Workforce Presence]] | `IWorkforcePresenceService` | Attendance/hours data |
+| **Depends on** | [[modules/time-attendance/overview\|Time & Attendance]] | `ITimeAttendanceService` | Attendance/hours data |
 | **Depends on** | [[modules/core-hr/overview\|Core Hr]] | `IEmployeeService` | Employee/department context |
 | **Depends on** | [[modules/exception-engine/overview\|Exception Engine]] | `IExceptionEngineService` | Exception counts per day |
-| **Depends on** | [[modules/work-management/analytics/overview|WorkSync Analytics]] | `IWorkSyncAnalyticsService` | Optional task completion, delivery, and productivity signals from internal WorkSync modules |
+| **Depends on** | [[modules/work-management/analytics/overview|Work Analytics]] | `IWorkSyncAnalyticsService` | Optional task completion, delivery, and productivity signals from internal WorkSync modules |
 | **Consumed by** | [[database/performance\|Performance]] | `IProductivityAnalyticsService` | Productivity scores for reviews |
-| **Consumed by** | [[modules/reporting-engine/overview\|Reporting Engine]] | — (via query) | Scheduled report generation |
+| **Consumed by** | [[modules/reporting-engine/overview\|Reporting Engine]] | - (via query) | Scheduled report generation |
 
 ---
 
@@ -54,7 +53,7 @@ public interface IProductivityAnalyticsService
     Task<Result<DailyEmployeeReportDto>> GetDailyReportAsync(Guid employeeId, DateOnly date, CancellationToken ct);
     Task<Result<WeeklyEmployeeReportDto>> GetWeeklyReportAsync(Guid employeeId, DateOnly weekStart, CancellationToken ct);
     Task<Result<MonthlyEmployeeReportDto>> GetMonthlyReportAsync(Guid employeeId, int year, int month, CancellationToken ct);
-    Task<Result<WorkforceSnapshotDto>> GetWorkforceSnapshotAsync(DateOnly date, CancellationToken ct);
+    Task<Result<MonitoringSnapshotDto>> GetMonitoringSnapshotAsync(DateOnly date, CancellationToken ct);
     Task<Result<decimal>> GetProductivityScoreAsync(Guid employeeId, DateOnly from, DateOnly to, CancellationToken ct);
 }
 ```
@@ -92,8 +91,8 @@ One row per employee per day.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `date` | `date` | |
 | `total_hours` | `decimal(5,2)` | From presence sessions |
 | `active_hours` | `decimal(5,2)` | From activity summaries |
@@ -123,8 +122,8 @@ Weekly aggregation.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `week_start` | `date` | Monday of the week |
 | `total_hours` | `decimal(6,2)` | |
 | `active_hours` | `decimal(6,2)` | |
@@ -152,10 +151,10 @@ Monthly aggregation.
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `year` | `int` | |
-| `month` | `int` | 1–12 |
+| `month` | `int` | 1-12 |
 | `total_hours` | `decimal(7,2)` | |
 | `active_hours` | `decimal(7,2)` | |
 | `idle_hours` | `decimal(7,2)` | |
@@ -176,14 +175,14 @@ Monthly aggregation.
 
 **Indexes:** `(tenant_id, employee_id, year, month)` UNIQUE
 
-### `workforce_snapshot`
+### `monitoring_snapshot`
 
 Tenant-wide daily metrics.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
+| `tenant_id` | `uuid` | FK -> tenants |
 | `date` | `date` | |
 | `total_employees` | `int` | Active employees count |
 | `active_count` | `int` | Employees with activity this day |
@@ -207,8 +206,8 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `employee_id` | `uuid` | FK → employees |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `employee_id` | `uuid` | FK -> employees |
 | `period_type` | `varchar(10)` | `daily`, `weekly`, `monthly` |
 | `period_start` | `date` | Start of period |
 | `period_end` | `date` | End of period |
@@ -218,25 +217,25 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 | `work_output_score` | `decimal(5,2)` | WorkSync-computed output score (0-100) |
 | `productivity_score` | `decimal(5,2)` | Deprecated alias for `work_output_score` during migration; do not use for new code |
 | `active_projects_count` | `int` | Projects active during period |
-| `velocity_story_points` | `int` | nullable — story points if WMS uses them |
+| `velocity_story_points` | `int` | nullable - story points if WMS uses them |
 | `submitted_at` | `timestamptz` | When WMS submitted this snapshot |
 | `created_at` | `timestamptz` | |
 
 **Indexes:** `(tenant_id, employee_id, period_type, period_start)` UNIQUE
 
-> **Phase note:** This table is created in Phase 1 so Productivity Analytics can combine agent-based workforce signals with internal WorkSync delivery signals when the tenant has WorkSync enabled. There is no bridge endpoint.
+> **Phase note:** This table is created in Phase 1 so Productivity Analytics can combine agent-based monitoring signals with internal WorkSync delivery signals when the tenant has WorkSync enabled. There is no bridge endpoint.
 
 ---
 
-## Domain Events (intra-module — MediatR)
+## Domain Events (intra-module - MediatR)
 
-> These events are published and consumed within this module only. They never leave the module.
+> These events are published and consumed within this module only. They never cross the module boundary.
 
 | Event | Published When | Handler |
 |:------|:---------------|:--------|
-| _(none)_ | — | — |
+| _(none)_ | - | - |
 
-## Cross-Module Events (cross-module — MediatR INotification)
+## Cross-Module Events (cross-module - MediatR INotification)
 
 ### Publishes
 
@@ -250,29 +249,28 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 
 | Event | Source Module | Action Taken |
 |:------|:-------------|:-------------|
-| `ActivitySnapshotReceived` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Update real-time workforce status feed |
-| `ExceptionAlertCreated` | [[modules/exception-engine/overview\|Exception Engine]] | Increment daily exception count in workforce snapshot |
+| `ActivitySnapshotReceived` | [[modules/activity-monitoring/overview\|Activity Monitoring]] | Update real-time monitoring status feed |
+| `ExceptionAlertCreated` | [[modules/exception-engine/overview\|Exception Engine]] | Increment daily exception count in monitoring snapshot |
 
 ---
 
 ## Key Business Rules
 
 1. **Reports are pre-computed, not real-time.** Dashboard API serves pre-aggregated data from these tables.
-2. **Daily reports aggregate from `activity_daily_summary` + `presence_sessions`** — never from raw snapshots.
+2. **Daily reports aggregate from `activity_daily_summary` + `presence_sessions`** - never from raw snapshots.
 3. **Score vocabulary is strict.** `active_percentage` is labelled "Activity rate". `activity_score` is monitoring-derived. `work_output_score` is WorkSync-derived. `productivity_score` is the final score and must expose `productivity_score_basis`.
 4. **Composite score formula:** when both monitoring and WorkSync output evidence exist, compute `productivity_score = (work_output_score * 0.40) + (productive_context_score * 0.25) + (presence_reliability_score * 0.20) + (collaboration_score * 0.10) - exception_penalty`, then clamp 0-100. `data_coverage_percentage` gates confidence, not the score itself.
    - `productive_context_score` comes from work-classified app/domain time plus focus time.
    - `presence_reliability_score` comes from scheduled-vs-present time, break compliance, and data coverage.
-   - `collaboration_score` comes from valid meeting time and WorkSync collaboration signals where enabled.
+   - `collaboration_score` comes from valid meeting time and Work Collaboration signals where enabled.
    - `exception_penalty` is 0-5 points based on unresolved severity-weighted exceptions.
 5. **Fallback score:** if WorkSync output data is unavailable, populate `productivity_score_basis = activity_only` and label the UI as "Activity-derived score". Do not compare activity-only scores against composite scores in department rankings.
 6. **Meeting time is valid work context.** Meetings reduce idle penalties when `meeting_detection` is enabled and the meeting session is inside a presence window. A low keyboard/mouse count during a meeting is not automatically low productivity.
 7. **Comparative rankings** (department rank) are only shown to managers with `analytics:view` permission, never to the employee themselves. Rankings must compare only employees with the same `productivity_score_basis` and acceptable `data_coverage_percentage`.
 8. **Export formats:** CSV and Excel via the [[modules/reporting-engine/overview|Reporting Engine]]. PDF deferred to Phase 2.
-9. **Workforce snapshot** includes ALL active employees, even those with monitoring disabled (they show presence data only, no activity breakdown).
-10. **Employee self-service dashboard** uses `analytics:view` permission and shows own daily hours, activity rate, work-classified app time, meeting time, score basis, and weekly/monthly trends. It never shows team/department aggregates or comparative rankings.
-11. **Executive dashboard** shows workforce-level summary only. Individual employee data is not shown unless there is an escalated or critical exception alert.
-12. **Manager detail view** allows drill-down for employees in the manager's hierarchy: app usage breakdown, allowlist violations, activity timeline, WorkSync output signals, score basis, and data coverage.
+9. **Monitoring snapshot** includes ALL active employees, even those with monitoring disabled (they show presence data only, no activity breakdown).
+11. **Executive dashboard** shows monitoring-level summary only. Individual employee data is not shown unless there is an escalated or critical exception alert.
+12. **Manager detail view** allows drill-down for employees visible through management coverage or configured analytics/reviewer access: app usage breakdown, allowlist violations, activity timeline, WorkSync output signals, score basis, and data coverage.
 
 ---
 
@@ -283,16 +281,16 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 | GET | `/api/v1/analytics/daily/{employeeId}` | `analytics:view` | Daily report |
 | GET | `/api/v1/analytics/weekly/{employeeId}` | `analytics:view` | Weekly report |
 | GET | `/api/v1/analytics/monthly/{employeeId}` | `analytics:view` | Monthly report |
-| GET | `/api/v1/analytics/workforce` | `analytics:view` | Workforce snapshot for date |
+| GET | `/api/v1/analytics/monitoring` | `analytics:view` | Monitoring snapshot for date |
 | GET | `/api/v1/analytics/trends/{employeeId}` | `analytics:view` | Trend data for charts |
 | GET | `/api/v1/analytics/export/daily` | `analytics:export` | Export daily report (CSV/Excel) |
 | GET | `/api/v1/analytics/export/weekly` | `analytics:export` | Export weekly report |
-| GET | `/api/v1/analytics/export/workforce` | `analytics:export` | Export workforce snapshot |
+| GET | `/api/v1/analytics/export/monitoring` | `analytics:export` | Export monitoring snapshot |
 | GET | `/api/v1/analytics/my/daily` | `analytics:view` | Employee's own daily report (self-service) |
 | GET | `/api/v1/analytics/my/weekly` | `analytics:view` | Employee's own weekly report |
 | GET | `/api/v1/analytics/my/monthly` | `analytics:view` | Employee's own monthly report |
 | GET | `/api/v1/analytics/my/trends` | `analytics:view` | Employee's own trend data for charts |
-| GET | `/api/v1/analytics/executive/summary` | `analytics:view` | Executive-level workforce summary (exceptions only, no individual drill-down) |
+| GET | `/api/v1/analytics/executive/summary` | `analytics:view` | Executive-level monitoring summary (exceptions only, no individual drill-down) |
 | GET | `/api/v1/analytics/executive/exceptions` | `analytics:view` | Executive-level exception overview (escalated/critical only) |
 
 ---
@@ -301,9 +299,9 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 
 | Job | Schedule | Queue | Purpose |
 |:----|:---------|:------|:--------|
-| `GenerateDailyReportsJob` | Daily 11:30 PM | Default | Aggregate daily data → `daily_employee_report` + `workforce_snapshot` |
-| `GenerateWeeklyReportsJob` | Monday 1:00 AM | Default | Aggregate week → `weekly_employee_report` |
-| `GenerateMonthlyReportsJob` | 1st of month 2:00 AM | Batch | Aggregate month → `monthly_employee_report` |
+| `GenerateDailyReportsJob` | Daily 11:30 PM | Default | Aggregate daily data -> `daily_employee_report` + `monitoring_snapshot` |
+| `GenerateWeeklyReportsJob` | Monday 1:00 AM | Default | Aggregate week -> `weekly_employee_report` |
+| `GenerateMonthlyReportsJob` | 1st of month 2:00 AM | Batch | Aggregate month -> `monthly_employee_report` |
 
 ---
 
@@ -312,28 +310,28 @@ Optional productivity data derived from internal WorkSync task, time, sprint, an
 - **Score basis is mandatory in DTOs and exports.** Every productivity score must declare whether it is `composite`, `activity_only`, `worksync_only`, or `insufficient_data`.
 - **Activity-only scores are fallback evidence.** They are useful for monitoring trends but should not be mixed with composite WorkSync-backed scores in rankings, reviews, or executive summaries.
 - **This module does NOT collect data.** It only aggregates data from other modules.
-- **For real-time dashboard data**, the frontend queries [[modules/workforce-presence/overview|Workforce Presence]] `GetLiveWorkforceStatusAsync()` — not this module. This module serves historical/aggregated reports.
+- **For real-time dashboard data**, the frontend queries [[modules/time-attendance/overview|Time & Attendance]] `GetLiveMonitoringStatusAsync()` - not this module. This module serves historical/aggregated reports.
 - **Performance module integration:** [[database/performance|Performance]] can pull `GetProductivityScoreAsync()` to include productivity data in performance reviews (optional, configurable by tenant). This score combines agent-based reports (`daily_employee_report`) with WorkSync output metrics (`wms_productivity_snapshots`) when available and always returns score basis.
-- **WorkSync analytics are optional.** If the tenant has no WorkSync modules enabled, `wms_productivity_snapshots` is empty and `GetProductivityScoreAsync()` uses an activity-derived fallback. No configuration change is needed, but UI/reporting must label the basis clearly.
+- **Work Analytics are optional.** If the tenant has no WorkSync modules enabled, `wms_productivity_snapshots` is empty and `GetProductivityScoreAsync()` uses an activity-derived fallback. No configuration change is needed, but UI/reporting must label the basis clearly.
 
 ## Features
 
-- [[modules/productivity-analytics/daily-reports/overview|Daily Reports]] — One row per employee per day with hours, activity rate, work-classified app time, score basis, and top apps — frontend: [[modules/productivity-analytics/daily-reports/frontend|Frontend]]
-- [[modules/productivity-analytics/weekly-reports/overview|Weekly Reports]] — Weekly aggregation with trend vs prior week
-- [[modules/productivity-analytics/monthly-reports/overview|Monthly Reports]] — Monthly aggregation with department comparative ranking
-- [[modules/productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]] — Tenant-wide daily metrics and per-department breakdown
-- Employee Self Service — Employee-facing dashboard: own hours, activity rate, work-classified app time, score basis, and trends (`analytics:view`)
-- Executive Dashboard — executive-level workforce summary: key metrics + exceptions only (`analytics:view`)
-- Manager Detail View — Manager drill-down: per-employee app usage, activity timeline, allowlist violations
+- [[modules/productivity-analytics/daily-reports/overview|Daily Reports]] - One row per employee per day with hours, activity rate, work-classified app time, score basis, and top apps - frontend: [[modules/productivity-analytics/daily-reports/frontend|Frontend]]
+- [[modules/productivity-analytics/weekly-reports/overview|Weekly Reports]] - Weekly aggregation with trend vs prior week
+- [[modules/productivity-analytics/monthly-reports/overview|Monthly Reports]] - Monthly aggregation with department comparative ranking
+- [[modules/productivity-analytics/monitoring-snapshots/overview|Monitoring Snapshots]] - Tenant-wide daily metrics and per-department breakdown
+- Employee Self Service - Employee-facing dashboard: own hours, activity rate, work-classified app time, score basis, and trends (`analytics:view`)
+- Executive Dashboard - executive-level monitoring summary: key metrics + exceptions only (`analytics:view`)
+- Manager Detail View - Manager drill-down: per-employee app usage, activity timeline, allowlist violations
 
 ---
 
 ## Related
 
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — All report tables use `(tenant_id, employee_id, date)` UNIQUE indexes
-- [[security/data-classification|Data Classification]] — Department rankings only visible to managers (`analytics:view`)
-- [[backend/messaging/event-catalog|Event Catalog]] — `DailyReportReady`, `WeeklyReportReady`, `MonthlyReportReady`
-- [[security/compliance|Compliance]] — Workforce snapshots cover all employees (monitoring-disabled show presence only)
-- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]] — Implementation task file
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - All report tables use `(tenant_id, employee_id, date)` UNIQUE indexes
+- [[security/data-classification|Data Classification]] - Department rankings only visible to managers (`analytics:view`)
+- [[backend/messaging/event-catalog|Event Catalog]] - `DailyReportReady`, `WeeklyReportReady`, `MonthlyReportReady`
+- [[security/compliance|Compliance]] - Monitoring snapshots cover all employees (monitoring-disabled show presence only)
+- [[current-focus/DEV1-productivity-analytics|DEV1: Productivity Analytics]] - Implementation task file
 
-See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/workforce-presence/overview|Workforce Presence]], [[modules/exception-engine/overview|Exception Engine]], [[modules/reporting-engine/overview|Reporting Engine]]
+See also: [[backend/module-catalog|Module Catalog]], [[modules/activity-monitoring/overview|Activity Monitoring]], [[modules/time-attendance/overview|Time & Attendance]], [[modules/exception-engine/overview|Exception Engine]], [[modules/reporting-engine/overview|Reporting Engine]]

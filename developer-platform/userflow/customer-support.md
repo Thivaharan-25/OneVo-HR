@@ -14,9 +14,16 @@ Super Admin and support agents manage tenant support tickets.
 6. Reply to the customer.
 7. Add internal notes when needed.
 8. Change category if the issue was filed incorrectly.
-9. Add useful issue/resolution details to the knowledgebase.
-10. Close the ticket when resolved.
+9. Close the ticket when resolved.
 
 ## Rules
 
 Internal notes are not visible to tenant users. Every support action is recorded in the activity timeline or audit history.
+
+## Database Entities
+
+- `support_tickets` stores the tenant ticket, issue description, status, assignment, and resolution timestamps.
+- `support_ticket_messages` stores tenant/platform replies that are visible to the customer.
+- `support_ticket_internal_notes` stores platform-only notes.
+- `support_ticket_events` stores the activity timeline.
+- `entity_assets` stores attachments for tickets and ticket messages.

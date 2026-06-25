@@ -1,4 +1,4 @@
-# Heartbeat Monitoring — End-to-End Logic
+﻿# Heartbeat Monitoring - End-to-End Logic
 
 **Module:** Agent Gateway
 **Feature:** Heartbeat Monitoring
@@ -56,8 +56,8 @@ DetectOfflineAgentsJob (Hangfire, every 5 min)
 
 - [[modules/agent-gateway/overview|Agent Gateway Module]]
 - [[frontend/architecture/overview|Heartbeat Monitoring Overview]]
-- [[modules/agent-gateway/agent-registration/end-to-end-logic|Agent Registration — End-to-End Logic]]
-- [[modules/agent-gateway/policy-distribution/end-to-end-logic|Policy Distribution — End-to-End Logic]]
+- [[modules/agent-gateway/agent-registration/end-to-end-logic|Agent Registration - End-to-End Logic]]
+- [[modules/agent-gateway/policy-distribution/end-to-end-logic|Policy Distribution - End-to-End Logic]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[security/auth-architecture|Auth Architecture]]

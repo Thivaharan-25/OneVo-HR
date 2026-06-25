@@ -20,7 +20,7 @@
 4. Super Admin selects allowed Developer Platform module permissions.
 5. Frontend calls `PUT /admin/v1/platform-roles/{id}/permissions`.
 6. Backend evaluates the recoverable-admin guard against the proposed permission set.
-7. Backend rejects the request with `recoverable_admin_required` if the change would leave zero active users with both `platform.accounts.manage` and `platform.roles.manage`.
+7. Backend rejects the request with `recoverable_admin_required` if the change would time_off zero active users with both `platform.accounts.manage` and `platform.roles.manage`.
 8. Backend replaces role permissions transactionally.
 9. Backend revokes or marks affected sessions for re-issue when permission claims are stale.
 

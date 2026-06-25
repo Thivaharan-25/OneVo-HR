@@ -1,4 +1,4 @@
-# Feature Catalog: ONEVO
+﻿# Feature Catalog: ONEVO
 
 **Last Updated:** 2026-05-13
 
@@ -16,13 +16,13 @@ See [[backend/folder-structure|Folder Structure]] for the full solution layout.
 
 ```
 ONEVO PLATFORM
-  ┌─────────────────────────────────────────────────────┐
-  │  ONEVO Frontend (Vite + React 19)                           │
-  │    HR Sidebar ──────┐                               │
-  │    Work Management Sidebar─┼──→  ONEVO.Api (.NET 10)│
-  │    IDE Extension (Phase 2) ─┘ single host, all pillars│
-  └─────────────────────────────────────────────────────┘
-                               ↕ ApplicationDbContext
+  +-----------------------------------------------------+
+  |  ONEVO Frontend (Vite + React 19)                           |
+  |    HR Sidebar ------+                               |
+  |    Work Management Sidebar-+--?  ONEVO.Api (.NET 10)|
+  |    IDE Extension (Phase 2) -+ single host, all pillars|
+  +-----------------------------------------------------+
+                               ? ApplicationDbContext
                             PostgreSQL (single database)
 ```
 
@@ -40,14 +40,14 @@ ONEVO uses Subscription Plans with base modules, optional module add-ons, resour
 | 2 | Tenant Configuration and Onboarding | Foundation | Always Included | None |
 | 3 | Roles and Permissions | Foundation | Always Included | Use only |
 | 4 | Profile Management | HR Core | Plan-selected module | Full |
-| 5 | Attendance and Leave Management | HR Core | Plan-selected module | Full |
+| 5 | Attendance and Time Off Management | HR Core | Plan-selected module | Full |
 | 6 | E2E Monitoring | Intelligence | Plan-selected module | View only |
 | 7 | Productivity and Performance Analytics | Intelligence | Plan-selected module | View only |
-| 8 | Exception Detection | Intelligence | Plan-selected module | Full |
+| 8 | Monitoring Alerts | Intelligence | Phase 1 lightweight alerts; full Exception Engine is Phase 2 | View only |
 | 9 | Overtime Management | Intelligence | Plan-selected module | Full |
 | 10 | Project Management | Work Management | Plan-selected module | Full |
-| 11 | Agentic Chat | Work Management | Plan-selected module | Full |
-| 12 | Third Party Integrations | Work Management | Plan-selected module | Full |
+| 11 | Third Party Integrations | Work Management | Plan-selected module | Full |
+| 12 | Agentic Chat | Work Management | Phase 2 plan-selected module | Full |
 | 13 | IDE Extension | Work Management | Phase 2 plan-selected module | Full |
 
 ---
@@ -83,25 +83,24 @@ Example: for the `51-200` employee range, the selected base plan plus selected a
 | 2 | Auth & Security | `Features/Auth` | 9 | Phase 1 |
 | 3 | Org Structure | `Features/OrgStructure` | 12 | Phase 1 |
 | 4 | Core HR | `Features/CoreHR` | 13 | Phase 1 |
-| 5 | Leave | `Features/Leave` | 5 | Phase 1 |
+| 5 | Time Off | `Features/TimeOff` | 5 | Phase 1 |
 | 6 | Payroll | `Features/Payroll` | 11 | Phase 2 |
 | 7 | Performance | `Features/Performance` | 7 | Phase 2 |
 | 8 | Skills & Learning | `Features/Skills` | 15 (5 P1 + 10 P2) | Mixed |
 | 9 | HR Documents | `Features/Documents` | 4 P2 new (documents table shared with WorkManagement.Collaboration) | Phase 2 |
 
-> **Org Structure note:** Includes `team_roles`, `team_role_permissions`, `team_member_roles` for stacking permissions across multiple team memberships (12 tables, up from 9).
 
 > **HR Documents note:** The `documents` and `document_versions` tables are created in Phase 1 by WorkManagement.Collaboration. HR Documents (Phase 2) adds `document_categories`, `document_templates`, `document_access_logs`, `document_acknowledgements` only.
 
-### Pillar 2: Workforce Intelligence
+### Pillar 2: Monitoring
 
 | # | Feature | Feature Folder | Tables | Phase |
 |:--|:--------|:---------------|:-------|:------|
-| 10 | Workforce Presence | `Features/WorkforcePresence` | 12 | Phase 1 |
+| 10 | Time & Attendance | `Features/TimeAttendance` | 12 | Phase 1 |
 | 11 | Activity Monitoring | `Features/ActivityMonitoring` | 9 | Phase 1 |
 | 11a | Discrepancy Engine | `Features/DiscrepancyEngine` | 2 | Phase 1 |
 | 12 | Identity Verification | `Features/IdentityVerification` | 6 | Phase 1 |
-| 13 | Exception Engine | `Features/ExceptionEngine` | 5 | Phase 1 |
+| 13 | Exception Engine | `Features/ExceptionEngine` | 5 | Phase 2 |
 | 14 | Productivity Analytics | `Features/ProductivityAnalytics` | 5 | Phase 1 |
 
 ### Pillar 3: Work Management
@@ -111,17 +110,17 @@ Example: for the `51-200` employee range, the selected base plan plus selected a
 | W1 | Foundation | `Features/WMFoundation` | 5 | Phase 1/2 |
 | W2 | Projects | `Features/Projects` | 7 | Phase 1 |
 | W3 | Tasks | `Features/Tasks` | 13 | Phase 1 |
-| W4 | Planning | `Features/Planning` | 7 | Phase 1 |
-| W5 | OKR & Goals | `Features/OKR` | ~5 | Phase 1 |
+| W4 | Planning | `Features/Planning` | 7 | Phase 2 |
+| W5 | OKR & Goals | `Features/OKR` | ~5 | Phase 2 |
 | W6 | Time | `Features/Time` | ~4 | Phase 1 |
-| W7 | Resources | `Features/Resources` | ~3 | Phase 1 |
-| W8 | Chat & Messaging | `Features/Chat` | 8 | Phase 1/2 |
-| W9 | Agentic Chat AI | `Features/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 1 - available as a plan-selected module/add-on |
+| W7 | Resources | `Features/Resources` | ~3 | Phase 2 |
+| W8 | Chat & Messaging | `Features/Chat` | 8 | Phase 2 |
+| W9 | Agentic Chat AI | `Features/ChatAI` | 2 (ai_action_jobs + premium_ai_detections) | Phase 2 |
 | W10 | Collaboration | `Features/Collaboration` | 4 new + extends documents | Phase 1 |
-| W11 | Analytics & Insights | `Features/WorkSyncAnalytics` | 7 | Phase 1 |
-| W12 | Integrations | `Features/WorkSyncIntegrations` | 7 | Phase 1 |
+| W11 | Analytics & Insights | `Features/WorkSyncAnalytics` | 7 | Phase 2 |
+| W12 | Integrations | `Features/WorkSyncIntegrations` | 7 | Phase 2 |
 
-Schema files: [[database/schemas/wms-project-management|Project Management]], [[database/schemas/wms-task-management|Task Management]], [[database/schemas/wms-planning|Sprint Planning]], [[database/schemas/wms-chat|Chat + Chat AI]], [[database/schemas/wms-collaboration|Collaboration]], [[database/schemas/wms-analytics|Analytics]], [[database/schemas/wms-integrations|Integrations]]
+Schema files: [[database/schemas/wms-project-management|Project Management]], [[database/schemas/wms-task-management|Task Management]], [[database/schemas/wms-planning|Sprint Planning]], [[database/schemas/wms-collaboration|Collaboration]], [[database/schemas/wms-analytics|Analytics]], [[database/schemas/wms-integrations|Integrations]]. [[database/schemas/wms-chat|Chat + Chat AI]] is Phase 2.
 
 ### IDE Extension
 
@@ -137,16 +136,16 @@ Tag engine, context engine, agent entitlement, and SignalR IDEHub spec: [[module
 
 | # | Feature | Feature Folder | Tables | Phase |
 |:--|:--------|:---------------|:-------|:------|
-| 15 | Shared Platform | `Features/SharedPlatform` | 35 | Phase 1/2; includes Automation Center workflow builder/API |
-| 16 | Notifications | `Features/Notifications` | 0 own tables | — |
+| 15 | Shared Platform | `Features/SharedPlatform` | 35 | Phase 1/2; Phase 1 notifications/billing/config only, Workflow/Automation Engine is Phase 2 |
+| 16 | Notifications | `Features/Notifications` | 0 own tables | - |
 | 17 | Configuration | `Features/Configuration` | 6 | Phase 1 |
 | 18 | Calendar | `Features/Calendar` | 1 | Phase 1 |
-| 19 | Reporting Engine | `Features/ReportingEngine` | 3 | Phase 1 |
+| 19 | Reporting Engine | `Features/ReportingEngine` | 3 | Phase 2 |
 | 20 | Grievance | `Features/Grievance` | 2 | Phase 2 |
 | 21 | Expense | `Features/Expense` | 3 | Phase 2 |
 | 22 | Agent Gateway | `Features/AgentGateway` | 6 | Phase 1 |
 | 23 | Dev Platform | `Features/DevPlatform` | 5 (P1) + 1 (P2) | Mixed |
-| 24 | Microsoft Teams Integration | `Features/Integrations/MicrosoftTeams` | Uses Shared Platform + Work Management Teams tables | Phase 1 optional integration |
+| 24 | Microsoft Teams Integration | `Features/Integrations/MicrosoftTeams` | Uses Shared Platform + Work Management Teams tables | Phase 2 |
 
 > **Shared Platform note:** Old external-provisioning tables removed because Work Management is internal. Count is 35 after Microsoft Teams account/token/webhook/delta tables.
 > **Agent Gateway note:** Added `agent_install_entitlements` and `agent_install_jobs` for IDE Extension entitlement gating. Count is 6 (was 4).
@@ -202,18 +201,18 @@ Work Management features are flat - no `WorkManagement/` parent folder. Each Wor
 | Trigger decoupled post-save side effect | Optional domain event; `DomainEventDispatchInterceptor` dispatches after save |
 | React to a justified event | `INotificationHandler<TEvent>` in optional `EventHandlers/` |
 | Background processing | `IBackgroundJobService` (Hangfire) injected in handler |
-| Real-time push to IDE | `IIDEHubService` -> SignalR IDEHub (task:updated, chat:message, tag:executed, ai:action_pending) |
+| Real-time push to IDE | Phase 2 `IIDEHubService` -> SignalR IDEHub (task:updated, chat:message, tag:executed, ai:action_pending) |
 
 No RabbitMQ. No IEventBus. No MassTransit. Most feature communication is direct through Application-owned interfaces; domain events are available by exception for decoupled post-save side effects.
 
 ---
 
-## Developer Platform — Admin API
+## Developer Platform - Admin API
 
-Developer Console endpoints live under `/admin/v1/*` inside the single `ONEVO.Api` host. `ONEVO.Admin.Api` is deprecated historical scaffold only, does not exist in the current `Onevo_Backend/src` tree, and must not be recreated or deployed. All data access goes through Application-owned repository/service interfaces exactly like customer APIs. Platform-level cross-tenant reads/writes must be explicit in those interface names and implementations.
+Developer Console endpoints live under `/admin/v1/*` inside the single `ONEVO.Api` host. Phase 1 does not have a separate admin backend service. All data access goes through Application-owned repository/service interfaces exactly like customer APIs. Platform-level cross-tenant reads/writes must be explicit in those interface names and implementations.
 
 | Aspect | Detail |
 |:-------|:-------|
-| Host project | `ONEVO.Api` — `Controllers/Admin/` |
-| JWT Issuer | `onevo-platform-admin` — never valid at `/api/v1/*` |
-| Feature data | `Features/DevPlatform` — no TenantId on these entities |
+| Host project | `ONEVO.Api` - `Controllers/Admin/` |
+| JWT Issuer | `onevo-platform-admin` - never valid at `/api/v1/*` |
+| Feature data | `Features/DevPlatform` - no TenantId on these entities |

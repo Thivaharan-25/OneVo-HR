@@ -37,52 +37,52 @@ export class SignalRService implements OnDestroy {
 
 | Channel | Data | Permission | UI Update |
 |:--------|:-----|:-----------|:----------|
-| `workforce-live` | Presence changes, active/idle transitions | `workforce:view` | Live dashboard cards |
-| `exception-alerts` | New exception alerts | `exceptions:view` | Toast + badge count |
-| `activity-feed` | Activity snapshots (admin drill-down) | `workforce:view` | Employee detail live |
+| `monitoring-live` | Presence changes, active/idle transitions | `monitoring:view` | Live dashboard cards |
+| `notifications-{userId}` | Phase 1 monitoring/attendance alerts | `monitoring:alerts:read` | Toast + badge count |
+| `activity-feed` | Activity snapshots (admin drill-down) | `monitoring:view` | Employee detail live |
 | `agent-status` | Agent online/offline | `agent:view-health` | Agent health indicator |
 | `notifications-{userId}` | Personal notifications | Authenticated | Bell icon badge |
 
 ## Angular Pattern
 
 ```typescript
-// operations-lifecycle-app: workforce-live.component.ts
-export class WorkforceLiveComponent implements OnInit, OnDestroy {
+// customer-app: monitoring-live.component.ts
+export class MonitoringLiveComponent implements OnInit, OnDestroy {
   private signalR = inject(SignalRService);
 
   presenceResource = resource({
-    loader: () => firstValueFrom(this.workforceService.getLiveStatus()),
+    loader: () => firstValueFrom(this.monitoringService.getLiveStatus()),
   });
 
   ngOnInit() {
     // High-frequency: set resource value directly (avoids HTTP refetch)
-    this.signalR.on<WorkforceUpdate>('WorkforceStatusUpdate', (update) => {
+    this.signalR.on<MonitoringUpdate>('MonitoringStatusUpdate', (update) => {
       this.presenceResource.set({ ...this.presenceResource.value()!, ...update });
     });
   }
 
-  ngOnDestroy() { this.signalR.off('WorkforceStatusUpdate'); }
+  ngOnDestroy() { this.signalR.off('MonitoringStatusUpdate'); }
 }
 
-// operations-lifecycle-app: exception-list.component.ts
-export class ExceptionListComponent implements OnInit, OnDestroy {
+// customer-app: monitoring-alert-list.component.ts
+export class MonitoringAlertListComponent implements OnInit, OnDestroy {
   private signalR = inject(SignalRService);
   private snackBar = inject(MatSnackBar);
 
   alertsResource = resource({
-    loader: () => firstValueFrom(this.exceptionService.getAlerts({ status: 'new' })),
+    loader: () => firstValueFrom(this.monitoringAlertService.getAlerts({ status: 'new' })),
   });
 
   ngOnInit() {
-    this.signalR.on('ExceptionAlertCreated', (alert: ExceptionAlert) => {
+    this.signalR.on('MonitoringAlertCreated', (alert: MonitoringAlert) => {
       this.alertsResource.reload();
       // Show toast
-      toast.warning(`Exception: ${alert.summary}`, {
+      toast.warning(`Alert: ${alert.summary}`, {
         description: alert.employeeName,
       });
     });
     
-    return () => connection.off('exception-alerts');
+    return () => connection.off('MonitoringAlertCreated');
   }, [connection, queryClient]);
 }
 ```
@@ -92,12 +92,12 @@ export class ExceptionListComponent implements OnInit, OnDestroy {
 If SignalR connection fails, fall back to polling:
 
 ```typescript
-export function useWorkforceStatus() {
+export function useMonitoringStatus() {
   const isConnected = useSignalRStatus();
   
   return useQuery({
-    queryKey: ['workforce', 'live'],
-    queryFn: () => workforceApi.liveStatus(),
+    queryKey: ['monitoring', 'live'],
+    queryFn: () => monitoringApi.liveStatus(),
     refetchInterval: isConnected ? false : 30_000, // Poll only when SignalR is down
   });
 }
@@ -106,7 +106,7 @@ export function useWorkforceStatus() {
 ## Related
 
 - [[modules/notifications/signalr-real-time/overview|Signalr Real Time]] - SignalR implementation
-- [[modules/workforce-presence/overview|Workforce Presence]] - live presence tracking
-- [[modules/exception-engine/overview|Exception Engine]] - real-time alerts
+- [[modules/time-attendance/overview|Time & Attendance]] - live presence tracking
+- [[modules/exception-engine/overview|Exception Engine]] - Phase 2 real-time alerts
 - [[backend/notification-system|Notification System]] - notification delivery
 

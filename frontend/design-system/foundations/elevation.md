@@ -1,12 +1,12 @@
-# Elevation & Shadow System
+﻿# Elevation & Shadow System
 
 ## Shadow Scale
 
-ONEVO uses a restrained elevation system — flat by default, shadows only for floating elements. The UI should feel grounded, not stacked.
+ONEVO uses a restrained elevation system - flat by default, shadows only for floating elements. The UI should feel grounded, not stacked.
 
 | Level | Tailwind | CSS | Usage |
 |:------|:---------|:----|:------|
-| 0 (flat) | — | `none` | Cards, table rows, sidebar items (default) |
+| 0 (flat) | - | `none` | Cards, table rows, sidebar items (default) |
 | 1 (subtle) | `shadow-sm` | `0 1px 2px rgba(0,0,0,0.05)` | Hover state on cards, dropdown triggers |
 | 2 (raised) | `shadow` | `0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)` | Popovers, dropdown menus, date pickers |
 | 3 (floating) | `shadow-md` | `0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)` | Dialogs, command palette, notification panel |
@@ -14,7 +14,7 @@ ONEVO uses a restrained elevation system — flat by default, shadows only for f
 
 ## Glass Surfaces (Selective Drama)
 
-Glassmorphism is reserved for **hero elements only** — sidebar, topbar, KPI stat cards, modals, quick search.
+Glassmorphism is reserved for **hero elements only** - sidebar, topbar, KPI stat cards, modals, quick search.
 
 ### Glass Variants
 
@@ -48,10 +48,10 @@ Glassmorphism is reserved for **hero elements only** — sidebar, topbar, KPI st
 
 ### What Does NOT Get Glass
 
-- DataTables and list pages → flat bordered cards
-- Form fields and detail page sections → flat bordered cards
-- Activity feeds and timelines → flat bordered cards
-- Charts containers on non-dashboard pages → flat bordered cards
+- DataTables and list pages -> flat bordered cards
+- Form fields and detail page sections -> flat bordered cards
+- Activity feeds and timelines -> flat bordered cards
+- Charts containers on non-dashboard pages -> flat bordered cards
 
 These use the standard flat surface:
 
@@ -65,7 +65,7 @@ These use the standard flat surface:
 
 ## Elevation Rules
 
-### Cards — Selective
+### Cards - Selective
 - **Glass cards:** KPI stat cards on dashboard, sidebar panels, modals
 - **Flat cards:** Data tables, form sections, detail page sections, activity feeds
 - Flat cards use borders (`border`) not shadows. Shadows only for floating UI
@@ -82,7 +82,7 @@ Cards and rows gain subtle elevation on hover to indicate interactivity:
 <TableRow className="transition-colors hover:bg-muted/50 cursor-pointer">
 ```
 
-### Floating UI — Consistent Shadow
+### Floating UI - Consistent Shadow
 
 All floating UI (popovers, dropdowns, command palette, tooltips) use the same shadow level for visual consistency:
 
@@ -142,6 +142,6 @@ In dark mode, shadows are less visible. Compensate with subtle border brightness
 
 ## Related
 
-- [[frontend/design-system/foundations/spacing|Spacing]] — spacing scale
-- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — surface colors
-- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] — page structure
+- [[frontend/design-system/foundations/spacing|Spacing]] - spacing scale
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] - surface colors
+- [[frontend/design-system/patterns/layout-patterns|Layout Patterns]] - page structure

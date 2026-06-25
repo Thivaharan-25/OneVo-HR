@@ -1,4 +1,4 @@
-# Succession Planning — Testing
+﻿# Succession Planning - Testing
 
 **Module:** Performance
 **Feature:** Succession Planning
@@ -38,7 +38,7 @@ public class SuccessionServiceTests
 ## Related
 
 - [[database/performance|Performance Module]]
-- [[modules/performance/succession-planning/end-to-end-logic|Succession Planning — End-to-End Logic]]
+- [[modules/performance/succession-planning/end-to-end-logic|Succession Planning - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - Performance task file (deferred to Phase 2)

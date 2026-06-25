@@ -1,4 +1,4 @@
-# Evaluation Engine — End-to-End Logic
+﻿# Evaluation Engine - End-to-End Logic
 
 **Module:** Exception Engine
 **Feature:** Evaluation Engine (Rule Processor)

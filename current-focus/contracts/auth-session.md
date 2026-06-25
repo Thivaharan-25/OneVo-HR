@@ -1,4 +1,4 @@
-﻿# Contract: Auth Session + Permissions
+# Contract: Auth Session + Permissions
 
 **Backend owner:** DEV1 Tasks 2-3  
 **Consumers:** DEV5 Tasks 3+, DEV6, DEV7, DEV8 Task 1  
@@ -99,8 +99,8 @@ interface PermissionsDto {
   user_id: string             // uuid
   tenant_id: string           // uuid
   roles: string[]             // e.g. ["super_admin", "hr_manager"]
-  permissions: string[]       // "resource:action" keys, e.g. ["employee:read", "leave:approve"]
-  active_modules: string[]    // module keys from active tenant entitlements, e.g. ["core_hr", "leave", "work_management"]
+  permissions: string[]       // "resource:action" keys, e.g. ["employee:read", "time_off:approve"]
+  active_modules: string[]    // module keys from active tenant entitlements, e.g. ["core_hr", "time_off", "work_management"]
   active_features: string[]   // feature keys that are commercially included and runtime-enabled, e.g. ["work_management.projects"]
 }
 ```

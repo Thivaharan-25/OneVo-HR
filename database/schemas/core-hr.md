@@ -1,4 +1,4 @@
-﻿# Core HR â€” Schema
+﻿# Core HR - Schema
 
 **Module:** [[modules/core-hr/overview|Core HR]]
 **Phase:** Phase 1
@@ -12,12 +12,12 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `address_type` | `varchar(20)` | `permanent`, `current`, `emergency` |
 | `address_json` | `jsonb` | Street, city, state, postal, country |
 | `is_primary` | `boolean` |  |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]]
 
 ---
 
@@ -27,14 +27,14 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `bank_name` | `varchar(100)` |  |
 | `branch_name` | `varchar(100)` |  |
 | `account_number_encrypted` | `bytea` | **Encrypted** via `IEncryptionService` (AES-256) |
 | `routing_number` | `varchar(20)` |  |
 | `is_primary` | `boolean` |  |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]]
 
 ---
 
@@ -44,12 +44,12 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `field_name` | `varchar(100)` |  |
 | `field_value` | `text` |  |
 | `field_type` | `varchar(20)` | `text`, `number`, `date`, `boolean`, `select` |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]]
 
 ---
 
@@ -59,14 +59,14 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `name` | `varchar(100)` |  |
 | `relationship` | `varchar(20)` | `spouse`, `child`, `parent`, `other` |
 | `date_of_birth` | `date` |  |
 | `is_emergency_contact` | `boolean` |  |
 | `phone` | `varchar(20)` |  |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]]
 
 ---
 
@@ -76,14 +76,14 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `name` | `varchar(100)` |  |
 | `relationship` | `varchar(30)` |  |
 | `phone` | `varchar(20)` |  |
 | `email` | `varchar(255)` |  |
 | `is_primary` | `boolean` |  |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]]
 
 ---
 
@@ -93,14 +93,14 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `event_type` | `varchar(30)` | `hired`, `promoted`, `transferred`, `salary_change`, `suspended`, `terminated`, `resigned` |
 | `event_date` | `date` |  |
 | `details_json` | `jsonb` | Event-specific data |
-| `performed_by_id` | `uuid` | FK â†’ users |
+| `performed_by_id` | `uuid` | FK -> users |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]], `performed_by_id` â†’ [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]], `performed_by_id` -> [[database/schemas/infrastructure#`users`|users]]
 
 ---
 
@@ -110,15 +110,15 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `qualification_type` | `varchar(20)` | `degree`, `certification`, `license` |
 | `title` | `varchar(200)` |  |
 | `institution` | `varchar(200)` |  |
 | `year_obtained` | `int` |  |
 | `expiry_date` | `date` | Nullable |
-| `document_file_id` | `uuid` | FK â†’ file_records |
+| `document_file_id` | `uuid` | FK -> file_records |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]], `document_file_id` â†’ [[database/schemas/infrastructure#`file_records`|file_records]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]], `document_file_id` -> [[database/schemas/infrastructure#`file_records`|file_records]]
 
 ---
 
@@ -128,14 +128,14 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `effective_date` | `date` |  |
 | `base_salary` | `decimal(15,2)` |  |
 | `currency_code` | `varchar(3)` |  |
 | `change_reason` | `varchar(100)` | `hire`, `promotion`, `annual_review`, `adjustment` |
-| `approved_by_id` | `uuid` | FK â†’ users |
+| `approved_by_id` | `uuid` | FK -> users |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]], `approved_by_id` â†’ [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]], `approved_by_id` -> [[database/schemas/infrastructure#`users`|users]]
 
 ---
 
@@ -145,14 +145,13 @@
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `company_name` | `varchar(200)` |  |
-| `job_title` | `varchar(100)` |  |
 | `start_date` | `date` |  |
 | `end_date` | `date` |  |
 | `reason_for_leaving` | `varchar(255)` |  |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]]
 
 ---
 
@@ -161,25 +160,25 @@
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK â†’ tenants |
-| `user_id` | `uuid` | FK â†’ users (1:1) |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `user_id` | `uuid` | FK -> users (1:1) |
 | `employee_number` | `varchar(20)` | Unique per tenant |
 | `first_name` | `varchar(100)` |  |
 | `last_name` | `varchar(100)` |  |
 | `email` | `varchar(255)` | Work email |
 | `phone` | `varchar(20)` |  |
-| `date_of_birth` | `date` | PII â€” CONFIDENTIAL |
+| `date_of_birth` | `date` | PII - CONFIDENTIAL |
 | `gender` | `varchar(10)` |  |
-| `nationality_id` | `uuid` | FK â†’ countries |
+| `nationality_id` | `uuid` | FK -> countries |
 | `department_id` | `uuid` | FK -> departments, nullable; current profile snapshot derived from active position when available |
-| `legal_entity_id` | `uuid` | FK â†’ legal_entities |
+| `legal_entity_id` | `uuid` | FK -> legal_entities |
 | `employment_type` | `varchar(20)` | `full_time`, `part_time`, `contract`, `intern` |
-| `employment_status` | `varchar(20)` | `active`, `on_leave`, `suspended`, `terminated`, `resigned` |
-| `work_mode` | `varchar(10)` | `office`, `remote`, `hybrid` |
+| `employment_status` | `varchar(20)` | `onboarding`, `active`, `on_leave`, `offboarding`, `suspended`, `terminated`, `resigned` |
+| `work_mode` | `varchar(10)` | `onsite`, `remote`, `hybrid`, `field` |
 | `hire_date` | `date` |  |
 | `probation_end_date` | `date` | Nullable |
 | `termination_date` | `date` | Nullable |
-| `avatar_file_id` | `uuid` | FK â†’ file_records |
+| `avatar_file_id` | `uuid` | FK -> file_records |
 | `created_at` | `timestamptz` |  |
 | `updated_at` | `timestamptz` |  |
 | `is_deleted` | `boolean` | Soft delete |
@@ -205,7 +204,7 @@ Effective-dated assignment history for department and position snapshots. Report
 
 ## `employee_transfers`
 
-Workflow/request record for employee transfer. Approved transfers update current employee fields and close/create `employee_assignment_history` rows on effective date.
+Lightweight request record for employee transfer. This is not a Workflow Engine instance. Approved transfers update current employee snapshots and close/create `position_assignments` and `employee_assignment_history` rows on effective date.
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
@@ -229,7 +228,7 @@ Workflow/request record for employee transfer. Approved transfers update current
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
+| `employee_id` | `uuid` | FK -> employees |
 | `reason` | `varchar(30)` | `resignation`, `termination`, `retirement`, `contract_end` |
 | `last_working_date` | `date` |  |
 | `knowledge_risk_level` | `varchar(10)` | `low`, `medium`, `high`, `critical` |
@@ -238,7 +237,7 @@ Workflow/request record for employee transfer. Approved transfers update current
 | `status` | `varchar(20)` | `initiated`, `in_progress`, `completed` |
 | `created_at` | `timestamptz` |  |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]]
 
 ---
 
@@ -254,7 +253,7 @@ Workflow/request record for employee transfer. Approved transfers update current
       "reason": "Critical handover skipped with HR approval",
       "approved_by_id": "uuid",
       "approved_at": "2026-04-29T00:00:00Z",
-      "source": "offboarding_workflow"
+      "source": "offboarding"
     }
   ],
   "total_amount": 0,
@@ -262,35 +261,40 @@ Workflow/request record for employee transfer. Approved transfers update current
 }
 ```
 
-## `onboarding_tasks`
+## `employee_checklist_tasks`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
-| `employee_id` | `uuid` | FK â†’ employees |
-| `task_name` | `varchar(200)` |  |
-| `category` | `varchar(50)` | `documentation`, `equipment`, `training`, `access`, `orientation` |
-| `assigned_to_id` | `uuid` | FK â†’ users |
+| `employee_id` | `uuid` | FK -> employees |
+| `template_id` | `uuid` | FK -> checklist_templates, nullable for manual task |
+| `lifecycle_type` | `varchar(20)` | `onboarding` or `offboarding` |
+| `task_title` | `varchar(200)` |  |
+| `owner_type` | `varchar(30)` | `employee`, `manager`, `hr`, `it`, `custom_user` |
+| `sequence` | `int` | Nullable display/order value |
+| `assigned_to_id` | `uuid` | FK -> users |
 | `due_date` | `date` |  |
 | `status` | `varchar(20)` | `pending`, `in_progress`, `completed` |
 | `completed_at` | `timestamptz` |  |
 
-**Foreign Keys:** `employee_id` â†’ [[#`employees`|employees]], `assigned_to_id` â†’ [[database/schemas/infrastructure#`users`|users]]
+**Foreign Keys:** `employee_id` -> [[#`employees`|employees]], `assigned_to_id` -> [[database/schemas/infrastructure#`users`|users]]
 
 ---
 
-## `onboarding_templates`
+## `checklist_templates`
 
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` |  |
 | `name` | `varchar(100)` |  |
-| `department_id` | `uuid` | FK â†’ departments (nullable â€” global template) |
-| `tasks_json` | `jsonb` | Template task definitions |
+| `template_type` | `varchar(20)` | `onboarding` or `offboarding` |
+| `department_id` | `uuid` | FK -> departments (nullable - global template) |
+| `tasks_json` | `jsonb` | Task definitions: title, owner type, due rule, and sequence |
+| `is_active` | `boolean` |  |
 
-**Foreign Keys:** `department_id` â†’ [[database/schemas/org-structure#`departments`|departments]]
+**Foreign Keys:** `department_id` -> [[database/schemas/org-structure#`departments`|departments]]
 
 ---
 

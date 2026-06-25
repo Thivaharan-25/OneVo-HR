@@ -1,4 +1,4 @@
-# Access Control — Testing
+﻿# Access Control - Testing
 
 **Module:** Documents
 **Feature:** Access Control

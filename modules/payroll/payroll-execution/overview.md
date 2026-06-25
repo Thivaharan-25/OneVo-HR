@@ -1,4 +1,4 @@
-# Payroll Execution
+﻿# Payroll Execution
 
 **Module:** Payroll  
 **Feature:** Payroll Execution
@@ -15,12 +15,12 @@ Batch payroll run execution producing payslips. Uses pessimistic locking (`SELEC
 Fields: `legal_entity_id`, `period_start`, `period_end`, `status` (`draft`, `processing`, `completed`, `failed`), `total_gross`, `total_net`, `total_tax`, `employee_count`.
 
 ### `payslips`
-Fields: `payroll_run_id`, `employee_id`, `base_salary`, `total_allowances`, `total_deductions`, `tax_amount`, `pension_employee`, `pension_employer`, `net_pay`, `worked_hours` (from workforce-presence), `overtime_hours`, `leave_days_deducted`, `breakdown_json`.
+Fields: `payroll_run_id`, `employee_id`, `base_salary`, `total_allowances`, `total_deductions`, `tax_amount`, `pension_employee`, `pension_employer`, `net_pay`, `worked_hours` (from time-attendance), `overtime_hours`, `time_off_minutes_deducted`, `breakdown_json`.
 
 ## Key Business Rules
 
-1. Reads actual hours from `IWorkforcePresenceService`.
-2. Pessimistic locking via `SELECT FOR UPDATE` — never run in parallel for same tenant.
+1. Reads actual hours from `ITimeAttendanceService`.
+2. Pessimistic locking via `SELECT FOR UPDATE` - never run in parallel for same tenant.
 
 ## API Endpoints
 

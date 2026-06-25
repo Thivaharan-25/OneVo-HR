@@ -1,4 +1,4 @@
-# Audit Trail — Testing
+﻿# Audit Trail - Testing
 
 **Module:** Payroll
 **Feature:** Audit Trail

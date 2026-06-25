@@ -1,4 +1,4 @@
-# Authorization — Testing
+﻿# Authorization - Testing
 
 **Module:** Auth
 **Feature:** Authorization (Hybrid Permission Control)
@@ -22,8 +22,8 @@ public class PermissionResolverTests
     public async Task Resolve_MergesRolePermissionsAndGrantOverrides()
     {
         // Role gives: employees:read
-        // Override grants: leave:approve
-        // Expected: [employees:read, leave:approve]
+        // Override grants: time_off:approve
+        // Expected: [employees:read, time_off:approve]
     }
 
     [Fact]
@@ -37,9 +37,9 @@ public class PermissionResolverTests
     [Fact]
     public async Task Resolve_FiltersOutPermissionsForUngrantedModules()
     {
-        // Role gives: leave:approve, payroll:read
-        // Feature grants: only 'leave' module
-        // Expected: [leave:approve] (payroll:read filtered out)
+        // Role gives: time_off:approve, payroll:read
+        // Feature grants: only 'time_off' module
+        // Expected: [time_off:approve] (payroll:read filtered out)
     }
 
     [Fact]
@@ -98,32 +98,33 @@ public class RoleServiceTests
 }
 ```
 
-### HierarchyScopeServiceTests
+### ManagementCoverageResolverTests
 
 ```csharp
-public class HierarchyScopeServiceTests
+public class ManagementCoverageResolverTests
 {
     [Fact]
-    public async Task GetSubordinateIds_ReturnsDirectAndIndirectReports()
+    public async Task ResolveVisibleEmployeeIds_PositionCoverage_ReturnsCoveredPositionEmployees()
     {
-        // Manager -> TeamLead -> Employee
-        // Manager should see both TeamLead and Employee
+        // Owner position covers a specific target position
+        // Should return active employees assigned to the covered position
     }
 
     [Fact]
-    public async Task GetSubordinateIds_SuperAdmin_ReturnsAllEmployees()
+    public async Task ResolveVisibleEmployeeIds_DepartmentCoverage_ReturnsCoveredDepartmentEmployees()
     {
-        // Super Admin bypasses hierarchy
+        // Owner position covers a department
+        // Should return active employees assigned inside that department
     }
 
     [Fact]
-    public async Task GetSubordinateIds_NoReports_ReturnsEmptySet()
+    public async Task ResolveVisibleEmployeeIds_NoCoverage_ReturnsEmptySet()
     {
-        // Regular employee with no reports -> empty set
+        // Permission without management coverage does not expose other employees
     }
 
     [Fact]
-    public async Task GetSubordinateIds_CachesResult()
+    public async Task ResolveVisibleEmployeeIds_CachesResult()
     {
         // Second call hits cache, not DB
     }
@@ -138,7 +139,7 @@ public class FeatureAccessServiceTests
     [Fact]
     public async Task Grant_RoleLevel_AllUsersWithRoleGetAccess()
     {
-        // Grant 'leave' module to a role -> all users with that role can access leave
+        // Grant 'time_off' module to a role -> all users with that role can access time_off
     }
 
     [Fact]
@@ -169,15 +170,15 @@ public class FeatureAccessServiceTests
 | Assign role to user | Unit | Success, cache invalidated |
 | Role already assigned | Unit | Failure |
 | Cannot delete system role | Unit | Failure |
-| Hierarchy: direct reports only | Unit | Returns subordinate IDs |
-| Hierarchy: recursive reports | Unit | Returns full subtree |
-| Hierarchy: Super Admin bypasses | Unit | Returns all |
+| Management coverage: position | Unit | Returns employees in covered position |
+| Management coverage: department | Unit | Returns employees in covered department |
+| Management coverage: company-wide | Unit | Returns employees in active Company |
 | Feature grant to role | Integration | All role users gain access |
 | Feature grant to employee | Integration | Only that employee gains access |
 | Permission override grant | Integration | Employee gains extra permission |
 | Permission override revoke | Integration | Employee loses specific permission |
 | Cache invalidation on role change | Integration | Affected users refreshed |
-| Cache invalidation on hierarchy change | Integration | Subtree recalculated |
+| Cache invalidation on management coverage change | Integration | Visible employee set recalculated |
 
 ## Related
 

@@ -1,14 +1,14 @@
-# SQLite Buffer — Local Data Store
+﻿# SQLite Buffer - Local Data Store
 
 ## Purpose
 
 The SQLite buffer provides **offline resilience** and **batch optimization** for the desktop agent. All collected data is written to SQLite immediately, then synced to the server in batches. If the network is unavailable, data accumulates locally and syncs when connectivity returns.
 
 Key benefits:
-- **Zero data loss** — data is persisted before any network call
-- **Batch efficiency** — multiple snapshots are sent in a single HTTP request
-- **Offline operation** — the agent continues collecting even without internet
-- **Crash recovery** — data survives service restarts
+- **Zero data loss** - data is persisted before any network call
+- **Batch efficiency** - multiple snapshots are sent in a single HTTP request
+- **Offline operation** - the agent continues collecting even without internet
+- **Crash recovery** - data survives service restarts
 
 ---
 
@@ -63,13 +63,13 @@ CREATE TABLE IF NOT EXISTS agent_config (
 );
 
 -- Stored keys:
--- 'device_id'          → UUID generated at first run
--- 'device_token'       → Encrypted device JWT (DPAPI-wrapped)
--- 'agent_id'           → UUID returned from server registration
--- 'employee_id'        → UUID of currently logged-in employee (NULL when logged out)
--- 'employee_name'      → Display name of logged-in employee
--- 'policy'             → JSON of current monitoring policy
--- 'last_policy_sync'   → ISO 8601 timestamp of last policy fetch
+-- 'device_id'          -> UUID generated at first run
+-- 'device_token'       -> Encrypted device JWT (DPAPI-wrapped)
+-- 'agent_id'           -> UUID returned from server registration
+-- 'employee_id'        -> UUID of currently logged-in employee (NULL when logged out)
+-- 'employee_name'      -> Display name of logged-in employee
+-- 'policy'             -> JSON of current monitoring policy
+-- 'last_policy_sync'   -> ISO 8601 timestamp of last policy fetch
 ```
 
 ### `sync_state`
@@ -348,7 +348,7 @@ public class DeviceTokenStore
 ```
 
 **Security notes:**
-- The device JWT is the most sensitive value — always stored encrypted via DPAPI
+- The device JWT is the most sensitive value - always stored encrypted via DPAPI
 - Activity data in the buffer is protected by Windows file-system ACLs (service runs as SYSTEM or the logged-in user)
 - The `agent_buffer.db` file should be in `%LOCALAPPDATA%` which is per-user and not accessible to other users
 - If stronger encryption is needed (Phase 2), consider SQLCipher for full database encryption
@@ -397,7 +397,7 @@ public async Task<string?> GetConfigAsync(string key, CancellationToken ct)
 The `DataSyncService` orchestrates the buffer-to-server flow:
 
 ```csharp
-// ONEVO.Agent.Service/Sync/DataSyncService.cs — simplified
+// ONEVO.Agent.Service/Sync/DataSyncService.cs - simplified
 
 public class DataSyncService : BackgroundService
 {
@@ -448,11 +448,11 @@ See [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] for th
 
 ## Related
 
-- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview and data flow
-- [[modules/agent-gateway/data-collection|Data Collection]] — Collectors that write to the buffer (includes buffer schema)
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Ingest endpoint that receives buffered data
-- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Uses buffer timestamps for gap detection
-- [[modules/agent-gateway/mock-mode|Mock Mode]] — Mock mode still uses the real SQLite buffer
-- [[AI_CONTEXT/rules|Rules]] — Section 10: Buffer size limit (100MB), performance budgets
-- [[security/data-classification|Data Classification]] — Activity data classification
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task
+- [[modules/agent-gateway/agent-overview|Agent Overview]] - Architecture overview and data flow
+- [[modules/agent-gateway/data-collection|Data Collection]] - Collectors that write to the buffer (includes buffer schema)
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] - Ingest endpoint that receives buffered data
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] - Uses buffer timestamps for gap detection
+- [[modules/agent-gateway/mock-mode|Mock Mode]] - Mock mode still uses the real SQLite buffer
+- [[AI_CONTEXT/rules|Rules]] - Section 10: Buffer size limit (100MB), performance budgets
+- [[security/data-classification|Data Classification]] - Activity data classification
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] - Implementation task

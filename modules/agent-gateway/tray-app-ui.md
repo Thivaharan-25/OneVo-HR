@@ -1,4 +1,4 @@
-# Tray App UI — MAUI System Tray Application
+﻿# Tray App UI - MAUI System Tray Application
 
 ## Overview
 
@@ -6,7 +6,7 @@ The MAUI Tray App (`ONEVO.Agent.TrayApp`) is the user-facing component of the de
 - System tray icon with status indication
 - Employee sign-in, login-based device enrollment, and logout
 - Photo capture for identity verification
-- Remote workplace setup and work-location verification prompts
+- Approved remote work location setup and work-location verification prompts
 - Status popup showing collector and sync state
 - Notification toasts for important events
 
@@ -28,16 +28,16 @@ Additional enrollment states required for login-based enrollment:
 |:------|:--------|:-----|
 | **Sign in required** | "ONEVO Agent - Sign in required" | Service is installed but device is not enrolled |
 | **Enrolling device** | "ONEVO Agent - Enrolling device..." | User completed sign-in and Service is completing enrollment |
-| **Consent required / policy blocked** | "ONEVO Agent - Monitoring paused" | Consent is missing, policy blocks collection, or Workforce Presence lifecycle is paused |
+| **Consent required / policy blocked** | "ONEVO Agent - Monitoring paused" | Consent is missing, policy blocks collection, or Time & Attendance lifecycle is paused |
 
 | State | Icon | Tooltip | When |
 |:------|:-----|:--------|:-----|
-| **Disconnected** | Gray circle | "ONEVO Agent — Not connected" | Service not running or pipe disconnected |
-| **Connected (no employee)** | Blue circle | "ONEVO Agent — No employee logged in" | Service running, no employee login |
-| **Collecting** | Green circle | "ONEVO Agent — Monitoring active" | Employee logged in, collectors running |
-| **Syncing** | Green circle with arrows | "ONEVO Agent — Syncing data..." | During active data upload |
-| **Error** | Red circle with ! | "ONEVO Agent — Error (click for details)" | Sync failure, auth error, or service error |
-| **Verification needed** | Orange circle with camera | "ONEVO Agent — Verification required" | Photo capture pending |
+| **Disconnected** | Gray circle | "ONEVO Agent - Not connected" | Service not running or pipe disconnected |
+| **Connected (no employee)** | Blue circle | "ONEVO Agent - No employee logged in" | Service running, no employee login |
+| **Collecting** | Green circle | "ONEVO Agent - Monitoring active" | Employee logged in, collectors running |
+| **Syncing** | Green circle with arrows | "ONEVO Agent - Syncing data..." | During active data upload |
+| **Error** | Red circle with ! | "ONEVO Agent - Error (click for details)" | Sync failure, auth error, or service error |
+| **Verification needed** | Orange circle with camera | "ONEVO Agent - Verification required" | Photo capture pending |
 
 | **Work location check** | Orange circle with location/camera | "ONEVO Agent - Work location verification required" | Work-location mismatch requires photo verification |
 
@@ -64,12 +64,12 @@ public class TrayIconService
     {
         var (icon, tooltip) = state switch
         {
-            TrayState.Disconnected => ("tray_gray.ico", "ONEVO Agent — Not connected"),
-            TrayState.ConnectedNoEmployee => ("tray_blue.ico", "ONEVO Agent — No employee logged in"),
-            TrayState.Collecting => ("tray_green.ico", "ONEVO Agent — Monitoring active"),
-            TrayState.Syncing => ("tray_green_sync.ico", "ONEVO Agent — Syncing data..."),
-            TrayState.Error => ("tray_red.ico", "ONEVO Agent — Error (click for details)"),
-            TrayState.VerificationNeeded => ("tray_orange.ico", "ONEVO Agent — Verification required"),
+            TrayState.Disconnected => ("tray_gray.ico", "ONEVO Agent - Not connected"),
+            TrayState.ConnectedNoEmployee => ("tray_blue.ico", "ONEVO Agent - No employee logged in"),
+            TrayState.Collecting => ("tray_green.ico", "ONEVO Agent - Monitoring active"),
+            TrayState.Syncing => ("tray_green_sync.ico", "ONEVO Agent - Syncing data..."),
+            TrayState.Error => ("tray_red.ico", "ONEVO Agent - Error (click for details)"),
+            TrayState.VerificationNeeded => ("tray_orange.ico", "ONEVO Agent - Verification required"),
             _ => ("tray_gray.ico", "ONEVO Agent")
         };
 
@@ -90,16 +90,22 @@ Right-clicking the tray icon shows:
 |:----------|:-------|:-----------|
 | **Status** | Opens status popup | Always |
 | **Sign in** | Opens enrollment flow (browser SSO) | Only when device is not yet enrolled (first-time setup) |
-| **Clock In** | Triggers photo capture → then clock-in | When clocked out AND (`work_type = remote/hybrid` OR `policy.agent_clock_in_enabled = true`) |
-| **Clock Out** | Triggers photo capture → then clock-out | When clocked in AND (`work_type = remote/hybrid` OR `policy.agent_clock_in_enabled = true`) |
+| **Clock In** | Runs policy-required verification, then clock-in | When clocked out AND (`work_mode = remote/hybrid` OR `policy.agent_clock_in_enabled = true`) |
+| **Clock Out** | Runs policy-required verification, then clock-out | When clocked in AND (`work_mode = remote/hybrid` OR `policy.agent_clock_in_enabled = true`) |
 | **Start Break** | Starts break, pauses monitoring | When clocked in and not on break |
 | **End Break** | Ends break, resumes monitoring | When on break |
 | **Remote Work Location** | Opens remote location setup/change request | When employee is remote/hybrid and policy allows |
 | **About** | Shows version info | Always |
 
+**Boundary notes:**
+- The tray app shows Clock In/Clock Out and Break controls when policy allows (same rules as the web topbar).
+- The Request dropdown (Time Off, Overtime, Work Area Change, Attendance Correction) belongs to the web Time Tracking page, not the tray app or topbar.
+- Work Area Change Requests are launched from Time Tracking, not from the global topbar or tray app.
+- Remote Work Location setup/change remains in the tray app or Employee Settings because it is tied to device/location capture.
+
 **Login is one-time.** After the employee signs in once and the device is enrolled, the tray app stays connected under their identity permanently. The device credential is stored via DPAPI and auto-renewed on heartbeat. There is no "sign in every shift" flow.
 
-There is no "Exit" or "Quit" option. The agent is managed by IT — employees cannot stop it. The service continues running regardless of whether the TrayApp is open.
+There is no "Exit" or "Quit" option. The agent is managed by IT - employees cannot stop it. The service continues running regardless of whether the TrayApp is open.
 
 ---
 
@@ -117,7 +123,7 @@ The preferred UX is browser-based sign-in:
 6. Service stores the returned device credential with DPAPI / Windows Credential Manager.
 7. TrayApp changes state to "Monitoring active" only after policy fetch, consent gate, and lifecycle allow collection.
 
-For remote or hybrid employees, the first approved remote clock-in may also require a remote workplace capture. The TrayApp asks the employee to confirm the current workplace, captures a verification photo, and sends network evidence to the Service. After the remote workplace is locked, changes must be requested from Employee Settings and approved by the reporting manager. See [[Userflow/Workforce-Intelligence/work-location-compliance|Work Location Compliance]].
+For remote or hybrid employees, the first approved remote clock-in may also require approved remote work location capture. The TrayApp asks the employee to confirm the current remote work location, captures a verification photo, and sends network evidence to the Service. After the remote work location is locked, changes must be requested from Employee Settings and approved through Org Structure management coverage by one eligible owner with the required permission. See [[Userflow/Monitoring/work-location-compliance|Work Location Compliance]].
 
 The email/password form below is a fallback UI pattern only. It must not ask for API keys, tenant keys, tenant IDs, or server URLs.
 
@@ -136,30 +142,30 @@ The first reference capture is not a verification failure or success. It must no
 ### Layout
 
 ```
-┌─────────────────────────────────────┐
-│         ONEVO                       │
-│         [Logo]                      │
-│                                     │
-│  Connect to your device             │
-│                                     │
-│  Email                              │
-│  ┌─────────────────────────────┐    │
-│  │ user@company.com            │    │
-│  └─────────────────────────────┘    │
-│                                     │
-│  Password                           │
-│  ┌─────────────────────────────┐    │
-│  │ ••••••••                    │    │
-│  └─────────────────────────────┘    │
-│                                     │
-│  ┌─────────────────────────────┐    │
-│  │        Connect              │    │
-│  └─────────────────────────────┘    │
-│                                     │
-│  [Spinner + "Connecting..."]        │
-│  [Error message if login fails]     │
-│                                     │
-└─────────────────────────────────────┘
++-------------------------------------+
+|         ONEVO                       |
+|         [Logo]                      |
+|                                     |
+|  Connect to your device             |
+|                                     |
+|  Email                              |
+|  +-----------------------------+    |
+|  | user@company.com            |    |
+|  +-----------------------------+    |
+|                                     |
+|  Password                           |
+|  +-----------------------------+    |
+|  | --------                    |    |
+|  +-----------------------------+    |
+|                                     |
+|  +-----------------------------+    |
+|  |        Connect              |    |
+|  +-----------------------------+    |
+|                                     |
+|  [Spinner + "Connecting..."]        |
+|  [Error message if login fails]     |
+|                                     |
++-------------------------------------+
 ```
 
 ### XAML
@@ -225,7 +231,7 @@ The first reference capture is not a verification failure or success. It must no
 ### Login Flow
 
 ```csharp
-// LoginWindow.xaml.cs — Connect command handler
+// LoginWindow.xaml.cs - Connect command handler
 
 private async Task OnConnectAsync()
 {
@@ -243,7 +249,7 @@ private async Task OnConnectAsync()
         }, _cts.Token);
 
         // Wait for status_update response from Service
-        // (handled by the IPC message listener — see OnMessageReceived)
+        // (handled by the IPC message listener - see OnMessageReceived)
     }
     catch (Exception ex)
     {
@@ -282,37 +288,37 @@ Shown when the user clicks "Status" from the tray menu or double-clicks the tray
 ### Layout
 
 ```
-┌────────────────────────────────────────┐
-│  ONEVO Agent Status                    │
-│                                        │
-│  Employee: John Doe                    │
-│  Status:   ● Connected                │
-│                                        │
-│  ── Collectors ──────────────────────  │
-│  Activity Monitor    ● Running         │
-│  App Tracker         ● Running         │
-│  Idle Detector       ● Running         │
-│  Meeting Detector    ● Running         │
-│  Device Tracker      ● Running         │
-│  Document Tracker    ● Running         │
-│  Comm Tracker        ● Running         │
-│                                        │
-│  ── Sync ────────────────────────────  │
-│  Last sync:    2 minutes ago           │
-│  Buffered:     12 records              │
-│  Connection:   ● Online                │
-│                                        │
-│  ── Monitoring ──────────────────────  │
-│  This device is monitoring:            │
-│  ✓ Keyboard/mouse activity counts      │
-│  ✓ Application & document usage        │
-│  ✓ Idle time                           │
-│  ✓ Meeting detection                   │
-│  ✓ Communication app activity          │
-│  ✗ Screenshots (authorized request)    │
-│                                        │
-│               [Close]                  │
-└────────────────────────────────────────┘
++----------------------------------------+
+|  ONEVO Agent Status                    |
+|                                        |
+|  Employee: John Doe                    |
+|  Status:   o Connected                |
+|                                        |
+|  -- Collectors ----------------------  |
+|  Activity Monitor    o Running         |
+|  App Tracker         o Running         |
+|  Idle Detector       o Running         |
+|  Meeting Detector    o Running         |
+|  Device Tracker      o Running         |
+|  Document Tracker    o Running         |
+|  Comm Tracker        o Running         |
+|                                        |
+|  -- Sync ----------------------------  |
+|  Last sync:    2 minutes ago           |
+|  Buffered:     12 records              |
+|  Connection:   o Online                |
+|                                        |
+|  -- Monitoring ----------------------  |
+|  This device is monitoring:            |
+|  [done] Keyboard/mouse activity counts      |
+|  [done] Application & document usage        |
+|  [done] Idle time                           |
+|  [done] Meeting detection                   |
+|  [done] Communication app activity          |
+|  [blocked] Screenshots (authorized request)    |
+|                                        |
+|               [Close]                  |
++----------------------------------------+
 ```
 
 ### XAML
@@ -395,30 +401,30 @@ Opened when the Service sends a `capture_photo` IPC message. See [[modules/ident
 ### Layout
 
 ```
-┌────────────────────────────────────────┐
-│  Identity Verification                 │
-│                                        │
-│  ┌──────────────────────────────────┐  │
-│  │                                  │  │
-│  │         Camera Feed              │  │
-│  │         (Live Preview)           │  │
-│  │                                  │  │
-│  │                                  │  │
-│  └──────────────────────────────────┘  │
-│                                        │
-│  Please look at the camera and         │
-│  click Capture.                        │
-│                                        │
-│  ┌──────────┐    ┌──────────┐          │
-│  │  Capture  │    │   Skip   │         │
-│  └──────────┘    └──────────┘          │
-│                                        │
-│  ⚠ Photo will be compared with        │
-│    your approved reference photo       │
-│                                        │
-│  Auto-skip in: 1:45                    │
-│                                        │
-└────────────────────────────────────────┘
++----------------------------------------+
+|  Identity Verification                 |
+|                                        |
+|  +----------------------------------+  |
+|  |                                  |  |
+|  |         Camera Feed              |  |
+|  |         (Live Preview)           |  |
+|  |                                  |  |
+|  |                                  |  |
+|  +----------------------------------+  |
+|                                        |
+|  Please look at the camera and         |
+|  click Capture.                        |
+|                                        |
+|  +----------+    +----------+          |
+|  |  Capture  |    |   Skip   |         |
+|  +----------+    +----------+          |
+|                                        |
+|  [warning] Photo will be compared with        |
+|    your approved reference photo       |
+|                                        |
+|  Auto-skip in: 1:45                    |
+|                                        |
++----------------------------------------+
 ```
 
 ### XAML
@@ -478,7 +484,7 @@ Opened when the Service sends a `capture_photo` IPC message. See [[modules/ident
 ### Behavior
 
 - Window appears as **topmost** (always on top) but not fullscreen
-- 2-minute countdown timer — auto-skips if user does not respond
+- 2-minute countdown timer - auto-skips if user does not respond
 - After capture, window closes immediately
 - After skip (manual or timeout), sends `photo_captured` with `skipped: true`
 
@@ -535,7 +541,7 @@ The monitoring policy includes a transparency level that affects what the user s
 |:-----|:-------------------|:-------------------|:------------|
 | `full_transparency` | Full collector list, what is monitored, sync status | "Photo will be compared with your approved reference photo" | "This device will monitor your activity" |
 | `partial` | "Monitoring active" (no details) | "Identity verification required" | "Connect to your device" |
-| `covert` | N/A — not applicable to desktop agent (always visible in tray) | N/A — verification always requires interaction | Standard login |
+| `covert` | N/A - not applicable to desktop agent (always visible in tray) | N/A - verification always requires interaction | Standard login |
 
 **Important:** The desktop agent is always visible in the system tray and Task Manager. There is no covert/hidden mode. See [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] for the reasoning.
 
@@ -547,10 +553,10 @@ The transparency level comes from the policy (see [[modules/agent-gateway/agent-
 
 ### Design Principles
 
-- **Minimal and functional** — the agent is not the main product. Keep UI small and unobtrusive.
-- **No branding customization** — uses ONEVO brand colors. Tenant branding applies to the web dashboard only.
-- **System-native feel** — follow Windows 11 design language (rounded corners, Segoe UI font, subtle shadows).
-- **Accessible** — support high-contrast mode, keyboard navigation, screen readers.
+- **Minimal and functional** - the agent is not the main product. Keep UI small and unobtrusive.
+- **No branding customization** - uses ONEVO brand colors. Tenant branding applies to the web dashboard only.
+- **System-native feel** - follow Windows 11 design language (rounded corners, Segoe UI font, subtle shadows).
+- **Accessible** - support high-contrast mode, keyboard navigation, screen readers.
 
 ### Color Palette
 
@@ -576,18 +582,18 @@ The transparency level comes from the policy (see [[modules/agent-gateway/agent-
 | Status popup | 380 x 520 | Center screen |
 | Photo capture | 480 x 560 | Center screen, topmost |
 
-All windows are non-resizable. The TrayApp does not have a main window — it runs entirely from the system tray.
+All windows are non-resizable. The TrayApp does not have a main window - it runs entirely from the system tray.
 
 ---
 
 ## Related
 
-- [[modules/identity-verification/photo-capture|Photo Capture]] — Photo capture flow, quality requirements, privacy
-- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] — All IPC messages between TrayApp and Service
-- [[modules/agent-gateway/agent-overview|Agent Overview]] — Architecture overview (TrayApp is one of three components)
-- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] — Server endpoints called via the Service
-- [[modules/agent-gateway/mock-mode|Mock Mode]] — TrayApp works identically in mock mode
-- [[modules/agent-gateway/agent-installer|Agent Installer]] — TrayApp starts via MSIX startup task
-- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] — Why the agent is always visible
-- [[AI_CONTEXT/rules|Rules]] — Section 10: Desktop Agent Rules (UI thread rules)
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] — Implementation task
+- [[modules/identity-verification/photo-capture|Photo Capture]] - Photo capture flow, quality requirements, privacy
+- [[modules/agent-gateway/ipc-protocol|Ipc Protocol]] - All IPC messages between TrayApp and Service
+- [[modules/agent-gateway/agent-overview|Agent Overview]] - Architecture overview (TrayApp is one of three components)
+- [[modules/agent-gateway/agent-server-protocol|Agent Server Protocol]] - Server endpoints called via the Service
+- [[modules/agent-gateway/mock-mode|Mock Mode]] - TrayApp works identically in mock mode
+- [[modules/agent-gateway/agent-installer|Agent Installer]] - TrayApp starts via MSIX startup task
+- [[modules/agent-gateway/tamper-resistance|Tamper Resistance]] - Why the agent is always visible
+- [[AI_CONTEXT/rules|Rules]] - Section 10: Desktop Agent Rules (UI thread rules)
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Shared Platform Agent Gateway]] - Implementation task

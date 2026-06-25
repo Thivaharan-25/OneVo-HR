@@ -1,9 +1,9 @@
-# Dashboard Customization
+﻿# Dashboard Customization
 
 **Area:** Dashboard  
 **Trigger:** User clicks "Customize" button in the dashboard topbar (user action - on demand)  
 **Required Permission(s):** Any authenticated user (customization is within the user's own permission ceiling - they cannot add zones or widgets they don't have access to)  
-**Related Permissions:** `workforce:view`, `employees:read`, `leave:read`, `settings:system`, `grievance:read` - each gates specific widgets in the Widget Library
+**Related Permissions:** `monitoring:view`, `employees:read`, `time_off:read`, `settings:system`, `grievance:read` - each gates specific widgets in the Widget Library
 
 ---
 
@@ -19,11 +19,11 @@
 
 ### Step 1: Enter Edit Mode
 
-- **UI:** User clicks "Customize" button (top-right area of topbar, ghost button). The `CustomizeBar` slides in below the topbar with instruction text: "Drag to reorder zones · Click x to hide · Add widgets from the library". Save and Reset to Default buttons appear in the bar (right-aligned). Each rendered zone gains:
+- **UI:** User clicks "Customize" button (top-right area of topbar, ghost button). The `CustomizeBar` slides in below the topbar with instruction text: "Drag to reorder zones , Click x to hide , Add widgets from the library". Save and Reset to Default buttons appear in the bar (right-aligned). Each rendered zone gains:
   - A drag handle icon `drag` in the zone header (cursor: grab)
   - A x remove button in the zone header
   - Dashed zone borders with hover highlight
-  Zone 1 (Exception Alert Strip) shows `ðŸ“Œ pinned` badge instead of drag/remove - it cannot be moved or hidden
+  Zone 1 (Exception Alert Strip) shows a `pinned` badge instead of drag/remove - it cannot be moved or hidden
 - **API:** N/A (edit mode is purely client-side UI state change)
 - **Backend:** N/A
 - **Validation:** N/A
@@ -34,20 +34,18 @@
 - **UI:** 240px panel slides in from the right edge (`width: 0` -> `240px`, `transition: width 200ms ease-out`). Panel header: "Add Widgets". Panel lists only widgets the user's permissions support - no locked/blurred widgets shown. Available widgets shown with icon, name, + button. Already-added widgets shown with checkmark (cannot add twice)
 - **API:** N/A (widget list is computed client-side from current backend session permissions)
 - **Backend:** N/A
-- **Validation:** Permission check using `useAuth() permission metadata` - widget only appears in list if user has required permission. `hierarchy_scope` also checked (e.g., "My Team Quick Stats" requires scope != `self`)
 - **DB:** None
 
 **Widget Library - permission-gated list:**
 
 | Widget | Permission Required | Scope Restriction |
 |:-------|:--------------------|:-----------------|
-| Top Performers | `workforce:view` + WI module | None |
+| Top Performers | `monitoring:view` + WI module | None |
 | Dept Headcount Breakdown | `employees:read` | None |
-| Leave Calendar Preview | `leave:read` | None |
+| Time Off Calendar Preview | `time_off:read` | None |
 | Recent Audit Log | `settings:system` | None |
 | Grievance Summary | `grievance:read` | None |
 | Contract Renewals (30d) | `employees:read` | None |
-| My Team Quick Stats | `employees:read` | `hierarchy_scope` != `self` |
 
 ### Step 3: User Reorders Zones
 
@@ -84,10 +82,10 @@
       { "id": "trends-charts", "visible": true, "order": 1 },
       { "id": "kpi-cards", "visible": true, "order": 2 },
       { "id": "pending-actions", "visible": true, "order": 3 },
-      { "id": "workforce-live", "visible": false, "order": 4 },
-      { "id": "workforce-events", "visible": true, "order": 5 }
+      { "id": "monitoring-live", "visible": false, "order": 4 },
+      { "id": "monitoring-events", "visible": true, "order": 5 }
     ],
-    "addedWidgets": ["dept-headcount", "leave-calendar-preview"]
+    "addedWidgets": ["dept-headcount", "time_off-calendar-preview"]
   }
   ```
 - **Backend:** `UserDashboardPrefsController.PatchPrefs()` - upserts `user_dashboard_prefs` row. `updated_at` set to `NOW()`. No merge - full replace of `zones_json` and `added_widgets_json`
@@ -120,7 +118,7 @@
 - If no changes were made: edit mode exits immediately with no confirmation
 
 ### Permission Revoked Between Sessions
-- User had "Top Performers" widget added when they had `workforce:view`
+- User had "Top Performers" widget added when they had `monitoring:view`
 - Permission is revoked by admin
 - On next dashboard load: `addedWidgets` contains "top-performers" but permission check fails
 - Widget silently dropped from rendered layout (no error shown to user)

@@ -15,7 +15,7 @@ Template rendering, channel configuration, and SLA-based escalation rules.
 Per-channel + locale templates: `template_code`, `channel`, `subject_template`, `body_template` (Handlebars/Liquid), `locale`, `version`.
 
 ### `notification_channels`
-Provider config: `channel_type`, `provider` (`resend`, `fcm`, `slack_webhook`), `credentials_encrypted`.
+Provider config: `channel_type`, `provider` (`resend`, `fcm`; `slack_webhook` is Phase 2), `credentials_encrypted`.
 
 ### `escalation_rules`
 SLA triggers: `resource_type`, `trigger_condition`, `sla_hours`, `action_type` (`remind`, `escalate`, `auto_approve`).

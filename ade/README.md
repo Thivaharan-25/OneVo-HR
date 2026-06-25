@@ -1,4 +1,4 @@
-# ADE — Agentic Development Environment
+﻿# ADE - Agentic Development Environment
 
 ## Overview
 
@@ -25,32 +25,32 @@ The orchestrator lives in this brain repo. It reads task definitions, injects co
 Input: dev_id, paths to brain + backend + frontend + agent repos
 
 1. Read all task files: current-focus/DEV{dev_id}-*.md
-2. Parse checkboxes — identify unchecked acceptance criteria
+2. Parse checkboxes - identify unchecked acceptance criteria
 3. Determine task order (task # from README table)
 4. For each task (SEQUENTIAL):
    a. Read the task file's "Related Tasks" section
    b. Check if cross-dev dependencies exist in the code repos
       - e.g., Does ICalendarConflictService exist in the backend repo?
-   c. If dependency MISSING → SKIP (do NOT mark checkbox)
-   d. If dependencies MET → Spawn worker agent
+   c. If dependency MISSING -> SKIP (do NOT mark checkbox)
+   d. If dependencies MET -> Spawn worker agent
 5. After all tasks processed:
-   → Report: completed tasks, skipped/blocked tasks with reasons
+   -> Report: completed tasks, skipped/blocked tasks with reasons
 ```
 
 ### Cross-Dev Dependency Check
 
-The orchestrator checks if required interfaces/services exist in the target code repo before spawning a worker. If a dependency is missing, the task is skipped — **checkboxes are NOT marked** for skipped tasks.
+The orchestrator checks if required interfaces/services exist in the target code repo before spawning a worker. If a dependency is missing, the task is skipped - **checkboxes are NOT marked** for skipped tasks.
 
-Example check: Before starting DEV1's Leave task, check if `ICalendarConflictService` exists in the backend repo. If not, skip Leave and report: "Leave blocked — Calendar module not found. Re-run after DEV3 delivers."
+Example check: Before starting DEV1's Time Off task, check if `ICalendarConflictService` exists in the backend repo. If not, skip Time Off and report: "Time Off blocked - Calendar module not found. Re-run after DEV3 delivers."
 
 ### Stop and Report
 
 After completing all unblocked tasks, the orchestrator stops and reports:
 ```
 Session complete.
-  ✓ Completed: Task 1 (Infrastructure), Task 2 (Employee Profile)
-  ✗ Blocked: Task 3 (Leave) — needs ICalendarConflictService from DEV3 Calendar
-  ✗ Blocked: Task 4 (Productivity Analytics) — needs IActivityMonitoringService from DEV3
+  [done] Completed: Task 1 (Infrastructure), Task 2 (Employee Profile)
+  [blocked] Blocked: Task 3 (Time Off) - needs ICalendarConflictService from DEV3 Calendar
+  [blocked] Blocked: Task 4 (Productivity Analytics) - needs IActivityMonitoringService from DEV3
 
   Re-run after DEV3 delivers Calendar and Activity Monitoring.
 ```
@@ -70,9 +70,9 @@ The dev re-runs the ADE manually when blocking dependencies are delivered.
 - `AI_CONTEXT/known-issues.md`
 
 **Task-specific layer:**
-- The task file (e.g., `current-focus/DEV1-leave.md`)
-- All files under the module folder (e.g., `modules/leave/**`)
-- All referenced userflows (e.g., `Userflow/Leave/**`)
+- The task file (e.g., `current-focus/DEV1-time_off.md`)
+- All files under the module folder (e.g., `modules/time-off/**`)
+- All referenced userflows (e.g., `Userflow/Time-Off/**`)
 - Related module overviews if cross-module interaction exists
 
 ### Worker Flow
@@ -96,7 +96,7 @@ The dev re-runs the ADE manually when blocking dependencies are delivered.
 
 ## Parallelism
 
-- **Dev-scoped sequential:** Each dev's ADE session runs tasks 1 → 2 → 3 → ... → N sequentially (N = task count per dev, read from current-focus/README.md)
+- **Dev-scoped sequential:** Each dev's ADE session runs tasks 1 -> 2 -> 3 -> ... -> N sequentially (N = task count per dev, read from current-focus/README.md)
 - **Cross-dev parallel:** Multiple devs can run their ADE sessions simultaneously (different modules, no conflicts)
 - **Step-scoped sequential:** Within each task, Step 1 (backend) completes before Step 2 (frontend) starts
 
@@ -105,9 +105,9 @@ The dev re-runs the ADE manually when blocking dependencies are delivered.
 ## Progress Tracking
 
 - **Checkboxes in task files** are the single source of truth
-- Workers mark `- [ ]` → `- [x]` as they complete each criterion
+- Workers mark `- [ ]` -> `- [x]` as they complete each criterion
 - Orchestrator reads checkbox state to determine remaining work
-- Skipped/blocked tasks leave checkboxes untouched
+- Skipped/blocked tasks time_off checkboxes untouched
 
 ---
 
@@ -118,11 +118,11 @@ $ ade run --dev {N} --brain ./onevo-hr-brain --backend ./onevo-backend --fronten
 ```
 
 Where:
-- `--dev {N}` — Developer number (1-4)
-- `--brain` — Path to this brain repo
-- `--backend` — Path to the .NET 10 backend repo
-- `--frontend` — Path to the Vite + React 19 frontend repo
-- `--agent` — Path to the .NET MAUI desktop agent repo (optional, only needed for DEV4)
+- `--dev {N}` - Developer number (1-4)
+- `--brain` - Path to this brain repo
+- `--backend` - Path to the .NET 10 backend repo
+- `--frontend` - Path to the Vite + React 19 frontend repo
+- `--agent` - Path to the .NET MAUI desktop agent repo (optional, only needed for DEV4)
 
 ---
 
@@ -130,7 +130,7 @@ Where:
 
 When multiple dev ADE sessions run in parallel, each session edits only its own task file (`DEV1-*.md`, `DEV3-*.md`, etc.). No two sessions share a task file, so conflicts on task files are impossible.
 
-If a conflict occurs on `current-focus/README.md` (high-level status only — no checkboxes), accept the latest version from the running session.
+If a conflict occurs on `current-focus/README.md` (high-level status only - no checkboxes), accept the latest version from the running session.
 
 If a push conflict occurs: pull, resolve `current-focus/README.md` by keeping both sets of status updates, then re-push.
 
@@ -138,7 +138,7 @@ If a push conflict occurs: pull, resolve `current-focus/README.md` by keeping bo
 
 ## Related
 
-- [[current-focus/README|Current Focus]] — Task assignments and dependency chain
-- [[AI_CONTEXT/rules|Rules]] — AI agent coding rules
-- [[AI_CONTEXT/project-context|Project Context]] — System architecture
-- [[docs/superpowers/specs/2026-04-08-phase1-restructure-and-ade-design|Design Spec]] — Full design decisions and rationale
+- [[current-focus/README|Current Focus]] - Task assignments and dependency chain
+- [[AI_CONTEXT/rules|Rules]] - AI agent coding rules
+- [[AI_CONTEXT/project-context|Project Context]] - System architecture
+- [[docs/superpowers/specs/2026-04-08-phase1-restructure-and-ade-design|Design Spec]] - Full design decisions and rationale

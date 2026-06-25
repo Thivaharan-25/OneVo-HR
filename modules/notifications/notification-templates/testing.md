@@ -1,4 +1,4 @@
-# Notification Templates — Testing
+﻿# Notification Templates - Testing
 
 **Module:** Notifications
 **Feature:** Notification Templates

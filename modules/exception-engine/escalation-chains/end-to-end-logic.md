@@ -1,4 +1,4 @@
-# Escalation Chains — End-to-End Logic
+﻿# Escalation Chains - End-to-End Logic
 
 **Module:** Exception Engine
 **Feature:** Escalation Chains
@@ -18,10 +18,8 @@ POST /api/v1/exceptions/escalation-chains
       -> 2. For each step:
          -> Validate resolver_type and resolver_config
          -> Resolver may target reporting chain first eligible, reporting manager,
-            team lead, department owner, selected permission, selected legal entity,
-            selected department/team/position/position branch, optional job level
             when configured, specific employee, previous approver, case participants,
-            HR coverage resolver, or configured escalation resolver
+            management coverage resolver, or configured escalation resolver
          -> Validate delay_minutes >= 0
       -> 3. INSERT into escalation_chains (one row per step)
          -> step_order = 1, 2, 3...
@@ -51,10 +49,9 @@ EscalationJob (Hangfire, every 5 min)
 ### Key Rules
 
 - **Escalation chains are per-severity, not per-rule.** All critical alerts follow the same chain.
-- **Escalation is time-based** — delay_minutes from trigger or last escalation.
+- **Escalation is time-based** - delay_minutes from trigger or last escalation.
 
 - **Routing is resolver-based.** No fixed role names are used to decide recipients.
-- **Teams is discussion-only.** Teams replies can sync into the ONEVO case conversation, but official actions stay in ONEVO.
 
 ## Related
 

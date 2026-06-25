@@ -1,4 +1,4 @@
-# Authentication — End-to-End Logic
+﻿# Authentication - End-to-End Logic
 
 **Module:** Auth
 **Feature:** Authentication

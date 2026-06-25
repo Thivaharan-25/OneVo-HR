@@ -1,4 +1,4 @@
-﻿# MFA - End-to-End Logic
+# MFA - End-to-End Logic
 
 **Module:** Auth
 **Feature:** Multi-Factor Authentication

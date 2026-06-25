@@ -1,4 +1,4 @@
-# Device Tracking — End-to-End Logic
+﻿# Device Tracking - End-to-End Logic
 
 **Module:** Activity Monitoring
 **Feature:** Device Tracking
@@ -43,15 +43,15 @@ GET /api/v1/activity/summary/{employeeId}?date=2026-04-05
 
 ### Edge Cases
 
-- **Mobile estimation is approximate** — based on presence gaps, not actual mobile tracking.
+- **Mobile estimation is approximate** - based on presence gaps, not actual mobile tracking.
 - **Multiple devices:** If employee uses both desktop and laptop, sessions from both contribute to `laptop_active_minutes`.
 
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
 - [[frontend/architecture/overview|Device Tracking Overview]]
-- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
-- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation — End-to-End Logic]]
+- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing - End-to-End Logic]]
+- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation - End-to-End Logic]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[infrastructure/multi-tenancy|Multi Tenancy]]

@@ -18,7 +18,7 @@ Infrastructure Operations shows platform-level infrastructure capacity and depen
 ## Capabilities
 
 - View database capacity (connection pool usage, query latency, storage size)
-- View storage capacity (Azure Blob usage %, queue depth)
+- View storage capacity (Cloudflare R2 usage %, queue depth)
 - View cloud infrastructure metrics (CPU, memory, storage across all instances)
 - View external dependency health: payment gateways, Resend, Cloudflare
 - Identify degraded dependencies with `detected_at` timestamp showing when degradation started

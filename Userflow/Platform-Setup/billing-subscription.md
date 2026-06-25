@@ -79,7 +79,7 @@ Storage is one shared tenant pool. AI token limit is one shared tenant allowance
 | List invoices | `GET /api/v1/billing/invoices` |
 | Pay invoice | `POST /api/v1/billing/payment` |
 | Request trial extension | `POST /api/v1/trial-extension/request` |
-| Support tickets | `GET /api/v1/support/tickets`, `POST /api/v1/support/tickets` |
+| Support tickets | `GET /api/v1/support/tickets`, `GET /api/v1/support/tickets/{id}`, `POST /api/v1/support/tickets`, `POST /api/v1/support/tickets/{id}/replies` |
 
 ## Audit Events
 

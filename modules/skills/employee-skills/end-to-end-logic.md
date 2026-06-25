@@ -1,4 +1,4 @@
-# Employee Skills — End-to-End Logic
+﻿# Employee Skills - End-to-End Logic
 
 **Module:** Skills
 **Feature:** Employee Skills Profile
@@ -39,8 +39,8 @@ GET /api/v1/skills/gap-analysis/{employeeId}
 
 ## Related
 
-- [[modules/skills/employee-skills/overview|Employee Skills]] — feature overview
-- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — skill and proficiency definitions
-- [[modules/skills/skill-assessments/overview|Skill Assessments]] — assessment responses that drive validation
-- [[backend/messaging/event-catalog|Event Catalog]] — SkillValidated, SkillUpgradeRequested events
-- [[backend/messaging/error-handling|Error Handling]] — invalid proficiency level and duplicate skill errors
+- [[modules/skills/employee-skills/overview|Employee Skills]] - feature overview
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] - skill and proficiency definitions
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] - assessment responses that drive validation
+- [[backend/messaging/event-catalog|Event Catalog]] - SkillValidated, SkillUpgradeRequested events
+- [[backend/messaging/error-handling|Error Handling]] - invalid proficiency level and duplicate skill errors

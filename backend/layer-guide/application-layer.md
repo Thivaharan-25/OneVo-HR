@@ -1,4 +1,4 @@
-# Application Layer Guide
+﻿# Application Layer Guide
 
 **Last Updated:** 2026-05-08
 
@@ -26,23 +26,23 @@ ONEVO.Application/Features/{Feature}/{SubFeature}/
 |   `-- I{SubFeature}Repository.cs
 |-- ServiceInterfaces/
 |   `-- I{SubFeature}Service.cs
-|-- Mappings/                   # optional — manual entity→DTO mapping; only when non-trivial
+|-- Mappings/                   # optional - manual entity->DTO mapping; only when non-trivial
 |   `-- {SubFeature}Mappings.cs
-|-- Helpers/                    # optional — SubFeature-scoped utility logic with no DI deps
+|-- Helpers/                    # optional - SubFeature-scoped utility logic with no DI deps
 |   `-- {SubFeature}Helper.cs
-`-- EventHandlers/              # optional — only when a justified domain event exists
+`-- EventHandlers/              # optional - only when a justified domain event exists
 ```
 
 Rules:
 - SubFeature is the second level inside every Feature folder.
 - Validators stay inside Commands/{UseCase}/ beside the command they validate.
 - Do not create a feature-level Validators/ folder.
-- Do not create EventHandlers/ by default — only when a justified domain event exists.
+- Do not create EventHandlers/ by default - only when a justified domain event exists.
 - Do not use Interfaces/, Repositories/, or Services/ as folder names.
   Use RepositoryInterfaces/ and ServiceInterfaces/ exactly.
 - Do not use AutoMapper. All mapping is done via static manual methods in Mappings/.
-- Mappings/ is optional — only add it when entity→DTO projection is non-trivial.
-- Helpers/ is optional — only add it for pure utility logic that has no DI dependencies.
+- Mappings/ is optional - only add it when entity->DTO projection is non-trivial.
+- Helpers/ is optional - only add it for pure utility logic that has no DI dependencies.
   If the helper needs DI, make it a service (ServiceInterfaces/ + implementation).
 - Cross-feature helpers and LINQ extensions go in Common/Helpers/ and Common/Extensions/.
 
@@ -82,7 +82,7 @@ Feature interfaces are in `Application/Features/{Feature}/{SubFeature}/Repositor
 All interfaces are implemented in Infrastructure. Application must not reference Infrastructure.
 
 **Common RepositoryInterfaces:**
-- `IUnitOfWork` — `SaveChangesAsync` and optional post-save event dispatch
+- `IUnitOfWork` - `SaveChangesAsync` and optional post-save event dispatch
 
 **Common ServiceInterfaces:**
 - `ICurrentUser`, `ICacheService`, `IEncryptionService`, `IEmailService`, `IStorageService`, `IDateTimeProvider`, `IBackgroundJobService`, `INotificationDispatcher`, `IModuleCatalogService`, `IModuleEntitlementService`, `ITenantContext`, `IDefaultRoleSeeder`

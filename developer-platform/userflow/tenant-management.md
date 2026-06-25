@@ -39,7 +39,7 @@ Click any tenant row to open the full tenant detail page. This is the primary ma
 | **Devices** | Deferred to Phase 2; Phase 1 may show aggregate agent/device health only in Platform Health |
 | **Subscriptions** | Current plan detail, module entitlements table with status per module, invoices table |
 | **Policies** | Feature flag overrides for this tenant, global policy overrides |
-| **Integrations** | All integration statuses (Microsoft 365, Azure AD SSO, Biometric, Slack, etc.) with connection health and last sync |
+| **Integrations** | All integration statuses (GitHub, Zoom, Microsoft Teams, Google Calendar, Outlook Calendar; Slack is Phase 2) with connection health and last sync |
 | **Activity Log** | Audit log filtered to this tenant only - all actor types (tenant user, platform admin, system) |
 | **Settings** | Editable tenant settings: org profile, operational settings, monitoring configuration (if applicable) |
 

@@ -10,9 +10,9 @@
 
 ## Purpose
 
-Tasks are the atomic unit of work in Work Management. Every task belongs to a project. Tasks support subtasks, assignments, checklists, custom fields, approval gates, watchers, and inter-task links.
+Tasks are the atomic unit of work in Work Management. Every task belongs to a project, and the project belongs to one workspace. Phase 1 tasks support subtasks, assignments, checklists, custom fields, approval gates, watchers, inter-task links, and simple Kanban/List/Calendar views. Sprint, advanced board, epic, version, and story-point fields are retained for Phase 2 planning compatibility and must not create active Phase 1 Planner screens.
 
-Task authority is context-bound. A user with `tasks:write` can create or assign tasks only inside a project/workspace context where they have local authority. Reporting hierarchy can limit or suggest assignees, but it must not grant task authority inside another manager's workspace or project by itself.
+Task authority is context-bound. A user with `tasks:write` can create or assign tasks only inside a project where they have local authority. The task's workspace context is inherited from the project. Reporting hierarchy may appear as non-authoritative context, but it must not grant task authority or assignment rights.
 
 ---
 
@@ -20,15 +20,14 @@ Task authority is context-bound. A user with `tasks:write` can create or assign 
 
 ### `tasks`
 
-Key columns: `project_id`, `workspace_id`, `tenant_id`, `title`, `description`, `status` (`todo`, `in_progress`, `in_review`, `done`, `cancelled`), `priority` (`low`, `medium`, `high`, `urgent`), `parent_task_id`, `epic_id`, `sprint_id`, `version_id`, `due_date`, `story_points`, `short_id`, `is_archived`, `type`, `created_by_id`.
+Key columns: `project_id`, `workspace_id`, `tenant_id`, `title`, `description`, `status` (`todo`, `in_progress`, `in_review`, `done`, `cancelled`), `priority` (`low`, `medium`, `high`, `urgent`), `parent_task_id`, `epic_id` (Phase 2), `sprint_id` (Phase 2), `version_id` (Phase 2), `due_date`, `story_points` (Phase 2), `short_id`, `is_archived`, `type`, `created_by_id`.
 
-`workspace_id` on a task is the team/workspace context responsible for that task. It must be one of the active `project_workspaces` for the task's project. It does not mean the whole project belongs to that workspace.
 
 ### `task_assignments`
 
 Key columns: `task_id`, `user_id`, `employee_id`, `assigned_by_id`, `assigned_at`, `availability_status`, `availability_checked_at`, `availability_warning`. Multiple employees can be assigned to one task.
 
-`employee_id` is required in Phase 1 and is resolved from `employees.user_id`. Assignment creation validates active employment and checks approved leave/calendar conflicts.
+`employee_id` is required in Phase 1 and is resolved from `employees.user_id`. Assignment creation validates active employment and checks approved time_off/calendar conflicts.
 
 ### `task_checklists`
 
@@ -62,15 +61,15 @@ Project-level field definitions. Key columns: `project_id`, `name`, `field_type`
 
 Per-task values. Key columns: `task_id`, `custom_field_id`, `text_value`, `number_value`, `date_value`, `user_value`, `select_values_json`.
 
-### `boards`
+### `boards` (Phase 2 advanced planning support)
 
 Key columns: `project_id`, `workspace_id`, `name`, `board_type`, `sprint_id`, `user_id`.
 
-### `board_columns`
+### `board_columns` (Phase 2 advanced planning support)
 
 Key columns: `board_id`, `name`, `status_key`, `position`, `wip_limit`.
 
-### `board_task_positions`
+### `board_task_positions` (Phase 2 advanced planning support)
 
 Key columns: `board_id`, `column_id`, `task_id`, `position`.
 
@@ -84,15 +83,15 @@ Key columns: `board_id`, `column_id`, `task_id`, `position`.
 4. When `task_approvals` is enabled on a project: status to `done` requires an approved `task_approvals` row.
 5. `short_id` generated from `project.identifier` plus auto-increment per project (e.g. `TASK-123`). Immutable after creation.
 6. Custom fields are project-level definitions; values are per-task.
-7. Moving a task to a board column updates `tasks.status` and `board_task_positions` in one transaction.
+7. Phase 1 Kanban view groups tasks by `tasks.status`; Phase 2 advanced boards may update `tasks.status` and `board_task_positions` in one transaction.
 8. Assignment APIs must reject inactive/deleted employees and users without employee records in Phase 1.
-9. Assignment APIs call Leave + Calendar availability checks before writing `task_assignments`. Approved leave creates `availability_status = on_leave` and a warning by default; tenant policy may hard-block it.
+9. Assignment APIs call Time Off + Calendar availability checks before writing `task_assignments`. Approved Time Off creates `availability_status = on_leave` and a warning by default; tenant policy may hard-block it.
 10. Employee offboarding deactivates future assignability and removes active watchers where required, while preserving historical task rows.
-11. When a task has `workspace_id`, that workspace must be linked to the project through `project_workspaces`.
-12. Creating a task requires `tasks:write`, active project membership or approved scoped project authority, and a responsible workspace that is actively linked to the project.
-13. Assignment requires the assignee to be an active project member or approved participant in the responsible workspace/project context.
-14. A reporting manager can assign tasks to reports only inside contexts where the manager has workspace/project task authority. Hierarchy over the assignee alone is not enough.
-15. A workspace/project local administration context can allow assignment to members of that workspace/project even when the assignee is not below the actor in the company hierarchy, subject to project policy.
+11. When a task has `workspace_id`, it must match the owning `projects.workspace_id` unless a later Phase 2 rule explicitly reactivates multi-workspace project participation.
+12. Creating a task requires `tasks:write` and active project membership or approved scoped project authority.
+13. Assignment requires the assignee to be an active project member.
+14. Reporting-manager relationship does not grant task assignment rights.
+15. Project local administration context can allow assignment to active project members, subject to project policy.
 
 ## Assignment Decision Flow
 
@@ -100,12 +99,11 @@ When a user assigns a task:
 
 1. Verify module entitlement and `tasks:write`.
 2. Verify the actor can access the project through `project_members` or an approved scoped grant.
-3. Verify the task's `workspace_id` is active in `project_workspaces`.
-4. Verify the actor has task authority in that project/workspace context.
-5. Verify the assignee is active and belongs to the project, responsible workspace, or approved participant set.
-6. If the actor is relying on reporting-manager authority, verify the assignee is below the actor in `employee_hierarchy_closure` and the workspace/project context is one the actor controls.
-7. Run leave/calendar availability checks.
-8. Write `task_assignments` or return a scoped 403 with no leaked employee/project details.
+3. Verify the task's `workspace_id`, when present, matches `projects.workspace_id`.
+4. Verify the actor has task authority in that project context.
+5. Verify the assignee is active and belongs to the project.
+6. Run time_off/calendar availability checks.
+7. Write `task_assignments` or return a scoped 403 with no leaked employee/project details.
 
 ---
 
@@ -114,8 +112,8 @@ When a user assigns a task:
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
 | `TaskCreatedEvent` | Task created | Notifications, IDE tag confirmation |
-| `TaskStatusChangedEvent` | Status updated | Sprint burndown snapshot trigger, Notifications |
-| `TaskAssignedEvent` | Assignee changed | Notifications, Calendar/Leave availability audit |
+| `TaskStatusChangedEvent` | Status updated | Notifications; Phase 2 sprint burndown snapshot trigger when planning is enabled |
+| `TaskAssignedEvent` | Assignee changed | Notifications, Calendar/Time Off availability audit |
 | `TaskApprovedEvent` | `task_approvals` approved | Sets status = done |
 | `TaskCompletedEvent` | Status -> done | Time log close, Reminders sync |
 

@@ -1,4 +1,4 @@
-# Data Ingestion
+﻿# Data Ingestion
 
 **Module:** Agent Gateway
 **Feature:** Data Ingestion
@@ -13,8 +13,8 @@ High-throughput ingestion endpoint for desktop agent data. Returns **202 Accepte
 
 1. Minimal validation (schema check only, detailed validation is async).
 2. Batch INSERT via `COPY` or `unnest()` for raw buffer.
-3. Rate limit per device (not per user) — default 30 requests/minute/device.
-4. Data routing by `type`: `activity_snapshot` → `activity_raw_buffer`, `device_session` → `device_sessions`, `verification_photo` → [[modules/identity-verification/overview|Identity Verification]].
+3. Rate limit per device (not per user) - default 30 requests/minute/device.
+4. Data routing by `type`: `activity_snapshot` -> `activity_raw_buffer`, `device_session` -> `device_sessions`, `verification_photo` -> [[modules/identity-verification/overview|Identity Verification]].
 
 ## Ingestion Payload Schema
 

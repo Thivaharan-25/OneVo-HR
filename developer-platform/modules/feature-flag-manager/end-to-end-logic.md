@@ -58,7 +58,7 @@ Tenant Detail tab navigation:
 
 | Column | Description | Sortable |
 |---|---|---|
-| Flag Key | Machine-readable key, e.g. `chat_ai.streaming_responses` | Yes |
+| Flag Key | Machine-readable key, e.g. `monitoring.website_usage` | Yes |
 | Description | Human-readable explanation | No |
 | Module | Badge showing owning module key | Yes |
 | Default Value | ON (green) / OFF (gray) | Yes |
@@ -75,7 +75,7 @@ Tenant Detail tab navigation:
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Flag Key | "Flag Key (slug)" | Text input | Yes | Lowercase, dots/underscores allowed, unique, max 120 chars. Format: `{module_key}.{feature_name}` | Permanent - cannot change after any tenant has a value set. e.g. `chat_ai.streaming_responses`, `work_management.ai_task_suggestions` |
+| Flag Key | "Flag Key (slug)" | Text input | Yes | Lowercase, dots/underscores allowed, unique, max 120 chars. Format: `{module_key}.{feature_name}` | Permanent - cannot change after any tenant has a value set. e.g. `monitoring.website_usage`, `work_management.github_integration` |
 | Description | "Description" | Textarea | Yes | 10-300 chars | Explains what enabling this flag does. Shown to operators. |
 | Module | "Owning Module" | Dropdown from module catalog | Required for tenant-facing product flags; empty only for platform operational flags | | Which ONEVO module this flag belongs to. Determines which tenants can have overrides (must be entitled to this module and commercially include this feature) |
 | Commercial Feature | "Commercial Feature" | Dropdown from selected module's feature list | Required for tenant-facing product flags; empty only for platform operational flags | Must belong to selected module | Which Module Catalog feature this flag controls at runtime. This is what the tenant subscription/custom contract is checked against. |
@@ -100,34 +100,23 @@ Seed only these Phase 1 runtime flags by default. Do not create runtime flags fo
 
 | Flag Key | Module | Feature Key | Default Value | Rollout % | Purpose |
 |---|---|---|---|---|---|
-| `leave.accrual_rules` | `leave` | `leave.accrual_rules` | true | 100 | Allows staged rollout of advanced leave accrual logic |
+| `time_off.accrual_rules` | `time_off` | `time_off.accrual_rules` | true | 100 | Allows staged rollout of advanced time_off accrual logic |
 | `monitoring.website_usage` | `monitoring` | `monitoring.website_usage` | false | 0 | Privacy-sensitive tracking control |
 | `monitoring.screenshot_on_demand` | `monitoring` | `monitoring.screenshot_on_demand` | false | 0 | Privacy-sensitive screenshot command control |
 | `monitoring.app_allowlist` | `monitoring` | `monitoring.app_allowlist` | true | 100 | Allows emergency disable of allowlist enforcement |
 | `monitoring.productivity_classification` | `monitoring` | `monitoring.productivity_classification` | true | 100 | Allows rollback of productivity classification rules |
-| `workforce.overtime` | `workforce` | `workforce.overtime` | true | 100 | Controls overtime workflows where tenant rollout varies |
-| `workforce.attendance_corrections` | `workforce` | `workforce.attendance_corrections` | true | 100 | Controls attendance correction workflow rollout |
-| `workforce.biometric_devices` | `workforce` | `workforce.biometric_devices` | false | 0 | Hardware-dependent rollout |
+| `monitoring.overtime` | `monitoring` | `monitoring.overtime` | true | 100 | Controls overtime request handling where tenant rollout varies |
+| `monitoring.attendance_corrections` | `monitoring` | `monitoring.attendance_corrections` | true | 100 | Controls attendance correction request rollout |
+| `monitoring.biometric_devices` | `monitoring` | `monitoring.biometric_devices` | false | 0 | Hardware-dependent rollout |
 | `verification.face_match` | `verification` | `verification.face_match` | false | 0 | AI/biometric rollout control |
 | `verification.manual_review` | `verification` | `verification.manual_review` | true | 100 | Allows operational disable of manual review queue |
 | `verification.photo_challenge` | `verification` | `verification.photo_challenge` | false | 0 | Camera/biometric challenge rollout |
-| `exceptions.baseline_relative_rules` | `exceptions` | `exceptions.baseline_relative_rules` | true | 100 | Allows rollback of baseline-relative alert conditions |
-| `exceptions.remote_screenshot_request` | `exceptions` | `exceptions.remote_screenshot_request` | false | 0 | Privacy-sensitive remote command |
-| `exceptions.remote_photo_request` | `exceptions` | `exceptions.remote_photo_request` | false | 0 | Privacy-sensitive remote command |
 | `analytics.productivity_dashboard` | `analytics` | `analytics.productivity_dashboard` | true | 100 | Allows tenant-level dashboard rollout control |
 | `analytics.data_export` | `analytics` | `analytics.data_export` | false | 0 | Controls sensitive data export access |
 | `analytics.scheduled_reports` | `analytics` | `analytics.scheduled_reports` | false | 0 | Background report rollout control |
 | `work_management.resource_planning` | `work_management` | `work_management.resource_planning` | false | 0 | Advanced WorkSync feature rollout |
 | `work_management.work_analytics` | `work_management` | `work_management.work_analytics` | false | 0 | WorkSync analytics rollout |
 | `work_management.github_integration` | `work_management` | `work_management.github_integration` | false | 0 | Integration-dependent rollout |
-| `work_management.automation_rules` | `work_management` | `work_management.automation_rules` | false | 0 | Automation rollout and emergency disable |
-| `chat.message_search` | `chat` | `chat.message_search` | false | 0 | Search/index rollout control |
-| `chat.teams_sync` | `chat` | `chat.teams_sync` | false | 0 | Microsoft Teams sync rollout |
-| `chat_ai.agentic_chat` | `chat_ai` | `chat_ai.agentic_chat` | false | 0 | AI feature rollout and provider dependency control |
-| `chat_ai.streaming_responses` | `chat_ai` | `chat_ai.streaming_responses` | false | 0 | Streaming response rollout |
-| `chat_ai.ai_task_suggestions` | `chat_ai` | `chat_ai.ai_task_suggestions` | false | 0 | AI task suggestion rollout |
-| `chat_ai.ai_summaries` | `chat_ai` | `chat_ai.ai_summaries` | false | 0 | AI summary rollout |
-| `chat_ai.ai_insights` | `chat_ai` | `chat_ai.ai_insights` | false | 0 | AI insight rollout |
 | `integrations.microsoft_teams` | `integrations` | `integrations.microsoft_teams` | false | 0 | Tenant integration rollout |
 | `integrations.github` | `integrations` | `integrations.github` | false | 0 | Tenant integration rollout |
 | `integrations.webhooks` | `integrations` | `integrations.webhooks` | false | 0 | Webhook surface rollout |
@@ -141,7 +130,6 @@ Optional operational foundation flags may be seeded if the backend implements th
 | `auth.mfa_enforcement` | `auth` | true | 100 | Gradual MFA enforcement |
 | `notifications.email_delivery` | `notifications` | true | 100 | Emergency disable for outbound email |
 | `notifications.in_app_delivery` | `notifications` | true | 100 | Emergency disable for in-app notifications |
-| `workflow_engine.automation_execution` | `workflow_engine` | true | 100 | Emergency stop for automation execution |
 
 ### Save Flag
 
@@ -149,10 +137,10 @@ Optional operational foundation flags may be seeded if the backend implements th
 
 ```json
 {
-  "flag_key": "chat_ai.streaming_responses",
-  "description": "Enable streaming token-by-token responses in the Agentic Chat UI instead of waiting for full response.",
-  "module_key": "chat_ai",
-  "feature_key": "chat_ai.streaming_responses",
+  "flag_key": "monitoring.website_usage",
+  "description": "Enable website usage collection for tenants that are commercially entitled to Activity Monitoring.",
+  "module_key": "monitoring",
+  "feature_key": "monitoring.website_usage",
   "default_value": false,
   "rollout_percentage": 0,
   "phase": 1,
@@ -188,7 +176,7 @@ Changing `default_value` is a high-impact action - it immediately affects all te
 **Confirmation dialog:**
 
 ```
-Changing "chat_ai.streaming_responses" default from OFF -> ON
+Changing "monitoring.website_usage" default from OFF -> ON
 
 This will enable this feature for all tenants that do not have an explicit override set.
 Currently: 0 tenants have overrides. ~847 active tenants will be affected.
@@ -208,7 +196,7 @@ Are you sure?
 {
   "default_value": true,
   "rollout_percentage": 10,
-  "reason": "Starting gradual rollout of streaming chat. Beginning with 10% of tenants."
+  "reason": "Starting gradual rollout of website usage collection. Beginning with 10% of tenants."
 }
 ```
 
@@ -283,7 +271,7 @@ It does not bypass commercial eligibility. Before saving `value = true`, the bac
 ```json
 {
   "value": true,
-  "reason": "Beta testing partner - TechNova requested early access to streaming chat."
+  "reason": "Beta testing partner - TechNova requested early access to website usage tracking."
 }
 ```
 
@@ -371,10 +359,10 @@ After selecting a tenant, shows all modules in the catalog with their current st
 **Confirmation dialog:**
 
 ```
-WARNING: Disable "Agentic Chat" for TechNova Solutions?
+WARNING: Disable "Website Usage Tracking" for TechNova Solutions?
 
-Runtime effect: tenants users will immediately lose access to Agentic Chat.
-Billing: not changed - this is a runtime toggle only. Their subscription still includes chat_ai.
+Runtime effect: tenant users will immediately stop collecting website usage data.
+Billing: not changed - this is a runtime toggle only. Their subscription still includes the monitoring feature.
 
 Integrations that will be disconnected:
   - Microsoft Teams (connected by james@technova.com, May 12 2024)

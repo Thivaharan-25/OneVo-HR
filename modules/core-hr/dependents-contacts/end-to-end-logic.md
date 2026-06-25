@@ -1,4 +1,4 @@
-# Dependents & Contacts — End-to-End Logic
+﻿# Dependents & Contacts - End-to-End Logic
 
 **Module:** Core HR
 **Feature:** Dependents & Emergency Contacts

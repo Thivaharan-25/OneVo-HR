@@ -1,4 +1,4 @@
-# File Management — End-to-End Logic
+﻿# File Management - End-to-End Logic
 
 **Module:** Infrastructure
 **Feature:** File Management

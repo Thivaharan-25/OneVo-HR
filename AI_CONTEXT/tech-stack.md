@@ -1,4 +1,4 @@
-# Technology Stack: ONEVO
+﻿# Technology Stack: ONEVO
 
 ## 1. Programming Languages
 
@@ -25,7 +25,7 @@
 | Real-time | SignalR | ASP.NET Core 10.x | WebSocket connections, presence tracking, live dashboards |
 | API Documentation | Swagger/OpenAPI | 3.0 | Auto-generated, Kiota SDK generation |
 | Validation | FluentValidation | 11.11.0 current | Request validation |
-| Mapping | Mapster or AutoMapper | Latest | DTO ↔ Entity mapping |
+| Mapping | Mapster or AutoMapper | Latest | DTO <-> Entity mapping |
 | Logging | Serilog | 4.3.1 | Structured logging with PII scrubbing |
 | HTTP Client | HttpClientFactory | Built-in | For external API calls with Polly resilience |
 | Resilience | Polly | 8.6.6 | Circuit breakers, retries, timeouts |
@@ -38,16 +38,20 @@
 
 ### Monorepo Structure
 
-Three Angular apps share a single Angular workspace monorepo:
+Angular uses one merged customer-facing app shell plus the separate internal Developer Platform console:
 
 | App | Boundary | Persona |
 |:----|:---------|:--------|
-| `setup-control-app` | Tenant/company setup, legal entities, departments, positions, roles/permissions, policies, imports, add-on requests | Tenant owner, system admin, HR setup users |
-| `operations-lifecycle-app` | Daily employee/manager/HR/workforce operations after setup is configured | Employees, managers, HR, workforce reviewers |
+| `customer-app` | Merged tenant-facing shell. Sidebar, sub-sidebar, visible modules, page actions, and data scope change by effective permissions, active company context, position-derived authority, and employee access coverage and permissions. Primary IA: Home, People, Time Off, Time & Attendance, Work, Calendar, Inbox, Monitoring, Settings. | Employees, managers, HR, monitoring reviewers, tenant admins |
 | `dev-console` | Internal ONEVO Developer Platform using `/admin/v1/*` | ONEVO platform operators only |
-| `shared` (library) | Auth, API services, design system, models | Imported by all three apps |
+| `shared` (library) | Auth, API services, design system, models | Imported by apps |
 
-Customer apps use the same BFF cookie session, same backend `/api/v1/*`, and same SignalR hubs. The Developer Platform uses internal platform-admin auth and `/admin/v1/*`. Final customer hostname mapping is a deployment decision; the app boundary names above are canonical.
+The customer app uses the same BFF cookie session, backend `/api/v1/*`, and SignalR hubs for all customer contexts. The Developer Platform uses internal platform-admin auth and `/admin/v1/*`.
+Customer-facing naming rules:
+
+- Use `Time Off` consistently in navigation, page headers, descriptions, and route descriptions.
+- Use one `Settings` module for customer-facing tenant/system administration; no separate customer `Admin` top-level module.
+- Phase 1 `Work` is simple project/work-item management only. Planner, Goals/OKR, advanced roadmap, and workflow automation are Phase 2.
 
 ### Core Stack
 
@@ -62,17 +66,17 @@ Customer apps use the same BFF cookie session, same backend `/api/v1/*`, and sam
 | Component Library | Angular Material | 21.x | Official Angular UI primitives; enterprise-grade |
 | Icons | Material Symbols | Latest | Google icon font, variable weight |
 | Charts | ng2-charts (Chart.js) | Latest | Line, bar, pie, doughnut, area |
-| Animation | Angular Animations | Built-in | `@angular/animations` — page transitions, micro-interactions |
-| Theming | CSS Custom Properties + Angular Material theming | — | Light/dark mode, per-tenant brand tokens |
-| Reactive State | Angular Signals | Built-in (21.x) | `signal()`, `computed()`, `effect()` — no NgRx |
+| Animation | Angular Animations | Built-in | `@angular/animations` - page transitions, micro-interactions |
+| Theming | CSS Custom Properties + Angular Material theming | - | Light/dark mode, per-tenant brand tokens |
+| Reactive State | Angular Signals | Built-in (21.x) | `signal()`, `computed()`, `effect()` - no NgRx |
 | URL State | Angular Router `ActivatedRoute` + `queryParams` | Built-in | Filters, pagination, search params |
 | HTTP | Angular `HttpClient` | Built-in | `resource()` + `toSignal()` for signal integration |
 | Forms | Angular Reactive Forms | Built-in | `FormBuilder`, `FormGroup`, `Validators` |
 | Form Validation | Zod | Latest | Schema validation mirrors backend FluentValidation |
 | Real-time | @microsoft/signalr | Latest | Wrapped in Angular services; auto-reconnect with exponential backoff |
-| SignalR channels | `workforce-live`, `exception-alerts`, `notifications-{userId}`, `agent-status` | — | Same hub as always |
+| SignalR channels | `monitoring-live`, `notifications-{userId}`, `agent-status`; `exception-alerts` is Phase 2 | - | Same hub, Phase 1 alerts route through Notifications |
 | Testing | Jest + Angular Testing Library + Playwright + MSW | Latest | Unit, component, E2E, API mocking |
-| Linting | ESLint + Prettier | — | Angular ESLint config |
+| Linting | ESLint + Prettier | - | Angular ESLint config |
 | i18n | Angular i18n | Built-in | `$localize` + locale files |
 
 ### Key npm Dependencies
@@ -95,28 +99,28 @@ Customer apps use the same BFF cookie session, same backend `/api/v1/*`, and sam
 
 ### Angular Conventions (v21 Standalone)
 
-- **No NgModules** — every component, pipe, and directive is standalone (`standalone: true`)
-- **Dependency injection** — use `inject()` function, not constructor injection
-- **Reactive state** — `signal()` / `computed()` / `effect()` replace component state; no RxJS `BehaviorSubject` for UI state
-- **New control flow** — use `@if`, `@for`, `@switch` (not `*ngIf`, `*ngFor`)
-- **Typed routes** — Angular Router typed route params
-- **HTTP with signals** — `toSignal(this.http.get(...))` or `resource()` for async data
-- **Guards** — functional guards (`CanActivateFn`), not class-based
-- **Interceptors** — functional interceptors (`HttpInterceptorFn`)
+- **No NgModules** - every component, pipe, and directive is standalone (`standalone: true`)
+- **Dependency injection** - use `inject()` function, not constructor injection
+- **Reactive state** - `signal()` / `computed()` / `effect()` replace component state; no RxJS `BehaviorSubject` for UI state
+- **New control flow** - use `@if`, `@for`, `@switch` (not `*ngIf`, `*ngFor`)
+- **Typed routes** - Angular Router typed route params
+- **HTTP with signals** - `toSignal(this.http.get(...))` or `resource()` for async data
+- **Guards** - functional guards (`CanActivateFn`), not class-based
+- **Interceptors** - functional interceptors (`HttpInterceptorFn`)
 
 ---
 
 ## 4. WorkPulse Agent
 
-The WorkPulse Agent is the ONEVO activity monitoring package distributed as an **MSIX bundle** to employee devices. It covers every employee type — not just developers.
+The WorkPulse Agent is the ONEVO activity monitoring package distributed as an **MSIX bundle** to employee devices. It covers every employee type - not just developers.
 
 **Phase 1: Windows only. Phase 2: macOS.** See [[modules/agent-gateway/agent-overview|Agent Overview]] for the macOS Phase 2 architecture.
 
-### Phase 1 — Windows
+### Phase 1 - Windows
 
 | Category | Technology | Version | Notes |
 |:---------|:-----------|:--------|:------|
-| Background Service | .NET Windows Service | 10 | `Microsoft.Extensions.Hosting.WindowsServices` — always-on data collector |
+| Background Service | .NET Windows Service | 10 | `Microsoft.Extensions.Hosting.WindowsServices` - always-on data collector |
 | Tray App UI | .NET MAUI | 10 | System tray icon, photo capture, employee login, break toggle |
 | Language | C# | 14 | Same language family as backend |
 | Local Storage | SQLite | via `Microsoft.Data.Sqlite` | Offline buffer for activity data |
@@ -124,12 +128,11 @@ The WorkPulse Agent is the ONEVO activity monitoring package distributed as an *
 | App Detection | Win32 APIs | - | `GetForegroundWindow`, `GetWindowText`, process enumeration |
 | Idle Detection | Win32 APIs | - | `GetLastInputInfo` |
 | Document Tracking | Process name matching | - | `WINWORD.EXE`, `EXCEL.EXE`, `POWERPNT.EXE`, Figma, Photoshop |
-| Communication Tracking | Process name + UIAutomation | - | Outlook, Slack, Teams active time + send event counts (count only) |
-| IPC | Named Pipes | `System.IO.Pipes` | Service ↔ MAUI tray app communication |
+| IPC | Named Pipes | `System.IO.Pipes` | Service <-> MAUI tray app communication |
 | Installer | MSIX bundle | Windows SDK | Silent MDM install (Intune/GPO), built-in auto-update, signed |
 | HTTP Client | HttpClient + Polly | Built-in | Retry + circuit breaker for Agent Gateway |
 
-### Phase 2 — macOS (Do NOT Build in Phase 1)
+### Phase 2 - macOS (Do NOT Build in Phase 1)
 
 | Category | Technology | Notes |
 |:---------|:-----------|:------|
@@ -166,52 +169,51 @@ The WorkPulse Agent is the ONEVO activity monitoring package distributed as an *
 
 ```
 ONEVO.Agent/
-├── ONEVO.Agent.Service/           # Windows Service (background collector)
-│   ├── Collectors/
-│   │   ├── ActivityCollector.cs    # Keyboard/mouse event counting
-│   │   ├── AppTracker.cs          # Foreground app detection
-│   │   ├── IdleDetector.cs        # Idle period detection
-│   │   ├── MeetingDetector.cs     # Meeting app process detection
-│   │   ├── DeviceTracker.cs       # Device active/idle cycle tracking
-│   │   ├── DocumentTracker.cs     # Word/Excel/PPT/Figma/Photoshop time tracking
-│   │   └── CommunicationTracker.cs # Outlook/Slack/Teams active time + send counts
-│   ├── Buffer/
-│   │   ├── SqliteBuffer.cs        # Local SQLite storage
-│   │   └── BufferCleanup.cs       # Purge sent data
-│   ├── Sync/
-│   │   ├── DataSyncService.cs     # Batch & send to Agent Gateway
-│   │   ├── HeartbeatService.cs    # 60-second heartbeat
-│   │   └── PolicySyncService.cs   # Fetch monitoring policy
-│   ├── Security/
-│   │   ├── DeviceTokenStore.cs    # Secure Device JWT storage (DPAPI)
-│   │   └── TamperDetector.cs      # Detect service manipulation
-│   ├── IPC/
-│   │   └── NamedPipeServer.cs     # Listen for MAUI app commands
-│   └── Program.cs
-│
-├── ONEVO.Agent.TrayApp/           # MAUI tray app
-│   ├── Views/
-│   │   ├── LoginWindow.xaml
-│   │   ├── StatusPopup.xaml
-│   │   └── PhotoCaptureWindow.xaml
-│   ├── Services/
-│   │   ├── NamedPipeClient.cs
-│   │   ├── CameraService.cs
-│   │   └── TrayIconService.cs
-│   └── App.xaml.cs
-│
-├── ONEVO.Agent.Shared/            # Shared types between Service and TrayApp
-│   ├── Models/
-│   │   ├── ActivitySnapshot.cs
-│   │   ├── AppUsageRecord.cs
-│   │   ├── DeviceSession.cs
-│   │   └── AgentPolicy.cs
-│   ├── IPC/
-│   │   └── IpcMessages.cs
-│   └── Constants.cs
-│
-└── ONEVO.Agent.Installer/         # MSIX packaging
-    └── Package.appxmanifest
++-- ONEVO.Agent.Service/           # Windows Service (background collector)
+|   +-- Collectors/
+|   |   +-- ActivityCollector.cs    # Keyboard/mouse event counting
+|   |   +-- AppTracker.cs          # Foreground app detection
+|   |   +-- IdleDetector.cs        # Idle period detection
+|   |   +-- MeetingDetector.cs     # Meeting app process detection
+|   |   +-- DeviceTracker.cs       # Device active/idle cycle tracking
+|   |   +-- DocumentTracker.cs     # Word/Excel/PPT/Figma/Photoshop time tracking
+|   +-- Buffer/
+|   |   +-- SqliteBuffer.cs        # Local SQLite storage
+|   |   +-- BufferCleanup.cs       # Purge sent data
+|   +-- Sync/
+|   |   +-- DataSyncService.cs     # Batch & send to Agent Gateway
+|   |   +-- HeartbeatService.cs    # 60-second heartbeat
+|   |   +-- PolicySyncService.cs   # Fetch monitoring policy
+|   +-- Security/
+|   |   +-- DeviceTokenStore.cs    # Secure Device JWT storage (DPAPI)
+|   |   +-- TamperDetector.cs      # Detect service manipulation
+|   +-- IPC/
+|   |   +-- NamedPipeServer.cs     # Listen for MAUI app commands
+|   +-- Program.cs
+|
++-- ONEVO.Agent.TrayApp/           # MAUI tray app
+|   +-- Views/
+|   |   +-- LoginWindow.xaml
+|   |   +-- StatusPopup.xaml
+|   |   +-- PhotoCaptureWindow.xaml
+|   +-- Services/
+|   |   +-- NamedPipeClient.cs
+|   |   +-- CameraService.cs
+|   |   +-- TrayIconService.cs
+|   +-- App.xaml.cs
+|
++-- ONEVO.Agent.Shared/            # Shared types between Service and TrayApp
+|   +-- Models/
+|   |   +-- ActivitySnapshot.cs
+|   |   +-- AppUsageRecord.cs
+|   |   +-- DeviceSession.cs
+|   |   +-- AgentPolicy.cs
+|   +-- IPC/
+|   |   +-- IpcMessages.cs
+|   +-- Constants.cs
+|
++-- ONEVO.Agent.Installer/         # MSIX packaging
+    +-- Package.appxmanifest
 ```
 
 See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API contract.
@@ -240,7 +242,7 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 | Frontend Hosting | Azure | Angular build output served through the selected Azure hosting/static delivery path |
 | DNS / Edge | Cloudflare DNS + optional Cloudflare proxy | `onevo.com`, wildcard `*.onevo.com`, DDoS/WAF/CDN if proxy mode is enabled |
 | Tenant URLs | Cloudflare wildcard DNS -> Azure | Default tenant URL pattern: `{tenantSlug}.onevo.com` |
-| Containerization | Docker | Development + deployment — all services in docker-compose.yml |
+| Containerization | Docker | Development + deployment - all services in docker-compose.yml |
 | Message Broker | None in Phase 1 | No RabbitMQ/MassTransit; optional in-process domain events only for justified post-save side effects |
 | CI/CD | GitHub Actions | Build, test, deploy pipeline |
 | Observability | OpenTelemetry + Prometheus + Grafana | Distributed tracing, metrics, dashboards |
@@ -256,8 +258,9 @@ See [[modules/agent-gateway/overview|Agent Gateway]] for the server-side API con
 | Stripe | International billing, subscriptions, cards | API Key + Webhooks | Phase 1 |
 | PayHere | Sri Lanka/local billing, subscriptions, cards/bank methods | Merchant ID + Merchant Secret + Webhooks | Phase 1 |
 | Resend | Transactional email | API Key | Phase 1 |
-| Biometric Terminals | Attendance capture | HMAC-SHA256 webhooks | Phase 1 |
-| Google Calendar | Leave event sync | OAuth 2.0 | Phase 2 |
+| Attendance/Biometric Terminals | Attendance capture | HMAC-SHA256 webhooks | Phase 1 |
+| Google Calendar | Calendar external sync (import/export) | OAuth 2.0 | Phase 1 |
+| Outlook Calendar | Calendar external sync (import/export) | OAuth 2.0 (Microsoft Graph) | Phase 1 |
 | Slack | Notifications | App integration | Phase 2 |
 | ADP / Oracle | Payroll sync | OAuth + REST | Phase 4 |
 | LMS Providers | Learning content | SSO + API | Phase 3 |
@@ -273,13 +276,13 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | CQRS | Write/read separation through MediatR commands and queries |
 | Audit Trail | `audit_logs` with JSON diffs |
 | Domain Events | Optional in-process MediatR notifications for justified post-save side effects |
-| Repository Pattern | Data access via `BaseRepository<T>` — see [[backend/shared-kernel\|Shared Kernel]] |
+| Repository Pattern | Data access via `BaseRepository<T>` - see [[backend/shared-kernel\|Shared Kernel]] |
 | Unit of Work | EF Core `DbContext` per request |
 | Mediator (MediatR) | Command/query handling; optional event notification dispatch |
 | Specification Pattern | Complex query composition |
-| Result Pattern | `Result<T, Error>` for explicit error handling — see [[backend/shared-kernel\|Shared Kernel]] |
-| Time-Series Buffer | Raw activity data → buffer table (partitioned, purged 48h) → aggregated summaries |
-| Tiered Real-Time | Agent→server (2-3 min), exception engine (5 min), dashboard (30s polling / SignalR push) |
+| Result Pattern | `Result<T, Error>` for explicit error handling - see [[backend/shared-kernel\|Shared Kernel]] |
+| Time-Series Buffer | Raw activity data -> buffer table (partitioned, purged 48h) -> aggregated summaries |
+| Tiered Real-Time | Agent->server (2-3 min), Phase 1 alerts/notifications routed through management coverage or authorized reviewer permissions, dashboard (30s polling / SignalR push). Full Exception Engine evaluation is Phase 2 |
 
 ---
 
@@ -292,8 +295,7 @@ See [[backend/external-integrations|External Integrations]] for full integration
 | Flutter | Mobile app deferred |
 | Meilisearch | PostgreSQL FTS sufficient for Phase 1 |
 | NgRx | Angular Signals cover all state management needs in Phase 1 |
-| Teams chat/group sync | Requires tenant Graph consent, user account linking, webhook/delta sync, and communication-data compliance review. Phase 1 optional integration. |
-| macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` — a parallel implementation. Phase 2. |
+| macOS Agent | WorkPulse Agent is Windows-only in Phase 1. macOS requires `CGEventTap` + `NSWorkspace` + `launchd` - a parallel implementation. Phase 2. |
 | Browser Extension | Optional browser domain tracking via Chrome/Edge/Firefox extension. Phase 2. |
 
 ## Related

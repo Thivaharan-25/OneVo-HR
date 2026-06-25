@@ -1,4 +1,4 @@
-# PeopleHR Full Migration
+﻿# PeopleHR Full Migration
 
 **Module:** [[modules/data-import/overview|DataImport]]  
 **Phase:** Phase 2  
@@ -29,22 +29,22 @@ No PeopleHR field may be discarded without a migration result row explaining why
 |:--------------|:--------------------------|:-----------------|:------|
 | Employees | Core HR: `employees`, employee profile tables | Supported | Primary identity source. |
 | Departments | Org Structure: `departments` | Supported | Create or resolve during org grouping. |
-| Positions / roles | Org Structure: `positions` and position access templates | Supported with review | HR admin confirms position mapping and generated access. |
+| Positions / roles | Org Structure: `positions` and position-based access grants | Supported with review | HR admin confirms position mapping and generated access. |
 | Reporting hierarchy | Org Structure: `positions`, `position_reporting_history`, `position_assignments`, `employee_hierarchy_closure` | Supported with org review | Source reporting relationships are converted into effective-dated position reporting rows after employees and positions are staged. |
 | Legal entities / locations | Org Structure: legal entities and locations | Supported with review | Unknown legal entity values require admin resolution. Single-company tenants can default unresolved company values to the tenant's only legal entity when the admin confirms. |
 | Salary / compensation | Core HR / Payroll: compensation, salary history, payroll profile | Supported with review | Currency, salary amount, pay frequency, and effective date must validate. |
-| Holiday / leave balances | Leave: `leave_entitlements`, `leave_balances_audit` | Supported with review | Balance import depends on tenant leave policy mapping. |
-| Holiday / leave bookings | Leave: `leave_requests`; Calendar feed side effects | Supported with review | Imported as historical or approved leave depending on source status. |
-| Absence / sickness | Leave or absence records | Supported with review | Absence type mapping is required. |
-| Timesheets / lateness | Time / Workforce Presence: attendance, timesheets, presence sessions | Partial | Stored raw if ONEVO cannot preserve exact PeopleHR semantics. |
+| Holiday / Time Off balances | Time Off: `time_off_entitlements`, `time_off_balances_audit` | Supported with review | Balance import depends on tenant Time Off policy mapping. |
+| Holiday / Time Off bookings | Time Off: `time_off_requests`; Calendar feed side effects | Supported with review | Imported as historical or approved Time Off depending on source status. |
+| Absence / sickness | Time Off or absence records | Supported with review | Absence type mapping is required. |
+| Timesheets / lateness | Time / Time & Attendance: attendance, timesheets, presence sessions | Partial | Stored raw if ONEVO cannot preserve exact PeopleHR semantics. |
 | Documents | Documents: `documents`, `document_versions` | Partial | Metadata imports first; binary download failures remain retryable. |
 | Training / CPD / qualifications | Skills staging/raw archive; Phase 1 may map existing skills only | Staged with review | Phase 1 can map existing tenant skills to employee skill requests. Certifications, course enrollments, CPD, and learning records are archived/staged until Phase 2 canonical tables are enabled. |
 | Benefits / perks | Payroll / Benefits extension tables | Raw archive first | Canonical mapping depends on benefits module maturity. |
 | Appraisals / performance | Performance: reviews, feedback, goals where applicable | Partial | Preserve raw appraisal forms if ONEVO review template differs. |
 | Vehicles / driving | Core HR custom fields or future assets module | Raw archive first | Imported to custom fields only when mapped. |
-| Maternity / paternity | Leave: special leave records and employee lifecycle metadata | Supported with review | Requires leave type mapping. |
+| Maternity / paternity | Time Off: special time off records and employee lifecycle metadata | Supported with review | Requires Time Off type mapping. |
 | Assignment / projects | Work Management projects/resources | Partial | Only import when tenant chooses to link PeopleHR assignments to Work Management. |
-| Work patterns | Workforce Presence: schedules, roster templates | Supported with review | Requires schedule pattern mapping. |
+| Work patterns | Time & Attendance: schedules, roster templates | Supported with review | Requires schedule pattern mapping. |
 | Custom screens / custom fields | `employee_custom_fields`, source metadata JSON | Supported | Unknown fields remain available for later mapping. |
 
 ---
@@ -78,7 +78,7 @@ The adapter must fetch raw PeopleHR records before any transformation. Mapping a
 | `PeopleHrEmployeeFetcher` | Fetches employee identity, contact, job, source reporting relationship, status, and custom field data. |
 | `PeopleHrOrgFetcher` | Fetches departments, positions, locations, work patterns, and reporting relationships where available. |
 | `PeopleHrSalaryFetcher` | Fetches salary, compensation, payroll identifier, and pay history data where the API key allows it. |
-| `PeopleHrLeaveFetcher` | Fetches leave balances, holidays, absence, sickness, maternity, and paternity records. |
+| `PeopleHrTimeOffFetcher` | Fetches Time Off balances, holidays, absence, sickness, maternity, and paternity records. |
 | `PeopleHrTimesheetFetcher` | Fetches timesheet, lateness, rota, and work pattern records. |
 | `PeopleHrDocumentFetcher` | Fetches document metadata and downloads files with retryable failure tracking. |
 | `PeopleHrSkillsFetcher` | Fetches training, CPD, qualifications, certifications, and learning records. |
@@ -116,7 +116,7 @@ Stores the untouched PeopleHR API payload for every fetched record.
 | `id` | `uuid` | PK |
 | `migration_run_id` | `uuid` | FK -> `peoplehr_migration_runs` |
 | `tenant_id` | `uuid` | Tenant-scoped |
-| `source_area` | `varchar(50)` | `employee`, `salary`, `leave`, `absence`, `document`, `training`, etc. |
+| `source_area` | `varchar(50)` | `employee`, `salary`, `time_off`, `absence`, `document`, `training`, etc. |
 | `source_record_id` | `varchar(150)` | PeopleHR record identifier when available |
 | `peoplehr_employee_id` | `varchar(150)` | Nullable for org-level records |
 | `source_endpoint` | `varchar(150)` | API action/endpoint used |
@@ -163,7 +163,7 @@ Preserves stable source identity links.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | Tenant-scoped |
-| `onevo_entity_type` | `varchar(50)` | `employee`, `document`, `leave_request`, etc. |
+| `onevo_entity_type` | `varchar(50)` | `employee`, `document`, `time_off_request`, etc. |
 | `onevo_entity_id` | `uuid` | Canonical ONEVO record id |
 | `peoplehr_area` | `varchar(50)` | Source area |
 | `peoplehr_record_id` | `varchar(150)` | Source record id |
@@ -194,7 +194,7 @@ Tracks admin review before commit.
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `migration_run_id` | `uuid` | FK -> `peoplehr_migration_runs` |
-| `category` | `varchar(50)` | `employee`, `org`, `salary`, `leave`, etc. |
+| `category` | `varchar(50)` | `employee`, `org`, `salary`, `time_off`, etc. |
 | `summary` | `text` | Review prompt |
 | `sample_source_json` | `jsonb` | Source example |
 | `sample_target_json` | `jsonb` | Proposed ONEVO result |
@@ -243,7 +243,7 @@ PeopleHR data must commit in dependency order:
 3. Position reporting history and position assignment second pass.
 4. User/auth invitation settings.
 5. Salary, compensation, payroll profile.
-6. Leave balances, holidays, absence, sickness, maternity, paternity.
+6. Time Off balances, holidays, absence, sickness, maternity, paternity.
 7. Attendance, timesheets, lateness, schedules.
 8. Documents and document versions.
 9. Training, qualifications, CPD, skills.
@@ -265,14 +265,14 @@ Blocking examples:
 - Reporting relationship points to an unknown employee or unresolved position after staging.
 - Required legal entity, department, or position cannot be resolved and admin chose not to create or map it.
 - Salary amount or currency is invalid.
-- Leave record has invalid date order.
+- Time Off record has invalid date order.
 - Document metadata has no employee link.
 
 Warning examples:
 
 - Optional phone number cannot be normalized.
 - Salary is outside configured band.
-- Leave type requires manual mapping.
+- Time Off type requires manual mapping.
 - Timesheet overlaps existing attendance record.
 - Custom field has no canonical ONEVO destination and will be archived raw.
 
@@ -319,7 +319,7 @@ The migration engine can be complex, but the customer experience must stay simpl
 The primary PeopleHR migration flow should be:
 
 1. **Connect PeopleHR** - enter API key and test access.
-2. **Choose Data to Import** - select clear categories such as Employees, Leave, Documents, Payroll, Training, and Performance.
+2. **Choose Data to Import** - select clear categories such as Employees, Time Off, Documents, Payroll, Training, and Performance.
 3. **Review Access Check** - show available, unavailable, and not-selected categories in plain language.
 4. **Review Field Matches** - show only fields that need confirmation; auto-mapped fields stay collapsed.
 5. **Fix Issues** - group problems by employee/category with clear actions: map, create, skip, or keep as archive.
@@ -371,7 +371,7 @@ Each completed run produces an audit report containing:
 
 ## Relationship to Onboarding
 
-PeopleHR full migration feeds the onboarding chain by creating or updating canonical employee records first. Once an employee is committed, the normal cross-module onboarding reactions can assign leave entitlements, shift schedules, payroll profiles, documents, auth invitations, and WorkPulse legal/privacy gates.
+PeopleHR full migration feeds the onboarding chain by creating or updating canonical employee records first. Once an employee is committed, the normal cross-module onboarding reactions can assign Time Off entitlements, shift schedules, payroll profiles, documents, auth invitations, and WorkPulse legal/privacy gates.
 
 PeopleHR source records remain the audit trail; ONEVO canonical tables remain the operating source of truth after commit.
 

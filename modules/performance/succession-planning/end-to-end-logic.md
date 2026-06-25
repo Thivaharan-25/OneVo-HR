@@ -1,4 +1,4 @@
-# Succession Planning — End-to-End Logic
+﻿# Succession Planning - End-to-End Logic
 
 **Module:** Performance
 **Feature:** Succession Planning
@@ -26,9 +26,9 @@ POST /api/v1/performance/succession-plans
 
 - [[database/performance|Performance Module]]
 - [[frontend/architecture/overview|Succession Planning Overview]]
-- [[modules/performance/reviews/end-to-end-logic|Reviews — End-to-End Logic]]
-- [[modules/performance/goals-okr/end-to-end-logic|Goals & OKR — End-to-End Logic]]
-- [[modules/performance/improvement-plans/end-to-end-logic|Improvement Plans — End-to-End Logic]]
+- [[modules/performance/reviews/end-to-end-logic|Reviews - End-to-End Logic]]
+- [[modules/performance/goals-okr/end-to-end-logic|Goals & OKR - End-to-End Logic]]
+- [[modules/performance/improvement-plans/end-to-end-logic|Improvement Plans - End-to-End Logic]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[backend/notification-system|Notification System]]

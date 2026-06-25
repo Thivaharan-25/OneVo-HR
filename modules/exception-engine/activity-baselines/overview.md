@@ -1,4 +1,4 @@
-# Activity Baselines
+﻿# Activity Baselines
 
 **Module:** Exception Engine
 **Feature:** Baseline-Relative Thresholds
@@ -44,16 +44,16 @@ Exception rules set `Operator = "baseline_relative"` on a `RuleCondition` to opt
 | `SigmaMultiplier` | How many standard deviations above the baseline constitutes a breach (e.g., `2.0`) |
 | `FallbackAbsoluteThreshold` | Used when no usable baseline exists (new employee, < 5 samples) |
 
-**Threshold formula:** `avg_value + (sigma_multiplier × stddev_value)`
+**Threshold formula:** `avg_value + (sigma_multiplier x stddev_value)`
 
 ## Evaluation Path
 
 `BaselineRuleEvaluator.EvaluateAsync()` handles `baseline_relative` conditions:
 
 1. Fetch the latest pre-computed baseline for `(tenantId, employeeId, metric)`
-2. If baseline is usable (≥ 5 samples, stddev > 0): compute `avg + sigma × stddev` as the threshold
+2. If baseline is usable (>= 5 samples, stddev > 0): compute `avg + sigma x stddev` as the threshold
 3. If not usable: fall back to `FallbackAbsoluteThreshold`
-4. Evaluate: `metric_value > threshold` → condition breached
+4. Evaluate: `metric_value > threshold` -> condition breached
 
 ## Hangfire Job
 
@@ -64,13 +64,13 @@ Exception rules set `Operator = "baseline_relative"` on a `RuleCondition` to opt
 ## Key Rules
 
 1. **Minimum 5 samples required** before baseline thresholds are applied. New employees always use the absolute fallback.
-2. **Zero stddev is treated as unusable** — prevents division-by-zero and handles employees with perfectly flat activity patterns.
-3. **One row per employee per metric per day** — the unique index on `(tenant_id, employee_id, metric, computed_at)` enforces this.
-4. **Existing absolute rules are unaffected** — only conditions with `Operator = "baseline_relative"` use this path. All other operators (`gt`, `lt`, `gte`, `lte`) evaluate against their explicit `Threshold` value as before.
+2. **Zero stddev is treated as unusable** - prevents division-by-zero and handles employees with perfectly flat activity patterns.
+3. **One row per employee per metric per day** - the unique index on `(tenant_id, employee_id, metric, computed_at)` enforces this.
+4. **Existing absolute rules are unaffected** - only conditions with `Operator = "baseline_relative"` use this path. All other operators (`gt`, `lt`, `gte`, `lte`) evaluate against their explicit `Threshold` value as before.
 
 ## Related
 
-- [[database/schemas/exception-engine|Exception Engine Schema]] — `employee_activity_baselines` table
-- [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]] — where `BaselineRuleEvaluator` is wired in
-- [[modules/exception-engine/exception-rules/overview|Exception Rules]] — `RuleCondition` fields `SigmaMultiplier` and `FallbackAbsoluteThreshold`
+- [[database/schemas/exception-engine|Exception Engine Schema]] - `employee_activity_baselines` table
+- [[modules/exception-engine/evaluation-engine/overview|Evaluation Engine]] - where `BaselineRuleEvaluator` is wired in
+- [[modules/exception-engine/exception-rules/overview|Exception Rules]] - `RuleCondition` fields `SigmaMultiplier` and `FallbackAbsoluteThreshold`
 - [[modules/exception-engine/overview|Exception Engine Overview]]

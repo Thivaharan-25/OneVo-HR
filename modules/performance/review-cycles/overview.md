@@ -1,4 +1,4 @@
-# Review Cycles
+﻿# Review Cycles
 
 **Module:** Performance  
 **Feature:** Review Cycles
@@ -12,7 +12,7 @@ Manages performance review cycles (quarterly, annual, probation) with optional p
 ## Database Tables
 
 ### `review_cycles`
-Key columns: `name`, `cycle_type` (`quarterly`, `annual`, `probation`), `start_date`, `end_date`, `status` (`draft`, `active`, `completed`), `include_productivity_data` (NEW — pull scores from Productivity Analytics).
+Key columns: `name`, `cycle_type` (`quarterly`, `annual`, `probation`), `start_date`, `end_date`, `status` (`draft`, `active`, `completed`), `include_productivity_data` (NEW - pull scores from Productivity Analytics).
 
 ## API Endpoints
 

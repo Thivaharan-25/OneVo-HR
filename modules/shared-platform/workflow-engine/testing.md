@@ -1,4 +1,7 @@
-# Workflow Engine — Testing
+﻿# Workflow Engine - Testing
+
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Not an active Phase 1 dependency; retained for future Workflow Engine testing reference.
 
 **Module:** Shared Platform
 **Feature:** Workflow Engine
@@ -68,7 +71,6 @@ public class WorkflowServiceTests
 | Create case conversation | Integration | Private case conversation is linked to workflow item |
 | Delivery router with Chat enabled | Integration | Action card appears in ONEVO Chat case conversation |
 | Delivery router without Chat | Integration | Action card appears in Inbox detail panel |
-| Teams mirror enabled | Integration | Discussion is mirrored, but official action remains a ONEVO link |
 | Approve advances to next step | Unit | Next resolver is evaluated and next assignee notified |
 | Final approval approves workflow | Unit | WorkflowApproved event |
 | Unresolved delay escalates dynamically | Unit | Escalation resolver receives action card and audit entry is written |

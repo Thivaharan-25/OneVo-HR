@@ -1,4 +1,4 @@
-# Skill Taxonomy — End-to-End Logic
+﻿# Skill Taxonomy - End-to-End Logic
 
 **Module:** Skills
 **Feature:** Skill Taxonomy (Categories & Skills)
@@ -9,7 +9,6 @@
 
 The standalone skill taxonomy endpoints in this file are Phase 2. Do not build these as Phase 1 routes, pages, sidebar items, or API integrations.
 
-Phase 1 only supports embedded skill search/create from `Org Structure -> Job Families -> Required Skills` through the job-family skill-requirements endpoint. Inline-created skills are simple tenant-scoped records used to attach required skills to a job family.
 
 ## Create Skill Category
 
@@ -42,8 +41,8 @@ POST /api/v1/skills
 
 ## Related
 
-- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] — feature overview
-- [[modules/skills/employee-skills/overview|Employee Skills]] — skills consumed from taxonomy
-- [[modules/skills/skill-assessments/overview|Skill Assessments]] — questions linked to taxonomy skills
-- [[backend/messaging/event-catalog|Event Catalog]] — SkillCreated, SkillUpdated events
-- [[backend/messaging/error-handling|Error Handling]] — duplicate name, inactive category, and FK constraint errors
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] - feature overview
+- [[modules/skills/employee-skills/overview|Employee Skills]] - skills consumed from taxonomy
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] - questions linked to taxonomy skills
+- [[backend/messaging/event-catalog|Event Catalog]] - SkillCreated, SkillUpdated events
+- [[backend/messaging/error-handling|Error Handling]] - duplicate name, inactive category, and FK constraint errors

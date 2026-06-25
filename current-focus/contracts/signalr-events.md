@@ -1,4 +1,4 @@
-﻿# Contract: SignalR Real-Time Events
+# Contract: SignalR Real-Time Events
 
 **Backend owners:** DEV2 Task 5 (notifications hub), DEV3 Tasks 3-4 (WorkSync chat, Semantic Kernel assistant, IDEHub chat/tag), DEV4 Tasks 3 and 5 (agent/exception)
 **Consumers:** DEV6 Task 4 (agent-status), DEV7 Task 3 (chat + assistant), DEV8 Tasks 2-3 (IDE)
@@ -6,7 +6,7 @@
 
 ---
 
-## Hub: `workforce-live`
+## Hub: `monitoring-live`
 
 ```ts
 // Agent status push - consumed by DEV6 Task 4

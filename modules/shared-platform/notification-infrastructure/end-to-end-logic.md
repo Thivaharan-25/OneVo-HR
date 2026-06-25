@@ -1,4 +1,4 @@
-# Notification Infrastructure — End-to-End Logic
+﻿# Notification Infrastructure - End-to-End Logic
 
 **Module:** Shared Platform
 **Feature:** Notification Infrastructure
@@ -10,7 +10,7 @@
 ### Flow
 
 ```
-1. Domain event published (e.g., LeaveApproved)
+1. Domain event published (e.g., TimeOffApproved)
 2. NotificationEventHandler receives event
 3. Resolve recipients based on event context
 4. Load notification_templates WHERE template_code AND channel
@@ -19,7 +19,7 @@
    -> email: call Resend API via notification_channels config
    -> in_app: INSERT notification record + SignalR push
    -> push: FCM via notification_channels config
-   -> slack: POST to webhook
+   -> slack: POST to webhook (Phase 2)
 7. Log delivery status
 ```
 
@@ -30,7 +30,7 @@
 ```
 EscalationCheckJob (Hangfire, hourly)
   -> Check escalation_rules for pending items past SLA:
-    -> e.g., leave_request pending > 48h -> remind manager
+    -> e.g., time_off_request pending > 48h -> remind manager
     -> If still pending after escalation -> auto_approve or escalate to next role
 
 ```

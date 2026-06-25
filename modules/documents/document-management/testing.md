@@ -1,4 +1,4 @@
-# Document Management — Testing
+﻿# Document Management - Testing
 
 **Module:** Documents
 **Feature:** Document Management

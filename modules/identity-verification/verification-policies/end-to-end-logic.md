@@ -1,4 +1,4 @@
-# Verification Policies — End-to-End Logic
+﻿# Verification Policies - End-to-End Logic
 
 **Module:** Identity Verification
 **Feature:** Verification Policies
@@ -36,15 +36,15 @@ PUT /api/v1/verification/policy
 
 ### Key Rules
 
-- **verify_on_login + verify_on_logout + interval_minutes** control when verification happens.
-- **Policy respects employee monitoring overrides** — if `identity_verification = false` in override, skip.
+- **require_photo_clock_in + require_photo_clock_out + camera_photo_verification_enabled + absence_photo_capture_enabled + photo_capture_context_scope** control when camera photo verification happens. `photo_capture_context_scope` decides whether clock-in/out photo capture applies to `remote_only`, `onsite_only`, `remote_and_onsite`, or is `disabled`.
+- **Policy respects employee monitoring overrides** - if `identity_verification = false` in override, skip.
 
 ## Related
 
 - [[modules/identity-verification/overview|Identity Verification Module]]
 - [[frontend/architecture/overview|Verification Policies Overview]]
-- [[modules/identity-verification/photo-verification/end-to-end-logic|Photo Verification — End-to-End Logic]]
-- [[modules/identity-verification/biometric-enrollment/end-to-end-logic|Biometric Enrollment — End-to-End Logic]]
+- [[modules/identity-verification/photo-verification/end-to-end-logic|Photo Verification - End-to-End Logic]]
+- [[modules/identity-verification/biometric-enrollment/end-to-end-logic|Biometric Enrollment - End-to-End Logic]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[security/compliance|Compliance]]

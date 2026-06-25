@@ -1,4 +1,4 @@
-# Review Cycles — End-to-End Logic
+﻿# Review Cycles - End-to-End Logic
 
 **Module:** Performance
 **Feature:** Review Cycles
@@ -32,7 +32,7 @@ PUT /api/v1/performance/cycles/{id}/activate
       -> 1. UPDATE status = 'active'
       -> 2. Auto-create review records for all eligible employees
          -> INSERT into reviews for each employee (status = 'draft')
-         -> Assign reviewer based on reporting hierarchy
+         -> Assign reviewer from the review-cycle rule, explicit reviewer assignment, or management coverage owner
       -> 3. If include_productivity_data:
          -> Pre-fetch productivity scores from IProductivityAnalyticsService
          -> Populate productivity_score on review records

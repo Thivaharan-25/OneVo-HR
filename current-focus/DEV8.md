@@ -1,4 +1,4 @@
-# DEV8: Frontend VS Code IDE Extension
+﻿# DEV8: Frontend VS Code IDE Extension
 
 **Track:** Frontend
 **Primary ownership:** VS Code IDE extension
@@ -46,7 +46,7 @@ npm test
 
 ---
 
-> **Parallel group** — Tasks 2, 3, 4, and 5 all require only Task 1 and are independent of each other. Run all four simultaneously.
+> **Parallel group** - Tasks 2, 3, 4, and 5 all require only Task 1 and are independent of each other. Run all four simultaneously.
 
 ## Task 2: Chat, Tasks, and Notifications Panels
 
@@ -93,7 +93,7 @@ npm run compile
 - [ ] `TagParser` parses action name, named params, mentions, and quoted values.
 - [ ] `TagExecutor` calls `POST /api/v1/ide/tags/execute`.
 - [ ] Tag picker is built from `permitted_tag_actions`.
-- [ ] HR group appears only when `active_modules` contains at least one Phase 1 HR module key such as `core_hr`, `leave`, or `calendar`.
+- [ ] HR group appears only when `active_modules` contains at least one Phase 1 HR module key such as `core_hr`, `time_off`, or `calendar`.
 - [ ] Missing actions are hidden.
 - [ ] Instant actions execute immediately.
 - [ ] Form actions open mini forms.
@@ -171,7 +171,7 @@ npm run compile
 ### References
 
 - [[Userflow/IDE-Extension/agent-install-flow|IDE Agent Install Flow]] (Userflow/IDE-Extension/agent-install-flow.md)
-- [[Userflow/Workforce-Intelligence/agent-deployment|Agent Deployment]] (Userflow/Workforce-Intelligence/agent-deployment.md)
+- [[Userflow/Monitoring/agent-deployment|Agent Deployment]] (Userflow/Monitoring/agent-deployment.md)
 - [[modules/agent-gateway/agent-installer|Agent Installer]] (modules/agent-gateway/agent-installer.md)
 
 ### Verification
@@ -195,7 +195,7 @@ npm run compile
 - [ ] Confirm forbidden actions are hidden.
 - [ ] Execute `@task:view`.
 - [ ] Execute `@time:start` and `@time:stop`.
-- [ ] Test HR user with `@leave:request` and `@clockin`.
+- [ ] Test HR user with `@time-off:request` and `@clockin`.
 - [ ] Test non-HR user and confirm HR actions are absent.
 - [ ] Test monitoring-entitled user and confirm install requires explicit consent.
 - [ ] Cancel install and confirm nothing runs.

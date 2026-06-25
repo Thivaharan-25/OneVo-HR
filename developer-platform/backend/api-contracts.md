@@ -87,12 +87,12 @@ Full tenant lifecycle: create, view, edit, suspend, reactivate, demo/trial opera
 | `POST` | `/admin/v1/tenants` | Create tenant or demo tenant draft | `platform.tenants.manage` |
 | `GET` | `/admin/v1/tenants/{id}` | Full tenant detail including provisioning_state | `platform.tenants.read` |
 | `PATCH` | `/admin/v1/tenants/{id}` | Edit tenant profile (company name, phone, website) | `platform.tenants.manage` |
-| `PATCH` | `/admin/v1/tenants/{id}/admin-account` | Save admin account â€” wizard Step 2 | `platform.tenants.manage` |
-| `PATCH` | `/admin/v1/tenants/{id}/subscription` | Assign/override subscription and commercial terms â€” wizard Step 3 and post-activation override | `platform.subscriptions.manage` |
-| `PATCH` | `/admin/v1/tenants/{id}/settings` | Save configuration and setup services â€” wizard Step 4 | `platform.tenants.manage` |
+| `PATCH` | `/admin/v1/tenants/{id}/admin-account` | Save admin account - wizard Step 2 | `platform.tenants.manage` |
+| `PATCH` | `/admin/v1/tenants/{id}/subscription` | Assign/override subscription and commercial terms - wizard Step 3 and post-activation override | `platform.subscriptions.manage` |
+| `PATCH` | `/admin/v1/tenants/{id}/settings` | Save configuration and setup services - wizard Step 4 | `platform.tenants.manage` |
 | `PATCH` | `/admin/v1/tenants/{id}/status` | Suspend or reactivate tenant | `platform.tenants.manage` |
 | `PATCH` | `/admin/v1/tenants/{id}/provision/confirm` | Confirm provisioning tenant where operator-created activation is allowed | `platform.tenants.manage` |
-| `GET` | `/admin/v1/tenants/{id}/provisioning-summary` | Activation checklist â€” blockers and warnings | `platform.tenants.read` |
+| `GET` | `/admin/v1/tenants/{id}/provisioning-summary` | Activation checklist - blockers and warnings | `platform.tenants.read` |
 
 ### Tenant Actions
 
@@ -125,7 +125,7 @@ Full tenant lifecycle: create, view, edit, suspend, reactivate, demo/trial opera
 |---|---|---|---|
 | `GET` | `/admin/v1/tenants/{id}/ai-provider-override` | List AI config overrides for this tenant | `platform.system_config.read` |
 | `PUT` | `/admin/v1/tenants/{id}/ai-provider-override/{purpose}` | Set per-tenant AI key for a specific purpose | `platform.system_config.manage` |
-| `DELETE` | `/admin/v1/tenants/{id}/ai-provider-override/{purpose}` | Remove AI override â€” falls back to global | `platform.system_config.manage` |
+| `DELETE` | `/admin/v1/tenants/{id}/ai-provider-override/{purpose}` | Remove AI override - falls back to global | `platform.system_config.manage` |
 | `POST` | `/admin/v1/tenants/{id}/ai-provider-override/{purpose}/test` | Test tenant's AI config | `platform.system_config.manage` |
 
 ### Tenant Settings Overrides
@@ -134,7 +134,7 @@ Full tenant lifecycle: create, view, edit, suspend, reactivate, demo/trial opera
 |---|---|---|---|
 | `GET` | `/admin/v1/tenants/{id}/settings-override` | List global setting overrides for this tenant | `platform.system_config.read` |
 | `PATCH` | `/admin/v1/tenants/{id}/settings-override` | Set a tenant-specific global setting override | `platform.system_config.manage` |
-| `DELETE` | `/admin/v1/tenants/{id}/settings-override/{key}` | Clear a setting override â€” falls back to global default | `platform.system_config.manage` |
+| `DELETE` | `/admin/v1/tenants/{id}/settings-override/{key}` | Clear a setting override - falls back to global default | `platform.system_config.manage` |
 
 ---
 
@@ -147,13 +147,17 @@ Full tenant lifecycle: create, view, edit, suspend, reactivate, demo/trial opera
 | `GET` | `/admin/v1/subscription-plans/{id}` | Plan detail with pricing, modules, add-ons, and usage/tenant impact | `platform.subscriptions.read` |
 | `PATCH` | `/admin/v1/subscription-plans/{id}` | Update plan metadata, pricing, modules, add-ons, resource add-ons, or active status | `platform.subscriptions.manage` |
 | `POST` | `/admin/v1/subscription-plans/{id}/clone` | Clone plan with new name | `platform.subscriptions.manage` |
-| `DELETE` | `/admin/v1/subscription-plans/{id}` | Deactivate plan â€” blocks new assignments, preserves existing | `platform.subscriptions.manage` |
-| `POST` | `/admin/v1/system-config/payment-gateways/verify` | Verify gateway credentials against provider â€” does not save | `platform.system_config.manage` |
+| `DELETE` | `/admin/v1/subscription-plans/{id}` | Deactivate plan - blocks new assignments, preserves existing | `platform.subscriptions.manage` |
+| `POST` | `/admin/v1/system-config/payment-gateways/verify` | Verify gateway credentials against provider - does not save | `platform.system_config.manage` |
+| `GET` | `/admin/v1/system-config/payment-gateways` | List payment gateway metadata, active credential presence, and country routes; secrets never returned | `platform.system_config.read` |
+| `POST` | `/admin/v1/system-config/payment-gateways` | Create gateway metadata, encrypted credential version, and country routes | `platform.system_config.manage` |
+| `PATCH` | `/admin/v1/system-config/payment-gateways/{id}` | Update metadata/routes and optionally create a new credential version | `platform.system_config.manage` |
+| `GET` | `/admin/v1/payment-gateways/resolve` | Resolve active gateway for a country (`?country={code}`) from country routes | `platform.tenants.manage` |
 | `GET` | `/admin/v1/subscription-invoices` | List invoices with filters | `platform.subscriptions.read` |
 | `GET` | `/admin/v1/subscription-invoices/{id}` | Invoice detail with line items | `platform.subscriptions.read` |
 | `PATCH` | `/admin/v1/subscription-invoices/{id}/void` | Void an open invoice | `platform.subscriptions.manage` |
-| `GET` | `/admin/v1/subscription-invoices/{id}/pdf` | Download invoice PDF (PayHere: generated via QuestPDF; Paddle: redirect to paddle_invoice_url) | `platform.subscriptions.read` |
-| `PATCH` | `/admin/v1/subscription-invoices/{id}/mark-uncollectible` | Write off invoice as uncollectible â€” requires reason | `platform.subscriptions.manage` |
+| `GET` | `/admin/v1/subscription-invoices/{id}/pdf` | Download invoice PDF (generated internally when needed or redirected to `external_invoice_url` when the selected gateway provides one) | `platform.subscriptions.read` |
+| `PATCH` | `/admin/v1/subscription-invoices/{id}/mark-uncollectible` | Write off invoice as uncollectible - requires reason | `platform.subscriptions.manage` |
 | `GET` | `/admin/v1/subscription-plans/pricing-history` | All price bracket changes across all plans | `platform.subscriptions.read` |
 | `GET` | `/admin/v1/billing-audit-logs` | List billing audit log entries with filters (tenant, action, date range) | `platform.subscriptions.read` |
 | `GET` | `/admin/v1/billing-audit-logs/{tenantId}` | Full billing audit trail for a specific tenant | `platform.subscriptions.read` |
@@ -169,15 +173,15 @@ Full tenant lifecycle: create, view, edit, suspend, reactivate, demo/trial opera
 
 ## Tenant Billing Portal (tenant-facing)
 
-Tenant users access their own billing information. All routes require a valid tenant user JWT. Every route is automatically scoped to the authenticated user's tenant â€” no `tenantId` in path.
+Tenant users access their own billing information. All routes require a valid tenant user JWT. Every route is automatically scoped to the authenticated user's tenant - no `tenantId` in path.
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
 | `GET` | `/api/v1/billing/invoices` | List invoices for this tenant (paginated, filterable by status/date) | `billing:read` |
 | `GET` | `/api/v1/billing/invoices/{id}` | Invoice detail with line items | `billing:read` |
-| `GET` | `/api/v1/billing/invoices/{id}/pdf` | Download invoice PDF â€” PayHere: QuestPDF stream; Paddle: redirect to Paddle-hosted URL | `billing:read` |
+| `GET` | `/api/v1/billing/invoices/{id}/pdf` | Download invoice PDF - PayHere: QuestPDF stream; Paddle: redirect to Paddle-hosted URL | `billing:read` |
 | `POST` | `/api/v1/billing/payment` | Pay an open invoice or start the configured payment flow | `billing:manage` |
-| `POST` | `/api/v1/billing/subscription/cancel` | Request subscription cancellation â€” takes effect at end of current billing period | `billing:manage` |
+| `POST` | `/api/v1/billing/subscription/cancel` | Request subscription cancellation - takes effect at end of current billing period | `billing:manage` |
 
 **Cancel subscription rules:**
 - Sets `tenant_subscriptions.cancellation_requested_at = now()` and `cancel_at_period_end = true`
@@ -208,6 +212,7 @@ Demo Profiles define trial/demo workspace behavior and the upgrade options visib
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
+| `POST` | `/api/v1/demo/request` | Public inquiry/intake endpoint that creates a `demo_access_requests` row only. It does not create a tenant, account, session, or entitlement. | Anonymous with anti-abuse controls |
 | `GET` | `/admin/v1/requests/demo` | List demo access requests | `platform.requests.read` |
 | `GET` | `/admin/v1/requests/demo/{id}` | Demo request detail: requester, company/tenant details, requested demo profile, requested access notes, and history | `platform.requests.read` |
 | `POST` | `/admin/v1/requests/demo/{id}/approve` | Approve demo access, create or update demo tenant, and apply demo profile limits | `platform.requests.manage` |
@@ -229,7 +234,6 @@ Demo Profiles define trial/demo workspace behavior and the upgrade options visib
 | `POST` | `/admin/v1/support/tickets/{id}/replies` | Reply to customer | `platform.support.manage` |
 | `POST` | `/admin/v1/support/tickets/{id}/internal-notes` | Add internal note | `platform.support.manage` |
 | `PATCH` | `/admin/v1/support/tickets/{id}/category` | Change ticket category | `platform.support.manage` |
-| `POST` | `/admin/v1/support/tickets/{id}/knowledgebase` | Promote issue/resolution to knowledgebase article | `platform.support.manage` |
 | `POST` | `/admin/v1/support/tickets/{id}/close` | Close ticket as resolved | `platform.support.manage` |
 
 ---
@@ -245,7 +249,9 @@ Tenant-facing routes are scoped to the authenticated tenant user and only apply 
 | `POST` | `/api/v1/demo/upgrade/submit` | Confirm company details, employee count, selected plan/add-ons, billing cycle, and billing contact; generate first invoice for self-service payment | `billing:manage` |
 | `POST` | `/api/v1/trial-extension/request` | Submit trial extension request with requested days and reason | `billing:manage` |
 | `GET` | `/api/v1/support/tickets` | Tenant support ticket list | `support:read` |
+| `GET` | `/api/v1/support/tickets/{id}` | Tenant support ticket detail with customer-visible messages and attachments only | `support:read` |
 | `POST` | `/api/v1/support/tickets` | Create tenant support ticket | `support:manage` |
+| `POST` | `/api/v1/support/tickets/{id}/replies` | Add tenant reply to open support ticket | `support:manage` |
 
 ---
 
@@ -255,14 +261,14 @@ Tenant-facing routes are scoped to the authenticated tenant user and only apply 
 |---|---|---|---|
 | `GET` | `/admin/v1/modules/catalog` | List all product modules | `platform.module_catalog.read` |
 | `POST` | `/admin/v1/modules/catalog` | Create a new product module | `platform.module_catalog.manage` |
-| `GET` | `/admin/v1/modules/catalog/{moduleKey}` | Module detail â€” pricing, permissions, linked integrations | `platform.module_catalog.read` |
+| `GET` | `/admin/v1/modules/catalog/{moduleKey}` | Module detail - pricing, permissions, linked integrations | `platform.module_catalog.read` |
 | `PATCH` | `/admin/v1/modules/catalog/{moduleKey}` | Update module metadata and limits | `platform.module_catalog.manage` |
 | `GET` | `/admin/v1/modules/catalog/{moduleKey}/permissions` | Permission codes owned by this module | `platform.module_catalog.read` |
 | `PUT` | `/admin/v1/modules/catalog/{moduleKey}/permissions` | Replace module permission ownership | `platform.module_catalog.manage` |
 | `GET` | `/admin/v1/modules/catalog/{moduleKey}/features` | Commercial feature list for this module | `platform.module_catalog.read` |
 | `PUT` | `/admin/v1/modules/catalog/{moduleKey}/features` | Replace commercial feature list for this module | `platform.module_catalog.manage` |
 | `GET` | `/admin/v1/modules/catalog/{moduleKey}/pricing` | Pricing brackets and price history | `platform.module_catalog.read` |
-| `PATCH` | `/admin/v1/modules/catalog/{moduleKey}/pricing` | Update pricing â€” creates price history entry | `platform.module_catalog.manage` |
+| `PATCH` | `/admin/v1/modules/catalog/{moduleKey}/pricing` | Update pricing - creates price history entry | `platform.module_catalog.manage` |
 | `GET` | `/admin/v1/modules/catalog/{moduleKey}/tenant-impact` | Tenants and plans affected by a pending change | `platform.module_catalog.read` |
 | `GET` | `/admin/v1/modules/catalog/{moduleKey}/integrations` | Integrations linked to this module | `platform.module_catalog.read` |
 | `POST` | `/admin/v1/modules/catalog/{moduleKey}/integrations` | Link an integration to this module | `platform.module_catalog.manage` |
@@ -297,7 +303,7 @@ Tenant-facing routes are scoped to the authenticated tenant user and only apply 
 | `PATCH` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Set per-tenant override with `value` after module entitlement and commercial feature inclusion validation | `platform.tenants.feature_overrides.manage` |
 | `DELETE` | `/admin/v1/tenants/{id}/feature-flags/{flagKey}` | Remove per-tenant override | `platform.tenants.feature_overrides.manage` |
 | `GET` | `/admin/v1/tenants/{id}/modules/runtime-status` | All module runtime enable/disable statuses for a tenant | `platform.tenants.feature_overrides.read` |
-| `PATCH` | `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status` | Toggle module runtime status â€” does not change billing | `platform.tenants.feature_overrides.manage` |
+| `PATCH` | `/admin/v1/tenants/{id}/modules/{moduleKey}/runtime-status` | Toggle module runtime status - does not change billing | `platform.tenants.feature_overrides.manage` |
 
 Tenant-facing product flags must provide both `module_key` and `feature_key`, with `feature_key` owned by the selected module in `module_features`. Only platform operational flags may omit both fields.
 
@@ -310,7 +316,7 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 | `GET` | `/admin/v1/role-templates` | List all global templates (system and custom) | `platform.templates.read` |
 | `POST` | `/admin/v1/role-templates` | Create a new global role template | `platform.templates.manage` |
 | `GET` | `/admin/v1/role-templates/{id}` | Template detail with full permission list | `platform.templates.read` |
-| `PATCH` | `/admin/v1/role-templates/{id}` | Update template â€” increments version | `platform.templates.manage` |
+| `PATCH` | `/admin/v1/role-templates/{id}` | Update template - increments version | `platform.templates.manage` |
 | `POST` | `/admin/v1/role-templates/{id}/clone` | Clone system or custom template into new editable template | `platform.templates.manage` |
 | `DELETE` | `/admin/v1/role-templates/{id}` | Deactivate template | `platform.templates.manage` |
 | `GET` | `/admin/v1/tenants/{id}/permissions/catalog` | Module-filtered permission catalog for a specific tenant | `platform.tenants.read` |
@@ -318,7 +324,7 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 | `POST` | `/admin/v1/tenants/{id}/roles` | Create a tenant-specific role (not saved as global template) | `platform.tenants.manage` |
 | `PUT` | `/admin/v1/tenants/{id}/roles/{roleId}/permissions` | Replace tenant role permission set | `platform.tenants.manage` |
 | `DELETE` | `/admin/v1/tenants/{id}/roles/{roleId}` | Delete tenant role | `platform.tenants.manage` |
-| `POST` | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Apply template to tenant â€” with idempotency handling | `platform.tenants.manage` |
+| `POST` | `/admin/v1/tenants/{id}/role-templates/{templateId}/apply` | Apply template to tenant - with idempotency handling | `platform.tenants.manage` |
 | `GET` | `/admin/v1/tenants/{id}/role-template-applications` | History of template applications for this tenant | `platform.tenants.read` |
 
 ---
@@ -334,10 +340,10 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/system-config/ai-providers` | List AI configs â€” no keys returned | `platform.system_config.read` |
-| `POST` | `/admin/v1/system-config/ai-providers/fetch-models` | Temporarily use entered key to fetch available models from provider â€” does not save | `platform.system_config.manage` |
+| `GET` | `/admin/v1/system-config/ai-providers` | List AI configs - no keys returned | `platform.system_config.read` |
+| `POST` | `/admin/v1/system-config/ai-providers/fetch-models` | Temporarily use entered key to fetch available models from provider - does not save | `platform.system_config.manage` |
 | `POST` | `/admin/v1/system-config/ai-providers` | Create AI provider config for a purpose | `platform.system_config.manage` |
-| `PUT` | `/admin/v1/system-config/ai-providers/{configId}` | Update AI config â€” key replaced atomically | `platform.system_config.manage` |
+| `PUT` | `/admin/v1/system-config/ai-providers/{configId}` | Update AI config - key replaced atomically | `platform.system_config.manage` |
 | `DELETE` | `/admin/v1/system-config/ai-providers/{configId}` | Deactivate AI config | `platform.system_config.manage` |
 | `POST` | `/admin/v1/system-config/ai-providers/{configId}/test` | Test connection using stored key and base URL | `platform.system_config.manage` |
 
@@ -345,7 +351,7 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/system-config/oauth-apps` | List OAuth app registrations â€” secrets never returned | `platform.system_config.read` |
+| `GET` | `/admin/v1/system-config/oauth-apps` | List OAuth app registrations - secrets never returned | `platform.system_config.read` |
 | `PUT` | `/admin/v1/system-config/oauth-apps/{provider}` | Set OAuth app credentials for a provider | `platform.system_config.manage` |
 | `POST` | `/admin/v1/system-config/oauth-apps/{provider}/test` | Validate stored OAuth app with provider | `platform.system_config.manage` |
 
@@ -353,7 +359,7 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/system-config/service-keys` | List platform service keys â€” secrets never returned | `platform.system_config.read` |
+| `GET` | `/admin/v1/system-config/service-keys` | List platform service keys - secrets never returned | `platform.system_config.read` |
 | `PUT` | `/admin/v1/system-config/service-keys/{serviceKey}` | Set/rotate a platform service key | `platform.system_config.manage` |
 | `POST` | `/admin/v1/system-config/service-keys/{serviceKey}/test` | Test service key connection | `platform.system_config.manage` |
 
@@ -378,7 +384,7 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/security/overview` | Security KPI summary â€” alert counts, active sessions, events | `platform.security.read` |
+| `GET` | `/admin/v1/security/overview` | Security KPI summary - alert counts, active sessions, events | `platform.security.read` |
 | `GET` | `/admin/v1/security/alerts` | Alert list with filters (severity, status, tenant, alert_code) | `platform.security.read` |
 | `GET` | `/admin/v1/security/alerts/{id}` | Alert detail with related audit events | `platform.security.read` |
 | `POST` | `/admin/v1/security/alerts/{id}/acknowledge` | Mark alert as acknowledged | `platform.security.manage` |
@@ -396,7 +402,7 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 |---|---|---|---|
 | `GET` | `/admin/v1/audit-logs` | Query cross-tenant audit log with full filter support | `platform.audit.read` |
 | `GET` | `/admin/v1/audit-logs/{id}` | Single audit entry with full previous_state and new_state | `platform.audit.read` |
-| `POST` | `/admin/v1/audit-logs/export` | Export filtered log as CSV or JSON â€” async for >10k rows | `platform.audit.export` |
+| `POST` | `/admin/v1/audit-logs/export` | Export filtered log as CSV or JSON - async for >10k rows | `platform.audit.export` |
 | `GET` | `/admin/v1/audit-logs/export/{jobId}` | Async export job status and download link | `platform.audit.export` |
 | `GET` | `/admin/v1/tenants/{id}/audit` | Audit log pre-filtered to a specific tenant | `platform.audit.read` |
 
@@ -411,7 +417,7 @@ Tenant-facing product flags must provide both `module_key` and `feature_key`, wi
 | `GET` | `/admin/v1/global-policies` | System Config -> Global Policies policy defaults endpoint; not a top-level sidebar item | `platform.system_config.read` |
 | `PATCH` | `/admin/v1/global-policies/{id}` | Update draft value for a policy key | `platform.system_config.manage` |
 | `GET` | `/admin/v1/global-policies/{id}/tenant-impact` | Count tenants affected by publishing the current draft | `platform.system_config.read` |
-| `POST` | `/admin/v1/global-policies/{id}/publish` | Publish draft as new default — future tenants only; does not auto-propagate to existing tenants | `platform.system_config.manage` |
+| `POST` | `/admin/v1/global-policies/{id}/publish` | Publish draft as new default - future tenants only; does not auto-propagate to existing tenants | `platform.system_config.manage` |
 | `POST` | `/admin/v1/global-policies/{id}/propagate` | Propagate published value to existing tenants without an explicit override | `platform.system_config.manage` |
 | `GET` | `/admin/v1/global-policies/{id}/history` | View publish history for a policy key | `platform.system_config.read` |
 
@@ -430,7 +436,7 @@ Operations is Phase 2. Service monitoring, dependency summaries, safe service ac
 
 ---
 
-## Security & Compliance â€” Extended
+## Security & Compliance - Extended
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
@@ -480,7 +486,7 @@ Operations is Phase 2. Service monitoring, dependency summaries, safe service ac
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/reference/countries/{countryCode}/defaults` | Default timezone, currency, and timezone choices for a country â€” used in Step 1 wizard | None (admin-namespace public) |
+| `GET` | `/admin/v1/reference/countries/{countryCode}/defaults` | Default timezone, currency, and timezone choices for a country - used in Step 1 wizard | None (admin-namespace public) |
 | `GET` | `/admin/v1/setup-services` | Global setup service catalog (free and paid) | `platform.tenants.read` |
 | `POST` | `/admin/v1/setup-services` | Create a setup service definition | `platform.tenants.manage` |
 | `PUT` | `/admin/v1/tenants/{id}/setup-services` | Select and track setup services for a tenant | `platform.tenants.manage` |
@@ -493,13 +499,13 @@ Full CRUD for the global reusable configuration template library. Role templates
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `GET` | `/admin/v1/configuration-templates` | List all global configuration templates; filter by `?type=` (position_template, leave_policy, configuration, onboarding, app_allowlist, monitoring_policy, data_import_mapping) and `?active_only=true` | `platform.templates.read` |
+| `GET` | `/admin/v1/configuration-templates` | List all global configuration templates; filter by `?type=` (position_template, time_off_policy, configuration, onboarding, app_allowlist, monitoring_policy, data_import_mapping) and `?active_only=true` | `platform.templates.read` |
 | `GET` | `/admin/v1/configuration-templates/{id}` | Full template detail including payload JSON and version history | `platform.templates.read` |
-| `POST` | `/admin/v1/configuration-templates` | Create a new configuration template â€” body: `{ template_key, template_type, name, description, module_keys_json, industry_profile_tag, payload_json, is_system }` | `platform.templates.manage` |
-| `PATCH` | `/admin/v1/configuration-templates/{id}` | Update template name, description, or payload â€” increments `version`; system templates are read-only (clone instead) | `platform.templates.manage` |
-| `DELETE` | `/admin/v1/configuration-templates/{id}` | Deactivate template (`is_active = false`) â€” blocked if active tenant positions or assignment rows still reference the template | `platform.templates.manage` |
+| `POST` | `/admin/v1/configuration-templates` | Create a new configuration template - body: `{ template_key, template_type, name, description, module_keys_json, industry_profile_tag, payload_json, is_system }` | `platform.templates.manage` |
+| `PATCH` | `/admin/v1/configuration-templates/{id}` | Update template name, description, or payload - increments `version`; system templates are read-only (clone instead) | `platform.templates.manage` |
+| `DELETE` | `/admin/v1/configuration-templates/{id}` | Deactivate template (`is_active = false`) - blocked if active tenant positions or assignment rows still reference the template | `platform.templates.manage` |
 | `POST` | `/admin/v1/configuration-templates/{id}/clone` | Clone a system or custom template into a new editable template | `platform.templates.manage` |
-| `POST` | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply template to tenant â€” body: `{ force_update: bool }`. Checks module entitlement, runs type-specific apply handler, writes audit row. Returns `{ application_id, applied_version, warnings[] }` | `platform.templates.manage` |
+| `POST` | `/admin/v1/tenants/{id}/configuration-templates/{templateId}/apply` | Apply template to tenant - body: `{ force_update: bool }`. Checks module entitlement, runs type-specific apply handler, writes audit row. Returns `{ application_id, applied_version, warnings[] }` | `platform.templates.manage` |
 | `GET` | `/admin/v1/tenants/{id}/configuration-template-applications` | History of all template applications for this tenant, ordered by `applied_at desc` | `platform.tenants.read` |
 
 **Query parameters for `GET /admin/v1/configuration-templates`:**
@@ -507,10 +513,10 @@ Full CRUD for the global reusable configuration template library. Role templates
 | Param | Type | Description |
 |---|---|---|
 | `type` | string | Filter by `template_type` enum value |
-| `active_only` | bool | Default `true` â€” omit inactive templates |
+| `active_only` | bool | Default `true` - omit inactive templates |
 | `industry_tag` | string | Filter monitoring_policy templates by `industry_profile_tag` |
 
-**Apply response warnings** (non-blocking â€” apply succeeds but caller should surface these):
+**Apply response warnings** (non-blocking - apply succeeds but caller should surface these):
 
 | Warning | Condition |
 |---|---|
@@ -532,27 +538,27 @@ Validation error: `assignment_scope_targets_required` when department or positio
 
 | Method | Path | Description | Permission |
 |---|---|---|---|
-| `POST` | `/admin/v1/uploads/integration-logo` | Upload integration catalog logo â€” returns `logo_url` | `platform.module_catalog.manage` |
+| `POST` | `/admin/v1/uploads/integration-logo` | Upload integration catalog logo - returns `logo_url` | `platform.module_catalog.manage` |
 | `POST` | `/admin/v1/uploads/gateway-logo` | Upload payment gateway logo for System Config payment provider records | `platform.system_config.manage` |
-| `POST` | `/admin/v1/uploads/oauth-app-logo` | Upload OAuth app provider logo â€” returns `logo_url` | `platform.system_config.manage` |
-| `POST` | `/admin/v1/uploads/ai-provider-logo` | Upload AI provider logo â€” returns `logo_url` | `platform.system_config.manage` |
+| `POST` | `/admin/v1/uploads/oauth-app-logo` | Upload OAuth app provider logo - returns `logo_url` | `platform.system_config.manage` |
+| `POST` | `/admin/v1/uploads/ai-provider-logo` | Upload AI provider logo - returns `logo_url` | `platform.system_config.manage` |
 
 All upload endpoints accept `multipart/form-data` with a single `file` field. Accepted types: PNG, SVG, JPEG. Max 500KB. Response: `{ "logo_url": "https://storage.onevo.io/..." }`.
 
 ---
 
-## Webhook Endpoints (inbound â€” not admin-authenticated)
+## Webhook Endpoints (inbound - not admin-authenticated)
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/webhooks/paddle` | Inbound Paddle webhook â€” signature verified via `Paddle-Signature` header (HMAC-SHA256) |
-| `POST` | `/webhooks/payhere/notify` | Inbound PayHere webhook â€” signature verified via MD5 hash |
+| `POST` | `/webhooks/paddle` | Inbound Paddle webhook - signature verified via `Paddle-Signature` header (HMAC-SHA256) |
+| `POST` | `/webhooks/payhere/notify` | Inbound PayHere webhook - signature verified via MD5 hash |
 
 Both endpoints return `200` immediately on signature validation and process asynchronously via `webhook_event_queue`.
 
 ---
 
-## Platform API Keys â€” Phase 2
+## Platform API Keys - Phase 2
 
 > Not available in Phase 1.
 

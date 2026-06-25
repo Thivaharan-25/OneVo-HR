@@ -17,7 +17,7 @@ Left tab navigation:
 - Role Templates (default)
 - Configuration
 - Position Templates
-- Leave Policy
+- Time Off Policy
 - Monitoring Policy
 - App Allowlist
 - Onboarding
@@ -63,7 +63,7 @@ Left tab navigation:
 
 | Field | Label | Type | Required | Validation | Notes |
 |---|---|---|---|---|---|
-| Template Name | "Template Name" | Text input | Yes | 2–80 chars, unique among active templates | e.g. "HR Admin", "Workforce Supervisor", "Leave Manager" |
+| Template Name | "Template Name" | Text input | Yes | 2–80 chars, unique among active templates | e.g. "HR Admin", "Monitoring Supervisor", "Time Off Manager" |
 | Description | "Description" | Textarea | Yes | 10–300 chars | Explains who this role is for and what they can do |
 | Is Global Template | "Save as Reusable Global Template" | Toggle | Yes | Default: On | Off = this template is created only for a specific tenant (only available when creating from the Apply to Tenant screen) |
 
@@ -77,7 +77,7 @@ Left tab navigation:
 
 **Foundation module permissions are always shown** in the permission picker because they apply to every tenant. Additional permissions appear only for selected modules.
 
-**Important rule:** The module scope here is the template's design scope — it limits which permissions are shown when building the template. When the template is applied to a specific tenant, the system ADDITIONALLY filters to only permissions from modules the tenant is entitled to. A template scoped to `leave + monitoring` applied to a tenant with only `leave` will only grant leave permissions — monitoring permissions are silently skipped.
+**Important rule:** The module scope here is the template's design scope — it limits which permissions are shown when building the template. When the template is applied to a specific tenant, the system ADDITIONALLY filters to only permissions from modules the tenant is entitled to. A template scoped to `time_off + monitoring` applied to a tenant with only `time_off` will only grant Time Off permissions — monitoring permissions are silently skipped.
 
 ### Section 3: Permission Picker
 
@@ -94,17 +94,17 @@ After selecting module scope, the full permission picker appears. Permissions ar
   ☐ org:manage              Edit org structure
   ...
 
-▼ Leave Management (leave)             [Select All] [Clear]
-  ☑ leave:read              View leave requests
-  ☑ leave:apply             Submit leave requests
-  ☑ leave:approve           Approve/reject leave
-  ☐ leave:policy:manage     Edit leave policies (usually admin only)
+▼ Time Off Management (time_off)             [Select All] [Clear]
+  ☑ time_off:read              View Time Off requests
+  ☑ time_off:create             Submit Time Off requests
+  ☑ time_off:approve           Approve/reject Time Off
+  ☐ time_off:policy:manage     Edit Time Off policies (usually admin only)
   ...
 ```
 
 **Each permission row shows:**
 - Checkbox — selected/unselected
-- Permission code — machine-readable, e.g. `leave:approve`
+- Permission code — machine-readable, e.g. `time_off:approve`
 - Display name — human-readable
 - Risk indicator — `⚠ High Risk` badge on permissions that grant irreversible or sensitive access (deletion, financial, impersonation)
 
@@ -126,18 +126,18 @@ Read-only summary at the bottom of the form showing:
 ```json
 {
   "name": "HR Admin",
-  "description": "Full HR management access. Can manage all employee records, org structure, leave, and HR documents. Cannot access payroll or workforce monitoring.",
+  "description": "Full HR management access. Can manage all employee records, org structure, Time Off, and HR documents. Cannot access payroll or monitoring monitoring.",
   "is_global": true,
-  "module_scope": ["core_hr", "leave", "org_structure", "calendar"],
+  "module_scope": ["core_hr", "time_off", "org_structure", "calendar"],
   "permission_codes": [
     "employees:read",
     "employees:manage",
     "org:read",
     "org:manage",
-    "leave:read",
-    "leave:apply",
-    "leave:approve",
-    "leave:policy:manage",
+    "time_off:read",
+    "time_off:create",
+    "time_off:approve",
+    "time_off:policy:manage",
     "calendar:read",
     "calendar:manage"
   ]
@@ -161,7 +161,9 @@ Read-only summary at the bottom of the form showing:
 }
 ```
 
-**State written:** `role_templates` row created with `version = 1`, `is_system = false`. `role_template_permissions` rows created for each permission code. Audit log: `action = 'role_template.created'`.
+**API-to-storage mapping:** request `module_scope` is stored as `role_templates.module_keys_json`; request `permission_codes` is stored as `role_templates.permission_codes_json`. Template permissions are stored on the template row, not in a canonical join table.
+
+**State written:** `role_templates` row created with `version = 1`, `is_system = false`, `module_keys_json`, and `permission_codes_json`. Audit log: `action = 'role_template.created'`.
 
 ---
 
@@ -174,11 +176,11 @@ Editing a template creates a new version. Previous version is preserved for audi
 **What can change:** name, description, permission_codes, module_scope.
 **What cannot change:** `is_system` (system templates cannot become custom), `is_global` after first tenant application.
 
-**Version increment rule:** every successful PATCH increments `role_templates.version`. The `role_template_permissions` rows are replaced (delete all, re-insert new set).
+**Version increment rule:** every successful PATCH increments `role_templates.version`. The `role_templates.permission_codes_json` and `role_templates.module_keys_json` values are replaced with the submitted canonical set.
 
 **Effect on tenants that previously applied this template:**
 - Applying a template materializes **independent** tenant-scoped roles in the Auth module. Those materialized roles are NOT updated when the template is edited.
-- The template version at time of application is recorded in `tenant_role_template_applications.template_version`.
+- The template version at time of application is recorded in the `role_template.applied` audit event and returned through role-template application history projections.
 - If a template has been updated, the Apply to Tenant screen shows a "Template updated — re-apply to get latest permissions" warning on tenants still using an older version.
 
 ---
@@ -221,7 +223,7 @@ System templates (`is_system = true`) cannot be edited directly. Clone creates a
 Before showing the permission picker or confirming an apply, the system filters the template's permissions against the tenant's entitled modules:
 
 ```
-template.permission_codes
+role_templates.permission_codes_json
     ↓ filter: keep only permissions owned by modules in tenant.entitled_module_keys
 tenant_filtered_permissions
 ```
@@ -295,8 +297,7 @@ If a role with the same name already exists for this tenant from a previous temp
 **State written:**
 - `roles` row created or updated for this tenant (in Auth module, via `ITenantRoleService`)
 - `role_permissions` rows replaced with effective permission set
-- `tenant_role_template_applications` row created: `(tenant_id, template_id, template_version, role_id, applied_by_id, applied_at, permissions_excluded_json)`
-- Audit log: `action = 'role_template.applied'`, actor, tenant, template, role_name, permissions_excluded count
+- Audit log: `action = 'role_template.applied'`, actor, tenant, template_id, template_version, role_id, role_name, permissions_excluded_json, and permissions_excluded count
 
 ---
 
@@ -313,8 +314,8 @@ When a tenant needs a role that is unique to them and should NOT become a global
 ```json
 {
   "name": "Regional HR Manager — APAC",
-  "description": "Custom role for TechNova's APAC people-operations group with leave approval for APAC org units only.",
-  "permission_codes": ["leave:approve", "employees:read", "org:read"]
+  "description": "Custom role for TechNova's APAC people-operations group with Time Off approval for APAC org units only.",
+  "permission_codes": ["time_off:approve", "employees:read", "org:read"]
 }
 ```
 
@@ -359,7 +360,7 @@ Apply the "Tenant Owner" role template or create a role with roles:manage, users
 ## Non-role Template Tabs
 
 > Full end-to-end logic for these three tabs — field specs, payload schemas, apply flows, reapply rules, module entitlement guards, and API catalog — is documented in the authoritative spec:
-> **[[developer-platform/modules/configuration-template-manager/end-to-end-logic|Configuration Template Manager End-to-End Logic]]** covers Configuration, Position Templates, Leave Policy, Monitoring Policy, App Allowlist, Onboarding, and Data Import payloads, apply rules, and APIs.
+> **[[developer-platform/modules/configuration-template-manager/end-to-end-logic|Configuration Template Manager End-to-End Logic]]** covers Configuration, Position Templates, Time Off Policy, Monitoring Policy, App Allowlist, Onboarding, and Data Import payloads, apply rules, and APIs.
 
 The sections below are a summary only.
 
@@ -513,7 +514,7 @@ Creates a new template pre-filled from the source, with name `{original} — Cop
 
 **State written:**
 - `tenant_settings` rows updated/inserted for each payload field, scoped to `tenant_id`
-- `tenant_configuration_template_applications` row created: `(tenant_id, template_id, template_version, type, applied_by_id, applied_at, reason)`
+- `tenant_configuration_template_applications` row created with `tenant_id`, `configuration_template_id`, `template_type`, `applied_version`, immutable `applied_payload_json`, nullable `warnings_json`, `status = "applied"`, `applied_by_id`, and `applied_at`.
 - Audit log: `action = 'configuration_template.applied'`, actor, tenant, template name, version
 
 **Re-apply rule:** Applying a configuration template again updates tenant settings according to the current payload.
@@ -532,7 +533,7 @@ Deactivation sets `is_active = false`. The template no longer appears in provisi
 
 ## Position Templates Tab
 
-Manages reusable `position_template` packs that seed tenant departments and concrete positions during provisioning. Each position may link to one global role template. Monitoring, app allowlist, onboarding, and leave assignment are managed from their own template screens, not from the position form.
+Manages reusable `position_template` packs that seed tenant departments and concrete positions during provisioning. Each position may link to one global role template. Monitoring, app allowlist, onboarding, and Time Off assignment are managed from their own template screens, not from the position form.
 
 ### Page Header
 
@@ -611,133 +612,136 @@ During provisioning, the tenant's real `estimated_employee_count` maps to one em
 - Non-destructive updates only for positions that already have assigned employees.
 
 ---
-## Leave Policy Tab
+## Time Off Policy Tab
 
-Manages reusable `leave_policy` type templates that seed leave configuration during provisioning.
+Manages reusable `time_off_policy` type templates that seed Time Off configuration during provisioning.
 
 ### Page Header
 
 | Element | Value |
 |---|---|
-| Title | "Leave Policy Templates" |
-| Subtitle | "Reusable leave type and policy presets for tenant provisioning." |
-| Create button | `+ New Leave Policy Template` — requires `platform.templates.manage` |
+| Title | "Time Off Policy Templates" |
+| Subtitle | "Reusable Time Off type and policy presets for tenant provisioning." |
+| Create button | `+ New Time Off Policy Template` — requires `platform.templates.manage` |
 
-### Leave Policy Templates Table
+### Time Off Policy Templates Table
 
-**API:** `GET /admin/v1/configuration-templates?type=leave_policy&search={q}`
+**API:** `GET /admin/v1/configuration-templates?type=time_off_policy&search={q}`
 
 | Column | Description | Sortable |
 |---|---|---|
 | Template Name | Display name | Yes |
-| Leave Types | Count of leave types defined | No |
-| Policies | Count of leave policies defined | No |
+| Time Off Types | Count of Time Off types defined | No |
+| Policies | Count of Time Off policies defined | No |
 | Applied To | Count of tenants that have applied this template | Yes |
 | Last Modified | Date | Yes |
 | Actions | Edit, Duplicate, Deactivate | — |
 
 ---
 
-### Create Leave Policy Template — Full Field Specification
+### Create Time Off Policy Template — Full Field Specification
 
-**Trigger:** `+ New Leave Policy Template` button
+**Trigger:** `+ New Time Off Policy Template` button
 
-A template defines one or more **leave types** and the **leave policy** that governs each type (accrual, entitlement, eligibility rules).
+A template defines one or more **Time Off types** and the **Time Off policy** that governs each type (accrual, entitlement, eligibility rules).
 
 #### Section 1: Template Identity
 
 | Field | Label | Type | Required | Validation |
 |---|---|---|---|---|
-| Template Name | "Template Name" | Text input | Yes | 2–80 chars, unique among active `leave_policy` templates |
+| Template Name | "Template Name" | Text input | Yes | 2–80 chars, unique among active `time_off_policy` templates |
 | Description | "Description" | Textarea | Yes | 10–300 chars |
 
-#### Section 2: Leave Type Builder
+#### Section 2: Time Off Type Builder
 
-One collapsible card per leave type. Operator adds as many types as needed.
+One collapsible card per Time Off type. Operator adds as many types as needed.
 
-**Per Leave Type — Identity fields:**
+**Per Time Off Type — Identity fields:**
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Leave Type Name | "Leave Type Name" | Text | Yes | e.g. "Annual Leave", "Sick Leave", "Casual Leave", "Maternity Leave" |
-| Leave Type Code | "Code" | Text (slug) | Yes | Unique within template, e.g. `annual`, `sick`, `casual` |
-| Is Paid | "Paid Leave" | Toggle | Yes | Default: on |
+| Time Off Type Name | "Time Off Type Name" | Text | Yes | e.g. "Annual Time Off", "Sick Time Off", "Casual Time Off", "Maternity Time Off" |
+| Time Off Type Code | "Code" | Text (slug) | Yes | Unique within template, e.g. `annual`, `sick`, `casual` |
+| Is Paid | "Paid Time Off" | Toggle | Yes | Default: on |
 | Requires Medical Certificate | "Requires Medical Certificate" | Toggle | No | Shown only if `Is Paid = off` (sick/unpaid) |
 | Requires Approval | "Requires Approval" | Toggle | Yes | Default: on |
-| Applicable Gender | "Applicable To" | Dropdown: All / Male / Female | No | Default: All. Use for maternity/paternity leave |
-| Color | "Calendar Color" | Color picker | No | Used in leave calendar display |
+| Applicable Gender | "Applicable To" | Dropdown: All / Male / Female | No | Default: All. Use for maternity/paternity time_off |
+| Color | "Calendar Color" | Color picker | No | Used in Time Off calendar display |
 
-**Per Leave Type — Entitlement fields:**
+**Per Time Off Type — Entitlement fields:**
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Max Days Per Year | "Max Days Per Year" | Number | Yes | Total entitlement per leave year |
-| Max Consecutive Days | "Max Consecutive Days" | Number | No | If set: a single leave request cannot exceed this many days |
+| Entitlement Amount | "Entitlement Amount" | Number | Yes | Amount entered before normalization |
+| Entitlement Input Unit | "Entitlement Unit" | Dropdown | Yes | `days` or `hours`; day input is converted to hours during entitlement generation |
+| Standard Day Hours | "Standard Day Hours" | Number | Required for day input | Fallback when no effective schedule exists |
+| Max Consecutive Hours | "Max Consecutive Hours" | Number | No | If set: a single Time Off request cannot exceed this many hours |
 | Min Notice Days | "Minimum Notice (days)" | Number | No | Minimum advance notice required when applying |
 | Carry Forward | "Carry Forward Unused Balance" | Toggle | No | Default: off |
-| Carry Forward Cap | "Carry Forward Cap (days)" | Number | No | Required if Carry Forward = on. Max days that can roll to next year |
-| Carry Forward Expiry (months) | "Carried Forward Balance Expires After (months)" | Number | No | If set: carried-forward balance expires N months into the new leave year |
+| Carry Forward Cap Hours | "Carry Forward Cap (hours)" | Number | No | Required if Carry Forward = on. Max hours that can roll to next policy period |
+| Carry Forward Expiry | "Carried Forward Balance Expires After" | Duration | No | If set: carried-forward balance expires after the configured duration |
 
-**Per Leave Type — Accrual Policy:**
+**Per Time Off Type — Accrual Policy:**
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
 | Accrual Type | "Accrual Type" | Dropdown | Yes | `upfront` (full entitlement granted at start of year) / `accrual` (earned incrementally) |
 | Accrual Frequency | "Accrual Frequency" | Dropdown | Yes if accrual | Monthly / Quarterly / Bi-Annual |
-| Accrual Amount | "Accrual Amount (days)" | Number | Yes if accrual | Days added per accrual cycle |
-| Accrual Start From | "Start Accruing From" | Dropdown | No | `joining_date` / `probation_end` / `leave_year_start` |
+| Accrual Amount | "Accrual Amount" | Number | Yes if accrual | Amount added per accrual cycle, interpreted by the entitlement input unit |
+| Accrual Start From | "Start Accruing From" | Dropdown | No | `joining_date` / `probation_end` / `time_off_year_start` |
 
-**Per Leave Type - Eligibility Rules:**
+**Per Time Off Type - Eligibility Rules:**
 
 | Field | Label | Type | Required | Notes |
 |---|---|---|---|---|
-| Exclude During Probation | "Exclude During Probation Period" | Toggle | No | Default: off. When on: employees on probation cannot apply for this leave type |
+| Exclude During Probation | "Exclude During Probation Period" | Toggle | No | Default: off. When on: employees on probation cannot apply for this Time Off type |
 | Min Service Days | "Minimum Service (days)" | Number | No | Employee must have been active for at least N days before they can apply |
-| Assignment Scope | "Applies To" | Radio | Yes | `tenant`, `department`, or `position`. Determines where this leave policy applies |
+| Assignment Scope | "Applies To" | Radio | Yes | `tenant`, `department`, or `position`. Determines where this Time Off policy applies |
 
-**Visual layout per leave type card:**
+**Visual layout per Time Off type card:**
 
 ```
-▼ Annual Leave                                              [Remove]
+▼ Annual Time Off                                              [Remove]
   ┌──────────────────────────────────────────────────────┐
   │ Code: annual   Paid: Yes   Approval: Required         │
-  │ Max 21 days/year   Carry forward: up to 5 days        │
-  │ Accrual: monthly 1.75 days   Start: joining_date      │
+  │ Entitlement: 21 days -> hours   Carry forward: 40 hours │
+  │ Accrual: monthly by normalized hours   Start: joining_date │
   │ Probation: excluded   Min service: 90 days            │
   └──────────────────────────────────────────────────────┘
 
-▼ Sick Leave                                               [Remove]
+▼ Sick Time Off                                               [Remove]
   ┌──────────────────────────────────────────────────────┐
   │ Code: sick   Paid: Yes   Approval: Required           │
-  │ Max 14 days/year   No carry forward                   │
+  │ Entitlement: 14 days -> hours   No carry forward       │
   │ Accrual: upfront                                      │
-  │ Medical cert required after 3 consecutive days        │
+  │ Medical cert required after configured duration threshold │
   └──────────────────────────────────────────────────────┘
 
-[+ Add Leave Type]
+[+ Add Time Off Type]
 ```
 
 **Save API:** `POST /admin/v1/configuration-templates`
 
 ```json
 {
-  "name": "Standard Leave Pack — APAC",
-  "description": "Standard leave types for APAC tenants: Annual, Sick, Casual, Maternity/Paternity.",
-  "type": "leave_policy",
+  "name": "Standard Time Off Pack — APAC",
+  "description": "Standard Time Off types for APAC tenants: Annual, Sick, Casual, Maternity/Paternity.",
+  "type": "time_off_policy",
   "payload": {
-    "leave_types": [
+    "time_off_types": [
       {
-        "name": "Annual Leave",
+        "name": "Annual Time Off",
         "code": "annual",
         "is_paid": true,
         "requires_approval": true,
         "applicable_gender": "all",
-        "max_days_per_year": 21,
-        "max_consecutive_days": null,
+
+        "entitlement_minutes": 10080,
+        "max_consecutive_minutes": null,
         "min_notice_days": 3,
         "carry_forward": true,
-        "carry_forward_cap": 5,
-        "carry_forward_expiry_months": 3,
+        "carry_forward_limit_minutes": 2400,
+        "carry_forward_expiry": "P3M",
         "accrual_type": "accrual",
         "accrual_frequency": "monthly",
         "accrual_amount": 1.75,
@@ -747,13 +751,14 @@ One collapsible card per leave type. Operator adds as many types as needed.
         "assignment_scope": "tenant"
       },
       {
-        "name": "Sick Leave",
+        "name": "Sick Time Off",
         "code": "sick",
         "is_paid": true,
         "requires_approval": true,
         "requires_medical_certificate": true,
         "applicable_gender": "all",
-        "max_days_per_year": 14,
+
+        "entitlement_minutes": 6720,
         "carry_forward": false,
         "accrual_type": "upfront",
         "exclude_during_probation": false,
@@ -761,13 +766,14 @@ One collapsible card per leave type. Operator adds as many types as needed.
         "assignment_scope": "tenant"
       },
       {
-        "name": "Casual Leave",
+        "name": "Casual Time Off",
         "code": "casual",
         "is_paid": true,
         "requires_approval": true,
         "applicable_gender": "all",
-        "max_days_per_year": 7,
-        "max_consecutive_days": 3,
+
+        "entitlement_minutes": 3360,
+        "max_consecutive_minutes": 1440,
         "carry_forward": false,
         "accrual_type": "upfront",
         "exclude_during_probation": true,
@@ -783,65 +789,66 @@ One collapsible card per leave type. Operator adds as many types as needed.
 ```json
 {
   "template_id": "ctmpl-uuid",
-  "name": "Standard Leave Pack — APAC",
-  "type": "leave_policy",
-  "leave_type_count": 3,
+  "name": "Standard Time Off Pack — APAC",
+  "type": "time_off_policy",
+  "time_off_type_count": 3,
   "version": 1,
   "created_at": "2026-05-18T09:00:00Z"
 }
 ```
 
 **Validation — server-side:**
-- At least one leave type required
-- Leave type codes must be unique within the template
-- `carry_forward_cap` required if `carry_forward = true`
+- At least one Time Off type required
+- Time Off type codes must be unique within the template
+- `carry_forward_limit_minutes` required if `carry_forward = true`
 - `accrual_frequency` and `accrual_amount` required if `accrual_type = 'accrual'`
-- `max_days_per_year` must be ≥ `carry_forward_cap` if carry forward is on
+- `entitlement_minutes` must be a positive integer
+- `carry_forward_limit_minutes` cannot exceed `entitlement_minutes` unless the policy intentionally allows over-carry
 - `applicable_gender` must be `all`, `male`, or `female`
 
-**State written:** `configuration_templates` row with `type = 'leave_policy'`, `payload` JSON, `version = 1`. Audit log: `action = 'leave_policy_template.created'`.
+**State written:** `configuration_templates` row with `type = 'time_off_policy'`, `payload` JSON, `version = 1`. Audit log: `action = 'time_off_policy_template.created'`.
 
 ---
 
-### Edit Leave Policy Template
+### Edit Time Off Policy Template
 
 **API:** `PATCH /admin/v1/configuration-templates/{id}`
 
-Full payload replacement. Every successful PATCH increments `version`. Editing a template does NOT update previously applied tenant leave types/policies — re-apply is required.
+Full payload replacement. Every successful PATCH increments `version`. Editing a template does NOT update previously applied tenant Time Off types/policies — re-apply is required.
 
 ---
 
-### Apply Leave Policy Template to Tenant
+### Apply Time Off Policy Template to Tenant
 
 **Entry points:**
-1. Leave Policy tab → row Actions → "Apply to Tenant"
-2. Provisioning wizard → Step 4 → Leave Policy Template dropdown
+1. Time Off Policy tab → row Actions → "Apply to Tenant"
+2. Provisioning wizard → Step 4 → Time Off Policy Template dropdown
 
 **Apply flow:**
 
 **Step 1: Select Tenant** (when entering from Template Manager)
 - Shows tenant name, plan, status
-- If leave types already exist for this tenant: warning — "This tenant already has {N} leave types. Leave types with matching codes will be skipped; new types will be added."
+- If Time Off types already exist for this tenant: warning — "This tenant already has {N} Time Off types. Time Off types with matching codes will be skipped; new types will be added."
 - If `assignment_scope` is `department` or `position`: checks that the selected departments or positions exist or were created by the selected position template pack.
 
 **Step 2: Preview**
-- Lists all leave types with their key entitlement fields
-- Shows whether each leave type applies to the full tenant, selected departments, or selected positions.
+- Lists all Time Off types with their key entitlement fields
+- Shows whether each Time Off type applies to the full tenant, selected departments, or selected positions.
 
 **Step 3: Confirm**
 
 **API:** `POST /admin/v1/tenants/{tenantId}/configuration-templates/{templateId}/apply`
 
 ```json
-{ "reason": "Initial provisioning — standard APAC leave pack." }
+{ "reason": "Initial provisioning — standard APAC Time Off pack." }
 ```
 
 **Response (200 OK):**
 ```json
 {
   "application_id": "ctapp-uuid",
-  "leave_types_created": 3,
-  "leave_types_skipped": 0,
+  "time_off_types_created": 3,
+  "time_off_types_skipped": 0,
   "skipped_codes": [],
   "policies_created": 3,
   "assignment_warnings": [],
@@ -850,17 +857,17 @@ Full payload replacement. Every successful PATCH increments `version`. Editing a
 ```
 
 **State written:**
-- `leave_types` rows created scoped to `tenant_id` for each leave type in payload (skip if `code` already exists for tenant)
-- `leave_policies` rows created for each leave type: entitlement + accrual rules persisted; assignment rows target tenant, departments, or positions
+- `time_off_types` rows created scoped to `tenant_id` for each Time Off type in payload (skip if `code` already exists for tenant)
+- `time_off_policies` rows created for each Time Off type: entitlement + accrual rules persisted; assignment rows target tenant, departments, or positions
 - `tenant_configuration_template_applications` row created
-- Audit log: `action = 'leave_policy_template.applied'`, leave types count, skipped count
+- Audit log: `action = 'time_off_policy_template.applied'`, Time Off types count, skipped count
 
-**Re-apply rule:** Applying the same leave policy template again upserts leave types and policies by code, and updates assignment rows according to the current payload.
+**Re-apply rule:** Applying the same Time Off policy template again upserts Time Off types and policies by code, and updates assignment rows according to the current payload.
 ---
 
-### Deactivate Leave Policy Template
+### Deactivate Time Off Policy Template
 
-Deactivation sets `is_active = false`. Template no longer appears in provisioning wizard dropdowns. Existing tenant leave types and policies are unaffected.
+Deactivation sets `is_active = false`. Template no longer appears in provisioning wizard dropdowns. Existing tenant Time Off types and policies are unaffected.
 
 **API:** `DELETE /admin/v1/configuration-templates/{id}`
 
@@ -911,7 +918,7 @@ Deactivation sets `is_active = false`. Template no longer appears in provisionin
 | 422 | `permissions_not_in_module_scope` | Codes owned by modules not in template's module_scope |
 | 422 | `all_permissions_excluded` | Every permission in template is excluded by tenant entitlement filter — nothing to apply |
 | 422 | `system_template_not_editable` | Attempt to PATCH a system template directly — must clone |
-| 422 | `invalid_template_type` | `type` value not one of the supported template types: `configuration`, `position_template`, `leave_policy`, `monitoring_policy`, `app_allowlist`, `onboarding`, `data_import_mapping` |
+| 422 | `invalid_template_type` | `type` value not one of the supported template types: `configuration`, `position_template`, `time_off_policy`, `monitoring_policy`, `app_allowlist`, `onboarding`, `data_import_mapping` |
 | 403 | `permission_denied` | Missing required platform permission |
 
 

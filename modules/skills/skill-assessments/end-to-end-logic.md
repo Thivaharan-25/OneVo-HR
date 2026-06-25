@@ -1,4 +1,4 @@
-﻿# Skill Assessments â€” End-to-End Logic
+﻿# Skill Assessments - End-to-End Logic
 
 **Module:** Skills
 **Feature:** Skill Assessments (Quiz & Validation)
@@ -7,7 +7,7 @@
 
 ## Phase Rule
 
-Quiz assessment endpoints in this file are Phase 2. Do not build quiz assessment routes, pages, or API integrations in Phase 1. Basic manager validation of employee skill requests is Phase 1 and belongs to Employee Skills.
+Quiz assessment endpoints in this file are Phase 2. Do not build quiz assessment routes, pages, or API integrations in Phase 1. Basic eligible-validator validation of employee skill requests is Phase 1 and belongs to Employee Skills.
 
 ## Take Skill Assessment (Quiz)
 
@@ -46,10 +46,9 @@ POST /api/v1/skills/validate
 
 ## Related
 
-- [[modules/skills/skill-assessments/overview|Skill Assessments]] â€” feature overview
-- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] â€” skills and question banks
-- [[modules/skills/employee-skills/overview|Employee Skills]] â€” proficiency updated from assessment score
-- [[backend/messaging/event-catalog|Event Catalog]] â€” AssessmentSubmitted, SkillLevelUpdated events
-- [[backend/messaging/error-handling|Error Handling]] â€” invalid answer type and duplicate submission errors
-
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] - feature overview
+- [[modules/skills/skill-taxonomy/overview|Skill Taxonomy]] - skills and question banks
+- [[modules/skills/employee-skills/overview|Employee Skills]] - proficiency updated from assessment score
+- [[backend/messaging/event-catalog|Event Catalog]] - AssessmentSubmitted, SkillLevelUpdated events
+- [[backend/messaging/error-handling|Error Handling]] - invalid answer type and duplicate submission errors
 

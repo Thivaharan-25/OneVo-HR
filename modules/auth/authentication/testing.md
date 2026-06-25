@@ -1,4 +1,4 @@
-# Authentication — Testing
+﻿# Authentication - Testing
 
 **Module:** Auth
 **Feature:** Authentication

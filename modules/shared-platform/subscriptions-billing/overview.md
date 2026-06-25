@@ -86,6 +86,8 @@ Invoices generated for first payment and recurring billing. Statuses include `dr
 - Cancellation and renewal changes are blocked while unpaid seat dues or unpaid added-seat dues exist.
 - A tenant cannot be charged twice for the same module.
 - A tenant cannot be entitled twice to the same module.
+- Grace period applies only after a tenant has already been `active`. It is for renewal/payment failure handling on an active subscription, not for first invoice activation.
+- First invoice payment cannot be bypassed by grace period. Initial upgrade remains `pending_payment` until payment succeeds.
 
 ## Tenant-Facing APIs
 
@@ -98,7 +100,9 @@ Invoices generated for first payment and recurring billing. Statuses include `dr
 | POST | `/api/v1/billing/payment` | `billing:manage` | Pay first or open invoice |
 | POST | `/api/v1/trial-extension/request` | `billing:manage` | Request trial extension |
 | GET | `/api/v1/support/tickets` | `support:read` | Tenant support tickets |
+| GET | `/api/v1/support/tickets/{id}` | `support:read` | Tenant support ticket detail with customer-visible messages and attachments |
 | POST | `/api/v1/support/tickets` | `support:manage` | Create support ticket |
+| POST | `/api/v1/support/tickets/{id}/replies` | `support:manage` | Add tenant reply to open support ticket |
 
 ## Related
 

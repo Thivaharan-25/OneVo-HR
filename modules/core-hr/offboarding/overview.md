@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Manages offboarding records including reason, last working date, knowledge risk assessment, knowledge transfer / handover status, exit interview notes, and outstanding penalties.
+Manages offboarding records including reason, last working date, knowledge risk assessment, knowledge transfer / handover status, exit interview notes, outstanding penalties, and offboarding checklist tasks generated from Checklist Templates.
 
 ## Database Tables
 
@@ -28,7 +28,7 @@ Recommended `penalties_json` shape:
       "reason": "Critical handover skipped with HR approval",
       "approved_by_id": "uuid",
       "approved_at": "2026-04-29T00:00:00Z",
-      "source": "offboarding_workflow"
+      "source": "offboarding"
     }
   ],
   "total_amount": 0,
@@ -42,10 +42,10 @@ Knowledge transfer is part of the manager offboarding checklist. The manager is 
 
 | Risk level | Required handling |
 |:-----------|:------------------|
-| `low` | Knowledge transfer task is optional unless the offboarding template requires it. |
+| `low` | Knowledge transfer task is optional unless the offboarding Checklist Template requires it. |
 | `medium` | Knowledge transfer task is created and assigned to the manager. |
 | `high` | Knowledge transfer task is mandatory before offboarding completion unless bypassed by HR/Admin approval. |
-| `critical` | Additional handover workflow is triggered. Offboarding cannot be completed until knowledge transfer is completed or an approved bypass is recorded. |
+| `critical` | Additional handover checklist tasks are required. Offboarding cannot be completed until knowledge transfer is completed or an approved bypass is recorded. |
 
 ### Bypass Rules
 

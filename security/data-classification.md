@@ -1,27 +1,25 @@
-# Data Classification: ONEVO
+﻿# Data Classification: ONEVO
 
 ## PII Inventory
 
-### Critical PII (Encrypted at Rest — AES-256)
+### Critical PII (Encrypted at Rest - AES-256)
 
 | Table | Column | Data Type | Contains |
 |:------|:-------|:----------|:---------|
 | `employee_bank_details` | `account_number_encrypted` | bytea | Bank account numbers |
 | `sso_providers` | `client_id_encrypted` | bytea | SSO client IDs |
 | `sso_providers` | `client_secret_encrypted` | bytea | SSO client secrets |
-| `hardware_terminals` | `api_key_encrypted` | bytea | Terminal API keys |
+| `biometric_devices` | `api_key_encrypted` | bytea | Attendance/biometric terminal API keys |
 | `integration_connections` | `credentials_encrypted` | bytea | Integration credentials |
 | `notification_channels` | `credentials_encrypted` | jsonb (encrypted) | Channel provider credentials |
-| `biometric_devices` | `api_key_encrypted` | bytea | Biometric terminal API keys |
-| `microsoft_graph_tokens` | `refresh_token_encrypted`, `access_token_encrypted` | bytea | Microsoft Graph tokens for Teams sync |
 
-### Restricted Data (Workforce Intelligence)
+### Restricted Data (Monitoring)
 
 | Table | Column/Data | Classification | Retention | Notes |
 |:------|:-----------|:---------------|:----------|:------|
 | `screenshots` | Screenshot files (blob storage) | **RESTRICTED** | Per tenant policy (default 30 days) | Never store in database. Never log content. |
-| `verification_records` | Verification photos (blob storage) | **RESTRICTED** | Configurable (default 30 days) | Temporary — auto-deleted by retention job |
-| `application_usage` | `window_title_hash` | **RESTRICTED** | SHA-256 hash only — never store raw titles | Raw titles may contain sensitive business data |
+| `verification_records` | Verification photos (blob storage) | **RESTRICTED** | Configurable (default 30 days) | Temporary - auto-deleted by retention job |
+| `application_usage` | `window_title_hash` | **RESTRICTED** | SHA-256 hash only - never store raw titles | Raw titles may contain sensitive business data |
 | `activity_snapshots` | Activity data | **CONFIDENTIAL** | 90 days | Log counts only, never content |
 | `activity_raw_buffer` | Raw agent payload | **CONFIDENTIAL** | 48 hours | Auto-purged daily |
 
@@ -42,7 +40,6 @@
 |:------|:------------|:---------------|:----------|:------|
 | `messages` | `content` from ONEVO or Microsoft Teams | **CONFIDENTIAL** | Chat retention policy + legal hold | Teams-synced messages are visible only through ONEVO workspace/channel permissions. |
 | `teams_message_sync_state` | External message IDs and sync errors | **CONFIDENTIAL** | Same as parent message metadata | Do not log message content or Graph tokens in sync errors. |
-| `external_account_connections` | Teams external user id/email | **SENSITIVE PII** | Until user disconnects or tenant retention deletes | Used for user matching and sync eligibility. |
 | `microsoft_graph_tokens` | Encrypted Graph refresh/access tokens | **CRITICAL SECRET** | Until disconnect/revocation | Always encrypted; never returned by API or logged. |
 
 ### Serilog PII Scrubbing
@@ -85,7 +82,7 @@ Managed via `retention_policies` table and Hangfire daily cleanup job. See [[sec
 
 | Right | Implementation |
 |:------|:--------------|
-| Right to Access | `compliance_exports` — generate full data export for a user |
+| Right to Access | `compliance_exports` - generate full data export for a user |
 | Right to Erasure | Anonymization of PII fields + deletion of non-required data |
 | Right to Rectification | Standard CRUD update endpoints |
 | Right to Portability | Export in JSON/CSV format via `compliance_exports` |

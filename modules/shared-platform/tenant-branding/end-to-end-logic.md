@@ -1,4 +1,4 @@
-# Tenant Branding — End-to-End Logic
+﻿# Tenant Branding - End-to-End Logic
 
 **Module:** Shared Platform
 **Feature:** Tenant Branding

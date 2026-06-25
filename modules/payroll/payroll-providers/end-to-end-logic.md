@@ -1,4 +1,4 @@
-# Payroll Providers — End-to-End Logic
+﻿# Payroll Providers - End-to-End Logic
 
 **Module:** Payroll
 **Feature:** Payroll Providers
@@ -23,7 +23,7 @@ POST /api/v1/payroll/providers
 
 ### Key Rules
 
-- **Credentials are encrypted at rest** — never stored in plaintext.
+- **Credentials are encrypted at rest** - never stored in plaintext.
 - **One provider per legal entity** via payroll_connections.
 
 ## Related

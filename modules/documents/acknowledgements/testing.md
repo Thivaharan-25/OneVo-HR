@@ -1,4 +1,4 @@
-# Acknowledgements — Testing
+﻿# Acknowledgements - Testing
 
 **Module:** Documents
 **Feature:** Acknowledgements

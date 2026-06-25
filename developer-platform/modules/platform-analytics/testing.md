@@ -1,4 +1,4 @@
-# Reports / Analytics - Testing
+﻿# Reports / Analytics - Testing
 
 ## Test Fixtures Required
 
@@ -23,11 +23,11 @@
 **Expected:** Response contains aggregate counts (total active users, DAU, sessions). Does NOT contain: individual user names, individual user activity details, individual keystrokes or screenshots, employee-level breakdowns. All data is aggregated at tenant or platform level.
 
 ### TC-AN-004: Module adoption counts match entitlement source of truth
-**Setup:** `tenant_module_entitlements` has 30 tenants with `chat_ai` in `active` status, 5 in `pending_payment`
+**Setup:** `tenant_module_entitlements` has 30 tenants with `activity_monitoring` in `active` status, 5 in `pending_payment`
 **Action:** `GET /admin/v1/analytics/modules`
 **Expected:**
-- `chat_ai.active_tenants = 30`
-- `chat_ai.pending_payment_tenants = 5`
+- `activity_monitoring.active_tenants = 30`
+- `activity_monitoring.pending_payment_tenants = 5`
 - Counts match `tenant_module_entitlements` table - not subscription plan data alone
 
 ### TC-AN-005: Date filters are enforced - no data outside range returned

@@ -1,4 +1,4 @@
-# Employee Monitoring Override
+﻿# Employee Monitoring Override
 
 **Area:** Configuration  
 **Trigger:** Admin overrides settings for specific employee (user action)
@@ -9,31 +9,31 @@
 
 ## Preconditions
 
-- Tenant monitoring configured → [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- Tenant monitoring configured -> [[Userflow/Monitoring/monitoring-configuration|Monitoring Configuration]]
 - Employee has completed required Legal & Privacy notice/consent for affected collection -> [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Employee Monitoring
-- **UI:** Employee Profile → Monitoring Settings tab or Settings → Monitoring → Employee Overrides → search employee
+- **UI:** Employee Profile -> Policy & Access Overrides or Monitoring -> Employee Overrides -> search employee
 - **API:** `GET /api/v1/configuration/employee-overrides/{employeeId}`
 
 ### Step 2: Set Overrides
-- **UI:** For each monitoring feature → three states:
+- **UI:** For each monitoring feature -> three states:
   - **Inherit** (use tenant/department default)
   - **Force ON** (enable even if department default is OFF)
   - **Force OFF** (disable even if department default is ON)
-- Set custom intervals (e.g., screenshot every 5 min instead of default 15 min)
+- Set monitoring capture overrides such as screenshot capture on/off and auto screenshot on deviation on/off. Do not configure screenshot intervals.
 
 ### Step 3: Add Reason
-- **UI:** Enter reason for override (required for audit trail) → e.g., "Employee in probation — enhanced monitoring" or "Privacy exemption approved by legal"
-- **Backend:** EmployeeOverrideService.SetAsync() → [[modules/configuration/employee-overrides/overview|Employee Overrides]]
-- **DB:** `employee_monitoring_overrides` — with reason and timestamp
+- **UI:** Enter reason for override (required for audit trail) -> e.g., "Employee in probation - enhanced monitoring" or "Privacy exemption approved by legal"
+- **Backend:** EmployeeOverrideService.SetAsync() -> [[modules/configuration/employee-overrides/overview|Employee Overrides]]
+- **DB:** `employee_monitoring_overrides` - with reason and timestamp
 
 ### Step 4: Save
 - **API:** `PUT /api/v1/configuration/employee-overrides/{employeeId}`
-- **Result:** Agent picks up new policy on next heartbeat → override logged in audit trail
+- **Result:** Agent picks up new policy on next heartbeat -> override logged in audit trail
 
 ## Variations
 
@@ -45,15 +45,15 @@
 | Scenario | What happens | User sees |
 |:---------|:-------------|:----------|
 | Missing notice/consent | Warning | "Required Legal & Privacy item is incomplete - feature will not activate until completed" |
-| Agent not installed | Info | "Employee has no desktop agent — override saved but not active" |
+| Agent not installed | Info | "Employee has no desktop agent - override saved but not active" |
 
 ## Events Triggered
 
-- `EmployeeOverrideUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `EmployeeOverrideUpdated` -> [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 
-- [[Userflow/Workforce-Intelligence/monitoring-configuration|Monitoring Configuration]]
+- [[Userflow/Monitoring/monitoring-configuration|Monitoring Configuration]]
 - [[Userflow/Configuration/monitoring-toggles|Monitoring Toggles]]
 - [[Userflow/Auth-Access/gdpr-consent|Legal & Privacy Acceptance]]
 

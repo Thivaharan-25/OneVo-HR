@@ -1,4 +1,4 @@
-# Collaboration — Testing
+﻿# Collaboration - Testing
 
 **Module:** WorkSync
 **Feature:** Collaboration
@@ -62,7 +62,7 @@ public class WikiPageServiceTests
     [Fact]
     public async Task UpdatePage_WithCyclicParent_ReturnsFailure()
     {
-        // page A → parent B → parent C → trying to set C's parent to A (cycle)
+        // page A -> parent B -> parent C -> trying to set C's parent to A (cycle)
         SetupAncestorChain(new[] { "B", "C" }, targetPageId: "A");
         var result = await _sut.UpdateParentAsync("C", parentId: "A", default);
         result.IsSuccess.Should().BeFalse();

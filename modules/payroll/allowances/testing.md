@@ -1,4 +1,4 @@
-# Allowances — Testing
+﻿# Allowances - Testing
 
 **Module:** Payroll
 **Feature:** Allowances

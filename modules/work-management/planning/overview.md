@@ -1,7 +1,7 @@
-# Planning (Sprints, Boards, Roadmaps)
+# Planning (Phase 2: Planner, Boards, Advanced Roadmaps)
 
 **Module:** Work Management
-**Feature:** Planning
+**Feature:** Planning (Phase 2)
 **Namespace:** `WorkManagement.Planning`
 **Owner:** DEV3
 **Tables:** 8
@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Planning covers three related capabilities: Sprint Planning (time-boxed iteration management with burndown tracking), Boards (Kanban-style task visualisation with WIP limits), and Roadmaps (timeline view across epics and milestones). Roadmaps are Phase 1 because Work Management user flows depend on them.
+Planning is deferred to Phase 2. Phase 1 Work must not expose Planner, sprint planning, Goals/OKR, advanced roadmap, or advanced work-planning screens. Phase 1 work execution uses Projects, Work Items, Documents, Project Members, Project Settings, and Worklogs only.
 
 ---
 
@@ -65,8 +65,8 @@ Snapshots of roadmap state at a point in time. Key columns: `roadmap_id`, `name`
 5. WIP limit rejects a move when the destination column already reached its limit.
 6. `board_task_positions.position` is float to allow insertion between positions without full reindex.
 7. Burndown snapshots written nightly by Hangfire; gap days (weekends) still get a snapshot row.
-8. Roadmaps are Phase 1 for Work Management.
-9. Sprint planning surfaces assignment availability warnings from `task_assignments`; planners can see when a proposed assignee is on approved leave or blocked by calendar.
+8. Roadmaps are Phase 2 and must not appear in Phase 1 customer navigation.
+9. Sprint planning surfaces assignment availability warnings from `task_assignments`; planners can see when a proposed assignee is on approved time_off or blocked by calendar.
 10. Sprint reports write contributor metrics to `sprint_report_contributors`, not opaque JSON.
 
 ---

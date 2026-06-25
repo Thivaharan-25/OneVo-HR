@@ -12,7 +12,7 @@
 | Channel | Purpose | Content |
 |:--------|:--------|:--------|
 | **Notification Bell** (topbar) | FYI updates - no action needed | "John was promoted", "Policy updated", system announcements |
-| **Inbox** (sidebar) | Phase 1 actionable items - needs your decision | Leave approvals, expense reviews, skill validations, attendance corrections, overtime approvals, remote location change requests |
+| **Inbox** (sidebar) | Phase 1 actionable items - needs your decision | Time Off approvals, expense reviews, skill validations, attendance corrections, overtime approvals, remote location change requests |
 
 Users should never have to check two places for the same thing. Each notification routes to exactly one channel based on whether it requires action.
 

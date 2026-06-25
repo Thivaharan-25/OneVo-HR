@@ -1,4 +1,4 @@
-# Notification Channels — Testing
+﻿# Notification Channels - Testing
 
 **Module:** Notifications
 **Feature:** Notification Channels

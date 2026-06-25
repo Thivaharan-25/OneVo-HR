@@ -1,6 +1,5 @@
 # Current Focus: ONEVO Build Packs
 
-**Team size:** 8 developers
 **Build model:** 4 backend developers + 4 frontend developers
 **ADE rule:** when a developer asks to continue their work, open that developer's canonical file and start from the first unchecked item.
 
@@ -13,12 +12,12 @@ Use these files as the active source of truth:
 | Developer | Track | Canonical File | Owns |
 |---|---|---|---|
 | Dev 1 | Backend | [[current-focus/DEV1|DEV1]] (current-focus/DEV1.md) | Platform foundation, auth/RBAC, tenant context, audit, Developer Platform Admin API |
-| Dev 2 | Backend | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md) | HR core, leave, calendar, workforce presence, notifications |
-| Dev 3 | Backend | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md) | WorkSync backend, chat, Chat AI, IDE backend APIs, tag execution |
+| Dev 2 | Backend | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md) | HR core, time_off, calendar, monitoring presence, notifications |
+| Dev 3 | Backend | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md) | Work backend: projects, work items, worklogs, simple docs/pages, membership/settings. Chat, Chat AI, IDE APIs, tag execution are Phase 2. |
 | Dev 4 | Backend | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md) | Monitoring agent, Agent Gateway, activity ingestion, IDE install jobs, agent version rollout |
 | Dev 5 | Frontend | [[current-focus/DEV5|DEV5]] (current-focus/DEV5.md) | Main app foundation, auth UI, shared components, standalone Developer Platform console |
-| Dev 6 | Frontend | [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) | HR, leave, calendar, presence, agent management UI |
-| Dev 7 | Frontend | [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md) | WorkSync web UI, projects, tasks, boards, docs, time, analytics |
+| Dev 6 | Frontend | [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) | HR, time_off, calendar, presence, agent management UI |
+| Dev 7 | Frontend | [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md) | Work web UI: projects, work items, worklogs, simple docs/pages, membership/settings. Boards, Planner, Chat, Analytics are Phase 2. |
 | Dev 8 | Frontend | [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) | Phase 2 VS Code IDE extension |
 
 Only these eight developer files are active in this folder. Supporting architecture, schema, module, and userflow references live outside `current-focus`.
@@ -56,11 +55,11 @@ If a dependency is missing, build the smallest mock or contract stub needed for 
 
 ## Foundation Owners Rule
 
-Two developers own the shared foundation files. All others build on top � they do not directly modify foundation files. If a change is needed, raise it with the owner who adds the extension point.
+Two developers own the shared foundation files. All others build on top ? they do not directly modify foundation files. If a change is needed, raise it with the owner who adds the extension point.
 
 | Owner | Track | Protected areas |
 |---|---|---|
-| **Dev 1** | Backend | Auth/RBAC core, `ITenantContext`, `BaseRepository<T>`, `ApplicationDbContext` boot config, shared middleware pipeline, workflow engine internals |
+| **Dev 1** | Backend | Auth/RBAC core, `ITenantContext`, `BaseRepository<T>`, `ApplicationDbContext` boot config, shared middleware pipeline; Workflow Engine is Phase 2 |
 | **Dev 5** | Frontend | App shell, nav rail, `app.routes.ts`, `app.config.ts`, shared Angular library primitives, `AuthService` signals, HttpClient interceptors, API service base |
 
 **Why this matters:** these files are touched by every developer indirectly. Without ownership enforcement, merge conflicts on shared kernel and shell layout become the most common blocker in the first two weeks.
@@ -73,7 +72,7 @@ The Developer Platform is a standalone internal control plane. It is not part of
 
 | Layer | Owner | Scope | Required Wiki References |
 |---|---|---|---|
-| Admin API surface | Dev 1 | `ONEVO.Api` `/admin/v1/*`, platform-admin auth, issuer isolation | [[developer-platform/system-design|Developer Platform System Design]] (developer-platform/system-design.md), [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md) |
+| Admin API surface | Dev 1 | `ONEVO.Api` `/admin/v1/*`, platform-admin auth, issuer isolation | [[developer-platform/backend/admin-api-layer|Admin API Layer]] (developer-platform/backend/admin-api-layer.md) |
 | DevPlatform backend feature | Dev 1 | `platform_users`, `platform_user_sessions`, admin auth/session CQRS | [[modules/dev-platform/overview|Dev Platform Feature]] (modules/dev-platform/overview.md), [[developer-platform/database/schema|Developer Platform Schema]] (developer-platform/database/schema.md) |
 | Tenant Management backend | Dev 1 | tenant list/detail/status/provisioning/subscription/impersonation APIs | [[developer-platform/modules/tenant-console/overview|Tenant Management]] (developer-platform/modules/tenant-console/overview.md), [[developer-platform/userflow/provisioning-flow|Provisioning Flow]] (developer-platform/userflow/provisioning-flow.md) |
 | Role Template backend | Dev 1 | module-filtered permission catalog, operator-managed role templates, tenant role materialization | [[developer-platform/modules/role-template-manager/overview|Role Template Manager]] (developer-platform/modules/role-template-manager/overview.md), [[modules/auth/overview|Auth]] (modules/auth/overview.md), [[Userflow/Auth-Access/role-creation|Role Creation]] (Userflow/Auth-Access/role-creation.md) |
@@ -92,7 +91,6 @@ Required boundary:
 
 ---
 
-## Cross-Team Contracts
 
 | Contract | Backend Owner | Frontend Consumer | Contract File |
 |---|---|---|---|
@@ -104,10 +102,10 @@ Required boundary:
 | Role template/admin permission catalog DTOs | Dev 1 | Dev 5 | `contracts/admin-api.md` |
 | Feature flag/admin config DTOs | Dev 1 | Dev 5 | `contracts/admin-api.md` |
 | App catalog admin DTOs | Dev 1 | Dev 5 | `contracts/admin-api.md` |
-| HR employee/leave/calendar APIs | Dev 2 | Dev 6, Dev 8 | `contracts/hr-employee.md` |
-| Presence and time APIs | Dev 2 | Dev 6, Dev 8 | `contracts/workforce-presence.md` |
-| WorkSync project/task/board APIs | Dev 3 | Dev 7, Dev 8 | `contracts/worksync-core.md` |
-| Chat APIs and SignalR events | Dev 3 | Dev 7, Dev 8 | `contracts/signalr-events.md` |
+| HR employee/time_off/calendar APIs | Dev 2 | Dev 6, Dev 8 | `contracts/hr-employee.md` |
+| Presence and time APIs | Dev 2 | Dev 6, Dev 8 | `contracts/time-attendance.md` |
+| Work project/work-item APIs; board APIs are Phase 2 | Dev 3 | Dev 7, Dev 8 | `contracts/worksync-core.md` |
+| Chat APIs and SignalR events (Phase 2) | Dev 3 | Dev 7, Dev 8 | `contracts/signalr-events.md` |
 | IDE entitlements and tag execution | Dev 3 | Dev 8 | `contracts/ide-entitlements.md` |
 | Agent install request/status APIs | Dev 4 | Dev 8 | `contracts/agent-gateway.md` |
 | Agent health and activity APIs | Dev 4 | Dev 6 | `contracts/agent-gateway.md` |
@@ -121,31 +119,31 @@ Tasks do not flow in a single line across all 8 developers. Use this schedule to
 
 | Window | Dev | Task | Note |
 |---|---|---|---|
-| **Day 0** | Dev 1 | DEV1.T0 � Backend CQRS Folder Structure Cleanup | First Dev 1 task; must run before all other backend foundation/Auth work |
-| **After DEV1.T0** | Dev 1 | DEV1.T1 � Backend Foundation | Critical path start after structure cleanup |
-| **Day 0** | Dev 5 | DEV5.T1 � Vite App Foundation | No backend dependency |
-| **Day 0** | Dev 8 | DEV8.T1 � Extension Foundation | MSW stubs; no backend dependency |
-| **After DEV1.T1** | Dev 1 | DEV1.T2 � Auth + RBAC | Sequential on T1 |
-| **After DEV1.T1** | Dev 2 | DEV2.T1 � Org Structure + Core HR | Parallel with DEV1.T2 |
-| **After DEV1.T1** | Dev 4 | **DEV1.T4 � Audit Foundation (pickup)** | Dev 4 is idle waiting for T2; T4 only needs T1 |
-| **After DEV5.T1** | Dev 5 | DEV5.T2 � API Client + State Layer | Sequential |
-| **After DEV1.T2 + T4** | Dev 1 | DEV1.T3 � Tenant + Entitlement | Dev 1 critical chain; T4 done by Dev 4 |
-| **After DEV1.T2 + T4** | **Dev 3 (pickup)** | **DEV1.T7 � Dev Platform Admin API** | Dev 3 is idle (blocked until T3); T7 only needs T1+T2+T4 |
-| **After DEV1.T2** | Dev 4 | DEV4.T1 � Agent Gateway Enrollment | Now unblocked (needed T1+T2) |
-| **After DEV5.T2** | Dev 5 | DEV5.T3 + DEV5.T4 � Auth Screens + Shared Components | **Parallel pair** |
-| **After DEV1.T3** | Dev 3 | DEV3.T1 � WorkSync Foundation | Now unblocked (may still be finishing T7 � fine to wrap) |
-| **After DEV5.T1�T4** | Dev 6 | DEV6.T1 � HR Employee Screens | First gating task |
-| **After DEV5.T1�T4** | Dev 7 | DEV7.T1 � WorkSync Shell + Projects | First gating task |
+| **Day 0** | Dev 1 | DEV1.T0 ? Backend CQRS Folder Structure Cleanup | First Dev 1 task; must run before all other backend foundation/Auth work |
+| **After DEV1.T0** | Dev 1 | DEV1.T1 ? Backend Foundation | Critical path start after structure cleanup |
+| **Day 0** | Dev 5 | DEV5.T1 ? Vite App Foundation | No backend dependency |
+| **Day 0** | Dev 8 | DEV8.T1 ? Extension Foundation | MSW stubs; no backend dependency |
+| **After DEV1.T1** | Dev 1 | DEV1.T2 ? Auth + RBAC | Sequential on T1 |
+| **After DEV1.T1** | Dev 2 | DEV2.T1 ? Org Structure + Core HR | Parallel with DEV1.T2 |
+| **After DEV1.T1** | Dev 4 | **DEV1.T4 ? Audit Foundation (pickup)** | Dev 4 is idle waiting for T2; T4 only needs T1 |
+| **After DEV5.T1** | Dev 5 | DEV5.T2 ? API Client + State Layer | Sequential |
+| **After DEV1.T2 + T4** | Dev 1 | DEV1.T3 ? Tenant + Entitlement | Dev 1 critical chain; T4 done by Dev 4 |
+| **After DEV1.T2 + T4** | **Dev 3 (pickup)** | **DEV1.T7 ? Dev Platform Admin API** | Dev 3 is idle (blocked until T3); T7 only needs T1+T2+T4 |
+| **After DEV1.T2** | Dev 4 | DEV4.T1 ? Agent Gateway Enrollment | Now unblocked (needed T1+T2) |
+| **After DEV5.T2** | Dev 5 | DEV5.T3 + DEV5.T4 ? Auth Screens + Shared Components | **Parallel pair** |
+| **After DEV1.T3** | Dev 3 | DEV3.T1 ? Work Foundation | Now unblocked (may still be finishing T7 ? fine to wrap) |
+| **After DEV5.T1?T4** | Dev 6 | DEV6.T1 ? HR Employee Screens | First gating task |
+| **After DEV5.T1?T4** | Dev 7 | DEV7.T1 ? Work Shell + Projects | First gating task |
 | **After DEV8.T1** | Dev 8 | DEV8.T2 + T3 + T4 + T5 | **All four parallel** |
 | **After DEV2.T1** | Dev 2 | DEV2.T2 + T3 + T4 + T5 | **All four parallel** |
 | **After DEV3.T1** | Dev 3 | DEV3.T2 + T3 + T5 (parallel); T4 after T2+T3 | T2/T3/T5 parallel; T4 gates on T2+T3 |
-| **After DEV4.T1** | Dev 4 | DEV4.T2 � Monitoring Agent Client | Sequential |
-| **After DEV4.T3** | Dev 4 | DEV4.T4 + T5 � Identity Verification + Exception Engine | **Parallel pair** |
+| **After DEV4.T1** | Dev 4 | DEV4.T2 ? Monitoring Agent Client | Sequential |
+| **After DEV4.T3** | Dev 4 | DEV4.T4 + T5 ? Identity Verification + Exception Engine | **Parallel pair** |
 | **After DEV6.T1** | Dev 6 | DEV6.T2 + T3 + T4 | **All three parallel** |
 | **After DEV7.T1** | Dev 7 | DEV7.T2 + T3 + T4 | **All three parallel** |
-| **After DEV5.T5** | Dev 5 | DEV5.T6 + T7 � Dev Platform Console UIs | **Parallel pair** |
-| **After DEV1.T3+T5+T7** | Dev 2 (overflow) | DEV1.T8 � Tenant Management Backend | Dev 2 picks up after their track is done |
-| **After DEV1.T4+T5+T7** | Dev 3 (overflow) | DEV1.T9 � Dev Platform Operations Backend | Dev 3 picks up after their track is done |
+| **After DEV5.T5** | Dev 5 | DEV5.T6 + T7 ? Dev Platform Console UIs | **Parallel pair** |
+| **After DEV1.T3+T5+T7** | Dev 2 (overflow) | DEV1.T8 ? Tenant Management Backend | Dev 2 picks up after their track is done |
+| **After DEV1.T4+T5+T7** | Dev 3 (overflow) | DEV1.T9 ? Dev Platform Operations Backend | Dev 3 picks up after their track is done |
 
 **Dev 1 critical chain (irreducible):** T0 ? T1 ? T2 ? T3 ? T5 ? T6. Everything else flows around it.
 
@@ -153,16 +151,15 @@ Tasks do not flow in a single line across all 8 developers. Use this schedule to
 
 ## Integration Checkpoints
 
-Explicit team sync moments. At each checkpoint the named developers confirm the contract is live and consuming devs switch from MSW stubs to real endpoints. Missing a checkpoint is a team call decision, not a solo one.
 
 | Checkpoint | Trigger | Who syncs | What switches |
 |---|---|---|---|
 | **CP1** | DEV1.T2 complete | Dev 1 + Dev 4 + Dev 5 | Auth contracts live. Dev 4 starts DEV4.T1. Dev 5 wires real auth into DEV5.T3. |
 | **CP2** | DEV5.T2 complete | Dev 5 + Dev 6 + Dev 7 | Frontend API client live. Dev 6 and Dev 7 build screens against real client shape. |
 | **CP3** | DEV1.T3 + DEV2.T1 complete | Dev 1 + Dev 2 + Dev 6 | Tenant entitlement and Core HR live. Dev 6 switches HR screens from MSW to real APIs. |
-| **CP4** | DEV3.T1 complete | Dev 3 + Dev 7 | WorkSync foundation live. Dev 7 switches from MSW to real DEV3 endpoints. |
+| **CP4** | DEV3.T1 complete | Dev 3 + Dev 7 | Work foundation live. Dev 7 switches from MSW to real DEV3 endpoints. |
 | **CP5** | DEV4.T1 complete | Dev 4 + Dev 6 + Dev 8 | Agent contracts live. Dev 6 agent UI and Dev 8 install flow switch from MSW. |
-| **CP6** | DEV1.T5 complete | Dev 1 + Dev 2 | Workflow engine live. Dev 2 finishes leave approval and notifications wiring. |
+| **CP6** | DEV1.T5 complete | Dev 1 + Dev 2 | Phase 1 lightweight approval routing live. Dev 2 finishes Time Off approval and notifications wiring. Workflow Engine is Phase 2. |
 | **CP7** | DEV3.T4 complete | Dev 3 + Dev 8 | IDE backend APIs live. Dev 8 switches tag engine and context panels from MSW. |
 
 ---
@@ -178,16 +175,16 @@ Use these module folders when implementing backend tasks:
 | Shared Platform | `Features/SharedPlatform` | [[modules/shared-platform/overview|Shared Platform]] (modules/shared-platform/overview.md) |
 | Configuration | `Features/Configuration` | [[modules/configuration/overview|Configuration]] (modules/configuration/overview.md) |
 | Core HR | `Features/CoreHR` | [[modules/core-hr/overview|Core HR]] (modules/core-hr/overview.md) |
-| Leave | `Features/Leave` | [[modules/leave/overview|Leave]] (modules/leave/overview.md) |
+| Time Off | `Features/TimeOff` | [[modules/time-off/overview|Time Off]] (modules/time-off/overview.md) |
 | Calendar | `Features/Calendar` | [[modules/calendar/overview|Calendar]] (modules/calendar/overview.md) |
-| Workforce Presence | `Features/WorkforcePresence` | [[modules/workforce-presence/overview|Workforce Presence]] (modules/workforce-presence/overview.md) |
+| Time & Attendance | `Features/TimeAttendance` | [[modules/time-attendance/overview|Time & Attendance]] (modules/time-attendance/overview.md) |
 | Notifications | `Features/Notifications` | [[modules/notifications/overview|Notifications]] (modules/notifications/overview.md) |
-| WorkSync Foundation | `Features/WorkSync/Foundation` | [[modules/work-management/foundation/overview|WorkSync Foundation]] (modules/work-management/foundation/overview.md) |
-| WorkSync Tasks | `Features/WorkSync/TaskManagement` | [[modules/work-management/tasks/overview|Tasks]] (modules/work-management/tasks/overview.md) |
-| WorkSync Planning | `Features/WorkSync/SprintPlanning` | [[modules/work-management/planning/overview|Planning]] (modules/work-management/planning/overview.md) |
-| WorkSync Chat | `Features/WorkSync/Chat` | [[modules/work-management/chat/overview|Chat]] (modules/work-management/chat/overview.md) |
-| WorkSync Chat AI | `Features/WorkSync/ChatAI` | [[modules/work-management/chat-ai/overview|Chat AI]] (modules/work-management/chat-ai/overview.md) |
-| WorkSync Collaboration | `Features/WorkSync/Collaboration` | [[modules/work-management/collaboration/overview|Collaboration]] (modules/work-management/collaboration/overview.md) |
+| Work Foundation | `Features/WorkSync/Foundation` | [[modules/work-management/foundation/overview|Work Foundation]] (modules/work-management/foundation/overview.md) |
+| Work Tasks | `Features/WorkSync/TaskManagement` | [[modules/work-management/tasks/overview|Tasks]] (modules/work-management/tasks/overview.md) |
+| Work Planning (Phase 2) | `Features/WorkSync/SprintPlanning` | [[modules/work-management/planning/overview|Planning]] (modules/work-management/planning/overview.md) |
+| Work Chat (Phase 2) | `Features/WorkSync/Chat` | [[modules/work-management/chat/overview|Chat]] (modules/work-management/chat/overview.md) |
+| Work Chat AI (Phase 2) | `Features/WorkSync/ChatAI` | [[modules/work-management/chat-ai/overview|Chat AI]] (modules/work-management/chat-ai/overview.md) |
+| Work Collaboration | `Features/WorkSync/Collaboration` | [[modules/work-management/collaboration/overview|Collaboration]] (modules/work-management/collaboration/overview.md) |
 | IDE Extension | `Features/IDEExtension` | [[modules/ide-extension/overview|IDE Extension]] (modules/ide-extension/overview.md) |
 | Agent Gateway | `Features/AgentGateway` | [[modules/agent-gateway/overview|Agent Gateway]] (modules/agent-gateway/overview.md) |
 | Activity Monitoring | `Features/ActivityMonitoring` | [[modules/activity-monitoring/overview|Activity Monitoring]] (modules/activity-monitoring/overview.md) |
@@ -203,24 +200,24 @@ This matrix is the coverage check. If ADE is asked to build an unfinished task, 
 |---|---|---|---|
 | Infrastructure | Dev 1 | Dev 5 | [[current-focus/DEV1|DEV1]] (current-focus/DEV1.md), [[current-focus/DEV5|DEV5]] (current-focus/DEV5.md) |
 | Auth & Security | Dev 1 | Dev 5 | [[current-focus/DEV1|DEV1]] (current-focus/DEV1.md), [[current-focus/DEV5|DEV5]] (current-focus/DEV5.md) |
-| Shared Platform: SSO, billing, feature flags, workflow engine, notification infrastructure, compliance, hardware terminals, real-time integrations | Dev 1 | Dev 6 *(Phase 2 frontend) | [[current-focus/DEV1|DEV1]] (current-focus/DEV1.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
+| Shared Platform: SSO, billing, feature flags, notification infrastructure, compliance, hardware terminals, real-time integrations; Workflow Engine is Phase 2 | Dev 1 | Dev 6 *(Phase 2 frontend) | [[current-focus/DEV1|DEV1]] (current-focus/DEV1.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | Configuration: tenant settings, monitoring toggles, employee overrides, app allowlist, integrations, retention | Dev 1 | Dev 6 (monitoring toggles only in Phase 1 - see DEV6 Task 3) | [[current-focus/DEV1|DEV1]] (current-focus/DEV1.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | Developer Platform Admin API | Dev 1 | Dev 5 | [[current-focus/DEV1|DEV1]] (current-focus/DEV1.md), [[current-focus/DEV5|DEV5]] (current-focus/DEV5.md) |
 | Org Structure | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | Core HR + Employee Lifecycle | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | Skills Core | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | HR Import / Data Import | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
-| Leave + Calendar, country holidays, Google/Outlook calendar sync | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
-| Workforce Presence | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
+| Time Off + Calendar, country holidays, Google/Outlook calendar sync | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
+| Time & Attendance | Dev 2 | Dev 6 | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | Notifications | Dev 2 | Dev 6, Dev 8 | [[current-focus/DEV2|DEV2]] (current-focus/DEV2.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
-| WorkSync Foundation, Projects, Tasks, Boards, Planning, OKR, Time, Resources | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
-| WorkSync Chat + Chat AI | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
-| WorkSync Collaboration, Docs/Wiki, Integrations, Analytics | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
+| Work Foundation, Projects, Work Items, Worklogs, simple docs/pages; Boards, Planning, OKR, Resources are Phase 2 | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
+| Work Chat + Chat AI (Phase 2) | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
+| Work Collaboration and simple docs/pages; Integrations and Analytics are Phase 2 | Dev 3 | Dev 7, Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
 | IDE Extension backend APIs (Phase 2) | Dev 3 | Dev 8 | [[current-focus/DEV3|DEV3]] (current-focus/DEV3.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
 | Agent Gateway + Windows monitoring agent | Dev 4 | Dev 6, Dev 8 | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md), [[current-focus/DEV8|DEV8]] (current-focus/DEV8.md) |
 | Activity Monitoring | Dev 4 | Dev 6 | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | Identity Verification + Biometric Device Backend (Phase 1); management UI is Phase 2 | Dev 4 | Dev 6 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
-| Exception Engine | Dev 4 | Dev 6 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
+| Phase 1 lightweight monitoring alerts + notifications; full Exception Engine is Phase 2 | Dev 4 | Dev 6 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md) |
 | Discrepancy Engine | Dev 4 | Dev 6, Dev 7 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md) |
 | Productivity Analytics | Dev 4 | Dev 6, Dev 7 *(Phase 2 frontend) | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV6|DEV6]] (current-focus/DEV6.md), [[current-focus/DEV7|DEV7]] (current-focus/DEV7.md) |
 | Agent Version Manager backend | Dev 4 | Dev 5 | [[current-focus/DEV4|DEV4]] (current-focus/DEV4.md), [[current-focus/DEV5|DEV5]] (current-focus/DEV5.md) |

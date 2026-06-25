@@ -1,8 +1,8 @@
-﻿# Contract: HR Employee + Leave + Calendar
+﻿# Contract: HR Employee + Time Off + Calendar
 
 **Backend owner:** DEV2 Tasks 1-3  
-**Consumers:** DEV6 Tasks 1-2, DEV8 (leave and clockin tags)  
-**Canonical source:** `ONEVO.Application/Features/CoreHR/` and `ONEVO.Application/Features/Leave/`
+**Consumers:** DEV6 Tasks 1-2, DEV8 (time_off and clockin tags)  
+**Canonical source:** `ONEVO.Application/Features/CoreHR/` and `ONEVO.Application/Features/TimeOff/`
 
 ---
 
@@ -30,7 +30,6 @@ interface EmployeeDto {
   email: string
   phone: string | null
   department: { id: string; name: string }
-  team: { id: string; name: string } | null
   location: { id: string; name: string } | null
   position: { id: string; name: string; code: string; type: "unique" | "pooled" } | null
   reports_to_position: { id: string; name: string; code: string } | null
@@ -42,16 +41,17 @@ interface EmployeeDto {
 }
 ```
 
-## GET `/api/v1/leave/balance`
+## GET `/api/v1/time-off/entitlements/me`
 
 ```ts
-interface LeaveBalanceDto {
-  leave_type_id: string
-  leave_type_name: string
-  available_days: number
-  used_days: number
-  pending_days: number
-  upcoming_days: number
+interface TimeOffBalanceDto {
+  time_off_type_id: string
+  time_off_type_name: string
+  available_minutes: number
+  used_minutes: number
+  pending_minutes: number
+  upcoming_minutes: number
+  display_day_equivalent?: number
 }
 ```
 
@@ -73,6 +73,5 @@ interface CalendarFeedDto {
 
 - All employee endpoints are tenant-scoped via `ITenantContext`
 - `status` drives status badge color in DEV6 employee list (`active` -> green, `onboarding` -> blue, `on_leave` -> amber, `offboarded` -> grey)
-- Leave balance is per-employee; manager sees team summary via `/api/v1/leave/team-summary`
 - Calendar feed query params: `from`, `to` (ISO dates), `employee_ids[]` (optional filter)
 

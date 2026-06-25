@@ -1,4 +1,7 @@
-# Grievance Cases
+﻿# Grievance Cases
+
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Grievance is deferred; not active in Phase 1.
 
 **Module:** Grievance  
 **Feature:** Grievance Cases
@@ -25,10 +28,10 @@ Fields: `filed_by_id` (nullable if anonymous), `against_id`, `category` (`harass
 
 ## Related
 
-- [[modules/grievance/overview|Grievance Module]] — parent module
-- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] — actions that may result from resolved cases
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped case isolation
-- [[security/auth-architecture|Auth Architecture]] — permissions: `grievance:write`, `grievance:manage`
-- [[security/data-classification|Data Classification]] — sensitive PII and anonymous reporting classification
-- [[security/compliance|Compliance]] — regulatory requirements for grievance handling
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task
+- [[modules/grievance/overview|Grievance Module]] - parent module
+- [[modules/grievance/disciplinary-actions/overview|Disciplinary Actions]] - actions that may result from resolved cases
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - tenant-scoped case isolation
+- [[security/auth-architecture|Auth Architecture]] - permissions: `grievance:write`, `grievance:manage`
+- [[security/data-classification|Data Classification]] - sensitive PII and anonymous reporting classification
+- [[security/compliance|Compliance]] - regulatory requirements for grievance handling
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - implementation task

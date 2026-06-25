@@ -1,21 +1,21 @@
-# DEV3: Backend WorkSync + IDE APIs
+﻿# DEV3: Backend Work + Phase 2 IDE APIs
 
 **Track:** Backend
-**Primary ownership:** WorkSync backend, projects, tasks, boards, planning, OKR, time, resources, chat, Chat AI, collaboration, integrations, analytics, IDE backend APIs, tag execution
-**Current Unfinished Task:** Task 1 - WorkSync foundation
+**Primary ownership:** Work backend: projects, work items, worklogs, simple docs/pages, project membership/settings. Boards, planning, OKR, resources, chat, Chat AI, integrations, analytics, IDE backend APIs, and tag execution are Phase 2 references.
+**Current Unfinished Task:** Task 1 - Work foundation
 **Blocked By:** DEV1 tenant/auth foundation
 
 ---
 
 ## ADE Instructions
 
-When Dev 3 asks to continue, start with the first unchecked item in **Current Unfinished Task**. Keep WorkSync inside the main backend and database.
+When Dev 3 asks to continue, start with the first unchecked item in **Current Unfinished Task**. Keep Work inside the main backend and database; internal `Features/WorkSync/*` names may remain as implementation folders.
 
 ---
 
-## Task 1: WorkSync Foundation + Projects + Resources
+## Task 1: Work Foundation + Projects
 
-**Goal:** create workspace, membership, role, and project foundation for WorkSync.
+**Goal:** create the project, membership, role, and basic work foundation for Phase 1 Work.
 
 **Requires:** DEV1 Tasks 1-3 complete
 
@@ -24,16 +24,13 @@ When Dev 3 asks to continue, start with the first unchecked item in **Current Un
 - [ ] Workspaces table and APIs exist.
 - [ ] Workspace members and roles exist.
 - [ ] Workspace members store both `user_id` and `employee_id`, and reject users without an active employee record in Phase 1.
-- [ ] `workspace_team_links` exists so explicit Org Structure teams can sync into workspace membership before Microsoft Teams integration.
 - [ ] Workspace role permissions can be resolved for a user.
 - [ ] Projects can be created, listed, updated, archived, and assigned members.
-- [ ] Project members store both `user_id` and `employee_id`, do not require full workspace membership, and deactivate on employee offboarding. Project-workspace links provide team/workspace context only and must not auto-add workspace members to the project.
-- [ ] Project members, epics, milestones, versions, and repository links are represented.
-- [ ] Resource plans, resource allocations, capacity snapshots, and resource rates needed for planning are represented where in scope.
+- [ ] Project members are represented. Epics, milestones, versions, and repository links are Phase 2.
+- [ ] Phase 2 resource planning is not implemented in Phase 1.
 - [ ] Workspace provisioning can be triggered from tenant module activation.
 - [ ] Workspace APIs are tenant-scoped.
 - [ ] Tests cover workspace membership, role permissions, project CRUD, and tenant isolation.
-- [ ] Tests cover explicit team membership sync and employee offboarding deactivation for `workspace_members` and `project_members`.
 
 ### References
 
@@ -51,32 +48,32 @@ dotnet test ONEVO.sln --filter WorkSync
 
 ---
 
-> **Parallel group** — Tasks 2, 3, and 5 all depend only on Task 1 and are independent of each other. Task 4 depends on Tasks 1–3. After Task 1 is done, Tasks 2, 3, and 5 can start simultaneously.
+> **Parallel group** - Tasks 2, 3, and 5 all depend only on Task 1 and are independent of each other. Task 4 depends on Tasks 1-3. After Task 1 is done, Tasks 2, 3, and 5 can start simultaneously.
 
-## Task 2: Tasks + Boards + Planning + OKR + Time
+## Task 2: Work Items + Worklogs (Phase 1) / Boards + Planning + OKR (Phase 2)
 
-**Goal:** implement task, board, sprint, and roadmap APIs consumed by web app and IDE extension.
+**Goal:** implement Phase 1 work-item and worklog APIs. Board, sprint, roadmap, OKR, and IDE task APIs are Phase 2 references.
 
 **Requires:** DEV3 Task 1 complete  
-**Live integration:** DEV2 Task 3 for leave-aware assignment warnings (use MSW stub returning `availability_status: null` until ready)
+**Live integration:** DEV2 Task 3 for time_off-aware assignment warnings (use MSW stub returning `availability_status: null` until ready)
 
 ### Acceptance Criteria
 
 - [ ] Task create/list/detail/update APIs exist.
 - [ ] Task assignments, comments, checklists, labels, and status transitions exist.
 - [ ] Task assignments store both `user_id` and `employee_id`, reject inactive/deleted employees, and resolve HR profile data without application-only joins.
-- [ ] Task assignment checks Leave + Calendar availability and writes `availability_status`, `availability_checked_at`, and `availability_warning`.
-- [ ] Boards, columns, and task positions exist.
-- [ ] Sprint planning APIs exist for backlog, sprint assignment, start, complete, and burndown snapshots.
-- [ ] Sprint planning surfaces task assignment availability warnings before sprint activation.
-- [ ] Sprint reports store contributor metrics in typed `sprint_report_contributors` rows, not only JSON.
-- [ ] Roadmap APIs exist.
-- [ ] OKR APIs exist for objectives, key results, check-ins, and progress updates.
+- [ ] Task assignment checks Time Off + Calendar availability and writes `availability_status`, `availability_checked_at`, and `availability_warning`.
+- [ ] Phase 2 only: boards, columns, and task positions.
+- [ ] Phase 2 only: sprint planning APIs for backlog, sprint assignment, start, complete, and burndown snapshots.
+- [ ] Phase 2 only: sprint planning assignment availability warnings.
+- [ ] Phase 2 only: sprint reports and typed contributor metrics.
+- [ ] Phase 2 only: roadmap APIs.
+- [ ] Phase 2 only: OKR APIs for objectives, key results, check-ins, and progress updates.
 - [ ] Time management APIs exist for time logs, timers, timesheets, and current period summary.
 - [ ] WorkSync time can provide daily logged minutes to the Discrepancy Engine.
-- [ ] `GET /api/v1/ide/tasks/assigned` returns tasks for the authenticated developer.
-- [ ] Tests cover task lifecycle, board moves, sprint assignment, and IDE assigned-task feed.
-- [ ] Tests cover leave-aware assignment warnings, offboarded employee assignment rejection, and typed sprint contributor reporting.
+- [ ] Phase 2 only: `GET /api/v1/ide/tasks/assigned`.
+- [ ] Tests cover Phase 1 work-item lifecycle and worklogs. Board moves, sprint assignment, and IDE assigned-task feed are Phase 2.
+- [ ] Tests cover time_off-aware assignment warnings, offboarded employee assignment rejection, and typed sprint contributor reporting.
 
 ### References
 
@@ -99,9 +96,9 @@ dotnet test ONEVO.sln --filter Time
 
 ---
 
-## Task 3: Chat + Chat AI
+## Task 3: Chat + Chat AI (Phase 2)
 
-**Goal:** implement WorkSync chat, Microsoft Teams sync hooks, and the first-party Semantic Kernel assistant/action pipeline used by web, IDE, and Teams-linked channels.
+**Goal:** Phase 2 reference for Work chat, Microsoft Teams sync hooks, and the first-party Semantic Kernel assistant/action pipeline.
 
 **Requires:** DEV3 Task 1 complete
 
@@ -134,7 +131,7 @@ dotnet test ONEVO.sln --filter AiAction
 
 ---
 
-## Task 4: IDE Backend APIs + Tag Execution
+## Task 4: IDE Backend APIs + Tag Execution (Phase 2)
 
 **Goal:** provide backend source of truth for the VS Code extension.
 
@@ -168,9 +165,9 @@ dotnet test ONEVO.sln --filter IDE
 
 ---
 
-## Task 5: WorkSync Collaboration + Integrations + Analytics
+## Task 5: Work Collaboration + Phase 2 Integrations + Analytics
 
-**Goal:** build documents/wiki, Git/code integration, automation, and WorkSync analytics APIs.
+**Goal:** build simple Phase 1 documents/pages where retained. Git/code integration, automation, and Work analytics APIs are Phase 2.
 
 **Requires:** DEV3 Tasks 1-3 complete  
 **Live integration:** DEV1 Task 5 for document approval workflow (use no-op stub until ready)
@@ -178,14 +175,14 @@ dotnet test ONEVO.sln --filter IDE
 ### Acceptance Criteria
 
 - [ ] Documents and document versions support workspace/project scope.
-- [ ] Document approvals use the Shared Platform workflow engine.
+- [ ] Phase 1 document/task approvals use direct reviewer routing and Notifications; Shared Platform workflow engine is Phase 2.
 - [ ] Wiki pages support tree structure and versioning.
 - [ ] Task-document links exist and enforce uniqueness.
-- [ ] Repository records, task repository links, and code activity events exist.
-- [ ] GitHub webhook endpoint validates signatures and extracts task refs from commits and PRs.
-- [ ] Commit records, pull request records, CI pipeline runs, and task automation rules exist.
-- [ ] Automation rules can update task status, assign, add labels, log time, or post chat messages after code events.
-- [ ] WorkSync analytics exposes sprint reports, dashboard widgets, saved views, and task throughput/capacity data.
+- [ ] Phase 2 only: repository records, task repository links, and code activity events.
+- [ ] Phase 2 only: GitHub webhook endpoint validates signatures and extracts task refs from commits and PRs.
+- [ ] Phase 2 only: commit records, pull request records, CI pipeline runs, and task automation rules.
+- [ ] Phase 2 only: automation rules after code events.
+- [ ] Phase 2 only: Work analytics exposes sprint reports, dashboard widgets, saved views, and throughput/capacity data.
 - [ ] Tests cover document version, document approval workflow, wiki update, repo link, webhook signature, task ref extraction, PR/CI record update, automation rule execution, and analytics query.
 
 ### References
@@ -218,13 +215,13 @@ dotnet test ONEVO.sln --filter WorkSyncAnalytics
 
 ---
 
-## Early Pickup: DEV1 Task 7 — Developer Platform Admin API Foundation
+## Early Pickup: DEV1 Task 7 - Developer Platform Admin API Foundation
 
 **Execute this during the wait window before DEV3 Task 1.**
 
-Dev 3 cannot start DEV3 Task 1 until DEV1 Tasks 1, 2, and 3 are all complete — the longest backend wait window. DEV1 Task 7 (Dev Platform Admin API Foundation) only requires DEV1 Tasks 1, 2, and 4. Since Dev 4 is building Task 4 in parallel with Task 2, Task 7 unlocks for Dev 3 as soon as Task 2 lands.
+Dev 3 cannot start DEV3 Task 1 until DEV1 Tasks 1, 2, and 3 are all complete - the longest backend wait window. DEV1 Task 7 (Dev Platform Admin API Foundation) only requires DEV1 Tasks 1, 2, and 4. Since Dev 4 is building Task 4 in parallel with Task 2, Task 7 unlocks for Dev 3 as soon as Task 2 lands.
 
-Dev 3 building Task 7 frees Dev 1 to run the critical chain T1 → T2 → T3 → T5 → T6 without detours.
+Dev 3 building Task 7 frees Dev 1 to run the critical chain T1 -> T2 -> T3 -> T5 -> T6 without detours.
 
 **Acceptance criteria and verification:** see `current-focus/DEV1.md` Task 7.
 
@@ -232,7 +229,7 @@ Dev 3 building Task 7 frees Dev 1 to run the critical chain T1 → T2 → T3 →
 
 ## Overflow Assignment: DEV1 Task 9
 
-After DEV3 Tasks 1–5 are complete, Dev 3 picks up **DEV1 Task 9 — Developer Platform Operations Backend**.
+After DEV3 Tasks 1-5 are complete, Dev 3 picks up **DEV1 Task 9 - Developer Platform Operations Backend**.
 
 **Requires:** DEV1 Tasks 4, 5, and 7 complete before starting (T4 by Dev 4, T5 by Dev 1, T7 already built by Dev 3 earlier).  
 **Acceptance criteria and verification:** see `current-focus/DEV1.md` Task 9.

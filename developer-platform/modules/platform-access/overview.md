@@ -2,7 +2,6 @@
 
 ## Purpose
 
-Platform Users and Platform Roles manage the identities, roles, and session state for ONEVO's own engineering and operations team: the people who use the Developer Console. Platform Users handles invites, MFA status, access history, active sessions, and role assignment. Platform Roles handles role definitions, permission assignments, and assigned users.
 
 Platform users are completely separate from tenant users. Platform roles and permissions have no relationship to ONEVO product permissions. A platform user with `platform.tenants.manage` cannot access any tenant-facing `/api/v1/*` endpoint, and a tenant JWT is rejected by every `/admin/v1/*` endpoint.
 
@@ -73,7 +72,7 @@ Tenant permissions such as `employees:read` control what tenant users can do in 
 
 ## Recoverable Admin Guard
 
-The backend must reject any role, role-permission, user-role, user-status, or session-revocation change that would leave zero active recoverable admins.
+The backend must reject any role, role-permission, user-role, user-status, or session-revocation change that would time_off zero active recoverable admins.
 
 A recoverable admin is an active platform user whose effective permissions include both:
 

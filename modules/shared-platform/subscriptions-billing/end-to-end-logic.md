@@ -60,6 +60,8 @@ POST /api/v1/demo/upgrade/submit
 
 The tenant remains payment-limited until the first invoice is paid. Requests Center is not part of paid activation.
 
+Grace period is not part of this first-invoice flow. Grace period applies only after a tenant has already been active and then hits a renewal/payment failure.
+
 ## Payment
 
 ```text
@@ -91,6 +93,17 @@ POST /api/v1/trial-extension/request
 ## Cancellation Blocking
 
 Cancellation or renewal changes must be blocked while unpaid seat dues or unpaid added-seat dues exist.
+
+## Grace Period After Activation
+
+```text
+Active tenant renewal/payment failure
+  -> Enter grace/past-due billing state according to billing policy
+  -> Keep or limit access according to the active subscription policy
+  -> Suspend tenant if grace period expires without payment
+```
+
+This state must not activate a tenant that is still waiting for its first invoice payment.
 
 ## Tests
 

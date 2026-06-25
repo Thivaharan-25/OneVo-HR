@@ -1,5 +1,7 @@
 # Chat AI
 
+**Phase:** Phase 2. Not part of Phase 1 implementation scope.
+
 **Module:** WorkSync
 **Feature:** Chat AI / ONEVO Semantic Kernel Assistant
 **Namespace:** `WorkSync.ChatAI`
@@ -33,10 +35,10 @@ Records each detected assistant intent from a message. Key columns:
 
 ### `ai_action_jobs`
 
-Universal undo state machine. Used by Phase 1 Chat AI with a 10 second undo window and Phase 2 IDE tags with a 30 second undo window. Key columns:
+Universal undo state machine. Used by Phase 2 Chat AI with a 10 second undo window and Phase 2 IDE tags with a 30 second undo window. Key columns:
 
 - `status` - `pending`, `finalized`, `undone`, `failed`
-- `source` - Phase 1: `onevo_chat`, `microsoft_teams`, `system`; Phase 2 adds `ide_tag`
+- `source` - Phase 2: `onevo_chat`, `microsoft_teams`, `system`, `ide_tag`
 - `source_message_id`, `channel_id`
 - `entity_type`, `action_type`
 - `action_params` JSONB used by finalization
@@ -62,7 +64,6 @@ Two-way sync bridge between chat reminders and task/reminder state. Key columns:
 5. During the undo window, `ai:action_pending` fires and the user sees an inline action card or toast.
 6. Undo sets `status = undone`, sets `undone_at`, and creates no downstream entity.
 7. Hangfire finalization creates the entity from `action_params`, then sets `status = finalized`.
-8. Teams-originated messages use the same pipeline only after the Teams sender maps to a ONEVO user. Unmapped Teams senders cannot execute assistant tools.
 9. Assistant answers are saved as chat messages with `sender_type = assistant`.
 10. Hangfire job processing is idempotent: re-check `status = pending` inside a lock before acting.
 
@@ -107,7 +108,6 @@ Two-way sync bridge between chat reminders and task/reminder state. Key columns:
 - [[modules/shared-platform/chatbot-api-integration|Semantic Kernel Assistant Integration]]
 - [[Userflow/Work-Management/chat-ai-flow|Chat AI Flow]]
 - [[modules/work-management/chat/overview|Chat]]
-- [[modules/work-management/chat/teams-sync/end-to-end-logic|Teams Chat Sync]]
 - [[modules/work-management/my-space/overview|My Space]]
 - [[modules/ide-extension/overview|IDE Extension]]
 - [[database/schemas/wms-chat|WMS Chat Schema]]

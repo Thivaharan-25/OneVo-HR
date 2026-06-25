@@ -1,4 +1,4 @@
-# Application Tracking — Testing
+﻿# Application Tracking - Testing
 
 **Module:** Activity Monitoring
 **Feature:** Application Tracking
@@ -58,7 +58,7 @@ public class ApplicationTrackingServiceTests
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
-- [[modules/activity-monitoring/application-tracking/end-to-end-logic|Application Tracking — End-to-End Logic]]
+- [[modules/activity-monitoring/application-tracking/end-to-end-logic|Application Tracking - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV3-activity-monitoring|DEV3: Activity Monitoring]]

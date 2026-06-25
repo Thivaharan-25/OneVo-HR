@@ -1,12 +1,12 @@
 # Schema: Work Management - Planning
 
 **Module:** `Work Management.Planning`
-**Phase:** 1 (including roadmaps - Phase 1 for Work Management)
+**Phase:** 2 - deferred. Not part of Phase 1 Work implementation.
 **Owner:** DEV3
 
 ---
 
-## `sprints` - Phase 1
+## `sprints` - Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
@@ -25,7 +25,7 @@
 
 ---
 
-## `sprint_backlog_items` - Phase 1
+## `sprint_backlog_items` - Phase 2
 
 Snapshot of tasks committed to a sprint. Decoupled from `board_task_positions` so board column can differ from backlog commitment.
 
@@ -44,7 +44,7 @@ Snapshot of tasks committed to a sprint. Decoupled from `board_task_positions` s
 
 ---
 
-## `sprint_daily_snapshots` - Phase 1
+## `sprint_daily_snapshots` - Phase 2
 
 One row per sprint per calendar day. Powers burndown charts.
 
@@ -65,7 +65,7 @@ One row per sprint per calendar day. Powers burndown charts.
 
 ---
 
-## `sprint_reports` - Phase 1
+## `sprint_reports` - Phase 2
 
 One row per completed sprint. Post-mortem summary.
 
@@ -81,7 +81,7 @@ One row per completed sprint. Post-mortem summary.
 
 ---
 
-## `sprint_report_contributors` - Phase 1
+## `sprint_report_contributors` - Phase 2
 
 Typed contributor rows for completed sprint reports. This keeps contributor data queryable by HR dimensions such as department, position, and employment status.
 
@@ -101,9 +101,9 @@ Typed contributor rows for completed sprint reports. This keeps contributor data
 
 ---
 
-## `roadmaps` - Phase 1 (for Work Management)
+## oadmaps - Phase 2
 
-> Originally marked Phase 2 in the HR phase plan, but promoted to Phase 1 because the Work Management user flow requires roadmap functionality.
+> Planning remains Phase 2. Phase 1 Work must not expose roadmap functionality as an active customer screen.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -119,7 +119,7 @@ Typed contributor rows for completed sprint reports. This keeps contributor data
 
 ---
 
-## `roadmap_items` - Phase 1 (for Work Management)
+## `roadmap_items` - Phase 2
 
 | Column | Type | Notes |
 |---|---|---|
@@ -132,7 +132,7 @@ Typed contributor rows for completed sprint reports. This keeps contributor data
 
 ---
 
-## `baselines` - Phase 1
+## `baselines` - Phase 2
 
 Point-in-time snapshot of a project plan for comparison.
 

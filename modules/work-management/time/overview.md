@@ -72,7 +72,7 @@ Individual day entries within a timesheet. Key columns: `timesheet_id`, `logged_
 ## Related
 
 - [[modules/work-management/tasks/overview|Task Management]]
-- [[modules/workforce-presence/overview|Workforce Presence]]
+- [[modules/time-attendance/overview|Time & Attendance]]
 - [[database/schemas/wms-project-management|WMS Project Management Schema]]
 - [[database/cross-module-relationships|Cross-Module Relationships]]
 - [[Userflow/Work-Management/time-tracking-flow.md|Time Tracking User Flow]]

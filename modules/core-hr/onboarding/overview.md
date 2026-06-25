@@ -7,15 +7,15 @@
 
 ## Purpose
 
-Manages onboarding tasks and reusable templates per department.
+Manages onboarding checklist tasks generated from reusable Checklist Templates. Checklist Templates are shared lifecycle templates and support both onboarding and offboarding.
 
 ## Database Tables
 
-### `onboarding_tasks`
-Per-employee tasks: `task_name`, `category` (`documentation`, `equipment`, `training`, `access`, `orientation`), `assigned_to_id`, `due_date`, `status`.
+### `employee_checklist_tasks`
+Per-employee lifecycle checklist tasks: `template_id`, `lifecycle_type`, `task_title`, `owner_type`, `sequence`, `assigned_to_id`, `due_date`, `status`.
 
-### `onboarding_templates`
-Reusable templates with `tasks_json`. Can be global or department-specific.
+### `checklist_templates`
+Reusable templates with `template_type` (`onboarding` or `offboarding`) and `tasks_json`. Can be global or department-specific.
 
 ## Domain Events
 

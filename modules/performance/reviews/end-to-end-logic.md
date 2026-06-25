@@ -1,4 +1,4 @@
-# Reviews — End-to-End Logic
+﻿# Reviews - End-to-End Logic
 
 **Module:** Performance
 **Feature:** Reviews
@@ -24,8 +24,8 @@ POST /api/v1/performance/reviews
 
 ### Key Rules
 
-- **Review types:** self, manager, peer, 360 — each has its own review record.
-- **Productivity score** is optional — only populated if cycle has `include_productivity_data = true`.
+- **Review types:** self, manager, peer, 360 - each has its own review record.
+- **Productivity score** is optional - only populated if cycle has `include_productivity_data = true`.
 
 ## Related
 

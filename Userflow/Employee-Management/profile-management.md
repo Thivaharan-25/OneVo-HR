@@ -1,9 +1,8 @@
 ﻿# Profile Management
 
 **Area:** Employee Management  
-**Trigger:** Employee or admin views/edits profile (user action â€” self-service or admin)
+**Trigger:** Employee or admin views/edits profile (user action - self-service or admin)
 **Required Permission(s):** `employees:read-own` (own profile) or `employees:read` (any employee)  
-**Related Permissions:** `employees:write` (edit), `employees:read` with team access policy (team profiles)
 
 ---
 
@@ -15,38 +14,36 @@
 ## Flow Steps
 
 ### Step 1: Navigate to Profile
-- **UI (own):** Dashboard â†’ click avatar â†’ "My Profile"
-- **UI (others):** Sidebar â†’ People â†’ Employees â†’ search/browse â†’ click employee name
+- **UI (own):** Dashboard -> click avatar -> "My Profile"
+- **UI (others):** Sidebar -> People -> Employees -> search/browse -> click employee name
 - **API:** `GET /api/v1/employees/{id}` or `GET /api/v1/employees/me`
 
 ### Step 2: View Profile Sections
 - **UI:** Single scrollable page with collapsible sections (no tabs):
-  1. **Identity Card** (glass): Name, photo, title, dept, status badge, hire date, reports to
-  2. **Quick Facts Strip**: Tenure, leave balance, last review score, salary band, next milestone
+  1. **Identity Card** (glass): Name, photo, title, dept, status badge, hire date, reports to, Managed by / coverage owner
+  2. **Quick Facts Strip**: Tenure, time off balance, last review score, salary band, next milestone
   3. **Alerts / Action Items**: Expiring visa, pending review, probation ending (if any)
-  4. **Employment Details** (expanded by default): Department, team, position, job family, level, title, resolved manager, start date, status
   5. **Pay & Benefits** (permission-gated, requires `payroll:read`): Salary, allowances, bank details (masked)
   6. **Documents** (collapsed by default, requires `documents:read`): Uploaded documents
   7. **Skills** (collapsed by default): requested/validated skills. Education and certifications are Phase 2 qualifications.
   8. **Dependents** (collapsed by default): Emergency contacts, family
-  9. **Leave** (collapsed by default, requires `leave:read-own`): Balances and requests
+  9. **Time Off** (collapsed by default, requires `time_off:read-own`): Balances and requests
   10. **Activity Timeline** (collapsed by default): Recent changes
 
 ### Step 3: Edit Fields (if `employees:write` or own editable fields)
-- **UI:** Click edit icon â†’ modify fields â†’ save
+- **UI:** Click edit icon -> modify fields -> save
 - **API:** `PUT /api/v1/employees/{id}`
-- **Backend:** EmployeeService.UpdateAsync() â†’ [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
+- **Backend:** EmployeeService.UpdateAsync() -> [[modules/core-hr/employee-profiles/overview|Employee Profiles]]
 - **Validation:** Email unique, required fields present
-- **DB:** `employees` â€” updated, audit trail created in `audit_logs`
+- **DB:** `employees` - updated, audit trail created in `audit_logs`
 
 ## Variations
 
-### When viewing with `employees:read` (team/reporting access policy)
-- Can only see employees in scope of their access policy â€” others hidden
+- Can only see employees allowed by management coverage - others hidden
+- `Reports to` is org-chart/reporting context only. `Managed by / coverage owner` shows the effective management coverage owner used for employee visibility and Phase 1 routing.
 
-### Own profile â€” limited editable fields
+### Own profile - limited editable fields
 - Employee can update: phone, address, emergency contacts, photo
-- Cannot edit: department, title, salary, job family level (admin only)
 
 ## Error Scenarios
 
@@ -57,7 +54,7 @@
 
 ## Events Triggered
 
-- `EmployeeUpdated` â†’ [[backend/messaging/event-catalog|Event Catalog]]
+- `EmployeeUpdated` -> [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 

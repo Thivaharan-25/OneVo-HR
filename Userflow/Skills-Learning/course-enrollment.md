@@ -21,30 +21,30 @@
 The steps below are Phase 2 only. Do not build Learning course pages, course enrollment APIs, or LMS integrations in Phase 1.
 
 ### Step 1: Browse Course Catalog
-- **UI:** Learning â†’ Course Catalog. Grid/list view showing available courses. Each course card displays: Title, Category (e.g., "Technical", "Leadership", "Compliance"), Duration (e.g., "4 hours", "2 weeks"), Difficulty level, Skills covered (tags), Enrollment count, Rating (if peer-rated), Thumbnail image. Filter sidebar: Category, Skill, Duration range, Difficulty. Search bar with full-text search. Tabs: "All Courses", "Recommended for You" (based on skill gaps), "Mandatory" (compliance)
+- **UI:** Learning -> Course Catalog. Grid/list view showing available courses. Each course card displays: Title, Category (e.g., "Technical", "Leadership", "Compliance"), Duration (e.g., "4 hours", "2 weeks"), Difficulty level, Skills covered (tags), Enrollment count, Rating (if peer-rated), Thumbnail image. Filter sidebar: Category, Skill, Duration range, Difficulty. Search bar with full-text search. Tabs: "All Courses", "Recommended for You" (based on skill gaps), "Mandatory" (compliance)
 - **API:** `GET /api/v1/learning/courses?page=1&pageSize=20&category={cat}&search={query}`
-- **Backend:** `CourseService.GetCatalogAsync()` â†’ [[skills]]
+- **Backend:** `CourseService.GetCatalogAsync()` -> [[skills]]
 - **Validation:** Permission check for `skills:read`
 - **DB:** `courses`, `course_skills`, `course_enrollments` (for enrollment count)
 
 ### Step 2: View Course Details
-- **UI:** Click course card â†’ course detail page. Sections: Overview (description, learning objectives), Curriculum (modules/chapters list with durations), Prerequisites (other courses or skills required), Skills You'll Gain (linked to taxonomy with proficiency level), Instructor info, Reviews/Ratings, Enrollment status. "Enroll" button if not enrolled. "Continue" button if in progress. "Completed" badge if finished
+- **UI:** Click course card -> course detail page. Sections: Overview (description, learning objectives), Curriculum (modules/chapters list with durations), Prerequisites (other courses or skills required), Skills You'll Gain (linked to taxonomy with proficiency level), Instructor info, Reviews/Ratings, Enrollment status. "Enroll" button if not enrolled. "Continue" button if in progress. "Completed" badge if finished
 - **API:** `GET /api/v1/learning/courses/{courseId}`
-- **Backend:** `CourseService.GetDetailAsync()` â†’ [[skills]]
+- **Backend:** `CourseService.GetDetailAsync()` -> [[skills]]
 - **Validation:** Check if employee meets prerequisites
 - **DB:** `courses`, `course_modules`, `course_skills`, `course_prerequisites`, `course_enrollments`
 
 ### Step 3: Check Prerequisites
 - **UI:** If prerequisites exist: green checkmarks for met prerequisites, red X for unmet. If all met: "Enroll" button enabled. If unmet: "Enroll" button disabled with message: "Complete these prerequisites first: [list]". Link to prerequisite courses. Manager override option: manager can waive prerequisites
 - **API:** `GET /api/v1/learning/courses/{courseId}/prerequisites/check`
-- **Backend:** `CoursePrerequisiteService.CheckAsync()` â†’ [[skills]]
+- **Backend:** `CoursePrerequisiteService.CheckAsync()` -> [[skills]]
 - **Validation:** Cross-references employee's completed courses and validated skills against course prerequisites
 - **DB:** `course_prerequisites`, `course_enrollments`, `employee_skills`
 
 ### Step 4: Enroll in Course
 - **UI:** Click "Enroll" button. Confirmation dialog: "Enroll in [Course Name]? Estimated time: [Duration]". Click "Confirm". Course added to "My Learning" section. Toast: "Successfully enrolled in [Course Name]". Calendar event optionally created for scheduled courses
 - **API:** `POST /api/v1/learning/courses/{courseId}/enroll`
-- **Backend:** `CourseEnrollmentService.EnrollAsync()` â†’ [[skills]]
+- **Backend:** `CourseEnrollmentService.EnrollAsync()` -> [[skills]]
   1. Validate prerequisites are met (server-side)
   2. Check enrollment capacity (if limited)
   3. Create `course_enrollments` record with status `enrolled`
@@ -57,7 +57,7 @@ The steps below are Phase 2 only. Do not build Learning course pages, course enr
 - **DB:** `course_enrollments`, `learning_plans`, `calendar_events`, `audit_logs`
 
 ### Step 5: Track Progress
-- **UI:** My Learning â†’ shows enrolled courses with progress. Click course â†’ learning interface: module list with completion checkboxes, progress bar (e.g., "3/8 modules completed â€” 37%"), time spent tracking, Resume button (opens last incomplete module). Each module: mark as complete when finished. Quiz modules: must pass with minimum score
+- **UI:** My Learning -> shows enrolled courses with progress. Click course -> learning interface: module list with completion checkboxes, progress bar (e.g., "3/8 modules completed - 37%"), time spent tracking, Resume button (opens last incomplete module). Each module: mark as complete when finished. Quiz modules: must pass with minimum score
 - **API:** `PUT /api/v1/learning/enrollments/{enrollmentId}/progress`
   ```json
   {
@@ -67,7 +67,7 @@ The steps below are Phase 2 only. Do not build Learning course pages, course enr
     "quizScore": 85
   }
   ```
-- **Backend:** `CourseProgressService.UpdateModuleProgressAsync()` â†’ [[skills]]
+- **Backend:** `CourseProgressService.UpdateModuleProgressAsync()` -> [[skills]]
   1. Update `course_module_progress` record
   2. Recalculate overall course progress percentage
   3. If quiz: validate minimum passing score
@@ -76,9 +76,9 @@ The steps below are Phase 2 only. Do not build Learning course pages, course enr
 - **DB:** `course_module_progress`, `course_enrollments`
 
 ### Step 6: Complete Course and Update Skills
-- **UI:** When all modules completed â†’ course status changes to `completed`. Completion certificate generated (if configured). Skills covered by course auto-suggested for declaration or proficiency update. Dialog: "You've completed [Course Name]! Update your skills?" â€” shows linked skills with suggested proficiency levels. Employee confirms or adjusts. Completion badge shown on profile
+- **UI:** When all modules completed -> course status changes to `completed`. Completion certificate generated (if configured). Skills covered by course auto-suggested for declaration or proficiency update. Dialog: "You've completed [Course Name]! Update your skills?" - shows linked skills with suggested proficiency levels. Employee confirms or adjusts. Completion badge shown on profile
 - **API:** `POST /api/v1/learning/enrollments/{enrollmentId}/complete`
-- **Backend:** `CourseCompletionService.CompleteAsync()` â†’ [[skills]]
+- **Backend:** `CourseCompletionService.CompleteAsync()` -> [[skills]]
   1. Validate all modules are completed (and quizzes passed)
   2. Update `course_enrollments` status to `completed`
   3. Set `completed_at` timestamp
@@ -95,8 +95,7 @@ The steps below are Phase 2 only. Do not build Learning course pages, course enr
 ## Variations
 
 ### When manager assigns a course to an employee
-- Manager navigates to Team â†’ Learning â†’ select employee â†’ "Assign Course"
-- Employee notified: "Your manager has assigned you [Course Name]"
+- Employee notified: "[Name] has assigned you [Course Name]"
 - Assigned courses shown with "Assigned" badge and optional due date
 - API: `POST /api/v1/learning/courses/{courseId}/assign` with `employeeId` and `dueDate`
 
@@ -104,7 +103,6 @@ The steps below are Phase 2 only. Do not build Learning course pages, course enr
 - Course flagged as mandatory by admin for specific departments or all employees
 - Appears in "Mandatory" tab with due date
 - Overdue courses flagged in reports and exception engine
-- Manager dashboard shows team compliance percentage
 
 ### When re-enrolling after course update
 - If course content updated, previously completed employees may be asked to re-certify
@@ -122,24 +120,24 @@ The steps below are Phase 2 only. Do not build Learning course pages, course enr
 
 ## Events Triggered
 
-- `CourseEnrollmentEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by learning analytics, notification service
-- `CourseProgressUpdatedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by learning plan tracking
-- `CourseCompletedEvent` â†’ [[backend/messaging/event-catalog|Event Catalog]] â€” consumed by skill auto-update, notification service, certificate generation
-- `AuditLogEntry` (action: `course.enrolled`, `course.completed`) â†’ [[modules/auth/audit-logging/overview|Audit Logging]]
+- `CourseEnrollmentEvent` -> [[backend/messaging/event-catalog|Event Catalog]] - consumed by learning analytics, notification service
+- `CourseProgressUpdatedEvent` -> [[backend/messaging/event-catalog|Event Catalog]] - consumed by learning plan tracking
+- `CourseCompletedEvent` -> [[backend/messaging/event-catalog|Event Catalog]] - consumed by skill auto-update, notification service, certificate generation
+- `AuditLogEntry` (action: `course.enrolled`, `course.completed`) -> [[modules/auth/audit-logging/overview|Audit Logging]]
 
 ## Related Flows
 
-- [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]] â€” skills linked to courses
-- [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]] â€” skills updated on course completion
-- [[Userflow/Skills-Learning/development-plan|Development Plan]] â€” courses assigned as part of development goals
-- [[Userflow/Skills-Learning/certification-tracking|Certification Tracking]] â€” certifications earned from courses
+- [[Userflow/Skills-Learning/skill-taxonomy-setup|Skill Taxonomy Setup]] - skills linked to courses
+- [[Userflow/Skills-Learning/employee-skill-declaration|Employee Skill Declaration]] - skills updated on course completion
+- [[Userflow/Skills-Learning/development-plan|Development Plan]] - courses assigned as part of development goals
+- [[Userflow/Skills-Learning/certification-tracking|Certification Tracking]] - certifications earned from courses
 
 ## Module References
 
-- [[skills]] â€” skills module overview
-- [[modules/skills/courses-learning/overview|Courses Learning]] â€” course data model, catalog, and enrollment logic
-- [[modules/skills/employee-skills/overview|Employee Skills]] â€” skill updates on completion
-- [[modules/calendar/calendar-events/overview|Calendar Events]] â€” scheduled course events
-- [[backend/notification-system|Notification System]] â€” enrollment and completion notifications
-- [[modules/documents/overview|Documents]] â€” certificate generation
+- [[skills]] - skills module overview
+- [[modules/skills/courses-learning/overview|Courses Learning]] - course data model, catalog, and enrollment logic
+- [[modules/skills/employee-skills/overview|Employee Skills]] - skill updates on completion
+- [[modules/calendar/calendar-events/overview|Calendar Events]] - scheduled course events
+- [[backend/notification-system|Notification System]] - enrollment and completion notifications
+- [[modules/documents/overview|Documents]] - certificate generation
 

@@ -1,4 +1,4 @@
-# Compensation — Testing
+﻿# Compensation - Testing
 
 **Module:** Core HR
 **Feature:** Compensation  

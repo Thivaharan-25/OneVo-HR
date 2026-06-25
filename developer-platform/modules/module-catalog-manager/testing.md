@@ -6,7 +6,7 @@
 - Platform account with `platform.module_catalog.read` only
 - `module_catalog` seeded with all Phase 1 modules
 - Permission catalog seeded with tenant-facing permission codes
-- `module_permission_ownership` seeded with at least `leave:read`, `leave:apply`, `leave:approve`, `leave:manage` owned by `leave`; and `employees:read`, `employees:write` owned by `core_hr`
+- `module_permission_ownership` seeded with at least `time_off:read`, `time_off:create`, `time_off:approve`, `time_off:manage` owned by `time_off`; and `employees:read`, `employees:write` owned by `core_hr`
 - At least 2 unclaimed permission codes (`orphan:read`, `orphan:manage`) not yet assigned to any module
 - 2 active tenants with different entitlements
 - At least 1 active subscription plan referencing `core_hr`
@@ -54,9 +54,9 @@
 **Expected:** `module_key` field is ignored or HTTP 422 - key is permanent
 
 ### TC-MC-003: Deactivated module excluded from new plan creation
-**Setup:** Module `leave` deactivated (`is_active = false`)
-**Action:** `POST /admin/v1/subscription-plans` with `base_module_keys: ["core_hr", "leave"]` and `optional_addon_module_keys: []`
-**Expected:** HTTP 422 - `leave` is inactive and cannot be included in new plans. Existing tenant entitlements using `leave` are preserved and not removed.
+**Setup:** Module `time_off` deactivated (`is_active = false`)
+**Action:** `POST /admin/v1/subscription-plans` with `base_module_keys: ["core_hr", "time_off"]` and `optional_addon_module_keys: []`
+**Expected:** HTTP 422 - `time_off` is inactive and cannot be included in new plans. Existing tenant entitlements using `time_off` are preserved and not removed.
 
 ### TC-MC-004: Phase 2 module cannot be included in Phase 1 plans
 **Setup:** Module `payroll` has `phase = 2`
@@ -106,44 +106,44 @@
 ## Permission Ownership
 
 ### TC-MC-007: Permission cannot be owned by two modules simultaneously via update
-**Setup:** `leave:approve` owned by module `leave`
-**Action:** `PUT /admin/v1/modules/catalog/core_hr/permissions` including `leave:approve`
-**Expected:** HTTP 422 - `leave:approve` already owned by `leave`; must be removed from `leave` first
+**Setup:** `time_off:approve` owned by module `time_off`
+**Action:** `PUT /admin/v1/modules/catalog/core_hr/permissions` including `time_off:approve`
+**Expected:** HTTP 422 - `time_off:approve` already owned by `time_off`; must be removed from `time_off` first
 
 ### TC-MC-008: Permission cannot be owned by two modules simultaneously via create
-**Setup:** `leave:approve` owned by module `leave`
-**Action:** `POST /admin/v1/modules/catalog` with `permission_codes: ["orphan:read", "leave:approve"]`
-**Expected:** HTTP 422 - `leave:approve` already owned by `leave`; error body lists the conflicting module key
+**Setup:** `time_off:approve` owned by module `time_off`
+**Action:** `POST /admin/v1/modules/catalog` with `permission_codes: ["orphan:read", "time_off:approve"]`
+**Expected:** HTTP 422 - `time_off:approve` already owned by `time_off`; error body lists the conflicting module key
 
 ### TC-MC-009: Removing permission ownership updates tenant permission catalog
-**Setup:** `leave:approve` owned by `leave`. Tenant T entitled to `leave`. `GET /admin/v1/tenants/{id}/permissions/catalog` includes `leave:approve`.
-**Action:** Remove `leave:approve` from leave module via `PUT /admin/v1/modules/catalog/leave/permissions` (omit `leave:approve`)
-**Expected:** `GET /admin/v1/tenants/{id}/permissions/catalog` no longer includes `leave:approve`
+**Setup:** `time_off:approve` owned by `time_off`. Tenant T entitled to `time_off`. `GET /admin/v1/tenants/{id}/permissions/catalog` includes `time_off:approve`.
+**Action:** Remove `time_off:approve` from Time Off module via `PUT /admin/v1/modules/catalog/time_off/permissions` (omit `time_off:approve`)
+**Expected:** `GET /admin/v1/tenants/{id}/permissions/catalog` no longer includes `time_off:approve`
 
 ### TC-MC-020: Permission picker returns all permissions with ownership metadata
 **Action:** `GET /admin/v1/modules/catalog/core_hr/permissions/available`
 **Expected:**
 - Response includes all seeded tenant-facing permission codes
 - Each entry has: `permission_code`, `owned_by_module_key` (null if unclaimed), `owned_by_module_name` (null if unclaimed)
-- `leave:approve` appears with `owned_by_module_key: "leave"` and is not omitted
+- `time_off:approve` appears with `owned_by_module_key: "time_off"` and is not omitted
 - `orphan:read` appears with `owned_by_module_key: null` and is available to claim
 - `employees:read` appears with `owned_by_module_key: "core_hr"` and is already owned by this module
 
 ### TC-MC-021: Releasing a permission from one module makes it claimable by another
-**Setup:** `leave:approve` owned by `leave`
-**Step 1 - Release:** `PUT /admin/v1/modules/catalog/leave/permissions` omitting `leave:approve`
-**Step 2 - Claim:** `PUT /admin/v1/modules/catalog/core_hr/permissions` including `leave:approve`
+**Setup:** `time_off:approve` owned by `time_off`
+**Step 1 - Release:** `PUT /admin/v1/modules/catalog/time_off/permissions` omitting `time_off:approve`
+**Step 2 - Claim:** `PUT /admin/v1/modules/catalog/core_hr/permissions` including `time_off:approve`
 **Expected:**
-- Step 1: HTTP 200, `module_permission_ownership` no longer has `leave` -> `leave:approve`
-- Step 2: HTTP 200, `module_permission_ownership` has `core_hr` -> `leave:approve`
-- `GET /admin/v1/modules/catalog/leave/permissions` no longer lists `leave:approve`
+- Step 1: HTTP 200, `module_permission_ownership` no longer has `time_off` -> `time_off:approve`
+- Step 2: HTTP 200, `module_permission_ownership` has `core_hr` -> `time_off:approve`
+- `GET /admin/v1/modules/catalog/time_off/permissions` no longer lists `time_off:approve`
 
 ### TC-MC-022: Deselecting an owned permission removes its default marker automatically
-**Setup:** Module `leave` owns `["leave:read", "leave:apply", "leave:approve", "leave:manage"]`. `leave:read`, `leave:apply`, and `leave:approve` have `is_default_permission = true`.
-**Action:** `PUT /admin/v1/modules/catalog/leave/permissions` with `permission_codes: ["leave:read", "leave:apply"]`
+**Setup:** Module `time_off` owns `["time_off:read", "time_off:create", "time_off:approve", "time_off:manage"]`. `time_off:read`, `time_off:create`, and `time_off:approve` have `is_default_permission = true`.
+**Action:** `PUT /admin/v1/modules/catalog/time_off/permissions` with `permission_codes: ["time_off:read", "time_off:create"]`
 **Expected:**
-- `module_permission_ownership` for `leave` contains only `leave:read` and `leave:apply`
-- No row remains for `leave:approve`, so its default marker is removed with the ownership row
+- `module_permission_ownership` for `time_off` contains only `time_off:read` and `time_off:create`
+- No row remains for `time_off:approve`, so its default marker is removed with the ownership row
 - No 422; deselecting is allowed
 
 ---
@@ -156,11 +156,8 @@
 {
   "integration_key": "my_calendar_tool",
   "display_name": "My Calendar Tool",
-  "category": "customer_oauth",
-  "auth_type": "oauth2",
-  "oauth_app_provider": "google",
-  "required_module_condition": "any",
-  "required_module_keys": ["calendar"],
+  "connection_scope": "employee",
+  "onevo_app_provider": "google",
   "is_active": true
 }
 ```
@@ -174,15 +171,15 @@
 **Action:** `PATCH /admin/v1/integrations/catalog/github` attempting to change `integration_key`
 **Expected:** `integration_key` field immutable; cannot change after connections exist
 
-### TC-MC-011: Integration condition change disconnects tenants that no longer qualify
+### TC-MC-011: Unlinking a module disconnects tenants that no longer qualify
 **Setup:**
-- Integration `slack` requires ANY of `["chat", "chat_ai", "integrations"]`
-- Tenant T entitled to `chat` only and qualifies
-- Tenant T has `slack` connected (`status = 'connected'`)
-**Action:** `PATCH /admin/v1/integrations/catalog/slack` - change required to ALL of `["chat_ai", "integrations"]`
+- Integration `github` is linked to modules `integrations` and `work_management` via `module_integration_links`
+- Tenant T entitled to `work_management` only and qualifies
+- Tenant T has `github` connected (`status = 'connected'`)
+**Action:** `DELETE /admin/v1/modules/catalog/work_management/integrations/github` — unlink `github` from `work_management`
 **Expected:**
-- Tenant T no longer qualifies
-- `tenant_integration_credentials` for tenant T + `slack`: `status = 'disconnected'`
+- Tenant T no longer qualifies (no remaining linked module is entitled)
+- `tenant_integration_credentials` for tenant T + `github`: `status = 'disconnected'`
 - Warning alert raised: `integration.access_revoked` for tenant T
 
 ---
@@ -190,9 +187,9 @@
 ## Module-Integration Linking
 
 ### TC-MC-012: Link integration to module - appears in module detail
-**Action:** `POST /admin/v1/modules/catalog/work_management/integrations` `{"integration_key": "github", "link_type": "required"}`
+**Action:** `POST /admin/v1/modules/catalog/work_management/integrations` `{"integration_key": "github"}`
 **Expected:**
-- `module_integration_links` row: `(work_management, github, required)`
+- `module_integration_links` row: `(work_management, github, linked_by_id, linked_at)`
 - `GET /admin/v1/modules/catalog/work_management/integrations` includes `github`
 
 ### TC-MC-013: Unlink integration shows impact count

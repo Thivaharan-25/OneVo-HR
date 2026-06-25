@@ -1,11 +1,27 @@
 # Workflow Engine And Automation Center - End-to-End Logic
 
-**Module:** Shared Platform  
+**Module:** Shared Platform
 **Feature:** Workflow Engine and Automation Center
+**Phase:** Phase 2 - deferred
 
 ---
 
-## Create Automation
+## Phase 1 Boundary
+
+Do not implement Workflow Engine or Automation Center as a Phase 1 customer-facing dependency.
+
+Phase 1 modules must handle approvals with built-in logic:
+
+- Time Off resolves approvers through reporting structure, permission, self-approval policy, and employee visibility.
+- Overtime and attendance corrections use Time & Attendance policy/routing rules.
+- Transfer, promotion, and position access use position authority plus lightweight approval request records.
+- Monitoring alerts notify the recipient resolved by Monitoring Policy (default: first available responsible person from the management coverage availability chain).
+
+Inbox may show module-owned action items, but those items are not workflow instances.
+
+---
+
+## Create Automation - Phase 2
 
 ```text
 Customer opens Automation Center
@@ -25,7 +41,9 @@ Customer opens Automation Center
   -> Publish AutomationDefinitionCreated
 ```
 
-## Apply Template
+This route and flow are Phase 2 only.
+
+## Apply Template - Phase 2
 
 ```text
 Customer clicks Templates
@@ -38,10 +56,10 @@ Customer clicks Templates
 
 Templates are not locked. Customers can edit, disable, or delete the automation created from a template.
 
-## Start Workflow From Trigger
+## Start Workflow From Trigger - Phase 2
 
 ```text
-Domain event arrives, such as LeaveRequestSubmitted or ExceptionAlertCreated
+Domain event arrives, such as TimeOffRequestSubmitted or ExceptionAlertCreated
   -> AutomationTriggerHandler loads active automations for the trigger
   -> Evaluate conditions using resource context
   -> If matched:
@@ -52,7 +70,9 @@ Domain event arrives, such as LeaveRequestSubmitted or ExceptionAlertCreated
        Schedule wait/escalation job if configured
 ```
 
-## Resolve Assignee Or Approver
+Phase 1 domain events must not require this handler to complete normal approvals.
+
+## Resolve Assignee Or Approver - Phase 2
 
 ```text
 Resolver input:
@@ -85,12 +105,12 @@ If many candidates:
 
 Resolvers must use tenant-owned org structure and permission assignments. They must never check fixed role names.
 
-For default leave approval when no custom workflow exists:
+For built-in Phase 1 Time Off approval when no custom workflow exists:
 
 ```text
 Input:
   employee_id
-  required_permission = leave:approve
+  required_permission = time_off:approve
 
 Flow:
   -> Resolve employee current position
@@ -100,17 +120,16 @@ Flow:
        find active linked user
        verify required permission
        verify self-approval policy
-  -> Assign first valid approver in hierarchy order
-  -> If none found before root:
-       mark blocked
-       notify automation owner or authorized admin
+  -> Assign first valid owner from management coverage order
+  -> If none found:
+       create a routing issue through the module-owned path
 ```
 
-Do not require administrators to choose a scope policy for every permission on every role. Permission checks answer whether the action is available. The resolver and resource context answer which employees, workspaces, projects, legal entities, or records are affected.
+Do not require administrators to choose a scope policy for every permission on every role. Permission checks answer whether the action is available. Management coverage, workspace membership, project membership, legal-entity context, and resource context answer which employees, workspaces, projects, legal entities, or records are affected.
 
 For connected-company workflows, resolver input also includes requester tenant, source tenant, target tenant, subject tenant, connection ID, and grant scope. The resolver must verify the connection is active and the grant includes the target tenant, resource type, and action before returning connected-tenant candidates.
 
-## Cross-Company Workflow
+## Cross-Company Workflow - Phase 2
 
 ```text
 Cross-company trigger arrives, such as EmployeeCrossCompanyTransferRequested
@@ -123,12 +142,12 @@ Cross-company trigger arrives, such as EmployeeCrossCompanyTransferRequested
   -> Audit every action with actor tenant and source/target tenant IDs
 ```
 
-## Delivery Router
+## Delivery Router - Phase 2
 
 ```text
 Workflow step assigned
   -> DeliveryRouter receives action card payload
-  -> If WorkSync Chat enabled:
+  -> If Work Chat enabled:
        create or reuse case conversation
        send action card to ONEVO Chat
   -> Else:
@@ -140,7 +159,7 @@ Workflow step assigned
 
 Teams replies can sync into the ONEVO case conversation for discussion. Approve, reject, request information, acknowledge, dismiss, escalate, and resolve actions still happen in ONEVO.
 
-## Take Approval Action
+## Take Approval Action - Phase 2
 
 ```text
 POST /api/v1/workflows/{instanceId}/approve
@@ -158,7 +177,7 @@ POST /api/v1/workflows/{instanceId}/approve
 
 For all-required mode, the workflow remains waiting until every assigned approver approves. For only-one-required mode, the first approval completes the step. For sequential mode, the next approver is notified only after the prior approver approves.
 
-## Delegate Current Approval
+## Delegate Current Approval - Phase 2
 
 ```text
 Approver clicks Delegate on the action card
@@ -174,9 +193,9 @@ Approver clicks Delegate on the action card
   -> Write audit entry
 ```
 
-Delegation is request-specific in Phase 1. Do not require a separate manager absence or acting-manager setup before approvals can move.
+Delegation is request-specific. Do not require a separate manager absence or acting-manager setup before approvals can move.
 
-## Request Information
+## Request Information - Phase 2
 
 ```text
 Approver clicks Request information
@@ -186,7 +205,7 @@ Approver clicks Request information
   -> Pause approval timer or switch to waiting_for_info per automation settings
 ```
 
-## Escalate Unresolved Item
+## Escalate Unresolved Item - Phase 2
 
 ```text
 Wait/delay job fires

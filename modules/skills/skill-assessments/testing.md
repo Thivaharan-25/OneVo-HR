@@ -1,4 +1,4 @@
-# Skill Assessments — Testing
+﻿# Skill Assessments - Testing
 
 **Module:** Skills
 **Feature:** Skill Assessments
@@ -51,5 +51,5 @@ public class SkillAssessmentServiceTests
 
 ## Related
 
-- [[modules/skills/skill-assessments/overview|Skill Assessments]] — feature overview
-- [[code-standards/testing-strategy|Testing Standards]] — project-wide testing conventions
+- [[modules/skills/skill-assessments/overview|Skill Assessments]] - feature overview
+- [[code-standards/testing-strategy|Testing Standards]] - project-wide testing conventions

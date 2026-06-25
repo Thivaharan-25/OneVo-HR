@@ -1,4 +1,4 @@
-# Frontend RBAC Patterns
+﻿# Frontend RBAC Patterns
 
 ## Permission Source
 
@@ -8,16 +8,15 @@ Permissions come from backend session endpoints such as `/api/v1/auth/session` o
 {
   "employeeId": "uuid",
   "displayTitle": "Engineering Manager",
-  "modules": ["core-hr", "leave", "workforceIntelligence"],
+  "modules": ["core-hr", "time_off", "monitoring"],
   "capabilities": [
-    { "permission": "employees:read",  "policy": "ReportingTree", "source": "role" },
-    { "permission": "leave:approve",   "policy": "DirectReports", "source": "role" },
-    { "permission": "workforce:view",  "policy": null,             "source": "role" },
+    { "permission": "employees:read",  "coverage": "management_coverage", "source": "role" },
+    { "permission": "time_off:approve",   "coverage": "management_coverage", "source": "role" },
+    { "permission": "monitoring:view",  "policy": null,             "source": "role" },
     { "permission": "monitoring:alerts:read", "policy": null,      "source": "role" }
   ],
   "navigation": [
-    "my-dashboard", "my-leave", "my-attendance",
-    "team-dashboard", "team-leave", "team-leave-approvals", "team-attendance"
+    "my-dashboard", "my-time_off", "my-attendance",
   ]
 }
 ```
@@ -30,7 +29,7 @@ The primary way to gate UI by permission in Angular templates:
 
 ```html
 <!-- Single permission -->
-<app-workforce-dashboard *hasPermission="'workforce:view'" />
+<app-monitoring-dashboard *hasPermission="'monitoring:view'" />
 
 <!-- Any of multiple permissions (array) -->
 <app-monitoring-settings *hasPermission="['monitoring:configure', 'monitoring:view-settings']" />
@@ -42,7 +41,7 @@ The primary way to gate UI by permission in Angular templates:
 <ng-template #forbidden><app-forbidden-inline /></ng-template>
 
 <!-- Render nothing when denied (default) -->
-<button *hasPermission="'exceptions:manage'" mat-button (click)="configureRules()">
+<button *hasPermission="'monitoring:alerts:resolve'" mat-button (click)="resolveAlert()">
   Configure Rules
 </button>
 ```
@@ -55,14 +54,14 @@ For conditional logic within component code:
 export class WorkforceSectionComponent {
   private auth = inject(AuthService);
 
-  canViewWorkforce = this.auth.hasPermission('workforce:view');
+  canViewWorkforce = this.auth.hasPermission('monitoring:view');
   canConfigureMonitoring = this.auth.hasPermission('monitoring:configure');
 }
 ```
 
 ```html
 @if (canViewWorkforce()) {
-  <app-workforce-dashboard />
+  <app-monitoring-dashboard />
 }
 
 @if (canConfigureMonitoring()) {
@@ -73,10 +72,10 @@ export class WorkforceSectionComponent {
 For conditional data fetching, drive the `resource()` request with a permission signal:
 
 ```typescript
-workforceResource = resource({
+monitoringResource = resource({
   request: () => this.canViewWorkforce() ? {} : null,
   loader: ({ request }) => request
-    ? firstValueFrom(this.workforceService.getLiveStatus())
+    ? firstValueFrom(this.monitoringService.getLiveStatus())
     : Promise.resolve(null),
 });
 ```
@@ -104,9 +103,9 @@ Nav configuration:
 export const NAV_CONFIG: NavItem[] = [
   { label: 'Home',       icon: 'home',          path: '/home' },
   { label: 'People',     icon: 'group',          path: '/employees',  permission: 'employees:read' },
-  { label: 'Leave',      icon: 'calendar_month', path: '/leave',      permission: 'leave:read' },
-  { label: 'Workforce',  icon: 'dashboard',      path: '/workforce',  permission: 'workforce:view', feature: 'workforceIntelligence' },
-  { label: 'Exceptions', icon: 'warning',        path: '/exceptions', permission: 'exceptions:view', feature: 'workforceIntelligence' },
+  { label: 'Time Off',      icon: 'calendar_month', path: '/time-off',      permission: 'time_off:read' },
+  { label: 'Monitoring',  icon: 'dashboard',      path: '/monitoring',  permission: 'monitoring:view', feature: 'monitoring' },
+  { label: 'Monitoring Alerts', icon: 'warning', path: '/monitoring/alerts', permission: 'monitoring:alerts:read', feature: 'monitoring' },
   { label: 'Org',        icon: 'account_tree',   path: '/org',        permission: 'org:read' },
   { label: 'Admin',      icon: 'shield',         path: '/admin',      permission: 'users:manage' },
   { label: 'Settings',   icon: 'settings',       path: '/settings',   permission: 'settings:read' },
@@ -115,36 +114,35 @@ export const NAV_CONFIG: NavItem[] = [
 
 Items where the user lacks permission are **hidden entirely** (not greyed out).
 
-## Access-Policy-Driven Data Scoping
+## Management-Coverage-Driven Data Access
 
-The frontend does not enforce data scoping. The backend resolves the assignment scope for each permission from `user_roles` and `user_permission_overrides`, then filters queries accordingly. The frontend adapts the UI based on what `capabilities` the backend returned in `app-context`:
+The frontend does not enforce employee-data filtering. The backend resolves employee visibility from Org Structure management coverage and filters queries accordingly. The frontend adapts the UI based on what `capabilities` the backend returned in `app-context`:
 
 | Effective capability | What the frontend shows |
 |:---------------------|:------------------------|
-| `employees:read` + `Own` | Own profile only |
-| `employees:read` + `DirectReports` / `ReportingTree` | Team/subordinate views |
-| `employees:read` + `Organization` | All-employee views |
-| `leave:approve` + any policy | Approvals inbox |
+| `employees:read` + management coverage | Employee views for covered positions/departments/company |
+| `employees:read` without management coverage | Own profile only where self-service applies |
+| `time_off:approve` + management coverage | Approvals inbox |
 | `analytics:view` (no policy) | Analytics section |
 
 ```typescript
 // Derive UI flags from capabilities, not role names
 const empRead = capabilities().find(c => c.permission === 'employees:read');
-showTeamFilter = empRead?.policy === 'DirectReports' || empRead?.policy === 'ReportingTree';
-showOrgFilter  = empRead?.policy === 'Organization';
+showManagedEmployeeFilters = empRead?.coverage === 'management_coverage';
+showCompanyWideFilter = empRead?.coverage === 'management_coverage' && empRead?.coverageLevel === 'company';
 ```
 
 ## Monitoring Config Gating
 
-Workforce Intelligence UI is gated by both RBAC permission AND monitoring configuration:
+Monitoring UI is gated by both RBAC permission AND monitoring configuration:
 
 ```typescript
-// workforce-section.component.ts
+// monitoring-section.component.ts
 export class WorkforceSectionComponent {
   private auth = inject(AuthService);
   private configService = inject(MonitoringConfigService);
 
-  hasPermission = this.auth.hasPermission('workforce:view');
+  hasPermission = this.auth.hasPermission('monitoring:view');
 
   configResource = resource({
     request: () => this.hasPermission() ? {} : null,
@@ -163,7 +161,7 @@ export class WorkforceSectionComponent {
 
 ```html
 @if (showDashboard()) {
-  <app-workforce-dashboard />
+  <app-monitoring-dashboard />
 } @else if (showDisabledBanner()) {
   <app-monitoring-disabled-banner />
 }
@@ -174,23 +172,25 @@ export class WorkforceSectionComponent {
 ### HR Management
 | Permission | Grants |
 |:-----------|:-------|
-| `employees:read` | View employees - scope determined by access policy on role (`Own` / `DirectReports` / `ReportingTree` / `Organization`) |
+| `employees:read` | View employees covered by management coverage; own profile remains self-service where supported |
 | `employees:write` | Create, edit employees |
-| `leave:read` | View leave records — scope determined by access policy |
-| `leave:approve` | Approve/reject leave — scope determined by access policy |
-| `leave:manage` | Configure leave policies |
+| `time_off:read` | View Time Off records covered by management coverage |
+| `time_off:approve` | Approve/reject Time Off assigned through management coverage |
+| `time_off:manage` | Configure Time Off policies |
 | `payroll:read` | View payroll runs |
 | `payroll:run` | Execute payroll calculation |
 | `payroll:approve` | Approve payroll for payment |
 
-### Workforce Intelligence
+### Monitoring
 | Permission | Grants |
 |:-----------|:-------|
-| `workforce:view` | Live dashboard, employee activity |
-| `workforce:manage` | Modify presence records |
+| `monitoring:view` | Live dashboard, employee activity |
+| `monitoring:manage` | Modify presence records |
 | `monitoring:alerts:read` | View exception/monitoring alerts |
 | `monitoring:alerts:resolve` | Acknowledge/dismiss alerts |
-| `exceptions:manage` | Configure rules, escalation chains |
+| `monitoring:alerts:read` | View Phase 1 monitoring alerts |
+| `monitoring:alerts:resolve` | Resolve Phase 1 monitoring alerts |
+| `exceptions:manage` | Phase 2: configure Exception Engine rules and escalation chains |
 | `monitoring:configure` | Edit monitoring feature toggles |
 | `monitoring:view-settings` | View monitoring settings (read-only) |
 | `analytics:view` | View reports and analytics |
@@ -203,15 +203,15 @@ export class WorkforceSectionComponent {
 ## No Hardcoded Role Names
 
 ```typescript
-// ❌ Wrong — never check role name
+// [wrong] Wrong - never check role name
 if (user.role === 'HR Manager') { ... }
 
-// ✅ Correct — check the permission signal
+// [ok] Correct - check the permission signal
 if (auth.hasPermission('employees:write')()) { ... }
 ```
 
 ## Related
 
-- [[frontend/cross-cutting/authorization|Authorization]] — full permission system
-- [[security/auth-flow|Auth Flow]] — session and token architecture
-- [[frontend/architecture/app-structure|App Structure]] — three-app monorepo
+- [[frontend/cross-cutting/authorization|Authorization]] - full permission system
+- [[security/auth-flow|Auth Flow]] - session and token architecture
+- [[frontend/architecture/app-structure|App Structure]] - customer-app + dev-console monorepo

@@ -1,4 +1,4 @@
-# Authentication (Frontend)
+﻿# Authentication (Frontend)
 
 ## Browser Session Model
 
@@ -123,7 +123,7 @@ refreshSession(): Observable<boolean> {
 }
 ```
 
-The backend may rotate internal JWTs or session records during this call — none are exposed to browser JavaScript.
+The backend may rotate internal JWTs or session records during this call - none are exposed to browser JavaScript.
 
 ## Logout
 
@@ -173,26 +173,17 @@ export class AuthSyncService implements OnDestroy {
 }
 ```
 
-## Context Switcher (Setup / Control ↔ Operations / Lifecycle)
+## Customer App Context Navigation
 
-Authorized users can switch between the customer apps. Both customer apps use the same BFF cookie session. The final customer hostname mapping is a deployment decision, so redirects must use configured app URLs rather than hardcoded subdomains:
+Authorized users move between setup, People, Time Off, Time & Attendance, Work, Monitoring, Calendar, Inbox, and Settings route groups inside the same customer app. The customer app uses one BFF cookie session; Developer Platform uses separate platform-admin auth:
 
 ```typescript
-// shared/src/lib/ui/shell/context-switcher.component.ts
-export class ContextSwitcherComponent {
+// shared/src/lib/ui/shell/context-nav.component.ts
+export class ContextNavComponent {
   private auth = inject(AuthService);
 
-  // Only show if user has permissions in the target app
-  canSwitchToSetup = this.auth.hasAnyPermission('org:manage', 'roles:manage', 'settings:write');
-  canSwitchToOperations = this.auth.hasAnyPermission('employees:read', 'leave:read', 'workforce:view');
-
-  switchToSetup() {
-    window.location.href = environment.appUrls.setupControl;
-  }
-
-  switchToOperations() {
-    window.location.href = environment.appUrls.operationsLifecycle;
-  }
+  canOpenSetup = this.auth.hasAnyPermission('org:manage', 'roles:manage', 'settings:write');
+  canOpenOperations = this.auth.hasAnyPermission('employees:read', 'time_off:read', 'monitoring:view');
 }
 ```
 
@@ -202,7 +193,7 @@ This page describes the customer web frontend only. IDE extensions, WorkPulse Ag
 
 ## Related
 
-- [[frontend/cross-cutting/authorization|Authorization]] — RBAC permission system
-- [[frontend/cross-cutting/security|Security]] — XSS, CSRF protection
-- [[frontend/data-layer/api-integration|API Integration]] — HttpClient interceptors
-- [[frontend/architecture/routing|Routing]] — functional route guards
+- [[frontend/cross-cutting/authorization|Authorization]] - RBAC permission system
+- [[frontend/cross-cutting/security|Security]] - XSS, CSRF protection
+- [[frontend/data-layer/api-integration|API Integration]] - HttpClient interceptors
+- [[frontend/architecture/routing|Routing]] - functional route guards

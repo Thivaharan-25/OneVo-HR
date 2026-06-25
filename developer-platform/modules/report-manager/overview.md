@@ -2,7 +2,6 @@
 
 ## Purpose
 
-Report Manager provides a catalog of pre-defined platform reports that operators can generate and export. Unlike Reports / Analytics (which is a live dashboard), Report Manager is for generating point-in-time, structured exports of specific operational or commercial data sets — for sharing with leadership, handing off to legal/compliance teams, or archiving.
 
 ## Data / Systems Read and Written
 

@@ -21,7 +21,7 @@ Key jobs operators monitor via this screen:
 | Job | Schedule | What It Does |
 |---|---|---|
 | `InvoiceGenerationJob` | Daily (per billing dates) | Generates invoices and initiates gateway charges |
-| `DunningCheckJob` | Daily at 02:00 UTC | Retries failed payments; auto-suspends after grace period |
+| `DunningCheckJob` | Daily at 02:00 UTC | Retries failed payments for already-active tenants; auto-suspends after grace period |
 | `PlatformHealthCheckJob` | Every 2 minutes | Creates or resolves service health alerts |
 | `ResourceUtilizationCheckJob` | Every 5 minutes | Creates or resolves CPU/memory/storage alerts |
 | `WebhookRetryJob` | Every minute | Retries failed webhook events; dead-letters after 5 failures |

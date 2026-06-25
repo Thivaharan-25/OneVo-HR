@@ -1,4 +1,4 @@
-# Daily Reports — Testing
+﻿# Daily Reports - Testing
 
 **Module:** Productivity Analytics
 **Feature:** Daily Reports
@@ -28,10 +28,10 @@ public class DailyReportServiceTests
     }
 
     [Fact]
-    public async Task Workforce_snapshot_includes_all_employees()
+    public async Task Monitoring_snapshot_includes_all_employees()
     {
         // Arrange
-        // ... setup mocks for workforce snapshot includes all employees
+        // ... setup mocks for monitoring snapshot includes all employees
 
         // Act
         // var result = await _sut.MethodAsync(command, default);
@@ -47,7 +47,7 @@ public class DailyReportServiceTests
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
 | Generate aggregates from activity and presence | Unit | Report with correct totals |
-| Workforce snapshot includes all employees | Unit | Total count matches |
+| Monitoring snapshot includes all employees | Unit | Total count matches |
 
 ## Related
 

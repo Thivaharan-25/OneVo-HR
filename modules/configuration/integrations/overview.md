@@ -1,13 +1,14 @@
-# Integration Connections
+﻿# Integration Connections
 
 **Module:** Configuration  
 **Feature:** Integrations
+**Phase:** Phase 2
 
 ---
 
 ## Purpose
 
-Manages external integration connections. Phase 1 includes Stripe, PayHere, Resend, and Google Calendar where enabled. PeopleHR, Slack, and LMS are Phase 2.
+Manages Phase 2 generic or legacy tenant integration connections. Phase 1 integrations do not use this feature: Stripe, PayHere, Paddle, Resend, Google Calendar, and Outlook Calendar use dedicated provider tables, not `integration_connections`.
 
 ## Database Tables
 
@@ -16,16 +17,18 @@ Manages external integration connections. Phase 1 includes Stripe, PayHere, Rese
 | Column | Type | Notes |
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
-| `tenant_id` | `uuid` | FK → tenants |
-| `integration_type` | `varchar(50)` | Phase 1: `stripe`, `payhere`, `resend`, `google_calendar`; Phase 2: `peoplehr`, `slack`, `lms` |
+| `tenant_id` | `uuid` | FK -> tenants |
+| `integration_type` | `varchar(50)` | Phase 2 generic or legacy tenant integrations only, e.g. `peoplehr`, `slack`, `lms` |
 | `config_json` | `jsonb` | |
 | `credentials_encrypted` | `bytea` | Encrypted |
 | `status` | `varchar(20)` | `active`, `inactive`, `error` |
 | `last_sync_at` | `timestamptz` | |
 
+**Phase rule:** This feature is Phase 2 only. `peoplehr`, `slack`, and `lms` connections must not be exposed as usable Phase 1 connection flows.
+
 **PeopleHR:** Phase 2 only. `peoplehr` connections are used by [[modules/data-import/peoplehr-full-migration|PeopleHR Full Migration]]. The connection card must support masked API key entry, permission preflight, last migration status, and audit links.
 
-**Payment gateways:** Billing credentials are managed through Shared Platform `payment_gateway_configs` when they are used for subscription collection, invoices, or payment methods. Configuration integration cards may link to that gateway setup, but must not duplicate raw payment secrets.
+**Dedicated provider ownership:** Billing credentials are managed through Shared Platform `payment_gateway_credentials`; non-secret gateway metadata stays in `payment_gateway_configs`; Resend email delivery uses `platform_service_keys`, `notification_channels`, and `email_delivery_logs`; Google/Outlook user calendar sync uses `external_calendar_connections` and `external_calendar_event_links`. Configuration integration cards may link to those setup screens, but must not duplicate raw provider secrets.
 
 ## API Endpoints
 
@@ -33,6 +36,8 @@ Manages external integration connections. Phase 1 includes Stripe, PayHere, Rese
 |:-------|:------|:-----------|:------------|
 | GET | `/api/v1/settings/integrations` | `settings:admin` | List integrations |
 | POST | `/api/v1/settings/integrations` | `settings:admin` | Add integration |
+| PUT | `/api/v1/settings/integrations/{id}` | `settings:admin` | Update integration config or rotate credentials |
+| POST | `/api/v1/settings/integrations/{id}/test` | `settings:admin` | Test connection and required scopes |
 
 ## Related
 

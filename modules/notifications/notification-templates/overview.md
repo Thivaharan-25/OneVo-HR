@@ -1,4 +1,4 @@
-# Notification Templates
+﻿# Notification Templates
 
 **Module:** Notifications  
 **Feature:** Notification Templates
@@ -15,15 +15,15 @@ Notifications does not own this table. `notification_templates` is physically ow
 Shared Platform and referenced by this feature for rendering.
 
 ### `notification_templates`
-Key columns: `event_type` (e.g., `leave.approved`, `exception.alert.created`), `channel` (`email`, `in_app`, `push`, `signalr`), `subject_template`, `body_template`, `is_active`.
+Key columns: `event_type` (e.g., `time_off.approved`, `exception.alert.created`), `channel` (`email`, `in_app`, `push`, `signalr`), `subject_template`, `body_template`, `is_active`.
 
-## New Event Types for Workforce Intelligence
+## New Event Types for Monitoring
 
-- `exception.alert.created` — New exception alert
-- `exception.alert.escalated` — Alert escalated
-- `verification.failed` — Identity verification failed
-- `agent.heartbeat.lost` — Agent went offline
-- `productivity.daily.report` / `productivity.weekly.report` — Reports ready
+- `exception.alert.created` - New exception alert
+- `exception.alert.escalated` - Alert escalated
+- `verification.failed` - Identity verification failed
+- `agent.heartbeat.lost` - Agent went offline
+- `productivity.daily.report` / `productivity.weekly.report` - Reports ready
 
 ## Related
 

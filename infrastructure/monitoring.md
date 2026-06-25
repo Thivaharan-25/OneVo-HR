@@ -18,7 +18,7 @@
 
 ### Business Dashboard
 - Payroll runs status (by tenant)
-- Leave requests pending (SLA tracking)
+- Time Off requests pending (SLA tracking)
 - Active tenants / subscription plan distribution
 - Employee count growth
 
@@ -29,7 +29,6 @@
 | High Error Rate | 5xx > 5% for 5 min | Critical | Page on-call |
 | Slow API | p99 > 5s for 10 min | Warning | Investigate |
 | DB Connection Exhaustion | Pool > 80% for 5 min | Critical | Scale PgBouncer |
-| Payroll Run Failed | payroll_run.status = 'failed' | Critical | Notify finance team |
 | Certificate Expiry | TLS cert < 14 days | Warning | Renew cert |
 | Disk Usage | > 80% | Warning | Clean up / scale |
 

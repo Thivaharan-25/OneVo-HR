@@ -1,40 +1,40 @@
-# Frontend Coding Standards
+﻿# Frontend Coding Standards
 
 ## Project Structure
 
-Three Angular 21 standalone-component apps in one Angular workspace monorepo. No NgModules, no SSR, no file-based routing. All routes defined in `app.routes.ts`. See [[frontend/architecture/app-structure|App Structure]] for the full workspace layout.
+Two Angular 21 standalone-component apps in one Angular workspace monorepo: `customer-app` and `dev-console`. No NgModules, no SSR, no file-based routing. All routes defined in `app.routes.ts`. See [[frontend/architecture/app-structure|App Structure]] for the full workspace layout.
 
 ```
-projects/shared/src/lib/        ← shared library (auth, api, realtime, ui, models, utils)
-projects/setup-control-app/src/app/
-├── app.routes.ts               ← setup/configuration routes
-├── app.config.ts               ← ApplicationConfig (providers)
-├── shell/                      ← nav rail + topbar
-└── features/                   ← feature components (standalone, lazy-loaded)
+projects/shared/src/lib/        <- shared library (auth, api, realtime, ui, models, utils)
+projects/customer-app/src/app/
++-- app.routes.ts               <- setup/configuration routes
++-- app.config.ts               <- ApplicationConfig (providers)
++-- shell/                      <- nav rail + topbar
++-- features/                   <- feature components (standalone, lazy-loaded)
 
-projects/operations-lifecycle-app/src/app/
-├── app.routes.ts               ← daily operations/lifecycle routes
-├── app.config.ts
-├── shell/
-└── features/
+projects/customer-app/src/app/
++-- app.routes.ts               <- daily operations/lifecycle routes
++-- app.config.ts
++-- shell/
++-- features/
 
 projects/dev-console/src/app/
-├── app.routes.ts               ← internal Developer Platform routes
-├── app.config.ts
-├── shell/
-└── features/
++-- app.routes.ts               <- internal Developer Platform routes
++-- app.config.ts
++-- shell/
++-- features/
 ```
 
 ## File Organization Rules
 
-1. **Feature components are standalone** — `standalone: true` on every `@Component`, `@Directive`, `@Pipe`
+1. **Feature components are standalone** - `standalone: true` on every `@Component`, `@Directive`, `@Pipe`
 2. **One component per file** (except small private helpers only used in that file)
 3. **Colocate first, promote when shared:**
-   - Used by only one route → colocated in `features/{domain}/{page}/`
-   - Used by 2+ pages in the same domain → promoted to `features/{domain}/components/` (delete colocated copy)
-   - Used across 2+ apps → promoted to `shared/src/lib/ui/` (delete app-level copy — never keep both)
-4. **API services** live in `shared/src/lib/api/endpoints/` — one service per backend module
-5. **Models** mirroring backend DTOs live in `shared/src/lib/models/` — one file per module
+   - Used by only one route -> colocated in `features/{domain}/{page}/`
+   - Used by 2+ pages in the same domain -> promoted to `features/{domain}/components/` (delete colocated copy)
+   - Used across 2+ apps -> promoted to `shared/src/lib/ui/` (delete app-level copy - never keep both)
+4. **API services** live in `shared/src/lib/api/endpoints/` - one service per backend module
+5. **Models** mirroring backend DTOs live in `shared/src/lib/models/` - one file per module
 
 ## Naming Conventions
 
@@ -51,8 +51,8 @@ projects/dev-console/src/app/
 | Service classes | `PascalCaseService` | `EmployeeApiService` |
 | Guard functions | `camelCaseGuard` | `authGuard`, `permissionGuard` |
 | Pipe classes | `PascalCasePipe` | `FormatDatePipe` |
-| Types / interfaces | `PascalCase` | `Employee`, `LeaveRequest` |
-| Route segments | `kebab-case` | `/workforce/live`, `/hr/employees` |
+| Types / interfaces | `PascalCase` | `Employee`, `TimeOffRequest` |
+| Route segments | `kebab-case` | `/monitoring`, `/people/employees` |
 
 ## Angular 21 Mandatory Patterns
 
@@ -61,7 +61,7 @@ projects/dev-console/src/app/
 ```typescript
 @Component({
   selector: 'app-employee-list',
-  standalone: true,                          // ← always
+  standalone: true,                          // <- always
   imports: [MatTableModule, RouterLink, HasPermissionDirective],
   templateUrl: './employee-list.component.html',
   styleUrl: './employee-list.component.scss',
@@ -69,16 +69,16 @@ projects/dev-console/src/app/
 export class EmployeeListComponent { }
 ```
 
-### inject() — Never Constructor Injection
+### inject() - Never Constructor Injection
 
 ```typescript
-// ✅ Correct
+// [ok] Correct
 export class EmployeeListComponent {
   private employeeService = inject(EmployeeApiService);
   private router = inject(Router);
 }
 
-// ❌ Wrong
+// [wrong] Wrong
 export class EmployeeListComponent {
   constructor(
     private employeeService: EmployeeApiService,
@@ -87,10 +87,10 @@ export class EmployeeListComponent {
 }
 ```
 
-### New Control Flow — Never Legacy Structural Directives
+### New Control Flow - Never Legacy Structural Directives
 
 ```html
-<!-- ✅ Correct -->
+<!-- [ok] Correct -->
 @if (employeesResource.isLoading()) {
   <mat-progress-bar mode="indeterminate" />
 }
@@ -102,21 +102,21 @@ export class EmployeeListComponent {
   @case ('inactive') { <mat-chip>Inactive</mat-chip> }
 }
 
-<!-- ❌ Wrong -->
+<!-- [wrong] Wrong -->
 <mat-progress-bar *ngIf="loading" />
 <app-employee-row *ngFor="let e of employees" [employee]="e" />
 ```
 
-### Signals — Never BehaviorSubject for State
+### Signals - Never BehaviorSubject for State
 
 ```typescript
-// ✅ Correct
+// [ok] Correct
 export class SidebarService {
   isExpanded = signal(true);
   toggle() { this.isExpanded.update(v => !v); }
 }
 
-// ❌ Wrong
+// [wrong] Wrong
 export class SidebarService {
   isExpanded$ = new BehaviorSubject(true);
   toggle() { this.isExpanded$.next(!this.isExpanded$.value); }
@@ -126,7 +126,7 @@ export class SidebarService {
 ### resource() for Async Data
 
 ```typescript
-// ✅ Correct — resource() driven by a filter signal
+// [ok] Correct - resource() driven by a filter signal
 export class EmployeeListComponent {
   private employeeService = inject(EmployeeApiService);
 
@@ -150,31 +150,31 @@ export class EmployeeListComponent {
 }
 ```
 
-### Functional Guards — Never Class-Based
+### Functional Guards - Never Class-Based
 
 ```typescript
-// ✅ Correct — functional guard
+// [ok] Correct - functional guard
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
   return auth.isAuthenticated() ? true : router.createUrlTree(['/login']);
 };
 
-// ❌ Wrong — class-based guard (Angular 21 deprecated)
+// [wrong] Wrong - class-based guard (Angular 21 deprecated)
 @Injectable()
 export class AuthGuard implements CanActivate {
   canActivate() { ... }
 }
 ```
 
-### Functional Interceptors — Never Class-Based
+### Functional Interceptors - Never Class-Based
 
 ```typescript
-// ✅ Correct
+// [ok] Correct
 export const correlationInterceptor: HttpInterceptorFn = (req, next) =>
   next(req.clone({ setHeaders: { 'X-Correlation-Id': crypto.randomUUID() } }));
 
-// ❌ Wrong
+// [wrong] Wrong
 @Injectable()
 export class CorrelationInterceptor implements HttpInterceptor {
   intercept(req, next) { ... }
@@ -204,7 +204,7 @@ export class EmployeeListComponent {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  // URL state → signals
+  // URL state -> signals
   private queryParams = toSignal(this.route.queryParamMap, { requireSync: true });
   search = computed(() => this.queryParams().get('q') ?? '');
   page   = computed(() => Number(this.queryParams().get('page') ?? '0'));
@@ -283,7 +283,7 @@ import type { Employee, EmployeeFilters } from '@onevo/shared';
 
 ## Error Handling
 
-- **HTTP errors:** handled globally by `errorInterceptor` → `MatSnackBar` toast
+- **HTTP errors:** handled globally by `errorInterceptor` -> `MatSnackBar` toast
 - **Component errors:** use Angular's `ErrorHandler` + error state template block
 - **Permission errors:** functional guard redirects to `/403`; `*hasPermission` directive hides elements
 - **Network errors:** show retry button, not just error message
@@ -293,18 +293,18 @@ import type { Employee, EmployeeFilters } from '@onevo/shared';
 - All interactive elements must be keyboard accessible
 - Use semantic HTML (`<nav>`, `<main>`, `<aside>`, `<table>`)
 - Angular Material components handle most a11y patterns (focus traps, ARIA roles)
-- Colour is never the only indicator — use icons + text alongside colour
+- Colour is never the only indicator - use icons + text alongside colour
 
 ## Performance
 
-- **Lazy load** all heavy feature routes via `loadComponent` / `loadChildren` — never eager-import route components in `app.routes.ts`
+- **Lazy load** all heavy feature routes via `loadComponent` / `loadChildren` - never eager-import route components in `app.routes.ts`
 - **`@defer`** for heavy in-page components (org charts, kanban boards, activity heatmaps)
-- **Paginate** all lists — never load unbounded data
+- **Paginate** all lists - never load unbounded data
 - **Debounce** search inputs (300 ms) before updating filter signal
 - **`OnPush` change detection** on pure display components when rendering large lists
 
 ```typescript
-// For high-frequency update components — use OnPush
+// For high-frequency update components - use OnPush
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   // ...
@@ -313,6 +313,6 @@ import type { Employee, EmployeeFilters } from '@onevo/shared';
 
 ## Related
 
-- [[frontend/architecture/app-structure|App Structure]] — workspace structure
-- [[frontend/design-system/components/component-catalog|Component Catalog]] — Angular Material + shared components
-- [[AI_CONTEXT/rules|Rules]] — Angular 21 mandatory patterns (authoritative)
+- [[frontend/architecture/app-structure|App Structure]] - workspace structure
+- [[frontend/design-system/components/component-catalog|Component Catalog]] - Angular Material + shared components
+- [[AI_CONTEXT/rules|Rules]] - Angular 21 mandatory patterns (authoritative)

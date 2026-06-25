@@ -1,6 +1,6 @@
 ﻿# Configuration Template Management Userflow
 
-**Module:** Developer Platform â†’ Platform Management â†’ Templates â†’ Configuration Template Manager
+**Module:** Developer Platform -> Platform Management -> Templates -> Configuration Template Manager
 **Actor:** Platform operator with `platform.templates.manage`
 
 ---
@@ -9,15 +9,15 @@
 
 ### Create a new configuration template
 
-1. Navigate to **Platform Management â†’ Templates** (`/platform/templates`)
+1. Navigate to **Platform Management -> Templates** (`/platform/templates`)
 2. Optionally filter by type chip to browse existing templates of the target type
 3. Click **”+ New Template”** (top-right)
-4. **Type Picker modal** appears â€” select the template type:
-   - Configuration / Position / Leave Policy / Monitoring Policy / App Allowlist / Onboarding / Data Import
+4. **Type Picker modal** appears - select the template type:
+   - Configuration / Position / Time Off Policy / Monitoring Policy / App Allowlist / Onboarding / Data Import
 5. Modal advances to the creation form for the selected type. Fill:
-   - **Section 1 â€” Identity:** name, `template_key`, description, `industry_profile_tag` (Monitoring Policy only)
-   - **Section 2 â€” Module Scope:** select required modules
-   - **Section 3 â€” Payload:** structured form fields for the selected type (fields vary â€” see end-to-end-logic payload schemas)
+   - **Section 1 - Identity:** name, `template_key`, description, `industry_profile_tag` (Monitoring Policy only)
+   - **Section 2 - Module Scope:** select required modules
+   - **Section 3 - Payload:** structured form fields for the selected type (fields vary - see end-to-end-logic payload schemas)
      - For `onboarding`: Applies To, Departments, and Positions assignment fields are shown. Department or position assignment requires at least one selected target.
 6. Click **”Save Template”**
 7. **API:** `POST /admin/v1/configuration-templates`
@@ -25,25 +25,25 @@
 
 ### Edit an existing template
 
-1. Open template detail â†’ click "Edit"
-2. System templates show "Clone" instead of "Edit" â€” editing a system template is blocked
+1. Open template detail -> click "Edit"
+2. System templates show "Clone" instead of "Edit" - editing a system template is blocked
 3. Edit name, description, module scope, or payload fields
-4. Save â†’ `version` increments, `updated_at` set
+4. Save -> `version` increments, `updated_at` set
 5. **API:** `PATCH /admin/v1/configuration-templates/{id}`
-6. Previously applied tenants are **not** automatically updated â€” reapply is manual
+6. Previously applied tenants are **not** automatically updated - reapply is manual
 
 ### Clone a system template
 
-1. Open system template detail â†’ click "Clone"
+1. Open system template detail -> click "Clone"
 2. New editable template created with `is_system = false`, `version = 1`, `template_key` = original key + `-copy`
 3. Rename and edit the clone as needed
 4. **API:** `POST /admin/v1/configuration-templates/{id}/clone`
 
 ### Deactivate a template
 
-1. Open template â†’ click "Deactivate"
+1. Open template -> click "Deactivate"
 2. System checks for active tenant positions and assignment rows that still reference the template
-3. If references exist: error shown listing affected tenants â€” operator must resolve before deactivating
+3. If references exist: error shown listing affected tenants - operator must resolve before deactivating
 4. If clear: template set to `is_active = false`
 5. **API:** `DELETE /admin/v1/configuration-templates/{id}`
 
@@ -53,11 +53,11 @@
 
 ### Apply a template from the template detail
 
-1. Open template detail â†’ click "Apply to Tenant"
-2. Tenant picker opens â€” search by name or slug
+1. Open template detail -> click "Apply to Tenant"
+2. Tenant picker opens - search by name or slug
 3. System shows module entitlement status for selected tenant (green tick / red X per required module)
 4. If any required module is not entitled: apply button is disabled, warning shown
-5. Optional: toggle "Force Update" (overwrites existing records â€” use with caution)
+5. Optional: toggle "Force Update" (overwrites existing records - use with caution)
 6. Click "Apply"
 7. **API:** `POST /admin/v1/tenants/{id}/configuration-templates/{templateId}/apply`
 8. Result panel shows:
@@ -73,7 +73,7 @@ See [[developer-platform/userflow/provisioning-flow#step-4-configuration|Provisi
 
 ### View tenant application history
 
-1. Open tenant card â†’ Configuration tab â†’ "Template Applications"
+1. Open tenant card -> Configuration tab -> "Template Applications"
 2. Table shows all applications ordered by `applied_at desc`
 3. Each row: template name, type, applied version, status, operator, applied_at, warnings count
 4. Click row to see full `applied_payload_json` snapshot and warnings

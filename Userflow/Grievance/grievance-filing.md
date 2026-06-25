@@ -1,6 +1,9 @@
 # Grievance Filing
 
-**Area:** Grievance  
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Grievance is deferred; not active in Phase 1.
+
+**Area:** Grievance (Phase 2)  
 **Trigger:** Employee files grievance (user action)
 **Required Permission(s):** `grievance:write`  
 **Related Permissions:** `documents:write` (attach evidence)
@@ -15,20 +18,19 @@
 ## Flow Steps
 
 ### Step 1: File Grievance
-- **UI:** Sidebar → Grievance → "File Grievance" → select category: Harassment, Discrimination, Workplace Safety, Policy Violation, Other
+- **UI:** Sidebar -> Grievance -> "File Grievance" -> select category: Harassment, Discrimination, Workplace Safety, Policy Violation, Other
 - **API:** `POST /api/v1/grievance/cases`
 
 ### Step 2: Enter Details
-- **UI:** Enter description (rich text) → attach evidence documents → select confidentiality level (Standard / Highly Confidential — restricts who can view)
+- **UI:** Enter description (rich text) -> attach evidence documents -> select confidentiality level (Standard / Highly Confidential - restricts who can view)
 - **Validation:** Description required, min 50 characters
 
 ### Step 3: Submit
-- **Backend:** GrievanceService.FileAsync() → [[modules/grievance/overview|Grievance]]
-- **DB:** `grievance_cases` — case number generated (GRV-2026-001), status: "Open"
-- **Result:** Automation Center creates or routes a confidential case to the configured grievance resolver, such as users with `grievance:manage`, a selected department/team/position branch, a specific employee, or the configured escalation resolver.
+- **Backend:** GrievanceService.FileAsync() -> [[modules/grievance/overview|Grievance]]
+- **DB:** `grievance_cases` - case number generated (GRV-2026-001), status: "Open"
 
 ### Step 4: Track Status
-- **UI:** Grievance → My Cases → see status (Open, Under Investigation, Resolved, Closed) → timeline of updates
+- **UI:** Grievance -> My Cases -> see status (Open, Under Investigation, Resolved, Closed) -> timeline of updates
 
 ## Error Scenarios
 
@@ -39,8 +41,8 @@
 
 ## Events Triggered
 
-- `GrievanceFiled` → [[backend/messaging/event-catalog|Event Catalog]]
-- `WorkflowStepAssigned` or notification to configured resolver → [[backend/notification-system|Notification System]]
+- `GrievanceFiled` -> [[backend/messaging/event-catalog|Event Catalog]]
+- Phase 2 workflow step assignment or notification to configured resolver -> [[backend/notification-system|Notification System]]
 
 ## Related Flows
 

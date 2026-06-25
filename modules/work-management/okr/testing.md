@@ -1,8 +1,14 @@
-# OKR & Goals — Testing
+﻿# OKR & Goals (Phase 2) - Testing
 
 **Module:** WorkSync
-**Feature:** OKR & Goals
+**Feature:** OKR & Goals (Phase 2)
 **Location:** `tests/ONEVO.Tests.Unit/Features/WorkSync/OKR/`
+
+---
+
+## Phase Guard
+
+This is a deferred Phase 2 design reference. Do not build OKR/Goals routes, pages, APIs, tests, or navigation items in Phase 1.
 
 ---
 
@@ -69,8 +75,8 @@ public class OKRServiceTests
 | Check-in cascades to objective | Unit | KR and objective progress updated |
 | Boolean KR with invalid value | Unit | Failure |
 | Progress clamped at 100 | Unit | Progress = 100 |
-| Status = on_track when ≥ 70% | Unit | Correct status |
-| Status = at_risk when 40–69% | Unit | Correct status |
+| Status = on_track when >= 70% | Unit | Correct status |
+| Status = at_risk when 40-69% | Unit | Correct status |
 | Status = off_track when < 40% | Unit | Correct status |
 
 ## Related

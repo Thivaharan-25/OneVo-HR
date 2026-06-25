@@ -9,26 +9,24 @@
 
 Time-based alert escalation for unresolved exception alerts and review cases. Escalation chains must use dynamic resolvers, not fixed role names.
 
-Exception Engine may keep alert-specific severity and delay rules, but the person or group receiving an escalation is resolved through the same resolver model used by Automation Center.
+Exception Engine escalation chains are Phase 2.
+
+In Phase 1, monitoring/attendance alerts do not use Exception Engine escalation chains. They route through Notifications/Inbox to the recipient resolved by Monitoring Policy. Phase 2 may reuse the Automation Center resolver model.
 
 ## Resolver-Based Routing
 
 Supported escalation targets:
 
 - Employee's reporting manager
-- Employee's team lead
 - Employee's department owner
 - Users with selected permission, such as `exceptions:manage`
 - Users in selected department
-- Users in selected team
 - Users in selected position or position branch
-- Users in selected job level, only when job levels are configured and linked
 - Specific employee
 - Configured escalation resolver
 - Previous workflow approver
 - Case conversation participants
 
-Do not use fixed escalation labels like HR or CEO. If a customer wants an HR-like escalation, they should select a permission, department, team, position branch, specific employee, HR coverage resolver, or configured escalation resolver.
 
 ## Database Tables
 
@@ -48,7 +46,7 @@ Example for `critical`:
 
 | Event | Published When | Consumers |
 |:------|:---------------|:----------|
-| `AlertEscalated` | Unacknowledged alert escalated | [[modules/notifications/overview\|Notifications]], Workflow Engine |
+| `AlertEscalated` | Unacknowledged alert escalated | [[modules/notifications/overview\|Notifications]]; Phase 2 Workflow Engine |
 | `CaseConversationCreated` | Alert automation opens a private case | Chat, Inbox, Audit |
 
 ## Key Business Rules
@@ -69,6 +67,6 @@ Example for `critical`:
 ## Related
 
 - [[modules/exception-engine/overview|Exception Engine Module]]
-- [[modules/shared-platform/workflow-engine/overview|Workflow Engine and Automation Center]]
-- [[Userflow/Automation/automation-center|Automation Center]]
+- [[modules/shared-platform/workflow-engine/overview|Workflow Engine and Automation Center (Phase 2)]]
+- [[Userflow/Automation/automation-center|Automation Center (Phase 2)]]
 - [[security/auth-architecture|Auth Architecture]]

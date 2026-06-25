@@ -1,4 +1,4 @@
-# Data Visualization
+﻿# Data Visualization
 
 ## Chart Library Choice
 
@@ -9,11 +9,11 @@
 
 ## Chart Types by Page
 
-### Live Workforce Dashboard
+### Live Monitoring Dashboard
 
 | Visual | Type | Library | Data |
 |:-------|:-----|:--------|:-----|
-| Active vs Idle vs Leave | Donut chart | Tremor | WorkforceStatus |
+| Active vs Idle vs Time Off | Donut chart | Tremor | MonitoringStatus |
 | Department breakdown | Horizontal bar | Recharts | departmentBreakdown[] |
 | Activity heatmap | Custom grid | Custom (Tailwind) | Hourly intensity per department |
 | Active exceptions | List with severity badges | shadcn Table | ExceptionAlert[] |
@@ -45,7 +45,7 @@ Full-day horizontal bar showing activity segments:
 
 ```
 8:00  9:00  10:00  11:00  12:00  1:00  2:00  3:00  4:00  5:00
-[████ active ████][idle][███ meeting ███][break][████ active ████]
+[#### active ####][idle][### meeting ###][break][#### active ####]
 ```
 
 Colors:
@@ -61,12 +61,12 @@ Grid showing hourly intensity (0-100) with color intensity mapping:
 
 ```
          8am  9am  10am  11am  12pm  1pm  2pm  3pm  4pm  5pm
-Eng.     ██   ███  ████  ███   █    ██   ████  ███  ██   █
-Sales    ██   ██   ███   ████  ██   ██   ███   ██   ██   █
-Support  ███  ████ ████  ███   █    ███  ████  ████ ███  ██
+Eng.     ##   ###  ####  ###   #    ##   ####  ###  ##   #
+Sales    ##   ##   ###   ####  ##   ##   ###   ##   ##   #
+Support  ###  #### ####  ###   #    ###  ####  #### ###  ##
 ```
 
-Color scale: `bg-green-50` (0) → `bg-green-200` (25) → `bg-green-400` (50) → `bg-green-600` (75) → `bg-green-800` (100)
+Color scale: `bg-green-50` (0) -> `bg-green-200` (25) -> `bg-green-400` (50) -> `bg-green-600` (75) -> `bg-green-800` (100)
 
 ## Recharts Standard Config
 
@@ -117,8 +117,8 @@ const chartConfig = {
 
 ## Related
 
-- [[frontend/design-system/components/component-catalog|Component Catalog]] — component library
-- [[modules/productivity-analytics/daily-reports/overview|Daily Reports]] — productivity reports
-- [[modules/productivity-analytics/workforce-snapshots/overview|Workforce Snapshots]] — workforce analytics
-- [[modules/productivity-analytics/overview|Productivity Analytics]] — analytics module
-- [[frontend/design-system/foundations/color-tokens|Color Tokens]] — color system
+- [[frontend/design-system/components/component-catalog|Component Catalog]] - component library
+- [[modules/productivity-analytics/daily-reports/overview|Daily Reports]] - productivity reports
+- [[modules/productivity-analytics/monitoring-snapshots/overview|Monitoring Snapshots]] - monitoring analytics
+- [[modules/productivity-analytics/overview|Productivity Analytics]] - analytics module
+- [[frontend/design-system/foundations/color-tokens|Color Tokens]] - color system

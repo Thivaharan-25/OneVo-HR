@@ -1,4 +1,4 @@
-﻿# Employee Profiles - Testing Strategy
+# Employee Profiles - Testing Strategy
 
 **Module:** Core HR
 **Feature:** Employee Profiles

@@ -1,4 +1,7 @@
-# My Space & Reminders — End-to-End Logic
+﻿# My Space & Reminders - End-to-End Logic
+
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Not active in current Phase 1 Work implementation; retained as future My Space/reminder design reference.
 
 **Module:** WorkSync
 **Feature:** My Space & Reminders
@@ -10,39 +13,36 @@
 ```
 POST /api/v1/me/reminders
   body: { title, due_at, linked_task_id?, recurrence_rule? }
-  → CreateReminderHandler
-    → 1. If linked_task_id: verify task exists and user has access
-    → 2. If linked_task_id: check no existing reminder for same user + task
+  -> CreateReminderHandler
+    -> 1. If linked_task_id: verify task exists and user has access
+    -> 2. If linked_task_id: check no existing reminder for same user + task
          If exists: return 409 DUPLICATE_REMINDER
-    → 3. INSERT reminders (is_completed = false)
-    → 4. If linked_task_id: INSERT chat_reminder_items
-             (sync_direction = "reminder_to_chat")
-    → Schedule Hangfire: ReminderDueJob(reminder_id, due_at)
-    → Return Result<ReminderDto>
-  → 201 Created
+    -> 3. INSERT reminders (is_completed = false)
+    -> Schedule Hangfire: ReminderDueJob(reminder_id, due_at)
+    -> Return Result<ReminderDto>
+  -> 201 Created
 ```
 
-## Two-Way Sync: Task Completed → Reminder Done
+## Two-Way Sync: Task Completed -> Reminder Done
 
 ```
 TaskCompletedEvent (domain event from TaskStatusChangedEvent)
-  → ReminderSyncHandler (INotificationHandler<TaskCompletedEvent>)
-    → 1. SELECT reminder_id FROM chat_reminder_items
-             WHERE linked entity = task_id (via reminder.linked_task_id)
-    → 2. If found: UPDATE reminders.is_completed = true, completed_at = now()
-    → (No command needed — domain event driven)
+  -> ReminderSyncHandler (INotificationHandler<TaskCompletedEvent>)
+    -> 1. SELECT id FROM reminders WHERE linked_task_id = task_id AND user_id = affected user
+    -> 2. If found: UPDATE reminders.is_completed = true, completed_at = now()
+    -> (No command needed - domain event driven)
 ```
 
-## Two-Way Sync: Reminder Done → Task Updated
+## Two-Way Sync: Reminder Done -> Task Updated
 
 ```
 PATCH /api/v1/me/reminders/{id}/complete
-  → CompleteReminderHandler
-    → 1. UPDATE reminders.is_completed = true, completed_at = now()
-    → 2. If reminder.linked_task_id is not null:
+  -> CompleteReminderHandler
+    -> 1. UPDATE reminders.is_completed = true, completed_at = now()
+    -> 2. If reminder.linked_task_id is not null:
          Send UpdateTaskStatusCommand (status = "done")
          (Uses same status validation as normal task status update)
-    → Return Result<ReminderDto>
+    -> Return Result<ReminderDto>
 ```
 
 ## Personal Board
@@ -50,11 +50,11 @@ PATCH /api/v1/me/reminders/{id}/complete
 ```
 POST /api/v1/me/boards
   body: { name }
-  → CreatePersonalBoardHandler
-    → 1. INSERT boards (project_id = null, user_id = caller)
-    → 2. Seed default columns: "To Do", "In Progress", "Done"
+  -> CreatePersonalBoardHandler
+    -> 1. INSERT boards (project_id = null, user_id = caller)
+    -> 2. Seed default columns: "To Do", "In Progress", "Done"
          (status_key maps to tasks.status equivalents)
-    → Return Result<BoardDto>
+    -> Return Result<BoardDto>
 ```
 
 ### Error Scenarios
@@ -68,5 +68,5 @@ POST /api/v1/me/boards
 ## Related
 
 - [[modules/work-management/my-space/overview|My Space Overview]]
-- [[modules/work-management/tasks/end-to-end-logic|Task Logic]] — status change validation
+- [[modules/work-management/tasks/end-to-end-logic|Task Logic]] - status change validation
 - [[modules/work-management/my-space/testing|My Space Testing]]

@@ -1,4 +1,4 @@
-# Compensation Setup
+﻿# Compensation Setup
 
 **Area:** Employee Management  
 **Phase:** Phase 2  
@@ -10,33 +10,32 @@
 
 ## Preconditions
 
-- Employee exists → [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
+- Employee exists -> [[Userflow/Employee-Management/employee-onboarding|Employee Onboarding]]
 - Employee has an active position assignment -> [[Userflow/Org-Structure/position-setup|Position Setup]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
 
 ### Step 1: Navigate to Compensation
-- **UI:** Employee Profile → Compensation tab → click "Edit" or "Add Salary Record"
+- **UI:** Employee Profile -> Compensation tab -> click "Edit" or "Add Salary Record"
 - **API:** `GET /api/v1/employees/{id}/compensation`
 
 ### Step 2: Set Base Salary
-- **UI:** Enter annual salary amount → select currency → set effective date → add reason (hire, revision, promotion)
-- **Validation:** Salary checked against job family level band (warning if outside range, not blocking)
+- **UI:** Enter annual salary amount -> select currency -> set effective date -> add reason (hire, revision, promotion)
 
 ### Step 3: Configure Allowances
-- **UI:** Add allowances from configured types (Housing, Transport, Meal, etc.) → set amount per allowance
+- **UI:** Add allowances from configured types (Housing, Transport, Meal, etc.) -> set amount per allowance
 - **API:** `POST /api/v1/employees/{id}/compensation`
-- **Backend:** CompensationService.SetCompensationAsync() → [[modules/core-hr/compensation/overview|Compensation]]
-- **DB:** `employee_compensation` — new record (previous record's `effective_to` set), `employee_allowances`
+- **Backend:** CompensationService.SetCompensationAsync() -> [[modules/core-hr/compensation/overview|Compensation]]
+- **DB:** `employee_compensation` - new record (previous record's `effective_to` set), `employee_allowances`
 
 ### Step 4: Enter Bank Details
-- **UI:** Enter bank name, account number, routing code, SWIFT/BIC → encrypted at rest
-- **DB:** `employee_bank_details` — AES-256 encrypted columns
+- **UI:** Enter bank name, account number, routing code, SWIFT/BIC -> encrypted at rest
+- **DB:** `employee_bank_details` - AES-256 encrypted columns
 - **Validation:** Account number format per country
 
 ### Step 5: Save
-- **Result:** Salary history maintained → previous records preserved → next payroll run uses latest effective record
+- **Result:** Salary history maintained -> previous records preserved -> next payroll run uses latest effective record
 
 ## Variations
 
@@ -54,7 +53,7 @@
 
 ## Events Triggered
 
-- `CompensationUpdated` → [[backend/messaging/event-catalog|Event Catalog]]
+- `CompensationUpdated` -> [[backend/messaging/event-catalog|Event Catalog]]
 
 ## Related Flows
 

@@ -1,4 +1,4 @@
-﻿# Employee Lifecycle â€” End-to-End Logic
+﻿# Employee Lifecycle - End-to-End Logic
 
 **Module:** Core HR
 **Feature:** Employee Lifecycle
@@ -7,7 +7,7 @@
 
 ## Flow Overview
 
-Employee Lifecycle tracks all significant employment events: hired, promoted, transferred, salary_change, suspended, terminated, and resigned. Each event creates an immutable audit record in `employee_lifecycle_events` and publishes a corresponding domain event consumed by notifications, leave, payroll, and agent-gateway modules.
+Employee Lifecycle tracks all significant employment events: hired, promoted, transferred, salary_change, suspended, terminated, and resigned. Each event creates an immutable audit record in `employee_lifecycle_events` and publishes a corresponding domain event consumed by notifications, time_off, payroll, and agent-gateway modules.
 
 ---
 
@@ -30,59 +30,59 @@ EmployeeTransferProcessor.ApplyDueTransfersAsync(today)
       - Publish EmployeeTransferred
 ```
 
-### 1. Record Lifecycle Event (Internal â€” triggered by other service actions)
+### 1. Record Lifecycle Event (Internal - triggered by other service actions)
 
 ```
 IEmployeeLifecycleService.RecordEventAsync(employeeId, eventType, detailsJson, performedById)
-  â†’ Validate: employee exists and is active
-  â†’ Validate: eventType is a known enum value
-  â†’ Build EmployeeLifecycleEvent entity
+  -> Validate: employee exists and is active
+  -> Validate: eventType is a known enum value
+  -> Build EmployeeLifecycleEvent entity
       - tenant_id from current tenant context
       - event_date = DateTime.UtcNow (or explicit date from caller)
       - details_json = serialized event-specific data
       - performed_by_id = user who initiated the action
-  â†’ _dbContext.EmployeeLifecycleEvents.Add(event)
-  â†’ _dbContext.SaveChangesAsync()
-  â†’ Publish domain event based on event_type:
-      - hired â†’ EmployeeCreated { EmployeeId, DepartmentId, HireDate }
-      - promoted â†’ EmployeePromoted { EmployeeId, OldPositionId, NewPositionId, EffectiveDate }
-      - transferred â†’ EmployeeTransferred { EmployeeId, OldDepartmentId, NewDepartmentId, OldPositionId, NewPositionId, EffectiveDate }
-      - terminated/resigned â†’ EmployeeTerminated { EmployeeId, Reason, LastWorkingDate }
-  â†’ Return LifecycleEventResponse
+  -> _dbContext.EmployeeLifecycleEvents.Add(event)
+  -> _dbContext.SaveChangesAsync()
+  -> Publish domain event based on event_type:
+      - hired -> EmployeeCreated { EmployeeId, DepartmentId, HireDate }
+      - promoted -> EmployeePromoted { EmployeeId, OldPositionId, NewPositionId, EffectiveDate }
+      - transferred -> EmployeeTransferred { EmployeeId, OldDepartmentId, NewDepartmentId, OldPositionId, NewPositionId, EffectiveDate }
+      - terminated/resigned -> EmployeeTerminated { EmployeeId, Reason, LastWorkingDate }
+  -> Return LifecycleEventResponse
 ```
 
 ### 2. Query Lifecycle History
 
 ```
 GET /api/v1/employees/{id}/lifecycle
-  â†’ EmployeesController.GetLifecycle(id)
-    â†’ IEmployeeLifecycleService.GetEventsAsync(employeeId, tenantId)
-      â†’ Query employee_lifecycle_events
+  -> EmployeesController.GetLifecycle(id)
+    -> IEmployeeLifecycleService.GetEventsAsync(employeeId, tenantId)
+      -> Query employee_lifecycle_events
           WHERE employee_id = @employeeId
           AND tenant_id = @tenantId
           ORDER BY event_date DESC, created_at DESC
-      â†’ Map to List<LifecycleEventResponse>
-      â†’ Return 200 OK
+      -> Map to List<LifecycleEventResponse>
+      -> Return 200 OK
 ```
 
 ### 3. Domain Event Consumers
 
 ```
-EmployeeCreated â†’
-  â”œâ”€ NotificationHandler: Send welcome notification to employee + position-resolved reporting manager when resolved
-  â””â”€ LeaveHandler: Initialize annual leave balances (pro-rated if mid-year)
+EmployeeCreated ->
+  +- NotificationHandler: Send welcome notification to employee + assigned onboarding/checklist owners when available
+  +- TimeOffHandler: Initialize annual Time Off balances (pro-rated if mid-year)
 
-EmployeePromoted â†’
-  â”œâ”€ NotificationHandler: Notify employee, old position-resolved manager, new position-resolved manager
-  â””â”€ PayrollHandler: Trigger salary review workflow
+EmployeePromoted ->
+  +- NotificationHandler: Notify employee and relevant old/new coverage owners when applicable
+  +- PayrollHandler: Trigger salary review workflow
 
-EmployeeTransferred â†’
-  â””â”€ NotificationHandler: Notify employee, old dept head, new dept head
+EmployeeTransferred ->
+  +- NotificationHandler: Notify employee, old dept head, new dept head
 
-EmployeeTerminated â†’
-  â”œâ”€ LeaveHandler: Forfeit remaining leave balances
-  â”œâ”€ PayrollHandler: Trigger final settlement calculation
-  â””â”€ AgentGatewayHandler: Revoke all active agent sessions
+EmployeeTerminated ->
+  +- TimeOffHandler: Forfeit remaining Time Off balances
+  +- PayrollHandler: Trigger final settlement calculation
+  +- AgentGatewayHandler: Revoke all active agent sessions
 ```
 
 ---
@@ -96,15 +96,15 @@ sequenceDiagram
     participant DB as PostgreSQL
     participant Bus as MediatR
     participant Notify as NotificationHandler
-    participant Leave as LeaveHandler
+    participant TimeOff as TimeOffHandler
     participant Payroll as PayrollHandler
 
     Caller->>LCS: RecordEventAsync(empId, "promoted", details)
     LCS->>DB: Validate employee exists
     LCS->>DB: INSERT INTO employee_lifecycle_events
     LCS->>Bus: Publish EmployeePromoted
-    Bus->>Notify: Handle â†’ send promotion notification
-    Bus->>Payroll: Handle â†’ trigger salary review
+    Bus->>Notify: Handle -> send promotion notification
+    Bus->>Payroll: Handle -> trigger salary review
     LCS-->>Caller: LifecycleEventResponse
 ```
 

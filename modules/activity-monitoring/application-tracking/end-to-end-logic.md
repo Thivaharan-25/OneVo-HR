@@ -1,4 +1,4 @@
-# Application Tracking — End-to-End Logic
+﻿# Application Tracking - End-to-End Logic
 
 **Module:** Activity Monitoring
 **Feature:** Application Tracking
@@ -12,7 +12,7 @@
 ```
 GET /api/v1/activity/apps/{employeeId}?date=2026-04-05
   -> ActivityController.GetAppUsage(employeeId, date)
-    -> [RequirePermission("workforce:view")]
+    -> [RequirePermission("monitoring:view")]
     -> ActivityMonitoringService.GetAppUsageAsync(employeeId, date, ct)
       -> 1. Validate employeeId exists via IEmployeeService
       -> 2. Check caller has access (own data or manager/admin)
@@ -51,15 +51,15 @@ POST /api/v1/activity/categories
 ### Edge Cases
 
 - **Process name is authoritative** for app identity and allowlist/category matching. `application_name` is display metadata only.
-- **Window titles are never exposed** — only `application_name` and `window_title_hash` are stored.
-- **Category changes don't retroactively update** — existing `is_productive` flags on `application_usage` rows stay as-is. New data uses updated categories.
+- **Window titles are never exposed** - only `application_name` and `window_title_hash` are stored.
+- **Category changes don't retroactively update** - existing `is_productive` flags on `application_usage` rows stay as-is. New data uses updated categories.
 
 ## Related
 
 - [[modules/activity-monitoring/overview|Activity Monitoring Module]]
 - [[frontend/architecture/overview|Application Tracking Overview]]
-- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing — End-to-End Logic]]
-- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation — End-to-End Logic]]
+- [[modules/activity-monitoring/raw-data-processing/end-to-end-logic|Raw Data Processing - End-to-End Logic]]
+- [[modules/activity-monitoring/daily-aggregation/end-to-end-logic|Daily Aggregation - End-to-End Logic]]
 - [[backend/messaging/event-catalog|Event Catalog]]
 - [[backend/messaging/error-handling|Error Handling]]
 - [[security/data-classification|Data Classification]]

@@ -1,4 +1,4 @@
-# Certifications
+﻿# Certifications
 
 **Module:** Skills & Learning  
 **Feature:** Certifications
@@ -24,11 +24,11 @@ Fields: `employee_id`, `course_id` (nullable), `certification_name`, `issuing_au
 
 ## Related
 
-- [[skills|Skills Module]] — parent module
-- [[modules/skills/courses-learning/overview|Courses Learning]] — courses that lead to certifications
-- [[modules/skills/employee-skills/overview|Employee Skills]] — skill records that may require certification evidence
-- [[modules/skills/development-plans/overview|Development Plans]] — development milestones linked to certification goals
-- [[infrastructure/multi-tenancy|Multi Tenancy]] — tenant-scoped certification records
-- [[backend/messaging/event-catalog|Event Catalog]] — expiry and renewal reminder events
-- [[backend/messaging/error-handling|Error Handling]] — expiry notification job error handling
-- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] — implementation task
+- [[skills|Skills Module]] - parent module
+- [[modules/skills/courses-learning/overview|Courses Learning]] - courses that lead to certifications
+- [[modules/skills/employee-skills/overview|Employee Skills]] - skill records that may require certification evidence
+- [[modules/skills/development-plans/overview|Development Plans]] - development milestones linked to certification goals
+- [[infrastructure/multi-tenancy|Multi Tenancy]] - tenant-scoped certification records
+- [[backend/messaging/event-catalog|Event Catalog]] - expiry and renewal reminder events
+- [[backend/messaging/error-handling|Error Handling]] - expiry notification job error handling
+- [[current-focus/DEV4-shared-platform-agent-gateway|DEV4: Supporting Bridges]] - implementation task

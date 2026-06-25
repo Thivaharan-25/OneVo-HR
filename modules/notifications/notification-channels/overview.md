@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Channel provider configuration (email via Resend, Slack, webhooks).
+Channel provider configuration (email via Resend, webhooks; Slack is Phase 2).
 
 ## Database Tables
 
@@ -15,7 +15,7 @@ Notifications does not own this table. `notification_channels` is physically own
 Shared Platform and referenced by this feature for delivery routing/provider configuration.
 
 ### `notification_channels`
-Fields: `channel_type` (`email`, `slack`, `webhook`), `config_json`, `credentials_encrypted`, `is_active`.
+Fields: `channel_type` (`email`, `webhook`; `slack` is Phase 2), `config_json`, `credentials_encrypted`, `is_active`.
 
 ## API Endpoints
 

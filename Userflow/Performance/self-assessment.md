@@ -1,7 +1,7 @@
-# Self-Assessment
+﻿# Self-Assessment
 
 **Area:** Performance  
-**Trigger:** Employee opens self-assessment during review cycle (reaction — triggered by cycle launch)
+**Trigger:** Employee opens self-assessment during review cycle (reaction - triggered by cycle launch)
 **Required Permission(s):** `performance:read-own`  
 **Related Permissions:** `performance:write` (save draft)
 
@@ -9,7 +9,7 @@
 
 ## Preconditions
 
-- Active review cycle with employee as participant → [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
+- Active review cycle with employee as participant -> [[Userflow/Performance/review-cycle-setup|Review Cycle Setup]]
 - Required permissions: [[Userflow/Auth-Access/permission-assignment|Permission Assignment Flow]]
 
 ## Flow Steps
@@ -19,18 +19,18 @@
 - **API:** `GET /api/v1/performance/reviews/me?cycle_id={id}`
 
 ### Step 2: Fill Self-Assessment
-- **UI:** Performance → My Reviews → select cycle → form with:
+- **UI:** Performance -> My Reviews -> select cycle -> form with:
   - Rate self against each competency (using cycle's rating scale)
   - Key achievements this period (text)
   - Areas for development (text)
-  - Goals progress update → [[Userflow/Performance/goal-setting|Goal Setting]]
+  - Goals progress update -> [[Userflow/Performance/goal-setting|Goal Setting]]
   - Overall self-rating
 
 ### Step 3: Save Draft / Submit
 - **UI:** "Save Draft" (come back later) or "Submit" (final, cannot edit after)
 - **API:** `PUT /api/v1/performance/reviews/{id}` (draft) or `POST /api/v1/performance/reviews/{id}/submit`
-- **Backend:** ReviewService.SubmitSelfAssessmentAsync() → [[modules/performance/reviews/overview|Reviews]]
-- **DB:** `reviews` — status: "Draft" or "Submitted"
+- **Backend:** ReviewService.SubmitSelfAssessmentAsync() -> [[modules/performance/reviews/overview|Reviews]]
+- **DB:** `reviews` - status: "Draft" or "Submitted"
 
 ### Step 4: Post-Submit
 - Configured review resolver notified that self-assessment is ready for review
@@ -45,8 +45,8 @@
 
 ## Events Triggered
 
-- `SelfAssessmentSubmitted` → [[backend/messaging/event-catalog|Event Catalog]]
-- Notification to manager → [[backend/notification-system|Notification System]]
+- `SelfAssessmentSubmitted` -> [[backend/messaging/event-catalog|Event Catalog]]
+- Notification to manager -> [[backend/notification-system|Notification System]]
 
 ## Related Flows
 

@@ -1,10 +1,10 @@
-# Motion & Animation
+﻿# Motion & Animation
 
 ## Principles
 
-1. **Functional, not decorative** — animations serve a purpose (state change, spatial orientation, feedback). No gratuitous motion.
-2. **Fast** — dashboard users interact rapidly. Animations should feel instant, not theatrical.
-3. **Respect preferences** — honor `prefers-reduced-motion`. All motion must degrade gracefully.
+1. **Functional, not decorative** - animations serve a purpose (state change, spatial orientation, feedback). No gratuitous motion.
+2. **Fast** - dashboard users interact rapidly. Animations should feel instant, not theatrical.
+3. **Respect preferences** - honor `prefers-reduced-motion`. All motion must degrade gracefully.
 
 ## Duration Scale
 
@@ -231,10 +231,10 @@ See the Sidebar Panel Expand/Collapse pattern below for the expansion panel appr
 
 ### Expansion Panel Open/Close
 
-The panel animates **width + opacity simultaneously** — it does NOT use `transform: translateX`. Width animation causes the content area to expand into the freed space naturally.
+The panel animates **width + opacity simultaneously** - it does NOT use `transform: translateX`. Width animation causes the content area to expand into the freed space naturally.
 
 ```css
-/* Panel shell wrapper — controls width and visibility */
+/* Panel shell wrapper - controls width and visibility */
 .panel-shell {
   transition: width 220ms cubic-bezier(0.16, 1, 0.3, 1),
               opacity 220ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -283,6 +283,6 @@ All animations must respect the user's OS preference:
 
 ## Related
 
-- [[frontend/design-system/foundations/elevation|Elevation]] — shadow transitions
-- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] — sidebar animation
-- [[modules/performance/feedback/overview|Feedback]] — toast/loading animations
+- [[frontend/design-system/foundations/elevation|Elevation]] - shadow transitions
+- [[frontend/design-system/patterns/navigation-patterns|Navigation Patterns]] - sidebar animation
+- [[modules/performance/feedback/overview|Feedback]] - toast/loading animations

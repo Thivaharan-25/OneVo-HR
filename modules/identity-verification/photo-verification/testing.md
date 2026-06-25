@@ -1,4 +1,4 @@
-# Photo Verification — Testing
+﻿# Photo Verification - Testing
 
 **Module:** Identity Verification
 **Feature:** Photo Verification
@@ -66,7 +66,7 @@ public class VerificationServiceTests
 ## Related
 
 - [[modules/identity-verification/overview|Identity Verification Module]]
-- [[modules/identity-verification/photo-verification/end-to-end-logic|Photo Verification — End-to-End Logic]]
+- [[modules/identity-verification/photo-verification/end-to-end-logic|Photo Verification - End-to-End Logic]]
 - [[code-standards/testing-strategy|Testing Standards]]
 - [[database/migration-patterns|Migration Patterns]]
 - [[current-focus/DEV4-identity-verification|DEV4: Identity Verification]]

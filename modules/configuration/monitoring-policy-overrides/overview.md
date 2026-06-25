@@ -9,12 +9,10 @@
 
 Monitoring policy overrides define group-level monitoring rules between tenant defaults and per-employee exceptions.
 
-Use this feature when a tenant wants different monitoring behavior for a role, department, team, or job family. For example:
 
 - Developers: application tracking, document tracking, communication tracking, and IDE/tool usage allowed.
 - Finance: document tracking and communication tracking enabled, development tools not expected.
 - Factory staff: desktop monitoring disabled, biometric/presence tracking enabled.
-- Remote support team: work-location verification and meeting detection enabled.
 
 This table should not replace tenant defaults or employee exceptions. It is the middle layer of the policy hierarchy.
 
@@ -28,7 +26,7 @@ Effective monitoring policy is resolved in this order:
 2. Scope override: `monitoring_policy_overrides`.
 3. Employee override: `employee_monitoring_overrides`.
 4. Consent/disclosure gate.
-5. Workforce Presence lifecycle gate.
+5. Time & Attendance lifecycle gate.
 6. App allowlist resolution.
 7. Privacy/transparency mode.
 
@@ -39,9 +37,7 @@ Scope override precedence when multiple scopes apply:
 1. `role`
 2. `position`
 3. `department`
-4. `team`
 
-The later scope can override earlier scopes only for fields it explicitly sets. This lets a broad role policy define the baseline while a team can refine one or two features.
 
 ---
 
@@ -53,13 +49,14 @@ The later scope can override earlier scopes only for fields it explicitly sets. 
 |:-------|:-----|:------|
 | `id` | `uuid` | PK |
 | `tenant_id` | `uuid` | FK -> tenants |
-| `scope_type` | `varchar(30)` | `role`, `department`, `team`, `position` |
-| `scope_id` | `uuid` | ID of the matching role/department/team/position |
+| `scope_type` | `varchar(30)` | `role`, `position`, `department` |
+| `scope_id` | `uuid` | FK to the corresponding scope table; validated by application logic |
 | `activity_monitoring` | `boolean` | Nullable |
 | `application_tracking` | `boolean` | Nullable |
 | `document_tracking` | `boolean` | Nullable |
 | `communication_tracking` | `boolean` | Nullable |
-| `screenshot_capture` | `boolean` | Nullable; command eligibility only |
+| `screenshot_capture` | `boolean` | Nullable; allows authorized on-demand screenshot capture |
+| `auto_screenshot_capture` | `boolean` | Nullable; allows automatic screenshot capture when monitoring detects a deviation |
 | `meeting_detection` | `boolean` | Nullable |
 | `device_tracking` | `boolean` | Nullable |
 | `work_location_verification` | `boolean` | Nullable |
@@ -83,7 +80,6 @@ The later scope can override earlier scopes only for fields it explicitly sets. 
 | DELETE | `/api/v1/settings/monitoring/policy/{scopeType}/{scopeId}` | `monitoring:configure` | Remove scope override |
 | GET | `/api/v1/settings/monitoring/resolved/{employeeId}` | `monitoring:view-settings` | Preview final employee policy |
 
-Valid `scopeType` values: `role`, `department`, `team`, `job-family`.
 
 ---
 
@@ -107,7 +103,6 @@ Screenshots and photos are special:
 
 ## Policy Refresh
 
-Any change to tenant toggles, scope overrides, employee overrides, app allowlist, consent state, or employee role/team/department/job family assignment must trigger `RefreshPolicy` for affected agents through Agent Gateway.
 
 If SignalR is unavailable, the agent receives the updated policy during heartbeat fallback.
 

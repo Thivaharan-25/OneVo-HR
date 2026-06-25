@@ -1,15 +1,15 @@
-# Dev Platform Feature
+﻿# Dev Platform Feature
 
 **Last Updated:** 2026-04-27
 
-The `DevPlatform` feature provides the developer console backend. In Phase 1 it is served by `/admin/v1/*` inside the single `ONEVO.Api` backend deployment. `ONEVO.Admin.Api` is deprecated scaffold only and must not be deployed as a second backend unit.
+The `DevPlatform` feature provides the developer console backend. In Phase 1 it is served by `/admin/v1/*` inside the single `ONEVO.Api` backend deployment. Phase 1 does not have a separate admin backend service.
 
 ## Key entities
 
 | Entity | Tables | Notes |
 |--------|--------|-------|
-| `DevPlatformAccount` | 1 | Platform admin accounts — no TenantId |
-| `DevPlatformSession` | 1 | Admin JWT session tracking — no TenantId |
+| `DevPlatformAccount` | 1 | Platform admin accounts - no TenantId |
+| `DevPlatformSession` | 1 | Admin JWT session tracking - no TenantId |
 | `AgentVersionRelease` | 1 | Agent binary releases |
 | `AgentDeploymentRing` | 1 | Canary / Beta / Stable rings |
 | `AgentDeploymentRingAssignment` | 1 | Tenant-to-ring assignment |
@@ -38,7 +38,7 @@ Infrastructure:
   ONEVO.Infrastructure/Persistence/Configurations/DevPlatform/
 
 API endpoints:
-  ONEVO.Api/Controllers/Admin/              ← Admin API namespace, not customer API
+  ONEVO.Api/Controllers/Admin/              <- Admin API namespace, not customer API
 
 ## Related
 

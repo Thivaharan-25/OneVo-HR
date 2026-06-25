@@ -19,7 +19,7 @@ User                    Frontend                  Auth Module              Datab
   |<-- Redirect dashboard -|                          |                       |
 ```
 
-The backend may use short-lived tenant JWTs internally, but those JWTs do not leave the backend for browser web sessions.
+The backend may use short-lived tenant JWTs internally, but those JWTs are not sent outside the backend for browser web sessions.
 
 ## Session Lifecycle
 
@@ -42,7 +42,7 @@ When the backend uses an internal tenant JWT, it follows the normal ONEVO tenant
     "sub": "user-uuid",
     "tenant_id": "tenant-uuid",
     "email": "user@company.com",
-    "permissions": ["employees:read", "leave:approve"],
+    "permissions": ["employees:read", "time_off:approve"],
     "perm_ver": 3,
     "iat": 1679616000,
     "exp": 1679616900,
@@ -80,14 +80,17 @@ Examples:
 ```text
 employees:read
 employees:write
-leave:create
-leave:approve
+time_off:create
+time_off:approve
 attendance:read-own
-exceptions:manage
+monitoring:alerts:read
+monitoring:alerts:resolve
 monitoring:configure
 roles:manage
 settings:admin
 ```
+
+`exceptions:manage` is Phase 2 Exception Engine rule configuration and is not a Phase 1 customer-app navigation permission.
 
 ### Authorization Check
 

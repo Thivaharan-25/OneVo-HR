@@ -1,4 +1,7 @@
-# Insight & Analytics — Testing
+﻿# Insight & Analytics - Testing
+
+**Phase:** Phase 2 - deferred
+**Phase 1 Status:** Not active in current Phase 1 Work implementation; retained as future design reference.
 
 **Module:** WorkSync
 **Feature:** Insight & Analytics
@@ -79,11 +82,11 @@ public class AnalyticsEndpointTests : IClassFixture<ONEVOWebFactory>
 
 | Scenario | Type | Expected |
 |:---------|:-----|:---------|
-| is_shared = true — all workspace members see | Unit | Dashboard included |
-| ACL share (user) — only target user sees | Unit | Dashboard included for target only |
-| No share at all — excluded | Unit | Dashboard excluded |
-| Queue export — Hangfire job enqueued | Unit | Job enqueued, status = queued |
-| Export fails — status = failed | Unit | Status set to failed |
+| is_shared = true - all workspace members see | Unit | Dashboard included |
+| ACL share (user) - only target user sees | Unit | Dashboard included for target only |
+| No share at all - excluded | Unit | Dashboard excluded |
+| Queue export - Hangfire job enqueued | Unit | Job enqueued, status = queued |
+| Export fails - status = failed | Unit | Status set to failed |
 | Private dashboard invisible to others | Integration | Not in list |
 | Export ready after processing | Integration | status = ready, download URL present |
 

@@ -14,7 +14,7 @@ Install MSIX
 -> Backend enrolls device and creates agent session
 -> Agent stores internal device credential using DPAPI / Windows Credential Manager
 -> Agent fetches policy
--> Monitoring starts only when Workforce Presence lifecycle allows it
+-> Monitoring starts only when Time & Attendance lifecycle allows it
 ```
 
 Employees never enter an API key, tenant key, tenant ID, or server URL. The device credential is internal to the agent and is not exposed in the UI.
@@ -89,7 +89,7 @@ Agent behavior:
 - Store `device_token` with DPAPI / Windows Credential Manager.
 - Cache policy locally.
 - Start heartbeat.
-- Do not collect telemetry until consent and Workforce Presence lifecycle permit it.
+- Do not collect telemetry until consent and Time & Attendance lifecycle permit it.
 
 ### 3. Employee Login / Session Refresh
 
@@ -130,19 +130,20 @@ Response 200:
   "communication_tracking": true,
   "browser_extension_enabled": false,
   "screenshot_capture": false,
+  "auto_screenshot_capture": false,
   "meeting_detection": true,
   "device_tracking": true,
   "identity_verification": true,
-  "verification_on_login": true,
-  "verification_on_logout": false,
-  "verification_interval_minutes": 60,
+  "photo_clock_in_required": true,
+  "photo_clock_out_required": true,
+  "absence_photo_capture": false,
   "idle_threshold_seconds": 300,
   "snapshot_interval_seconds": 150,
   "heartbeat_interval_seconds": 60
 }
 ```
 
-Screenshot capture means the agent can accept `manual` / `on_demand` capture commands. It does not enable scheduled or random screenshot collection.
+Screenshot capture means the agent can accept authorized `on_demand` capture commands. `auto_screenshot_capture` allows `auto_deviation` screenshot commands from monitoring. Interval and random screenshot collection are not supported.
 
 ### 5. Heartbeat
 
